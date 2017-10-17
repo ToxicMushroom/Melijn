@@ -85,4 +85,31 @@ public class MusicManager {
             }
         });
     }
+
+    public void loadSimpelTrack(Guild guild, final String source) {
+        MusicPlayer player = getPlayer(guild);
+        guild.getAudioManager().setSendingHandler(player.getAudioHandler());
+        manager.loadItemOrdered(player, source, new AudioLoadResultHandler() {
+            @Override
+            public void trackLoaded(AudioTrack track) {
+                player.playTrack(track);
+            }
+            @Override
+            public void playlistLoaded(AudioPlaylist playlist) {
+                List<AudioTrack> tracks = playlist.getTracks();
+                if (tracks.size() > 5)
+                    tracks = tracks.subList(0, 1); // First 5 tracks from playlist (0 index)
+
+                for (AudioTrack track : tracks) {
+                    player.playTrack(track);
+                }
+            }
+            @Override
+            public void noMatches() {
+            }
+            @Override
+            public void loadFailed(FriendlyException exception) {
+            }
+        });
+    }
 }

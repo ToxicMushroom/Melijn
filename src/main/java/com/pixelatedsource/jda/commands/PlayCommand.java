@@ -33,7 +33,7 @@ public class PlayCommand extends Command {
             eb.setTitle("Some info for new people");
             eb.setColor(Helpers.EmbedColor);
             eb.setDescription(PixelatedBot.PREFIX + "play [yt|sc|link] <Songname>");
-            eb.addField("Legenda","[] = optional" +
+            eb.addField("Legenda", "[] = optional" +
                     "| = or" +
                     "<> = needed", true);
             eb.setFooter("ToxicMushroom | " + simpleDateFormat.format(date), "https://i.imgur.com/1wj6Jlr.png");
@@ -42,7 +42,7 @@ public class PlayCommand extends Command {
         }
 
         args[0] = args[0].toLowerCase(); //makes it so there will be less to check
-        String songname = Arrays.toString(args).replaceFirst("sc", "").replaceFirst("yt", "").replaceFirst("soundcloud", "").replaceFirst("youtube", "").replaceFirst("link", "");
+        String songname = Arrays.toString(args).replaceFirst("sc", "").replaceFirst("yt", "").replaceFirst("soundcloud", "").replaceFirst("youtube", "").replaceFirst("link", "").replaceFirst("looplink", "");
 
         if (sendervoiceChannel == null) {//if the user isn't in a voice channel in the same guild
             EmbedBuilder eb = new EmbedBuilder();
@@ -54,18 +54,25 @@ public class PlayCommand extends Command {
             event.replyWarning("");
             return;
         }
-        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) guild.getAudioManager().openAudioConnection(sendervoiceChannel);
+        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
+            guild.getAudioManager().openAudioConnection(sendervoiceChannel);
         if (args[0].equalsIgnoreCase("sc") || args[0].equalsIgnoreCase("soundcloud")) {
             // if statement opens a conection in case of not connected
             manager.loadTrack(event.getTextChannel(), "scsearch:" + songname);
             Helpers.LOG.debug("scsearch");
         } else if (args[0].equalsIgnoreCase("link")) {
-            manager.loadTrack(event.getTextChannel(), songname);
+            manager.loadTrack(event.getTextChannel(), args[(args.length - 1)]);
             Helpers.LOG.debug("secrets");
+
+        } else if (args[0].equalsIgnoreCase("looplink")) {
+            manager.loadTrack(event.getTextChannel(), args[(args.length - 1)]);
+            manager.loadTrack(event.getTextChannel(), args[(args.length - 1)]);
+            PixelatedBot.looped.put(event.getGuild(), true);
+            Helpers.LOG.debug("looplink");
         } else {
             manager.loadTrack(event.getTextChannel(), "ytsearch:" + songname);
             Helpers.LOG.debug("YOUTUBE");
-        }
 
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.pixelatedsource.jda.commands;
 import com.jagrosh.jdautilities.commandclient.Command;
 import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
+import com.pixelatedsource.jda.PixelatedBot;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -19,6 +20,7 @@ public class StopCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
+        PixelatedBot.looped.put(event.getGuild(), false);
         MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd,yyyy HH:mm:ss");
         Date date = new Date(System.currentTimeMillis());

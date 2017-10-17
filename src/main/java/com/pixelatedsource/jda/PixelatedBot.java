@@ -11,6 +11,7 @@ import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import javax.security.auth.login.LoginException;
+import java.util.HashMap;
 
 public class PixelatedBot extends ListenerAdapter {
 
@@ -18,6 +19,7 @@ public class PixelatedBot extends ListenerAdapter {
     public static String OWNERID = config.getValue("ownerid");
     public static String TOKEN = config.getValue("token");
     public static String PREFIX = config.getValue("prefix");
+    public static HashMap<Guild, Boolean> looped = new HashMap<>();
 
 
     public static void main(String[] args) throws LoginException, RateLimitedException {
@@ -36,7 +38,9 @@ public class PixelatedBot extends ListenerAdapter {
                 new ResumeCommand(),
                 new VolumeCommand(),
                 new AboutCommand(),
-                new PlayerinfoCommand()
+                new PlayerinfoCommand(),
+                new LoopCommand(),
+                new TexttoemojiCommand()
         );
         new JDABuilder(AccountType.BOT)
                 .setToken(TOKEN)

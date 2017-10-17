@@ -6,7 +6,7 @@ plugins {
 
 mainClassName = 'com.pixelatedsource.jda.PixelatedBot'
 version '1.0'
-def jdaVersion = '3.3.1_290'
+def jdaVersion = '3.3.1_291'
 
 sourceCompatibility = 1.8
 
