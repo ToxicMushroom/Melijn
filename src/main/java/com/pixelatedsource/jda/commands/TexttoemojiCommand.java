@@ -2,6 +2,7 @@ package com.pixelatedsource.jda.commands;
 
 import com.jagrosh.jdautilities.commandclient.Command;
 import com.jagrosh.jdautilities.commandclient.CommandEvent;
+import com.pixelatedsource.jda.Helpers;
 
 public class TexttoemojiCommand extends Command {
 
@@ -12,6 +13,17 @@ public class TexttoemojiCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        event.reply(event.getMessage().getRawContent().replaceAll("(.{1})", ":regional_indicator_$1:"));
+        StringBuilder sb = new StringBuilder();
+        for (String s : event.getArgs().split("")) {
+            if (Character.isLetter(s.toLowerCase().charAt(0))) {
+                sb.append(":regional_indicator_").append(s.toLowerCase()).append(":");
+            } else if (Character.isDigit(s.charAt(0))) {
+                sb.append(":").append(Helpers.numberToString(Integer.valueOf(s))).append(":");
+            } else {
+                if (" ".equals(s)) sb.append(" ");
+                sb.append(s);
+            }
+        }
+        event.reply(sb.toString());
     }
 }

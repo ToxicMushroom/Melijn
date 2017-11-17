@@ -24,7 +24,7 @@ public class PlayerinfoCommand extends Command {
         String[] args = event.getArgs().split(" ");
         User user;
         User usr2;
-        if (args[0].equalsIgnoreCase(""))  usr2 = event.getAuthor(); else if (event.getMessage().getMentionedUsers().size() == 0) usr2 = event.getJDA().getUserById(args[0]);
+        if (args[0].equalsIgnoreCase(""))  usr2 = event.getAuthor(); else if (event.getMessage().getMentionedUsers().size() == 0) usr2 = event.getJDA().retrieveUserById(args[0]).complete();
         else usr2 = event.getMessage().getMentionedUsers().get(0);
         user = usr2;
         if (user == null) user = event.getAuthor();

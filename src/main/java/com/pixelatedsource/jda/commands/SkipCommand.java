@@ -7,10 +7,7 @@ import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.Guild;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.concurrent.BlockingQueue;
 
 public class SkipCommand extends Command {
@@ -24,28 +21,43 @@ public class SkipCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        Guild guild = event.getGuild();
-        MusicPlayer player = manager.getPlayer(guild);
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd,yyyy HH:mm:ss");
-        Date date = new Date(System.currentTimeMillis());
+        MusicPlayer player = manager.getPlayer(event.getGuild());
+        AudioTrack tracknp = player.getAudioPlayer().getPlayingTrack();
         EmbedBuilder eb = new EmbedBuilder();
+        String[] args = event.getArgs().split("\\s+");
         BlockingQueue<AudioTrack> audioTracks = player.getListener().getTracks();
-        int i = 0;
-        AudioTrack nextSong = null;
-        for(AudioTrack track : audioTracks) {
-            if (i == 1) {
-            } else {
-                nextSong = track;
-                i++;
+        int i = 1;
+        if (args.length > 0) {
+            if (!args[0].equalsIgnoreCase("")) {
+                try {
+                    i = Integer.parseInt(args[0]);
+                    if (i > 50 || i < 1) {
+                        event.reply("... dude how hard is it to pick a number from 1 to 50");
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    e.addSuppressed(e);
+                    event.reply("... dude how hard is it to pick a number from 1 to 50");
+                }
             }
         }
-        eb.setTitle("Skipped");
-        eb.setColor(Helpers.EmbedColor);
-        if (nextSong != null) {
-            eb.setDescription("Skipped: " + player.getAudioPlayer().getPlayingTrack().getInfo().title + "\n" + "Now playing: " + nextSong.getInfo().title);
-        } else {  eb.setDescription("Skipped: " + player.getAudioPlayer().getPlayingTrack().getInfo().title + "\n" + "No next song."); }
-        eb.setFooter("ToxicMushroom | " + simpleDateFormat.format(date), "https://i.imgur.com/1wj6Jlr.png");
+        AudioTrack nextSong = null;
+        int c = 0;
+        for(AudioTrack track : audioTracks) {
+            if (i != c) {
+                nextSong = track;
+                player.skipTrack();
+                c++;
+            }
+        }
+            eb.setTitle("Skipped");
+            eb.setColor(Helpers.EmbedColor);
+        if (nextSong != null)
+            eb.setDescription("Skipped: " + tracknp.getInfo().title + "\n" + "Now playing: " + nextSong.getInfo().title);
+        else
+            eb.setDescription("Skipped: " + tracknp.getInfo().title + "\n" + "No next song.");
+            eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
         event.reply(eb.build());
-        player.skipTrack();
+
     }
 }

@@ -19,6 +19,7 @@ public class Helpers {
 
     public static final Logger LOG = LogManager.getLogger(PixelatedBot.class.getName());
     public static Color EmbedColor = Color.decode("#00ffd8");
+
     public static String getDurationBreakdown(long millis) {
         if (millis < 0) {
             throw new IllegalArgumentException("Duration must be greater than zero!");
@@ -50,7 +51,9 @@ public class Helpers {
 
         return (sb.toString());
     }
+
     private static ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+
     public static void ScheduleClose(AudioManager manager) {
         if (!manager.isConnected() && !manager.isAttemptingToConnect())
             return;
@@ -84,6 +87,33 @@ public class Helpers {
         Date date = new Date(System.currentTimeMillis());
         eb.setFooter("ToxicMushroom | " + simpleDateFormat.format(date), "https://i.imgur.com/1wj6Jlr.png");
         channel.sendMessage(eb.build()).queue();
+    }
+
+    public static String numberToString(int i) {
+        switch (i) {
+            case 0:
+                return "zero";
+            case 1:
+                return "one";
+            case 2:
+                return "two";
+            case 3:
+                return "three";
+            case 4:
+                return "four";
+            case 5:
+                return "five";
+            case 6:
+                return "six";
+            case 7:
+                return "seven";
+            case 8:
+                return "eight";
+            case 9:
+                return "nine";
+            default:
+                return "zero";
+        }
     }
 
 }

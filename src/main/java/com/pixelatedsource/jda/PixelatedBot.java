@@ -2,6 +2,7 @@ package com.pixelatedsource.jda;
 
 import com.jagrosh.jdautilities.commandclient.CommandClientBuilder;
 import com.pixelatedsource.jda.commands.*;
+import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.Game;
@@ -28,6 +29,7 @@ public class PixelatedBot extends ListenerAdapter {
         client.setOwnerId(OWNERID);
         client.setPrefix(PREFIX);
         client.addCommands(
+
                 new PingCommand(),
                 new PlayCommand(),
                 new QueueCommand(),
@@ -44,6 +46,7 @@ public class PixelatedBot extends ListenerAdapter {
         );
         new JDABuilder(AccountType.BOT)
                 .setToken(TOKEN)
+                .setAudioSendFactory(new NativeAudioSendFactory())
                 .setGame(Game.of(PREFIX + "help", "https://www.twitch.tv/pixelhamster"))
                 .addEventListener(client.build())
                 .buildAsync();
