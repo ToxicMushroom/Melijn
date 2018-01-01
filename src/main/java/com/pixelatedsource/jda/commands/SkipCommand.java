@@ -23,7 +23,10 @@ public class SkipCommand extends Command {
     protected void execute(CommandEvent event) {
         MusicPlayer player = manager.getPlayer(event.getGuild());
         AudioTrack tracknp = player.getAudioPlayer().getPlayingTrack();
-        EmbedBuilder eb = new EmbedBuilder();
+        if (tracknp == null) {
+            event.reply("Their are no songs playing at the moment.");
+            return;
+        }
         String[] args = event.getArgs().split("\\s+");
         BlockingQueue<AudioTrack> audioTracks = player.getListener().getTracks();
         int i = 1;
@@ -43,20 +46,21 @@ public class SkipCommand extends Command {
         }
         AudioTrack nextSong = null;
         int c = 0;
-        for(AudioTrack track : audioTracks) {
+        for (AudioTrack track : audioTracks) {
             if (i != c) {
                 nextSong = track;
                 player.skipTrack();
                 c++;
             }
         }
-            eb.setTitle("Skipped");
-            eb.setColor(Helpers.EmbedColor);
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("Skipped");
+        eb.setColor(Helpers.EmbedColor);
         if (nextSong != null)
             eb.setDescription("Skipped: " + tracknp.getInfo().title + "\n" + "Now playing: " + nextSong.getInfo().title);
         else
             eb.setDescription("Skipped: " + tracknp.getInfo().title + "\n" + "No next song.");
-            eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
+        eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
         event.reply(eb.build());
 
     }
