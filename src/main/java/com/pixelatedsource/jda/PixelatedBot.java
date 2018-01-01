@@ -29,7 +29,6 @@ public class PixelatedBot extends ListenerAdapter {
         client.setOwnerId(OWNERID);
         client.setPrefix(PREFIX);
         client.addCommands(
-
                 new PingCommand(),
                 new PlayCommand(),
                 new QueueCommand(),
@@ -48,7 +47,7 @@ public class PixelatedBot extends ListenerAdapter {
         new JDABuilder(AccountType.BOT)
                 .setToken(TOKEN)
                 .setAudioSendFactory(new NativeAudioSendFactory())
-                .setGame(Game.of(PREFIX + "help", "https://www.twitch.tv/pixelhamster"))
+                .setGame(Game.of(Game.GameType.STREAMING,PREFIX + "help", "https://www.twitch.tv/pixelhamster"))
                 .addEventListener(client.build())
                 .buildAsync();
         Helpers.starttime = System.currentTimeMillis();
