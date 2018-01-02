@@ -1,6 +1,8 @@
 package com.pixelatedsource.jda;
 
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.managers.AudioManager;
 import org.apache.logging.log4j.LogManager;
@@ -16,9 +18,19 @@ import java.util.concurrent.TimeUnit;
 public class Helpers {
 
     public static long starttime;
-
+    public static String noPerms = "You don't have the permission: ";
     public static final Logger LOG = LogManager.getLogger(PixelatedBot.class.getName());
     public static Color EmbedColor = Color.decode("#00ffd8");
+
+    public static boolean hasPerm(Member member, String permission) {
+        if (member.isOwner()) return true;
+        if (member.getRoles().size() == 0) return PixelatedBot.mySQL.hasPermission(member.getGuild(), null, permission);
+        boolean rolf = false;
+        for (Role role : member.getRoles()) {
+            if (PixelatedBot.mySQL.hasPermission(member.getGuild(), role, permission)) rolf = true;
+        }
+        return rolf;
+    }
 
     public static String getDurationBreakdown(long millis) {
         if (millis < 0) {
