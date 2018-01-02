@@ -2,6 +2,7 @@ package com.pixelatedsource.jda;
 
 import com.jagrosh.jdautilities.commandclient.CommandClientBuilder;
 import com.pixelatedsource.jda.commands.*;
+import com.pixelatedsource.jda.db.MySQL;
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
@@ -16,10 +17,15 @@ import java.util.HashMap;
 
 public class PixelatedBot extends ListenerAdapter {
 
+    public static MySQL mySQL;
     static final Config config = new Config();
     public static String OWNERID = config.getValue("ownerid");
     public static String TOKEN = config.getValue("token");
     public static String PREFIX = config.getValue("prefix");
+    private static String ip = config.getValue("ipadress");
+    private static String user = config.getValue("username");
+    private static String pass = config.getValue("password");
+    private static String dbname = config.getValue("database");
     public static HashMap<Guild, Boolean> looped = new HashMap<>();
 
 
@@ -51,6 +57,8 @@ public class PixelatedBot extends ListenerAdapter {
                 .addEventListener(client.build())
                 .buildAsync();
         Helpers.starttime = System.currentTimeMillis();
+        mySQL = new MySQL(ip, user, pass, dbname);
+
     }
 
     public void onDisconnect(DisconnectEvent e) {
