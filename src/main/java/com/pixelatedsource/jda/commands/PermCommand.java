@@ -30,7 +30,7 @@ public class PermCommand extends Command {
         }
         switch (args[0]) {
             case "add":
-                if (Helpers.hasPerm(member, "perm.add")) {
+                if (Helpers.hasPerm(member, this.name + ".add")) {
                     if (args.length == 3) {
                         if (roles.size() == 1)
                             PixelatedBot.mySQL.addPermission(guild, roles.get(0), args[2]);
@@ -41,12 +41,12 @@ public class PermCommand extends Command {
                         return;
                     }
                 } else {
-                    event.reply(Helpers.noPerms + "`perm.add`.");
+                    event.reply(Helpers.noPerms + "`" + this.name + ".add`.");
                     return;
                 }
                 break;
             case "remove":
-                if (Helpers.hasPerm(member, "perm.remove")) {
+                if (Helpers.hasPerm(member, this.name + ".remove")) {
                     if (args.length == 3) {
                         if (roles.size() == 1)
                             PixelatedBot.mySQL.removePermission(guild, roles.get(0), args[2]);
@@ -57,12 +57,12 @@ public class PermCommand extends Command {
                         return;
                     }
                 } else {
-                    event.reply(Helpers.noPerms + "`perm.remove`.");
+                    event.reply(Helpers.noPerms + "`" + this.name + ".remove`.");
                     return;
                 }
                 break;
             case "clear":
-                if (Helpers.hasPerm(member, "perm.clear")) {
+                if (Helpers.hasPerm(member, this.name + ".clear")) {
                     if (args.length == 2) {
                         if (roles.size() == 1)
                             PixelatedBot.mySQL.clearPermissions(guild, roles.get(0));
@@ -73,12 +73,12 @@ public class PermCommand extends Command {
                         return;
                     }
                 } else {
-                    event.reply(Helpers.noPerms + "`perm.remove`.");
+                    event.reply(Helpers.noPerms + "`" + this.name + ".remove`.");
                     return;
                 }
                 break;
             case "view":
-                if (Helpers.hasPerm(member, "perm.view")) {
+                if (Helpers.hasPerm(member, this.name + ".view")) {
 
                 }
                 break;

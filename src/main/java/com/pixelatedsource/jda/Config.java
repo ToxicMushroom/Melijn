@@ -22,7 +22,7 @@ public class Config {
         JSONObject obj = read(configFile);
         if (obj.has("token") &&
                 obj.has("prefix") &&
-                    obj.has("ownerid")) {
+                obj.has("ownerid") && obj.has("username") && obj.has("password") && obj.has("ipadress") && obj.has("database")) {
             configObject = obj;
         } else {
             create();
@@ -35,9 +35,13 @@ public class Config {
         try {
             Files.write(Paths.get(configFile.getPath()),
                     new JSONObject()
-                            .put("ownerid", "")
-                            .put("prefix", ".")
+                            .put("ownerid", "231459866630291459")
+                            .put("prefix", ">")
                             .put("token", "")
+                            .put("username", "")
+                            .put("password", "")
+                            .put("ipadress", "")
+                            .put("database", "")
                             .toString(4)
                             .getBytes());
         } catch (IOException e) {

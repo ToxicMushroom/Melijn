@@ -16,6 +16,7 @@ public class AboutCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
+        event.getJDA().getSelfUser().getManager().setName("PixelSniper").queue();
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("About");
         eb.setColor(Helpers.EmbedColor);

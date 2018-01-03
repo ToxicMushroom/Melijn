@@ -4,6 +4,7 @@ import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MySQL {
@@ -127,6 +128,19 @@ public class MySQL {
     }
 
     public List<String> getPermissions(Guild guild, Role role) {
-        List<String>
+        List<String> toReturn = new ArrayList<>();
+        String id = role == null ? "all" : role.getId();
+        try {
+            PreparedStatement getPerms = con.prepareStatement("SELECT * FROM perms WHERE guildId= '?' AND roleId= '?'");
+            getPerms.setString(1, guild.getId());
+            getPerms.setString(2, id);
+            ResultSet rs = getPerms.executeQuery();
+            while (rs.next()) {
+                toReturn.add(rs.getString("permission"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return toReturn;
     }
 }
