@@ -143,4 +143,17 @@ public class MySQL {
         }
         return toReturn;
     }
+
+    public boolean noOneHasPermission(Guild guild, String permission) {
+        try {
+            PreparedStatement getting = con.prepareStatement("SELECT * FROM perms WHERE guildId= '?' AND permission= '?'");
+            getting.setString(1, guild.getId());
+            getting.setString(2, permission);
+            ResultSet rs = getting.executeQuery();
+            if (rs.next()) return false;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
 }
