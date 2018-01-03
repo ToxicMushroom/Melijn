@@ -10,29 +10,31 @@ public class VolumeCommand extends Command {
 
     public VolumeCommand() {
         this.name = "volume";
-        this.help = "choose a value between 0-150";
+        this.help = "Set the volume of the player -> Usage: " + PixelatedBot.PREFIX + this.name + " <0-100>";
         this.guildOnly = true;
         this.ownerCommand = true;
     }
 
     @Override
     protected void execute(CommandEvent event) {
-        String args[] = event.getArgs().split(" ");
-        int volume;
-        if (args.length == 0 || args[0].equalsIgnoreCase("")) {
-            Helpers.DefaultEmbed("Volume", PixelatedBot.PREFIX + "volume [number from 0 to 150]", event.getTextChannel());
-            return;
-        }
-        try {
-            volume = Integer.parseInt(args[0]);
-        } catch (NumberFormatException e) {
-            return;
-        }
-        if (volume > -1 && volume < 151) {
-            MusicManager.getManagerinstance().getPlayer(event.getGuild()).getAudioPlayer().setVolume(volume);
-            Helpers.DefaultEmbed("Volume", "Volume has been set to " + String.valueOf(Math.round((double) volume / 1.5)) + "%", event.getTextChannel());
-        } else {
-            Helpers.DefaultEmbed("Volume", PixelatedBot.PREFIX + "volume [number from 0 to 150]", event.getTextChannel());
+        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name)) {
+            String args[] = event.getArgs().split("\\s+");
+            int volume;
+            if (args.length == 0) {
+                event.reply("Provide a number between 0 and 100");
+                return;
+            }
+            try {
+                volume = Integer.parseInt(args[0]);
+            } catch (NumberFormatException e) {
+                return;
+            }
+            if (volume >= 0 && volume <= 100) {
+                MusicManager.getManagerinstance().getPlayer(event.getGuild()).getAudioPlayer().setVolume(Integer.parseInt(String.valueOf(Math.round(volume * 1.5))));
+                event.reply("Volume has been set to " + String.valueOf(Math.round((double) volume / 1.5)) + "%");
+            } else {
+                event.reply("no no no, use 0-100");
+            }
         }
     }
 }

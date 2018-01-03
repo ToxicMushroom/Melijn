@@ -9,18 +9,29 @@ public class LoopCommand extends Command {
 
     public LoopCommand() {
         this.name = "loop";
-        this.help = "Enable or disable song looping";
+        this.help = "Enable or disable song looping -> Usage: " + PixelatedBot.PREFIX + this.name + " <false|true>";
     }
 
     @Override
     protected void execute(CommandEvent event) {
-        String[] args = event.getArgs().split(" ");
-        if (args[args.length-1].equalsIgnoreCase("true"))
-        {PixelatedBot.looped.put(event.getGuild(), true);
-            Helpers.DefaultEmbed("Loop","Enabled",event.getTextChannel());
-        }
-        else {PixelatedBot.looped.put(event.getGuild(), false);
-            Helpers.DefaultEmbed("Loop","Disabled",event.getTextChannel());
+        boolean acces = false;
+        if (event.getGuild() == null) acces = true;
+        if (!acces) acces = Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name);
+        if (acces) {
+            String[] args = event.getArgs().split("\\s+");
+            switch (args[0]) {
+                case "yes":
+                case "true":
+                    PixelatedBot.looped.put(event.getGuild(), true);
+                    event.reply("Loop enabled!");
+                    break;
+
+                case "no"://idk if switch works like this
+                case "false":
+                    PixelatedBot.looped.put(event.getGuild(), false);
+                    event.reply("Loop disabled!");
+                    break;
+            }
         }
     }
 }

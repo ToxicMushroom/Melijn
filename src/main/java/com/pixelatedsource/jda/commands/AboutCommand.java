@@ -3,13 +3,14 @@ package com.pixelatedsource.jda.commands;
 import com.jagrosh.jdautilities.commandclient.Command;
 import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
+import com.pixelatedsource.jda.PixelatedBot;
 import net.dv8tion.jda.core.EmbedBuilder;
 
 public class AboutCommand extends Command {
 
     public AboutCommand() {
         this.name = "about";
-        this.help = "Shows bot info";
+        this.help = "Shows info about the bot -> Usage: " + PixelatedBot.PREFIX + this.name;
         this.guildOnly = false;
         this.aliases = new String[]{"info", "botinfo", "author"};
     }

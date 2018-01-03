@@ -14,7 +14,6 @@ public class PingCommand extends Command {
         this.help = "Shows you the ping of the bot";
     }
 
-
     @Override
     protected void execute(CommandEvent event) {
         EmbedBuilder eb = new EmbedBuilder();

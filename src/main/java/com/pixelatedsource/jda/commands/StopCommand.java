@@ -8,28 +8,26 @@ import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
 import net.dv8tion.jda.core.EmbedBuilder;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 public class StopCommand extends Command {
 
     public StopCommand() {
+        this.guildOnly = true;
         this.name = "stop";
-        this.help = "stops the current song";
+        this.help = "Stops the player -> Usage: " + PixelatedBot.PREFIX + this.name;
     }
 
     @Override
     protected void execute(CommandEvent event) {
-        PixelatedBot.looped.put(event.getGuild(), false);
-        MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd,yyyy HH:mm:ss");
-        Date date = new Date(System.currentTimeMillis());
-        player.stopTrack();
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setColor(Helpers.EmbedColor);
-        eb.setTitle("Stopped");
-        eb.setDescription("**I stopped all the songs and left the channel. To resume listening to the songs use !play.**");
-        eb.setFooter("ToxicMushroom | " + simpleDateFormat.format(date), "https://i.imgur.com/1wj6Jlr.png");
-        event.getTextChannel().sendMessage(eb.build()).queue();
+        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name)) {
+            PixelatedBot.looped.put(event.getGuild(), false);
+            MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
+            player.stopTrack();
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.setColor(Helpers.EmbedColor);
+            eb.setTitle("Stopped");
+            eb.setDescription("**I stopped playing music and left the voicechannel.**");
+            eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
+            event.getTextChannel().sendMessage(eb.build()).queue();
+        }
     }
 }

@@ -8,38 +8,43 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.async.Callback;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.pixelatedsource.jda.Helpers;
+import com.pixelatedsource.jda.PixelatedBot;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 
 public class CatCommand extends Command {
     public CatCommand() {
         this.name = "cat";
-        this.help = "shows a random cat";
+        this.help = "Displays a random cat in chat -> Usage: " + PixelatedBot.PREFIX + this.name;
         this.botPermissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
         this.guildOnly = false;
     }
 
     @Override
     protected void execute(CommandEvent event) {
-        // use Unirest to poll an API
-        Unirest.post("http://random.cat/meow").asJsonAsync(new Callback<JsonNode>() {
-            @Override
-            public void completed(HttpResponse<JsonNode> response) {
-                event.reply(new EmbedBuilder()
-                        .setColor(Helpers.EmbedColor)
-                        .setImage(response.getBody().getObject().getString("file"))
-                        .build());
-            }
+        boolean acces = false;
+        if (event.getGuild() == null) acces = true;
+        if (!acces) acces = Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name);
+        if (acces) {
+            Unirest.post("http://random.cat/meow").asJsonAsync(new Callback<JsonNode>() {
+                @Override
+                public void completed(HttpResponse<JsonNode> response) {
+                    event.reply(new EmbedBuilder()
+                            .setColor(Helpers.EmbedColor)
+                            .setImage(response.getBody().getObject().getString("file"))
+                            .build());
+                }
 
-            @Override
-            public void failed(UnirestException e) {
-                event.reactError();
-            }
+                @Override
+                public void failed(UnirestException e) {
+                    event.reactError();
+                }
 
-            @Override
-            public void cancelled() {
-                event.reactError();
-            }
-        });
+                @Override
+                public void cancelled() {
+                    event.reactError();
+                }
+            });
+        }
     }
 }

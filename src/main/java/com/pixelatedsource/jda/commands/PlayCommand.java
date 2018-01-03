@@ -9,66 +9,71 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 
 public class PlayCommand extends Command {
 
     public PlayCommand() {
         this.name = "play";
-        this.help = "play a song with yt or sc";
+        this.guildOnly = true;
+        this.help = "Play sounds like BOOM BOOM or wooosh ect.. -> Usage: " + PixelatedBot.PREFIX + this.name + " [yt|sc|link] <songname|link>" +
+                "\nYoutube is the default music browser.";
     }
 
-    MusicManager manager = MusicManager.getManagerinstance();
+    private MusicManager manager = MusicManager.getManagerinstance();
 
     @Override
     protected void execute(CommandEvent event) {
         Guild guild = event.getGuild();
         VoiceChannel sendervoiceChannel = guild.getMember(event.getAuthor()).getVoiceState().getChannel();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-        Date date = new Date(System.currentTimeMillis());
-        String args[] = event.getArgs().split(" ");
+        String args[] = event.getArgs().split("\\s+");
         if (args.length == 0 || args[0].equalsIgnoreCase("")) {//no args -> usage:
             EmbedBuilder eb = new EmbedBuilder();
             eb.setTitle("Some info for new people");
             eb.setColor(Helpers.EmbedColor);
-            eb.setDescription(PixelatedBot.PREFIX + "play [yt|sc|link] <Songname>");
+            eb.setDescription(PixelatedBot.PREFIX + this.name + " [yt|sc|link] <Songname>");
             eb.addField("Legenda", "[] = optional" +
                     "| = or" +
                     "<> = needed", true);
-            eb.setFooter("ToxicMushroom | " + simpleDateFormat.format(date), "https://i.imgur.com/1wj6Jlr.png");
+            eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
             event.reply(eb.build());
             return;
         }
         args[0] = args[0].toLowerCase();
-        String songname = Arrays.toString(args).replaceFirst("sc", "").replaceFirst("yt", "").replaceFirst("soundcloud", "").replaceFirst("youtube", "").replaceFirst("link", "").replaceFirst("looplink", "");
+        String songname = Arrays.toString(args)
+                .replaceFirst("sc", "")
+                .replaceFirst("yt", "")
+                .replaceFirst("soundcloud", "")
+                .replaceFirst("youtube", "")
+                .replaceFirst("link", "")
+                .replaceFirst("looplink", "");
         if (sendervoiceChannel == null) {
             EmbedBuilder eb = new EmbedBuilder();
             eb.setTitle("I'm a pet so i follow you everywhere :3");
             eb.setColor(Helpers.EmbedColor);
-            eb.setDescription("PS: you need to join a voice channel then when you use the command i'll party with you");
-            eb.setFooter("ToxicMushroom | " + simpleDateFormat.format(date), "https://i.imgur.com/1wj6Jlr.png");
+            eb.setDescription("PS: you need to join a voice channel then when you use the command then I'll party with you");
+            eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
             event.reply(eb.build());
-            event.replyWarning("");
             return;
         }
+
         if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
             guild.getAudioManager().openAudioConnection(sendervoiceChannel);
         if (args[0].equalsIgnoreCase("sc") || args[0].equalsIgnoreCase("soundcloud")) {
-            manager.loadTrack(event.getTextChannel(), "scsearch:" + songname);
-            Helpers.LOG.debug("scsearch");
+            if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.name + ".sc"))
+                manager.loadTrack(event.getTextChannel(), "scsearch:" + songname);
         } else if (args[0].equalsIgnoreCase("link")) {
-            manager.loadTrack(event.getTextChannel(), args[(args.length - 1)]);
-            Helpers.LOG.debug("secrets");
+            if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.name + ".link"))
+                manager.loadTrack(event.getTextChannel(), args[(args.length - 1)]);
         } else if (args[0].equalsIgnoreCase("looplink")) {
-            manager.loadTrack(event.getTextChannel(), args[(args.length - 1)]);
-            manager.loadTrack(event.getTextChannel(), args[(args.length - 1)]);
-            PixelatedBot.looped.put(event.getGuild(), true);
-            Helpers.LOG.debug("looplink");
+            if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.name + ".looplink")) {
+                manager.loadTrack(event.getTextChannel(), args[(args.length - 1)]);
+                manager.loadTrack(event.getTextChannel(), args[(args.length - 1)]);
+                PixelatedBot.looped.put(event.getGuild(), true);
+            }
         } else {
-            manager.loadTrack(event.getTextChannel(), "ytsearch:" + songname);
-            Helpers.LOG.debug("YOUTUBE");
+            if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.name + ".yt"))
+                manager.loadTrack(event.getTextChannel(), "ytsearch:" + songname);
         }
     }
 }

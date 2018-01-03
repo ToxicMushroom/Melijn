@@ -13,7 +13,7 @@ public class MySQL {
     private String pass;
     private String user;
     private String dbname;
-    public Connection con;
+    private Connection con;
 
     public MySQL(String ip, String user, String pass, String dbname) {
         this.ip = ip;

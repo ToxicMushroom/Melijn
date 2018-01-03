@@ -3,41 +3,38 @@ package com.pixelatedsource.jda.commands;
 import com.jagrosh.jdautilities.commandclient.Command;
 import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
+import com.pixelatedsource.jda.PixelatedBot;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
 import net.dv8tion.jda.core.EmbedBuilder;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class ClearCommand extends Command {
 
     public ClearCommand() {
         this.name = "clear";
-        this.help = "clears the queue";
+        this.help = "Clears the queue -> Usage: " + PixelatedBot.PREFIX + this.name;
         this.guildOnly = true;
     }
 
     @Override
     protected void execute(CommandEvent event) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd,yyyy HH:mm:ss");
-        Date date = new Date(System.currentTimeMillis());
-        MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
-        if (player.getListener().getTracks().isEmpty()) {
+        boolean acces = false;
+        if (event.getGuild() == null) acces = true;
+        if (!acces) acces = Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name);
+        if (acces) {
+            MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
             EmbedBuilder eb = new EmbedBuilder();
             eb.setColor(Helpers.EmbedColor);
-            eb.setTitle("But...");
-            eb.setDescription("**There are no songs to remove.**");
-            eb.setFooter("ToxicMushroom | " + simpleDateFormat.format(date), "https://i.imgur.com/1wj6Jlr.png");
-            event.getTextChannel().sendMessage(eb.build()).queue();
-            return;
+            eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
+            if (player.getListener().getTracks().isEmpty()) {
+                eb.setTitle("But...");
+                eb.setDescription("**There are no songs to remove.**");
+            } else {
+                player.getListener().getTracks().clear();
+                eb.setTitle("Cleared");
+                eb.setDescription("**I cleared the queue i hope that you aren't mad at me :(. i'm a __good__ pet.**");
+            }
+            event.reply(eb.build());
         }
-        player.getListener().getTracks().clear();
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setColor(Helpers.EmbedColor);
-        eb.setTitle("Cleared");
-        eb.setDescription("**I cleared the queue i hope that you aren't mad at me :(. i'm a __good__ pet.**");
-        eb.setFooter("ToxicMushroom | " + simpleDateFormat.format(date), "https://i.imgur.com/1wj6Jlr.png");
-        event.getTextChannel().sendMessage(eb.build()).queue();
     }
 }

@@ -18,7 +18,7 @@ import java.util.HashMap;
 public class PixelatedBot extends ListenerAdapter {
 
     public static MySQL mySQL;
-    static final Config config = new Config();
+    private static final Config config = new Config();
     public static String OWNERID = config.getValue("ownerid");
     public static String TOKEN = config.getValue("token");
     public static String PREFIX = config.getValue("prefix");
