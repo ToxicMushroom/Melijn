@@ -24,6 +24,7 @@ public class Helpers {
 
     public static boolean hasPerm(Member member, String permission) {
         if (member.isOwner()) return true;
+        if (PixelatedBot.mySQL.noOneHasPermission(member.getGuild(), permission)) return true;
         if (member.getRoles().size() == 0) return PixelatedBot.mySQL.hasPermission(member.getGuild(), null, permission);
         boolean rolf = false;
         for (Role role : member.getRoles()) {
