@@ -10,6 +10,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.awt.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -21,6 +23,31 @@ public class Helpers {
     public static String noPerms = "You don't have the permission: ";
     public static final Logger LOG = LogManager.getLogger(PixelatedBot.class.getName());
     public static Color EmbedColor = Color.decode("#00ffd8");
+    public static ArrayList<String> perms = new ArrayList<>(Arrays.asList(
+            "play.yt",
+            "play.sc",
+            "play.link",
+            "skip",
+            "skipx",
+            "stop",
+            "volume",
+            "loop",
+            "queue",
+            "clear",
+            "loop",
+            "resume",
+            "userinfo",
+            "cat",
+            "t2e",
+            "perm.add",
+            "perm.remove",
+            "perm.clear",
+            "perm.view",
+            "perm.copy",
+            "perm.*",
+            "*",
+            "play.*"
+    ));
 
     public static boolean hasPerm(Member member, String permission) {
         if (member.isOwner()) return true;
@@ -28,7 +55,8 @@ public class Helpers {
         if (member.getRoles().size() == 0) return PixelatedBot.mySQL.hasPermission(member.getGuild(), null, permission);
         boolean rolf = false;
         for (Role role : member.getRoles()) {
-            if (PixelatedBot.mySQL.hasPermission(member.getGuild(), role, permission)) rolf = true;
+            if (PixelatedBot.mySQL.hasPermission(member.getGuild(), role, permission) ||
+                    PixelatedBot.mySQL.hasPermission(member.getGuild(), role, "*")) rolf = true;
         }
         return rolf;
     }
