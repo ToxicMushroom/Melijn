@@ -29,11 +29,15 @@ public class MySQL {
 
     private void connect() {
         try {
-            con = DriverManager.getConnection("jdbc:mysql://" + ip + ":3306/" + dbname + "?autoReconnect=true", user, pass);
+            con = DriverManager.getConnection("jdbc:mysql://" + this.ip + ":3306/" + this.dbname + "?autoReconnect=true&useUnicode=true",
+                    this.user, this.pass);
+            Statement statement = con.createStatement();
+            statement.executeQuery("SET NAMES 'utf8mb4'");
+            statement.close();
             System.out.println("[MySQL] has connected");
-        update("CREATE TABLE IF NOT EXISTS perms(guildName varchar(64), guildId varchar(128), roleName varchar(64), roleId varchar(128), permission varchar(256))");
+            update("CREATE TABLE IF NOT EXISTS perms(guildName varchar(64), guildId varchar(128), roleName varchar(64), roleId varchar(128), permission varchar(256))");
         } catch (SQLException e) {
-            System.out.println((char)27 + "[31m" + "did not connect");
+            System.out.println((char) 27 + "[31m" + "did not connect");
             e.printStackTrace();
         }
     }
@@ -91,7 +95,7 @@ public class MySQL {
     public void removePermission(Guild guild, Role role, String permission) {
         String id = role == null ? "all" : role.getId();
         try {
-            PreparedStatement removing = con.prepareStatement("DELETE FROM perms WHERE guildId= '?' AND roleId= '?' AND permission= '?'");
+            PreparedStatement removing = con.prepareStatement("DELETE FROM perms WHERE guildId= ? AND roleId= ? AND permission= ?");
             removing.setString(1, guild.getId());
             removing.setString(2, id);
             removing.setString(3, permission);
@@ -100,10 +104,11 @@ public class MySQL {
             e.printStackTrace();
         }
     }
+
     public boolean hasPermission(Guild guild, Role role, String permission) {
         String id = role == null ? "all" : role.getId();
         try {
-            PreparedStatement getting = con.prepareStatement("SELECT * FROM perms WHERE guildId= '?' AND roleId= '?' AND permission= '?'");
+            PreparedStatement getting = con.prepareStatement("SELECT * FROM perms WHERE guildId= ? AND roleId= ? AND permission= ?");
             getting.setString(1, guild.getId());
             getting.setString(2, id);
             getting.setString(3, permission);
@@ -118,7 +123,7 @@ public class MySQL {
     public void clearPermissions(Guild guild, Role role) {
         String id = role == null ? "all" : role.getId();
         try {
-            PreparedStatement clearing = con.prepareStatement("DELETE FROM perms WHERE guildId= '?' AND roleId= '?'");
+            PreparedStatement clearing = con.prepareStatement("DELETE FROM perms WHERE guildId= ? AND roleId= ?");
             clearing.setString(1, guild.getId());
             clearing.setString(2, id);
             clearing.executeUpdate();
@@ -131,7 +136,7 @@ public class MySQL {
         List<String> toReturn = new ArrayList<>();
         String id = role == null ? "all" : role.getId();
         try {
-            PreparedStatement getPerms = con.prepareStatement("SELECT * FROM perms WHERE guildId= '?' AND roleId= '?'");
+            PreparedStatement getPerms = con.prepareStatement("SELECT * FROM perms WHERE guildId= ? AND roleId= ?");
             getPerms.setString(1, guild.getId());
             getPerms.setString(2, id);
             ResultSet rs = getPerms.executeQuery();
@@ -146,7 +151,7 @@ public class MySQL {
 
     public boolean noOneHasPermission(Guild guild, String permission) {
         try {
-            PreparedStatement getting = con.prepareStatement("SELECT * FROM perms WHERE guildId= '?' AND permission= '?'");
+            PreparedStatement getting = con.prepareStatement("SELECT * FROM perms WHERE guildId= ? AND permission= ?");
             getting.setString(1, guild.getId());
             getting.setString(2, permission);
             ResultSet rs = getting.executeQuery();
