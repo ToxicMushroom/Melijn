@@ -37,10 +37,11 @@ public class QueueCommand extends Command {
             List<String> lijst = new ArrayList<>();
             int i = 0;
             if (player.getAudioPlayer().getPlayingTrack() != null) {
-                lijst.add(String.valueOf("[" + i + "](" + player.getAudioPlayer().getPlayingTrack().getInfo().uri + ") Now playing: " + player.getAudioPlayer().getPlayingTrack().getInfo().title + " `" + Helpers.getDurationBreakdown(player.getAudioPlayer().getPlayingTrack().getInfo().length) + "`"));
+                lijst.add(String.valueOf("[#" + i + "](" + player.getAudioPlayer().getPlayingTrack().getInfo().uri + ") - Now playing: " + player.getAudioPlayer().getPlayingTrack().getInfo().title + " `" + Helpers.getDurationBreakdown(player.getAudioPlayer().getPlayingTrack().getInfo().length) + "`"));
             }
             for (AudioTrack track : tracks) {
-                lijst.add(String.valueOf("[" + i + "](" + track.getInfo().uri + ") " + track.getInfo().title + " `" + Helpers.getDurationBreakdown(track.getInfo().length) + "`"));
+                i++;
+                lijst.add(String.valueOf("[#" + i + "](" + track.getInfo().uri + ") - " + track.getInfo().title + " `" + Helpers.getDurationBreakdown(track.getInfo().length) + "`"));
             }
             StringBuilder builder = new StringBuilder();
             for (String s : lijst) {
@@ -63,7 +64,7 @@ public class QueueCommand extends Command {
                     builder.append(s).append("\n");
                 }
                 EmbedBuilder eb = new EmbedBuilder();
-                eb.setTitle("Queue part " + part + 1);
+                eb.setTitle("Queue part " + part);
                 eb.setColor(Helpers.EmbedColor);
                 eb.setDescription(builder.toString());
                 eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
