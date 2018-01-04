@@ -18,6 +18,7 @@ public class PlayCommand extends Command {
         this.guildOnly = true;
         this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " [yt|sc|link] <songname|link>" +
                 "\nYoutube is the default music browser.";
+        this.aliases = new String[] {"p"};
     }
 
     private MusicManager manager = MusicManager.getManagerinstance();

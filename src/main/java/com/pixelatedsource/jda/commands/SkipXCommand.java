@@ -23,7 +23,10 @@ public class SkipXCommand extends Command {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name)) {
             String[] args = event.getArgs().replaceFirst(":", " ").split("\\s+");
             AudioTrack player = manager.getPlayer(event.getGuild()).getAudioPlayer().getPlayingTrack();
-
+            if (args.length < 2 && player != null) {
+                event.reply("Current progress of the song: `" + Helpers.getDurationBreakdown(player.getPosition()) + "`/ `" + Helpers.getDurationBreakdown(player.getDuration()) + "`");
+                return;
+            }
             int seconds;
             if (args.length < 2) seconds = 0;
             else try {

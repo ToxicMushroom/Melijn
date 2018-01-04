@@ -44,7 +44,7 @@ public class MusicPlayer {
     }
 
     public synchronized void stopTrack() {
-        audioPlayer.stopTrack();
+        audioPlayer.setPaused(true); //audioPlayer.stopTrack();
         Helpers.ScheduleClose(guild.getAudioManager());
     }
 

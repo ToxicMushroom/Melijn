@@ -10,27 +10,31 @@ public class LoopCommand extends Command {
     public LoopCommand() {
         this.name = "loop";
         this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " <false|true>";
+        this.aliases = new String[] {"repeat"};
+        this.guildOnly = true;
     }
 
     @Override
     protected void execute(CommandEvent event) {
-        boolean acces = false;
-        if (event.getGuild() == null) acces = true;
-        if (!acces) acces = Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name);
-        if (acces) {
+        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name)) {
             String[] args = event.getArgs().split("\\s+");
-            switch (args[0]) {
-                case "yes":
-                case "true":
-                    PixelatedBot.looped.put(event.getGuild(), true);
-                    event.reply("Loop enabled!");
-                    break;
+            if (args.length == 0 || args[0].equalsIgnoreCase("")) {
+                String ts = PixelatedBot.looped.get(event.getGuild()) ? "**enabled**." : "**disabled**.";
+                event.reply("Looping is " + ts);
+            } else {
+                switch (args[0]) {
+                    case "yes":
+                    case "true":
+                        PixelatedBot.looped.put(event.getGuild(), true);
+                        event.reply("Loop enabled!");
+                        break;
 
-                case "no"://idk if switch works like this
-                case "false":
-                    PixelatedBot.looped.put(event.getGuild(), false);
-                    event.reply("Loop disabled!");
-                    break;
+                    case "no"://idk if switch works like this
+                    case "false":
+                        PixelatedBot.looped.put(event.getGuild(), false);
+                        event.reply("Loop disabled!");
+                        break;
+                }
             }
         }
     }

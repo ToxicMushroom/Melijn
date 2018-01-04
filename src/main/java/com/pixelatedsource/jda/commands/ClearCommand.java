@@ -13,6 +13,7 @@ public class ClearCommand extends Command {
     public ClearCommand() {
         this.name = "clear";
         this.help = "Usage: " + PixelatedBot.PREFIX + this.name;
+        this.aliases = new String[] {"cls"};
         this.guildOnly = true;
     }
 
