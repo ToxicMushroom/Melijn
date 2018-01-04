@@ -16,7 +16,7 @@ public class MusicPlayer {
         this.guild = guild;
         listener = new AudioListener(this);
         audioPlayer.addListener(listener);
-        audioPlayer.setVolume(69);
+        audioPlayer.setVolume(40);
     }
 
     public AudioPlayer getAudioPlayer() {
