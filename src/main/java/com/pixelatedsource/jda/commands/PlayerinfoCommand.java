@@ -15,7 +15,7 @@ public class PlayerinfoCommand extends Command {
 
     public PlayerinfoCommand() {
         this.name = "userinfo";
-        this.help = "Gives you info about a user -> Usage: " + PixelatedBot.PREFIX + this.name + " <@user|id>";
+        this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " <@user|id>";
         this.aliases = new String[] { "profile", "playerinfo", "memberinfo", "playerprofile" };
     }
 

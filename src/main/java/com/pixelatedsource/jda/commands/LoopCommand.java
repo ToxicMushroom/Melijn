@@ -9,7 +9,7 @@ public class LoopCommand extends Command {
 
     public LoopCommand() {
         this.name = "loop";
-        this.help = "Enable or disable song looping -> Usage: " + PixelatedBot.PREFIX + this.name + " <false|true>";
+        this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " <false|true>";
     }
 
     @Override

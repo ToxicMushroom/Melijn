@@ -13,7 +13,7 @@ public class SkipXCommand extends Command {
         this.name = "skipx";
         this.aliases = new String[]{"seek"};
         this.guildOnly = true;
-        this.help = "Skip a part of the playing song -> Usage: " + PixelatedBot.PREFIX + this.name + " <xx:xx>";
+        this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " <xx:xx>";
     }
 
     private MusicManager manager = MusicManager.getManagerinstance();

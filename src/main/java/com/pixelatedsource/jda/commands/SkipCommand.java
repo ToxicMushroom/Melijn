@@ -15,7 +15,7 @@ public class SkipCommand extends Command {
 
     public SkipCommand() {
         this.name = "skip";
-        this.help = "Skip songs -> Usage: " + PixelatedBot.PREFIX + this.name + " [1-50]";
+        this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " [1-50]";
         this.guildOnly = true;
     }
 
@@ -61,10 +61,12 @@ public class SkipCommand extends Command {
             eb.setColor(Helpers.EmbedColor);
             String songOrSongs = i == 1 ? "song" : "songs";
             if (nextSong != null)
-                eb.setDescription("Skipped " + i + " " + songOrSongs + tracknp.getInfo().title + "\n" + "Now playing the next song: " + nextSong.getInfo().title + " " +
+                eb.setDescription("Skipped " + i + " " + songOrSongs + ": `" + tracknp.getInfo().title + "`\n" + "Now playing the next song: `" + nextSong.getInfo().title + "` " +
                         Helpers.getDurationBreakdown(nextSong.getInfo().length));
-            else
-                eb.setDescription("Skipped: " + tracknp.getInfo().title + "\n" + "No next song to play.");
+            else {
+                player.skipTrack();
+                eb.setDescription("Skipped " + i + " " + songOrSongs + ": `" + tracknp.getInfo().title + "`\n" + "No next song to play :/.");
+            }
             eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
             event.reply(eb.build());
         }

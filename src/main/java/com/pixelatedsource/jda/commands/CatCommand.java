@@ -15,8 +15,9 @@ import net.dv8tion.jda.core.Permission;
 public class CatCommand extends Command {
     public CatCommand() {
         this.name = "cat";
-        this.help = "Displays a random cat in chat -> Usage: " + PixelatedBot.PREFIX + this.name;
+        this.help = "Usage: " + PixelatedBot.PREFIX + this.name;
         this.botPermissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.aliases = new String[] {"kitten", "kat", "poes"};
         this.guildOnly = false;
     }
 

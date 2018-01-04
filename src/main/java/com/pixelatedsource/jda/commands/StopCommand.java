@@ -13,7 +13,7 @@ public class StopCommand extends Command {
     public StopCommand() {
         this.guildOnly = true;
         this.name = "stop";
-        this.help = "Stops the player -> Usage: " + PixelatedBot.PREFIX + this.name;
+        this.help = "Usage: " + PixelatedBot.PREFIX + this.name;
     }
 
     @Override

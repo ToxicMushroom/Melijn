@@ -18,7 +18,7 @@ public class QueueCommand extends Command {
 
     public QueueCommand() {
         this.name = "queue";
-        this.help = "Displays all songs from the queue -> Usage: " + PixelatedBot.PREFIX + this.name;
+        this.help = "Usage: " + PixelatedBot.PREFIX + this.name;
         this.guildOnly = true;
     }
 
@@ -37,7 +37,7 @@ public class QueueCommand extends Command {
             List<String> lijst = new ArrayList<>();
             int i = 0;
             if (player.getAudioPlayer().getPlayingTrack() != null) {
-                lijst.add(String.valueOf("[#" + i + "](" + player.getAudioPlayer().getPlayingTrack().getInfo().uri + ") - Now playing: " + player.getAudioPlayer().getPlayingTrack().getInfo().title + " `" + Helpers.getDurationBreakdown(player.getAudioPlayer().getPlayingTrack().getInfo().length) + "`"));
+                lijst.add(String.valueOf("[#" + i + "](" + player.getAudioPlayer().getPlayingTrack().getInfo().uri + ") - `Now playing:` " + player.getAudioPlayer().getPlayingTrack().getInfo().title + " `" + Helpers.getDurationBreakdown(player.getAudioPlayer().getPlayingTrack().getInfo().length) + "`"));
             }
             for (AudioTrack track : tracks) {
                 i++;

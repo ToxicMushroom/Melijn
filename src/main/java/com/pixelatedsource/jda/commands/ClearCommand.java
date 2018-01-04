@@ -12,7 +12,7 @@ public class ClearCommand extends Command {
 
     public ClearCommand() {
         this.name = "clear";
-        this.help = "Clears the queue -> Usage: " + PixelatedBot.PREFIX + this.name;
+        this.help = "Usage: " + PixelatedBot.PREFIX + this.name;
         this.guildOnly = true;
     }
 

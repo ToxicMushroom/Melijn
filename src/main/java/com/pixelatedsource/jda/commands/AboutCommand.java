@@ -10,7 +10,7 @@ public class AboutCommand extends Command {
 
     public AboutCommand() {
         this.name = "about";
-        this.help = "Shows info about the bot -> Usage: " + PixelatedBot.PREFIX + this.name;
+        this.help = "Usage: " + PixelatedBot.PREFIX + this.name;
         this.guildOnly = false;
         this.aliases = new String[]{"info", "botinfo", "author"};
     }

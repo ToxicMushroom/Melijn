@@ -57,7 +57,7 @@ public class Helpers {
         }
         if (minutes != 0) {
             sb.append(minutes);
-            sb.append("min ");
+            sb.append("m ");
         }
         sb.append(seconds);
         sb.append("s ");

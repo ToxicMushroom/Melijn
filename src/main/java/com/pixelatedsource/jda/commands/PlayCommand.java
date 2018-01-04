@@ -16,7 +16,7 @@ public class PlayCommand extends Command {
     public PlayCommand() {
         this.name = "play";
         this.guildOnly = true;
-        this.help = "Play sounds like BOOM BOOM or wooosh ect.. -> Usage: " + PixelatedBot.PREFIX + this.name + " [yt|sc|link] <songname|link>" +
+        this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " [yt|sc|link] <songname|link>" +
                 "\nYoutube is the default music browser.";
     }
 

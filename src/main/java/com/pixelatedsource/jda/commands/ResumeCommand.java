@@ -14,7 +14,7 @@ public class ResumeCommand extends Command {
     public ResumeCommand() {
         this.name = "resume";
         this.guildOnly = true;
-        this.help = "Resumes the paused queue -> Usage: " + PixelatedBot.PREFIX + this.name;
+        this.help = "Usage: " + PixelatedBot.PREFIX + this.name;
     }
 
     @Override

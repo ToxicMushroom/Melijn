@@ -9,7 +9,7 @@ public class TexttoemojiCommand extends Command {
 
     public TexttoemojiCommand() {
         this.name = "t2e";
-        this.help = "Converts a-Z and 0-9 into emotes -> Usage: " + PixelatedBot.PREFIX + this.name + " <text>";
+        this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " <text>";
         this.aliases = new String[] {"TextToEmotes", "Text2Emotes", "TextToEmojies", "Text2Emojies"};
         this.guildOnly = true;
     }

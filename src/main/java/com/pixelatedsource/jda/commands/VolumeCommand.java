@@ -10,7 +10,7 @@ public class VolumeCommand extends Command {
 
     public VolumeCommand() {
         this.name = "volume";
-        this.help = "Set the volume of the player -> Usage: " + PixelatedBot.PREFIX + this.name + " <0-100>";
+        this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " <0-100>";
         this.guildOnly = true;
         this.ownerCommand = true;
     }
