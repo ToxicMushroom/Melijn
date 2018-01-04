@@ -31,7 +31,6 @@ public class PixelatedBot extends ListenerAdapter {
 
     public static void main(String[] args) throws LoginException, RateLimitedException {
         CommandClientBuilder client = new CommandClientBuilder();
-        client.setEmojis("\uD83D\uDE03", "\uD83D\uDE2E", "\uD83D\uDE26");
         client.setOwnerId(OWNERID);
         client.setPrefix(PREFIX);
         client.addCommands(
@@ -48,12 +47,13 @@ public class PixelatedBot extends ListenerAdapter {
                 new PlayerinfoCommand(),
                 new LoopCommand(),
                 new TexttoemojiCommand(),
-                new SkipXCommand()
+                new SkipXCommand(),
+                new PermCommand()
         );
         new JDABuilder(AccountType.BOT)
                 .setToken(TOKEN)
                 .setAudioSendFactory(new NativeAudioSendFactory())
-                .setGame(Game.of(Game.GameType.STREAMING,PREFIX + "help", "https://www.twitch.tv/pixelhamster"))
+                .setGame(Game.of(Game.GameType.STREAMING, PREFIX + "help", "https://www.twitch.tv/pixelhamster"))
                 .addEventListener(client.build())
                 .buildAsync();
         Helpers.starttime = System.currentTimeMillis();
