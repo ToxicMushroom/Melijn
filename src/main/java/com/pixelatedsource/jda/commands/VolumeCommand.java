@@ -31,9 +31,9 @@ public class VolumeCommand extends Command {
             }
             if (volume >= 0 && volume <= 100) {
                 MusicManager.getManagerinstance().getPlayer(event.getGuild()).getAudioPlayer().setVolume(Integer.parseInt(String.valueOf(Math.round(volume * 1.5))));
-                event.reply("Volume has been set to " + String.valueOf(Math.round((double) volume / 1.5)) + "%");
+                event.reply("Volume has been set to " + String.valueOf(Math.round((double) volume)) + "%");
             } else {
-                event.reply("no no no, use 0-100");
+                event.reply("no no no, use 0-100. default: 40");
             }
         }
     }
