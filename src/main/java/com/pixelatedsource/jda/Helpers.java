@@ -1,9 +1,11 @@
 package com.pixelatedsource.jda;
 
+import com.pixelatedsource.jda.music.MusicManager;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.managers.AudioManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Helpers {
 
+    private static ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     public static long starttime;
     public static String noPerms = "You don't have the permission: ";
     public static final Logger LOG = LogManager.getLogger(PixelatedBot.class.getName());
@@ -49,9 +52,11 @@ public class Helpers {
             "play.*"
     ));
 
-    public static boolean hasPerm(Member member, String permission) {
+    public static boolean hasPerm(Member member, String permission, int level) {
         if (member.isOwner()) return true;
-        if (PixelatedBot.mySQL.noOneHasPermission(member.getGuild(), permission)) return true;
+        if (level == 0) {
+            if (PixelatedBot.mySQL.noOneHasPermission(member.getGuild(), permission)) return true;
+        }
         if (member.getRoles().size() == 0) return PixelatedBot.mySQL.hasPermission(member.getGuild(), null, permission);
         boolean rolf = false;
         for (Role role : member.getRoles()) {
@@ -59,6 +64,14 @@ public class Helpers {
                     PixelatedBot.mySQL.hasPermission(member.getGuild(), role, "*")) rolf = true;
         }
         return rolf;
+    }
+
+    public static void waitForIt(User user) {
+        Runnable run = () -> {
+            MusicManager.usersRequest.remove(user);
+            MusicManager.usersFormToReply.remove(user);
+        };
+        executorService.schedule(run, 30, TimeUnit.SECONDS);
     }
 
     public static String getDurationBreakdown(long millis) {
@@ -96,9 +109,7 @@ public class Helpers {
     private static ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
     public static void ScheduleClose(AudioManager manager) {
-        if (!manager.isConnected() && !manager.isAttemptingToConnect())
-            return;
-
+        if (!manager.isConnected() && !manager.isAttemptingToConnect()) return;
         executor.execute(() -> {
             manager.closeAudioConnection();
             LOG.debug("Terminated AudioConnection in " + manager.getGuild().getId());
@@ -110,7 +121,7 @@ public class Helpers {
     }
 
     public static String getFooterStamp() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd,yyyy HH:mm:ss");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("d MMM yyyy HH:mm:ss");
         Date date = new Date(System.currentTimeMillis());
         return "ToxicMushroom | " + simpleDateFormat.format(date);
     }
