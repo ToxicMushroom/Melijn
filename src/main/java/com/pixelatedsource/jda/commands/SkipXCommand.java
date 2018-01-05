@@ -20,7 +20,7 @@ public class SkipXCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name)) {
+        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name, 0)) {
             String[] args = event.getArgs().replaceFirst(":", " ").split("\\s+");
             AudioTrack player = manager.getPlayer(event.getGuild()).getAudioPlayer().getPlayingTrack();
             if (args.length < 2 && player != null) {

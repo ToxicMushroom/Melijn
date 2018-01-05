@@ -16,7 +16,7 @@ public class LoopCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name)) {
+        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name, 0)) {
             String[] args = event.getArgs().split("\\s+");
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {
                 String ts = PixelatedBot.looped.get(event.getGuild()) ? "**enabled**." : "**disabled**.";

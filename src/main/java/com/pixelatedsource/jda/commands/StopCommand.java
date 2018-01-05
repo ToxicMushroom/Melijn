@@ -18,7 +18,7 @@ public class StopCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name)) {
+        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name, 0)) {
             PixelatedBot.looped.put(event.getGuild(), false);
             MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
             player.stopTrack();

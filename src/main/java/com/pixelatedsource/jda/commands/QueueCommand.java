@@ -26,7 +26,7 @@ public class QueueCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name)) {
+        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name, 0)) {
             Guild guild = event.getGuild();
             MusicPlayer player = manager.getPlayer(guild);
             if (player.getListener().getTrackSize() == 0 && player.getAudioPlayer().getPlayingTrack() == null) {

@@ -16,7 +16,7 @@ public class TexttoemojiCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name)) {
+        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name, 0)) {
             StringBuilder sb = new StringBuilder();
             for (String s : event.getArgs().split("")) {
                 if (Character.isLetter(s.toLowerCase().charAt(0))) {

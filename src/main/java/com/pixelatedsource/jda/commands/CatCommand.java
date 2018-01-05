@@ -25,7 +25,7 @@ public class CatCommand extends Command {
     protected void execute(CommandEvent event) {
         boolean acces = false;
         if (event.getGuild() == null) acces = true;
-        if (!acces) acces = Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name);
+        if (!acces) acces = Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name, 0);
         if (acces) {
             Unirest.post("http://random.cat/meow").asJsonAsync(new Callback<JsonNode>() {
                 @Override

@@ -19,7 +19,7 @@ public class VolumeCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name)) {
+        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name, 0)) {
             String args[] = event.getArgs().split("\\s+");
             MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
             int volume;

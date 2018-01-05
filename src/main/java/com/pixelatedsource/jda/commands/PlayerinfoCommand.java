@@ -23,7 +23,7 @@ public class PlayerinfoCommand extends Command {
     protected void execute(CommandEvent event) {
         boolean acces = false;
         if (event.getGuild() == null) acces = true;
-        if (!acces) acces = Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name);
+        if (!acces) acces = Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name, 0);
         if (acces) {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm ss");
             String[] args = event.getArgs().split(" ");
