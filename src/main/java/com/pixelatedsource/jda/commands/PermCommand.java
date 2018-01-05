@@ -172,8 +172,9 @@ public class PermCommand extends Command {
                                 role = null;
                             }
                         } else {
-                            if (event.getJDA().getRoleById(args[1]) == null) {
+                            if (!args[1].matches("0-9") || event.getJDA().getRoleById(args[1]) == null) {
                                 event.reply("`" + args[1] + "` is not a valid id. exampleId: '260424455270957058'");
+                                return;
                             }
                             role = event.getJDA().getRoleById(args[1]);
                         }
