@@ -87,6 +87,7 @@ public class MySQL {
             adding.setString(4, id);
             adding.setString(5, permission);
             adding.executeUpdate();
+            adding.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -100,6 +101,7 @@ public class MySQL {
             removing.setString(2, id);
             removing.setString(3, permission);
             removing.executeUpdate();
+            removing.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -114,6 +116,8 @@ public class MySQL {
             getting.setString(3, permission);
             ResultSet rs = getting.executeQuery();
             if (rs.next()) return true;
+            getting.close();
+            rs.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -127,6 +131,7 @@ public class MySQL {
             clearing.setString(1, guild.getId());
             clearing.setString(2, id);
             clearing.executeUpdate();
+            clearing.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -143,6 +148,8 @@ public class MySQL {
             while (rs.next()) {
                 toReturn.add(rs.getString("permission"));
             }
+            getPerms.close();
+            rs.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -150,15 +157,20 @@ public class MySQL {
     }
 
     public boolean noOneHasPermission(Guild guild, String permission) {
+        List<String> roleNames = new ArrayList<>();
         try {
-            PreparedStatement getting = con.prepareStatement("SELECT * FROM perms WHERE guildId= ? AND permission= ?");
-            getting.setString(1, guild.getId());
-            getting.setString(2, permission);
-            ResultSet rs = getting.executeQuery();
-            if (rs.next()) return false;
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM perms WHERE guildId= ? AND permission= ?");
+            statement.setString(1, guild.getId());
+            statement.setString(2, permission);
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                roleNames.add(rs.getString("roleName"));
+            }
+            statement.close();
+            rs.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return true;
+        return roleNames.size() == 0;
     }
 }
