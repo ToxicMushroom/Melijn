@@ -14,12 +14,13 @@ public class ResumeCommand extends Command {
     public ResumeCommand() {
         this.name = "resume";
         this.guildOnly = true;
+        this.aliases = new String[] {"unpause"};
         this.help = "Usage: " + PixelatedBot.PREFIX + this.name;
     }
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name)) {
+        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name, 0)) {
             MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
             VoiceChannel voiceChannel = event.getGuild().getMember(event.getAuthor()).getVoiceState().getChannel();
             event.getGuild().getAudioManager().openAudioConnection(voiceChannel);
