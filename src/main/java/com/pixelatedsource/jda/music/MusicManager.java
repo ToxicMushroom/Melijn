@@ -10,17 +10,23 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.User;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class MusicManager {
 
     private final AudioPlayerManager manager = new DefaultAudioPlayerManager();
     private final Map<String, MusicPlayer> players = new HashMap<>();
     private static MusicManager managerinstance = new MusicManager();
+    public static HashMap<User, List<AudioTrack>> usersRequest = new HashMap<>();
+    public static HashMap<User, Message> usersFormToReply = new HashMap<>();
+
 
     private MusicManager() {
         AudioSourceManagers.registerRemoteSources(manager);
@@ -37,7 +43,7 @@ public class MusicManager {
         return players.get(guild.getId());
     }
 
-    public void loadTrack(final TextChannel channel, final String source) {
+    public void loadTrack(final TextChannel channel, final String source, User requester, boolean isPlaylist) {
         MusicPlayer player = getPlayer(channel.getGuild());
         channel.getGuild().getAudioManager().setSendingHandler(player.getAudioHandler());
         manager.loadItemOrdered(player, source, new AudioLoadResultHandler() {
@@ -47,7 +53,7 @@ public class MusicManager {
                 player.playTrack(track);
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setTitle("Added");
-                eb.setDescription("`" + track.getInfo().title + "` added to the queue at postition **#" + player.getListener().getTrackSize()+ "**");
+                eb.setDescription("`" + track.getInfo().title + "` added to the queue at postition **#" + player.getListener().getTrackSize() + "**");
                 eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                 eb.setColor(Helpers.EmbedColor);
                 channel.sendMessage(eb.build()).queue();
@@ -56,17 +62,30 @@ public class MusicManager {
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
                 List<AudioTrack> tracks = playlist.getTracks();
-                if (tracks.size() > 1)
-                    tracks = tracks.subList(0, 1); // First 5 tracks from playlist (0 index)
-
-                for (AudioTrack track : tracks) {
-                    player.playTrack(track);
-                    EmbedBuilder eb = new EmbedBuilder();
-                    eb.setTitle("Added");
-                    eb.setDescription("`" + track.getInfo().title + "` added to the queue at postition #" + player.getListener().getTrackSize());
-                    eb.setDescription("`" + track.getInfo().title + "` added to the queue at postition **#" + player.getListener().getTrackSize()+ "**");
-                    eb.setColor(Helpers.EmbedColor);
-                    channel.sendMessage(eb.build()).queue();
+                if (!isPlaylist) {
+                    trackLoaded(tracks.get(0));
+                } else {
+                    if (tracks.size() > 50)
+                        tracks = tracks.subList(0, 50);
+                    if (usersRequest.get(requester) == null && usersFormToReply.get(requester) == null) {
+                        usersRequest.put(requester, tracks);
+                        StringBuilder songs = new StringBuilder();
+                        for (AudioTrack track : tracks) {
+                            songs.append(track.getInfo().title).append("\n");
+                        }
+                        String toSend = String.valueOf("You're about to add a playlist which contains these songs:\n" + songs + "Hit :white_check_mark: to accept or :negative_squared_cross_mark: to deny").length() < 1999 ?
+                                "You're about to add a playlist which contains these songs:\n" + songs + "Hit :white_check_mark: to accept or :negative_squared_cross_mark: to deny" : //true before :
+                                "You're about to add a playlist which contains " + songs.length() + " songs.\nHit :white_check_mark: to accept or :negative_squared_cross_mark: to deny.";
+                        channel.sendMessage(toSend).queue(v -> {
+                            usersFormToReply.put(requester, v);
+                            v.addReaction("\u2705").queue();
+                            v.addReaction("\u274E").queue();
+                            Helpers.waitForIt(requester);
+                        });
+                    } else {
+                        channel.sendMessage("You still have a request to answer. (requests automatically get removed after 30 seconds)")
+                                .queue(v -> v.delete().queueAfter(10, TimeUnit.SECONDS));
+                    }
                 }
             }
 
@@ -90,6 +109,7 @@ public class MusicManager {
             public void trackLoaded(AudioTrack track) {
                 player.playTrack(track);
             }
+
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
                 List<AudioTrack> tracks = playlist.getTracks();
@@ -100,9 +120,11 @@ public class MusicManager {
                     player.playTrack(track);
                 }
             }
+
             @Override
             public void noMatches() {
             }
+
             @Override
             public void loadFailed(FriendlyException exception) {
             }

@@ -9,25 +9,38 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class PlayCommand extends Command {
 
     public PlayCommand() {
         this.name = "play";
         this.guildOnly = true;
-        this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " [yt|sc|link] <songname|link>" +
+        this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " [yt|sc|link] <songname | link>" +
                 "\nYoutube is the default music browser.";
-        this.aliases = new String[] {"p"};
+        this.aliases = new String[]{"p"};
     }
 
+    private List<String> providers = new ArrayList<>(Arrays.asList("yt", "sc", "link", "youtube", "soundcloud"));
     private MusicManager manager = MusicManager.getManagerinstance();
 
     @Override
     protected void execute(CommandEvent event) {
         Guild guild = event.getGuild();
-        VoiceChannel sendervoiceChannel = guild.getMember(event.getAuthor()).getVoiceState().getChannel();
+        boolean acces = Helpers.hasPerm(guild.getMember(event.getAuthor()), this.name + ".*", 1);
+        VoiceChannel senderVoiceChannel = guild.getMember(event.getAuthor()).getVoiceState().getChannel();
         String args[] = event.getArgs().split("\\s+");
+        if (senderVoiceChannel == null) {
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.setTitle("I'm a pet so i follow you everywhere :3");
+            eb.setColor(Helpers.EmbedColor);
+            eb.setDescription("PS: you need to join a voice channel then when you use the command then I'll party with you");
+            eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
+            event.reply(eb.build());
+            return;
+        }
         if (args.length == 0 || args[0].equalsIgnoreCase("")) {//no args -> usage:
             EmbedBuilder eb = new EmbedBuilder();
             eb.setTitle("Some info for new people");
@@ -40,41 +53,60 @@ public class PlayCommand extends Command {
             event.reply(eb.build());
             return;
         }
-        args[0] = args[0].toLowerCase();
-        String songname = Arrays.toString(args)
-                .replaceFirst("sc", "")
-                .replaceFirst("yt", "")
-                .replaceFirst("soundcloud", "")
-                .replaceFirst("youtube", "")
-                .replaceFirst("link", "")
-                .replaceFirst("looplink", "");
-        if (sendervoiceChannel == null) {
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.setTitle("I'm a pet so i follow you everywhere :3");
-            eb.setColor(Helpers.EmbedColor);
-            eb.setDescription("PS: you need to join a voice channel then when you use the command then I'll party with you");
-            eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
-            event.reply(eb.build());
-            return;
-        }
-
-        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
-            guild.getAudioManager().openAudioConnection(sendervoiceChannel);
-        if (args[0].equalsIgnoreCase("sc") || args[0].equalsIgnoreCase("soundcloud")) {
-            if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.name + ".sc"))
-                manager.loadTrack(event.getTextChannel(), "scsearch:" + songname);
-        } else if (args[0].equalsIgnoreCase("link")) {
-            if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.name + ".link"))
-                manager.loadTrack(event.getTextChannel(), args[(args.length - 1)]);
-        } else if (args[0].equalsIgnoreCase("looplink")) {
-            if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.name + ".looplink")) {
-                manager.loadTrack(event.getTextChannel(), args[(args.length - 1)]);
-                manager.loadTrack(event.getTextChannel(), args[(args.length - 1)]);
-                PixelatedBot.looped.put(event.getGuild(), true);
+        String songname;
+        StringBuilder sb = new StringBuilder();
+        if (providers.contains(args[0].toLowerCase())) {
+            int i = 0;
+            for (String s : args) {
+                if (i != 0)
+                    sb.append(s).append(" ");
+                i++;
             }
         } else {
-            if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.name + ".yt"))
-                manager.loadTrack(event.getTextChannel(), "ytsearch:" + songname);
+            for (String s : args) {
+                sb.append(s).append(" ");
+            }
+        }
+        songname = sb.toString();
+        switch (args[0].toLowerCase()) {
+            case "sc":
+            case "soundcloud":
+                if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.name + ".sc", 0) || acces) {
+                    if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
+                        guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                    manager.loadTrack(event.getTextChannel(), "scsearch:" + songname, event.getAuthor(), false);
+                }
+                break;
+            case "yt":
+            case "youtube":
+                if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.name + ".yt", 0) || acces) {
+                    if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
+                        guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                    manager.loadTrack(event.getTextChannel(), "ytsearch:" + songname, event.getAuthor(), false);
+                }
+                break;
+            case "link":
+                if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.name + ".link", 0) || acces) {
+                    if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
+                        guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                    manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
+                }
+                break;
+            default:
+                if (songname.contains("https://") || songname.contains("http://")) {
+                    if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.name + ".link", 0) || acces) {
+                        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
+                            guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                        manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
+                    }
+                } else {
+                    if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.name + ".yt", 0) || acces) {
+                        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
+                            guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                        manager.loadTrack(event.getTextChannel(), "ytsearch:" + songname, event.getAuthor(), false);
+                    }
+                }
+                break;
         }
     }
 }
