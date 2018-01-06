@@ -19,7 +19,7 @@ public class LoopCommand extends Command {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name, 0)) {
             String[] args = event.getArgs().split("\\s+");
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {
-                String ts = PixelatedBot.looped.get(event.getGuild()) ? "**enabled**." : "**disabled**.";
+                String ts = PixelatedBot.looped.get(event.getGuild()) == null || !PixelatedBot.looped.get(event.getGuild()) ? "**disabled**.": "**enabled**.";
                 event.reply("Looping is " + ts);
             } else {
                 switch (args[0]) {
