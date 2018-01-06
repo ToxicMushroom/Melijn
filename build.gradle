@@ -16,7 +16,7 @@ repositories {
 dependencies {
     compile 'com.sedmelluq:jda-nas:1.0.5'
     compile 'com.jagrosh:JDA-Utilities:1.9'
-    compile "net.dv8tion:JDA:3.4.0_322"
+    compile "net.dv8tion:JDA:3.4.0_323"
     compile 'com.sedmelluq:lavaplayer:1.2.45'
     compile 'mysql:mysql-connector-java:5.1.36'
     compile group: 'com.mashape.unirest', name: 'unirest-java', version: '1.4.9'
