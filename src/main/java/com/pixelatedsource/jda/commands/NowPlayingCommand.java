@@ -24,7 +24,7 @@ public class NowPlayingCommand extends Command {
                 event.reply("There are no songs playing at the moment.");
             else
                 event.reply(new EmbedBuilder()
-                        .setTitle("NowPlaying")
+                        .setTitle("Now playing")
                         .setColor(Helpers.EmbedColor)
                         .setDescription(track.getInfo().title + " `" + Helpers.getDurationBreakdown(track.getPosition()) +" / " +  Helpers.getDurationBreakdown(track.getInfo().length) + "`")
                         .setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon())
