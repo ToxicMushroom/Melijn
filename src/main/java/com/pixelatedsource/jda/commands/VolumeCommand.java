@@ -14,7 +14,6 @@ public class VolumeCommand extends Command {
         this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " <0-100>";
         this.guildOnly = true;
         this.aliases = new String[] {"vol"};
-        this.ownerCommand = true;
     }
 
     @Override

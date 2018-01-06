@@ -40,6 +40,8 @@ public class Helpers {
             "loop",
             "resume",
             "userinfo",
+            "np",
+            "remove",
             "cat",
             "t2e",
             "perm.add",

@@ -6,7 +6,6 @@ import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.Guild;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,16 +35,11 @@ public class RemoveCommand extends Command {
             StringBuilder sb = new StringBuilder();
             ArrayList<String> desc = new ArrayList<>();
             for (String s : args) {
-                if (songs.get(Integer.valueOf(s)) != null) {
-                    manager.getPlayer(event.getGuild()).getListener().tracks.remove(songs.get(Integer.valueOf(s)));
-                    sb.append("**#").append(s).append("**").append(" - ").append(songs.get(Integer.valueOf(s)).getInfo().title).append("\n");
-                    desc.add("**#" + s + "**" + " - " + songs.get(Integer.valueOf(s)).getInfo().title + "\n");
-                }
                 if (s.contains("-")) {
-                    if (s.replaceAll("-", "").matches("0-" + manager.getPlayer(event.getGuild()).getListener().getTrackSize())) {
+                    if (s.matches("\\d+-\\d+")) {
                         String[] list = s.split("-");
                         if (list.length == 2) {
-                            ArrayList<String> numbersBetween = getNumbersBetween(event.getGuild(), Integer.valueOf(list[0]), Integer.valueOf(list[1]));
+                            ArrayList<String> numbersBetween = getNumbersBetween(Integer.valueOf(list[0]), Integer.valueOf(list[1]));
                             for (String sl : numbersBetween) {
                                 if (songs.get(Integer.valueOf(sl)) != null) {
                                     manager.getPlayer(event.getGuild()).getListener().tracks.remove(songs.get(Integer.valueOf(sl)));
@@ -57,6 +51,14 @@ public class RemoveCommand extends Command {
                             event.reply("Wrong format!");
                         }
                     }
+                } else if (s.matches("\\d+")) {
+                    if (songs.get(Integer.valueOf(s)) != null) {
+                        manager.getPlayer(event.getGuild()).getListener().tracks.remove(songs.get(Integer.valueOf(s)));
+                        sb.append("**#").append(s).append("**").append(" - ").append(songs.get(Integer.valueOf(s)).getInfo().title).append("\n");
+                        desc.add("**#" + s + "**" + " - " + songs.get(Integer.valueOf(s)).getInfo().title + "\n");
+                    }
+                } else {
+                    event.reply("Wrong arguments check the site for more info: http://pixelnetwork.be/commands");
                 }
             }
             if (sb.toString().length() > 1900) {
@@ -95,9 +97,9 @@ public class RemoveCommand extends Command {
         }
     }
 
-    private ArrayList<String> getNumbersBetween(Guild guild, int a, int b) {
+    private ArrayList<String> getNumbersBetween(int a, int b) {
         ArrayList<String> toReturn = new ArrayList<>();
-        if (a > 0 && a < manager.getPlayer(guild).getListener().getTrackSize() && b > 0 && b < manager.getPlayer(guild).getListener().getTrackSize()) {
+        if (a > 0 && b > 0) {
             if (a < b) {
                 int c = a;
                 while (c <= b) {
