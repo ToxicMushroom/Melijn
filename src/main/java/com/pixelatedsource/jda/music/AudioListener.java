@@ -11,7 +11,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class AudioListener extends AudioEventAdapter {
-    private final BlockingQueue<AudioTrack> tracks = new LinkedBlockingQueue<>();
+    public final BlockingQueue<AudioTrack> tracks = new LinkedBlockingQueue<>();
     private final MusicPlayer player;
 
     public AudioListener(MusicPlayer player) {
@@ -41,7 +41,6 @@ public class AudioListener extends AudioEventAdapter {
             if (endReason.mayStartNext) nextTrack();
         } else if (PixelatedBot.looped.get(player.getGuild())) {
             MusicManager.getManagerinstance().loadSimpelTrack(player.getGuild(), track.getInfo().uri);
-
         }
     }
 
