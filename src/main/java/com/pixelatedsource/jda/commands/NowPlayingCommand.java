@@ -6,6 +6,9 @@ import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
+
+import static net.dv8tion.jda.core.Permission.MESSAGE_EMBED_LINKS;
 
 public class NowPlayingCommand extends Command {
 
@@ -14,6 +17,7 @@ public class NowPlayingCommand extends Command {
         this.aliases = new String[] {"nowplaying", "playing", "nplaying", "nowp"};
         this.help = "Show you the song that the bot is playing";
         this.guildOnly = true;
+        this.botPermissions = new Permission[] {MESSAGE_EMBED_LINKS};
     }
 
     @Override

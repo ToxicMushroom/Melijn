@@ -5,6 +5,7 @@ import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.PixelatedBot;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Role;
@@ -12,6 +13,7 @@ import net.dv8tion.jda.core.entities.Role;
 import java.util.List;
 
 import static com.pixelatedsource.jda.PixelatedBot.mySQL;
+import static net.dv8tion.jda.core.Permission.MESSAGE_EMBED_LINKS;
 
 public class PermCommand extends Command {
 
@@ -19,6 +21,7 @@ public class PermCommand extends Command {
         this.name = "perm";
         this.aliases = new String[]{"permission"};
         this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " <add|remove|clear|info> <role|roleId> [permission]\nCheck http://pixelnetwork.be/commands to see the permission for each command";
+        this.botPermissions = new Permission[] {MESSAGE_EMBED_LINKS};
     }
 
     @Override

@@ -12,6 +12,7 @@ public class LoopCommand extends Command {
         this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " <false|true>";
         this.aliases = new String[] {"repeat"};
         this.guildOnly = true;
+
     }
 
     @Override

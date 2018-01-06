@@ -6,12 +6,15 @@ import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.PixelatedBot;
 import com.pixelatedsource.jda.music.MusicManager;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static net.dv8tion.jda.core.Permission.MESSAGE_EMBED_LINKS;
 
 public class PlayCommand extends Command {
 
@@ -20,6 +23,7 @@ public class PlayCommand extends Command {
         this.guildOnly = true;
         this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " [yt|sc|link] <songname | link>" + "\nYoutube is the default music browser.";
         this.aliases = new String[]{"p"};
+        this.botPermissions = new Permission[] {MESSAGE_EMBED_LINKS};
     }
 
     private List<String> providers = new ArrayList<>(Arrays.asList("yt", "sc", "link", "youtube", "soundcloud"));

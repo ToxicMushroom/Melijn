@@ -12,6 +12,8 @@ import com.pixelatedsource.jda.PixelatedBot;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 
+import static net.dv8tion.jda.core.Permission.MESSAGE_EMBED_LINKS;
+
 public class CatCommand extends Command {
     public CatCommand() {
         this.name = "cat";
@@ -19,6 +21,7 @@ public class CatCommand extends Command {
         this.botPermissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
         this.aliases = new String[] {"kitten", "kat", "poes"};
         this.guildOnly = false;
+        this.botPermissions = new Permission[] {MESSAGE_EMBED_LINKS};
     }
 
     @Override

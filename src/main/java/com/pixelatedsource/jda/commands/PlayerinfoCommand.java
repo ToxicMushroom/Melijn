@@ -5,11 +5,14 @@ import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.PixelatedBot;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.User;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static net.dv8tion.jda.core.Permission.MESSAGE_EMBED_LINKS;
 
 public class PlayerinfoCommand extends Command {
 
@@ -17,6 +20,7 @@ public class PlayerinfoCommand extends Command {
         this.name = "userinfo";
         this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " <@user|id>";
         this.aliases = new String[] { "profile", "playerinfo", "memberinfo", "playerprofile" };
+        this.botPermissions = new Permission[] {MESSAGE_EMBED_LINKS};
     }
 
     @Override

@@ -7,6 +7,9 @@ import com.pixelatedsource.jda.PixelatedBot;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
+
+import static net.dv8tion.jda.core.Permission.MESSAGE_EMBED_LINKS;
 
 public class ClearCommand extends Command {
 
@@ -15,6 +18,7 @@ public class ClearCommand extends Command {
         this.help = "Usage: " + PixelatedBot.PREFIX + this.name;
         this.aliases = new String[] {"cls"};
         this.guildOnly = true;
+        this.botPermissions = new Permission[] {MESSAGE_EMBED_LINKS};
     }
 
     @Override

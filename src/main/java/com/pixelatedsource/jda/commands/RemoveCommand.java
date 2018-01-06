@@ -6,10 +6,13 @@ import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
+
+import static net.dv8tion.jda.core.Permission.MESSAGE_EMBED_LINKS;
 
 public class RemoveCommand extends Command {
     public RemoveCommand() {
@@ -17,6 +20,7 @@ public class RemoveCommand extends Command {
         this.aliases = new String[]{"delete"};
         this.help = "Remove songs of the queue";
         this.guildOnly = true;
+        this.botPermissions = new Permission[] {MESSAGE_EMBED_LINKS};
     }
 
     private MusicManager manager = MusicManager.getManagerinstance();

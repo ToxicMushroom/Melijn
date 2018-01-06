@@ -7,7 +7,10 @@ import com.pixelatedsource.jda.PixelatedBot;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.VoiceChannel;
+
+import static net.dv8tion.jda.core.Permission.MESSAGE_EMBED_LINKS;
 
 public class ResumeCommand extends Command {
 
@@ -16,6 +19,7 @@ public class ResumeCommand extends Command {
         this.guildOnly = true;
         this.aliases = new String[] {"unpause"};
         this.help = "Usage: " + PixelatedBot.PREFIX + this.name;
+        this.botPermissions = new Permission[] {MESSAGE_EMBED_LINKS};
     }
 
     @Override

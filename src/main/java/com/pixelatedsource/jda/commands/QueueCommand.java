@@ -8,11 +8,14 @@ import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+
+import static net.dv8tion.jda.core.Permission.MESSAGE_EMBED_LINKS;
 
 public class QueueCommand extends Command {
 
@@ -20,6 +23,7 @@ public class QueueCommand extends Command {
         this.name = "queue";
         this.help = "Usage: " + PixelatedBot.PREFIX + this.name;
         this.guildOnly = true;
+        this.botPermissions = new Permission[] {MESSAGE_EMBED_LINKS};
     }
 
     private MusicManager manager = MusicManager.getManagerinstance();

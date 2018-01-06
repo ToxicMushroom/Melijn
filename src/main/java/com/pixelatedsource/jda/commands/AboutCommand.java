@@ -5,7 +5,10 @@ import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.PixelatedBot;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
+
+import static net.dv8tion.jda.core.Permission.MESSAGE_EMBED_LINKS;
 
 public class AboutCommand extends Command {
 
@@ -14,6 +17,7 @@ public class AboutCommand extends Command {
         this.help = "Usage: " + PixelatedBot.PREFIX + this.name;
         this.guildOnly = false;
         this.aliases = new String[]{"info", "botinfo", "author"};
+        this.botPermissions = new Permission[] {MESSAGE_EMBED_LINKS};
     }
 
     @Override
