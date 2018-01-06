@@ -4,6 +4,7 @@ import com.jagrosh.jdautilities.commandclient.CommandClientBuilder;
 import com.pixelatedsource.jda.commands.*;
 import com.pixelatedsource.jda.db.MySQL;
 import com.pixelatedsource.jda.events.AddReaction;
+import com.pixelatedsource.jda.events.Channels;
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
@@ -50,7 +51,8 @@ public class PixelatedBot extends ListenerAdapter {
                 new TexttoemojiCommand(),
                 new SkipXCommand(),
                 new PermCommand(),
-                new NowPlayingCommand()
+                new NowPlayingCommand(),
+                new RemoveCommand()
         );
         new JDABuilder(AccountType.BOT)
                 .setToken(TOKEN)
@@ -58,6 +60,7 @@ public class PixelatedBot extends ListenerAdapter {
                 .setGame(Game.of(Game.GameType.STREAMING, PREFIX + "help", "https://www.twitch.tv/pixelhamster"))
                 .addEventListener(client.build())
                 .addEventListener(new AddReaction())
+                .addEventListener(new Channels())
                 .buildAsync();
         Helpers.starttime = System.currentTimeMillis();
         mySQL = new MySQL(ip, user, pass, dbname);
