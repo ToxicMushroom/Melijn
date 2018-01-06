@@ -18,8 +18,7 @@ public class PlayCommand extends Command {
     public PlayCommand() {
         this.name = "play";
         this.guildOnly = true;
-        this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " [yt|sc|link] <songname | link>" +
-                "\nYoutube is the default music browser.";
+        this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " [yt|sc|link] <songname | link>" + "\nYoutube is the default music browser.";
         this.aliases = new String[]{"p"};
     }
 
@@ -46,9 +45,7 @@ public class PlayCommand extends Command {
             eb.setTitle("Some info for new people");
             eb.setColor(Helpers.EmbedColor);
             eb.setDescription(PixelatedBot.PREFIX + this.name + " [yt|sc|link] <Songname>");
-            eb.addField("Legenda", "[] = optional" +
-                    "| = or" +
-                    "<> = needed", true);
+            eb.addField("Legenda", "[] = optional" + "| = or" + "<> = needed", true);
             eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
             event.reply(eb.build());
             return;
@@ -58,8 +55,7 @@ public class PlayCommand extends Command {
         if (providers.contains(args[0].toLowerCase())) {
             int i = 0;
             for (String s : args) {
-                if (i != 0)
-                    sb.append(s).append(" ");
+                if (i != 0) sb.append(s).append(" ");
                 i++;
             }
         } else {
@@ -72,31 +68,27 @@ public class PlayCommand extends Command {
             case "sc":
             case "soundcloud":
                 if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.name + ".sc", 0) || acces) {
-                    if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
-                        guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                    if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) guild.getAudioManager().openAudioConnection(senderVoiceChannel);
                     manager.loadTrack(event.getTextChannel(), "scsearch:" + songname, event.getAuthor(), false);
                 }
                 break;
             case "yt":
             case "youtube":
                 if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.name + ".yt", 0) || acces) {
-                    if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
-                        guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                    if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) guild.getAudioManager().openAudioConnection(senderVoiceChannel);
                     manager.loadTrack(event.getTextChannel(), "ytsearch:" + songname, event.getAuthor(), false);
                 }
                 break;
             case "link":
                 if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.name + ".link", 0) || acces) {
-                    if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
-                        guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                    if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) guild.getAudioManager().openAudioConnection(senderVoiceChannel);
                     manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
                 }
                 break;
             default:
                 if (songname.contains("https://") || songname.contains("http://")) {
                     if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.name + ".link", 0) || acces) {
-                        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
-                            guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) guild.getAudioManager().openAudioConnection(senderVoiceChannel);
                         if (songname.contains("open.spotify.com")) {
                             event.reply("You can't play spotify links with bots sadly :(\nIf you have a self made playlist you can use [this](http://www.playlist-converter.net/#/) site to convert it into a youtube playlist or soundcloud (those are supported).");
                         }
@@ -104,8 +96,7 @@ public class PlayCommand extends Command {
                     }
                 } else {
                     if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.name + ".yt", 0) || acces) {
-                        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
-                            guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) guild.getAudioManager().openAudioConnection(senderVoiceChannel);
                         manager.loadTrack(event.getTextChannel(), "ytsearch:" + songname, event.getAuthor(), false);
                     }
                 }
