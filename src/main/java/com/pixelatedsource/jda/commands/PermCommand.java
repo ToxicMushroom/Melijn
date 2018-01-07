@@ -376,7 +376,7 @@ public class PermCommand extends Command {
                                                 event.reply("(Arg 1) Member has no roles!");
                                                 return;
                                             }
-                                        } else  {
+                                        } else {
                                             event.reply("(Arg 1) User isn't a member!");
                                             return;
                                         }
