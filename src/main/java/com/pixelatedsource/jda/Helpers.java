@@ -51,7 +51,8 @@ public class Helpers {
             "perm.copy",
             "perm.*",
             "*",
-            "play.*"
+            "play.*",
+            "guildinfo"
     ));
 
     public static boolean hasPerm(Member member, String permission, int level) {
