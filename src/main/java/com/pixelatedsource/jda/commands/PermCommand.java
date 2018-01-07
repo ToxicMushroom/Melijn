@@ -44,7 +44,7 @@ public class PermCommand extends Command {
                         if (Helpers.perms.contains(args[2])) {
                             String roleName;
                             if (args[1].equalsIgnoreCase("everyone")) {
-                                roleName = "everyone";
+                                roleName = "@everyone";
                                 mySQL.addPermission(guild, null, args[2]);
                             } else if (roles.size() == 1) {
                                 roleName = roles.get(0).getName();
@@ -86,7 +86,7 @@ public class PermCommand extends Command {
                         if (Helpers.perms.contains(args[2])) {
                             String roleName;
                             if (args[1].equalsIgnoreCase("everyone")) {
-                                roleName = "everyone";
+                                roleName = "@everyone";
                                 mySQL.removePermission(guild, null, args[2]);
                             } else if (roles.size() == 1) {
                                 roleName = roles.get(0).getName();
@@ -121,7 +121,7 @@ public class PermCommand extends Command {
                     if (args.length == 2) {
                         String roleName = "error";
                         if (args[1].equalsIgnoreCase("everyone")) {
-                            roleName = "everyone";
+                            roleName = "@everyone";
                             mySQL.clearPermissions(guild, null);
                         } else if (roles.size() == 1) {
                             roleName = roles.get(0).getName();
@@ -177,7 +177,7 @@ public class PermCommand extends Command {
                                 role = null;
                             }
                         } else {
-                            if (!args[1].matches("0-9") || jda.getRoleById(args[1]) == null) {
+                            if (!args[1].matches("\\d+") || jda.getRoleById(args[1]) == null) {
                                 event.reply("`" + args[1] + "` is not a valid id. exampleId: '260424455270957058'");
                                 return;
                             }
@@ -188,7 +188,7 @@ public class PermCommand extends Command {
                         if (role == null && error) {
                             event.reply("Error: the user that you tagged has no roles.");
                             return;
-                        } else roleName = role == null ? "everyone" : role.getName();
+                        } else roleName = role == null ? "@everyone" : role.getName();
 
                         lijst = mySQL.getPermissions(guild, role);
                         StringBuilder builder = new StringBuilder();
@@ -467,8 +467,8 @@ public class PermCommand extends Command {
                             return;
                         }
                         PixelatedBot.mySQL.copyPermissions(guild, role1, role2);
-                        String roleName1 = role1 == null ? "everyone" : role1.getName();
-                        String roleName2 = role2 == null ? "everyone" : role2.getName();
+                        String roleName1 = role1 == null ? "@everyone" : role1.getName();
+                        String roleName2 = role2 == null ? "@everyone" : role2.getName();
                         event.reply("I copied all permissions from `" + roleName1 + "` to `" + roleName2 + "`.");
                     }
                 }
