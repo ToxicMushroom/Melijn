@@ -18,6 +18,7 @@ public class GuildInfoCommand extends Command {
         this.help = "Show you information about the guild where you execute it";
         this.aliases = new String[]{"serverinfo"};
         this.botPermissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.guildOnly = true;
     }
 
     @Override
