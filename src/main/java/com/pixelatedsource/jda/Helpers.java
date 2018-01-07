@@ -52,7 +52,8 @@ public class Helpers {
             "perm.*",
             "*",
             "play.*",
-            "guildinfo"
+            "guildinfo",
+            "roleinfo"
     ));
 
     public static boolean hasPerm(Member member, String permission, int level) {
