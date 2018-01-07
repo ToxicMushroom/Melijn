@@ -23,18 +23,12 @@ public class GuildInfoCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        boolean acces = false;
-        if (event.getGuild() == null) acces = true;
-        if (!acces) acces = Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name, 0);
-        if (acces) {
+        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name, 0)) {
             String[] args = event.getArgs().split("\\s+");
             JDA jda = event.getJDA();
-            if (event.getGuild() == null && args.length == 0) return;
-            if (event.getGuild() == null && jda.getGuildById(args[0]) != null) return;
             Guild guild = event.getGuild();
             if (args.length == 1 && !args[0].equalsIgnoreCase("")) if (jda.getGuildById(args[0]) != null) guild = jda.getGuildById(args[0]);
             EmbedBuilder eb = new EmbedBuilder();
-
             eb.setTitle("Guild info: " + guild.getName());
             eb.setThumbnail(guild.getIconUrl());
             eb.setColor(Helpers.EmbedColor);
