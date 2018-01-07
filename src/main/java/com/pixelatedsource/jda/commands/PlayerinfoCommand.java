@@ -41,8 +41,8 @@ public class PlayerinfoCommand extends Command {
             if (user == null) user = event.getAuthor();
             EmbedBuilder eb = new EmbedBuilder();
             eb.setColor(Helpers.EmbedColor);
-            eb.setTitle(user.getName() + "'s profile");
-            eb.setImage(user.getAvatarUrl());
+            eb.setTitle(user.getName() + "#" + user.getDiscriminator() + "'s profile");
+            eb.setThumbnail(user.getAvatarUrl());
             if (event.getGuild().getMember(user) == null) {
                 eb.addField("Avatar:", "[Download](" + user.getAvatarUrl() + ")", true);
                 eb.addField("ID:", user.getId(), true);
