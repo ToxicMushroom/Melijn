@@ -52,7 +52,8 @@ public class PixelatedBot extends ListenerAdapter {
                 new SkipXCommand(),
                 new PermCommand(),
                 new NowPlayingCommand(),
-                new RemoveCommand()
+                new RemoveCommand(),
+                new GuildInfoCommand()
         );
         new JDABuilder(AccountType.BOT)
                 .setToken(TOKEN)
