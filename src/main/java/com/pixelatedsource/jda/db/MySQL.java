@@ -173,4 +173,15 @@ public class MySQL {
         }
         return roleNames.size() == 0;
     }
+
+    public void copyPermissions(Guild guild, Role role1, Role role2) {
+        List<String> permsRole1 = getPermissions(guild, role1);
+        List<String> permsRole2 = getPermissions(guild, role2);
+        for (String s : permsRole1) {
+            if (!permsRole2.contains(s)) {
+
+                addPermission(guild, role2, s);
+            }
+        }
+    }
 }
