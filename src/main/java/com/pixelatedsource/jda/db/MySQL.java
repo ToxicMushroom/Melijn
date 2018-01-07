@@ -77,8 +77,9 @@ public class MySQL {
     }
 
     public void addPermission(Guild guild, Role role, String permission) {
-        String id = role == null ? "all" : role.getId();
-        String name = id.equals("all") ? "everyone" : role.getName();
+        String id = role == null ? guild.getRolesByName("@everyone", false).get(0).getId() : role.getId();
+        String name = role == null ? "@everyone" : role.getName();
+
         try {
             PreparedStatement adding = con.prepareStatement("INSERT INTO perms (guildName, guildId, roleName, roleId, permission) VALUES (?, ?, ?, ?, ?)");
             adding.setString(1, guild.getName());
@@ -94,7 +95,7 @@ public class MySQL {
     }
 
     public void removePermission(Guild guild, Role role, String permission) {
-        String id = role == null ? "all" : role.getId();
+        String id = role == null ? guild.getRolesByName("@everyone", false).get(0).getId() : role.getId();
         try {
             PreparedStatement removing = con.prepareStatement("DELETE FROM perms WHERE guildId= ? AND roleId= ? AND permission= ?");
             removing.setString(1, guild.getId());
@@ -108,7 +109,7 @@ public class MySQL {
     }
 
     public boolean hasPermission(Guild guild, Role role, String permission) {
-        String id = role == null ? "all" : role.getId();
+        String id = role == null ? guild.getRolesByName("@everyone", false).get(0).getId() : role.getId();
         try {
             PreparedStatement getting = con.prepareStatement("SELECT * FROM perms WHERE guildId= ? AND roleId= ? AND permission= ?");
             getting.setString(1, guild.getId());
@@ -125,7 +126,7 @@ public class MySQL {
     }
 
     public void clearPermissions(Guild guild, Role role) {
-        String id = role == null ? "all" : role.getId();
+        String id = role == null ? guild.getRolesByName("@everyone", false).get(0).getId() : role.getId();
         try {
             PreparedStatement clearing = con.prepareStatement("DELETE FROM perms WHERE guildId= ? AND roleId= ?");
             clearing.setString(1, guild.getId());
@@ -139,7 +140,7 @@ public class MySQL {
 
     public List<String> getPermissions(Guild guild, Role role) {
         List<String> toReturn = new ArrayList<>();
-        String id = role == null ? "all" : role.getId();
+        String id = role == null ? guild.getRolesByName("@everyone", false).get(0).getId() : role.getId();
         try {
             PreparedStatement getPerms = con.prepareStatement("SELECT * FROM perms WHERE guildId= ? AND roleId= ?");
             getPerms.setString(1, guild.getId());
