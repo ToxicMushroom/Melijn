@@ -1,7 +1,10 @@
 package com.pixelatedsource.jda;
 
 import com.jagrosh.jdautilities.commandclient.CommandClientBuilder;
-import com.pixelatedsource.jda.commands.*;
+import com.pixelatedsource.jda.commands.animals.CatCommand;
+import com.pixelatedsource.jda.commands.animals.DogCommand;
+import com.pixelatedsource.jda.commands.music.*;
+import com.pixelatedsource.jda.commands.util.*;
 import com.pixelatedsource.jda.db.MySQL;
 import com.pixelatedsource.jda.events.AddReaction;
 import com.pixelatedsource.jda.events.Channels;

@@ -1,4 +1,4 @@
-package com.pixelatedsource.jda.commands;
+package com.pixelatedsource.jda.commands.animals;
 
 import com.jagrosh.jdautilities.commandclient.Command;
 import com.jagrosh.jdautilities.commandclient.CommandEvent;

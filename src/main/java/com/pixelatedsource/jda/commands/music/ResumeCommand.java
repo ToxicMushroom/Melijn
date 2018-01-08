@@ -1,4 +1,4 @@
-package com.pixelatedsource.jda.commands;
+package com.pixelatedsource.jda.commands.music;
 
 import com.jagrosh.jdautilities.commandclient.Command;
 import com.jagrosh.jdautilities.commandclient.CommandEvent;
@@ -8,14 +8,16 @@ import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.VoiceChannel;
 
 import static net.dv8tion.jda.core.Permission.MESSAGE_EMBED_LINKS;
 
-public class StopCommand extends Command {
+public class ResumeCommand extends Command {
 
-    public StopCommand() {
+    public ResumeCommand() {
+        this.name = "resume";
         this.guildOnly = true;
-        this.name = "stop";
+        this.aliases = new String[] {"unpause"};
         this.help = "Usage: " + PixelatedBot.PREFIX + this.name;
         this.botPermissions = new Permission[] {MESSAGE_EMBED_LINKS};
     }
@@ -23,14 +25,15 @@ public class StopCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name, 0)) {
-            PixelatedBot.looped.put(event.getGuild(), false);
             MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
-            player.stopTrack();
+            VoiceChannel voiceChannel = event.getGuild().getMember(event.getAuthor()).getVoiceState().getChannel();
+            event.getGuild().getAudioManager().openAudioConnection(voiceChannel);
+            player.resumeTrack();
             EmbedBuilder eb = new EmbedBuilder();
             eb.setColor(Helpers.EmbedColor);
-            eb.setTitle("Stopped");
-            eb.setDescription("**I stopped playing music and left the voicechannel.**");
+            eb.setTitle("Resumed");
             eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
+            eb.setDescription("**Thank you for resuming my queue. I appreciate that.**");
             event.getTextChannel().sendMessage(eb.build()).queue();
         }
     }
