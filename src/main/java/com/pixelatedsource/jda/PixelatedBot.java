@@ -1,6 +1,7 @@
 package com.pixelatedsource.jda;
 
 import com.jagrosh.jdautilities.commandclient.CommandClientBuilder;
+import com.pixelatedsource.jda.commands.animals.AlpacaCommand;
 import com.pixelatedsource.jda.commands.animals.CatCommand;
 import com.pixelatedsource.jda.commands.animals.DogCommand;
 import com.pixelatedsource.jda.commands.music.*;
@@ -58,7 +59,8 @@ public class PixelatedBot extends ListenerAdapter {
                 new RemoveCommand(),
                 new GuildInfoCommand(),
                 new RoleInfoCommand(),
-                new DogCommand()
+                new DogCommand(),
+                new AlpacaCommand()
         );
         new JDABuilder(AccountType.BOT)
                 .setToken(TOKEN)
