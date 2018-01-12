@@ -3,7 +3,7 @@ package com.pixelatedsource.jda.commands.util;
 import com.jagrosh.jdautilities.commandclient.Command;
 import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelatedBot;
+import com.pixelatedsource.jda.PixelSniper;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 
@@ -13,7 +13,7 @@ public class PingCommand extends Command {
 
     public PingCommand() {
         this.name = "ping";
-        this.help = "Usage: " + PixelatedBot.PREFIX + this.name;
+        this.help = "Usage: " + PixelSniper.PREFIX + this.name;
         this.botPermissions = new Permission[]{ Permission.MESSAGE_EMBED_LINKS };
     }
 

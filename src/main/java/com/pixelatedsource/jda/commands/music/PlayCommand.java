@@ -3,7 +3,7 @@ package com.pixelatedsource.jda.commands.music;
 import com.jagrosh.jdautilities.commandclient.Command;
 import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelatedBot;
+import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.music.MusicManager;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
@@ -21,7 +21,7 @@ public class PlayCommand extends Command {
     public PlayCommand() {
         this.name = "play";
         this.guildOnly = true;
-        this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " [yt|sc|link] <songname | link>" + "\nYoutube is the default music browser.";
+        this.help = "Usage: " + PixelSniper.PREFIX + this.name + " [yt|sc|link] <songname | link>" + "\nYoutube is the default music browser.";
         this.aliases = new String[]{"p"};
         this.botPermissions = new Permission[] {MESSAGE_EMBED_LINKS};
     }
@@ -48,7 +48,7 @@ public class PlayCommand extends Command {
             EmbedBuilder eb = new EmbedBuilder();
             eb.setTitle("Some info for new people");
             eb.setColor(Helpers.EmbedColor);
-            eb.setDescription(PixelatedBot.PREFIX + this.name + " [yt|sc|link] <Songname>");
+            eb.setDescription(PixelSniper.PREFIX + this.name + " [yt|sc|link] <Songname>");
             eb.addField("Legenda", "[] = optional" + "| = or" + "<> = needed", true);
             eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
             event.reply(eb.build());

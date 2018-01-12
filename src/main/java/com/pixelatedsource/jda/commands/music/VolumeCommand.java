@@ -3,7 +3,7 @@ package com.pixelatedsource.jda.commands.music;
 import com.jagrosh.jdautilities.commandclient.Command;
 import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelatedBot;
+import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
 
@@ -11,7 +11,7 @@ public class VolumeCommand extends Command {
 
     public VolumeCommand() {
         this.name = "volume";
-        this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " <0-100>";
+        this.help = "Usage: " + PixelSniper.PREFIX + this.name + " <0-100>";
         this.guildOnly = true;
         this.aliases = new String[] {"vol"};
     }

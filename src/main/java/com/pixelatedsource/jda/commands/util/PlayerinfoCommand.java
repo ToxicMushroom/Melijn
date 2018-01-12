@@ -3,7 +3,7 @@ package com.pixelatedsource.jda.commands.util;
 import com.jagrosh.jdautilities.commandclient.Command;
 import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelatedBot;
+import com.pixelatedsource.jda.PixelSniper;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
@@ -18,7 +18,7 @@ public class PlayerinfoCommand extends Command {
 
     public PlayerinfoCommand() {
         this.name = "userinfo";
-        this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " <@user|id>";
+        this.help = "Usage: " + PixelSniper.PREFIX + this.name + " <@user|id>";
         this.aliases = new String[] { "profile", "playerinfo", "memberinfo", "playerprofile" };
         this.botPermissions = new Permission[] {MESSAGE_EMBED_LINKS};
     }

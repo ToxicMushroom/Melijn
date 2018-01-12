@@ -1,7 +1,7 @@
 package com.pixelatedsource.jda.music;
 
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelatedBot;
+import com.pixelatedsource.jda.PixelSniper;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -37,9 +37,9 @@ public class AudioListener extends AudioEventAdapter {
 
     @Override
     public void onTrackEnd(AudioPlayer player2, AudioTrack track, AudioTrackEndReason endReason) {
-        if (PixelatedBot.looped.get(player.getGuild()) == null || !PixelatedBot.looped.get(player.getGuild())) {
+        if (PixelSniper.looped.get(player.getGuild()) == null || !PixelSniper.looped.get(player.getGuild())) {
             if (endReason.mayStartNext) nextTrack();
-        } else if (PixelatedBot.looped.get(player.getGuild())) {
+        } else if (PixelSniper.looped.get(player.getGuild())) {
             MusicManager.getManagerinstance().loadSimpelTrack(player.getGuild(), track.getInfo().uri);
         }
     }

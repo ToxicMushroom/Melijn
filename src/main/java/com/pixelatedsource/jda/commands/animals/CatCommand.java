@@ -8,16 +8,17 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.async.Callback;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelatedBot;
+import com.pixelatedsource.jda.PixelSniper;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 
 import static net.dv8tion.jda.core.Permission.MESSAGE_EMBED_LINKS;
 
 public class CatCommand extends Command {
+
     public CatCommand() {
         this.name = "cat";
-        this.help = "Usage: " + PixelatedBot.PREFIX + this.name;
+        this.help = "Usage: " + PixelSniper.PREFIX + this.name;
         this.botPermissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
         this.aliases = new String[] {"kitten", "kat", "poes"};
         this.guildOnly = false;

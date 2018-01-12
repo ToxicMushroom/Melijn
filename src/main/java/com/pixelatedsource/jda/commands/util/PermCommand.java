@@ -3,7 +3,7 @@ package com.pixelatedsource.jda.commands.util;
 import com.jagrosh.jdautilities.commandclient.Command;
 import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelatedBot;
+import com.pixelatedsource.jda.PixelSniper;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
@@ -14,7 +14,7 @@ import net.dv8tion.jda.core.entities.User;
 
 import java.util.List;
 
-import static com.pixelatedsource.jda.PixelatedBot.mySQL;
+import static com.pixelatedsource.jda.PixelSniper.mySQL;
 import static net.dv8tion.jda.core.Permission.MESSAGE_EMBED_LINKS;
 
 public class PermCommand extends Command {
@@ -22,7 +22,7 @@ public class PermCommand extends Command {
     public PermCommand() {
         this.name = "perm";
         this.aliases = new String[]{"permission"};
-        this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " <add|remove|clear|info> <role|roleId> [permission]\nCheck http://pixelnetwork.be/commands to see the permission for each command";
+        this.help = "Usage: " + PixelSniper.PREFIX + this.name + " <add|remove|clear|info> <role|roleId> [permission]\nCheck http://pixelnetwork.be/commands to see the permission for each command";
         this.botPermissions = new Permission[]{MESSAGE_EMBED_LINKS};
     }
 
@@ -34,7 +34,7 @@ public class PermCommand extends Command {
         JDA jda = event.getJDA();
         List<Role> roles = event.getMessage().getMentionedRoles();
         if (args.length < 2) {
-            event.reply("Fill in all the values please.\nUse " + PixelatedBot.PREFIX + "help to check the usage of the command.");
+            event.reply("Fill in all the values please.\nUse " + PixelSniper.PREFIX + "help to check the usage of the command.");
             return;
         }
         switch (args[0]) {
@@ -72,7 +72,7 @@ public class PermCommand extends Command {
                             event.reply("The provided permission is not inside the list on http://pixelnetwork.be/commands");
                         }
                     } else {
-                        event.reply("Fill in all the values please.\nUse " + PixelatedBot.PREFIX + "help to check the usage of the command.");
+                        event.reply("Fill in all the values please.\nUse " + PixelSniper.PREFIX + "help to check the usage of the command.");
                         return;
                     }
                 } else {
@@ -108,7 +108,7 @@ public class PermCommand extends Command {
                             event.reply("The provided permission is not inside the list on http://pixelnetwork.be/commands");
                         }
                     } else {
-                        event.reply("Fill in all the values please.\nUse " + PixelatedBot.PREFIX + "help to check the usage of the command.");
+                        event.reply("Fill in all the values please.\nUse " + PixelSniper.PREFIX + "help to check the usage of the command.");
                         return;
                     }
                 } else {
@@ -151,7 +151,7 @@ public class PermCommand extends Command {
                                 break;
                         }
                     } else {
-                        event.reply("Fill in all the values please.\nUse " + PixelatedBot.PREFIX + "help to check the usage of the command.");
+                        event.reply("Fill in all the values please.\nUse " + PixelSniper.PREFIX + "help to check the usage of the command.");
                         return;
                     }
                 } else {
@@ -226,7 +226,7 @@ public class PermCommand extends Command {
                             event.reply(eb.build());
                         }
                     } else {
-                        event.reply("Fill in all the values please.\nUse " + PixelatedBot.PREFIX + "help to check the usage of the command.");
+                        event.reply("Fill in all the values please.\nUse " + PixelSniper.PREFIX + "help to check the usage of the command.");
                         return;
                     }
                 } else {
@@ -466,7 +466,7 @@ public class PermCommand extends Command {
                             event.reply("That doesn't make sense to me..");
                             return;
                         }
-                        PixelatedBot.mySQL.copyPermissions(guild, role1, role2);
+                        PixelSniper.mySQL.copyPermissions(guild, role1, role2);
                         String roleName1 = role1 == null ? "@everyone" : role1.getName();
                         String roleName2 = role2 == null ? "@everyone" : role2.getName();
                         event.reply("I copied all permissions from `" + roleName1 + "` to `" + roleName2 + "`.");

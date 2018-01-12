@@ -24,7 +24,7 @@ public class Helpers {
     private static ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     public static long starttime;
     public static String noPerms = "You don't have the permission: ";
-    public static final Logger LOG = LogManager.getLogger(PixelatedBot.class.getName());
+    public static final Logger LOG = LogManager.getLogger(PixelSniper.class.getName());
     public static Color EmbedColor = Color.decode("#00ffd8");
     public static ArrayList<String> perms = new ArrayList<>(Arrays.asList(
             "play.yt",
@@ -61,13 +61,13 @@ public class Helpers {
     public static boolean hasPerm(Member member, String permission, int level) {
         if (member.isOwner()) return true;
         if (level == 0) {
-            if (PixelatedBot.mySQL.noOneHasPermission(member.getGuild(), permission)) return true;
+            if (PixelSniper.mySQL.noOneHasPermission(member.getGuild(), permission)) return true;
         }
-        if (member.getRoles().size() == 0) return PixelatedBot.mySQL.hasPermission(member.getGuild(), null, permission);
+        if (member.getRoles().size() == 0) return PixelSniper.mySQL.hasPermission(member.getGuild(), null, permission);
         boolean rolf = false;
         for (Role role : member.getRoles()) {
-            if (PixelatedBot.mySQL.hasPermission(member.getGuild(), role, permission) ||
-                    PixelatedBot.mySQL.hasPermission(member.getGuild(), role, "*")) rolf = true;
+            if (PixelSniper.mySQL.hasPermission(member.getGuild(), role, permission) ||
+                    PixelSniper.mySQL.hasPermission(member.getGuild(), role, "*")) rolf = true;
         }
         return rolf;
     }

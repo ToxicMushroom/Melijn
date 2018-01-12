@@ -1,7 +1,6 @@
 package com.pixelatedsource.jda;
 
 import com.jagrosh.jdautilities.commandclient.CommandClientBuilder;
-import com.pixelatedsource.jda.commands.animals.AlpacaCommand;
 import com.pixelatedsource.jda.commands.animals.CatCommand;
 import com.pixelatedsource.jda.commands.animals.DogCommand;
 import com.pixelatedsource.jda.commands.music.*;
@@ -21,7 +20,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import javax.security.auth.login.LoginException;
 import java.util.HashMap;
 
-public class PixelatedBot extends ListenerAdapter {
+public class PixelSniper extends ListenerAdapter {
 
     public static MySQL mySQL;
     private static final Config config = new Config();
@@ -59,8 +58,7 @@ public class PixelatedBot extends ListenerAdapter {
                 new RemoveCommand(),
                 new GuildInfoCommand(),
                 new RoleInfoCommand(),
-                new DogCommand(),
-                new AlpacaCommand()
+                new DogCommand()
         );
         new JDABuilder(AccountType.BOT)
                 .setToken(TOKEN)

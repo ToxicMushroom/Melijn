@@ -3,7 +3,7 @@ package com.pixelatedsource.jda.commands.music;
 import com.jagrosh.jdautilities.commandclient.Command;
 import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelatedBot;
+import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -18,7 +18,7 @@ public class ResumeCommand extends Command {
         this.name = "resume";
         this.guildOnly = true;
         this.aliases = new String[] {"unpause"};
-        this.help = "Usage: " + PixelatedBot.PREFIX + this.name;
+        this.help = "Usage: " + PixelSniper.PREFIX + this.name;
         this.botPermissions = new Permission[] {MESSAGE_EMBED_LINKS};
     }
 

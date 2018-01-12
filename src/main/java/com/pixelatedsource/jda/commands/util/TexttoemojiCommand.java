@@ -3,13 +3,13 @@ package com.pixelatedsource.jda.commands.util;
 import com.jagrosh.jdautilities.commandclient.Command;
 import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelatedBot;
+import com.pixelatedsource.jda.PixelSniper;
 
 public class TexttoemojiCommand extends Command {
 
     public TexttoemojiCommand() {
         this.name = "t2e";
-        this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " <text>";
+        this.help = "Usage: " + PixelSniper.PREFIX + this.name + " <text>";
         this.aliases = new String[] {"TextToEmotes", "Text2Emotes", "TextToEmojies", "Text2Emojies"};
         this.guildOnly = true;
     }

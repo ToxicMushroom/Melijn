@@ -3,7 +3,7 @@ package com.pixelatedsource.jda.commands.music;
 import com.jagrosh.jdautilities.commandclient.Command;
 import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelatedBot;
+import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -21,7 +21,7 @@ public class QueueCommand extends Command {
 
     public QueueCommand() {
         this.name = "queue";
-        this.help = "Usage: " + PixelatedBot.PREFIX + this.name;
+        this.help = "Usage: " + PixelSniper.PREFIX + this.name;
         this.guildOnly = true;
         this.botPermissions = new Permission[] {MESSAGE_EMBED_LINKS};
     }

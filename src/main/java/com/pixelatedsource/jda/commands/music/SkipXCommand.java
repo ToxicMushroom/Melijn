@@ -3,7 +3,7 @@ package com.pixelatedsource.jda.commands.music;
 import com.jagrosh.jdautilities.commandclient.Command;
 import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelatedBot;
+import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
@@ -13,7 +13,7 @@ public class SkipXCommand extends Command {
         this.name = "skipx";
         this.aliases = new String[]{"seek"};
         this.guildOnly = true;
-        this.help = "Usage: " + PixelatedBot.PREFIX + this.name + " <xx:xx>";
+        this.help = "Usage: " + PixelSniper.PREFIX + this.name + " <xx:xx>";
     }
 
     private MusicManager manager = MusicManager.getManagerinstance();
@@ -34,7 +34,7 @@ public class SkipXCommand extends Command {
                 Integer.parseInt(args[0]);
                 seconds = Integer.parseInt(args[1]);
             } catch (NumberFormatException e) {
-                event.reply("Usage: " + PixelatedBot.PREFIX + this.name + " 1:10");
+                event.reply("Usage: " + PixelSniper.PREFIX + this.name + " 1:10");
                 e.addSuppressed(e.getCause());
                 return;
             }
