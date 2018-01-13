@@ -5,6 +5,7 @@ import com.pixelatedsource.jda.blub.CommandClientBuilder;
 import com.pixelatedsource.jda.commands.HelpCommand;
 import com.pixelatedsource.jda.commands.animals.CatCommand;
 import com.pixelatedsource.jda.commands.animals.DogCommand;
+import com.pixelatedsource.jda.commands.management.PermCommand;
 import com.pixelatedsource.jda.commands.music.*;
 import com.pixelatedsource.jda.commands.util.*;
 import com.pixelatedsource.jda.db.MySQL;

@@ -1,4 +1,4 @@
-package com.pixelatedsource.jda.commands.util;
+package com.pixelatedsource.jda.commands.management;
 
 import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.PixelSniper;
@@ -24,7 +24,7 @@ public class PermCommand extends Command {
         this.description = "You can edit the user's acces to your demands ;D";
         this.usage = PREFIX + this.commandName + " <add|remove|clear|info> <role|roleId> [permission]\nCheck http://pixelnetwork.be/commands to see the permission for each command";
         this.aliases = new String[]{"permission"};
-        this.category = Category.PERMS;
+        this.category = Category.MANAGEMENT;
     }
 
     @Override

@@ -35,6 +35,7 @@ public class MySQL {
             statement.close();
             System.out.println("[MySQL] has connected");
             update("CREATE TABLE IF NOT EXISTS perms(guildName varchar(64), guildId varchar(128), roleName varchar(64), roleId varchar(128), permission varchar(256))");
+            update("CREATE TABLE IF NOT EXISTS prefixes(guildId varchar(128), prefix varchar(128))");
         } catch (SQLException e) {
             System.out.println((char) 27 + "[31m" + "did not connect");
             e.printStackTrace();
@@ -182,6 +183,40 @@ public class MySQL {
 
                 addPermission(guild, role2, s);
             }
+        }
+    }
+
+    public boolean setPrefix(String id, String arg) {
+        try {
+            if (getPrefix(id).equalsIgnoreCase("No prefix set, using the default prefix: `>`")) {
+                PreparedStatement setPrefix = con.prepareStatement("INSERT INTO prefixes (guildId, prefix) VALUES (?, ?)");
+                setPrefix.setString(1, id);
+                setPrefix.setString(2, arg);
+                setPrefix.executeUpdate();
+                return true;
+            } else {
+                PreparedStatement updatePrefix = con.prepareStatement("UPDATE prefixes SET prefix= ? WHERE guildId= ?");
+                updatePrefix.setString(1, arg);
+                updatePrefix.setString(2, id);
+                updatePrefix.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return false;
+    }
+
+    public static String getPrefix(String id) {
+        try {
+            PreparedStatement getPrefix = con.prepareStatement("SELECT * FROM prefixes WHERE guildId= ?");
+            getPrefix.setString(1, id);
+            ResultSet rs = getPrefix.executeQuery();
+            if (rs.next()) return "Current prefix: `" + rs.getString("prefix") + "`";
+            else return "No prefix set, using the default prefix: `>`";
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "SQL error..";
         }
     }
 }
