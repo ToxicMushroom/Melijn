@@ -5,7 +5,8 @@ import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
-import com.pixelatedsource.jda.db.MySQL;
+
+import java.util.Arrays;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
@@ -23,9 +24,8 @@ public class SetPrefixCommand extends Command {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                 String[] args = event.getArgs().split("\\s+");
-                if (args.length > 1) event.reply("The prefix can't include spaces.");
-                if (args.length == 0) event.reply(MySQL.getPrefix(event.getGuild().getId()));
-                if (args.length == 1 && args[0].length() < 100) {
+                if (args.length == 0 || args[0].equalsIgnoreCase("")) event.reply(PixelSniper.mySQL.getPrefix(event.getGuild().getId()));
+                else if (Arrays.toString(args).length() <= 100) {
                     if (PixelSniper.mySQL.setPrefix(event.getGuild().getId(), args[0])) {
                         event.reply("The prefix has been set to `" + args[0] + "`");
                     }
