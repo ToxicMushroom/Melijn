@@ -29,7 +29,7 @@ public class MySQL {
 
     private void connect() {
         try {
-            con = DriverManager.getConnection("jdbc:mysql://" + this.ip + ":3306/" + this.dbname + "?autoReconnect=true&useUnicode=true", this.user, this.pass);
+            con = DriverManager.getConnection("jdbc:mysql://" + this.ip + ":3306/" + this.dbname + "?autoReconnect=true&useUnicode=true&useSSL=false", this.user, this.pass);
             Statement statement = con.createStatement();
             statement.executeQuery("SET NAMES 'utf8mb4'");
             statement.close();
@@ -188,32 +188,34 @@ public class MySQL {
 
     public boolean setPrefix(String id, String arg) {
         try {
-            if (getPrefix(id).equalsIgnoreCase("No prefix set, using the default prefix: `>`")) {
+            if (getPrefix(id).equalsIgnoreCase(">")) {
                 PreparedStatement setPrefix = con.prepareStatement("INSERT INTO prefixes (guildId, prefix) VALUES (?, ?)");
                 setPrefix.setString(1, id);
                 setPrefix.setString(2, arg);
                 setPrefix.executeUpdate();
+                setPrefix.close();
                 return true;
             } else {
                 PreparedStatement updatePrefix = con.prepareStatement("UPDATE prefixes SET prefix= ? WHERE guildId= ?");
                 updatePrefix.setString(1, arg);
                 updatePrefix.setString(2, id);
                 updatePrefix.executeUpdate();
+                updatePrefix.close();
+                return true;
             }
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
-        return false;
     }
 
-    public static String getPrefix(String id) {
+    public String getPrefix(String id) {
         try {
             PreparedStatement getPrefix = con.prepareStatement("SELECT * FROM prefixes WHERE guildId= ?");
             getPrefix.setString(1, id);
             ResultSet rs = getPrefix.executeQuery();
-            if (rs.next()) return "Current prefix: `" + rs.getString("prefix") + "`";
-            else return "No prefix set, using the default prefix: `>`";
+            if (rs.next()) return rs.getString("prefix");
+            return ">";
         } catch (SQLException e) {
             e.printStackTrace();
             return "SQL error..";
