@@ -6,6 +6,7 @@ import com.pixelatedsource.jda.commands.HelpCommand;
 import com.pixelatedsource.jda.commands.animals.CatCommand;
 import com.pixelatedsource.jda.commands.animals.DogCommand;
 import com.pixelatedsource.jda.commands.management.PermCommand;
+import com.pixelatedsource.jda.commands.management.SetPrefixCommand;
 import com.pixelatedsource.jda.commands.music.*;
 import com.pixelatedsource.jda.commands.util.*;
 import com.pixelatedsource.jda.db.MySQL;
@@ -61,7 +62,8 @@ public class PixelSniper extends ListenerAdapter {
                 new RemoveCommand(),
                 new GuildInfoCommand(),
                 new RoleInfoCommand(),
-                new DogCommand()
+                new DogCommand(),
+                new SetPrefixCommand()
         );
         commandClient = client.build();
         new JDABuilder(AccountType.BOT)

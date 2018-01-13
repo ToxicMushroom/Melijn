@@ -57,7 +57,8 @@ public class Helpers {
             "dog",
             "alpaca",
             "about",
-            "ping"
+            "ping",
+            "setprefix"
     ));
 
     public static boolean hasPerm(Member member, String permission, int level) {
