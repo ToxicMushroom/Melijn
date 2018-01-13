@@ -55,7 +55,9 @@ public class Helpers {
             "guildinfo",
             "roleinfo",
             "dog",
-            "alpaca"
+            "alpaca",
+            "about",
+            "ping"
     ));
 
     public static boolean hasPerm(Member member, String permission, int level) {

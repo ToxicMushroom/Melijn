@@ -1,37 +1,33 @@
 package com.pixelatedsource.jda.commands.music;
 
-import com.jagrosh.jdautilities.commandclient.Command;
-import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.PixelSniper;
+import com.pixelatedsource.jda.blub.Category;
+import com.pixelatedsource.jda.blub.Command;
+import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.Permission;
 
-import static net.dv8tion.jda.core.Permission.MESSAGE_EMBED_LINKS;
+import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
 public class StopCommand extends Command {
 
     public StopCommand() {
-        this.guildOnly = true;
-        this.name = "stop";
-        this.help = "Usage: " + PixelSniper.PREFIX + this.name;
-        this.botPermissions = new Permission[] {MESSAGE_EMBED_LINKS};
+        this.commandName = "stop";
+        this.description = "Stops the current playing song and pauses the queue and disconnects from the connected voice channel";
+        this.usage = PREFIX + this.commandName;
+        this.category = Category.MUSIC;
     }
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name, 0)) {
-            PixelSniper.looped.put(event.getGuild(), false);
-            MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
-            player.stopTrack();
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.setColor(Helpers.EmbedColor);
-            eb.setTitle("Stopped");
-            eb.setDescription("**I stopped playing music and left the voicechannel.**");
-            eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
-            event.getTextChannel().sendMessage(eb.build()).queue();
+        if (event.getGuild() != null) {
+            if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
+                PixelSniper.looped.put(event.getGuild(), false);
+                MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
+                player.stopTrack();
+                event.reply("Stopped by <@" + event.getAuthor().getId() + ">");
+            }
         }
     }
 }

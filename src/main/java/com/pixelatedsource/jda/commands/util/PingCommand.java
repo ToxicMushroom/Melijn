@@ -1,30 +1,30 @@
 package com.pixelatedsource.jda.commands.util;
 
-import com.jagrosh.jdautilities.commandclient.Command;
-import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelSniper;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.Permission;
+import com.pixelatedsource.jda.blub.Category;
+import com.pixelatedsource.jda.blub.Command;
+import com.pixelatedsource.jda.blub.CommandEvent;
 
-import java.awt.*;
+import java.time.temporal.ChronoUnit;
+
+import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
 public class PingCommand extends Command {
 
     public PingCommand() {
-        this.name = "ping";
-        this.help = "Usage: " + PixelSniper.PREFIX + this.name;
-        this.botPermissions = new Permission[]{ Permission.MESSAGE_EMBED_LINKS };
+        this.commandName = "ping";
+        this.description = "Shows you the bot's ping";
+        this.usage = PREFIX + this.commandName;
+        this.category = Category.UTILS;
     }
 
     @Override
     protected void execute(CommandEvent event) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setColor(Color.CYAN);
-        eb.setDescription("Pong! `" + event.getJDA().getPing() + "`");
-        eb.setThumbnail("https://iminco.nl/wp-content/uploads/kip-1024x512.jpg");
-        eb.setTitle("Ping", "http://www.pixelnetwork.be/videos/bingbingbong.mp4");
-        eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
-        event.reply(eb.build());
+        boolean acces = false;
+        if (event.getGuild() == null) acces = true;
+        if (!acces) acces = Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0);
+        if (acces) {
+            event.getChannel().sendMessage("Ping... ").queue(m -> m.editMessage("Ping: " + event.getMessage().getCreationTime().until(m.getCreationTime(), ChronoUnit.MILLIS) + "ms | " + "Websocket: " + event.getJDA().getPing() + "ms").queue());
+        }
     }
 }

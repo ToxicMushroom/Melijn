@@ -13,7 +13,7 @@ public class MySQL {
     private String pass;
     private String user;
     private String dbname;
-    private Connection con;
+    private static Connection con;
 
     public MySQL(String ip, String user, String pass, String dbname) {
         this.ip = ip;
@@ -29,8 +29,7 @@ public class MySQL {
 
     private void connect() {
         try {
-            con = DriverManager.getConnection("jdbc:mysql://" + this.ip + ":3306/" + this.dbname + "?autoReconnect=true&useUnicode=true",
-                    this.user, this.pass);
+            con = DriverManager.getConnection("jdbc:mysql://" + this.ip + ":3306/" + this.dbname + "?autoReconnect=true&useUnicode=true", this.user, this.pass);
             Statement statement = con.createStatement();
             statement.executeQuery("SET NAMES 'utf8mb4'");
             statement.close();

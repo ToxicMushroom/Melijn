@@ -1,26 +1,30 @@
 package com.pixelatedsource.jda.commands.util;
 
-import com.jagrosh.jdautilities.commandclient.Command;
-import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
+import com.pixelatedsource.jda.blub.Category;
+import com.pixelatedsource.jda.blub.Command;
+import com.pixelatedsource.jda.blub.CommandEvent;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
 
 import java.util.List;
 
+import static com.pixelatedsource.jda.PixelSniper.PREFIX;
+
 public class RoleInfoCommand extends Command {
 
     public RoleInfoCommand() {
-        this.name = "roleinfo";
+        this.commandName = "roleinfo";
+        this.description = "Shows you a list of all the guild's roles and their id's";
+        this.usage = PREFIX + commandName;
         this.aliases = new String[]{"rankinfo"};
-        this.help = "Shows you a list of all the guild's roles and their id's";
-        this.guildOnly = true;
+        this.category = Category.UTILS;
     }
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name, 0)) {
+        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
             JDA jda = event.getJDA();
             Guild guild = event.getGuild();
@@ -31,7 +35,7 @@ public class RoleInfoCommand extends Command {
             for (Role role : roles) {
                 sb.append("[").append(role.getName()).append("] - ").append(role.getId()).append("\n");
                 if (sb.toString().length() > 1850) {
-                    event.reply("Roles of " + guild.getName() + " part **#" + i + "**\n```INI\n" + sb.toString() + "```");
+                    event.getChannel().sendMessage("Roles of " + guild.getName() + " part **#" + i + "**\n```INI\n" + sb.toString() + "```").queue();
                     sb = new StringBuilder();
                     i++;
                 }

@@ -1,6 +1,8 @@
 package com.pixelatedsource.jda;
 
-import com.jagrosh.jdautilities.commandclient.CommandClientBuilder;
+import com.pixelatedsource.jda.blub.CommandClient;
+import com.pixelatedsource.jda.blub.CommandClientBuilder;
+import com.pixelatedsource.jda.commands.HelpCommand;
 import com.pixelatedsource.jda.commands.animals.CatCommand;
 import com.pixelatedsource.jda.commands.animals.DogCommand;
 import com.pixelatedsource.jda.commands.music.*;
@@ -14,7 +16,6 @@ import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.events.DisconnectEvent;
-import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import javax.security.auth.login.LoginException;
@@ -24,21 +25,22 @@ public class PixelSniper extends ListenerAdapter {
 
     public static MySQL mySQL;
     private static final Config config = new Config();
-    public static String OWNERID = config.getValue("ownerid");
-    public static String TOKEN = config.getValue("token");
+    private static String OWNERID = config.getValue("ownerid");
+    private static String TOKEN = config.getValue("token");
     public static String PREFIX = config.getValue("prefix");
-    private static String ip = config.getValue("ipadress");
-    private static String user = config.getValue("username");
-    private static String pass = config.getValue("password");
-    private static String dbname = config.getValue("database");
+    private static String IP = config.getValue("ipadress");
+    private static String USER = config.getValue("username");
+    private static String PASS = config.getValue("password");
+    private static String DBNAME = config.getValue("database");
     public static HashMap<Guild, Boolean> looped = new HashMap<>();
+    public static CommandClient commandClient;
 
-
-    public static void main(String[] args) throws LoginException, RateLimitedException {
+    public static void main(String[] args) throws LoginException {
         CommandClientBuilder client = new CommandClientBuilder();
         client.setOwnerId(OWNERID);
         client.setPrefix(PREFIX);
         client.addCommands(
+                new HelpCommand(),
                 new PingCommand(),
                 new PlayCommand(),
                 new QueueCommand(),
@@ -60,17 +62,17 @@ public class PixelSniper extends ListenerAdapter {
                 new RoleInfoCommand(),
                 new DogCommand()
         );
+        commandClient = client.build();
         new JDABuilder(AccountType.BOT)
                 .setToken(TOKEN)
                 .setAudioSendFactory(new NativeAudioSendFactory())
-                .setGame(Game.of(Game.GameType.STREAMING, PREFIX + "help", "https://www.twitch.tv/pixelhamster"))
-                .addEventListener(client.build())
+                .setGame(Game.streaming(PREFIX + "help", "https://www.twitch.tv/pixelhamster"))
+                .addEventListener(commandClient)
                 .addEventListener(new AddReaction())
                 .addEventListener(new Channels())
                 .buildAsync();
         Helpers.starttime = System.currentTimeMillis();
-        mySQL = new MySQL(ip, user, pass, dbname);
-
+        mySQL = new MySQL(IP, USER, PASS, DBNAME);
     }
 
     public void onDisconnect(DisconnectEvent e) {

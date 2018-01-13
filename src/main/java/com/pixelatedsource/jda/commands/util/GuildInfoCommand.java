@@ -1,8 +1,9 @@
 package com.pixelatedsource.jda.commands.util;
 
-import com.jagrosh.jdautilities.commandclient.Command;
-import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
+import com.pixelatedsource.jda.blub.Category;
+import com.pixelatedsource.jda.blub.Command;
+import com.pixelatedsource.jda.blub.CommandEvent;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
@@ -11,19 +12,21 @@ import net.dv8tion.jda.core.entities.Guild;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
+import static com.pixelatedsource.jda.PixelSniper.PREFIX;
+
 public class GuildInfoCommand extends Command {
 
     public GuildInfoCommand() {
-        this.name = "guildinfo";
-        this.help = "Show you information about the guild where you execute it";
+        this.commandName = "guildinfo";
+        this.description = "Show you information about the guild where you execute it";
+        this.usage = PREFIX + this.commandName;
         this.aliases = new String[]{"serverinfo"};
-        this.botPermissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
-        this.guildOnly = true;
+        this.category = Category.UTILS;
     }
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name, 0)) {
+        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
             JDA jda = event.getJDA();
             Guild guild = event.getGuild();

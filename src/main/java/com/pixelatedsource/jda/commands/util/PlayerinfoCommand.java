@@ -1,41 +1,40 @@
 package com.pixelatedsource.jda.commands.util;
 
-import com.jagrosh.jdautilities.commandclient.Command;
-import com.jagrosh.jdautilities.commandclient.CommandEvent;
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelSniper;
+import com.pixelatedsource.jda.blub.Category;
+import com.pixelatedsource.jda.blub.Command;
+import com.pixelatedsource.jda.blub.CommandEvent;
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.User;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static net.dv8tion.jda.core.Permission.MESSAGE_EMBED_LINKS;
+import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
 public class PlayerinfoCommand extends Command {
 
     public PlayerinfoCommand() {
-        this.name = "userinfo";
-        this.help = "Usage: " + PixelSniper.PREFIX + this.name + " <@user|id>";
-        this.aliases = new String[] { "profile", "playerinfo", "memberinfo", "playerprofile" };
-        this.botPermissions = new Permission[] {MESSAGE_EMBED_LINKS};
+        this.commandName = "userinfo";
+        this.description = "Shows you useful information about a user/member";
+        this.usage = PREFIX + this.commandName + " <@user|id>";
+        this.aliases = new String[]{"profile", "playerinfo", "memberinfo", "playerprofile"};
+        this.category = Category.UTILS;
     }
 
     @Override
     protected void execute(CommandEvent event) {
         boolean acces = false;
         if (event.getGuild() == null) acces = true;
-        if (!acces) acces = Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.name, 0);
+        if (!acces) acces = Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0);
         if (acces) {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm ss");
-            String[] args = event.getArgs().split(" ");
+            String[] args = event.getArgs().split("\\s+");
             User user;
             User usr2;
             if (args[0].equalsIgnoreCase("")) usr2 = event.getAuthor();
-            else if (event.getMessage().getMentionedUsers().size() == 0)
-                usr2 = event.getJDA().retrieveUserById(args[0]).complete();
+            else if (event.getMessage().getMentionedUsers().size() == 0) usr2 = event.getJDA().retrieveUserById(args[0]).complete();
             else usr2 = event.getMessage().getMentionedUsers().get(0);
             user = usr2;
             if (user == null) user = event.getAuthor();

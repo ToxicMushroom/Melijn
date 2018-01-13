@@ -6,7 +6,6 @@ plugins {
 
 mainClassName = 'com.pixelatedsource.jda.PixelatedBot'
 version '1.0'
-
 sourceCompatibility = 1.8
 
 repositories {
@@ -15,7 +14,6 @@ repositories {
 
 dependencies {
     compile 'com.sedmelluq:jda-nas:1.0.5'
-    compile 'com.jagrosh:JDA-Utilities:1.9'
     compile "net.dv8tion:JDA:3.5.0_327"
     compile 'com.sedmelluq:lavaplayer:1.2.45'
     compile 'mysql:mysql-connector-java:5.1.36'
