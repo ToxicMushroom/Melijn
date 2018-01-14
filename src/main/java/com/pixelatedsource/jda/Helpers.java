@@ -58,7 +58,10 @@ public class Helpers {
             "alpaca",
             "about",
             "ping",
-            "setprefix"
+            "setprefix",
+            "setlogchannel",
+            "tempban",
+            "unban"
     ));
 
     public static boolean hasPerm(Member member, String permission, int level) {

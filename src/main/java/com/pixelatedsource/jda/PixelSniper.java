@@ -5,13 +5,13 @@ import com.pixelatedsource.jda.blub.CommandClientBuilder;
 import com.pixelatedsource.jda.commands.HelpCommand;
 import com.pixelatedsource.jda.commands.animals.CatCommand;
 import com.pixelatedsource.jda.commands.animals.DogCommand;
-import com.pixelatedsource.jda.commands.management.PermCommand;
-import com.pixelatedsource.jda.commands.management.SetPrefixCommand;
+import com.pixelatedsource.jda.commands.management.*;
 import com.pixelatedsource.jda.commands.music.*;
 import com.pixelatedsource.jda.commands.util.*;
 import com.pixelatedsource.jda.db.MySQL;
 import com.pixelatedsource.jda.events.AddReaction;
 import com.pixelatedsource.jda.events.Channels;
+import com.pixelatedsource.jda.events.Chat;
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
@@ -25,7 +25,6 @@ import java.util.HashMap;
 
 public class PixelSniper extends ListenerAdapter {
 
-    public static MySQL mySQL;
     private static final Config config = new Config();
     private static String OWNERID = config.getValue("ownerid");
     private static String TOKEN = config.getValue("token");
@@ -35,6 +34,7 @@ public class PixelSniper extends ListenerAdapter {
     private static String PASS = config.getValue("password");
     private static String DBNAME = config.getValue("database");
     public static HashMap<Guild, Boolean> looped = new HashMap<>();
+    public static MySQL mySQL  = new MySQL(IP, USER, PASS, DBNAME);
     public static CommandClient commandClient;
 
     public static void main(String[] args) throws LoginException {
@@ -63,7 +63,10 @@ public class PixelSniper extends ListenerAdapter {
                 new GuildInfoCommand(),
                 new RoleInfoCommand(),
                 new DogCommand(),
-                new SetPrefixCommand()
+                new SetPrefixCommand(),
+                new SetLogChannelCommand(),
+                new TempBan(),
+                new UnbanCommand()
         );
         commandClient = client.build();
         new JDABuilder(AccountType.BOT)
@@ -73,9 +76,9 @@ public class PixelSniper extends ListenerAdapter {
                 .addEventListener(commandClient)
                 .addEventListener(new AddReaction())
                 .addEventListener(new Channels())
+                .addEventListener(new Chat())
                 .buildAsync();
         Helpers.starttime = System.currentTimeMillis();
-        mySQL = new MySQL(IP, USER, PASS, DBNAME);
     }
 
     public void onDisconnect(DisconnectEvent e) {

@@ -1,6 +1,7 @@
 package com.pixelatedsource.jda.commands.music;
 
 import com.pixelatedsource.jda.Helpers;
+import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
@@ -48,7 +49,7 @@ public class PlayCommand extends Command {
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setTitle("Some info for new people");
                 eb.setColor(Helpers.EmbedColor);
-                eb.setDescription(PREFIX + this.commandName + " [yt|sc|link] <Songname>");
+                eb.setDescription(PixelSniper.mySQL.getPrefix(guild.getId()) + this.commandName + " [yt|sc|link] <Songname>");
                 eb.addField("Legenda", "[] = optional" + "| = or" + "<> = needed", true);
                 eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                 event.reply(eb.build());

@@ -1,11 +1,20 @@
 package com.pixelatedsource.jda.db;
 
+import com.pixelatedsource.jda.Helpers;
+import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.entities.Role;
+import net.dv8tion.jda.core.entities.User;
 
+import java.awt.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static com.pixelatedsource.jda.utils.MessageHelper.millisToDate;
 
 public class MySQL {
 
@@ -34,8 +43,14 @@ public class MySQL {
             statement.executeQuery("SET NAMES 'utf8mb4'");
             statement.close();
             System.out.println("[MySQL] has connected");
-            update("CREATE TABLE IF NOT EXISTS perms(guildName varchar(64), guildId varchar(128), roleName varchar(64), roleId varchar(128), permission varchar(256))");
-            update("CREATE TABLE IF NOT EXISTS prefixes(guildId varchar(128), prefix varchar(128))");
+            update("CREATE TABLE IF NOT EXISTS log_channels(guildId varchar(64), channelId varchar(64))");
+            update("CREATE TABLE IF NOT EXISTS perms(guildName varchar(64), guildId varchar(128), roleName varchar(64), roleId varchar(128), permission varchar(256));");
+            update("CREATE TABLE IF NOT EXISTS prefixes(guildId varchar(128), prefix varchar(128));");
+            update("CREATE TABLE IF NOT EXISTS active_bans(guildId varchar(128), victimId varchar(128), authorId varchar(128), reason varchar(2000), startTime bigint, endTime bigint);");
+            update("CREATE TABLE IF NOT EXISTS history_bans(guildId varchar(128), victimId varchar(128), authorId varchar(128), reason varchar(2000), startTime bigint, endTime bigint, active boolean);");
+            update("CREATE TABLE IF NOT EXISTS history_messages(guildId varchar(128), authorId varchar(128), messageId varchar(128), content varchar(3000), textChannelId varchar(128), sentTime bigint);");
+            update("CREATE TABLE IF NOT EXISTS deleted_messages(guildId varchar(128), authorId varchar(128), messageId varchar(128), content varchar(3000), textChannelId varchar(128), sentTime bigint, delTime bigint);");
+            update("CREATE TABLE IF NOT EXISTS unclaimed_messages(deletedMessageId varchar(64), logMessageId varchar(64));");
         } catch (SQLException e) {
             System.out.println((char) 27 + "[31m" + "did not connect");
             e.printStackTrace();
@@ -44,8 +59,8 @@ public class MySQL {
 
     public void close() {
         try {
-            if (this.con != null) {
-                this.con.close();
+            if (con != null) {
+                con.close();
                 System.out.println("[MySQL] has disconnected");
             }
         } catch (SQLException e) {
@@ -55,7 +70,7 @@ public class MySQL {
 
     public void update(String qry) {
         try {
-            Statement st = this.con.createStatement();
+            Statement st = con.createStatement();
             st.executeUpdate(qry);
             st.close();
         } catch (SQLException e) {
@@ -67,7 +82,7 @@ public class MySQL {
     public ResultSet query(String qry) {
         ResultSet rs = null;
         try {
-            Statement st = this.con.createStatement();
+            Statement st = con.createStatement();
             rs = st.executeQuery(qry);
         } catch (SQLException e) {
             connect();
@@ -76,6 +91,109 @@ public class MySQL {
         return rs;
     }
 
+    //Message stuff----------------------------------------------------
+    private boolean messageExists(String id) {
+        try {
+            ResultSet rs = query("SELECT * FROM history_messages WHERE messageId= '" + id + "'");
+            return rs.next() && rs.getString("messageId") != null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public void createMessage(String messageId, String content, String authorId, String guildId, String textchannelid) {
+        if (!messageExists(messageId)) {
+            try {
+                PreparedStatement createMessage = con.prepareStatement("INSERT INTO history_messages(guildId, authorId, messageId, content, textChannelId, sentTime) VALUES (?, ?, ?, ?, ?, ?)");
+                createMessage.setString(1, guildId);
+                createMessage.setString(2, authorId);
+                createMessage.setString(3, messageId);
+                createMessage.setString(4, content);
+                createMessage.setString(5, textchannelid);
+                createMessage.setLong(6, System.currentTimeMillis());
+                createMessage.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void saveDeletedMessage(String messageid) {
+        ResultSet rs = query("SELECT * FROM history_messages WHERE messageId= '" + messageid + "'");
+        try {
+            if (rs.next()) {
+                String guildId = rs.getString("guildId");
+                String authorId = rs.getString("authorId");
+                String content = rs.getString("content");
+                String channelId = rs.getString("textChannelId");
+                String sentTime = rs.getString("sentTime");
+                PreparedStatement createMessage = con.prepareStatement("INSERT INTO deleted_messages (guildId, authorId, messageId, content, textChannelId, sentTime, delTime) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                createMessage.setString(1, guildId);
+                createMessage.setString(2, authorId);
+                createMessage.setString(3, messageid);
+                createMessage.setString(4, content);
+                createMessage.setString(5, channelId);
+                createMessage.setString(6, sentTime);
+                createMessage.setLong(7, System.currentTimeMillis());
+                createMessage.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addUnclaimed(String deletedmessageid, String unclaimedid) {
+        try {
+            PreparedStatement addunclaimed = con.prepareStatement("INSERT INTO unclaimed_messages (deletedMessageId, logMessageId) VALUES (?, ?)");
+            addunclaimed.setString(1, deletedmessageid);
+            addunclaimed.setString(2, unclaimedid);
+            addunclaimed.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getMessageIdByUnclaimedId(String unclaimedid) {
+        try {
+            PreparedStatement getMessageId = con.prepareStatement("SELECT * FROM unclaimed_messages WHERE logMessageId= ?");
+            getMessageId.setString(1, unclaimedid);
+            ResultSet rs = getMessageId.executeQuery();
+            String s = null;
+            while (rs.next()) {
+                s = rs.getString("deletedMessageId");
+            }
+            return s;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public MessageEmbed unclaimedToClaimed(String messageid, JDA jda, User staff) {
+        try {
+            PreparedStatement getdeletedmessage = con.prepareStatement("SELECT * FROM deleted_messages WHERE messageId= ?");
+            getdeletedmessage.setString(1, messageid);
+            ResultSet rs = getdeletedmessage.executeQuery();
+            if (rs.next()) {
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.setTitle("Message deleted in #" + jda.getTextChannelById(rs.getString("textChannelId")).getName());
+                eb.setThumbnail(jda.retrieveUserById(rs.getString("authorId")).complete().getAvatarUrl());
+                eb.setFooter(millisToDate(rs.getLong("delTime")), Helpers.getFooterIcon());
+                eb.setColor(Color.magenta);
+                String authorId = rs.getString("authorId");
+                User author = jda.retrieveUserById(authorId).complete();
+                eb.setDescription("```LDIF" + "\nSender: " + author.getName() + "#" + author.getDiscriminator() + "\nMessage: " + rs.getString("content").replaceAll("`", "´").replaceAll("\n", " ") + "\nSender's ID: " + rs.getString("authorId") + "\nSent Time: " + millisToDate(rs.getLong("sentTime")) + "```");
+                eb.addField("Deleted by: ", staff.getName() + "#" + staff.getDiscriminator(), false);
+                return eb.build();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    //Permissions stuff---------------------------------------------------------
     public void addPermission(Guild guild, Role role, String permission) {
         String id = role == null ? guild.getRolesByName("@everyone", false).get(0).getId() : role.getId();
         String name = role == null ? "@everyone" : role.getName();
@@ -186,6 +304,7 @@ public class MySQL {
         }
     }
 
+    //Prefix stuff---------------------------------------------------------------
     public boolean setPrefix(String id, String arg) {
         try {
             if (getPrefix(id).equalsIgnoreCase(">")) {
@@ -219,6 +338,139 @@ public class MySQL {
         } catch (SQLException e) {
             e.printStackTrace();
             return "SQL error..";
+        }
+    }
+
+    //Banning stuff--------------------------------------------------------------
+    public boolean setTempBan(JDA jda, String guildId, String authorId, String victimId, String reason, long days) {
+        if (days > 0) {
+            Long moment = System.currentTimeMillis();
+            Long until = System.currentTimeMillis() + TimeUnit.DAYS.toMillis(days);
+            User victim = jda.retrieveUserById(victimId).complete();
+            User staff = jda.retrieveUserById(authorId).complete();
+            String name = victim.getName() + "#" + victim.getDiscriminator();
+            String namep = staff.getName() + "#" + staff.getDiscriminator();
+            try {
+                EmbedBuilder banned = new EmbedBuilder();
+                banned.setColor(Color.RED);
+                banned.setDescription("```LDIF" + "\nBanned: " + name + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nFrom: " + millisToDate(moment) + "\nUntil: " + millisToDate(until) + "```");
+                banned.setThumbnail(victim.getAvatarUrl());
+                if (victim.getAvatarUrl() == null) banned.setThumbnail(victim.getDefaultAvatarUrl());
+                banned.setAuthor("Banned by: " + namep, null, staff.getAvatarUrl());
+                if (!victim.isFake()) victim.openPrivateChannel().complete().sendMessage(banned.build()).queue();
+                if (getLogChannelId(guildId) != null) jda.getGuildById(guildId).getTextChannelById(getLogChannelId(guildId)).sendMessage(banned.build()).queue();
+                ResultSet rs = query("SELECT * FROM active_bans WHERE victimId= '" + victimId + "' AND guildId= '" + guildId + "'");
+                if (rs.next()) {//Player was banned so just update the times
+                    PreparedStatement banupdate = con.prepareStatement("UPDATE active_bans SET victimId= ?, guildId= ?, reason= ?, startTime= ?, endTime= ?, authorId= ? WHERE victimId= ? AND guildId= ?");
+                    banupdate.setString(1, victimId);
+                    banupdate.setString(2, guildId);
+                    banupdate.setString(3, reason);
+                    banupdate.setLong(4, moment);
+                    banupdate.setLong(5, until);
+                    banupdate.setString(6, authorId);
+                    banupdate.setString(7, victimId);
+                    banupdate.setString(8, guildId);
+                    banupdate.executeUpdate();
+                } else {//nieuwe ban
+                    PreparedStatement ban = con.prepareStatement("INSERT INTO active_bans (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?)");
+                    ban.setString(1, guildId);
+                    ban.setString(2, victimId);
+                    ban.setString(3, authorId);
+                    ban.setString(4, reason);
+                    ban.setLong(5, moment);
+                    ban.setLong(6, until);
+                    ban.executeUpdate();
+                }
+                //add to history as active
+                PreparedStatement banhistoire = con.prepareStatement("INSERT INTO history_bans (guildId, victimId, authorId, reason, startTime, endTime, active) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                banhistoire.setString(1, guildId);
+                banhistoire.setString(2, victimId);
+                banhistoire.setString(3, authorId);
+                banhistoire.setString(4, reason);
+                banhistoire.setLong(5, moment);
+                banhistoire.setLong(6, until);
+                banhistoire.setBoolean(7, true);
+                banhistoire.executeUpdate();
+                jda.getGuildById(guildId).getController().ban(victimId, 7, reason).queue();
+                return true;
+            } catch (SQLException | IllegalStateException e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    public boolean unban(User toUnban, String guildid, JDA jda) {
+        Guild guild = jda.getGuildById(guildid);
+        if (toUnban != null) {
+            try {
+                ResultSet rs = query("SELECT * FROM active_bans WHERE guildId= '" + guildid + "' AND victimId= '" + toUnban.getId() + "'");
+                if (rs.next()) {
+                    User author = jda.retrieveUserById(rs.getString("authorId")).complete();
+                    guild.getController().unban(toUnban.getId()).queue();
+                    PreparedStatement unban = con.prepareStatement("UPDATE history_bans SET ACTIVE= ? WHERE victimId= ? AND guildId= ?");
+                    unban.setBoolean(1, false);
+                    unban.setString(2, toUnban.getId());
+                    unban.setString(3, guildid);
+                    unban.executeUpdate();
+                    unban.close();
+                    update("DELETE FROM active_bans WHERE guildId= '" + guildid + "' AND victimId= '" + toUnban.getId() + "'");
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.setAuthor(author.getName() + "#" + author.getDiscriminator() + " has unbanned " + toUnban.getName() + "#" + toUnban.getDiscriminator(), null, author.getAvatarUrl());
+                    eb.setThumbnail(toUnban.getAvatarUrl());
+                    eb.setColor(Helpers.EmbedColor);
+                    eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
+                    eb.setColor(Color.green);
+                    toUnban.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
+                    if (getLogChannelId(guildid) != null) {
+                        guild.getTextChannelById(getLogChannelId(guildid)).sendMessage(eb.build()).queue();
+                    }
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    //log channel stuff----------------------------------------------------------
+    public boolean setLogChannel(String guildId, String channelId) {
+        try {
+            if (getLogChannelId(guildId) == null) {
+                PreparedStatement setPrefix = con.prepareStatement("INSERT INTO log_channels (guildId, channelId) VALUES (?, ?)");
+                setPrefix.setString(1, guildId);
+                setPrefix.setString(2, channelId);
+                setPrefix.executeUpdate();
+                setPrefix.close();
+                return true;
+            } else {
+                PreparedStatement updatePrefix = con.prepareStatement("UPDATE log_channels SET channelId= ? WHERE guildId= ?");
+                updatePrefix.setString(1, channelId);
+                updatePrefix.setString(2, guildId);
+                updatePrefix.executeUpdate();
+                updatePrefix.close();
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public String getLogChannelId(String guildId) {
+        try {
+            PreparedStatement getLogChannel = con.prepareStatement("SELECT * FROM log_channels WHERE guildId= ?");
+            getLogChannel.setString(1, guildId);
+            ResultSet rs = getLogChannel.executeQuery();
+            String s = null;
+            while (rs.next()) s = rs.getString("channelId");
+            return s;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }
