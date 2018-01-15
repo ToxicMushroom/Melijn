@@ -2,6 +2,7 @@ package com.pixelatedsource.jda.events;
 
 import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.PixelSniper;
+import com.pixelatedsource.jda.blub.ChannelType;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
 import com.pixelatedsource.jda.utils.MessageHelper;
@@ -17,7 +18,7 @@ public class AddReaction extends ListenerAdapter {
 
     @Override
     public void onMessageReactionAdd(MessageReactionAddEvent event) {
-        if (PixelSniper.mySQL.getLogChannelId(event.getGuild().getId()) != null && PixelSniper.mySQL.getLogChannelId(event.getGuild().getId()).equalsIgnoreCase(event.getTextChannel().getId())) {
+        if (PixelSniper.mySQL.getChannelId(event.getGuild().getId(), ChannelType.LOG) != null && PixelSniper.mySQL.getChannelId(event.getGuild().getId(), ChannelType.LOG).equalsIgnoreCase(event.getTextChannel().getId())) {
             if (event.getReactionEmote().getName().equalsIgnoreCase("\uD83D\uDD30")) {
                 if (Helpers.hasPerm(event.getMember(), "emote.claim", 1)) {
                     String messageid = PixelSniper.mySQL.getMessageIdByUnclaimedId(event.getMessageId());
@@ -26,10 +27,12 @@ public class AddReaction extends ListenerAdapter {
                     }
                 }
             } else if (event.getReactionEmote().getName().equalsIgnoreCase("\u274C")){ //:x: emote red cross
-                if (event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_READ)) {
-                    String messageid = event.getMessageId();
-                    MessageHelper.deletedByEmote.put(messageid, event.getUser());
-                    event.getChannel().getMessageById(messageid).queue(v -> v.delete().queue());
+                if (Helpers.hasPerm(event.getMember(),"emote.delete", 1)) {
+                    if (event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_READ)) {
+                        String messageid = event.getMessageId();
+                        MessageHelper.deletedByEmote.put(messageid, event.getUser());
+                        event.getChannel().getMessageById(messageid).queue(v -> v.delete().queue());
+                    }
                 }
             }
         }

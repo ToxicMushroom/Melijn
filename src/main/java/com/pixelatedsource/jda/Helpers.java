@@ -61,7 +61,12 @@ public class Helpers {
             "setprefix",
             "setlogchannel",
             "tempban",
-            "unban"
+            "unban",
+            "setmusicchannel",
+            "setstreamermode",
+            "setstreamurl",
+            "emote.claim",
+            "emote.delete"
     ));
 
     public static boolean hasPerm(Member member, String permission, int level) {

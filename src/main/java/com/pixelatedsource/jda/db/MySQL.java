@@ -41,10 +41,12 @@ public class MySQL {
             statement.executeQuery("SET NAMES 'utf8mb4'");
             statement.close();
             System.out.println("[MySQL] has connected");
-            update("CREATE TABLE IF NOT EXISTS log_channels(guildId varchar(64), channelId varchar(64))");
-            update("CREATE TABLE IF NOT EXISTS perms(guildName varchar(64), guildId varchar(128), roleName varchar(64), roleId varchar(128), permission varchar(256));");
-            update("CREATE TABLE IF NOT EXISTS music_channels(guildId varchar(64), channelId varchar(64))");
+            update("CREATE TABLE IF NOT EXISTS stream_urls(guildId varchar(127), url varchar(1500))");
             update("CREATE TABLE IF NOT EXISTS prefixes(guildId varchar(128), prefix varchar(128));");
+            update("CREATE TABLE IF NOT EXISTS perms(guildName varchar(64), guildId varchar(128), roleName varchar(64), roleId varchar(128), permission varchar(256));");
+            update("CREATE TABLE IF NOT EXISTS log_channels(guildId varchar(128), channelId varchar(128))");
+            update("CREATE TABLE IF NOT EXISTS music_channels(guildId varchar(128), channelId varchar(128))");
+            update("CREATE TABLE IF NOT EXISTS streamer_modes(guildId varchar(128), state boolean)");
             update("CREATE TABLE IF NOT EXISTS active_bans(guildId varchar(128), victimId varchar(128), authorId varchar(128), reason varchar(2000), startTime bigint, endTime bigint);");
             update("CREATE TABLE IF NOT EXISTS history_bans(guildId varchar(128), victimId varchar(128), authorId varchar(128), reason varchar(2000), startTime bigint, endTime bigint, active boolean);");
             update("CREATE TABLE IF NOT EXISTS history_messages(guildId varchar(128), authorId varchar(128), messageId varchar(128), content varchar(3000), textChannelId varchar(128), sentTime bigint);");
@@ -354,12 +356,18 @@ public class MySQL {
             try {
                 EmbedBuilder banned = new EmbedBuilder();
                 banned.setColor(Color.RED);
-                banned.setDescription("```LDIF" + "\nBanned: " + name + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nFrom: " + millisToDate(moment) + "\nUntil: " + millisToDate(until) + "```");
+                banned.setDescription("```LDIF" +
+                        "\nBanned: " + name +
+                        "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") +
+                        "\nGuild: " + guild.getName() +
+                        "\nFrom: " + millisToDate(moment) +
+                        "\nUntil: " + millisToDate(until)
+                        + "```");
                 banned.setThumbnail(victim.getAvatarUrl());
                 if (victim.getAvatarUrl() == null) banned.setThumbnail(victim.getDefaultAvatarUrl());
                 banned.setAuthor("Banned by: " + namep, null, staff.getAvatarUrl());
                 if (!victim.isFake()) victim.openPrivateChannel().complete().sendMessage(banned.build()).queue();
-                if (getLogChannelId(guildId) != null) jda.getGuildById(guildId).getTextChannelById(getLogChannelId(guildId)).sendMessage(banned.build()).queue();
+                if (getChannelId(guildId, ChannelType.LOG) != null) jda.getGuildById(guildId).getTextChannelById(getChannelId(guildId, ChannelType.LOG)).sendMessage(banned.build()).queue();
                 ResultSet rs = query("SELECT * FROM active_bans WHERE victimId= '" + victimId + "' AND guildId= '" + guildId + "'");
                 if (rs.next()) {//Player was banned so just update the times
                     PreparedStatement banupdate = con.prepareStatement("UPDATE active_bans SET victimId= ?, guildId= ?, reason= ?, startTime= ?, endTime= ?, authorId= ? WHERE victimId= ? AND guildId= ?");
@@ -418,14 +426,19 @@ public class MySQL {
                     unban.close();
                     update("DELETE FROM active_bans WHERE guildId= '" + guildid + "' AND victimId= '" + toUnban.getId() + "'");
                     EmbedBuilder eb = new EmbedBuilder();
-                    eb.setAuthor(author.getName() + "#" + author.getDiscriminator() + " has unbanned " + toUnban.getName() + "#" + toUnban.getDiscriminator(), null, author.getAvatarUrl());
+                    eb.setAuthor("Unbanned by: " + author.getName() + "#" + author.getDiscriminator(), null, author.getAvatarUrl());
+                    eb.setDescription("```LDIF" +
+                            "\nUnbanned: " + toUnban.getName() + "#" + toUnban.getDiscriminator() +
+                            "\nGuild: " + guild.getName() +
+                            "\nMoment: " + millisToDate(System.currentTimeMillis())
+                            + "```");
                     eb.setThumbnail(toUnban.getAvatarUrl());
                     eb.setColor(Helpers.EmbedColor);
                     eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                     eb.setColor(Color.green);
                     toUnban.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
-                    if (getLogChannelId(guildid) != null) {
-                        guild.getTextChannelById(getLogChannelId(guildid)).sendMessage(eb.build()).queue();
+                    if (getChannelId(guildid, ChannelType.LOG) != null) {
+                        guild.getTextChannelById(getChannelId(guildid, ChannelType.LOG)).sendMessage(eb.build()).queue();
                     }
                     t = true;
                 }
@@ -439,6 +452,7 @@ public class MySQL {
     }
 
     //log channel stuff----------------------------------------------------------
+
     public boolean setChannel(String guildId, String channelId, ChannelType type) {
         try {
             if (getChannelId(guildId, type) == null) {
@@ -462,6 +476,10 @@ public class MySQL {
         }
     }
 
+    public String getChannelId(Guild guild, ChannelType type) {
+        return getChannelId(guild.getId(), type);
+    }
+
     public String getChannelId(String guildId,ChannelType type) {
         try {
             PreparedStatement getLogChannel = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_channels WHERE guildId= ?");
@@ -469,6 +487,80 @@ public class MySQL {
             ResultSet rs = getLogChannel.executeQuery();
             String s = null;
             while (rs.next()) s = rs.getString("channelId");
+            return s;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    //streamer stuff------------------------------------------------
+    public boolean setStreamerMode(String guildId, boolean state) {
+        try {
+            if (!getStreamerMode(guildId)) {
+                PreparedStatement setPrefix = con.prepareStatement("INSERT INTO streamer_modes (guildId, state) VALUES (?, ?)");
+                setPrefix.setString(1, guildId);
+                setPrefix.setBoolean(2, state);
+                setPrefix.executeUpdate();
+                setPrefix.close();
+                return true;
+            } else {
+                PreparedStatement updatePrefix = con.prepareStatement("UPDATE streamer_modes SET state= ? WHERE guildId= ?");
+                updatePrefix.setBoolean(1, state);
+                updatePrefix.setString(2, guildId);
+                updatePrefix.executeUpdate();
+                updatePrefix.close();
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean getStreamerMode(String guildId) {
+        try {
+            PreparedStatement getLogChannel = con.prepareStatement("SELECT * FROM streamer_modes WHERE guildId= ?");
+            getLogChannel.setString(1, guildId);
+            ResultSet rs = getLogChannel.executeQuery();
+            boolean s = false;
+            while (rs.next()) s = rs.getBoolean("state");
+            return s;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean setStreamUrl(Guild guild, String url) {
+        try {
+            if (getStreamUrl(guild) == null) {
+                PreparedStatement setPrefix = con.prepareStatement("INSERT INTO stream_urls(guildId, url) VALUES (?, ?)");
+                setPrefix.setString(1, guild.getId());
+                setPrefix.setString(2, url);
+                setPrefix.executeUpdate();
+                setPrefix.close();
+                return true;
+            } else {
+                PreparedStatement updatePrefix = con.prepareStatement("UPDATE stream_urls SET url= ? WHERE guildId= ?");
+                updatePrefix.setString(1, url);
+                updatePrefix.setString(2, guild.getId());
+                updatePrefix.executeUpdate();
+                updatePrefix.close();
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public String getStreamUrl(Guild guild) {
+        try {
+            PreparedStatement getLogChannel = con.prepareStatement("SELECT * FROM stream_urls WHERE guildId= ?");
+            getLogChannel.setString(1, guild.getId());
+            ResultSet rs = getLogChannel.executeQuery();
+            String s = null;
+            while (rs.next()) s = rs.getString("url");
             return s;
         } catch (SQLException e) {
             e.printStackTrace();

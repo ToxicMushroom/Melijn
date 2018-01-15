@@ -9,9 +9,9 @@ import net.dv8tion.jda.core.Permission;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
-public class TempBan extends Command {
+public class TempBanCommand extends Command {
 
-    public TempBan() {
+    public TempBanCommand() {
         this.commandName = "tempban";
         this.description = "Ban people and let the bot unban them after the specified amount of days";
         this.usage = PREFIX + commandName + " <@user | userid> <number of days> <reason>";
