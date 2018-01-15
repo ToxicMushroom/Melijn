@@ -51,6 +51,7 @@ public class TempBan extends Command {
                     event.reply(this.usage);
                 }
             }
+            else event.reply("I don't have permission to ban :(");
         }
     }
 }

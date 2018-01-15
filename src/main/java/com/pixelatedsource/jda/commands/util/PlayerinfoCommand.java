@@ -42,7 +42,7 @@ public class PlayerinfoCommand extends Command {
             eb.setColor(Helpers.EmbedColor);
             eb.setTitle(user.getName() + "#" + user.getDiscriminator() + "'s profile");
             eb.setThumbnail(user.getAvatarUrl());
-            if (event.getGuild().getMember(user) == null) {
+            if (event.getGuild() == null || event.getGuild().getMember(user) == null) {
                 eb.addField("Avatar:", "[Download](" + user.getAvatarUrl() + ")", true);
                 eb.addField("ID:", user.getId(), true);
                 eb.addField("Discord join date:", String.valueOf(user.getCreationTime().toLocalDate()), false);

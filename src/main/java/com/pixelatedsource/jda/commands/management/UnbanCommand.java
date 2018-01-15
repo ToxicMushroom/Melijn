@@ -39,7 +39,7 @@ public class UnbanCommand extends Command  {
                         event.getMessage().addReaction("\u274C").queue();
                     }
                 } else {
-                    event.reply("Wrong argument length");
+                    event.reply(this.usage);
                 }
             }
         }
