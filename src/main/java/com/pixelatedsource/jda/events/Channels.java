@@ -6,6 +6,7 @@ import com.pixelatedsource.jda.music.MusicManager;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.events.guild.voice.GuildVoiceDeafenEvent;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceMoveEvent;
@@ -24,20 +25,23 @@ public class Channels extends ListenerAdapter {
         if (guild.getAudioManager().isConnected()) {
             if (event.getChannelLeft() == audioManager.getConnectedChannel()) {
                 AudioPlayer audioPlayer = manager.getPlayer(guild).getAudioPlayer();
-                int doverDuiven = 0;
+                int doveDuiven = 0;
                 for (Member member : audioManager.getConnectedChannel().getMembers()) {
                     if (member.getVoiceState().isDeafened() || member.getVoiceState().isGuildDeafened()) {
-                        if (member != guild.getSelfMember()) doverDuiven++;
+                        if (member != guild.getSelfMember()) doveDuiven++;
                     }
                 }
-                if ((audioManager.getConnectedChannel().getMembers().size() - doverDuiven) == 0) {
+                if ((audioManager.getConnectedChannel().getMembers().size() - doveDuiven) == 1) {
                     audioPlayer.stopTrack();
+                    audioManager.closeAudioConnection();
+                } else if (audioPlayer.getPlayingTrack() == null) {
+                    if (PixelSniper.mySQL.getStreamUrl(guild) != null) manager.loadSimpelTrack(guild, PixelSniper.mySQL.getStreamUrl(guild));
                 }
             }
         } else if (PixelSniper.mySQL.getChannelId(guild, ChannelType.MUSIC) != null) {
             if (PixelSniper.mySQL.getStreamerMode(guild.getId()) && event.getChannelJoined().getId().equalsIgnoreCase(PixelSniper.mySQL.getChannelId(guild, ChannelType.MUSIC)) && !audioManager.isConnected()) {
                 audioManager.openAudioConnection(guild.getVoiceChannelById(PixelSniper.mySQL.getChannelId(guildId, ChannelType.MUSIC)));
-                if (PixelSniper.mySQL.getStreamUrl(guild) != null) manager.loadSimpelTrack(guild, PixelSniper.mySQL.getStreamUrl(guild));
+                if (PixelSniper.mySQL.getStreamUrl(guild) != null && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null) manager.loadSimpelTrack(guild, PixelSniper.mySQL.getStreamUrl(guild));
             }
         }
     }
@@ -49,6 +53,7 @@ public class Channels extends ListenerAdapter {
         AudioManager audioManager = guild.getAudioManager();
         if (PixelSniper.mySQL.getStreamerMode(guild.getId()) && PixelSniper.mySQL.getChannelId(guild, ChannelType.MUSIC) != null && !audioManager.isConnected()) {
             audioManager.openAudioConnection(guild.getVoiceChannelById(PixelSniper.mySQL.getChannelId(guildId, ChannelType.MUSIC)));
+            if (PixelSniper.mySQL.getStreamUrl(guild) != null && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null) manager.loadSimpelTrack(guild, PixelSniper.mySQL.getStreamUrl(guild));
         }
     }
 
@@ -58,15 +63,21 @@ public class Channels extends ListenerAdapter {
         AudioManager audioManager = guild.getAudioManager();
         if (audioManager.isConnected()) {
             AudioPlayer audioPlayer = manager.getPlayer(guild).getAudioPlayer();
-            int doverDuiven = 0;
+            int doveDuiven = 0;
             for (Member member : audioManager.getConnectedChannel().getMembers()) {
                 if (member.getVoiceState().isDeafened() || member.getVoiceState().isGuildDeafened()) {
-                    if (member != guild.getSelfMember()) doverDuiven++;
+                    if (member != guild.getSelfMember()) doveDuiven++;
                 }
             }
-            if ((audioManager.getConnectedChannel().getMembers().size() - doverDuiven) == 0) {
-                audioPlayer.stopTrack();
+            if ((audioManager.getConnectedChannel().getMembers().size() - doveDuiven) == 1) {
+                audioPlayer.setPaused(true);
+                audioManager.closeAudioConnection();
             }
         }
+    }
+
+    @Override
+    public void onGuildVoiceDeafen(GuildVoiceDeafenEvent event) {
+
     }
 }

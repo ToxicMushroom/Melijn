@@ -2,6 +2,7 @@ package com.pixelatedsource.jda.events;
 
 import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.PixelSniper;
+import com.pixelatedsource.jda.blub.ChannelType;
 import com.pixelatedsource.jda.db.MySQL;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -76,7 +77,7 @@ public class Chat extends ListenerAdapter {
                                 eb.addField("Deleted by: ", staff.getName() + "#" + staff.getDiscriminator(), false);
                                 eb.setColor(Color.magenta);
                             }
-                            guild.getTextChannelById(mySQL.getLogChannelId(e.getGuild().getId())).sendMessage(eb.build()).queue(v -> {
+                            guild.getTextChannelById(mySQL.getChannelId(e.getGuild().getId(), ChannelType.LOG)).sendMessage(eb.build()).queue(v -> {
                                 if (eb.build().getColor().equals(Color.decode("#000001"))) mySQL.addUnclaimed(e.getMessageId(), v.getId());
                             });
                             mySQL.saveDeletedMessage(e.getMessageId());

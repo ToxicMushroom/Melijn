@@ -26,11 +26,14 @@ public class SetStreamUrlCommand extends Command {
             Guild guild = event.getGuild();
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                 String[] args = event.getArgs().split("\\s+");
+                String url = PixelSniper.mySQL.getStreamUrl(guild);
                 if (args.length == 0 || args[0].equalsIgnoreCase("")) {
-                    event.reply(PixelSniper.mySQL.getStreamUrl(guild));
+                    event.reply(url);
                 } else if (args.length == 1) {
                     if (args[0].contains("http://") || args[0].contains("https://")) {
-                        PixelSniper.mySQL.setStreamUrl(guild, args[0]);
+                        if (PixelSniper.mySQL.setStreamUrl(guild, args[0])) {
+                            event.reply("Changed the url from " + url + " to " + PixelSniper.mySQL.getStreamUrl(guild));
+                        }
                     }
                 }
             }

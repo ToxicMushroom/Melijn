@@ -41,7 +41,7 @@ public class SetStreamerModeCommand extends Command {
                                         guild.getAudioManager().openAudioConnection(musicChannel);
                                     }
                                     PixelSniper.mySQL.setStreamerMode(guild.getId(), true);
-                                    event.reply("The streamer mode has been enabled.");
+                                    event.reply("\uD83D\uDCF6 The streamer mode has been **enabled**.");
                                 } else {
                                     event.reply("The bot has no permission to the music channel.");
                                 }
@@ -49,7 +49,7 @@ public class SetStreamerModeCommand extends Command {
                             case "false":
                             case "off":
                                 PixelSniper.mySQL.setStreamerMode(guild.getId(), false);
-                                event.reply("The streamer mode has been disabled.");
+                                event.reply("The streamer mode has been **disabled**.");
                                 break;
                         }
                     } else {

@@ -33,6 +33,8 @@ public class SetMusicChannelCommand extends Command {
                     } else {
                         event.reply("Failed to set music channel.");
                     }
+                } else {
+                    event.reply("Please provide a channelId.");
                 }
             }
         }

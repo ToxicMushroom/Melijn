@@ -3,6 +3,7 @@ package com.pixelatedsource.jda.commands.management;
 import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
+import com.pixelatedsource.jda.blub.ChannelType;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 
@@ -22,7 +23,7 @@ public class SetLogChannelCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
-                String logChannelId = PixelSniper.mySQL.getLogChannelId(event.getGuild().getId());
+                String logChannelId = PixelSniper.mySQL.getChannelId(event.getGuild().getId(), ChannelType.LOG);
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     String id;
@@ -36,8 +37,8 @@ public class SetLogChannelCommand extends Command {
                         event.reply("Unknown input");
                         return;
                     }
-                    if (PixelSniper.mySQL.setLogChannel(event.getGuild().getId(), id)) {
-                        event.reply("LogChannel has been changed from <#" + logChannelId + "> to <#" + PixelSniper.mySQL.getLogChannelId(event.getGuild().getId()) + ">");
+                    if (PixelSniper.mySQL.setChannel(event.getGuild().getId(), id, ChannelType.LOG)) {
+                        event.reply("LogChannel has been changed from <#" + logChannelId + "> to <#" + PixelSniper.mySQL.getChannelId(event.getGuild().getId(), ChannelType.LOG) + ">");
                     }
                 } else {
                     event.reply("<#" + logChannelId + ">");
