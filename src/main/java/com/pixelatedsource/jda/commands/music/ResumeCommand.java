@@ -27,7 +27,7 @@ public class ResumeCommand extends Command {
             VoiceChannel voiceChannel = event.getGuild().getMember(event.getAuthor()).getVoiceState().getChannel();
             event.getGuild().getAudioManager().openAudioConnection(voiceChannel);
             player.resumeTrack();
-            event.reply("Resumed by <@" + event.getAuthor() + ">");
+            event.reply("Resumed by **" + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + "**");
         }
     }
 }

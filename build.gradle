@@ -1,10 +1,10 @@
 plugins {
     id'java'
     id'application'
-    id'com.github.johnrengelman.shadow' version '2.0.1'
+    id'com.github.johnrengelman.shadow' version '2.0.2'
 }
 
-mainClassName = 'com.pixelatedsource.jda.PixelatedBot'
+mainClassName = 'com.pixelatedsource.jda.PixelSniper'
 version '1.0'
 sourceCompatibility = 1.8
 

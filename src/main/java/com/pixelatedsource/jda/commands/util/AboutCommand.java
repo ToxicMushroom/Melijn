@@ -25,6 +25,7 @@ public class AboutCommand extends Command {
         if (event.getGuild() == null) acces = true;
         if (!acces) acces = Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0);
         if (acces) {
+            String[] args = event.getArgs().split("\\s+");
             EmbedBuilder eb = new EmbedBuilder();
             eb.setTitle("About");
             eb.setColor(Helpers.EmbedColor);
@@ -39,6 +40,15 @@ public class AboutCommand extends Command {
             }
             eb.addField("Playing music count", String.valueOf(i), false);
             event.reply(eb.build());
+            if (args.length > 0 && args[0].equalsIgnoreCase("dawae")) {
+                StringBuilder desc = new StringBuilder();
+                int blub = 0;
+                for (Guild guild : event.getJDA().getGuilds()) {
+                    if (guild.getAudioManager().isConnected() || guild.getAudioManager().isAttemptingToConnect())
+                        desc.append("**#").append(++blub).append("** - (").append(guild.getName()).append(")[").append(guild.getIconUrl()).append("]");
+                }
+                event.getAuthor().openPrivateChannel().queue(s -> s.sendMessage("dis is da wae:\n" + desc.toString()).queue());
+            }
         }
     }
 }

@@ -14,7 +14,7 @@ public class SetMusicChannelCommand extends Command {
     public SetMusicChannelCommand() {
         this.commandName = "setmusicchannel";
         this.description = "Set the music channel to a channel so the bot wil auto join ect";
-        this.usage = PREFIX + commandName + " [id]";
+        this.usage = PREFIX + commandName + " [id ]";
         this.aliases = new String[]{"smc"};
         this.category = Category.MANAGEMENT;
     }
