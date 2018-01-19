@@ -41,7 +41,10 @@ public class Channels extends ListenerAdapter {
         } else if (PixelSniper.mySQL.getChannelId(guild, ChannelType.MUSIC) != null) {
             if (PixelSniper.mySQL.getStreamerMode(guild.getId()) && event.getChannelJoined().getId().equalsIgnoreCase(PixelSniper.mySQL.getChannelId(guild, ChannelType.MUSIC)) && !audioManager.isConnected()) {
                 audioManager.openAudioConnection(guild.getVoiceChannelById(PixelSniper.mySQL.getChannelId(guildId, ChannelType.MUSIC)));
-                if (PixelSniper.mySQL.getStreamUrl(guild) != null && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack().getInfo().uri.equalsIgnoreCase(PixelSniper.mySQL.getChannelId(guildId, ChannelType.MUSIC))) manager.loadSimpelTrack(guild, PixelSniper.mySQL.getStreamUrl(guild));
+                if (PixelSniper.mySQL.getStreamUrl(guild) != null && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null) {
+                    manager.getPlayer(guild).getListener().tracks.clear();
+                    manager.loadSimpelTrack(guild, PixelSniper.mySQL.getStreamUrl(guild));
+                }
             }
         }
     }
@@ -53,7 +56,11 @@ public class Channels extends ListenerAdapter {
         AudioManager audioManager = guild.getAudioManager();
         if (PixelSniper.mySQL.getStreamerMode(guild.getId()) && PixelSniper.mySQL.getChannelId(guild, ChannelType.MUSIC) != null && !audioManager.isConnected()) {
             audioManager.openAudioConnection(guild.getVoiceChannelById(PixelSniper.mySQL.getChannelId(guildId, ChannelType.MUSIC)));
-            if (PixelSniper.mySQL.getStreamUrl(guild) != null && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack().getInfo().uri.equalsIgnoreCase(PixelSniper.mySQL.getChannelId(guildId, ChannelType.MUSIC))) manager.loadSimpelTrack(guild, PixelSniper.mySQL.getStreamUrl(guild));
+            if (PixelSniper.mySQL.getStreamUrl(guild) != null && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null && manager.getPlayer(guild).getListener().getTrackSize() == 0) {
+                manager.loadSimpelTrack(guild, PixelSniper.mySQL.getStreamUrl(guild));
+            } else {
+                manager.getPlayer(guild).resumeTrack();
+            }
         }
     }
 

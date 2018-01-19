@@ -8,7 +8,6 @@ import com.pixelatedsource.jda.music.MusicPlayer;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
@@ -26,13 +25,14 @@ public class AddReaction extends ListenerAdapter {
                         event.getChannel().getMessageById(event.getMessageId()).queue(v -> v.editMessage(PixelSniper.mySQL.unclaimedToClaimed(messageid, event.getJDA(), event.getUser())).queue());
                     }
                 }
-            } else if (event.getReactionEmote().getName().equalsIgnoreCase("\u274C")){ //:x: emote red cross
-                if (Helpers.hasPerm(event.getMember(),"emote.delete", 1)) {
-                    if (event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_READ)) {
-                        String messageid = event.getMessageId();
-                        MessageHelper.deletedByEmote.put(messageid, event.getUser());
-                        event.getChannel().getMessageById(messageid).queue(v -> v.delete().queue());
-                    }
+            }
+        }
+        if (PixelSniper.mySQL.getChannelId(event.getGuild().getId(), ChannelType.LOG) != null) {
+            if (event.getReactionEmote().getName().equalsIgnoreCase("\u274C")) { //:x: emote red cross
+                if (Helpers.hasPerm(event.getMember(), "emote.delete", 1)) {
+                    String messageid = event.getMessageId();
+                    MessageHelper.deletedByEmote.put(messageid, event.getUser());
+                    event.getChannel().getMessageById(messageid).queue(v -> v.delete().queue());
                 }
             }
         }

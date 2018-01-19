@@ -2,6 +2,7 @@ package com.pixelatedsource.jda.db;
 
 import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.blub.ChannelType;
+import com.pixelatedsource.jda.blub.Command;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.*;
@@ -30,10 +31,6 @@ public class MySQL {
         connect();
     }
 
-    public MySQL() {
-        if (con == null) connect();
-    }
-
     private void connect() {
         try {
             con = DriverManager.getConnection("jdbc:mysql://" + this.ip + ":3306/" + this.dbname + "?autoReconnect=true&useUnicode=true&useSSL=false", this.user, this.pass);
@@ -41,6 +38,7 @@ public class MySQL {
             statement.executeQuery("SET NAMES 'utf8mb4'");
             statement.close();
             System.out.println("[MySQL] has connected");
+            update("CREATE TABLE IF NOT EXISTS commands(commandName varchar(1000), gebruik varchar(1000), description varchar(2000), extra varchar(2000), category varchar(100), aliases varchar(200));");
             update("CREATE TABLE IF NOT EXISTS stream_urls(guildId varchar(127), url varchar(1500))");
             update("CREATE TABLE IF NOT EXISTS prefixes(guildId varchar(128), prefix varchar(128));");
             update("CREATE TABLE IF NOT EXISTS perms(guildName varchar(64), guildId varchar(128), roleName varchar(64), roleId varchar(128), permission varchar(256));");
@@ -54,6 +52,7 @@ public class MySQL {
             update("CREATE TABLE IF NOT EXISTS unclaimed_messages(deletedMessageId varchar(64), logMessageId varchar(64));");
         } catch (SQLException e) {
             System.out.println((char) 27 + "[31m" + "did not connect");
+            System.exit(44);
             e.printStackTrace();
         }
     }
@@ -75,7 +74,6 @@ public class MySQL {
             st.executeUpdate(qry);
             st.close();
         } catch (SQLException e) {
-            connect();
             e.printStackTrace();
         }
     }
@@ -356,13 +354,7 @@ public class MySQL {
             try {
                 EmbedBuilder banned = new EmbedBuilder();
                 banned.setColor(Color.RED);
-                banned.setDescription("```LDIF" +
-                        "\nBanned: " + name +
-                        "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") +
-                        "\nGuild: " + guild.getName() +
-                        "\nFrom: " + millisToDate(moment) +
-                        "\nUntil: " + millisToDate(until)
-                        + "```");
+                banned.setDescription("```LDIF" + "\nBanned: " + name + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nFrom: " + millisToDate(moment) + "\nUntil: " + millisToDate(until) + "```");
                 banned.setThumbnail(victim.getAvatarUrl());
                 if (victim.getAvatarUrl() == null) banned.setThumbnail(victim.getDefaultAvatarUrl());
                 banned.setAuthor("Banned by: " + namep, null, staff.getAvatarUrl());
@@ -427,11 +419,7 @@ public class MySQL {
                     update("DELETE FROM active_bans WHERE guildId= '" + guildid + "' AND victimId= '" + toUnban.getId() + "'");
                     EmbedBuilder eb = new EmbedBuilder();
                     eb.setAuthor("Unbanned by: " + author.getName() + "#" + author.getDiscriminator(), null, author.getAvatarUrl());
-                    eb.setDescription("```LDIF" +
-                            "\nUnbanned: " + toUnban.getName() + "#" + toUnban.getDiscriminator() +
-                            "\nGuild: " + guild.getName() +
-                            "\nMoment: " + millisToDate(System.currentTimeMillis())
-                            + "```");
+                    eb.setDescription("```LDIF" + "\nUnbanned: " + toUnban.getName() + "#" + toUnban.getDiscriminator() + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(System.currentTimeMillis()) + "```");
                     eb.setThumbnail(toUnban.getAvatarUrl());
                     eb.setColor(Helpers.EmbedColor);
                     eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
@@ -480,7 +468,7 @@ public class MySQL {
         return getChannelId(guild.getId(), type);
     }
 
-    public String getChannelId(String guildId,ChannelType type) {
+    public String getChannelId(String guildId, ChannelType type) {
         try {
             PreparedStatement getLogChannel = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_channels WHERE guildId= ?");
             getLogChannel.setString(1, guildId);
@@ -493,6 +481,7 @@ public class MySQL {
             return null;
         }
     }
+
     //streamer stuff------------------------------------------------
     public boolean setStreamerMode(String guildId, boolean state) {
         try {
@@ -566,5 +555,29 @@ public class MySQL {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public void addCommand(Command command) {
+        if (getCommandName(command.getCommandName()).equalsIgnoreCase("")) {
+
+        } else {
+
+        }
+    }
+
+    public String getCommandName(String name) {
+        String toReturn = "";
+        try {
+            PreparedStatement ps = con.prepareStatement("SELECT FROM commands WHERE commandName= ?");
+            ps.setString(1, name);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                toReturn = rs.getString(name);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return toReturn;
     }
 }
