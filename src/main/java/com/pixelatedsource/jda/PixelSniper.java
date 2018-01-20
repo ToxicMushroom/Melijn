@@ -38,6 +38,7 @@ public class PixelSniper extends ListenerAdapter {
     public static CommandClient commandClient;
 
     public static void main(String[] args) throws LoginException {
+        mySQL.update("TRUNCATE TABLE commands");
         CommandClientBuilder client = new CommandClientBuilder();
         client.setOwnerId(OWNERID);
         client.setPrefix(PREFIX);

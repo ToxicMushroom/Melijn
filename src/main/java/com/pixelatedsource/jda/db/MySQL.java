@@ -10,6 +10,7 @@ import net.dv8tion.jda.core.entities.*;
 import java.awt.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -558,26 +559,17 @@ public class MySQL {
     }
 
     public void addCommand(Command command) {
-        if (getCommandName(command.getCommandName()).equalsIgnoreCase("")) {
-
-        } else {
-
-        }
-    }
-
-    public String getCommandName(String name) {
-        String toReturn = "";
         try {
-            PreparedStatement ps = con.prepareStatement("SELECT FROM commands WHERE commandName= ?");
-            ps.setString(1, name);
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                toReturn = rs.getString(name);
-            }
+            PreparedStatement newCommand = con.prepareStatement("INSERT INTO commands(commandName, gebruik, description, extra, category, aliases) VALUES (?, ?, ?, ? , ?, ?)");
+            newCommand.setString(1, command.getCommandName());
+            newCommand.setString(2, command.getUsage());
+            newCommand.setString(3, command.getDescription());
+            newCommand.setString(4, command.getExtra());
+            newCommand.setString(5, String.valueOf(command.getCategory()));
+            newCommand.setString(6, Arrays.toString(command.getAliases()));
+            newCommand.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return toReturn;
     }
 }
