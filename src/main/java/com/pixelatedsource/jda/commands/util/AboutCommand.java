@@ -45,7 +45,7 @@ public class AboutCommand extends Command {
                 int blub = 0;
                 for (Guild guild : event.getJDA().getGuilds()) {
                     if (guild.getAudioManager().isConnected() || guild.getAudioManager().isAttemptingToConnect())
-                        desc.append("**#").append(++blub).append("** - (").append(guild.getName()).append(")[").append(guild.getIconUrl()).append("]");
+                        desc.append("**#").append(++blub).append("** - ").append(guild.getName()).append("\n");
                 }
                 event.getAuthor().openPrivateChannel().queue(s -> s.sendMessage("dis is da wae:\n" + desc.toString()).queue());
             }

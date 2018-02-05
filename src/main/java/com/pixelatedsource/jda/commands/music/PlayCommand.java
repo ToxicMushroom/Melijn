@@ -95,7 +95,8 @@ public class PlayCommand extends Command {
                         if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) || acces) {
                             if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) guild.getAudioManager().openAudioConnection(senderVoiceChannel);
                             if (songname.contains("open.spotify.com")) {
-                                event.reply("You can't play spotify links with bots sadly :(\nIf you have a self made playlist you can use [this](http://www.playlist-converter.net/#/) site to convert it into a youtube playlist or soundcloud (those are supported).");
+                                event.reply("You can't play spotify links with bots sadly :(\nIf you have a self made playlist you can use http://www.playlist-converter.net/#/ to convert it into a youtube playlist or soundcloud (those are supported).");
+                                return;
                             }
                             manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
                         }

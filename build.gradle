@@ -14,8 +14,8 @@ repositories {
 
 dependencies {
     compile 'com.sedmelluq:jda-nas:1.0.5'
-    compile "net.dv8tion:JDA:3.5.0_330"
-    compile 'com.sedmelluq:lavaplayer:1.2.45'
+    compile "net.dv8tion:JDA:3.5.0_334"
+    compile 'com.sedmelluq:lavaplayer:1.2.46'
     compile 'mysql:mysql-connector-java:5.1.45'
     compile group: 'com.mashape.unirest', name: 'unirest-java', version: '1.4.9'
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.9.1'
