@@ -1,6 +1,7 @@
 package com.pixelatedsource.jda.commands.management;
 
 import com.pixelatedsource.jda.Helpers;
+import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
@@ -26,8 +27,17 @@ public class WarnCommand extends Command {
                     User victim = null;
                     if (event.getMessage().getMentionedUsers().size() == 1) {
                         victim = event.getMessage().getMentionedUsers().get(0);
-                    } else if (args[0].matches("\\d+")) {
-
+                    } else if (args[0].matches("\\d+") && event.getJDA().retrieveUserById(args[0]).complete() != null) {
+                        victim = event.getJDA().retrieveUserById(args[0]).complete();
+                    } else {
+                        event.reply("Unknown user.");
+                        return;
+                    }
+                    String reason = event.getArgs().replaceFirst(args[0], "");
+                    if (PixelSniper.mySQL.addWarn(event.getAuthor(), victim, event.getGuild(), reason)) {
+                        event.getMessage().addReaction("\u2705").queue();
+                    } else {
+                        event.getMessage().addReaction("\u274C").queue();
                     }
                 } else {
                     event.reply(this.usage);

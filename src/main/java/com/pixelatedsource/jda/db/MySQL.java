@@ -5,7 +5,10 @@ import com.pixelatedsource.jda.blub.ChannelType;
 import com.pixelatedsource.jda.blub.Command;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.MessageEmbed;
+import net.dv8tion.jda.core.entities.Role;
+import net.dv8tion.jda.core.entities.User;
 
 import java.awt.*;
 import java.sql.*;
@@ -46,6 +49,7 @@ public class MySQL {
             update("CREATE TABLE IF NOT EXISTS log_channels(guildId varchar(128), channelId varchar(128))");
             update("CREATE TABLE IF NOT EXISTS music_channels(guildId varchar(128), channelId varchar(128))");
             update("CREATE TABLE IF NOT EXISTS streamer_modes(guildId varchar(128), state boolean)");
+            update("CREATE TABLE IF NOT EXISTS warns(guildId varchar(128), victimId varchar(128), authorId varchar(128), reason varchar(2000), moment bigint);");
             update("CREATE TABLE IF NOT EXISTS active_bans(guildId varchar(128), victimId varchar(128), authorId varchar(128), reason varchar(2000), startTime bigint, endTime bigint);");
             update("CREATE TABLE IF NOT EXISTS history_bans(guildId varchar(128), victimId varchar(128), authorId varchar(128), reason varchar(2000), startTime bigint, endTime bigint, active boolean);");
             update("CREATE TABLE IF NOT EXISTS history_messages(guildId varchar(128), authorId varchar(128), messageId varchar(128), content varchar(3000), textChannelId varchar(128), sentTime bigint);");
@@ -328,10 +332,13 @@ public class MySQL {
         }
     }
 
-    public String getPrefix(String id) {
+    public String getPrefix(Guild guild) {
+        return getPrefix(guild.getId());
+    }
+    public String getPrefix(String guildId) {
         try {
             PreparedStatement getPrefix = con.prepareStatement("SELECT * FROM prefixes WHERE guildId= ?");
-            getPrefix.setString(1, id);
+            getPrefix.setString(1, guildId);
             ResultSet rs = getPrefix.executeQuery();
             if (rs.next()) return rs.getString("prefix");
             return ">";
@@ -571,5 +578,42 @@ public class MySQL {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean addWarn(User staff, User victim, Guild guild, String reason) {
+        try {
+            reason = reason.replaceFirst(" ", "");
+            PreparedStatement newWarn = con.prepareStatement("INSERT INTO warns(guildId, victimId, authorId, reason, moment) VALUES (?, ?, ?, ?, ?);");
+            newWarn.setString(1, guild.getId());
+            newWarn.setString(2, victim.getId());
+            newWarn.setString(3, staff.getId());
+            newWarn.setString(4, reason);
+            newWarn.setLong(5, System.currentTimeMillis());
+            newWarn.executeUpdate();
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+            embedBuilder.setAuthor("Warned by: " + staff.getName() + "#" + staff.getDiscriminator(), null, staff.getAvatarUrl());
+            embedBuilder.setDescription("```LDIF\n" +
+                    "Warned: " + victim.getName() + "#" + victim.getDiscriminator() + "\n" +
+                    "Reason: " + reason + "\n" +
+                    "Guild: " + guild.getName() + "\n" +
+                    "Moment: " + millisToDate(System.currentTimeMillis()) + "\n" +
+                    "```");
+            embedBuilder.setThumbnail(victim.getAvatarUrl());
+            embedBuilder.setColor(Color.yellow);
+            String logChannelId = getChannelId(guild, ChannelType.LOG);
+            if (logChannelId != null) {
+                if (victim.isFake())
+                    guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build() + "\nTarget has private messages disabled.").queue();
+                else
+                    guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
+            }
+            if (!victim.isFake()) {
+                victim.openPrivateChannel().complete().sendMessage(embedBuilder.build()).queue();
+            }
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

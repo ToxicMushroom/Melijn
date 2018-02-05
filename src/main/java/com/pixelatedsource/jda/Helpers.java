@@ -67,7 +67,9 @@ public class Helpers {
             "setstreamermode",
             "setstreamurl",
             "emote.claim",
-            "emote.delete"
+            "emote.delete",
+            "warn",
+            "purge"
     ));
 
     public static boolean hasPerm(Member member, String permission, int level) {

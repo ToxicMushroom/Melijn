@@ -51,7 +51,7 @@ public class TempBanCommand extends Command {
                         event.reply(this.usage);
                     }
                 } else {
-                    event.reply("The bot has no permission to ban users.");
+                    event.reply("I have no permission to ban users.");
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");
