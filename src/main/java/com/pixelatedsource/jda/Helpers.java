@@ -23,6 +23,7 @@ public class Helpers {
 
     private static ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     public static long starttime;
+    public static String guildOnly = "This is a guildonly command";
     public static String noPerms = "You don't have the permission: ";
     public static final Logger LOG = LogManager.getLogger(PixelSniper.class.getName());
     public static Color EmbedColor = Color.decode("#00ffd8");

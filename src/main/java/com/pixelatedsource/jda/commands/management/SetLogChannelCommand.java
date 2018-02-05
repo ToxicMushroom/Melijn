@@ -43,7 +43,11 @@ public class SetLogChannelCommand extends Command {
                 } else {
                     event.reply("<#" + logChannelId + ">");
                 }
+            } else {
+                event.reply("You need the permission `" + commandName + "` to execute this command.");
             }
+        } else {
+            event.reply(Helpers.guildOnly);
         }
     }
 }

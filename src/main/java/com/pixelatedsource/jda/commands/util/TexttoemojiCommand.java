@@ -35,6 +35,8 @@ public class TexttoemojiCommand extends Command {
                 }
             }
             event.reply(sb.toString());
+        } else {
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
     }
 }

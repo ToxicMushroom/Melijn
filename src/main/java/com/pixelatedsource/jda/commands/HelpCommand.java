@@ -20,7 +20,7 @@ public class HelpCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.getAuthor().isFake()) return;
         event.getAuthor().openPrivateChannel().queue(c -> {
-            c.sendMessage("You can find help [here.](http://pixelnetwork.be/commands/index.php)").queue();
+            c.sendMessage("You can find help on my fancy webpage https://pixelnetwork.be/commands").queue();
             if (event.getGuild() != null) event.getMessage().addReaction("\u2705").queue();
         });
     }

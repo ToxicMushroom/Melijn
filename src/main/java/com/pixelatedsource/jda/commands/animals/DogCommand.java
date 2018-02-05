@@ -51,6 +51,8 @@ public class DogCommand extends Command {
                     channel.sendMessage("Something went wrong").queue(s -> s.delete().queueAfter(5, TimeUnit.SECONDS));
                 }
             });
+        } else {
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
     }
 }

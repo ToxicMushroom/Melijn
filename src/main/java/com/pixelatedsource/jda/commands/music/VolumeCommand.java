@@ -41,7 +41,11 @@ public class VolumeCommand extends Command {
                 } else {
                     event.reply("no no no, use 0-100. default: 40");
                 }
+            } else {
+                event.reply("You need the permission `" + commandName + "` to execute this command.");
             }
+        } else {
+            event.reply(Helpers.guildOnly);
         }
     }
 }

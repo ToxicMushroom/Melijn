@@ -75,6 +75,8 @@ public class PlayCommand extends Command {
                     if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".sc", 0) || acces) {
                         if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) guild.getAudioManager().openAudioConnection(senderVoiceChannel);
                         manager.loadTrack(event.getTextChannel(), "scsearch:" + songname, event.getAuthor(), false);
+                    } else {
+                        event.reply("You need the permission `" + commandName + ".sc` to execute this command.");
                     }
                     break;
                 case "yt":
@@ -82,12 +84,16 @@ public class PlayCommand extends Command {
                     if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".yt", 0) || acces) {
                         if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) guild.getAudioManager().openAudioConnection(senderVoiceChannel);
                         manager.loadTrack(event.getTextChannel(), "ytsearch:" + songname, event.getAuthor(), false);
+                    } else {
+                        event.reply("You need the permission `" + commandName + ".yt` to execute this command.");
                     }
                     break;
                 case "link":
                     if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) || acces) {
                         if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) guild.getAudioManager().openAudioConnection(senderVoiceChannel);
                         manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
+                    } else {
+                        event.reply("You need the permission `" + commandName + ".link` to execute this command.");
                     }
                     break;
                 default:
@@ -99,15 +105,22 @@ public class PlayCommand extends Command {
                                 return;
                             }
                             manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
+                        } else {
+                            event.reply("You need the permission `" + commandName + ".link` to execute this command.");
                         }
                     } else {
                         if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".yt", 0) || acces) {
                             if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) guild.getAudioManager().openAudioConnection(senderVoiceChannel);
                             manager.loadTrack(event.getTextChannel(), "ytsearch:" + songname, event.getAuthor(), false);
+
+                        } else {
+                            event.reply("You need the permission `" + commandName + ".yt` to execute this command.");
                         }
                     }
                     break;
             }
+        } else {
+            event.reply(Helpers.guildOnly);
         }
     }
 }

@@ -44,7 +44,11 @@ public class SkipXCommand extends Command {
                 }
                 if (player != null) player.setPosition(Integer.parseInt(args[0]) * 60000 + seconds * 1000);
                 else event.reply("Their are no songs playing at the moment.");
+            } else {
+                event.reply("You need the permission `" + commandName + "` to execute this command.");
             }
+        } else {
+            event.reply(Helpers.guildOnly);
         }
     }
 }

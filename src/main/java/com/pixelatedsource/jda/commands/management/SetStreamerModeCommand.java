@@ -58,7 +58,11 @@ public class SetStreamerModeCommand extends Command {
                 } else {
                     event.reply("You have to have set a music channel to enable this mode!");
                 }
+            } else {
+                event.reply("You need the permission `" + commandName + "` to execute this command.");
             }
+        } else {
+            event.reply(Helpers.guildOnly);
         }
     }
 }

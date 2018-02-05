@@ -36,7 +36,11 @@ public class SetMusicChannelCommand extends Command {
                 } else {
                     event.reply("Please provide a channelId.");
                 }
+            } else {
+                event.reply("You need the permission `" + commandName + "` to execute this command.");
             }
+        } else {
+            event.reply(Helpers.guildOnly);
         }
     }
 }

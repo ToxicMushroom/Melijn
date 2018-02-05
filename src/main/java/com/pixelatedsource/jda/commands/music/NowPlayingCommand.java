@@ -27,7 +27,11 @@ public class NowPlayingCommand extends Command {
                 AudioTrack track = MusicManager.getManagerinstance().getPlayer(event.getGuild()).getAudioPlayer().getPlayingTrack();
                 if (track == null) event.reply("There are no songs playing at the moment.");
                 else event.reply(new EmbedBuilder().setTitle("Now playing").setColor(Helpers.EmbedColor).setDescription(track.getInfo().title + " `" + Helpers.getDurationBreakdown(track.getPosition()) + " / " + Helpers.getDurationBreakdown(track.getInfo().length) + "`").setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon()).build());
+            } else {
+                event.reply("You need the permission `" + commandName + "` to execute this command.");
             }
+        } else {
+            event.reply(Helpers.guildOnly);
         }
     }
 }

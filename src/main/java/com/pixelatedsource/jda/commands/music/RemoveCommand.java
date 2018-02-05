@@ -99,7 +99,11 @@ public class RemoveCommand extends Command {
                     eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                     event.reply(eb.build());
                 }
+            } else {
+                event.reply("You need the permission `" + commandName + "` to execute this command.");
             }
+        } else {
+            event.reply(Helpers.guildOnly);
         }
     }
 

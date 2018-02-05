@@ -478,6 +478,8 @@ public class PermCommand extends Command {
                 default:
                     break;
             }
+        } else {
+            event.reply(Helpers.guildOnly);
         }
     }
 }

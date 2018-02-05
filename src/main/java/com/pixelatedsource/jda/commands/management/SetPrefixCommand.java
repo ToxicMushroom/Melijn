@@ -32,7 +32,11 @@ public class SetPrefixCommand extends Command {
                 } else {
                     event.reply("The maximum prefix size is 100 characters");
                 }
+            } else {
+                event.reply("You need the permission `" + commandName + "` to execute this command.");
             }
+        } else {
+            event.reply(Helpers.guildOnly);
         }
     }
 }

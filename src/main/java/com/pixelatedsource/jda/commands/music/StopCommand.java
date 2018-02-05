@@ -26,8 +26,12 @@ public class StopCommand extends Command {
                 PixelSniper.looped.put(event.getGuild(), false);
                 MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
                 player.stopTrack();
-                event.reply("Stopped by <@" + event.getAuthor().getId() + ">");
+                event.reply("Stopped by **" + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + "**");
+            } else {
+                event.reply("You need the permission `" + commandName + "` to execute this command.");
             }
+        } else {
+            event.reply(Helpers.guildOnly);
         }
     }
 }
