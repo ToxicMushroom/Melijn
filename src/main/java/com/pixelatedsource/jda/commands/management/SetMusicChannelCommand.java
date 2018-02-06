@@ -14,7 +14,7 @@ public class SetMusicChannelCommand extends Command {
     public SetMusicChannelCommand() {
         this.commandName = "setmusicchannel";
         this.description = "Set the music channel to a channel so the bot wil auto join ect";
-        this.usage = PREFIX + commandName + " [id ]";
+        this.usage = PREFIX + commandName + " [id]";
         this.aliases = new String[]{"smc"};
         this.category = Category.MANAGEMENT;
     }
@@ -34,7 +34,11 @@ public class SetMusicChannelCommand extends Command {
                         event.reply("Failed to set music channel.");
                     }
                 } else {
-                    event.reply("Please provide a channelId.");
+                    if (event.getGuild() != null) {
+                        event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                    } else {
+                        event.reply(usage);
+                    }
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

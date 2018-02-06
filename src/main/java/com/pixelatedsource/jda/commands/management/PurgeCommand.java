@@ -1,6 +1,7 @@
 package com.pixelatedsource.jda.commands.management;
 
 import com.pixelatedsource.jda.Helpers;
+import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
@@ -48,7 +49,11 @@ public class PurgeCommand extends Command {
                             event.reply("Error: NumberFormatException");
                         }
                     } else {
-                        event.reply(usage);
+                        if (event.getGuild() != null) {
+                            event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                        } else {
+                            event.reply(usage);
+                        }
                     }
                 } else {
                     event.reply("I have no permission to manage messages.");

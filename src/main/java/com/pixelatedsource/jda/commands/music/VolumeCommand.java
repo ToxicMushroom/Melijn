@@ -1,6 +1,7 @@
 package com.pixelatedsource.jda.commands.music;
 
 import com.pixelatedsource.jda.Helpers;
+import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
@@ -39,7 +40,11 @@ public class VolumeCommand extends Command {
                     player.getAudioPlayer().setVolume(Integer.parseInt(String.valueOf(Math.round(volume * 1.5))));
                     event.reply("Volume has been set to **" + String.valueOf(Math.round((double) volume)) + "%**");
                 } else {
-                    event.reply("no no no, use 0-100. default: 40");
+                    if (event.getGuild() != null) {
+                        event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                    } else {
+                        event.reply(usage);
+                    }
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

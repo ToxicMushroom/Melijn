@@ -46,13 +46,11 @@ public class PlayCommand extends Command {
                 return;
             }
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {//no args -> usage:
-                EmbedBuilder eb = new EmbedBuilder();
-                eb.setTitle("Some info for new people");
-                eb.setColor(Helpers.EmbedColor);
-                eb.setDescription(PixelSniper.mySQL.getPrefix(guild.getId()) + this.commandName + " [yt|sc|link] <Songname>");
-                eb.addField("Legenda", "[] = optional" + "| = or" + "<> = needed", true);
-                eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
-                event.reply(eb.build());
+                if (event.getGuild() != null) {
+                    event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                } else {
+                    event.reply(usage);
+                }
                 return;
             }
             String songname;

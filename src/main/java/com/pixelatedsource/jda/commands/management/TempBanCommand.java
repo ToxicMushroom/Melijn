@@ -48,7 +48,11 @@ public class TempBanCommand extends Command {
                             event.reply("`" + days + "` is not a number");
                         }
                     } else {
-                        event.reply(this.usage);
+                        if (event.getGuild() != null) {
+                            event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                        } else {
+                            event.reply(usage);
+                        }
                     }
                 } else {
                     event.reply("I have no permission to ban users.");

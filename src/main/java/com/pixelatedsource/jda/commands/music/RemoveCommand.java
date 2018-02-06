@@ -1,6 +1,7 @@
 package com.pixelatedsource.jda.commands.music;
 
 import com.pixelatedsource.jda.Helpers;
+import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
@@ -63,7 +64,11 @@ public class RemoveCommand extends Command {
                             desc.add("**#" + s + "**" + " - " + songs.get(Integer.valueOf(s)).getInfo().title + "\n");
                         }
                     } else {
-                        event.reply("Wrong arguments check the site for more info: http://pixelnetwork.be/commands");
+                        if (event.getGuild() != null) {
+                            event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                        } else {
+                            event.reply(usage);
+                        }
                     }
                 }
                 if (sb.toString().length() > 1900) {

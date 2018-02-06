@@ -34,6 +34,18 @@ public class SetStreamUrlCommand extends Command {
                         if (PixelSniper.mySQL.setStreamUrl(guild, args[0])) {
                             event.reply("Changed the url from " + url + " to " + PixelSniper.mySQL.getStreamUrl(guild));
                         }
+                    } else {
+                        if (event.getGuild() != null) {
+                            event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                        } else {
+                            event.reply(usage);
+                        }
+                    }
+                } else {
+                    if (event.getGuild() != null) {
+                        event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                    } else {
+                        event.reply(usage);
                     }
                 }
             } else {

@@ -40,7 +40,11 @@ public class WarnCommand extends Command {
                         event.getMessage().addReaction("\u274C").queue();
                     }
                 } else {
-                    event.reply(this.usage);
+                    if (event.getGuild() != null) {
+                        event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                    } else {
+                        event.reply(usage);
+                    }
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

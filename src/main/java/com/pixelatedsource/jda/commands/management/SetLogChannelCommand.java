@@ -34,7 +34,11 @@ public class SetLogChannelCommand extends Command {
                     } else if (args[0].equalsIgnoreCase("null")) {
                         id = null;
                     } else {
-                        event.reply("Unknown input");
+                        if (event.getGuild() != null) {
+                            event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                        } else {
+                            event.reply(usage);
+                        }
                         return;
                     }
                     if (PixelSniper.mySQL.setChannel(event.getGuild().getId(), id, ChannelType.LOG)) {

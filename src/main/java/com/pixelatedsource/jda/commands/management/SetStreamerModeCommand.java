@@ -53,7 +53,11 @@ public class SetStreamerModeCommand extends Command {
                                 break;
                         }
                     } else {
-                        event.reply("Wrong input.");
+                        if (event.getGuild() != null) {
+                            event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                        } else {
+                            event.reply(usage);
+                        }
                     }
                 } else {
                     event.reply("You have to have set a music channel to enable this mode!");

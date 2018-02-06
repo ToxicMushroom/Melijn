@@ -1,6 +1,7 @@
 package com.pixelatedsource.jda.commands.music;
 
 import com.pixelatedsource.jda.Helpers;
+import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
@@ -33,13 +34,15 @@ public class SkipXCommand extends Command {
                 }
                 int seconds;
                 if (args.length < 2) seconds = 0;
-                else try {
+                else if (args[0].matches("\\d+") || args[1].matches("\\d+")) {
                     if (args[0] == null || args[0].equalsIgnoreCase("")) args[0] = "0";
-                    Integer.parseInt(args[0]);
                     seconds = Integer.parseInt(args[1]);
-                } catch (NumberFormatException e) {
-                    event.reply("Usage: " + PREFIX + this.commandName + " 1:10");
-                    e.addSuppressed(e.getCause());
+                } else  {
+                    if (event.getGuild() != null) {
+                        event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                    } else {
+                        event.reply(usage);
+                    }
                     return;
                 }
                 if (player != null) player.setPosition(Integer.parseInt(args[0]) * 60000 + seconds * 1000);

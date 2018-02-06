@@ -344,7 +344,7 @@ public class MySQL {
             return ">";
         } catch (SQLException e) {
             e.printStackTrace();
-            return "SQL error..";
+            return ">";
         }
     }
 

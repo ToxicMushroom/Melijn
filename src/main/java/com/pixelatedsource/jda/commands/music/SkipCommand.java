@@ -1,6 +1,7 @@
 package com.pixelatedsource.jda.commands.music;
 
 import com.pixelatedsource.jda.Helpers;
+import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
@@ -42,12 +43,20 @@ public class SkipCommand extends Command {
                         try {
                             i = Integer.parseInt(args[0]);
                             if (i >= 50 || i < 1) {
-                                event.reply("... dude how hard is it to pick a number from 1 to 50");
+                                if (event.getGuild() != null) {
+                                    event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                                } else {
+                                    event.reply(usage);
+                                }
                                 return;
                             }
                         } catch (NumberFormatException e) {
                             e.addSuppressed(e);
-                            event.reply("... dude how hard is it to pick a number from 1 to 50");
+                            if (event.getGuild() != null) {
+                                event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                            } else {
+                                event.reply(usage);
+                            }
                         }
                     }
                 }
