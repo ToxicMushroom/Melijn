@@ -21,8 +21,8 @@ public class DogCommand extends Command {
     public DogCommand() {
         this.commandName = "dog";
         this.description = "Shows you a random dog";
-        this.category = Category.ANIMALS;
         this.usage = PREFIX + commandName;
+        this.category = Category.ANIMALS;
         this.aliases = new String[]{"hond"};
     }
 

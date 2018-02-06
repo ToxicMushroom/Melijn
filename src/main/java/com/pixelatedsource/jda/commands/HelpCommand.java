@@ -18,10 +18,10 @@ public class HelpCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getAuthor().isFake()) return;
-        event.getAuthor().openPrivateChannel().queue(c -> {
-            c.sendMessage("You can find help on my fancy webpage https://pixelnetwork.be/commands").queue();
-            if (event.getGuild() != null) event.getMessage().addReaction("\u2705").queue();
-        });
+        if (event.getGuild() != null) {
+            event.reply("https://www.pixelnetwork.be/commands/index.php?id=" + event.getGuild().getId());
+        } else {
+            event.reply("https://www.pixelnetwork.be/commands/");
+        }
     }
 }

@@ -13,11 +13,14 @@ import net.dv8tion.jda.core.entities.MessageChannel;
 
 import java.util.concurrent.TimeUnit;
 
+import static com.pixelatedsource.jda.PixelSniper.PREFIX;
+
 public class CatCommand extends Command {
 
     public CatCommand() {
         this.commandName = "cat";
         this.description = "Shows you a random kittie";
+        this.usage = PREFIX + commandName;
         this.aliases = new String[]{"kitten", "kat", "poes"};
         this.category = Category.ANIMALS;
     }
