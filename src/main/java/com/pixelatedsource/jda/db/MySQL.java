@@ -106,6 +106,23 @@ public class MySQL {
         return false;
     }
 
+    public User getMessageAuthor(String messageId, JDA jda) {
+        if (messageExists(messageId)) {
+            try {
+                PreparedStatement getAuthor = con.prepareStatement("SELECT * FROM history_messages WHERE messageId= ?");
+                getAuthor.setString(1, messageId);
+                ResultSet rs = getAuthor.executeQuery();
+
+                while (rs.next()) {
+                    return jda.retrieveUserById(rs.getString("authorId")).complete();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
     public void createMessage(String messageId, String content, String authorId, String guildId, String textchannelid) {
         if (!messageExists(messageId)) {
             try {
