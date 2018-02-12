@@ -67,10 +67,6 @@ public class Chat extends ListenerAdapter {
                             ZonedDateTime deletionTime = MiscUtil.getCreationTime(auditLogEntry.getIdLong()).toZonedDateTime();
                             ZonedDateTime now = OffsetDateTime.now().atZoneSameInstant(deletionTime.getOffset());
                             deletionTime = deletionTime.plusSeconds(1).plusNanos((e.getJDA().getPing() * 1_000_000));
-                            System.out.println("Changes size: " + auditLogEntry.getOption(AuditLogOption.COUNT));
-                            System.out.println("DeletionTime: " + deletionTime.toInstant().toEpochMilli());
-                            System.out.println("NowTime:      " + now.toInstant().toEpochMilli());
-                            System.out.println("-------------------------------------------");
 
                             EmbedBuilder eb = new EmbedBuilder();
                             eb.setTitle("Message deleted in #" + e.getChannel().getName());
@@ -85,12 +81,10 @@ public class Chat extends ListenerAdapter {
                                 MessageHelper.filterDeletedMessages.remove(e.getMessageId());
                             } else if (now.toInstant().toEpochMilli() - deletionTime.toInstant().toEpochMilli() < 1000) {
                                 User deletor = auditLogEntry.getUser();
-                                if (deletor != null)
-                                    eb.setFooter("Deleted by: " + deletor.getName() + "#" + deletor.getDiscriminator(), deletor.getAvatarUrl());
+                                if (deletor != null) eb.setFooter("Deleted by: " + deletor.getName() + "#" + deletor.getDiscriminator(), deletor.getAvatarUrl());
                             } else {
                                 User deletor = sameAsLast ? auditLogEntry.getUser() : PixelSniper.mySQL.getMessageAuthor(e.getMessageId(), e.getJDA());
-                                if (deletor != null)
-                                    eb.setFooter("Deleted by: " + deletor.getName() + "#" + deletor.getDiscriminator(), deletor.getAvatarUrl());
+                                if (deletor != null) eb.setFooter("Deleted by: " + deletor.getName() + "#" + deletor.getDiscriminator(), deletor.getAvatarUrl());
                             }
 
                             guild.getTextChannelById(mySQL.getChannelId(e.getGuild().getId(), ChannelType.LOG)).sendMessage(eb.build()).queue(v -> {
