@@ -1,16 +1,18 @@
 package com.pixelatedsource.jda;
 
 import com.pixelatedsource.jda.music.MusicManager;
-import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.JDA;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Role;
-import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.managers.AudioManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.awt.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Helpers {
 
+    public static long lastRunMillis;
     private static ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     public static long starttime;
     public static String guildOnly = "This is a guildonly command";
@@ -69,11 +72,43 @@ public class Helpers {
             "emote.claim",
             "emote.delete",
             "warn",
-            "purge"
+            "purge",
+            "ban",
+            "history",
+            "mute",
+            "setmuterole",
+            "tempmute",
+            "unmute",
+            "avatar"
     ));
 
+    public static void startTimer(JDA jda) {
+        Runnable runnable = () -> {
+            lastRunMillis = System.currentTimeMillis();
+            try {
+                ResultSet bans = PixelSniper.mySQL.query("SELECT * FROM active_bans WHERE endTime < NOW()");
+                ResultSet mutes = PixelSniper.mySQL.query("SELECT * FROM active_mutes WHERE endTime < NOW()");
+
+                while (bans.next()) {
+                    User toUnban = jda.retrieveUserById(bans.getString("victimId")).complete();
+                    PixelSniper.mySQL.unban(toUnban, jda.getGuildById(bans.getString("guildId")), jda);
+                }
+                while (mutes.next()) {
+                    User toUnmute = jda.retrieveUserById(mutes.getString("victimId")).complete();
+                    PixelSniper.mySQL.unmute(toUnmute, jda.getGuildById(mutes.getString("guildId")), jda);
+                }
+
+                bans.close();
+                mutes.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        };
+        executorService.scheduleAtFixedRate(runnable, 1, 30, TimeUnit.SECONDS);
+    }
+
     public static boolean hasPerm(Member member, String permission, int level) {
-        if (member.isOwner()) return true;
+        if (member.isOwner() || member.hasPermission(Permission.ADMINISTRATOR)) return true;
         if (level == 0) {
             if (PixelSniper.mySQL.noOneHasPermission(member.getGuild(), permission)) return true;
         }
@@ -143,22 +178,11 @@ public class Helpers {
     public static String getFooterStamp() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("d MMM yyyy HH:mm:ss");
         Date date = new Date(System.currentTimeMillis());
-        return "ToxicMushroom | " + simpleDateFormat.format(date);
+        return simpleDateFormat.format(date);
     }
 
     public static String getFooterIcon() {
-        return "https://i.imgur.com/1wj6Jlr.png";
-    }
-
-    public static void DefaultEmbed(String title, String Content, TextChannel channel) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setColor(EmbedColor);
-        eb.setDescription(Content);
-        eb.setTitle(title);
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd,yyyy HH:mm:ss");
-        Date date = new Date(System.currentTimeMillis());
-        eb.setFooter("ToxicMushroom | " + simpleDateFormat.format(date), "https://i.imgur.com/1wj6Jlr.png");
-        channel.sendMessage(eb.build()).queue();
+        return null;
     }
 
     public static String numberToString(int i) {

@@ -9,32 +9,31 @@ import net.dv8tion.jda.core.entities.User;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
-public class WarnCommand extends Command {
+public class UnmuteCommand extends Command {
 
-    public WarnCommand() {
-        this.commandName = "warn";
-        this.description = "warn someone";
-        this.usage = PREFIX + commandName + " <user> <reason>";
+    public UnmuteCommand() {
+        this.commandName = "unmute";
+        this.description = "unmute a muted user";
+        this.usage = PREFIX + commandName + " <@user | userId>";
         this.category = Category.MANAGEMENT;
     }
 
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
-            if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+            if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
                 String[] args = event.getArgs().split("\\s+");
-                if (args.length >= 2) {
-                    User victim;
+                if (args.length == 1) {
+                    User toUnban;
                     if (event.getMessage().getMentionedUsers().size() == 1) {
-                        victim = event.getMessage().getMentionedUsers().get(0);
+                        toUnban = event.getMessage().getMentionedUsers().get(0);
                     } else if (args[0].matches("\\d+") && event.getJDA().retrieveUserById(args[0]).complete() != null) {
-                        victim = event.getJDA().retrieveUserById(args[0]).complete();
+                        toUnban = event.getJDA().retrieveUserById(args[0]).complete();
                     } else {
-                        event.reply("Unknown user.");
+                        event.reply("Unknown user");
                         return;
                     }
-                    String reason = event.getArgs().replaceFirst(args[0], "");
-                    if (PixelSniper.mySQL.addWarn(event.getAuthor(), victim, event.getGuild(), reason)) {
+                    if (PixelSniper.mySQL.unmute(toUnban, event.getGuild(), event.getJDA())) {
                         event.getMessage().addReaction("\u2705").queue();
                     } else {
                         event.getMessage().addReaction("\u274C").queue();

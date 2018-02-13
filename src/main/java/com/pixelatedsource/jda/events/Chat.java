@@ -1,5 +1,6 @@
 package com.pixelatedsource.jda.events;
 
+import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.ChannelType;
 import com.pixelatedsource.jda.db.MySQL;
@@ -9,6 +10,7 @@ import net.dv8tion.jda.core.audit.ActionType;
 import net.dv8tion.jda.core.audit.AuditLogEntry;
 import net.dv8tion.jda.core.audit.AuditLogOption;
 import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Guild.Ban;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
@@ -20,12 +22,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class Chat extends ListenerAdapter {
 
     private ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+    public static List<User> black = new ArrayList<>();
     private MySQL mySQL = PixelSniper.mySQL;
     private String latestId = "";
     private int latestChanges = 0;
@@ -48,6 +53,7 @@ public class Chat extends ListenerAdapter {
 
     @Override
     public void onGuildMessageDelete(GuildMessageDeleteEvent e) {
+        if (Helpers.lastRunMillis < System.currentTimeMillis() - 60_000) Helpers.startTimer(e.getJDA());
         Guild guild = e.getGuild();
         ResultSet rs = PixelSniper.mySQL.query("SELECT * FROM history_messages WHERE messageId= '" + e.getMessageId() + "' ");
         try {
@@ -55,11 +61,11 @@ public class Chat extends ListenerAdapter {
                 executorService.execute(() -> {
                     try {
                         User user = e.getJDA().retrieveUserById(rs.getString("authorId")).complete();
-                        if (user != null) {
-                            for (Guild.Ban ban : guild.getBanList().complete()) {
-                                if (ban.getUser() == user) return;
+                        if (user != null && !black.contains(user)) {
+                            if (guild.getBanList().complete().stream().map(Ban::getUser).anyMatch(user::equals)) {
+                                black.add(user);
+                                return;
                             }
-
                             AuditLogEntry auditLogEntry = guild.getAuditLogs().type(ActionType.MESSAGE_DELETE).limit(1).complete().get(0);
                             boolean sameAsLast = latestId.equals(auditLogEntry.getId()) && latestChanges != Integer.valueOf(auditLogEntry.getOption(AuditLogOption.COUNT));
                             latestId = auditLogEntry.getId();

@@ -10,7 +10,7 @@ import net.dv8tion.jda.core.entities.User;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
-public class UnbanCommand extends Command  {
+public class UnbanCommand extends Command {
 
     public UnbanCommand() {
         this.commandName = "unban";
@@ -35,17 +35,13 @@ public class UnbanCommand extends Command  {
                             event.reply("Unknown user");
                             return;
                         }
-                        if (PixelSniper.mySQL.unban(toUnban, event.getGuild().getId(), event.getJDA())) {
+                        if (PixelSniper.mySQL.unban(toUnban, event.getGuild(), event.getJDA())) {
                             event.getMessage().addReaction("\u2705").queue();
                         } else {
                             event.getMessage().addReaction("\u274C").queue();
                         }
                     } else {
-                        if (event.getGuild() != null) {
-                            event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
-                        } else {
-                            event.reply(usage);
-                        }
+                        event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
                     }
                 } else {
                     event.reply("I have no permission to unban users.");

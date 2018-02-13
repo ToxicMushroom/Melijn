@@ -49,6 +49,8 @@ public class GuildInfoCommand extends Command {
                 eb.addField("Categories", String.valueOf(guild.getCategories().size()), true);
                 eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                 event.reply(eb.build());
+            } else {
+                event.reply("You need the permission `" + commandName + "` to execute this command.");
             }
         }
     }
