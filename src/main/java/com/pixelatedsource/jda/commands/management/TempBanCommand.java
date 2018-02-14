@@ -50,11 +50,7 @@ public class TempBanCommand extends Command {
                             event.reply("`" + time + "` is not the right format.\n**Format:** (number)(*timeunit*) *timeunit* = s, m, h, d, M or y\n**Example:** 1__m__ (1 __minute__)");
                         }
                     } else {
-                        if (event.getGuild() != null) {
-                            event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
-                        } else {
-                            event.reply(usage);
-                        }
+                        event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
                     }
                 } else {
                     event.reply("I have no permission to ban users.");

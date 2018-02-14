@@ -672,6 +672,7 @@ public class MySQL {
                     eb.setThumbnail(toUnmute.getAvatarUrl());
                     eb.setColor(Helpers.EmbedColor);
                     eb.setColor(Color.green);
+                    guild.getController().removeSingleRoleFromMember(guild.getMember(toUnmute), guild.getRoleById(getRoleId(guild, RoleType.MUTE))).queue();
                     toUnmute.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
                     if (getChannelId(guild, ChannelType.LOG) != null) {
                         guild.getTextChannelById(getChannelId(guild, ChannelType.LOG)).sendMessage(eb.build()).queue();
@@ -686,6 +687,96 @@ public class MySQL {
         }
         return false;
     }
+
+        //Punishment getters
+        public String[] getUserBans(User user, Guild guild, JDA jda) {
+            try {
+                PreparedStatement getbans = con.prepareStatement("SELECT * FROM history_bans WHERE victimId= ? AND guildId= ?");
+                getbans.setString(1, user.getId());
+                getbans.setString(2, guild.getId());
+                ResultSet rs = getbans.executeQuery();
+                int amount = 0;
+                while (rs.next()) amount++;
+                String[] bans = new String[amount];
+                ResultSet rs2 = getbans.executeQuery();
+                if (amount == 0) return new String[]{"no bans"};
+                int progress = 0;
+                while (rs2.next()) {
+                    String endTime = rs2.getString("endTime").equalsIgnoreCase("NULL") ? "Infinity" : millisToDate(rs2.getLong("endTime"));
+                    bans[progress] = String.valueOf("```ini\n" +
+                            "[Banned by]: " + jda.retrieveUserById(rs2.getString("authorId")) +
+                            "\n[Reason]: " + rs2.getString("reason") +
+                            "\n[From]: " + millisToDate(rs2.getLong("startTime")) +
+                            "\n[Until]: " + endTime +
+                            "\n[active]: " + rs2.getString("active") +
+                            "```");
+                    progress++;
+                }
+                return bans;
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return new String[]{"no bans"};
+        }
+
+        public String[] getUserMutes(User user, Guild guild, JDA jda) {
+            try {
+                PreparedStatement getbans = con.prepareStatement("SELECT * FROM history_mutes WHERE victimId= ? AND guildId= ?");
+                getbans.setString(1, user.getId());
+                getbans.setString(2, guild.getId());
+                ResultSet rs = getbans.executeQuery();
+                int amount = 0;
+                while (rs.next()) amount++;
+                String[] bans = new String[amount];
+                ResultSet rs2 = getbans.executeQuery();
+                if (amount == 0) return new String[]{"no mutes"};
+                int progress = 0;
+                while (rs2.next()) {
+                    String endTime = rs2.getString("endTime").equalsIgnoreCase("NULL") ? "Infinity" : millisToDate(rs2.getLong("endTime"));
+                    bans[progress] = String.valueOf("```ini\n" +
+                            "[Muted by]: " + jda.retrieveUserById(rs2.getString("authorId")) +
+                            "\n[Reason]: " + rs2.getString("reason") +
+                            "\n[From]: " + millisToDate(rs2.getLong("startTime")) +
+                            "\n[Until]: " + endTime +
+                            "\n[active]: " + rs2.getString("active") +
+                            "```");
+                    progress++;
+                }
+                return bans;
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return new String[]{"no mutes"};
+        }
+
+        public String[] getUserWarns(User user, Guild guild, JDA jda) {
+            try {
+                PreparedStatement getbans = con.prepareStatement("SELECT * FROM warns WHERE victimId= ? AND guildId= ?");
+                getbans.setString(1, user.getId());
+                getbans.setString(2, guild.getId());
+                ResultSet rs = getbans.executeQuery();
+                int amount = 0;
+                while (rs.next()) amount++;
+                String[] bans = new String[amount];
+                ResultSet rs2 = getbans.executeQuery();
+                if (amount == 0) return new String[]{"no warns"};
+                int progress = 0;
+                while (rs2.next()) {
+                    bans[progress] = String.valueOf("```ini\n" +
+                            "[Warned by]: " + jda.retrieveUserById(rs2.getString("authorId")) +
+                            "\n[Reason]: " + rs2.getString("reason") +
+                            "\n[Moment]: " + millisToDate(rs2.getLong("moment")) +
+                            "```");
+                    progress++;
+                }
+                return bans;
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return new String[]{"no warns"};
+        }
+
+
     //log channel stuff----------------------------------------------------------
 
     public boolean setChannel(String guildId, String channelId, ChannelType type) {
