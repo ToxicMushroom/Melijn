@@ -46,6 +46,7 @@ public class HistoryCommand extends Command {
                                         banBuffer = new StringBuilder();
                                     }
                                 }
+                                mergedBans.add(banBuffer.toString());
                                 EmbedBuilder ebBan = new EmbedBuilder();
                                 int banCount = 0;
                                 for (String mergedBan : mergedBans) {
@@ -68,10 +69,11 @@ public class HistoryCommand extends Command {
                                         muteBuffer = new StringBuilder();
                                     }
                                 }
+                                mergedMutes.add(muteBuffer.toString());
                                 EmbedBuilder ebMute = new EmbedBuilder();
                                 int muteCount = 0;
                                 for (String mergedMute : mergedMutes) {
-                                    ebMute.setTitle(target.getName() + "#" + target.getDiscriminator() + "'s bans " + ++muteCount + "/" + mergedMutes.size());
+                                    ebMute.setTitle(target.getName() + "#" + target.getDiscriminator() + "'s mutes " + ++muteCount + "/" + mergedMutes.size());
                                     ebMute.setDescription(mergedMute);
                                     ebMute.setColor(Helpers.EmbedColor);
                                     ebMute.setThumbnail(target.getAvatarUrl());
@@ -90,10 +92,11 @@ public class HistoryCommand extends Command {
                                         warnsBuffer = new StringBuilder();
                                     }
                                 }
+                                mergedWarns.add(warnsBuffer.toString());
                                 EmbedBuilder ebWarn = new EmbedBuilder();
                                 int warnCount = 0;
                                 for (String mergedBan : mergedWarns) {
-                                    ebWarn.setTitle(target.getName() + "#" + target.getDiscriminator() + "'s bans " + ++warnCount + "/" + mergedWarns.size());
+                                    ebWarn.setTitle(target.getName() + "#" + target.getDiscriminator() + "'s warns " + ++warnCount + "/" + mergedWarns.size());
                                     ebWarn.setDescription(mergedBan);
                                     ebWarn.setColor(Helpers.EmbedColor);
                                     ebWarn.setThumbnail(target.getAvatarUrl());

@@ -33,7 +33,7 @@ public class WarnCommand extends Command {
                         event.reply("Unknown user.");
                         return;
                     }
-                    String reason = event.getArgs().replaceFirst(args[0], "");
+                    String reason = event.getArgs().replaceFirst(args[0] + "\\s+", "");
                     if (PixelSniper.mySQL.addWarn(event.getAuthor(), victim, event.getGuild(), reason)) {
                         event.getMessage().addReaction("\u2705").queue();
                     } else {

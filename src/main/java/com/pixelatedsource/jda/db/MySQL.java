@@ -703,8 +703,9 @@ public class MySQL {
                 int progress = 0;
                 while (rs2.next()) {
                     String endTime = rs2.getString("endTime").equalsIgnoreCase("NULL") ? "Infinity" : millisToDate(rs2.getLong("endTime"));
+                    User staff = jda.retrieveUserById(rs2.getString("authorId")).complete();
                     bans[progress] = String.valueOf("```ini\n" +
-                            "[Banned by]: " + jda.retrieveUserById(rs2.getString("authorId")) +
+                            "[Banned by]: " + staff.getName() + "#" + staff.getDiscriminator() +
                             "\n[Reason]: " + rs2.getString("reason") +
                             "\n[From]: " + millisToDate(rs2.getLong("startTime")) +
                             "\n[Until]: " + endTime +
@@ -732,9 +733,10 @@ public class MySQL {
                 if (amount == 0) return new String[]{"no mutes"};
                 int progress = 0;
                 while (rs2.next()) {
+                    User staff = jda.retrieveUserById(rs2.getString("authorId")).complete();
                     String endTime = rs2.getString("endTime").equalsIgnoreCase("NULL") ? "Infinity" : millisToDate(rs2.getLong("endTime"));
                     bans[progress] = String.valueOf("```ini\n" +
-                            "[Muted by]: " + jda.retrieveUserById(rs2.getString("authorId")) +
+                            "[Muted by]: " + staff.getName() + "#" + staff.getDiscriminator() +
                             "\n[Reason]: " + rs2.getString("reason") +
                             "\n[From]: " + millisToDate(rs2.getLong("startTime")) +
                             "\n[Until]: " + endTime +
@@ -762,8 +764,9 @@ public class MySQL {
                 if (amount == 0) return new String[]{"no warns"};
                 int progress = 0;
                 while (rs2.next()) {
+                    User staff = jda.retrieveUserById(rs2.getString("authorId")).complete();
                     bans[progress] = String.valueOf("```ini\n" +
-                            "[Warned by]: " + jda.retrieveUserById(rs2.getString("authorId")) +
+                            "[Warned by]: " + staff.getName() + "#" + staff.getDiscriminator() +
                             "\n[Reason]: " + rs2.getString("reason") +
                             "\n[Moment]: " + millisToDate(rs2.getLong("moment")) +
                             "```");
