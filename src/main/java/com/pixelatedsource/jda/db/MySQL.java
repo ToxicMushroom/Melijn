@@ -429,13 +429,12 @@ public class MySQL {
 
     public boolean setPermBan(User staff, User victim, Guild guild, String reason) {
         Long moment = System.currentTimeMillis();
-        Long until = null;
         String name = victim.getName() + "#" + victim.getDiscriminator();
         String namep = staff.getName() + "#" + staff.getDiscriminator();
         try {
             EmbedBuilder banned = new EmbedBuilder();
             banned.setColor(Color.RED);
-            banned.setDescription("```LDIF" + "\nBanned: " + name + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nFrom: " + millisToDate(moment) + "\nUntil: " + millisToDate(until) + "```");
+            banned.setDescription("```LDIF" + "\nBanned: " + name + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(moment) + "```");
             banned.setThumbnail(victim.getAvatarUrl());
             if (victim.getAvatarUrl() == null) banned.setThumbnail(victim.getDefaultAvatarUrl());
             banned.setAuthor("Permanently banned by: " + namep, null, staff.getAvatarUrl());
@@ -448,7 +447,7 @@ public class MySQL {
                 banupdate.setString(2, guild.getId());
                 banupdate.setString(3, reason);
                 banupdate.setLong(4, moment);
-                banupdate.setLong(5, until);
+                banupdate.setBigDecimal(5, null);
                 banupdate.setString(6, staff.getId());
                 banupdate.setString(7, victim.getId());
                 banupdate.setString(8, guild.getId());
@@ -460,7 +459,7 @@ public class MySQL {
                 ban.setString(3, staff.getId());
                 ban.setString(4, reason);
                 ban.setLong(5, moment);
-                ban.setLong(6, until);
+                ban.setBigDecimal(6, null);
                 ban.executeUpdate();
             }
             //add to history as active
@@ -470,7 +469,7 @@ public class MySQL {
             banhistoire.setString(3, staff.getId());
             banhistoire.setString(4, reason);
             banhistoire.setLong(5, moment);
-            banhistoire.setLong(6, until);
+            banhistoire.setBigDecimal(6, null);
             banhistoire.setBoolean(7, true);
             banhistoire.executeUpdate();
             guild.getController().ban(victim.getId(), 7, reason).queue();

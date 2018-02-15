@@ -86,13 +86,14 @@ public class Helpers {
         Runnable runnable = () -> {
             lastRunMillis = System.currentTimeMillis();
             try {
-                ResultSet bans = PixelSniper.mySQL.query("SELECT * FROM active_bans WHERE endTime < NOW()");
-                ResultSet mutes = PixelSniper.mySQL.query("SELECT * FROM active_mutes WHERE endTime < NOW()");
+                ResultSet bans = PixelSniper.mySQL.query("SELECT * FROM active_bans WHERE endTime < " + System.currentTimeMillis());
+                ResultSet mutes = PixelSniper.mySQL.query("SELECT * FROM active_mutes WHERE endTime < " + System.currentTimeMillis());
 
                 while (bans.next()) {
                     User toUnban = jda.retrieveUserById(bans.getString("victimId")).complete();
                     PixelSniper.mySQL.unban(toUnban, jda.getGuildById(bans.getString("guildId")), jda);
                 }
+
                 while (mutes.next()) {
                     User toUnmute = jda.retrieveUserById(mutes.getString("victimId")).complete();
                     PixelSniper.mySQL.unmute(toUnmute, jda.getGuildById(mutes.getString("guildId")), jda);
@@ -104,7 +105,7 @@ public class Helpers {
                 e.printStackTrace();
             }
         };
-        executorService.scheduleAtFixedRate(runnable, 1, 30, TimeUnit.SECONDS);
+        executorService.scheduleAtFixedRate(runnable, 1, 2, TimeUnit.SECONDS);
     }
 
     public static boolean hasPerm(Member member, String permission, int level) {

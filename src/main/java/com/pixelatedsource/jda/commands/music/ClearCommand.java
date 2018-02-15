@@ -22,7 +22,7 @@ public class ClearCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null) {
+        if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
                 MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
                 EmbedBuilder eb = new EmbedBuilder();

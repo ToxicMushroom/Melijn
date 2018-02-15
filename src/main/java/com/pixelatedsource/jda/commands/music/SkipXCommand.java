@@ -34,15 +34,11 @@ public class SkipXCommand extends Command {
                 }
                 int seconds;
                 if (args.length < 2) seconds = 0;
-                else if (args[0].matches("\\d+") || args[1].matches("\\d+")) {
+                else if (args[0].matches("\\d+") && args[1].matches("\\d+")) {
                     if (args[0] == null || args[0].equalsIgnoreCase("")) args[0] = "0";
                     seconds = Integer.parseInt(args[1]);
-                } else  {
-                    if (event.getGuild() != null) {
-                        event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
-                    } else {
-                        event.reply(usage);
-                    }
+                } else {
+                    event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
                     return;
                 }
                 if (player != null) player.setPosition(Integer.parseInt(args[0]) * 60000 + seconds * 1000);
