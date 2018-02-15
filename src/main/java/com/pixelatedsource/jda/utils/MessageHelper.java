@@ -32,22 +32,22 @@ public class MessageHelper {
             return Long.parseLong(string.replaceAll("s", ""));
         }
         if (string.matches("\\d++[m]")) {
-            return Long.parseLong(string.replaceAll("m", ""));
+            return Long.parseLong(string.replaceAll("m", ""))*60;
         }
         if (string.matches("\\d++[h]")) {
-            return Long.parseLong(string.replaceAll("h", ""));
+            return Long.parseLong(string.replaceAll("h", ""))*3600;
         }
         if (string.matches("\\d++[d]")) {
-            return Long.parseLong(string.replaceAll("d", ""));
+            return Long.parseLong(string.replaceAll("d", ""))*86_400;
         }
         if (string.matches("\\d++[w]")) {
-            return Long.parseLong(string.replaceAll("w", ""));
+            return Long.parseLong(string.replaceAll("w", ""))*604_800;
         }
         if (string.matches("\\d++[M]")) {
-            return Long.parseLong(string.replaceAll("M", ""));
+            return Long.parseLong(string.replaceAll("M", ""))*18_144_000;
         }
         if (string.matches("\\d++[y]")) {
-            return Long.parseLong(string.replaceAll("y", ""));
+            return Long.parseLong(string.replaceAll("y", ""))*217_728_000;
         }
         System.exit(86400);
         return 0;
