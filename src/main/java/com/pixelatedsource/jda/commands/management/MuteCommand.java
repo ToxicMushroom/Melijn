@@ -29,10 +29,10 @@ public class MuteCommand extends Command {
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length >= 2) {
-                    User target;
+                    User target = null;
                     String reason = event.getArgs().replaceFirst(args[0] + "\\s+", "");
                     if (event.getMessage().getMentionedUsers().size() > 0) target = event.getMessage().getMentionedUsers().get(0);
-                    else target = event.getJDA().getUserById(args[0]);
+                    else if (args[0].matches("\\d+")) target = event.getJDA().retrieveUserById(args[0]).complete();
                     if (target == null || event.getGuild().getMember(target) == null) {
                         event.reply("Unknown member! ");
                         return;

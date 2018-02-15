@@ -27,10 +27,10 @@ public class BanCommand extends Command {
                 if (event.getGuild().getSelfMember().hasPermission(Permission.BAN_MEMBERS)) {
                     String[] args = event.getArgs().split("\\s+");
                     if (args.length >= 2) {
-                        User target;
+                        User target = null;
                         String reason = event.getArgs().replaceFirst(args[0] + "\\s+", "");
                         if (event.getMessage().getMentionedUsers().size() > 0) target = event.getMessage().getMentionedUsers().get(0);
-                        else target = event.getJDA().retrieveUserById(args[0]).complete();
+                        else if (args[0].matches("\\d+")) target = event.getJDA().retrieveUserById(args[0]).complete();
                         if (target == null) {
                             event.reply("Unknown user!");
                             return;
