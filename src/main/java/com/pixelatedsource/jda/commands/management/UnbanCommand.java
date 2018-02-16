@@ -35,7 +35,7 @@ public class UnbanCommand extends Command {
                             event.reply("Unknown user");
                             return;
                         }
-                        if (PixelSniper.mySQL.unban(toUnban, event.getGuild(), event.getJDA())) {
+                        if (PixelSniper.mySQL.unban(toUnban, event.getGuild(), event.getJDA(), false)) {
                             event.getMessage().addReaction("\u2705").queue();
                         } else {
                             event.getMessage().addReaction("\u274C").queue();

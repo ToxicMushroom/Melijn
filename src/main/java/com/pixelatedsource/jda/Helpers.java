@@ -91,12 +91,12 @@ public class Helpers {
 
                 while (bans.next()) {
                     User toUnban = jda.retrieveUserById(bans.getString("victimId")).complete();
-                    PixelSniper.mySQL.unban(toUnban, jda.getGuildById(bans.getString("guildId")), jda);
+                    PixelSniper.mySQL.unban(toUnban, jda.getGuildById(bans.getString("guildId")), jda, true);
                 }
 
                 while (mutes.next()) {
                     User toUnmute = jda.retrieveUserById(mutes.getString("victimId")).complete();
-                    PixelSniper.mySQL.unmute(toUnmute, jda.getGuildById(mutes.getString("guildId")), jda);
+                    PixelSniper.mySQL.unmute(toUnmute, jda.getGuildById(mutes.getString("guildId")), jda, true);
                 }
 
                 bans.close();

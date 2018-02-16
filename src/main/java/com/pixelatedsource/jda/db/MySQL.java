@@ -479,7 +479,7 @@ public class MySQL {
         }
     }
 
-    public boolean unban(User toUnban, Guild guild, JDA jda) {
+    public boolean unban(User toUnban, Guild guild, JDA jda, boolean auto) {
         if (toUnban != null) {
             try {
                 ResultSet rs = query("SELECT * FROM active_bans WHERE guildId= '" + guild.getId() + "' AND victimId= '" + toUnban.getId() + "'");
@@ -495,6 +495,7 @@ public class MySQL {
                     unban.close();
                     update("DELETE FROM active_bans WHERE guildId= '" + guild.getId() + "' AND victimId= '" + toUnban.getId() + "'");
                     EmbedBuilder eb = new EmbedBuilder();
+                    if (auto) author = jda.getSelfUser();
                     eb.setAuthor("Unbanned by: " + author.getName() + "#" + author.getDiscriminator(), null, author.getAvatarUrl());
                     eb.setDescription("```LDIF" + "\nUnbanned: " + toUnban.getName() + "#" + toUnban.getDiscriminator() + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(System.currentTimeMillis()) + "```");
                     eb.setThumbnail(toUnban.getAvatarUrl());
@@ -651,7 +652,7 @@ public class MySQL {
         }
     }
 
-    public boolean unmute(User toUnmute, Guild guild, JDA jda) {
+    public boolean unmute(User toUnmute, Guild guild, JDA jda, boolean auto) {
         if (toUnmute != null) {
             try {
                 ResultSet rs = query("SELECT * FROM active_mutes WHERE guildId= '" + guild.getId() + "' AND victimId= '" + toUnmute.getId() + "'");
@@ -666,6 +667,7 @@ public class MySQL {
                     unmute.close();
                     update("DELETE FROM active_mutes WHERE guildId= '" + guild.getId() + "' AND victimId= '" + toUnmute.getId() + "'");
                     EmbedBuilder eb = new EmbedBuilder();
+                    if (auto) author = jda.getSelfUser();
                     eb.setAuthor("Unmuted by: " + author.getName() + "#" + author.getDiscriminator(), null, author.getAvatarUrl());
                     eb.setDescription("```LDIF" + "\nUnmuted: " + toUnmute.getName() + "#" + toUnmute.getDiscriminator() + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(System.currentTimeMillis()) + "```");
                     eb.setThumbnail(toUnmute.getAvatarUrl());
