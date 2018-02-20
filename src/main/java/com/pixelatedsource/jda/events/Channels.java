@@ -35,7 +35,10 @@ public class Channels extends ListenerAdapter {
                     audioPlayer.stopTrack();
                     audioManager.closeAudioConnection();
                 } else if (audioPlayer.getPlayingTrack() == null) {
-                    if (PixelSniper.mySQL.getStreamUrl(guild) != null) manager.loadSimpelTrack(guild, PixelSniper.mySQL.getStreamUrl(guild));
+                    if (PixelSniper.mySQL.getStreamUrl(guild) != null) {
+                        manager.getPlayer(guild).getListener().tracks.clear();
+                        manager.loadSimpelTrack(guild, PixelSniper.mySQL.getStreamUrl(guild));
+                    }
                 }
             }
         } else if (PixelSniper.mySQL.getChannelId(guild, ChannelType.MUSIC) != null) {
@@ -56,10 +59,9 @@ public class Channels extends ListenerAdapter {
         AudioManager audioManager = guild.getAudioManager();
         if (PixelSniper.mySQL.getStreamerMode(guild.getId()) && PixelSniper.mySQL.getChannelId(guild, ChannelType.MUSIC) != null && !audioManager.isConnected()) {
             audioManager.openAudioConnection(guild.getVoiceChannelById(PixelSniper.mySQL.getChannelId(guildId, ChannelType.MUSIC)));
-            if (PixelSniper.mySQL.getStreamUrl(guild) != null && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null && manager.getPlayer(guild).getListener().getTrackSize() == 0) {
+            if (PixelSniper.mySQL.getStreamUrl(guild) != null && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null) {
+                manager.getPlayer(guild).getListener().tracks.clear();
                 manager.loadSimpelTrack(guild, PixelSniper.mySQL.getStreamUrl(guild));
-            } else {
-                manager.getPlayer(guild).resumeTrack();
             }
         }
     }
