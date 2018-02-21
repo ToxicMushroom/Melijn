@@ -30,22 +30,22 @@ public class AvatarCommand extends Command {
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {
                 author = event.getAuthor();
             } else {
-                if (event.getMessage().getMentionedUsers().size() < 1) {
+                if (event.getMessage().getMentionedUsers().size() > 0) {
                     author = event.getMessage().getMentionedUsers().get(0);
                 } else {
                     if (args[0].matches("\\d+")) {
-                        User toCheck = event.getJDA().retrieveUserById(args[0]).complete();
-                        if (toCheck != null) author = toCheck;
+                        author = event.getJDA().retrieveUserById(args[0]).complete();
                     }
                 }
             }
             if (author != null) {
+                String url = author.getAvatarUrl() == null ? author.getDefaultAvatarUrl() : author.getAvatarUrl();
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setColor(Helpers.EmbedColor);
                 eb.setTitle(author.getName() + "#" + author.getDiscriminator() + "'s avatar");
-                eb.setImage(author.getAvatarUrl() + "?size=1024");
-                eb.setDescription("[Avatar URL Link](" + author.getAvatarUrl() + "?size=1024)");
-                event.reply(eb.build());
+                eb.setImage(url + "?size=1024");
+                eb.setDescription("[Avatar URL Link](" + url + "?size=1024)");
+                 event.reply(eb.build());
             } else {
                 event.reply("Unknown user");
             }

@@ -57,7 +57,9 @@ public class Channels extends ListenerAdapter {
         Guild guild = event.getGuild();
         String guildId = guild.getId();
         AudioManager audioManager = guild.getAudioManager();
-        if (PixelSniper.mySQL.getStreamerMode(guild.getId()) && PixelSniper.mySQL.getChannelId(guild, ChannelType.MUSIC) != null && !audioManager.isConnected()) {
+        if (event.getChannelJoined().getId().equalsIgnoreCase(PixelSniper.mySQL.getChannelId(guild, ChannelType.MUSIC)) &&
+                PixelSniper.mySQL.getStreamerMode(guild.getId()) && PixelSniper.mySQL.getChannelId(guild, ChannelType.MUSIC) != null &&
+                !audioManager.isConnected()) {
             audioManager.openAudioConnection(guild.getVoiceChannelById(PixelSniper.mySQL.getChannelId(guildId, ChannelType.MUSIC)));
             if (PixelSniper.mySQL.getStreamUrl(guild) != null && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null) {
                 manager.getPlayer(guild).getListener().tracks.clear();

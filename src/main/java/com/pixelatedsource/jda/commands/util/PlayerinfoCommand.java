@@ -41,9 +41,10 @@ public class PlayerinfoCommand extends Command {
             EmbedBuilder eb = new EmbedBuilder();
             eb.setColor(Helpers.EmbedColor);
             eb.setTitle(user.getName() + "#" + user.getDiscriminator() + "'s profile");
-            eb.setThumbnail(user.getAvatarUrl());
+            String url = user.getAvatarUrl() == null ? user.getDefaultAvatarUrl() : user.getAvatarUrl();
+            eb.setThumbnail(url + "?size=1024");
             if (event.getGuild() == null || event.getGuild().getMember(user) == null) {
-                eb.addField("Avatar:", "[Download](" + user.getAvatarUrl() + ")", true);
+                eb.addField("Avatar:", "[Download](" + url + "?size=1024)", true);
                 eb.addField("ID:", user.getId(), true);
                 eb.addField("Discord join date:", String.valueOf(user.getCreationTime().toLocalDate()), false);
                 eb.addField("Bot:", String.valueOf(user.isBot()), false);
@@ -52,7 +53,7 @@ public class PlayerinfoCommand extends Command {
                 Member member = event.getGuild().getMember(user);
                 String nickname = member.getNickname();
                 if (nickname == null) nickname = "No nickname";
-                eb.addField("Avatar:", "[Download](" + user.getAvatarUrl() + ")", true);
+                eb.addField("Avatar:", "[Download](" + url + "?size=1024)", true);
                 eb.addField("Nickname:", nickname, false);
                 eb.addField("Status:", member.getOnlineStatus().toString(), false);
                 eb.addField("Playing:", String.valueOf(member.getGame()), false);
