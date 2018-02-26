@@ -11,6 +11,7 @@ import net.dv8tion.jda.core.entities.Message;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
@@ -22,7 +23,9 @@ public class PurgeCommand extends Command {
         this.usage = PREFIX + commandName + " [1-100]";
         this.category = Category.MANAGEMENT;
     }
+
     private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(5);
+
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
@@ -33,27 +36,24 @@ public class PurgeCommand extends Command {
                         try {
                             Runnable runnable = () -> {
                                 Long start = System.currentTimeMillis();
-                                int size = event.getMessage().getTextChannel().getHistory().retrievePast(Integer.parseInt(args[0])).complete().size();
+                                int size = event.getMessage().getTextChannel().getHistory().retrievePast(Integer.parseInt(args[0]) + 1).complete().size();
                                 int progress = 0;
-                                List<Message> list = event.getMessage().getTextChannel().getHistory().retrievePast(Integer.parseInt(args[0])).complete();
+                                List<Message> list = event.getMessage().getTextChannel().getHistory().retrievePast(Integer.parseInt(args[0]) + 1).complete();
                                 Message purgingMessage = event.getTextChannel().sendMessage("Purging... 0% 0s").complete();
                                 for (Message message : list) {
                                     progress++;
                                     message.delete().complete();
-                                    purgingMessage.editMessage("Purging... " + Math.round((progress / size * 100)) + "% - " + Math.round((System.currentTimeMillis() - start) / 1000) + "s").complete();
+                                    double i = (double) progress / (double) size * 100D;
+                                    purgingMessage.editMessage("Purging... " + Math.round(i) + "% - " + Math.round((System.currentTimeMillis() - start) / 1000) + "s").complete();
                                 }
-                                purgingMessage.editMessage("Purged in " + Math.round((System.currentTimeMillis() - start) / 1000) + "s").complete();
+                                purgingMessage.editMessage("Purged in " + Math.round((System.currentTimeMillis() - start) / 1000) + "s").queue(v -> v.delete().queueAfter(5, TimeUnit.SECONDS));
                             };
                             executorService.execute(runnable);
                         } catch (NumberFormatException e) {
                             event.reply("Error: NumberFormatException");
                         }
                     } else {
-                        if (event.getGuild() != null) {
-                            event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
-                        } else {
-                            event.reply(usage);
-                        }
+                        event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
                     }
                 } else {
                     event.reply("I have no permission to manage messages.");

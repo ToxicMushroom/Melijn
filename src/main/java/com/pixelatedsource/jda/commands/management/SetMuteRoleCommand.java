@@ -35,8 +35,8 @@ public class SetMuteRoleCommand extends Command {
                     else if (event.getMessage().getMentionedRoles().size() > 0) mutedRole = event.getMessage().getMentionedRoles().get(0);
 
                     if (mutedRole != null) {
-                        if (PixelSniper.mySQL.setRole(event.getGuild(), args[0], RoleType.MUTE)) {
-                            event.reply("MuteRoleId changed from " + role + " to " + PixelSniper.mySQL.getRoleId(event.getGuild(), RoleType.MUTE));
+                        if (PixelSniper.mySQL.setRole(event.getGuild(), mutedRole.getId(), RoleType.MUTE)) {
+                            event.reply("MuteRole changed from @" + event.getGuild().getRoleById(role).getName() + " to @" + event.getGuild().getRoleById(PixelSniper.mySQL.getRoleId(event.getGuild(), RoleType.MUTE)).getName());
                         } else {
                             event.reply("Failed to set role.");
                         }
