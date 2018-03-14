@@ -1,6 +1,7 @@
 package com.pixelatedsource.jda.music;
 
 import com.pixelatedsource.jda.Helpers;
+import com.pixelatedsource.jda.commands.music.SPlayCommand;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -27,8 +28,7 @@ public class MusicManager {
     public static HashMap<User, List<AudioTrack>> usersRequest = new HashMap<>();
     public static HashMap<User, Message> usersFormToReply = new HashMap<>();
 
-
-    private MusicManager() {
+    public MusicManager() {
         AudioSourceManagers.registerRemoteSources(manager);
         AudioSourceManagers.registerLocalSource(manager);
     }
@@ -54,7 +54,7 @@ public class MusicManager {
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setTitle("Added");
                 eb.setDescription("`" + track.getInfo().title + "` added to the queue at postition **#" + player.getListener().getTrackSize() + "**");
-                eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
+                eb.setFooter(Helpers.getFooterStamp(), null);
                 eb.setColor(Helpers.EmbedColor);
                 channel.sendMessage(eb.build()).queue();
             }
@@ -127,6 +127,56 @@ public class MusicManager {
 
             @Override
             public void loadFailed(FriendlyException exception) {
+            }
+        });
+    }
+
+    public void searchTracks(TextChannel channel, String source, User author) {
+        MusicPlayer player = getPlayer(channel.getGuild());
+        channel.getGuild().getAudioManager().setSendingHandler(player.getAudioHandler());
+        manager.loadItemOrdered(player, source, new AudioLoadResultHandler() {
+
+            @Override
+            public void trackLoaded(AudioTrack track) {
+                loadTrack(channel, source, author, false);
+            }
+
+            @Override
+            public void playlistLoaded(AudioPlaylist playlist) {
+                List<AudioTrack> tracks = playlist.getTracks();
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.setTitle("Select Menu");
+                eb.setColor(Helpers.EmbedColor);
+                eb.setFooter(Helpers.getFooterStamp(), null);
+                StringBuilder sb = new StringBuilder();
+                HashMap<Integer, AudioTrack> map = new HashMap<>();
+                int i = 0;
+                for (AudioTrack track : tracks) {
+                    map.put(i, track);
+                    if (i != 5)
+                    sb.append("[").append(++i).append("](").append(track.getInfo().uri).append(") - ").append(track.getInfo().title).append(" `[").append(Helpers.getDurationBreakdown(track.getInfo().length)).append("]`\n");
+                }
+                eb.setDescription(sb.toString());
+                SPlayCommand.userChoices.put(author, map);
+                channel.sendMessage(eb.build()).queue((s) -> {
+                    SPlayCommand.usersFormToReply.put(author, s);
+                    s.addReaction("\u0031\u20E3").queue();
+                    s.addReaction("\u0032\u20E3").queue();
+                    s.addReaction("\u0033\u20E3").queue();
+                    s.addReaction("\u0034\u20E3").queue();
+                    s.addReaction("\u0035\u20E3").queue();
+                    s.addReaction("\u274E").queue();
+                });
+            }
+
+            @Override
+            public void noMatches() {
+                channel.sendMessage("I couldn't find a song called " + source + ". Check on spelling mistakes.").queue();
+            }
+
+            @Override
+            public void loadFailed(FriendlyException exception) {
+                channel.sendMessage("Error: " + exception.getMessage()).queue();
             }
         });
     }

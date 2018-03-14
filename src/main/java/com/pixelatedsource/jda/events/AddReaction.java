@@ -3,6 +3,7 @@ package com.pixelatedsource.jda.events;
 import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.ChannelType;
+import com.pixelatedsource.jda.commands.music.SPlayCommand;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
 import com.pixelatedsource.jda.utils.MessageHelper;
@@ -36,7 +37,7 @@ public class AddReaction extends ListenerAdapter {
                 }
             }
         }
-        if (MusicManager.usersFormToReply.get(event.getUser()) != null) {
+        if (MusicManager.usersFormToReply.get(event.getUser()) != null && MusicManager.usersFormToReply.get(event.getUser()).getId().equalsIgnoreCase(event.getMessageId())) {
             if (event.getMessageId().equals(MusicManager.usersFormToReply.get(event.getUser()).getId())) {
                 MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
                 if (event.getReactionEmote().getName().equalsIgnoreCase("✅")) {
@@ -83,6 +84,51 @@ public class AddReaction extends ListenerAdapter {
                     MusicManager.usersFormToReply.remove(event.getUser());
                     MusicManager.usersRequest.remove(event.getUser());
                 }
+            }
+        }
+        if (SPlayCommand.usersFormToReply.get(event.getUser()) != null && SPlayCommand.usersFormToReply.get(event.getUser()).getId().equalsIgnoreCase(event.getMessageId())) {
+            MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
+            AudioTrack track;
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.setTitle("Added");
+            eb.setFooter(Helpers.getFooterStamp(), null);
+            eb.setColor(Helpers.EmbedColor);
+            switch (event.getReactionEmote().getName()) {
+                case "\u0031\u20E3":
+                    track = SPlayCommand.userChoices.get(event.getUser()).get(0);
+                    player.playTrack(track);
+                    eb.setDescription("`" + track.getInfo().title + "` added to the queue at postition **#" + player.getListener().getTrackSize() + "**");
+                    event.getTextChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
+                    break;
+                case "\u0032\u20E3":
+                    track = SPlayCommand.userChoices.get(event.getUser()).get(1);
+                    player.playTrack(track);
+                    eb.setDescription("`" + track.getInfo().title + "` added to the queue at postition **#" + player.getListener().getTrackSize() + "**");
+                    event.getTextChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
+                    break;
+                case "\u0033\u20E3":
+                    track = SPlayCommand.userChoices.get(event.getUser()).get(2);
+                    player.playTrack(track);
+                    eb.setDescription("`" + track.getInfo().title + "` added to the queue at postition **#" + player.getListener().getTrackSize() + "**");
+                    event.getTextChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
+                    break;
+                case "\u0034\u20E3":
+                    track = SPlayCommand.userChoices.get(event.getUser()).get(3);
+                    player.playTrack(track);
+                    eb.setDescription("`" + track.getInfo().title + "` added to the queue at postition **#" + player.getListener().getTrackSize() + "**");
+                    event.getTextChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
+                    break;
+                case "\u0035\u20E3":
+                    track = SPlayCommand.userChoices.get(event.getUser()).get(4);
+                    player.playTrack(track);
+                    eb.setDescription("`" + track.getInfo().title + "` added to the queue at postition **#" + player.getListener().getTrackSize() + "**");
+                    event.getTextChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
+                    break;
+                case "\u274E":
+                    SPlayCommand.usersFormToReply.remove(event.getUser());
+                    SPlayCommand.userChoices.remove(event.getUser());
+                    event.getTextChannel().getMessageById(event.getMessageId()).queue(s -> s.delete().queue());
+                    break;
             }
         }
     }
