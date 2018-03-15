@@ -32,7 +32,7 @@ public class CatCommand extends Command {
         if (!acces) acces = Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0);
         if (acces) {
             MessageChannel channel = event.getChannel();
-            Unirest.post("http://random.cat/meow").asJsonAsync(new Callback<JsonNode>() {
+            Unirest.post("http://aws.random.cat/meow").asJsonAsync(new Callback<JsonNode>() {
                 @Override
                 public void completed(HttpResponse<JsonNode> response) {
                     channel.sendMessage(response.getBody().getObject().getString("file")).queue();
