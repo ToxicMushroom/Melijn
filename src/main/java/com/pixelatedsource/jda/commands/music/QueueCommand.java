@@ -20,7 +20,7 @@ public class QueueCommand extends Command {
 
     public QueueCommand() {
         this.commandName = "queue";
-        this.description = "Shows you da way";
+        this.description = "Shows you a list of all songs wich will play in the future.";
         this.usage = PREFIX + this.commandName;
         this.category = Category.MUSIC;
     }
