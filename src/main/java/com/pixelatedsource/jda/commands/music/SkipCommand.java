@@ -43,20 +43,12 @@ public class SkipCommand extends Command {
                         try {
                             i = Integer.parseInt(args[0]);
                             if (i >= 50 || i < 1) {
-                                if (event.getGuild() != null) {
-                                    event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
-                                } else {
-                                    event.reply(usage);
-                                }
+                                event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
                                 return;
                             }
                         } catch (NumberFormatException e) {
                             e.addSuppressed(e);
-                            if (event.getGuild() != null) {
-                                event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
-                            } else {
-                                event.reply(usage);
-                            }
+                            event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
                         }
                     }
                 }

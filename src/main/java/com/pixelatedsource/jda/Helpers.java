@@ -31,6 +31,7 @@ public class Helpers {
     public static final Logger LOG = LogManager.getLogger(PixelSniper.class.getName());
     public static Color EmbedColor = Color.decode("#00ffd8");
     public static ArrayList<String> perms = new ArrayList<>(Arrays.asList(
+            "pause",
             "splay.yt",
             "splay.sc",
             "splay.link",
