@@ -93,6 +93,7 @@ public class AddReaction extends ListenerAdapter {
             eb.setTitle("Added");
             eb.setFooter(Helpers.getFooterStamp(), null);
             eb.setColor(Helpers.EmbedColor);
+            boolean wrongemote = false;
             switch (event.getReactionEmote().getName()) {
                 case "\u0031\u20E3":
                     track = SPlayCommand.userChoices.get(event.getUser()).get(0);
@@ -129,6 +130,13 @@ public class AddReaction extends ListenerAdapter {
                     SPlayCommand.userChoices.remove(event.getUser());
                     event.getTextChannel().getMessageById(event.getMessageId()).queue(s -> s.delete().queue());
                     break;
+                default:
+                    wrongemote = true;
+                    break;
+
+            }
+            if (!wrongemote) {
+                event.getTextChannel().getMessageById(event.getMessageId()).queue((s) -> s.clearReactions().queue());
             }
         }
     }
