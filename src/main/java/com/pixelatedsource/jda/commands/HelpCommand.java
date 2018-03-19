@@ -10,7 +10,7 @@ public class HelpCommand extends Command {
 
     public HelpCommand() {
         this.commandName = "help";
-        this.description = "Shows you this menu";
+        this.description = "Gives you the link to this page.";
         this.usage = PREFIX + commandName;
         this.aliases = new String[]{"commands", "cmds"};
         this.category = Category.DEFAULT;
@@ -19,9 +19,9 @@ public class HelpCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
-            event.reply("https://www.pixelnetwork.be/commands/index.php?id=" + event.getGuild().getId());
+            event.reply("http://melijn.com/commands/index.php?id=" + event.getGuild().getId());
         } else {
-            event.reply("https://www.pixelnetwork.be/commands/");
+            event.reply("http://melijn.com/commands/");
         }
     }
 }
