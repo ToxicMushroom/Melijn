@@ -48,7 +48,9 @@ public class PurgeCommand extends Command {
                                     double i = (double) progress / (double) size * 100D;
                                     purgingMessage.editMessage("Purging... " + Math.round(i) + "% - " + Math.round((System.currentTimeMillis() - start) / 1000) + "s").complete();
                                 }
-                                purgingMessage.editMessage("Purged in " + Math.round((System.currentTimeMillis() - start) / 1000) + "s").queue(v -> v.delete().queueAfter(5, TimeUnit.SECONDS));
+                                purgingMessage.editMessage("Purged in " + Math.round((System.currentTimeMillis() - start) / 1000) + "s").queue((v) -> v.delete().queueAfter(5, TimeUnit.SECONDS, (s) -> {
+                                    MessageHelper.purgedMessages.add(v.getId());
+                                }));
                             };
                             executorService.execute(runnable);
                         } catch (NumberFormatException e) {
