@@ -12,8 +12,8 @@ import com.pixelatedsource.jda.db.MySQL;
 import com.pixelatedsource.jda.events.AddReaction;
 import com.pixelatedsource.jda.events.Channels;
 import com.pixelatedsource.jda.events.Chat;
-import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 import net.dv8tion.jda.core.AccountType;
+import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Guild;
@@ -33,18 +33,29 @@ public class PixelSniper extends ListenerAdapter {
     private static String USER = config.getValue("username");
     private static String PASS = config.getValue("password");
     private static String DBNAME = config.getValue("database");
+
     public static HashMap<Guild, Boolean> looped = new HashMap<>();
     public static MySQL mySQL = new MySQL(IP, USER, PASS, DBNAME);
     public static CommandClient commandClient;
+    private static JDA jda;
 
-    public static void main(String[] args) throws LoginException {
+    public static void main(String[] args) throws LoginException, InterruptedException {
         mySQL.update("TRUNCATE TABLE commands");
         CommandClientBuilder client = new CommandClientBuilder();
         client.setOwnerId(OWNERID);
         client.setPrefix(PREFIX);
         client.addCommands(new PauseCommand(), new SPlayCommand(), new BanCommand(), new HistoryCommand(), new MuteCommand(), new SetMuteRoleCommand(), new TempMuteCommand(), new UnmuteCommand(), new AvatarCommand(), new WarnCommand(), new PurgeCommand(), new HelpCommand(), new PingCommand(), new PlayCommand(), new QueueCommand(), new CatCommand(), new SkipCommand(), new ClearCommand(), new StopCommand(), new ResumeCommand(), new VolumeCommand(), new AboutCommand(), new PlayerinfoCommand(), new LoopCommand(), new TexttoemojiCommand(), new SkipXCommand(), new PermCommand(), new NowPlayingCommand(), new RemoveCommand(), new GuildInfoCommand(), new RoleInfoCommand(), new DogCommand(), new SetPrefixCommand(), new SetMusicChannelCommand(), new SetLogChannelCommand(), new TempBanCommand(), new UnbanCommand(), new SetStreamerModeCommand(), new SetStreamUrlCommand());
         commandClient = client.build();
-        Helpers.startTimer(new JDABuilder(AccountType.BOT).setToken(TOKEN).setAudioSendFactory(new NativeAudioSendFactory()).setGame(Game.streaming(PREFIX + "help", "https://www.twitch.tv/pixelhamster")).addEventListener(commandClient).addEventListener(new AddReaction()).addEventListener(new Channels()).addEventListener(new Chat()).buildAsync());
+
+        jda = new JDABuilder(AccountType.BOT)
+                .setToken(TOKEN)
+                .setGame(Game.streaming(PREFIX + "help", "https://www.twitch.tv/pixelhamster"))
+                .addEventListener(commandClient)
+                .addEventListener(new AddReaction())
+                .addEventListener(new Channels())
+                .addEventListener(new Chat())
+                .buildBlocking();
+        Helpers.startTimer(jda);
         Helpers.starttime = System.currentTimeMillis();
     }
 

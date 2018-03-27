@@ -10,11 +10,12 @@ sourceCompatibility = 1.8
 
 repositories {
     jcenter()
+    mavenCentral()
 }
 
 dependencies {
     compile 'com.sedmelluq:jda-nas:1.0.5'
-    compile 'net.dv8tion:JDA:3.5.1_351'
+    compile 'net.dv8tion:JDA:3.5.1_353'
     compile 'com.sedmelluq:lavaplayer:1.2.56'
     compile 'mysql:mysql-connector-java:5.1.45'
     compile group: 'com.mashape.unirest', name: 'unirest-java', version: '1.4.9'

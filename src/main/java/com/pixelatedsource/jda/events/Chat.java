@@ -88,6 +88,11 @@ public class Chat extends ListenerAdapter {
                             } else if (now.toInstant().toEpochMilli() - deletionTime.toInstant().toEpochMilli() < 1000) {
                                 User deletor = auditLogEntry.getUser();
                                 if (deletor != null) eb.setFooter("Deleted by: " + deletor.getName() + "#" + deletor.getDiscriminator(), deletor.getAvatarUrl());
+                            } else if (MessageHelper.purgedMessages.contains(e.getMessageId())) {
+                                User bot = guild.getSelfMember().getUser();
+                                eb.setColor(Color.decode("#551A8B"));
+                                eb.setFooter("Purged by: " + bot.getName() + "#" + bot.getDiscriminator(), bot.getAvatarUrl());
+                                MessageHelper.purgedMessages.remove(e.getMessageId());
                             } else {
                                 User deletor = sameAsLast ? auditLogEntry.getUser() : PixelSniper.mySQL.getMessageAuthor(e.getMessageId(), e.getJDA());
                                 if (deletor != null) eb.setFooter("Deleted by: " + deletor.getName() + "#" + deletor.getDiscriminator(), deletor.getAvatarUrl());
@@ -98,7 +103,6 @@ public class Chat extends ListenerAdapter {
                             });
                             mySQL.update("DELETE FROM history_messages WHERE sentTime < " + (System.currentTimeMillis() - 604_800_000L));
                             mySQL.saveDeletedMessage(e.getMessageId());
-
                         }
                     } catch (SQLException e1) {
                         e1.printStackTrace();

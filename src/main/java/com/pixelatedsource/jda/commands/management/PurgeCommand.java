@@ -5,6 +5,7 @@ import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Message;
 
@@ -42,6 +43,7 @@ public class PurgeCommand extends Command {
                                 Message purgingMessage = event.getTextChannel().sendMessage("Purging... 0% 0s").complete();
                                 for (Message message : list) {
                                     progress++;
+                                    MessageHelper.purgedMessages.add(message.getId());
                                     message.delete().complete();
                                     double i = (double) progress / (double) size * 100D;
                                     purgingMessage.editMessage("Purging... " + Math.round(i) + "% - " + Math.round((System.currentTimeMillis() - start) / 1000) + "s").complete();

@@ -2,6 +2,7 @@ package com.pixelatedsource.jda.utils;
 
 import net.dv8tion.jda.core.entities.User;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 
@@ -9,6 +10,7 @@ public class MessageHelper {
 
     public static HashMap<String, String> filterDeletedMessages = new HashMap<>();
     public static HashMap<String, User> deletedByEmote = new HashMap<>();
+    public static ArrayList<String> purgedMessages = new ArrayList<>();
 
     public static String millisToDate(long millis) {
         Calendar start = Calendar.getInstance();
