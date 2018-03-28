@@ -19,9 +19,9 @@ public class HelpCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
-            event.reply("http://melijn.com/commands/index.php?id=" + event.getGuild().getId());
+            event.reply("https://melijn.com/commands/index.php?id=" + event.getGuild().getId());
         } else {
-            event.reply("http://melijn.com/commands/");
+            event.reply("https://melijn.com/commands/");
         }
     }
 }
