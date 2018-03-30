@@ -12,6 +12,7 @@ import com.pixelatedsource.jda.db.MySQL;
 import com.pixelatedsource.jda.events.AddReaction;
 import com.pixelatedsource.jda.events.Channels;
 import com.pixelatedsource.jda.events.Chat;
+import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
@@ -54,6 +55,7 @@ public class PixelSniper extends ListenerAdapter {
                 .addEventListener(new AddReaction())
                 .addEventListener(new Channels())
                 .addEventListener(new Chat())
+                .setAudioSendFactory(new NativeAudioSendFactory())
                 .buildBlocking();
         Helpers.startTimer(jda);
         Helpers.starttime = System.currentTimeMillis();
