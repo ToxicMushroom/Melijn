@@ -30,8 +30,12 @@ public class RemoveCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
-                BlockingQueue<AudioTrack> tracks = manager.getPlayer(event.getGuild()).getListener().getTracks();
                 String[] args = event.getArgs().replaceAll("\\s+", "").split(",");
+                if (args.length == 0) {
+                    event.reply(usage);
+                    return;
+                }
+                BlockingQueue<AudioTrack> tracks = manager.getPlayer(event.getGuild()).getListener().getTracks();
                 HashMap<Integer, AudioTrack> songs = new HashMap<>();
                 int i = 0;
                 for (AudioTrack track : tracks) {
@@ -64,11 +68,7 @@ public class RemoveCommand extends Command {
                             desc.add("**#" + s + "**" + " - " + songs.get(Integer.valueOf(s)).getInfo().title + "\n");
                         }
                     } else {
-                        if (event.getGuild() != null) {
-                            event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
-                        } else {
-                            event.reply(usage);
-                        }
+                        event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
                     }
                 }
                 if (sb.toString().length() > 1900) {
@@ -128,7 +128,7 @@ public class RemoveCommand extends Command {
                     toReturn.add(String.valueOf(c));
                     d++;
                 }
-            } else if (a == b) {
+            } else {
                 toReturn.add(String.valueOf(a));
             }
         }
