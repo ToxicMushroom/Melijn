@@ -43,7 +43,7 @@ public class SetStreamUrlCommand extends Command {
                         }
                     } else {
                         if (args[0].equalsIgnoreCase("list")) {
-                            event.reply(linkjes.toString());
+                            event.reply("**Radio**\n" + linkjes.keySet().toString().replaceAll("(,\\s+|,)", "\n+ ").replaceFirst("\\[", "+ ").replaceFirst("]", ""));
                         } else {
                             if (linkjes.keySet().contains(args[0])) {
                                 if (PixelSniper.mySQL.setStreamUrl(guild, linkjes.get(args[0]))) {
