@@ -7,6 +7,8 @@ import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import net.dv8tion.jda.core.entities.Guild;
 
+import java.util.HashMap;
+
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
 public class SetStreamUrlCommand extends Command {
@@ -19,6 +21,11 @@ public class SetStreamUrlCommand extends Command {
         this.aliases = new String[]{"ssu"};
         this.category = Category.MUSIC;
     }
+
+    HashMap<String, String> linkjes = new HashMap<String, String>() {{
+        put("slam-nonstop", "http://stream.radiocorp.nl/web10_mp3");
+        put("radio538", "http://18973.live.streamtheworld.com/RADIO538.mp3");
+    }};
 
     @Override
     protected void execute(CommandEvent event) {
@@ -35,18 +42,20 @@ public class SetStreamUrlCommand extends Command {
                             event.reply("Changed the url from " + url + " to " + PixelSniper.mySQL.getStreamUrl(guild));
                         }
                     } else {
-                        if (event.getGuild() != null) {
-                            event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                        if (args[0].equalsIgnoreCase("list")) {
+                            event.reply(linkjes.toString());
                         } else {
-                            event.reply(usage);
+                            if (linkjes.keySet().contains(args[0])) {
+                                if (PixelSniper.mySQL.setStreamUrl(guild, linkjes.get(args[0]))) {
+                                    event.reply("Changed the url from " + url + " to " + PixelSniper.mySQL.getStreamUrl(guild));
+                                }
+                            } else {
+                                event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                            }
                         }
                     }
                 } else {
-                    if (event.getGuild() != null) {
-                        event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
-                    } else {
-                        event.reply(usage);
-                    }
+                    event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");
