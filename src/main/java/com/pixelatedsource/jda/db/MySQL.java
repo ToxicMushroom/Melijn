@@ -6,10 +6,7 @@ import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.RoleType;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.MessageEmbed;
-import net.dv8tion.jda.core.entities.Role;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.entities.*;
 
 import java.awt.*;
 import java.sql.*;
@@ -47,7 +44,8 @@ public class MySQL {
             update("CREATE TABLE IF NOT EXISTS commands(commandName varchar(1000), gebruik varchar(1000), description varchar(2000), extra varchar(2000), category varchar(100), aliases varchar(200));");
             update("CREATE TABLE IF NOT EXISTS stream_urls(guildId varchar(127), url varchar(1500))");
             update("CREATE TABLE IF NOT EXISTS prefixes(guildId varchar(128), prefix varchar(128));");
-            update("CREATE TABLE IF NOT EXISTS perms(guildName varchar(64), guildId varchar(128), roleName varchar(64), roleId varchar(128), permission varchar(256));");
+            update("CREATE TABLE IF NOT EXISTS perms_roles(guildId varchar(128), roleId varchar(128), permission varchar(256));");
+            update("CREATE TABLE IF NOT EXISTS perms_users(guildId varchar(128), userId varchar(128), permission varchar(256));");
             update("CREATE TABLE IF NOT EXISTS log_channels(guildId varchar(128), channelId varchar(128))");
             update("CREATE TABLE IF NOT EXISTS music_channels(guildId varchar(128), channelId varchar(128))");
             update("CREATE TABLE IF NOT EXISTS streamer_modes(guildId varchar(128), state boolean)");
@@ -219,17 +217,24 @@ public class MySQL {
     }
 
     //Permissions stuff---------------------------------------------------------
-    public void addPermission(Guild guild, Role role, String permission) {
-        String id = role == null ? guild.getRolesByName("@everyone", false).get(0).getId() : role.getId();
-        String name = role == null ? "@everyone" : role.getName();
-
+    public void addRolePermission(Guild guild, Role role, String permission) {
         try {
-            PreparedStatement adding = con.prepareStatement("INSERT INTO perms (guildName, guildId, roleName, roleId, permission) VALUES (?, ?, ?, ?, ?)");
-            adding.setString(1, guild.getName());
-            adding.setString(2, guild.getId());
-            adding.setString(3, name);
-            adding.setString(4, id);
-            adding.setString(5, permission);
+            PreparedStatement adding = con.prepareStatement("INSERT INTO perms_roles(guildId, roleId, permission) VALUES (?, ?, ?)");
+            adding.setString(1, guild.getId());
+            adding.setString(2, role.getId());
+            adding.setString(3, permission);
+            adding.executeUpdate();
+            adding.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public void addUserPermission(Guild guild, User user, String permission) {
+        try {
+            PreparedStatement adding = con.prepareStatement("INSERT INTO perms_users(guildId, userId, permission) VALUES (?, ?, ?)");
+            adding.setString(1, guild.getId());
+            adding.setString(2, user.getId());
+            adding.setString(3, permission);
             adding.executeUpdate();
             adding.close();
         } catch (SQLException e) {
@@ -237,12 +242,23 @@ public class MySQL {
         }
     }
 
-    public void removePermission(Guild guild, Role role, String permission) {
-        String id = role == null ? guild.getRolesByName("@everyone", false).get(0).getId() : role.getId();
+    public void removeRolePermission(Guild guild, Role role, String permission) {
         try {
-            PreparedStatement removing = con.prepareStatement("DELETE FROM perms WHERE guildId= ? AND roleId= ? AND permission= ?");
+            PreparedStatement removing = con.prepareStatement("DELETE FROM perms_roles WHERE guildId= ? AND roleId= ? AND permission= ?");
             removing.setString(1, guild.getId());
-            removing.setString(2, id);
+            removing.setString(2, role.getId());
+            removing.setString(3, permission);
+            removing.executeUpdate();
+            removing.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public void removeUserPermission(Guild guild, User user, String permission) {
+        try {
+            PreparedStatement removing = con.prepareStatement("DELETE FROM perms_users WHERE guildId= ? AND usersId= ? AND permission= ?");
+            removing.setString(1, guild.getId());
+            removing.setString(2, user.getId());
             removing.setString(3, permission);
             removing.executeUpdate();
             removing.close();
@@ -251,12 +267,11 @@ public class MySQL {
         }
     }
 
-    public boolean hasPermission(Guild guild, Role role, String permission) {
-        String id = role == null ? guild.getRolesByName("@everyone", false).get(0).getId() : role.getId();
+    public boolean hasPermission(Guild guild, User user, String permission) {
         try {
-            PreparedStatement getting = con.prepareStatement("SELECT * FROM perms WHERE guildId= ? AND roleId= ? AND permission= ?");
+            PreparedStatement getting = con.prepareStatement("SELECT * FROM perms_users WHERE guildId= ? AND userId= ? AND permission= ?");
             getting.setString(1, guild.getId());
-            getting.setString(2, id);
+            getting.setString(2, user.getId());
             getting.setString(3, permission);
             ResultSet rs = getting.executeQuery();
             if (rs.next()) return true;
@@ -265,15 +280,42 @@ public class MySQL {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        List<Role> roles = new ArrayList<>(guild.getMember(user).getRoles());
+        roles.add(guild.getPublicRole());
+        for (Role role : roles) {
+            try {
+                PreparedStatement getting = con.prepareStatement("SELECT * FROM perms_roles WHERE guildId= ? AND roleId= ? AND permission= ?");
+                getting.setString(1, guild.getId());
+                getting.setString(2, role.getId());
+                getting.setString(3, permission);
+                ResultSet rs = getting.executeQuery();
+                if (rs.next()) return true;
+                getting.close();
+                rs.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
         return false;
     }
 
-    public void clearPermissions(Guild guild, Role role) {
-        String id = role == null ? guild.getRolesByName("@everyone", false).get(0).getId() : role.getId();
+    public void clearRolePermissions(Guild guild, Role role) {
         try {
-            PreparedStatement clearing = con.prepareStatement("DELETE FROM perms WHERE guildId= ? AND roleId= ?");
+            PreparedStatement clearing = con.prepareStatement("DELETE FROM perms_roles WHERE guildId= ? AND roleId= ?");
             clearing.setString(1, guild.getId());
-            clearing.setString(2, id);
+            clearing.setString(2, role.getId());
+            clearing.executeUpdate();
+            clearing.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public void clearUserPermissions(Guild guild, User user) {
+        try {
+            PreparedStatement clearing = con.prepareStatement("DELETE FROM perm_users WHERE guildId= ? AND userId= ?");
+            clearing.setString(1, guild.getId());
+            clearing.setString(2, user.getId());
             clearing.executeUpdate();
             clearing.close();
         } catch (SQLException e) {
@@ -281,13 +323,29 @@ public class MySQL {
         }
     }
 
-    public List<String> getPermissions(Guild guild, Role role) {
+    public List<String> getRolePermissions(Guild guild, Role role) {
         List<String> toReturn = new ArrayList<>();
-        String id = role == null ? guild.getRolesByName("@everyone", false).get(0).getId() : role.getId();
         try {
-            PreparedStatement getPerms = con.prepareStatement("SELECT * FROM perms WHERE guildId= ? AND roleId= ?");
+            PreparedStatement getPerms = con.prepareStatement("SELECT * FROM perms_roles WHERE guildId= ? AND roleId= ?");
             getPerms.setString(1, guild.getId());
-            getPerms.setString(2, id);
+            getPerms.setString(2, role.getId());
+            ResultSet rs = getPerms.executeQuery();
+            while (rs.next()) {
+                toReturn.add(rs.getString("permission"));
+            }
+            getPerms.close();
+            rs.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return toReturn;
+    }
+    public List<String> getUserPermissions(Guild guild, User user) {
+        List<String> toReturn = new ArrayList<>();
+        try {
+            PreparedStatement getPerms = con.prepareStatement("SELECT * FROM perms_users WHERE guildId= ? AND userId= ?");
+            getPerms.setString(1, guild.getId());
+            getPerms.setString(2, user.getId());
             ResultSet rs = getPerms.executeQuery();
             while (rs.next()) {
                 toReturn.add(rs.getString("permission"));
@@ -301,30 +359,70 @@ public class MySQL {
     }
 
     public boolean noOneHasPermission(Guild guild, String permission) {
-        List<String> roleNames = new ArrayList<>();
+        List<String> roleIds = new ArrayList<>();
         try {
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM perms WHERE guildId= ? AND permission= ?");
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM perms_roles WHERE guildId= ? AND permission= ?");
             statement.setString(1, guild.getId());
             statement.setString(2, permission);
             ResultSet rs = statement.executeQuery();
             while (rs.next()) {
-                roleNames.add(rs.getString("roleName"));
+                roleIds.add(rs.getString("roleId"));
             }
             statement.close();
             rs.close();
+
+            PreparedStatement statement1 = con.prepareStatement("SELECT * FROM perms_users WHERE guildId= ? AND permission= ?");
+            statement1.setString(1, guild.getId());
+            statement1.setString(2, permission);
+            ResultSet rs1 = statement1.executeQuery();
+            while (rs1.next()) {
+                roleIds.add(rs1.getString("userId"));
+            }
+            statement1.close();
+            rs1.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return roleNames.size() == 0;
+        return roleIds.size() == 0;
     }
 
-    public void copyPermissions(Guild guild, Role role1, Role role2) {
-        List<String> permsRole1 = getPermissions(guild, role1);
-        List<String> permsRole2 = getPermissions(guild, role2);
+    public void copyRolePermissions(Role role1, Role role2) {
+        Guild guild = role1.getGuild();
+        List<String> permsRole1 = getRolePermissions(guild, role1);
+        List<String> permsRole2 = getRolePermissions(guild, role2);
         for (String s : permsRole1) {
             if (!permsRole2.contains(s)) {
+                addRolePermission(guild, role2, s);
+            }
+        }
+    }
+    public void copyUserPermissions(Guild guild, User user1, User user2) {
+        List<String> permsUser1 = getUserPermissions(guild, user1);
+        List<String> permsUser2 = getUserPermissions(guild, user2);
+        for (String s : permsUser1) {
+            if (!permsUser2.contains(s)) {
+                addUserPermission(guild, user2, s);
+            }
+        }
+    }
 
-                addPermission(guild, role2, s);
+    public void copyRoleUserPermissions(Role role, User user) {
+        Guild guild = role.getGuild();
+        List<String> permsRole = getRolePermissions(guild, role);
+        List<String> permsUser = getUserPermissions(guild, user);
+        for (String s : permsRole) {
+            if (!permsUser.contains(s)) {
+                addUserPermission(guild, user, s);
+            }
+        }
+    }
+    public void copyUserRolePermissions(User user, Role role) {
+        Guild guild = role.getGuild();
+        List<String> permsUser = getUserPermissions(guild, user);
+        List<String> permsRole = getRolePermissions(guild, role);
+        for (String s : permsUser) {
+            if (!permsRole.contains(s)) {
+                addRolePermission(guild, role, s);
             }
         }
     }

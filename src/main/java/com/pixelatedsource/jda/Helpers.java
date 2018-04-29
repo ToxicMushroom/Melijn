@@ -4,7 +4,6 @@ import com.pixelatedsource.jda.music.MusicManager;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.managers.AudioManager;
 import org.apache.logging.log4j.LogManager;
@@ -35,6 +34,7 @@ public class Helpers {
             "splay.yt",
             "splay.sc",
             "splay.link",
+            "splay.*",
             "play.yt",
             "play.sc",
             "play.link",
@@ -117,13 +117,7 @@ public class Helpers {
         if (level == 0) {
             if (PixelSniper.mySQL.noOneHasPermission(member.getGuild(), permission)) return true;
         }
-        if (member.getRoles().size() == 0) return PixelSniper.mySQL.hasPermission(member.getGuild(), null, permission);
-        boolean rolf = false;
-        for (Role role : member.getRoles()) {
-            if (PixelSniper.mySQL.hasPermission(member.getGuild(), role, permission) ||
-                    PixelSniper.mySQL.hasPermission(member.getGuild(), role, "*")) rolf = true;
-        }
-        return rolf;
+        return PixelSniper.mySQL.hasPermission(member.getGuild(), member.getUser(), permission) || PixelSniper.mySQL.hasPermission(member.getGuild(), member.getUser(), "*");
     }
 
     public static void waitForIt(User user) {

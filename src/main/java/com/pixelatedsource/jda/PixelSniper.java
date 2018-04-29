@@ -37,7 +37,7 @@ public class PixelSniper extends ListenerAdapter {
 
     public static HashMap<Guild, Boolean> looped = new HashMap<>();
     public static MySQL mySQL = new MySQL(IP, USER, PASS, DBNAME);
-    public static CommandClient commandClient;
+    private static CommandClient commandClient;
     private static JDA jda;
 
     public static void main(String[] args) throws LoginException, InterruptedException {
@@ -51,6 +51,7 @@ public class PixelSniper extends ListenerAdapter {
         jda = new JDABuilder(AccountType.BOT)
                 .setToken(TOKEN)
                 .setGame(Game.streaming(PREFIX + "help", "https://www.twitch.tv/pixelhamster"))
+                .setAutoReconnect(true)
                 .addEventListener(commandClient)
                 .addEventListener(new AddReaction())
                 .addEventListener(new Channels())

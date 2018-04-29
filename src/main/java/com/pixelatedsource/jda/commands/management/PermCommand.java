@@ -5,13 +5,12 @@ import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Role;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.entities.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
@@ -22,7 +21,7 @@ public class PermCommand extends Command {
     public PermCommand() {
         this.commandName = "perm";
         this.description = "You can edit the user's acces to your demands ;D";
-        this.usage = PREFIX + this.commandName + " <add|remove|clear|info> <role|roleId> [permission]\nCheck http://pixelnetwork.be/commands to see the permission for each command";
+        this.usage = PREFIX + this.commandName + " <add | remove | clear | copy | info | list> <@role | roleId | @user | userId> [permission]\nA permission is just the name of the command.";
         this.aliases = new String[]{"permission"};
         this.category = Category.MANAGEMENT;
     }
@@ -33,10 +32,12 @@ public class PermCommand extends Command {
             String[] args = event.getArgs().split("\\s+");
             Member member = event.getGuild().getMember(event.getAuthor());
             Guild guild = event.getGuild();
+            Message message = event.getMessage();
             JDA jda = event.getJDA();
-            List<Role> roles = event.getMessage().getMentionedRoles();
+            List<Role> mentionedRoles = message.getMentionedRoles();
+            List<User> mentionedUsers = message.getMentionedUsers();
             if (args.length < 2) {
-                event.reply("Fill in all the values please.\nUse " + PREFIX + "help to check the usage of the command.");
+                MessageHelper.sendUsage(this, event);
                 return;
             }
             switch (args[0]) {
@@ -44,73 +45,115 @@ public class PermCommand extends Command {
                     if (Helpers.hasPerm(member, this.commandName + ".add", 1)) {
                         if (args.length == 3) {
                             if (Helpers.perms.contains(args[2])) {
-                                String roleName;
-                                if (args[1].equalsIgnoreCase("everyone")) {
-                                    roleName = "@everyone";
-                                    mySQL.addPermission(guild, null, args[2]);
-                                } else if (roles.size() == 1) {
-                                    roleName = roles.get(0).getName();
-                                    mySQL.addPermission(guild, roles.get(0), args[2]);
-                                } else if (event.getMessage().getMentionedMembers().size() == 1) {
-                                    if (event.getMessage().getMentionedMembers().get(0).getRoles().size() != 0) {
-                                        roleName = event.getMessage().getMentionedMembers().get(0).getRoles().get(0).getName();
-                                        mySQL.addPermission(guild, event.getMessage().getMentionedMembers().get(0).getRoles().get(0), args[2]);
-                                    } else {
-                                        roleName = "error200002020";
-                                    }
-                                } else {
-                                    roleName = jda.getRoleById(args[1]).getName();
-                                    mySQL.addPermission(guild, jda.getRoleById(args[1]), args[2]);
-                                }
-                                switch (roleName) {
-                                    case "error200002020":
-                                        event.reply("Error: the user that you tagged has no roles.");
+                                String mode = "default";
+                                if (args[1].matches("<@" + "\\d+" + ">")) mode = "user";
+                                if (args[1].matches("<@&" + "\\d+" + ">")) mode = "role";
+                                if (args[1].matches("\\d+")) mode = "id";
+                                if (args[1].matches("everyone")) mode = "everyone";
+
+                                switch (mode) {
+                                    case "user":
+                                        if (mentionedUsers.size() == 1) {
+                                            User target = mentionedUsers.get(0);
+                                            mySQL.addUserPermission(guild, target, args[2]);
+                                            event.reply("Permission: `" + args[2] + "` added to `" + target.getName() + "#" + target.getDiscriminator() + "`");
+                                        }
+                                        break;
+                                    case "role":
+                                        if (mentionedRoles.size() == 1) {
+                                            Role target = mentionedRoles.get(0);
+                                            mySQL.addRolePermission(guild, target, args[2]);
+                                            event.reply("Permission: `" + args[2] + "` added to `@" + target.getName() + "`");
+                                        }
+                                        break;
+                                    case "id":
+                                        if (guild.getRoleById(args[1]) == null && guild.getMemberById(args[1]) == null) {
+                                            MessageHelper.sendUsage(this, event);
+                                        } else if (guild.getRoleById(args[1]) == null && guild.getMemberById(args[1]) != null) {
+                                            User target = jda.getUserById(args[1]);
+                                            mySQL.addUserPermission(guild, target, args[2]);
+                                            event.reply("Permission: `" + args[2] + "` added to `" + target.getName() + "#" + target.getDiscriminator() + "`");
+                                        } else if (guild.getRoleById(args[1]) != null && guild.getMemberById(args[1]) == null) {
+                                            Role target =  guild.getRoleById(args[1]);
+                                            mySQL.addRolePermission(guild, target, args[2]);
+                                            event.reply("Permission: `" + args[2] + "` added to `@" + target.getName() + "`");
+                                        } else {
+                                            event.reply("NANI!?");
+                                            return;
+                                        }
+                                        break;
+                                    case "everyone":
+                                        mySQL.addRolePermission(guild, guild.getRoleById(guild.getId()), args[2]);
+                                        event.reply("Permission: `" + args[2] + "` added to `@everyone`");
                                         break;
                                     default:
-                                        event.reply("`" + args[2] + "`" + " has been added to " + roleName);
+                                        MessageHelper.sendUsage(this, event);
                                         break;
                                 }
                             } else {
-                                event.reply("The provided permission is not inside the list on http://pixelnetwork.be/commands");
+                                event.reply(">perm list".replaceFirst(">", mySQL.getPrefix(event.getGuild())));
                             }
                         } else {
-                            event.reply("Fill in all the values please.\nUse " + PREFIX + "help to check the usage of the command.");
-                            return;
+                            MessageHelper.sendUsage(this, event);
                         }
                     } else {
                         event.reply(Helpers.noPerms + "`" + this.commandName + ".add`.");
-                        return;
                     }
                     break;
                 case "remove":
                     if (Helpers.hasPerm(member, this.commandName + ".remove", 1)) {
                         if (args.length == 3) {
                             if (Helpers.perms.contains(args[2])) {
-                                String roleName;
-                                if (args[1].equalsIgnoreCase("everyone")) {
-                                    roleName = "@everyone";
-                                    mySQL.removePermission(guild, null, args[2]);
-                                } else if (roles.size() == 1) {
-                                    roleName = roles.get(0).getName();
-                                    mySQL.removePermission(guild, roles.get(0), args[2]);
-                                } else if (event.getMessage().getMentionedMembers().size() == 1) {
-                                    if (event.getMessage().getMentionedMembers().get(0).getRoles().size() != 0) {
-                                        roleName = event.getMessage().getMentionedMembers().get(0).getRoles().get(0).getName();
-                                        mySQL.removePermission(guild, event.getMessage().getMentionedMembers().get(0).getRoles().get(0), args[2]);
-                                    } else {
-                                        roleName = "error200002020";
-                                    }
-                                } else {
-                                    roleName = jda.getRoleById(args[1]).getName();
-                                    mySQL.removePermission(guild, jda.getRoleById(args[1]), args[2]);
+                                String mode = "default";
+                                if (args[1].matches("<@" + "\\d+" + ">")) mode = "user";
+                                if (args[1].matches("<@&" + "\\d+" + ">")) mode = "role";
+                                if (args[1].matches("\\d+")) mode = "id";
+                                if (args[1].matches("everyone")) mode = "everyone";
+
+                                switch (mode) {
+                                    case "user":
+                                        if (mentionedUsers.size() == 1) {
+                                            User target = mentionedUsers.get(0);
+                                            mySQL.removeUserPermission(guild, target, args[2]);
+                                            event.reply("Permission: `" + args[2] + "` removed from `" + target.getName() + "#" + target.getDiscriminator() + "`");
+                                        }
+                                        break;
+                                    case "role":
+                                        if (mentionedRoles.size() == 1) {
+                                            Role target = mentionedRoles.get(0);
+                                            mySQL.removeRolePermission(guild, target, args[2]);
+                                            event.reply("Permission: `" + args[2] + "` removed from `@" + target.getName() + "`");
+                                        }
+                                        break;
+                                    case "id":
+                                        if (guild.getRoleById(args[1]) == null && guild.getMemberById(args[1]) == null) {
+                                            MessageHelper.sendUsage(this, event);
+                                        } else if (guild.getRoleById(args[1]) == null && guild.getMemberById(args[1]) != null) {
+                                            User target = jda.getUserById(args[1]);
+                                            mySQL.removeUserPermission(guild, target, args[2]);
+                                            event.reply("Permission: `" + args[2] + "` removed from `" + target.getName() + "#" + target.getDiscriminator() + "`");
+                                        } else if (guild.getRoleById(args[1]) != null && guild.getMemberById(args[1]) == null) {
+                                            Role target =  guild.getRoleById(args[1]);
+                                            mySQL.removeRolePermission(guild, target, args[2]);
+                                            event.reply("Permission: `" + args[2] + "` removed from `@" + target.getName() + "`");
+                                        } else {
+                                            event.reply("NANI!?");
+                                            return;
+                                        }
+                                        break;
+                                    case "everyone":
+                                        mySQL.removeRolePermission(guild, guild.getRoleById(guild.getId()), args[2]);
+                                        event.reply("Permission: `" + args[2] + "` removed from `@everyone`");
+                                        break;
+                                    default:
+                                        MessageHelper.sendUsage(this, event);
+                                        break;
                                 }
-                                if (roleName.equals("error200002020")) event.reply("Error: the user that you tagged has no roles.");
-                                else event.reply("`" + args[2] + "`" + " has been deleted from " + roleName);
                             } else {
-                                event.reply("The provided permission is not inside the list on http://pixelnetwork.be/commands");
+                                event.reply(">perm list".replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild())));
                             }
                         } else {
-                            event.reply("Fill in all the values please.\nUse " + PREFIX + "help to check the usage of the command.");
+                            MessageHelper.sendUsage(this, event);
                             return;
                         }
                     } else {
@@ -121,114 +164,129 @@ public class PermCommand extends Command {
                 case "clear":
                     if (Helpers.hasPerm(member, this.commandName + ".clear", 1)) {
                         if (args.length == 2) {
-                            String roleName = "error";
-                            if (args[1].equalsIgnoreCase("everyone")) {
-                                roleName = "@everyone";
-                                mySQL.clearPermissions(guild, null);
-                            } else if (roles.size() == 1) {
-                                roleName = roles.get(0).getName();
-                                mySQL.clearPermissions(guild, roles.get(0));
-                            } else if (event.getMessage().getMentionedMembers().size() == 1) {
-                                if (event.getMessage().getMentionedMembers().get(0).getRoles().size() != 0) {
-                                    roleName = event.getMessage().getMentionedMembers().get(0).getRoles().get(0).getName();
-                                    mySQL.clearPermissions(guild, event.getMessage().getMentionedMembers().get(0).getRoles().get(0));
-                                } else {
-                                    roleName = "error200002020";
-                                }
-                            } else {
-                                if (jda.getRoleById(args[1]) != null) {
-                                    roleName = jda.getRoleById(args[1]).getName();
-                                    mySQL.clearPermissions(guild, jda.getRoleById(args[1]));
-                                }
-                            }
-                            switch (roleName) {
-                                case "error":
-                                    event.reply("Error: " + args[1] + " is not a valid id.");
+                            String mode = "default";
+                            if (args[1].matches("<@" + "\\d+" + ">")) mode = "user";
+                            if (args[1].matches("<@&" + "\\d+" + ">")) mode = "role";
+                            if (args[1].matches("\\d+")) mode = "id";
+                            if (args[1].matches("everyone")) mode = "everyone";
+
+                            switch (mode) {
+                                case "user":
+                                    if (mentionedUsers.size() == 1) {
+                                        User target = mentionedUsers.get(0);
+                                        mySQL.clearUserPermissions(guild, target);
+                                        event.reply("Permissions off `" + target.getName() + "#" + target.getDiscriminator() + "` have been cleared");
+                                    }
                                     break;
-                                case "error200002020":
-                                    event.reply("Error: the user that you tagged has no roles.");
+                                case "role":
+                                    if (mentionedRoles.size() == 1) {
+                                        Role target = mentionedRoles.get(0);
+                                        mySQL.clearRolePermissions(guild, target);
+                                        event.reply("Permissions off `@" + target.getName() + "` have been cleared");
+                                    }
+                                    break;
+                                case "id":
+                                    if (guild.getRoleById(args[1]) == null && guild.getMemberById(args[1]) == null) {
+                                        MessageHelper.sendUsage(this, event);
+                                    } else if (guild.getRoleById(args[1]) == null && guild.getMemberById(args[1]) != null) {
+                                        User target = jda.getUserById(args[1]);
+                                        mySQL.clearUserPermissions(guild, target);
+                                        event.reply("Permissions off `" + target.getName() + "#" + target.getDiscriminator() + "` have been cleared");
+                                    } else if (guild.getRoleById(args[1]) != null && guild.getMemberById(args[1]) == null) {
+                                        Role target =  guild.getRoleById(args[1]);
+                                        mySQL.clearRolePermissions(guild, target);
+                                        event.reply("Permissions off `@" + target.getName() + "` have been cleared");
+                                    } else {
+                                        event.reply("NANI!?");
+                                        return;
+                                    }
+                                    break;
+                                case "everyone":
+                                    mySQL.clearRolePermissions(guild, guild.getRoleById(guild.getId()));
+                                    event.reply("Permissions off `@everyone` have been cleared");
                                     break;
                                 default:
-                                    event.reply("Permissions cleared for " + roleName);
+                                    MessageHelper.sendUsage(this, event);
                                     break;
                             }
                         } else {
-                            event.reply("Fill in all the values please.\nUse " + PREFIX + "help to check the usage of the command.");
+                            MessageHelper.sendUsage(this, event);
                             return;
                         }
                     } else {
-                        event.reply(Helpers.noPerms + "`" + this.commandName + ".remove`.");
+                        event.reply(Helpers.noPerms + "`" + this.commandName + ".clear`.");
                         return;
                     }
                     break;
                 case "view":
                     if (Helpers.hasPerm(member, this.commandName + ".view", 0)) {
                         if (args.length == 2) {
-                            List<String> lijst;
-                            Role role;
-                            boolean error = false;
-                            if (args[1].equalsIgnoreCase("everyone")) {
-                                role = null;
-                            } else if (roles.size() == 1) {
-                                role = roles.get(0);
-                            } else if (event.getMessage().getMentionedMembers().size() == 1) {
-                                if (event.getMessage().getMentionedMembers().get(0).getRoles().size() != 0) {
-                                    role = event.getMessage().getMentionedMembers().get(0).getRoles().get(0);
-                                } else {
-                                    error = true;
-                                    role = null;
-                                }
-                            } else {
-                                if (!args[1].matches("\\d+") || jda.getRoleById(args[1]) == null) {
-                                    event.reply("`" + args[1] + "` is not a valid id. exampleId: '260424455270957058'");
-                                    return;
-                                }
-                                role = jda.getRoleById(args[1]);
-                            }
+                            List<String> lijst = new ArrayList<>();
+                            String targetName = "default";
+                            String mode = "default";
+                            if (args[1].matches("<@" + "\\d+" + ">")) mode = "user";
+                            if (args[1].matches("<@&" + "\\d+" + ">")) mode = "role";
+                            if (args[1].matches("\\d+")) mode = "id";
+                            if (args[1].matches("everyone")) mode = "everyone";
 
-                            String roleName;
-                            if (role == null && error) {
-                                event.reply("Error: the user that you tagged has no roles.");
-                                return;
-                            } else roleName = role == null ? "@everyone" : role.getName();
-
-                            lijst = mySQL.getPermissions(guild, role);
-                            StringBuilder builder = new StringBuilder();
-                            for (String s : lijst) {
-                                builder.append(s).append("\n");
-                            }
-                            if (builder.toString().length() > 1800) {
-                                int part = 1;
-                                builder = new StringBuilder();
-                                for (String s : lijst) {
-                                    if (builder.toString().length() + s.length() > 1800) {
-                                        EmbedBuilder eb = new EmbedBuilder();
-                                        eb.setTitle("Permissions of " + roleName + " #" + part);
-                                        eb.setColor(Helpers.EmbedColor);
-                                        eb.setDescription(builder.toString());
-                                        eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
-                                        event.reply(eb.build());
-                                        builder = new StringBuilder();
-                                        part++;
+                            switch (mode) {
+                                case "user":
+                                    if (mentionedUsers.size() == 1) {
+                                        lijst = mySQL.getUserPermissions(guild, mentionedUsers.get(0));
+                                        targetName = mentionedUsers.get(0).getName() + "#" + mentionedUsers.get(0).getDiscriminator();
                                     }
-                                    builder.append(s).append("\n");
-                                }
-                                EmbedBuilder eb = new EmbedBuilder();
-                                eb.setTitle("Permissions of " + roleName + " #" + (part + 1));
-                                eb.setColor(Helpers.EmbedColor);
-                                eb.setDescription(builder.toString());
-                                eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
-                                event.reply(eb.build());
-                            } else {
-                                EmbedBuilder eb = new EmbedBuilder();
-                                eb.setTitle("Permissions of " + roleName);
-                                eb.setColor(Helpers.EmbedColor);
-                                eb.setDescription(builder.toString());
-                                eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
-                                event.reply(eb.build());
+                                    break;
+                                case "role":
+                                    if (mentionedRoles.size() == 1) {
+                                        lijst = mySQL.getRolePermissions(guild, mentionedRoles.get(0));
+                                        targetName = "@" + mentionedRoles.get(0).getName();
+
+                                    }
+                                    break;
+                                case "id":
+                                    if (guild.getRoleById(args[1]) == null && guild.getMemberById(args[1]) == null) {
+                                        MessageHelper.sendUsage(this, event);
+                                    } else if (guild.getRoleById(args[1]) == null && guild.getMemberById(args[1]) != null) {
+                                        User target = jda.getUserById(args[1]);
+                                        lijst = mySQL.getUserPermissions(guild, target);
+                                        targetName = target.getName() + "#" + target.getDiscriminator();
+                                    } else if (guild.getRoleById(args[1]) != null && guild.getMemberById(args[1]) == null) {
+                                        lijst = mySQL.getRolePermissions(guild, guild.getRoleById(args[1]));
+                                        targetName = "@" + mentionedRoles.get(0).getName();
+                                    } else {
+                                        event.reply("NANI!?");
+                                        return;
+                                    }
+                                    break;
+                                case "everyone":
+                                    lijst = mySQL.getRolePermissions(guild, guild.getRoleById(guild.getId()));
+                                    targetName = "@everyone";
+                                    break;
+                                default:
+                                    MessageHelper.sendUsage(this, event);
+                                    return;
                             }
+                            int partNumber = 0;
+                            StringBuilder sb = new StringBuilder();
+                            for (String s : lijst) {
+                                sb.append(s);
+                                if (sb.toString().length() > 1900) {
+                                    event.reply(new EmbedBuilder()
+                                            .setTitle("Permissions off `" + targetName + "` part #" + partNumber++)
+                                            .setColor(Helpers.EmbedColor)
+                                            .setDescription(sb.toString())
+                                            .build());
+                                    sb = new StringBuilder();
+                                }
+                            }
+                            String title = partNumber == 0 ? "Permissions off `" + targetName + "`" : "Permissions off `" + targetName + "` part #" + partNumber;
+                            event.reply(new EmbedBuilder()
+                                    .setTitle(title)
+                                    .setColor(Helpers.EmbedColor)
+                                    .setDescription(sb.toString())
+                                    .build());
                         } else {
-                            event.reply("Fill in all the values please.\nUse " + PREFIX + "help to check the usage of the command.");
+                            MessageHelper.sendUsage(this, event);
                             return;
                         }
                     } else {
@@ -239,239 +297,95 @@ public class PermCommand extends Command {
                 case "copy":
                     if (Helpers.hasPerm(member, this.commandName + ".copy", 1)) {
                         if (args.length == 3) {
-                            if (args[1].equals(args[2])) {
-                                event.reply("That doesn't make sense to me..");
-                                return;
-                            }
-                            String[] rawArgs = event.getMessage().getContentRaw().split("\\s+");
-                            List<Role> mentionedRoles = event.getMessage().getMentionedRoles();
-                            List<Member> mentionedMembers = event.getMessage().getMentionedMembers();
-                            for (Member memberCheck : mentionedMembers) {
-                                if (memberCheck.getRoles().size() == 0) {
-                                    event.reply("One of the targets has no roles");
+                            String transmitterMode = "default";
+                            String receiverMode = "default";
+                            User transmitter = null;
+                            User receiver = null;
+                            Role transmitterRole = null;
+                            Role receiverRole = null ;
+                            if (args[1].matches("<@" + "\\d+" + ">")) transmitterMode = "user";
+                            if (args[1].matches("<@&" + "\\d+" + ">")) transmitterMode = "role";
+                            if (args[1].matches("\\d+")) transmitterMode = "id";
+                            if (args[1].matches("everyone")) transmitterMode = "everyone";
+                            if (args[2].matches("<@" + "\\d+" + ">")) receiverMode = "user";
+                            if (args[2].matches("<@&" + "\\d+" + ">")) receiverMode = "role";
+                            if (args[2].matches("\\d+")) receiverMode = "id";
+                            if (args[2].matches("everyone")) receiverMode = "everyone";
+
+                            switch (transmitterMode) {
+                                case "user":
+                                    if (mentionedUsers.size() == 1) {
+                                        transmitter = mentionedUsers.get(0);
+                                    }
+                                    break;
+                                case "role":
+                                    if (mentionedRoles.size() == 1) {
+                                        transmitterRole = mentionedRoles.get(0);
+                                    }
+                                    break;
+                                case "id":
+                                    if (guild.getRoleById(args[1]) == null && guild.getMemberById(args[1]) == null) {
+                                        MessageHelper.sendUsage(this, event);
+                                        return;
+                                    } else if (guild.getRoleById(args[1]) == null && guild.getMemberById(args[1]) != null) {
+                                        transmitter = jda.getUserById(args[1]);
+                                    } else if (guild.getRoleById(args[1]) != null && guild.getMemberById(args[1]) == null) {
+                                        transmitterRole = guild.getRoleById(args[1]);
+                                    } else {
+                                        event.reply("NANI!?");
+                                        return;
+                                    }
+                                    break;
+                                case "everyone":
+                                    transmitterRole = guild.getRoleById(guild.getId());
+                                    break;
+                                default:
+                                    MessageHelper.sendUsage(this, event);
                                     return;
-                                }
                             }
-                            int fallback = 0;
-                            if (rawArgs[2].equalsIgnoreCase("everyone")) {
-                                rawArgs[2] = guild.getRoles().get(0).getId();
-                                fallback = 1;
-                            }
-                            if (rawArgs[3].equalsIgnoreCase("everyone")) {
-                                rawArgs[3] = guild.getRoles().get(0).getId();
-                                fallback = 2;
-                            }
-                            Role role1;
-                            Role role2;
-                            int mentionedMembersCount = mentionedMembers.size();
-                            int mentionedRolesCount = mentionedRoles.size();
-                            if (mentionedMembersCount == 2) {
-                                if (rawArgs[2].equals("<@" + mentionedMembers.get(0).getUser().getId() + ">")) {
-                                    role1 = mentionedMembers.get(0).getRoles().get(0);
-                                    role2 = mentionedMembers.get(1).getRoles().get(0);
-                                } else {
-                                    role1 = mentionedMembers.get(1).getRoles().get(0);
-                                    role2 = mentionedMembers.get(0).getRoles().get(0);
-                                }
-                            } else if (mentionedRolesCount == 2) {
-                                if (rawArgs[2].equals("<@" + mentionedRoles.get(0).getId() + ">")) {
-                                    role1 = mentionedRoles.get(0);
-                                    role2 = mentionedRoles.get(1);
-                                } else {
-                                    role1 = mentionedRoles.get(1);
-                                    role2 = mentionedRoles.get(0);
-                                }
-                            } else if (mentionedMembersCount == 1 && mentionedRolesCount == 1) {
-                                if (rawArgs[2].equals("<@" + mentionedMembers.get(0).getUser().getId() + ">")) {
-                                    role1 = mentionedMembers.get(0).getRoles().get(0);
-                                    role2 = mentionedRoles.get(0);
-                                } else {
-                                    role1 = mentionedRoles.get(0);
-                                    role2 = mentionedMembers.get(0).getRoles().get(0);
-                                }
-                            } else if (mentionedMembersCount == 1 && mentionedRolesCount == 0) {
-                                if (rawArgs[2].equals("<@" + mentionedMembers.get(0).getUser().getId() + ">")) {
-                                    role1 = mentionedMembers.get(0).getRoles().get(0);
-                                    if (rawArgs[3].matches("\\d+")) {
-                                        if (jda.getUserById(rawArgs[3]) != null) {
-                                            if (guild.getMember(jda.getUserById(rawArgs[3])) != null) {
-                                                if (guild.getMember(jda.getUserById(rawArgs[3])).getRoles().size() != 0) {
-                                                    role2 = guild.getMember(jda.getUserById(rawArgs[3])).getRoles().get(0);
-                                                } else {
-                                                    event.reply("(Arg 2) Member has no roles!");
-                                                    return;
-                                                }
-                                            } else {
-                                                event.reply("(Arg 2) User isn't a member!");
-                                                return;
-                                            }
-                                        } else if (jda.getRoleById(rawArgs[3]) != null) {
-                                            role2 = jda.getRoleById(rawArgs[3]);
-                                        } else {
-                                            event.reply("(Arg 2) Unknown Id!");
-                                            return;
-                                        }
+
+                            switch (receiverMode) {
+                                case "user":
+                                    if (mentionedUsers.size() == 1) {
+                                        receiver = mentionedUsers.get(0);
+                                    }
+                                    break;
+                                case "role":
+                                    if (mentionedRoles.size() == 1) {
+                                        receiverRole = mentionedRoles.get(0);
+                                    }
+                                    break;
+                                case "id":
+                                    if (guild.getRoleById(args[1]) == null && guild.getMemberById(args[1]) == null) {
+                                        MessageHelper.sendUsage(this, event);
+                                        return;
+                                    } else if (guild.getRoleById(args[1]) == null && guild.getMemberById(args[1]) != null) {
+                                        receiver = jda.getUserById(args[1]);
+                                    } else if (guild.getRoleById(args[1]) != null && guild.getMemberById(args[1]) == null) {
+                                        receiverRole = guild.getRoleById(args[1]);
                                     } else {
-                                        event.reply("(Arg 2) Isn't an Id!");
+                                        event.reply("NANI!?");
                                         return;
                                     }
-                                } else {
-                                    role2 = mentionedMembers.get(0).getRoles().get(0);
-                                    if (rawArgs[2].matches("\\d+")) {
-                                        if (jda.getUserById(rawArgs[2]) != null) {
-                                            if (guild.getMember(jda.getUserById(rawArgs[2])) != null) {
-                                                if (guild.getMember(jda.getUserById(rawArgs[2])).getRoles().size() != 0) {
-                                                    role1 = guild.getMember(jda.getUserById(rawArgs[2])).getRoles().get(0);
-                                                } else {
-                                                    event.reply("(Arg 1) Member has no roles!");
-                                                    return;
-                                                }
-                                            } else {
-                                                event.reply("(Arg 1) User isn't a member!");
-                                                return;
-                                            }
-                                        } else if (jda.getRoleById(rawArgs[2]) != null) {
-                                            role1 = jda.getRoleById(rawArgs[2]);
-                                        } else {
-                                            event.reply("(Arg 1) Unknown Id!");
-                                            return;
-                                        }
-                                    } else {
-                                        event.reply("(Arg 1) Isn't an Id");
-                                        return;
-                                    }
-                                }
-                            } else if (mentionedMembersCount == 0 && mentionedRolesCount == 1) {
-                                if (rawArgs[2].equals("<@" + mentionedRoles.get(0).getId() + ">")) {
-                                    role1 = mentionedRoles.get(0);
-                                    if (rawArgs[3].matches("\\d+")) {
-                                        if (jda.getUserById(rawArgs[3]) != null) {
-                                            if (guild.getMember(jda.getUserById(rawArgs[3])) != null) {
-                                                if (guild.getMember(jda.getUserById(rawArgs[3])).getRoles().size() != 0) {
-                                                    role2 = guild.getMember(jda.getUserById(rawArgs[3])).getRoles().get(0);
-                                                } else {
-                                                    event.reply("(Arg 2) Member has no roles!");
-                                                    return;
-                                                }
-                                            } else {
-                                                event.reply("(Arg 2) User isn't a member!");
-                                                return;
-                                            }
-                                        } else if (jda.getRoleById(rawArgs[3]) != null) {
-                                            role2 = jda.getRoleById(rawArgs[3]);
-                                        } else {
-                                            event.reply("(Arg 2) Unknown Id!");
-                                            return;
-                                        }
-                                    } else {
-                                        event.reply("(Arg 2) isn't an Id!");
-                                        return;
-                                    }
-                                } else {
-                                    role2 = mentionedRoles.get(0);
-                                    if (rawArgs[2].matches("\\d+")) {
-                                        if (jda.getUserById(rawArgs[2]) != null) {
-                                            if (guild.getMember(jda.getUserById(rawArgs[2])) != null) {
-                                                if (guild.getMember(jda.getUserById(rawArgs[2])).getRoles().size() != 0) {
-                                                    role1 = guild.getMember(jda.getUserById(rawArgs[2])).getRoles().get(0);
-                                                } else {
-                                                    event.reply("(Arg 1) Member has no roles!");
-                                                    return;
-                                                }
-                                            } else {
-                                                event.reply("(Arg 1) User isn't a member!");
-                                                return;
-                                            }
-                                        } else if (jda.getRoleById(rawArgs[2]) != null) {
-                                            role1 = jda.getRoleById(rawArgs[2]);
-                                        } else {
-                                            event.reply("(Arg 1) Unknown Id!");
-                                            return;
-                                        }
-                                    } else {
-                                        event.reply("(Arg 1) Isn't an Id!");
-                                        return;
-                                    }
-                                }
-                            } else if (mentionedMembersCount == 0 && mentionedRolesCount == 0) {
-                                if (rawArgs[2].matches("\\d+") && rawArgs[3].matches("\\d+")) {
-                                    if (guild.getRoleById(rawArgs[2]) != null) {
-                                        role1 = guild.getRoleById(rawArgs[2]);
-                                        if (guild.getRoleById(rawArgs[3]) != null) {
-                                            role2 = guild.getRoleById(rawArgs[3]);
-                                        } else if (jda.getUserById(rawArgs[3]) != null) {
-                                            User user = jda.getUserById(rawArgs[3]);
-                                            if (guild.getMember(user) != null) {
-                                                if (guild.getMember(user).getRoles().size() != 0) {
-                                                    role2 = guild.getMember(user).getRoles().get(0);
-                                                } else {
-                                                    event.reply("(Arg 2) The member has no roles!");
-                                                    return;
-                                                }
-                                            } else {
-                                                event.reply("(Arg 2) User isn't a member!");
-                                                return;
-                                            }
-                                        } else {
-                                            event.reply("(Arg 2) Unknown Id!");
-                                            return;
-                                        }
-                                    } else if (jda.getUserById(rawArgs[2]) != null) {
-                                        if (jda.getUserById(rawArgs[3]) != null) {
-                                            User user1 = jda.getUserById(rawArgs[2]);
-                                            User user2 = jda.getUserById(rawArgs[3]);
-                                            if (guild.getMember(user1) != null && guild.getMember(user2) != null) {
-                                                if (guild.getMember(user1).getRoles().size() != 0 && guild.getMember(user2).getRoles().size() != 0) {
-                                                    role1 = guild.getMember(user1).getRoles().get(0);
-                                                    role2 = guild.getMember(user2).getRoles().get(0);
-                                                } else {
-                                                    event.reply("At least 1 member has no roles!");
-                                                    return;
-                                                }
-                                            } else {
-                                                event.reply("At least 1 user isn't a member of this guild!");
-                                                return;
-                                            }
-                                        } else if (guild.getRoleById(rawArgs[3]) != null) {
-                                            role2 = guild.getRoleById(rawArgs[3]);
-                                            User user = jda.getUserById(rawArgs[2]);
-                                            if (guild.getMember(user) != null) {
-                                                if (guild.getMember(user).getRoles().size() != 0) {
-                                                    role1 = guild.getMember(user).getRoles().get(0);
-                                                } else {
-                                                    event.reply("(Arg 1) The member has no roles!");
-                                                    return;
-                                                }
-                                            } else {
-                                                event.reply("(Arg 1) User isn't a member!");
-                                                return;
-                                            }
-                                        } else {
-                                            event.reply("(Arg 2) Unknown Id!");
-                                            return;
-                                        }
-                                    } else {
-                                        event.reply("(Arg 1) Unknown Id!");
-                                        return;
-                                    }
-                                } else {
-                                    event.reply("Your args aren't Id's nor mentions!");
+                                    break;
+                                case "everyone":
+                                    receiverRole = guild.getRoleById(guild.getId());
+                                    break;
+                                default:
+                                    MessageHelper.sendUsage(this, event);
                                     return;
-                                }
-                            } else {
-                                event.reply("To many tagged roles or users!");
-                                return;
                             }
-                            if (fallback == 1) role1 = null;
-                            if (fallback == 2) role2 = null;
-                            if (role1 == role2) {
-                                event.reply("That doesn't make sense to me..");
-                                return;
+
+                            if (transmitter != null && receiver != null) {
+                                mySQL.copyUserPermissions(guild, transmitter, receiver);
+                                event.reply("Copied all permissions from `" + transmitter.getName() + "#" + transmitter.getDiscriminator() + "` to `" + receiver.getName() + "#" + receiver.getDiscriminator() + "`");
+                            } else if (transmitter != null && receiverRole != null) {
+                                mySQL.copyUserRolePermissions(transmitter, receiverRole);
+                            } else if (transmitterRole != null && receiverRole != null) {
+                                mySQL.copyRolePermissions(transmitterRole, receiverRole);
+                            } else if (transmitterRole != null && receiver != null) {
+                                mySQL.copyRoleUserPermissions(transmitterRole, receiver);
                             }
-                            PixelSniper.mySQL.copyPermissions(guild, role1, role2);
-                            String roleName1 = role1 == null ? "@everyone" : role1.getName();
-                            String roleName2 = role2 == null ? "@everyone" : role2.getName();
-                            event.reply("I copied all permissions from `" + roleName1 + "` to `" + roleName2 + "`.");
                         }
                     }
                     break;

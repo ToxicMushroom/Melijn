@@ -1,5 +1,8 @@
 package com.pixelatedsource.jda.utils;
 
+import com.pixelatedsource.jda.PixelSniper;
+import com.pixelatedsource.jda.blub.Command;
+import com.pixelatedsource.jda.blub.CommandEvent;
 import net.dv8tion.jda.core.entities.User;
 
 import java.util.ArrayList;
@@ -53,5 +56,9 @@ public class MessageHelper {
         }
         System.exit(86400);
         return 0;
+    }
+
+    public static void sendUsage(Command cmd, CommandEvent event) {
+        event.reply(cmd.getUsage().replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild())));
     }
 }
