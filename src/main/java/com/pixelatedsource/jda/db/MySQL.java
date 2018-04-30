@@ -49,6 +49,7 @@ public class MySQL {
             update("CREATE TABLE IF NOT EXISTS log_channels(guildId varchar(128), channelId varchar(128))");
             update("CREATE TABLE IF NOT EXISTS music_channels(guildId varchar(128), channelId varchar(128))");
             update("CREATE TABLE IF NOT EXISTS streamer_modes(guildId varchar(128), state boolean)");
+            update("CREATE TABLE IF NOT EXISTS filters(guildId varchar(128), mode varchar(16), content varchar(2000))");
             update("CREATE TABLE IF NOT EXISTS warns(guildId varchar(128), victimId varchar(128), authorId varchar(128), reason varchar(2000), moment bigint);");
             update("CREATE TABLE IF NOT EXISTS active_bans(guildId varchar(128), victimId varchar(128), authorId varchar(128), reason varchar(2000), startTime bigint, endTime bigint);");
             update("CREATE TABLE IF NOT EXISTS history_bans(guildId varchar(128), victimId varchar(128), authorId varchar(128), reason varchar(2000), startTime bigint, endTime bigint, active boolean);");
@@ -1049,5 +1050,49 @@ public class MySQL {
             e.printStackTrace();
             return false;
         }
+    }
+
+    //Filter stuff-----------------------------------------
+    public void addFilter(Guild guild, String mode, String content) {
+        try {
+            PreparedStatement addFilter = con.prepareStatement("INSERT INTO filters (guildId, mode, content) VALUES (?, ?, ?)");
+            addFilter.setString(1, guild.getId());
+            addFilter.setString(2, mode);
+            addFilter.setString(3, content);
+            addFilter.executeUpdate();
+            addFilter.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void removeFilter(Guild guild, String mode, String content) {
+        try {
+            PreparedStatement addFilter = con.prepareStatement("DELETE FROM filters WHERE guildId= ? AND mode= ? AND content= ?");
+            addFilter.setString(1, guild.getId());
+            addFilter.setString(2, mode);
+            addFilter.setString(3, content);
+            addFilter.executeUpdate();
+            addFilter.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<String> getFilters(Guild guild, String mode) {
+        List<String> filters = new ArrayList<>();
+        try {
+            PreparedStatement addFilter = con.prepareStatement("SELECT * FROM filters WHERE guildId= ? AND mode= ?");
+            addFilter.setString(1, guild.getId());
+            addFilter.setString(2, mode);
+            ResultSet rs = addFilter.executeQuery();
+            while (rs.next()) {
+                filters.add(rs.getString("content"));
+            }
+            addFilter.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return filters;
     }
 }

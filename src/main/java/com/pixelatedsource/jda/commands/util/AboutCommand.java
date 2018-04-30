@@ -32,7 +32,7 @@ public class AboutCommand extends Command {
             eb.addField("Author", "[ToxicMushroom](https://www.youtube.com/toxicmushroom)", true);
             eb.addField("Total server count", String.valueOf(event.getJDA().getGuilds().size()), true);
             eb.addField("Total user count", String.valueOf(event.getJDA().getUsers().size()), true);
-            eb.addField("Libs", "[JDA](https://github.com/DV8FromTheWorld/JDA), [JDA-Utilities](https://github.com/JDA-Applications/JDA-Utilities), [LavaPlayer](https://github.com/sedmelluq/lavaplayer)", false);
+            eb.addField("Libs", "[JDA](https://github.com/DV8FromTheWorld/JDA), [OK-HTTP](https://github.com/square/okhttp), [LavaPlayer](https://github.com/sedmelluq/lavaplayer)", false);
             eb.addField("Online time", Helpers.getOnlineTime(), false);
             int i = 0;
             for (Guild guild : event.getJDA().getGuilds()) {

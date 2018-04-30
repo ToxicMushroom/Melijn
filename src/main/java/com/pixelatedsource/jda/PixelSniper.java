@@ -3,8 +3,9 @@ package com.pixelatedsource.jda;
 import com.pixelatedsource.jda.blub.CommandClient;
 import com.pixelatedsource.jda.blub.CommandClientBuilder;
 import com.pixelatedsource.jda.commands.HelpCommand;
-import com.pixelatedsource.jda.commands.animals.CatCommand;
-import com.pixelatedsource.jda.commands.animals.DogCommand;
+import com.pixelatedsource.jda.commands.fun.CatCommand;
+import com.pixelatedsource.jda.commands.fun.DogCommand;
+import com.pixelatedsource.jda.commands.fun.PotatoCommand;
 import com.pixelatedsource.jda.commands.management.*;
 import com.pixelatedsource.jda.commands.music.*;
 import com.pixelatedsource.jda.commands.util.*;
@@ -45,7 +46,7 @@ public class PixelSniper extends ListenerAdapter {
         CommandClientBuilder client = new CommandClientBuilder();
         client.setOwnerId(OWNERID);
         client.setPrefix(PREFIX);
-        client.addCommands(new PauseCommand(), new SPlayCommand(), new BanCommand(), new HistoryCommand(), new MuteCommand(), new SetMuteRoleCommand(), new TempMuteCommand(), new UnmuteCommand(), new AvatarCommand(), new WarnCommand(), new PurgeCommand(), new HelpCommand(), new PingCommand(), new PlayCommand(), new QueueCommand(), new CatCommand(), new SkipCommand(), new ClearCommand(), new StopCommand(), new ResumeCommand(), new VolumeCommand(), new AboutCommand(), new PlayerinfoCommand(), new LoopCommand(), new TexttoemojiCommand(), new SkipXCommand(), new PermCommand(), new NowPlayingCommand(), new RemoveCommand(), new GuildInfoCommand(), new RoleInfoCommand(), new DogCommand(), new SetPrefixCommand(), new SetMusicChannelCommand(), new SetLogChannelCommand(), new TempBanCommand(), new UnbanCommand(), new SetStreamerModeCommand(), new SetStreamUrlCommand());
+        client.addCommands(new FilterCommand(), new PotatoCommand(), new PauseCommand(), new SPlayCommand(), new BanCommand(), new HistoryCommand(), new MuteCommand(), new SetMuteRoleCommand(), new TempMuteCommand(), new UnmuteCommand(), new AvatarCommand(), new WarnCommand(), new PurgeCommand(), new HelpCommand(), new PingCommand(), new PlayCommand(), new QueueCommand(), new CatCommand(), new SkipCommand(), new ClearCommand(), new StopCommand(), new ResumeCommand(), new VolumeCommand(), new AboutCommand(), new PlayerinfoCommand(), new LoopCommand(), new TexttoemojiCommand(), new SkipXCommand(), new PermCommand(), new NowPlayingCommand(), new RemoveCommand(), new GuildInfoCommand(), new RoleInfoCommand(), new DogCommand(), new SetPrefixCommand(), new SetMusicChannelCommand(), new SetLogChannelCommand(), new TempBanCommand(), new UnbanCommand(), new SetStreamerModeCommand(), new SetStreamUrlCommand());
         commandClient = client.build();
 
         jda = new JDABuilder(AccountType.BOT)

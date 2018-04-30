@@ -83,7 +83,9 @@ public class Helpers {
             "setmuterole",
             "tempmute",
             "unmute",
-            "avatar"
+            "avatar",
+            "potato",
+            "filter"
     ));
 
     public static void startTimer(JDA jda) {

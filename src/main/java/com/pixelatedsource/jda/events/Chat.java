@@ -6,6 +6,7 @@ import com.pixelatedsource.jda.blub.ChannelType;
 import com.pixelatedsource.jda.db.MySQL;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.audit.ActionType;
 import net.dv8tion.jda.core.audit.AuditLogEntry;
 import net.dv8tion.jda.core.audit.AuditLogOption;
@@ -23,9 +24,12 @@ import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Chat extends ListenerAdapter {
 
@@ -41,6 +45,59 @@ public class Chat extends ListenerAdapter {
         User author = event.getAuthor();
         try {
             mySQL.createMessage(event.getMessageId(), event.getMessage().getContentRaw(), author.getId(), guild.getId(), event.getChannel().getId());
+
+            if (!event.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
+                String message = event.getMessage().getContentRaw();
+                String detectedWord = null;
+                HashMap<Integer, Integer> deniedPositions = new HashMap<>();
+                HashMap<Integer, Integer> allowedPositions = new HashMap<>();
+                List<String> deniedList = mySQL.getFilters(guild, "denied");
+                List<String> allowedList = mySQL.getFilters(guild, "allowed");
+
+                for (String toFind : deniedList) {
+                    Pattern word = Pattern.compile(Pattern.quote(toFind.toLowerCase()));
+                    Matcher match = word.matcher(message.toLowerCase());
+                    while (match.find()) {
+                        if (deniedPositions.keySet().contains(match.start()) && deniedPositions.get(match.start()) < match.end())
+                            deniedPositions.replace(match.start(), match.end());
+                        else
+                            deniedPositions.put(match.start(), match.end());
+                    }
+                }
+                for (String toFind : allowedList) {
+                    Pattern word = Pattern.compile(Pattern.quote(toFind.toLowerCase()));
+                    Matcher match = word.matcher(message.toLowerCase());
+                    while (match.find()) {
+                        if (allowedPositions.keySet().contains(match.start()) && allowedPositions.get(match.start()) < match.end())
+                            allowedPositions.replace(match.start(), match.end());
+                        else
+                            allowedPositions.put(match.start(), match.end());
+                    }
+                }
+
+                if (allowedPositions.size() > 0 && deniedPositions.size() > 0) {
+                    for (Integer beginDenied : deniedPositions.keySet()) {
+                        Integer endDenied = deniedPositions.get(beginDenied);
+                        for (Integer beginAllowed : allowedPositions.keySet()) {
+                            Integer endAllowed = allowedPositions.get(beginAllowed);
+                            if (beginDenied < beginAllowed || endDenied > endAllowed) {
+                                detectedWord = message.substring(beginDenied, endDenied);
+                            }
+                        }
+                    }
+                } else if (deniedPositions.size() > 0) {
+                    detectedWord = "";
+                    for (Integer beginDenied : deniedPositions.keySet()) {
+                        Integer endDenied = deniedPositions.get(beginDenied);
+                        detectedWord += message.substring(beginDenied, endDenied) + ", ";
+                    }
+                }
+                if (detectedWord != null) {
+                    MessageHelper.filterDeletedMessages.put(event.getMessageId(), detectedWord.substring(0, detectedWord.length() - 2));
+                    event.getMessage().delete().reason("Use of prohibited words").queue();
+                }
+            }
+
             ResultSet rs = PixelSniper.mySQL.query("SELECT * FROM active_bans WHERE guildId='" + guild.getId() + "' AND endTime < " + System.currentTimeMillis());
             while (rs.next()) {
                 event.getGuild().getController().unban(rs.getString("victimId")).queue();
@@ -82,7 +139,7 @@ public class Chat extends ListenerAdapter {
                             if (MessageHelper.filterDeletedMessages.get(e.getMessageId()) != null) {
                                 eb.addField("Detected: ", "`" + MessageHelper.filterDeletedMessages.get(e.getMessageId()).replaceAll("`", "´") + "`", false);
                                 eb.setColor(Color.ORANGE);
-                                User bot = guild.getSelfMember().getUser();
+                                User bot = e.getJDA().getSelfUser();
                                 eb.setFooter("Deleted by: " + bot.getName() + "#" + bot.getDiscriminator(), bot.getAvatarUrl());
                                 MessageHelper.filterDeletedMessages.remove(e.getMessageId());
                             } else if (now.toInstant().toEpochMilli() - deletionTime.toInstant().toEpochMilli() < 1000) {
