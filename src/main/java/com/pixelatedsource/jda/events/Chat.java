@@ -41,70 +41,72 @@ public class Chat extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-        Guild guild = event.getGuild();
-        User author = event.getAuthor();
-        try {
-            mySQL.createMessage(event.getMessageId(), event.getMessage().getContentRaw(), author.getId(), guild.getId(), event.getChannel().getId());
+        if (event != null && event.getMember() != null) {
+            Guild guild = event.getGuild();
+            User author = event.getAuthor();
+            try {
+                mySQL.createMessage(event.getMessageId(), event.getMessage().getContentRaw(), author.getId(), guild.getId(), event.getChannel().getId());
 
-            if (!event.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
-                String message = event.getMessage().getContentRaw();
-                String detectedWord = null;
-                HashMap<Integer, Integer> deniedPositions = new HashMap<>();
-                HashMap<Integer, Integer> allowedPositions = new HashMap<>();
-                List<String> deniedList = mySQL.getFilters(guild, "denied");
-                List<String> allowedList = mySQL.getFilters(guild, "allowed");
+                if (!event
+                        .getMember()
+                        .hasPermission(
+                                Permission
+                                        .MESSAGE_MANAGE)) {
+                    String message = event.getMessage().getContentRaw();
+                    String detectedWord = null;
+                    HashMap<Integer, Integer> deniedPositions = new HashMap<>();
+                    HashMap<Integer, Integer> allowedPositions = new HashMap<>();
+                    List<String> deniedList = mySQL.getFilters(guild, "denied");
+                    List<String> allowedList = mySQL.getFilters(guild, "allowed");
 
-                for (String toFind : deniedList) {
-                    Pattern word = Pattern.compile(Pattern.quote(toFind.toLowerCase()));
-                    Matcher match = word.matcher(message.toLowerCase());
-                    while (match.find()) {
-                        if (deniedPositions.keySet().contains(match.start()) && deniedPositions.get(match.start()) < match.end())
-                            deniedPositions.replace(match.start(), match.end());
-                        else
-                            deniedPositions.put(match.start(), match.end());
-                    }
-                }
-                for (String toFind : allowedList) {
-                    Pattern word = Pattern.compile(Pattern.quote(toFind.toLowerCase()));
-                    Matcher match = word.matcher(message.toLowerCase());
-                    while (match.find()) {
-                        if (allowedPositions.keySet().contains(match.start()) && allowedPositions.get(match.start()) < match.end())
-                            allowedPositions.replace(match.start(), match.end());
-                        else
-                            allowedPositions.put(match.start(), match.end());
-                    }
-                }
-
-                if (allowedPositions.size() > 0 && deniedPositions.size() > 0) {
-                    for (Integer beginDenied : deniedPositions.keySet()) {
-                        Integer endDenied = deniedPositions.get(beginDenied);
-                        for (Integer beginAllowed : allowedPositions.keySet()) {
-                            Integer endAllowed = allowedPositions.get(beginAllowed);
-                            if (beginDenied < beginAllowed || endDenied > endAllowed) {
-                                detectedWord = message.substring(beginDenied, endDenied);
-                            }
+                    for (String toFind : deniedList) {
+                        Pattern word = Pattern.compile(Pattern.quote(toFind.toLowerCase()));
+                        Matcher match = word.matcher(message.toLowerCase());
+                        while (match.find()) {
+                            if (deniedPositions.keySet().contains(match.start()) && deniedPositions.get(match.start()) < match.end()) deniedPositions.replace(match.start(), match.end());
+                            else deniedPositions.put(match.start(), match.end());
                         }
                     }
-                } else if (deniedPositions.size() > 0) {
-                    detectedWord = "";
-                    for (Integer beginDenied : deniedPositions.keySet()) {
-                        Integer endDenied = deniedPositions.get(beginDenied);
-                        detectedWord += message.substring(beginDenied, endDenied) + ", ";
+                    for (String toFind : allowedList) {
+                        Pattern word = Pattern.compile(Pattern.quote(toFind.toLowerCase()));
+                        Matcher match = word.matcher(message.toLowerCase());
+                        while (match.find()) {
+                            if (allowedPositions.keySet().contains(match.start()) && allowedPositions.get(match.start()) < match.end()) allowedPositions.replace(match.start(), match.end());
+                            else allowedPositions.put(match.start(), match.end());
+                        }
+                    }
+
+                    if (allowedPositions.size() > 0 && deniedPositions.size() > 0) {
+                        for (Integer beginDenied : deniedPositions.keySet()) {
+                            Integer endDenied = deniedPositions.get(beginDenied);
+                            for (Integer beginAllowed : allowedPositions.keySet()) {
+                                Integer endAllowed = allowedPositions.get(beginAllowed);
+                                if (beginDenied < beginAllowed || endDenied > endAllowed) {
+                                    detectedWord = message.substring(beginDenied, endDenied);
+                                }
+                            }
+                        }
+                    } else if (deniedPositions.size() > 0) {
+                        detectedWord = "";
+                        for (Integer beginDenied : deniedPositions.keySet()) {
+                            Integer endDenied = deniedPositions.get(beginDenied);
+                            detectedWord += message.substring(beginDenied, endDenied) + ", ";
+                        }
+                    }
+                    if (detectedWord != null) {
+                        MessageHelper.filterDeletedMessages.put(event.getMessageId(), detectedWord.substring(0, detectedWord.length() - 2));
+                        event.getMessage().delete().reason("Use of prohibited words").queue();
                     }
                 }
-                if (detectedWord != null) {
-                    MessageHelper.filterDeletedMessages.put(event.getMessageId(), detectedWord.substring(0, detectedWord.length() - 2));
-                    event.getMessage().delete().reason("Use of prohibited words").queue();
-                }
-            }
 
-            ResultSet rs = PixelSniper.mySQL.query("SELECT * FROM active_bans WHERE guildId='" + guild.getId() + "' AND endTime < " + System.currentTimeMillis());
-            while (rs.next()) {
-                event.getGuild().getController().unban(rs.getString("victimId")).queue();
-                PixelSniper.mySQL.update("DELETE FROM active_bans WHERE guildId='" + guild.getId() + "' AND victimId='" + rs.getString("victimId") + "' AND endTime < " + System.currentTimeMillis());
+                ResultSet rs = PixelSniper.mySQL.query("SELECT * FROM active_bans WHERE guildId='" + guild.getId() + "' AND endTime < " + System.currentTimeMillis());
+                while (rs.next()) {
+                    event.getGuild().getController().unban(rs.getString("victimId")).queue();
+                    PixelSniper.mySQL.update("DELETE FROM active_bans WHERE guildId='" + guild.getId() + "' AND victimId='" + rs.getString("victimId") + "' AND endTime < " + System.currentTimeMillis());
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 
