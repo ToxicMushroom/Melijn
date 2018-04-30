@@ -29,17 +29,25 @@ public class FilterCommand extends Command {
                 Guild guild = event.getGuild();
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length >= 2) {
-                    String content = event.getArgs().replaceFirst(args[0] + "\\s+" + args[1] + "\\s+", "");
+                    String content = event.getArgs().replaceFirst(args[0] + "\\s+" + args[1], "").replaceFirst("\\s+", "");
                     switch (args[0]) {
                         case "allowed":
                             switch (args[1]) {
                                 case "add":
-                                    mySQL.addFilter(guild, "allowed", content);
-                                    event.reply("`" + content + "` has been added to the allowed list.");
+                                    if (args.length > 2) {
+                                        mySQL.addFilter(guild, "allowed", content);
+                                        event.reply("`" + content + "` has been added to the allowed list.");
+                                    } else {
+                                        MessageHelper.sendUsage(this, event);
+                                    }
                                     break;
                                 case "remove":
-                                    mySQL.removeFilter(guild, "allowed", content);
-                                    event.reply("`" + content + "` has been removed from the allowed list.");
+                                    if (args.length > 2) {
+                                        mySQL.removeFilter(guild, "allowed", content);
+                                        event.reply("`" + content + "` has been removed from the allowed list.");
+                                    } else {
+                                        MessageHelper.sendUsage(this, event);
+                                    }
                                     break;
                                 case "list":
                                     int filterNumber = 0;
@@ -58,19 +66,27 @@ public class FilterCommand extends Command {
                                     event.reply(partBuilder.toString());
                                     break;
                                 default:
-                                    event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(guild)));
+                                    MessageHelper.sendUsage(this, event);
                                     break;
                             }
                             break;
                         case "denied":
                             switch (args[1]) {
                                 case "add":
-                                    mySQL.addFilter(guild, "denied", content);
-                                    event.reply("`" + content + "` has been added to the denied list.");
+                                    if (args.length > 2) {
+                                        mySQL.addFilter(guild, "denied", content);
+                                        event.reply("`" + content + "` has been added to the denied list.");
+                                    } else {
+                                        MessageHelper.sendUsage(this, event);
+                                    }
                                     break;
                                 case "remove":
-                                    mySQL.removeFilter(guild, "denied", content);
-                                    event.reply("`" + content + "` has been removed from the denied list.");
+                                    if (args.length > 2) {
+                                        mySQL.removeFilter(guild, "denied", content);
+                                        event.reply("`" + content + "` has been removed from the denied list.");
+                                    } else {
+                                        MessageHelper.sendUsage(this, event);
+                                    }
                                     break;
                                 case "list":
                                     int filterNumber = 0;
