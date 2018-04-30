@@ -26,11 +26,11 @@ public class TriggeredCommand extends Command {
             if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS))
                 event.reply(new EmbedBuilder()
                         .setColor(Helpers.EmbedColor)
-                        .setDescription("Enjoy your delicious \uD83E\uDD54")
+                        .setDescription("**TRIGGERED**")
                         .setImage(WebUtils.getUrl("triggered"))
                         .build());
             else
-                event.reply("Enjoy your \uD83E\uDD54 \n" + WebUtils.getUrl("triggered"));
+                event.reply("**TRIGGERED** \n" + WebUtils.getUrl("triggered"));
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
