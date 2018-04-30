@@ -21,10 +21,7 @@ public class AvatarCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        boolean acces = false;
-        if (event.getGuild() == null) acces = true;
-        if (!acces) acces = Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0);
-        if (acces) {
+        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
             User author = null;
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {

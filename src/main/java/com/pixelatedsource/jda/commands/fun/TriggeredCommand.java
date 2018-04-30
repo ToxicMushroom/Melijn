@@ -8,20 +8,23 @@ import com.pixelatedsource.jda.utils.WebUtils;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
-public class PotatoCommand extends Command {
+public class TriggeredCommand extends Command {
 
-    public PotatoCommand() {
-        this.commandName = "potato";
-        this.description = "shows you a delicious treat";
+    public TriggeredCommand() {
+        this.commandName = "triggered";
+        this.description = "Will visualize your triggered state to other people";
         this.usage = PREFIX + commandName;
-        this.aliases = new String[]{"aardappel", "patat"};
+        this.aliases = new String[]{"rage"};
         this.category = Category.FUN;
     }
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
-            event.reply(WebUtils.getUrl("potato"));
+        boolean acces = false;
+        if (event.getGuild() == null) acces = true;
+        if (!acces) acces = Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0);
+        if (acces) {
+            event.reply(WebUtils.getUrl("triggered"));
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }

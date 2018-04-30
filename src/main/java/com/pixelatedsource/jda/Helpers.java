@@ -85,7 +85,10 @@ public class Helpers {
             "unmute",
             "avatar",
             "potato",
-            "filter"
+            "filter",
+            "pat",
+            "slap",
+            "triggered"
     ));
 
     public static void startTimer(JDA jda) {
