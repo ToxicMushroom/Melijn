@@ -147,10 +147,10 @@ public class Chat extends ListenerAdapter {
                             } else if (now.toInstant().toEpochMilli() - deletionTime.toInstant().toEpochMilli() < 1000) {
                                 User deletor = auditLogEntry.getUser();
                                 if (deletor != null) eb.setFooter("Deleted by: " + deletor.getName() + "#" + deletor.getDiscriminator(), deletor.getAvatarUrl());
-                            } else if (MessageHelper.purgedMessages.contains(e.getMessageId())) {
-                                User bot = guild.getSelfMember().getUser();
+                            } else if (MessageHelper.purgedMessages.get(e.getMessageId()) != null) {
+                                User purger = MessageHelper.purgedMessages.get(e.getMessageId());
                                 eb.setColor(Color.decode("#551A8B"));
-                                eb.setFooter("Purged by: " + bot.getName() + "#" + bot.getDiscriminator(), bot.getAvatarUrl());
+                                eb.setFooter("Purged by: " + purger.getName() + "#" + purger.getDiscriminator(), purger.getAvatarUrl());
                                 MessageHelper.purgedMessages.remove(e.getMessageId());
                             } else {
                                 User deletor = sameAsLast ? auditLogEntry.getUser() : PixelSniper.mySQL.getMessageAuthor(e.getMessageId(), e.getJDA());

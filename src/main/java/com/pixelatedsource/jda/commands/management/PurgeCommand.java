@@ -1,7 +1,6 @@
 package com.pixelatedsource.jda.commands.management;
 
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
@@ -9,10 +8,10 @@ import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Message;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
@@ -21,11 +20,11 @@ public class PurgeCommand extends Command {
     public PurgeCommand() {
         this.commandName = "purge";
         this.description = "Deletes messages messages";
-        this.usage = PREFIX + commandName + " [1-100]";
+        this.usage = PREFIX + commandName + " [1 - 500]";
         this.category = Category.MANAGEMENT;
     }
 
-    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(5);
+    private ExecutorService service = new ScheduledThreadPoolExecutor(5);
 
     @Override
     protected void execute(CommandEvent event) {
@@ -33,31 +32,33 @@ public class PurgeCommand extends Command {
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                 if (event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_MANAGE)) {
                     String[] args = event.getArgs().split("\\s+");
-                    if (args.length == 1 && !args[0].equalsIgnoreCase("") && args[0].matches("\\d+")) {
+                    if (args.length == 1 && args[0].matches("\\d+")) {
                         try {
-                            Runnable runnable = () -> {
-                                Long start = System.currentTimeMillis();
-                                int size = event.getMessage().getTextChannel().getHistory().retrievePast(Integer.parseInt(args[0]) + 1).complete().size();
-                                int progress = 0;
-                                List<Message> list = event.getMessage().getTextChannel().getHistory().retrievePast(Integer.parseInt(args[0]) + 1).complete();
-                                Message purgingMessage = event.getTextChannel().sendMessage("Purging... 0% 0s").complete();
-                                for (Message message : list) {
-                                    progress++;
-                                    MessageHelper.purgedMessages.add(message.getId());
-                                    message.delete().complete();
-                                    double i = (double) progress / (double) size * 100D;
-                                    purgingMessage.editMessage("Purging... " + Math.round(i) + "% - " + Math.round((System.currentTimeMillis() - start) / 1000) + "s").complete();
+                            Runnable run = () -> {
+                                int amount = Integer.parseInt(args[0]);
+                                if (amount < 1) {
+                                    MessageHelper.sendUsage(this, event);
+                                    return;
                                 }
-                                purgingMessage.editMessage("Purged in " + Math.round((System.currentTimeMillis() - start) / 1000) + "s").queue((v) -> v.delete().queueAfter(5, TimeUnit.SECONDS, (s) -> {
-                                    MessageHelper.purgedMessages.add(v.getId());
-                                }));
+
+                                List<Message> toPurge = event.getTextChannel().getHistory().retrievePast(Integer.parseInt(args[0]) + 1).complete();
+                                toPurge.forEach(blub -> MessageHelper.purgedMessages.put(blub.getId(), event.getAuthor()));
+                                while (toPurge.size() > 100) {
+                                    List<Message> deleteablePurgeList = new ArrayList<>();
+                                    while (deleteablePurgeList.size() != 100) {
+                                        deleteablePurgeList.add(toPurge.get(deleteablePurgeList.size()));
+                                    }
+                                    toPurge.removeAll(deleteablePurgeList);
+                                    event.getTextChannel().deleteMessages(deleteablePurgeList).queue();
+                                }
+                                event.getTextChannel().deleteMessages(toPurge).queue();
                             };
-                            executorService.execute(runnable);
+                            service.execute(run);
                         } catch (NumberFormatException e) {
-                            event.reply("Error: NumberFormatException");
+                            MessageHelper.sendUsage(this, event);
                         }
                     } else {
-                        event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                        MessageHelper.sendUsage(this, event);
                     }
                 } else {
                     event.reply("I have no permission to manage messages.");

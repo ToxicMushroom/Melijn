@@ -30,7 +30,8 @@ public class TempBanCommand extends Command {
                         User target = null;
                         String time = args[1];
                         String reason = event.getArgs().replaceFirst(args[0], "").replaceFirst(" " + args[1] + " ", "");
-                        if (event.getMessage().getMentionedUsers().size() > 0) target = event.getMessage().getMentionedUsers().get(0);
+                        if (event.getMessage().getMentionedUsers().size() > 0)
+                            target = event.getMessage().getMentionedUsers().get(0);
                         else if (args[0].matches("\\d+")) target = event.getJDA().retrieveUserById(args[0]).complete();
                         if (target == null) {
                             event.reply("Unknown user!");
