@@ -88,7 +88,11 @@ public class Helpers {
             "filter",
             "pat",
             "slap",
-            "triggered"
+            "triggered",
+            "setjoinleavechannel",
+            "setjoinmessage",
+            "setleavemessage",
+            "setjoinrole"
     ));
 
     public static void startTimer(JDA jda) {
