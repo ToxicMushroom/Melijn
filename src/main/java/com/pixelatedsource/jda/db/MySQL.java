@@ -3,10 +3,14 @@ package com.pixelatedsource.jda.db;
 import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.blub.ChannelType;
 import com.pixelatedsource.jda.blub.Command;
+import com.pixelatedsource.jda.blub.MessageType;
 import com.pixelatedsource.jda.blub.RoleType;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.MessageEmbed;
+import net.dv8tion.jda.core.entities.Role;
+import net.dv8tion.jda.core.entities.User;
 
 import java.awt.*;
 import java.sql.*;
@@ -14,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.pixelatedsource.jda.utils.MessageHelper.millisToDate;
 
@@ -39,15 +45,17 @@ public class MySQL {
             Statement statement = con.createStatement();
             statement.executeQuery("SET NAMES 'utf8mb4'");
             statement.close();
-            System.out.println("[MySQL] has connected");
-            update("CREATE TABLE IF NOT EXISTS mute_roles(guildId varchar(128), roleId varchar(128));");
+            Logger.getLogger(this.getClass().getName()).info("[MySQL] has connected");
             update("CREATE TABLE IF NOT EXISTS commands(commandName varchar(1000), gebruik varchar(1000), description varchar(2000), extra varchar(2000), category varchar(100), aliases varchar(200));");
             update("CREATE TABLE IF NOT EXISTS stream_urls(guildId varchar(127), url varchar(1500))");
             update("CREATE TABLE IF NOT EXISTS prefixes(guildId varchar(128), prefix varchar(128));");
+            update("CREATE TABLE IF NOT EXISTS mute_roles(guildId varchar(128), roleId varchar(128));");
+            update("CREATE TABLE IF NOT EXISTS join_roles(guildId varchar(128), roleId varchar(128));");
             update("CREATE TABLE IF NOT EXISTS perms_roles(guildId varchar(128), roleId varchar(128), permission varchar(256));");
             update("CREATE TABLE IF NOT EXISTS perms_users(guildId varchar(128), userId varchar(128), permission varchar(256));");
             update("CREATE TABLE IF NOT EXISTS log_channels(guildId varchar(128), channelId varchar(128))");
             update("CREATE TABLE IF NOT EXISTS music_channels(guildId varchar(128), channelId varchar(128))");
+            update("CREATE TABLE IF NOT EXISTS welcome_channels(guildId varchar(128), channelId varchar(128))");
             update("CREATE TABLE IF NOT EXISTS streamer_modes(guildId varchar(128), state boolean)");
             update("CREATE TABLE IF NOT EXISTS filters(guildId varchar(128), mode varchar(16), content varchar(2000))");
             update("CREATE TABLE IF NOT EXISTS warns(guildId varchar(128), victimId varchar(128), authorId varchar(128), reason varchar(2000), moment bigint);");
@@ -57,9 +65,11 @@ public class MySQL {
             update("CREATE TABLE IF NOT EXISTS history_mutes(guildId varchar(128), victimId varchar(128), authorId varchar(128), reason varchar(2000), startTime bigint, endTime bigint, active boolean);");
             update("CREATE TABLE IF NOT EXISTS history_messages(guildId varchar(128), authorId varchar(128), messageId varchar(128), content varchar(3000), textChannelId varchar(128), sentTime bigint);");
             update("CREATE TABLE IF NOT EXISTS deleted_messages(guildId varchar(128), authorId varchar(128), messageId varchar(128), content varchar(3000), textChannelId varchar(128), sentTime bigint, delTime bigint);");
+            update("CREATE TABLE IF NOT EXISTS join_messages(guildId varchar(128), content varchar(2280))");
+            update("CREATE TABLE IF NOT EXISTS leave_messages(guildId varchar(128), content varchar(2280))");
             update("CREATE TABLE IF NOT EXISTS unclaimed_messages(deletedMessageId varchar(64), logMessageId varchar(64));");
         } catch (SQLException e) {
-            System.out.println((char) 27 + "[31m" + "did not connect");
+            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "[MySQL] did not connect");
             System.exit(44);
             e.printStackTrace();
         }
@@ -822,19 +832,24 @@ public class MySQL {
 
         public String[] getUserMutes(User user, Guild guild, JDA jda) {
             try {
-                PreparedStatement getbans = con.prepareStatement("SELECT * FROM history_mutes WHERE victimId= ? AND guildId= ?");
-                getbans.setString(1, user.getId());
-                getbans.setString(2, guild.getId());
-                ResultSet rs = getbans.executeQuery();
+                PreparedStatement getMutes = con.prepareStatement("SELECT * FROM history_mutes WHERE victimId= ? AND guildId= ?");
+                getMutes.setString(1, user.getId());
+                getMutes.setString(2, guild.getId());
+                ResultSet rs = getMutes.executeQuery();
                 int amount = 0;
                 while (rs.next()) amount++;
                 String[] bans = new String[amount];
-                ResultSet rs2 = getbans.executeQuery();
+                ResultSet rs2 = getMutes.executeQuery();
                 if (amount == 0) return new String[]{"no mutes"};
                 int progress = 0;
                 while (rs2.next()) {
                     User staff = jda.retrieveUserById(rs2.getString("authorId")).complete();
-                    String endTime = rs2.getString("endTime").equalsIgnoreCase("NULL") ? "Infinity" : millisToDate(rs2.getLong("endTime"));
+                    String endTime =
+                            rs2.getString("endTime")
+                                    .equalsIgnoreCase("NULL") ?
+                                    "Infinity" :
+                                    millisToDate(
+                                            rs2.getLong("endTime"));
                     bans[progress] = String.valueOf("```ini\n" +
                             "[Muted by]: " + staff.getName() + "#" + staff.getDiscriminator() +
                             "\n[Reason]: " + rs2.getString("reason") +
@@ -849,6 +864,22 @@ public class MySQL {
                 e.printStackTrace();
             }
             return new String[]{"no mutes"};
+        }
+
+        public boolean isUserMuted(User user, Guild guild) {
+            try {
+                PreparedStatement getMutes = con.prepareStatement("SELECT * FROM active_mutes WHERE victimId= ? AND guildId= ?");
+                getMutes.setString(1, user.getId());
+                getMutes.setString(2, guild.getId());
+                ResultSet rs = getMutes.executeQuery();
+                while (rs.next()) {
+                    return true;
+                }
+                return false;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return false;
+            }
         }
 
         public String[] getUserWarns(User user, Guild guild, JDA jda) {
@@ -1020,12 +1051,12 @@ public class MySQL {
             PreparedStatement getRoleId = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_roles WHERE guildId= ?");
             getRoleId.setString(1, guild.getId());
             ResultSet rs = getRoleId.executeQuery();
-            String s = null;
+            String s = "null";
             while (rs.next()) s = rs.getString("roleId");
             return s;
         } catch (SQLException e) {
             e.printStackTrace();
-            return null;
+            return "null";
         }
     }
 
@@ -1094,5 +1125,43 @@ public class MySQL {
             e.printStackTrace();
         }
         return filters;
+    }
+
+    //Message stuff ---------------------------------------------------------
+    public String getMessage(Guild guild, MessageType type) {
+        try {
+            PreparedStatement getLogChannel = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_messages WHERE guildId= ?");
+            getLogChannel.setString(1, guild.getId());
+            ResultSet rs = getLogChannel.executeQuery();
+            String s = null;
+            while (rs.next()) s = rs.getString("content");
+            return s;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public boolean setMessage(Guild guild, String content, MessageType type) {
+        try {
+            if (getMessage(guild, type) == null) {
+                PreparedStatement setPrefix = con.prepareStatement("INSERT INTO " + type.toString().toLowerCase() + "_messages (guildId, content) VALUES (?, ?)");
+                setPrefix.setString(1, guild.getId());
+                setPrefix.setString(2, content);
+                setPrefix.executeUpdate();
+                setPrefix.close();
+                return true;
+            } else {
+                PreparedStatement updatePrefix = con.prepareStatement("UPDATE " + type.toString().toLowerCase() + "_messages SET content= ? WHERE guildId= ?");
+                updatePrefix.setString(1, content);
+                updatePrefix.setString(2, guild.getId());
+                updatePrefix.executeUpdate();
+                updatePrefix.close();
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

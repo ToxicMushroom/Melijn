@@ -24,11 +24,13 @@ public class CatCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS))
+                if (WebUtils.getCatUrl() != null)
                 event.reply(new EmbedBuilder()
                         .setColor(Helpers.EmbedColor)
                         .setDescription("Enjoy your \uD83D\uDC31 ~meow~")
                         .setImage(WebUtils.getCatUrl())
                         .build());
+            else event.reply("Cat failed to jump into my downloads folder :|\n We need to wait for more cats (402 forbidden)");
             else
                 event.reply("Enjoy your \uD83D\uDC31 ~meow~\n" + WebUtils.getCatUrl());
         } else {

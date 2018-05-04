@@ -6,6 +6,7 @@ import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.ChannelType;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.utils.MessageHelper;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
@@ -34,11 +35,7 @@ public class SetLogChannelCommand extends Command {
                     } else if (args[0].equalsIgnoreCase("null")) {
                         id = null;
                     } else {
-                        if (event.getGuild() != null) {
-                            event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
-                        } else {
-                            event.reply(usage);
-                        }
+                        MessageHelper.sendUsage(this, event);
                         return;
                     }
                     if (PixelSniper.mySQL.setChannel(event.getGuild().getId(), id, ChannelType.LOG)) {
