@@ -30,6 +30,7 @@ public class SetStreamerModeCommand extends Command {
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                 if (PixelSniper.mySQL.getChannelId(guild.getId(), ChannelType.MUSIC) == null) {
                     event.reply("You first have to set a music channel.\n" + PixelSniper.mySQL.getPrefix(event.getGuild().getId()) + "smc <channelId>");
+                    return;
                 }
                 VoiceChannel musicChannel = guild.getVoiceChannelById(PixelSniper.mySQL.getChannelId(guild.getId(), ChannelType.MUSIC));
                 if (musicChannel != null) {
