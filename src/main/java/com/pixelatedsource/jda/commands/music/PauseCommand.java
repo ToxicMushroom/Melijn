@@ -1,12 +1,12 @@
 package com.pixelatedsource.jda.commands.music;
 
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
+import com.pixelatedsource.jda.utils.MessageHelper;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
@@ -43,7 +43,7 @@ public class PauseCommand extends Command {
                             event.reply("Resumed by **" + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + "**");
                             break;
                         default:
-                            event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                            MessageHelper.sendUsage(this, event);
                             break;
                     }
 

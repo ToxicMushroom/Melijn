@@ -1,12 +1,12 @@
 package com.pixelatedsource.jda.commands.music;
 
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
+import com.pixelatedsource.jda.utils.MessageHelper;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
 
@@ -43,12 +43,12 @@ public class SkipCommand extends Command {
                         try {
                             i = Integer.parseInt(args[0]);
                             if (i >= 50 || i < 1) {
-                                event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                                MessageHelper.sendUsage(this, event);
                                 return;
                             }
                         } catch (NumberFormatException e) {
                             e.addSuppressed(e);
-                            event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                            MessageHelper.sendUsage(this, event);
                         }
                     }
                 }

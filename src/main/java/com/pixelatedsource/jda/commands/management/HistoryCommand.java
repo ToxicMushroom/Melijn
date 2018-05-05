@@ -5,6 +5,7 @@ import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.User;
 
@@ -108,7 +109,7 @@ public class HistoryCommand extends Command {
                         event.reply("Unknown user");
                     }
                 } else {
-                    event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                    MessageHelper.sendUsage(this, event);
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

@@ -5,6 +5,7 @@ import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.entities.Guild;
 
 import java.util.HashMap;
@@ -50,12 +51,12 @@ public class SetStreamUrlCommand extends Command {
                                     event.reply("Changed the url from " + url + " to " + PixelSniper.mySQL.getStreamUrl(guild));
                                 }
                             } else {
-                                event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                                MessageHelper.sendUsage(this, event);
                             }
                         }
                     }
                 } else {
-                    event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                    MessageHelper.sendUsage(this, event);
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

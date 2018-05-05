@@ -6,6 +6,7 @@ import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.ChannelType;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.VoiceChannel;
@@ -56,11 +57,7 @@ public class SetStreamerModeCommand extends Command {
                                 break;
                         }
                     } else {
-                        if (event.getGuild() != null) {
-                            event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
-                        } else {
-                            event.reply(usage);
-                        }
+                        MessageHelper.sendUsage(this, event);
                     }
                 } else {
                     event.reply("You have to have set a music channel to enable this mode!");

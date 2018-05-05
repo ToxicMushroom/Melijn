@@ -27,7 +27,7 @@ import java.util.HashMap;
 public class PixelSniper extends ListenerAdapter {
 
     private static final Config config = new Config();
-    private static String OWNERID = config.getValue("ownerid");
+    public static String OWNERID = config.getValue("ownerid");
     private static String TOKEN = config.getValue("token");
     public static String PREFIX = config.getValue("prefix");
     private static String IP = config.getValue("ipadress");

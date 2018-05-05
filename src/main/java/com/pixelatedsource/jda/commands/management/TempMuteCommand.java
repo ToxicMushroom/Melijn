@@ -59,7 +59,7 @@ public class TempMuteCommand extends Command {
                         event.reply("`" + time + "` is not the right format.\n**Format:** (number)(*timeunit*) *timeunit* = s, m, h, d, M or y\n**Example:** 1__m__ (1 __minute__)");
                     }
                 } else {
-                    event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                    MessageHelper.sendUsage(this, event);
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

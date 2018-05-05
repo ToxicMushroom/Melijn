@@ -5,6 +5,7 @@ import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.utils.MessageHelper;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
@@ -40,7 +41,7 @@ public class LoopCommand extends Command {
                             event.reply("Loop disabled!");
                             break;
                         default:
-                            event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
+                            MessageHelper.sendUsage(this, event);
                             break;
                     }
                 }

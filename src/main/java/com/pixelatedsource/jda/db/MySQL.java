@@ -1051,12 +1051,13 @@ public class MySQL {
             PreparedStatement getRoleId = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_roles WHERE guildId= ?");
             getRoleId.setString(1, guild.getId());
             ResultSet rs = getRoleId.executeQuery();
-            String s = "null";
-            while (rs.next()) s = rs.getString("roleId");
-            return s;
+            while (rs.next()) {
+                return rs.getString("roleId");
+            }
+            return null;
         } catch (SQLException e) {
             e.printStackTrace();
-            return "null";
+            return null;
         }
     }
 

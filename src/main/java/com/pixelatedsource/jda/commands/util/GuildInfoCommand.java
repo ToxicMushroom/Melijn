@@ -31,7 +31,8 @@ public class GuildInfoCommand extends Command {
                 String[] args = event.getArgs().split("\\s+");
                 JDA jda = event.getJDA();
                 Guild guild = event.getGuild();
-                if (args.length == 1 && !args[0].equalsIgnoreCase("")) if (jda.getGuildById(args[0]) != null) guild = jda.getGuildById(args[0]);
+                if (args.length == 1 && !args[0].equalsIgnoreCase("") && jda.getGuildById(args[0]) != null)
+                    guild = jda.getGuildById(args[0]);
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setTitle("Guild info: " + guild.getName());
                 eb.setThumbnail(guild.getIconUrl());

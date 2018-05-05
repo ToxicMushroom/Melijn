@@ -26,7 +26,7 @@ public class JoinLeave extends ListenerAdapter {
                     .replaceAll("%USER%", "<@" + joinedUser.getId() + ">")
                     .replaceAll("%USERNAME%", joinedUser.getName() + "#" + joinedUser.getDiscriminator())).queue();
         }
-        if (mySQL.getRoleId(guild, RoleType.JOIN) != null && guild.getRoleById(mySQL.getRoleId(guild, RoleType.JOIN)) != null)
+        if (mySQL.getRoleId(guild, RoleType.JOIN) != null && !mySQL.getRoleId(guild, RoleType.JOIN).equalsIgnoreCase("null") && guild.getRoleById(mySQL.getRoleId(guild, RoleType.JOIN)) != null)
             guild.getController().addSingleRoleToMember(event.getMember(), guild.getRoleById(mySQL.getRoleId(guild, RoleType.JOIN))).queue();
         if (mySQL.isUserMuted(joinedUser, guild) && mySQL.getRoleId(guild, RoleType.MUTE) != null)
             guild.getController().addSingleRoleToMember(event.getMember(), guild.getRoleById(mySQL.getRoleId(guild, RoleType.MUTE))).queue();

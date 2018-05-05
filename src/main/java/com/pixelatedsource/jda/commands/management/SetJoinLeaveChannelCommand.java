@@ -32,7 +32,7 @@ public class SetJoinLeaveChannelCommand extends Command {
                     String id;
                     if (event.getMessage().getMentionedChannels().size() == 1 && event.getMessage().getMentionedChannels().get(0).getType() == net.dv8tion.jda.core.entities.ChannelType.TEXT) {
                         id = event.getMessage().getMentionedChannels().get(0).getId();
-                    } else if (args[0].matches("\\d+") && event.getGuild().getTextChannelById(args[0]) != null) {
+                    } else if (args[0].matches("\\d+") && guild.getTextChannelById(args[0]) != null) {
                         id = args[0];
                     } else if (args[0].equalsIgnoreCase("null")) {
                         id = null;
@@ -43,10 +43,14 @@ public class SetJoinLeaveChannelCommand extends Command {
                     if (mySQL.setChannel(guild.getId(), id, ChannelType.WELCOME)) {
                         if (mySQL.getMessage(guild, MessageType.JOIN) == null) mySQL.setMessage(guild, "Welcome **%USERNAME%** to our awesome discord server :D", MessageType.JOIN);
                         if (mySQL.getMessage(guild, MessageType.LEAVE) == null) mySQL.setMessage(guild,"**%USERNAME%** left us :C", MessageType.JOIN);
-                        event.reply("WelcomeChannel has been changed from <#" + welcomeChannelId + "> to <#" + PixelSniper.mySQL.getChannelId(event.getGuild().getId(), ChannelType.WELCOME) + ">");
+                        String oldChannel = welcomeChannelId == null || welcomeChannelId.equalsIgnoreCase("null") ? "null" : "<#" + welcomeChannelId + ">";
+                        String newChannel = args[0].equalsIgnoreCase("null") ? "null" : "<#" + id + ">";
+                        event.reply("WelcomeChannel has been changed from " + oldChannel + " to " + newChannel);
+                    } else {
+                        event.reply("Failed to set WelcomeChannel");
                     }
                 } else {
-                    event.reply("<#" + welcomeChannelId + ">");
+                    event.reply("Current WelcomeChannel: <#" + welcomeChannelId + ">");
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

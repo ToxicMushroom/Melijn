@@ -1,11 +1,11 @@
 package com.pixelatedsource.jda.commands.music;
 
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.music.MusicManager;
+import com.pixelatedsource.jda.utils.MessageHelper;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
@@ -52,11 +52,7 @@ public class SPlayCommand extends Command {
                 return;
             }
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {//no args -> usage:
-                if (event.getGuild() != null) {
-                    event.reply(usage.replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild().getId())));
-                } else {
-                    event.reply(usage);
-                }
+                MessageHelper.sendUsage(this, event);
                 return;
             }
             String songname;

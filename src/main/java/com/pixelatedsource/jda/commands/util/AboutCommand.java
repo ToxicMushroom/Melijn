@@ -7,6 +7,7 @@ import com.pixelatedsource.jda.blub.CommandEvent;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 
+import static com.pixelatedsource.jda.PixelSniper.OWNERID;
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
 public class AboutCommand extends Command {
@@ -29,7 +30,7 @@ public class AboutCommand extends Command {
             eb.addField("Author", "[ToxicMushroom](https://www.youtube.com/toxicmushroom)", true);
             eb.addField("Total server count", String.valueOf(event.getJDA().getGuilds().size()), true);
             eb.addField("Total user count", String.valueOf(event.getJDA().getUsers().size()), true);
-            eb.addField("Libs", "[JDA](https://github.com/DV8FromTheWorld/JDA), [OK-HTTP](https://github.com/square/okhttp), [LavaPlayer](https://github.com/sedmelluq/lavaplayer)", false);
+            eb.addField("Libs", "[JDA](https://github.com/DV8FromTheWorld/JDA), [MySQL connector](https://dev.mysql.com/downloads/connector/j/5.1.html), [LavaPlayer](https://github.com/sedmelluq/lavaplayer)", false);
             eb.addField("Online time", Helpers.getOnlineTime(), false);
             int i = 0;
             for (Guild guild : event.getJDA().getGuilds()) {
@@ -37,7 +38,7 @@ public class AboutCommand extends Command {
             }
             eb.addField("Playing music count", String.valueOf(i), false);
             event.reply(eb.build());
-            if (args.length > 0 && args[0].equalsIgnoreCase("dawae")) {
+            if (event.getAuthor().getId().equalsIgnoreCase(OWNERID)) {
                 StringBuilder desc = new StringBuilder();
                 int blub = 0;
                 for (Guild guild : event.getJDA().getGuilds()) {

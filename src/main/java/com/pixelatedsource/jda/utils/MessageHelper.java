@@ -8,6 +8,8 @@ import net.dv8tion.jda.core.entities.User;
 import java.util.Calendar;
 import java.util.HashMap;
 
+import static com.pixelatedsource.jda.PixelSniper.PREFIX;
+
 public class MessageHelper {
 
     public static HashMap<String, String> filterDeletedMessages = new HashMap<>();
@@ -58,6 +60,6 @@ public class MessageHelper {
     }
 
     public static void sendUsage(Command cmd, CommandEvent event) {
-        event.reply(cmd.getUsage().replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild())));
+        event.reply(cmd.getUsage().replaceFirst(PREFIX, PixelSniper.mySQL.getPrefix(event.getGuild())));
     }
 }

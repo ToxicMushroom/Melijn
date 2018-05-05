@@ -17,11 +17,10 @@ dependencies {
     compile 'com.sedmelluq:jda-nas:1.0.5'
     compile 'net.dv8tion:JDA:3.6.0_361'
     compile 'com.sedmelluq:lavaplayer:1.2.63'
-    compile 'mysql:mysql-connector-java:5.1.45'
+    compile 'mysql:mysql-connector-java:5.1.46'
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.10.0'
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.10.0'
     compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.10.0'
-    compile 'com.squareup.okhttp3:okhttp:3.10.0'
 }
 
 compileJava.options.encoding = 'UTF-8'
