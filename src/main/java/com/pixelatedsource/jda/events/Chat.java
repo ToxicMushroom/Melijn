@@ -111,15 +111,15 @@ public class Chat extends ListenerAdapter {
     }
 
     @Override
-    public void onGuildMessageDelete(GuildMessageDeleteEvent e) {
-        if (Helpers.lastRunMillis < System.currentTimeMillis() - 60_000) Helpers.startTimer(e.getJDA());
-        Guild guild = e.getGuild();
-        ResultSet rs = PixelSniper.mySQL.query("SELECT * FROM history_messages WHERE messageId= '" + e.getMessageId() + "' ");
+    public void onGuildMessageDelete(GuildMessageDeleteEvent event) {
+        if (Helpers.lastRunMillis < System.currentTimeMillis() - 60_000) Helpers.startTimer(event.getJDA(), PixelSniper.dblAPI);
+        Guild guild = event.getGuild();
+        ResultSet rs = PixelSniper.mySQL.query("SELECT * FROM history_messages WHERE messageId= '" + event.getMessageId() + "' ");
         try {
             if (rs.next()) {
                 executorService.execute(() -> {
                     try {
-                        User user = e.getJDA().retrieveUserById(rs.getString("authorId")).complete();
+                        User user = event.getJDA().retrieveUserById(rs.getString("authorId")).complete();
                         if (user != null && !black.contains(user)) {
                             if (guild.getBanList().complete().stream().map(Ban::getUser).anyMatch(user::equals)) {
                                 black.add(user);
@@ -131,37 +131,37 @@ public class Chat extends ListenerAdapter {
                             latestChanges = Integer.valueOf(auditLogEntry.getOption(AuditLogOption.COUNT));
                             ZonedDateTime deletionTime = MiscUtil.getCreationTime(auditLogEntry.getIdLong()).toZonedDateTime();
                             ZonedDateTime now = OffsetDateTime.now().atZoneSameInstant(deletionTime.getOffset());
-                            deletionTime = deletionTime.plusSeconds(1).plusNanos((e.getJDA().getPing() * 1_000_000));
+                            deletionTime = deletionTime.plusSeconds(1).plusNanos((event.getJDA().getPing() * 1_000_000));
 
                             EmbedBuilder eb = new EmbedBuilder();
-                            eb.setTitle("Message deleted in #" + e.getChannel().getName());
+                            eb.setTitle("Message deleted in #" + event.getChannel().getName());
                             eb.setThumbnail(user.getAvatarUrl());
                             eb.setColor(Color.decode("#000001"));
                             eb.setDescription("```LDIF" + "\nSender: " + user.getName() + "#" + user.getDiscriminator() + "\nMessage: " + rs.getString("content").replaceAll("`", "´").replaceAll("\n", " ") + "\nSender's Id: " + rs.getString("authorId") + "\nSent Time: " + MessageHelper.millisToDate(rs.getLong("sentTime")) + "```");
-                            if (MessageHelper.filterDeletedMessages.get(e.getMessageId()) != null) {
-                                eb.addField("Detected: ", "`" + MessageHelper.filterDeletedMessages.get(e.getMessageId()).replaceAll("`", "´") + "`", false);
+                            if (MessageHelper.filterDeletedMessages.get(event.getMessageId()) != null) {
+                                eb.addField("Detected: ", "`" + MessageHelper.filterDeletedMessages.get(event.getMessageId()).replaceAll("`", "´") + "`", false);
                                 eb.setColor(Color.ORANGE);
-                                User bot = e.getJDA().getSelfUser();
+                                User bot = event.getJDA().getSelfUser();
                                 eb.setFooter("Deleted by: " + bot.getName() + "#" + bot.getDiscriminator(), bot.getAvatarUrl());
-                                MessageHelper.filterDeletedMessages.remove(e.getMessageId());
+                                MessageHelper.filterDeletedMessages.remove(event.getMessageId());
                             } else if (now.toInstant().toEpochMilli() - deletionTime.toInstant().toEpochMilli() < 1000) {
                                 User deletor = auditLogEntry.getUser();
                                 if (deletor != null) eb.setFooter("Deleted by: " + deletor.getName() + "#" + deletor.getDiscriminator(), deletor.getAvatarUrl());
-                            } else if (MessageHelper.purgedMessages.get(e.getMessageId()) != null) {
-                                User purger = MessageHelper.purgedMessages.get(e.getMessageId());
+                            } else if (MessageHelper.purgedMessages.get(event.getMessageId()) != null) {
+                                User purger = MessageHelper.purgedMessages.get(event.getMessageId());
                                 eb.setColor(Color.decode("#551A8B"));
                                 eb.setFooter("Purged by: " + purger.getName() + "#" + purger.getDiscriminator(), purger.getAvatarUrl());
-                                MessageHelper.purgedMessages.remove(e.getMessageId());
+                                MessageHelper.purgedMessages.remove(event.getMessageId());
                             } else {
-                                User deletor = sameAsLast ? auditLogEntry.getUser() : PixelSniper.mySQL.getMessageAuthor(e.getMessageId(), e.getJDA());
+                                User deletor = sameAsLast ? auditLogEntry.getUser() : PixelSniper.mySQL.getMessageAuthor(event.getMessageId(), event.getJDA());
                                 if (deletor != null) eb.setFooter("Deleted by: " + deletor.getName() + "#" + deletor.getDiscriminator(), deletor.getAvatarUrl());
                             }
 
-                            guild.getTextChannelById(mySQL.getChannelId(e.getGuild().getId(), ChannelType.LOG)).sendMessage(eb.build()).queue(v -> {
-                                if (eb.build().getColor().equals(Color.decode("#000001"))) mySQL.addUnclaimed(e.getMessageId(), v.getId());
+                            guild.getTextChannelById(mySQL.getChannelId(event.getGuild().getId(), ChannelType.LOG)).sendMessage(eb.build()).queue(v -> {
+                                if (eb.build().getColor().equals(Color.decode("#000001"))) mySQL.addUnclaimed(event.getMessageId(), v.getId());
                             });
                             mySQL.update("DELETE FROM history_messages WHERE sentTime < " + (System.currentTimeMillis() - 604_800_000L));
-                            mySQL.saveDeletedMessage(e.getMessageId());
+                            mySQL.saveDeletedMessage(event.getMessageId());
                         }
                     } catch (SQLException e1) {
                         e1.printStackTrace();

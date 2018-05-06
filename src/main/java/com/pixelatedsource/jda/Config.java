@@ -35,6 +35,7 @@ public class Config {
         try {
             Files.write(Paths.get(configFile.getPath()),
                     new JSONObject()
+                            .put("dbltoken", "")
                             .put("ownerid", "231459866630291459")
                             .put("prefix", ">")
                             .put("token", "")

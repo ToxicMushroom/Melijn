@@ -9,6 +9,7 @@ import com.pixelatedsource.jda.music.MusicPlayer;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
@@ -136,7 +137,11 @@ public class AddReaction extends ListenerAdapter {
 
             }
             if (!wrongemote) {
-                event.getTextChannel().getMessageById(event.getMessageId()).queue((s) -> s.clearReactions().queue());
+                event.getTextChannel().getMessageById(event.getMessageId()).queue((s) -> {
+                    if (s.getGuild() != null && s.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_MANAGE))
+                        s.clearReactions().queue();
+                }
+                );
             }
         }
     }

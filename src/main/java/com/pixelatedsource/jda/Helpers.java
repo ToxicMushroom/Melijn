@@ -8,6 +8,7 @@ import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.managers.AudioManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.discordbots.api.client.DiscordBotListAPI;
 
 import java.awt.*;
 import java.sql.ResultSet;
@@ -95,8 +96,9 @@ public class Helpers {
             "setjoinrole"
     ));
 
-    public static void startTimer(JDA jda) {
+    public static void startTimer(JDA jda, DiscordBotListAPI dbl) {
         Runnable runnable = () -> {
+
             lastRunMillis = System.currentTimeMillis();
             try {
                 ResultSet bans = PixelSniper.mySQL.query("SELECT * FROM active_bans WHERE endTime < " + System.currentTimeMillis());
@@ -118,6 +120,10 @@ public class Helpers {
                 e.printStackTrace();
             }
         };
+        Runnable runnable1 = () -> {
+            if (dbl != null) dbl.setStats(jda.getSelfUser().getId(), jda.getGuilds().size());
+        };
+        executorService.scheduleAtFixedRate(runnable1, 5, 60, TimeUnit.SECONDS);
         executorService.scheduleAtFixedRate(runnable, 1, 2, TimeUnit.SECONDS);
     }
 
@@ -139,7 +145,7 @@ public class Helpers {
 
     public static String getDurationBreakdown(long millis) {
         if (millis < 0) {
-            throw new IllegalArgumentException("Duration must be greater than zero!");
+            return "error";
         }
 
         long days = TimeUnit.MILLISECONDS.toDays(millis);
