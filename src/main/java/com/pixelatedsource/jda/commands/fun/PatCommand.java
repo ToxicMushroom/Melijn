@@ -31,10 +31,10 @@ public class PatCommand extends Command {
                     event.reply(new EmbedBuilder()
                             .setColor(Helpers.EmbedColor)
                             .setDescription("**Melijn** patted you")
-                            .setImage(WebUtils.getUrl("slap"))
+                            .setImage(WebUtils.getUrl("pat"))
                             .build());
                 else
-                    event.reply("**Melijn** patted you\n" + WebUtils.getUrl("slap"));
+                    event.reply("**Melijn** patted you\n" + WebUtils.getUrl("pat"));
             } else if (args.length == 1) {
                 User author = event.getAuthor();
                 User patted = null;
@@ -49,7 +49,7 @@ public class PatCommand extends Command {
                         event.reply(new EmbedBuilder()
                                 .setColor(Helpers.EmbedColor)
                                 .setDescription("**" + author.getName() + "** patted **" + patted.getName() + "**")
-                                .setImage(WebUtils.getUrl("slap"))
+                                .setImage(WebUtils.getUrl("pat"))
                                 .build());
                     else
                         event.reply("**Melijn** patted you\n" + WebUtils.getUrl("slap"));

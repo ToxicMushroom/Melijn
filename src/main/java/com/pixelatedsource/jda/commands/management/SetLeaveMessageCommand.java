@@ -30,8 +30,8 @@ public class SetLeaveMessageCommand extends Command {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     if (PixelSniper.mySQL.setMessage(guild, newMessage, MessageType.LEAVE)) {
-                        event.reply("LeaveMessage has been changed from **" + oldMessage + "** to **" +
-                                PixelSniper.mySQL.getMessage(guild, MessageType.LEAVE) + "**");
+                        event.reply("LeaveMessage has been changed from '" + oldMessage + "' to '" +
+                                PixelSniper.mySQL.getMessage(guild, MessageType.LEAVE) + "'");
                     }
                 } else {
                     event.reply(oldMessage);

@@ -30,8 +30,8 @@ public class SetJoinMessageCommand extends Command {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     if (PixelSniper.mySQL.setMessage(guild, newMessage, MessageType.JOIN)) {
-                        event.reply("JoinMessage has been changed from **" + oldMessage + "** to **" +
-                                PixelSniper.mySQL.getMessage(guild, MessageType.JOIN) + "**");
+                        event.reply("JoinMessage has been changed from '" + oldMessage + "' to '" +
+                                PixelSniper.mySQL.getMessage(guild, MessageType.JOIN) + "'");
                     }
                 } else {
                     event.reply(oldMessage);
