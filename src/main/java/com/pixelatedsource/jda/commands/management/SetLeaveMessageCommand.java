@@ -8,6 +8,8 @@ import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.blub.MessageType;
 import net.dv8tion.jda.core.entities.Guild;
 
+import java.util.HashMap;
+
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
 public class SetLeaveMessageCommand extends Command {
@@ -20,19 +22,21 @@ public class SetLeaveMessageCommand extends Command {
         this.category = Category.MANAGEMENT;
     }
 
+    public static HashMap<String, String> leaveMessages = PixelSniper.mySQL.getMessageMap(MessageType.LEAVE);
+
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
                 Guild guild = event.getGuild();
-                String oldMessage = PixelSniper.mySQL.getMessage(guild, MessageType.LEAVE);
+                String oldMessage = leaveMessages.getOrDefault(guild.getId(), "");
                 String newMessage = event.getArgs();
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
-                    if (PixelSniper.mySQL.setMessage(guild, newMessage, MessageType.LEAVE)) {
-                        event.reply("LeaveMessage has been changed from '" + oldMessage + "' to '" +
-                                PixelSniper.mySQL.getMessage(guild, MessageType.LEAVE) + "'");
-                    }
+                    new Thread(() -> PixelSniper.mySQL.setMessage(guild, newMessage, MessageType.LEAVE)).start();
+                    if (leaveMessages.containsKey(guild.getId())) leaveMessages.replace(guild.getId(), newMessage);
+                    else leaveMessages.put(guild.getId(), newMessage);
+                    event.reply("LeaveMessage has been changed from '" + oldMessage + "' to '" + newMessage + "'");
                 } else {
                     event.reply(oldMessage);
                 }

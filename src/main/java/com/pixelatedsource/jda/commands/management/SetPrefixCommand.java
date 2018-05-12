@@ -5,8 +5,10 @@ import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import net.dv8tion.jda.core.entities.Guild;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
@@ -19,16 +21,20 @@ public class SetPrefixCommand extends Command {
         this.category = Category.MANAGEMENT;
     }
 
+    public static HashMap<String, String> prefixes = PixelSniper.mySQL.getPrefixMap();
+
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+                Guild guild = event.getGuild();
                 String[] args = event.getArgs().split("\\s+");
-                if (args.length == 0 || args[0].equalsIgnoreCase("")) event.reply(PixelSniper.mySQL.getPrefix(event.getGuild().getId()));
+                if (args.length == 0 || args[0].equalsIgnoreCase("")) event.reply(prefixes.containsKey(guild.getId()) ? prefixes.get(guild.getId()) : PREFIX);
                 else if (Arrays.toString(args).length() <= 100) {
-                    if (PixelSniper.mySQL.setPrefix(event.getGuild().getId(), args[0])) {
-                        event.reply("The prefix has been set to `" + args[0] + "`");
-                    }
+                    new Thread(() -> PixelSniper.mySQL.setPrefix(guild.getId(), args[0])).start();
+                    if (prefixes.containsKey(guild.getId())) prefixes.replace(guild.getId(), args[0]);
+                    else prefixes.put(guild.getId(), args[0]);
+                    event.reply("The prefix has been set to `" + args[0] + "`");
                 } else {
                     event.reply("The maximum prefix size is 100 characters");
                 }

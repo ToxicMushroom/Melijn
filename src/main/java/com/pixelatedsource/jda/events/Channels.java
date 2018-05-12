@@ -1,7 +1,8 @@
 package com.pixelatedsource.jda.events;
 
-import com.pixelatedsource.jda.PixelSniper;
-import com.pixelatedsource.jda.blub.ChannelType;
+import com.pixelatedsource.jda.commands.management.SetMusicChannelCommand;
+import com.pixelatedsource.jda.commands.management.SetStreamerModeCommand;
+import com.pixelatedsource.jda.commands.music.SetStreamUrlCommand;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import net.dv8tion.jda.core.entities.Guild;
@@ -22,7 +23,7 @@ public class Channels extends ListenerAdapter {
         Guild guild = event.getGuild();
         String guildId = guild.getId();
         AudioManager audioManager = guild.getAudioManager();
-        if (guild.getAudioManager().isConnected()) {
+        if (audioManager.isConnected()) {
             if (event.getChannelLeft() == audioManager.getConnectedChannel()) {
                 AudioPlayer audioPlayer = manager.getPlayer(guild).getAudioPlayer();
                 int doveDuiven = 0;
@@ -35,19 +36,20 @@ public class Channels extends ListenerAdapter {
                     audioPlayer.stopTrack();
                     audioManager.closeAudioConnection();
                 } else if (audioPlayer.getPlayingTrack() == null) {
-                    if (PixelSniper.mySQL.getStreamUrl(guild) != null) {
+                    if (SetStreamUrlCommand.streamUrls.containsKey(guildId)) {
                         manager.getPlayer(guild).getListener().tracks.clear();
-                        manager.loadSimpelTrack(guild, PixelSniper.mySQL.getStreamUrl(guild));
+                        manager.loadSimpelTrack(guild, SetStreamUrlCommand.streamUrls.get(guildId));
                     }
                 }
             }
-        } else if (PixelSniper.mySQL.getChannelId(guild, ChannelType.MUSIC) != null) {
-            if (PixelSniper.mySQL.getStreamerMode(guild.getId()) && event.getChannelJoined().getId().equalsIgnoreCase(PixelSniper.mySQL.getChannelId(guild, ChannelType.MUSIC)) && !audioManager.isConnected()) {
-                audioManager.openAudioConnection(guild.getVoiceChannelById(PixelSniper.mySQL.getChannelId(guildId, ChannelType.MUSIC)));
-                if (PixelSniper.mySQL.getStreamUrl(guild) != null && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null) {
-                    manager.getPlayer(guild).getListener().tracks.clear();
-                    manager.loadSimpelTrack(guild, PixelSniper.mySQL.getStreamUrl(guild));
-                }
+        } else if (SetMusicChannelCommand.musicChannelIds.containsKey(guildId) &&
+                SetStreamerModeCommand.streamerModes.getOrDefault(guildId, false) &&
+                event.getChannelJoined().getId().equalsIgnoreCase(SetMusicChannelCommand.musicChannelIds.get(guildId)) &&
+                !audioManager.isConnected()) {
+            audioManager.openAudioConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelIds.get(guildId)));
+            if (SetStreamUrlCommand.streamUrls.containsKey(guildId) && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null) {
+                manager.getPlayer(guild).getListener().tracks.clear();
+                manager.loadSimpelTrack(guild, SetStreamUrlCommand.streamUrls.get(guildId));
             }
         }
     }
@@ -57,13 +59,14 @@ public class Channels extends ListenerAdapter {
         Guild guild = event.getGuild();
         String guildId = guild.getId();
         AudioManager audioManager = guild.getAudioManager();
-        if (event.getChannelJoined().getId().equalsIgnoreCase(PixelSniper.mySQL.getChannelId(guild, ChannelType.MUSIC)) &&
-                PixelSniper.mySQL.getStreamerMode(guild.getId()) && PixelSniper.mySQL.getChannelId(guild, ChannelType.MUSIC) != null &&
+        if (SetStreamerModeCommand.streamerModes.getOrDefault(guildId, false) &&
+                event.getChannelJoined().getId().equalsIgnoreCase(SetMusicChannelCommand.musicChannelIds.getOrDefault(guildId, "a")) &&
+                SetMusicChannelCommand.musicChannelIds.containsKey(guildId) &&
                 !audioManager.isConnected()) {
-            audioManager.openAudioConnection(guild.getVoiceChannelById(PixelSniper.mySQL.getChannelId(guildId, ChannelType.MUSIC)));
-            if (PixelSniper.mySQL.getStreamUrl(guild) != null && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null) {
+            audioManager.openAudioConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelIds.get(guildId)));
+            if (SetStreamUrlCommand.streamUrls.containsKey(guildId) && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null) {
                 manager.getPlayer(guild).getListener().tracks.clear();
-                manager.loadSimpelTrack(guild, PixelSniper.mySQL.getStreamUrl(guild));
+                manager.loadSimpelTrack(guild, SetStreamUrlCommand.streamUrls.get(guildId));
             }
         }
     }

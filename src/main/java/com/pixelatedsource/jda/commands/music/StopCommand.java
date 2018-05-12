@@ -1,7 +1,6 @@
 package com.pixelatedsource.jda.commands.music;
 
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
@@ -23,7 +22,7 @@ public class StopCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
-                PixelSniper.looped.put(event.getGuild(), false);
+                LoopCommand.looped.put(event.getGuild(), false);
                 MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
                 player.stopTrack();
                 event.reply("Stopped by **" + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + "**");

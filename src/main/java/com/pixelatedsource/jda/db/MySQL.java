@@ -11,11 +11,11 @@ import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.User;
+import org.json.JSONObject;
 
 import java.awt.*;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -41,7 +41,7 @@ public class MySQL {
 
     private void connect() {
         try {
-            con = DriverManager.getConnection("jdbc:mysql://" + this.ip + ":3306/" + this.dbname + "?autoReconnect=true&useUnicode=true&useSSL=false", this.user, this.pass);
+            con = DriverManager.getConnection("jdbc:mysql://" + this.ip + ":3306/" + this.dbname + "?autoReconnect=true&useUnicode=true&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC", this.user, this.pass);
             Statement statement = con.createStatement();
             statement.executeQuery("SET NAMES 'utf8mb4'");
             statement.close();
@@ -68,10 +68,11 @@ public class MySQL {
             update("CREATE TABLE IF NOT EXISTS join_messages(guildId varchar(128), content varchar(2280))");
             update("CREATE TABLE IF NOT EXISTS leave_messages(guildId varchar(128), content varchar(2280))");
             update("CREATE TABLE IF NOT EXISTS unclaimed_messages(deletedMessageId varchar(64), logMessageId varchar(64));");
+            update("CREATE TABLE IF NOT EXISTS votes(userId varchar(128), votes varchar(100), streak varchar(100), lastTime varchar(128));");
         } catch (SQLException e) {
             Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "[MySQL] did not connect");
-            System.exit(44);
             e.printStackTrace();
+            System.exit(44);
         }
     }
 
@@ -108,48 +109,52 @@ public class MySQL {
         return rs;
     }
 
-    //Message stuff----------------------------------------------------
-    private boolean messageExists(String id) {
+    public String getMessageAuthorId(String guildId, String messageId) {
         try {
-            ResultSet rs = query("SELECT * FROM history_messages WHERE messageId= '" + id + "'");
-            return rs.next() && rs.getString("messageId") != null;
+            PreparedStatement getAuthor = con.prepareStatement("SELECT * FROM history_messages WHERE messageId= ?");
+            getAuthor.setString(1, messageId);
+            ResultSet rs = getAuthor.executeQuery();
+
+            while (rs.next()) {
+                return rs.getString("authorId");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-        }
-        return false;
-    }
-
-    public User getMessageAuthor(String messageId, JDA jda) {
-        if (messageExists(messageId)) {
-            try {
-                PreparedStatement getAuthor = con.prepareStatement("SELECT * FROM history_messages WHERE messageId= ?");
-                getAuthor.setString(1, messageId);
-                ResultSet rs = getAuthor.executeQuery();
-
-                while (rs.next()) {
-                    return jda.retrieveUserById(rs.getString("authorId")).complete();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
         return null;
     }
 
-    public void createMessage(String messageId, String content, String authorId, String guildId, String textchannelid) {
-        if (!messageExists(messageId)) {
-            try {
-                PreparedStatement createMessage = con.prepareStatement("INSERT INTO history_messages(guildId, authorId, messageId, content, textChannelId, sentTime) VALUES (?, ?, ?, ?, ?, ?)");
-                createMessage.setString(1, guildId);
-                createMessage.setString(2, authorId);
-                createMessage.setString(3, messageId);
-                createMessage.setString(4, content);
-                createMessage.setString(5, textchannelid);
-                createMessage.setLong(6, System.currentTimeMillis());
-                createMessage.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace();
+    public JSONObject getMessageObject(String guildId, String messageId) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            PreparedStatement preparedStatement = con.prepareStatement("SELECT * FROM history_messages WHERE messageId=?");
+            preparedStatement.setString(1, messageId);
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                jsonObject.put("authorId", rs.getString("authorId"));
+                jsonObject.put("sentTime", rs.getString("sentTime"));
+                jsonObject.put("content", rs.getString("content"));
+                jsonObject.put("guildId", rs.getString("guildId"));
+                jsonObject.put("textChannelId", rs.getString("textChannelId"));
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return jsonObject;
+    }
+
+    public void createMessage(String messageId, String content, String authorId, String guildId, String textChannelId) {
+        try {
+            PreparedStatement createMessage = con.prepareStatement("INSERT INTO history_messages(guildId, authorId, messageId, content, textChannelId, sentTime) VALUES (?, ?, ?, ?, ?, ?)");
+            createMessage.setString(1, guildId);
+            createMessage.setString(2, authorId);
+            createMessage.setString(3, messageId);
+            createMessage.setString(4, content);
+            createMessage.setString(5, textChannelId);
+            createMessage.setLong(6, System.currentTimeMillis());
+            createMessage.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -240,6 +245,7 @@ public class MySQL {
             e.printStackTrace();
         }
     }
+
     public void addUserPermission(Guild guild, User user, String permission) {
         try {
             PreparedStatement adding = con.prepareStatement("INSERT INTO perms_users(guildId, userId, permission) VALUES (?, ?, ?)");
@@ -265,6 +271,7 @@ public class MySQL {
             e.printStackTrace();
         }
     }
+
     public void removeUserPermission(Guild guild, User user, String permission) {
         try {
             PreparedStatement removing = con.prepareStatement("DELETE FROM perms_users WHERE guildId= ? AND usersId= ? AND permission= ?");
@@ -322,6 +329,7 @@ public class MySQL {
             e.printStackTrace();
         }
     }
+
     public void clearUserPermissions(Guild guild, User user) {
         try {
             PreparedStatement clearing = con.prepareStatement("DELETE FROM perm_users WHERE guildId= ? AND userId= ?");
@@ -351,6 +359,7 @@ public class MySQL {
         }
         return toReturn;
     }
+
     public List<String> getUserPermissions(Guild guild, User user) {
         List<String> toReturn = new ArrayList<>();
         try {
@@ -407,6 +416,7 @@ public class MySQL {
             }
         }
     }
+
     public void copyUserPermissions(Guild guild, User user1, User user2) {
         List<String> permsUser1 = getUserPermissions(guild, user1);
         List<String> permsUser2 = getUserPermissions(guild, user2);
@@ -427,6 +437,7 @@ public class MySQL {
             }
         }
     }
+
     public void copyUserRolePermissions(User user, Role role) {
         Guild guild = role.getGuild();
         List<String> permsUser = getUserPermissions(guild, user);
@@ -439,7 +450,7 @@ public class MySQL {
     }
 
     //Prefix stuff---------------------------------------------------------------
-    public boolean setPrefix(String id, String arg) {
+    public void setPrefix(String id, String arg) {
         try {
             if (getPrefix(id).equalsIgnoreCase(">")) {
                 PreparedStatement setPrefix = con.prepareStatement("INSERT INTO prefixes (guildId, prefix) VALUES (?, ?)");
@@ -447,18 +458,15 @@ public class MySQL {
                 setPrefix.setString(2, arg);
                 setPrefix.executeUpdate();
                 setPrefix.close();
-                return true;
             } else {
                 PreparedStatement updatePrefix = con.prepareStatement("UPDATE prefixes SET prefix= ? WHERE guildId= ?");
                 updatePrefix.setString(1, arg);
                 updatePrefix.setString(2, id);
                 updatePrefix.executeUpdate();
                 updatePrefix.close();
-                return true;
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
     }
 
@@ -798,117 +806,96 @@ public class MySQL {
         return false;
     }
 
-        //Punishment getters
-        public String[] getUserBans(User user, Guild guild, JDA jda) {
-            try {
-                PreparedStatement getbans = con.prepareStatement("SELECT * FROM history_bans WHERE victimId= ? AND guildId= ?");
-                getbans.setString(1, user.getId());
-                getbans.setString(2, guild.getId());
-                ResultSet rs = getbans.executeQuery();
-                int amount = 0;
-                while (rs.next()) amount++;
-                String[] bans = new String[amount];
-                ResultSet rs2 = getbans.executeQuery();
-                if (amount == 0) return new String[]{"no bans"};
-                int progress = 0;
-                while (rs2.next()) {
-                    String endTime = rs2.getString("endTime").equalsIgnoreCase("NULL") ? "Infinity" : millisToDate(rs2.getLong("endTime"));
-                    User staff = jda.retrieveUserById(rs2.getString("authorId")).complete();
-                    bans[progress] = String.valueOf("```ini\n" +
-                            "[Banned by]: " + staff.getName() + "#" + staff.getDiscriminator() +
-                            "\n[Reason]: " + rs2.getString("reason") +
-                            "\n[From]: " + millisToDate(rs2.getLong("startTime")) +
-                            "\n[Until]: " + endTime +
-                            "\n[active]: " + rs2.getString("active") +
-                            "```");
-                    progress++;
-                }
-                return bans;
-            } catch (SQLException e) {
-                e.printStackTrace();
+    //Punishment getters
+    public String[] getUserBans(User user, Guild guild, JDA jda) {
+        try {
+            PreparedStatement getbans = con.prepareStatement("SELECT * FROM history_bans WHERE victimId= ? AND guildId= ?");
+            getbans.setString(1, user.getId());
+            getbans.setString(2, guild.getId());
+            ResultSet rs = getbans.executeQuery();
+            int amount = 0;
+            while (rs.next()) amount++;
+            String[] bans = new String[amount];
+            ResultSet rs2 = getbans.executeQuery();
+            if (amount == 0) return new String[]{"no bans"};
+            int progress = 0;
+            while (rs2.next()) {
+                String endTime = rs2.getString("endTime").equalsIgnoreCase("NULL") ? "Infinity" : millisToDate(rs2.getLong("endTime"));
+                User staff = jda.retrieveUserById(rs2.getString("authorId")).complete();
+                bans[progress] = String.valueOf("```ini\n" + "[Banned by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs2.getString("reason") + "\n[From]: " + millisToDate(rs2.getLong("startTime")) + "\n[Until]: " + endTime + "\n[active]: " + rs2.getString("active") + "```");
+                progress++;
             }
-            return new String[]{"no bans"};
+            return bans;
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+        return new String[]{"no bans"};
+    }
 
-        public String[] getUserMutes(User user, Guild guild, JDA jda) {
-            try {
-                PreparedStatement getMutes = con.prepareStatement("SELECT * FROM history_mutes WHERE victimId= ? AND guildId= ?");
-                getMutes.setString(1, user.getId());
-                getMutes.setString(2, guild.getId());
-                ResultSet rs = getMutes.executeQuery();
-                int amount = 0;
-                while (rs.next()) amount++;
-                String[] bans = new String[amount];
-                ResultSet rs2 = getMutes.executeQuery();
-                if (amount == 0) return new String[]{"no mutes"};
-                int progress = 0;
-                while (rs2.next()) {
-                    User staff = jda.retrieveUserById(rs2.getString("authorId")).complete();
-                    String endTime =
-                            rs2.getString("endTime")
-                                    .equalsIgnoreCase("NULL") ?
-                                    "Infinity" :
-                                    millisToDate(
-                                            rs2.getLong("endTime"));
-                    bans[progress] = String.valueOf("```ini\n" +
-                            "[Muted by]: " + staff.getName() + "#" + staff.getDiscriminator() +
-                            "\n[Reason]: " + rs2.getString("reason") +
-                            "\n[From]: " + millisToDate(rs2.getLong("startTime")) +
-                            "\n[Until]: " + endTime +
-                            "\n[active]: " + rs2.getString("active") +
-                            "```");
-                    progress++;
-                }
-                return bans;
-            } catch (SQLException e) {
-                e.printStackTrace();
+    public String[] getUserMutes(User user, Guild guild, JDA jda) {
+        try {
+            PreparedStatement getMutes = con.prepareStatement("SELECT * FROM history_mutes WHERE victimId= ? AND guildId= ?");
+            getMutes.setString(1, user.getId());
+            getMutes.setString(2, guild.getId());
+            ResultSet rs = getMutes.executeQuery();
+            int amount = 0;
+            while (rs.next()) amount++;
+            String[] bans = new String[amount];
+            ResultSet rs2 = getMutes.executeQuery();
+            if (amount == 0) return new String[]{"no mutes"};
+            int progress = 0;
+            while (rs2.next()) {
+                User staff = jda.retrieveUserById(rs2.getString("authorId")).complete();
+                String endTime = rs2.getString("endTime").equalsIgnoreCase("NULL") ? "Infinity" : millisToDate(rs2.getLong("endTime"));
+                bans[progress] = String.valueOf("```ini\n" + "[Muted by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs2.getString("reason") + "\n[From]: " + millisToDate(rs2.getLong("startTime")) + "\n[Until]: " + endTime + "\n[active]: " + rs2.getString("active") + "```");
+                progress++;
             }
-            return new String[]{"no mutes"};
+            return bans;
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+        return new String[]{"no mutes"};
+    }
 
-        public boolean isUserMuted(User user, Guild guild) {
-            try {
-                PreparedStatement getMutes = con.prepareStatement("SELECT * FROM active_mutes WHERE victimId= ? AND guildId= ?");
-                getMutes.setString(1, user.getId());
-                getMutes.setString(2, guild.getId());
-                ResultSet rs = getMutes.executeQuery();
-                while (rs.next()) {
-                    return true;
-                }
-                return false;
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return false;
+    public boolean isUserMuted(User user, Guild guild) {
+        try {
+            PreparedStatement getMutes = con.prepareStatement("SELECT * FROM active_mutes WHERE victimId= ? AND guildId= ?");
+            getMutes.setString(1, user.getId());
+            getMutes.setString(2, guild.getId());
+            ResultSet rs = getMutes.executeQuery();
+            while (rs.next()) {
+                return true;
             }
+            return false;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
+    }
 
-        public String[] getUserWarns(User user, Guild guild, JDA jda) {
-            try {
-                PreparedStatement getbans = con.prepareStatement("SELECT * FROM warns WHERE victimId= ? AND guildId= ?");
-                getbans.setString(1, user.getId());
-                getbans.setString(2, guild.getId());
-                ResultSet rs = getbans.executeQuery();
-                int amount = 0;
-                while (rs.next()) amount++;
-                String[] bans = new String[amount];
-                ResultSet rs2 = getbans.executeQuery();
-                if (amount == 0) return new String[]{"no warns"};
-                int progress = 0;
-                while (rs2.next()) {
-                    User staff = jda.retrieveUserById(rs2.getString("authorId")).complete();
-                    bans[progress] = String.valueOf("```ini\n" +
-                            "[Warned by]: " + staff.getName() + "#" + staff.getDiscriminator() +
-                            "\n[Reason]: " + rs2.getString("reason") +
-                            "\n[Moment]: " + millisToDate(rs2.getLong("moment")) +
-                            "```");
-                    progress++;
-                }
-                return bans;
-            } catch (SQLException e) {
-                e.printStackTrace();
+    public String[] getUserWarns(User user, Guild guild, JDA jda) {
+        try {
+            PreparedStatement getbans = con.prepareStatement("SELECT * FROM warns WHERE victimId= ? AND guildId= ?");
+            getbans.setString(1, user.getId());
+            getbans.setString(2, guild.getId());
+            ResultSet rs = getbans.executeQuery();
+            int amount = 0;
+            while (rs.next()) amount++;
+            String[] bans = new String[amount];
+            ResultSet rs2 = getbans.executeQuery();
+            if (amount == 0) return new String[]{"no warns"};
+            int progress = 0;
+            while (rs2.next()) {
+                User staff = jda.retrieveUserById(rs2.getString("authorId")).complete();
+                bans[progress] = String.valueOf("```ini\n" + "[Warned by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs2.getString("reason") + "\n[Moment]: " + millisToDate(rs2.getLong("moment")) + "```");
+                progress++;
             }
-            return new String[]{"no warns"};
+            return bans;
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+        return new String[]{"no warns"};
+    }
 
 
     //log channel stuff----------------------------------------------------------
@@ -1164,5 +1151,109 @@ public class MySQL {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public HashMap<String,String> getPrefixMap() {
+        HashMap<String, String> mapje = new HashMap<>();
+        try {
+            PreparedStatement gertjeuh = con.prepareStatement("SELECT * FROM prefixes");
+            ResultSet rs = gertjeuh.executeQuery();
+            while (rs.next()) {
+                mapje.put(rs.getString("guildId"), rs.getString("prefix"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return mapje;
+    }
+
+    public HashMap<String,String> getChannelMap(ChannelType type) {
+        HashMap<String, String> mapje = new HashMap<>();
+        try {
+            PreparedStatement GERTJEUH = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_channels");
+            ResultSet rs = GERTJEUH.executeQuery();
+            while (rs.next()) {
+                mapje.put(rs.getString("guildId"), rs.getString("channelId"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return mapje;
+    }
+
+    public HashMap<String,String> getMessageMap(MessageType leave) {
+        HashMap<String, String> mapje = new HashMap<>();
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM " + leave.toString().toLowerCase() + "_messages");
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                mapje.put(rs.getString("guildId"), rs.getString("content"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return mapje;
+    }
+
+    public HashMap<String,String> getStreamUrlMap() {
+        HashMap<String, String> mapje = new HashMap<>();
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM stream_urls");
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                mapje.put(rs.getString("guildId"), rs.getString("url"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return mapje;
+    }
+
+    public HashMap<String,String> getRoleMap(RoleType type) {
+        HashMap<String, String> mapje = new HashMap<>();
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_roles");
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                mapje.put(rs.getString("guildId"), rs.getString("roleId"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return mapje;
+    }
+
+    public HashMap<String, Boolean> getStreamerModeMap() {
+        HashMap<String, Boolean> mapje = new HashMap<>();
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM streamer_modes");
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                mapje.put(rs.getString("guildId"), rs.getString("state").equalsIgnoreCase("true"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return mapje;
+    }
+
+    public JSONObject getVotesObject(String userId) {
+        JSONObject toReturn = new JSONObject();
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM votes WHERE userId=?");
+            statement.setString(1, userId);
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                toReturn.put("votes", rs.getString("votes"));
+                toReturn.put("streak", rs.getString("streak"));
+                toReturn.put("lastTime", rs.getString("lastTime"));
+            }
+            rs.close();
+            statement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return toReturn;
     }
 }

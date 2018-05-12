@@ -7,6 +7,9 @@ import com.pixelatedsource.jda.blub.ChannelType;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.utils.MessageHelper;
+import net.dv8tion.jda.core.entities.Guild;
+
+import java.util.HashMap;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
@@ -20,20 +23,22 @@ public class SetMusicChannelCommand extends Command {
         this.category = Category.MANAGEMENT;
     }
 
+    public static HashMap<String, String> musicChannelIds = PixelSniper.mySQL.getChannelMap(ChannelType.MUSIC);
+
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+                Guild guild = event.getGuild();
                 String[] args = event.getArgs().split("\\s+");
-                String channel = PixelSniper.mySQL.getChannelId(event.getGuild().getId(), ChannelType.MUSIC);
+                String channelId = musicChannelIds.get(guild.getId());
                 if (args.length == 0 || args[0].equalsIgnoreCase("")) {
-                    event.reply(channel);
-                } else if (args[0].matches("\\d+")) {
-                    if (PixelSniper.mySQL.setChannel(event.getGuild().getId(), args[0], ChannelType.MUSIC)) {
-                        event.reply("Music channel changed from " + channel + " to " + PixelSniper.mySQL.getChannelId(event.getGuild().getId(), ChannelType.MUSIC));
-                    } else {
-                        event.reply("Failed to set music channel.");
-                    }
+                    event.reply("<#" + channelId + ">");
+                } else if (args[0].matches("\\d+") && guild.getVoiceChannelById(args[0]) != null) {
+                    if (musicChannelIds.containsKey(guild.getId())) musicChannelIds.replace(guild.getId(), args[0]);
+                    else musicChannelIds.put(guild.getId(), args[0]);
+                    new Thread(() -> PixelSniper.mySQL.setChannel(guild.getId(), args[0], ChannelType.MUSIC)).start();
+                    event.reply("Music channel changed from <#" + channelId + "> to <#" + args[0] + ">");
                 } else {
                     MessageHelper.sendUsage(this, event);
                 }

@@ -1,8 +1,8 @@
 package com.pixelatedsource.jda.utils;
 
-import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.commands.management.SetPrefixCommand;
 import net.dv8tion.jda.core.entities.User;
 
 import java.util.Calendar;
@@ -13,7 +13,7 @@ import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 public class MessageHelper {
 
     public static HashMap<String, String> filterDeletedMessages = new HashMap<>();
-    public static HashMap<String, User> deletedByEmote = new HashMap<>();
+    //public static HashMap<String, User> deletedByEmote = new HashMap<>();
     public static HashMap<String, User> purgedMessages = new HashMap<>();
 
     public static String millisToDate(long millis) {
@@ -60,6 +60,18 @@ public class MessageHelper {
     }
 
     public static void sendUsage(Command cmd, CommandEvent event) {
-        event.reply(cmd.getUsage().replaceFirst(PREFIX, PixelSniper.mySQL.getPrefix(event.getGuild())));
+        if (SetPrefixCommand.prefixes.containsKey(event.getGuild().getId()))
+            event.reply(cmd.getUsage().replaceFirst(PREFIX, SetPrefixCommand.prefixes.get(event.getGuild().getId())));
+        else
+            event.reply(cmd.getUsage());
+    }
+
+    public static String millisToVote(long untilNext) {
+        String hours = String.valueOf(untilNext/3600000);
+        untilNext -= (untilNext/3600000) * 3600000;
+        String minutes = String.valueOf(untilNext/60000);
+        untilNext -= (untilNext/60000) * 60000;
+        String seconds = String.valueOf(untilNext/1000);
+        return hours + ":" + minutes + ":" + seconds + "s";
     }
 }

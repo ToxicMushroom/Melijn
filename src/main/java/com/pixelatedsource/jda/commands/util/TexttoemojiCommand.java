@@ -13,7 +13,7 @@ public class TexttoemojiCommand extends Command {
         this.commandName = "t2e";
         this.description = "Converts input text and numbers to emotes";
         this.usage = PREFIX + this.commandName + " <text>";
-        this.aliases = new String[]{"TextToEmotes", "Text2Emotes", "TextToEmojies", "Text2Emojies"};
+        this.aliases = new String[]{"TextToEmojis", "Text2Emojis"};
         this.category = Category.UTILS;
     }
 

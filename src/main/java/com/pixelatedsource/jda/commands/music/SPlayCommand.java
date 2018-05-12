@@ -26,7 +26,7 @@ public class SPlayCommand extends Command {
         this.commandName = "splay";
         this.description = "Gives you the search results to pick from instead of playing the first song of the results (that's what >play does)";
         this.usage = PREFIX + commandName + " [sc] [songname]\nsc only has to be used when you want to search on soundcloud";
-        this.aliases = new String[]{"search", "searchplay"};
+        this.aliases = new String[]{"search", "searchplay", "sp"};
         this.category = Category.MUSIC;
     }
 

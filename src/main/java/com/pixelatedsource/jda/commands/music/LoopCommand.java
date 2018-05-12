@@ -1,11 +1,13 @@
 package com.pixelatedsource.jda.commands.music;
 
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.utils.MessageHelper;
+import net.dv8tion.jda.core.entities.Guild;
+
+import java.util.HashMap;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
@@ -19,25 +21,27 @@ public class LoopCommand extends Command {
         this.category = Category.MUSIC;
     }
 
+    public static HashMap<Guild, Boolean> looped = new HashMap<>();
+
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length == 0 || args[0].equalsIgnoreCase("")) {
-                    String ts = PixelSniper.looped.get(event.getGuild()) == null || !PixelSniper.looped.get(event.getGuild()) ? "**disabled**." : "**enabled**.";
+                    String ts = looped.get(event.getGuild()) == null || !looped.get(event.getGuild()) ? "**disabled**." : "**enabled**.";
                     event.reply("Looping is " + ts);
                 } else {
                     switch (args[0]) {
                         case "yes":
                         case "true":
-                            PixelSniper.looped.put(event.getGuild(), true);
+                            looped.put(event.getGuild(), true);
                             event.reply("Loop enabled!");
                             break;
 
-                        case "no"://idk if switch works like this
+                        case "no":
                         case "false":
-                            PixelSniper.looped.put(event.getGuild(), false);
+                            looped.put(event.getGuild(), false);
                             event.reply("Loop disabled!");
                             break;
                         default:
