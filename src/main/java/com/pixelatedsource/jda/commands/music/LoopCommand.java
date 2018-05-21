@@ -4,6 +4,7 @@ import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.entities.Guild;
 
@@ -21,33 +22,55 @@ public class LoopCommand extends Command {
         this.category = Category.MUSIC;
     }
 
-    public static HashMap<Guild, Boolean> looped = new HashMap<>();
+    public static HashMap<String, Boolean> looped = new HashMap<>();
 
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
                 String[] args = event.getArgs().split("\\s+");
-                if (args.length == 0 || args[0].equalsIgnoreCase("")) {
-                    String ts = looped.get(event.getGuild()) == null || !looped.get(event.getGuild()) ? "**disabled**." : "**enabled**.";
-                    event.reply("Looping is " + ts);
-                } else {
-                    switch (args[0]) {
-                        case "yes":
-                        case "true":
-                            looped.put(event.getGuild(), true);
-                            event.reply("Loop enabled!");
-                            break;
-
-                        case "no":
-                        case "false":
-                            looped.put(event.getGuild(), false);
-                            event.reply("Loop disabled!");
-                            break;
-                        default:
-                            MessageHelper.sendUsage(this, event);
-                            break;
+                Guild guild = event.getGuild();
+                if (MusicManager.getManagerinstance().getPlayer(guild).getListener().getTrackSize() > 0 || MusicManager.getManagerinstance().getPlayer(guild).getAudioPlayer().getPlayingTrack() != null) {
+                    if (args.length == 0 || args[0].equalsIgnoreCase("")) {
+                        if (looped.containsKey(guild.getId())) {
+                            if (looped.get(guild.getId())) {
+                                looped.put(guild.getId(), false);
+                                event.reply("Looping has been **disabled**");
+                            } else {
+                                looped.put(guild.getId(), true);
+                                event.reply("Looping has been **enabled**");
+                            }
+                        } else {
+                            looped.put(guild.getId(), true);
+                            event.reply("Looping has been **enabled**");
+                        }
+                    } else {
+                        switch (args[0]) {
+                            case "on":
+                            case "yes":
+                            case "true":
+                                if (looped.containsKey(guild.getId())) looped.replace(guild.getId(), true);
+                                else looped.put(guild.getId(), true);
+                                event.reply("Looping has been **enabled**");
+                                break;
+                            case "off":
+                            case "no":
+                            case "false":
+                                if (looped.containsKey(guild.getId())) looped.replace(guild.getId(), false);
+                                else looped.put(guild.getId(), false);
+                                event.reply("Looping has been **disabled**");
+                                break;
+                            case "info":
+                                String ts = looped.get(guild.getId()) == null || !looped.get(guild.getId()) ? "off" : "on";
+                                event.reply("The state of looping is '" + ts + "'");
+                                break;
+                            default:
+                                MessageHelper.sendUsage(this, event);
+                                break;
+                        }
                     }
+                } else {
+                    event.reply("No music playing atm!");
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

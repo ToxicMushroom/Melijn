@@ -21,7 +21,7 @@ public class Channels extends ListenerAdapter {
     @Override
     public void onGuildVoiceMove(GuildVoiceMoveEvent event) {
         Guild guild = event.getGuild();
-        String guildId = guild.getId();
+        long guildId = guild.getIdLong();
         AudioManager audioManager = guild.getAudioManager();
         if (audioManager.isConnected()) {
             if (event.getChannelLeft() == audioManager.getConnectedChannel()) {
@@ -44,7 +44,7 @@ public class Channels extends ListenerAdapter {
             }
         } else if (SetMusicChannelCommand.musicChannelIds.containsKey(guildId) &&
                 SetStreamerModeCommand.streamerModes.getOrDefault(guildId, false) &&
-                event.getChannelJoined().getId().equalsIgnoreCase(SetMusicChannelCommand.musicChannelIds.get(guildId)) &&
+                event.getChannelJoined().getIdLong() == SetMusicChannelCommand.musicChannelIds.get(guildId) &&
                 !audioManager.isConnected()) {
             audioManager.openAudioConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelIds.get(guildId)));
             if (SetStreamUrlCommand.streamUrls.containsKey(guildId) && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null) {
@@ -57,10 +57,10 @@ public class Channels extends ListenerAdapter {
     @Override
     public void onGuildVoiceJoin(GuildVoiceJoinEvent event) {
         Guild guild = event.getGuild();
-        String guildId = guild.getId();
+        long guildId = guild.getIdLong();
         AudioManager audioManager = guild.getAudioManager();
         if (SetStreamerModeCommand.streamerModes.getOrDefault(guildId, false) &&
-                event.getChannelJoined().getId().equalsIgnoreCase(SetMusicChannelCommand.musicChannelIds.getOrDefault(guildId, "a")) &&
+                event.getChannelJoined().getIdLong() == (SetMusicChannelCommand.musicChannelIds.getOrDefault(guildId, -1L)) &&
                 SetMusicChannelCommand.musicChannelIds.containsKey(guildId) &&
                 !audioManager.isConnected()) {
             audioManager.openAudioConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelIds.get(guildId)));

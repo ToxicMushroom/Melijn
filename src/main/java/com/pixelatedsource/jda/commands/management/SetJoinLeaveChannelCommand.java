@@ -20,41 +20,50 @@ public class SetJoinLeaveChannelCommand extends Command {
         this.category = Category.MANAGEMENT;
     }
 
-    public static HashMap<String, String> welcomChannels = PixelSniper.mySQL.getChannelMap(ChannelType.WELCOME);
+    public static HashMap<Long, Long> welcomChannels = PixelSniper.mySQL.getChannelMap(ChannelType.WELCOME);
 
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
                 Guild guild = event.getGuild();
-                String welcomeChannelId = welcomChannels.getOrDefault(guild.getId(), "null");
+                long welcomeChannelId = welcomChannels.getOrDefault(guild.getIdLong(), -1L);
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
-                    String id;
+                    long id;
                     if (event.getMessage().getMentionedChannels().size() == 1 && event.getMessage().getMentionedChannels().get(0).getType() == net.dv8tion.jda.core.entities.ChannelType.TEXT) {
-                        id = event.getMessage().getMentionedChannels().get(0).getId();
+                        id = event.getMessage().getMentionedChannels().get(0).getIdLong();
                     } else if (args[0].matches("\\d+") && guild.getTextChannelById(args[0]) != null) {
-                        id = args[0];
+                        id = Long.parseLong(args[0]);
                     } else if (args[0].equalsIgnoreCase("null")) {
-                        id = null;
+                        id = -1L;
                     } else {
                         MessageHelper.sendUsage(this, event);
                         return;
                     }
-                    new Thread(() -> PixelSniper.mySQL.setChannel(guild.getId(), id, ChannelType.WELCOME)).start();
-                    if (!SetJoinMessageCommand.joinMessages.containsKey(guild.getId())) {
-                        SetJoinMessageCommand.joinMessages.put(guild.getId(), "Welcome **%USERNAME%** to our awesome discord server :D");
-                        new Thread(() -> PixelSniper.mySQL.setMessage(guild, "Welcome **%USERNAME%** to our awesome discord server :D", MessageType.JOIN)).start();
-                        event.reply("I've set the default join message :beginner:");
+                    if (id != -1L) {
+                        new Thread(() -> PixelSniper.mySQL.setChannel(guild.getIdLong(), id, ChannelType.WELCOME)).start();
+                        if (!SetJoinMessageCommand.joinMessages.containsKey(guild.getIdLong())) {
+                            SetJoinMessageCommand.joinMessages.put(guild.getIdLong(), "Welcome %USER% to our awesome discord server :D");
+                            new Thread(() -> PixelSniper.mySQL.setMessage(guild.getIdLong(), "Welcome %USER% to our awesome discord server :D", MessageType.JOIN)).start();
+                            event.reply("I've set the default join message :beginner:");
+                        }
+                        if (!SetLeaveMessageCommand.leaveMessages.containsKey(guild.getIdLong())) {
+                            SetLeaveMessageCommand.leaveMessages.put(guild.getIdLong(), "**%USERNAME%** left us :C");
+                            new Thread(() -> PixelSniper.mySQL.setMessage(guild.getIdLong(), "**%USERNAME%** left us :C", MessageType.LEAVE)).start();
+                            event.reply("I've set the default leave message :beginner:");
+                        }
+                        if (welcomChannels.replace(guild.getIdLong(), welcomeChannelId) == null) {
+                            welcomChannels.put(guild.getIdLong(), welcomeChannelId);
+                        }
+                        String oldChannel = welcomeChannelId == -1 ? "nothing" : "<#" + welcomeChannelId + ">";
+                        String newChannel = "<#" + id + ">";
+                        event.reply("WelcomeChannel has been changed from " + oldChannel + " to " + newChannel);
+                    } else {
+                        long oldChannel = welcomChannels.getOrDefault(guild.getIdLong(), -1L);
+                        welcomChannels.remove(guild.getIdLong());
+                        event.reply("WelcomeChannel has been changed from " + (oldChannel == -1L ? "nothing" : "<#" + oldChannel + ">") + " to nothing");
                     }
-                    if (!SetLeaveMessageCommand.leaveMessages.containsKey(guild.getId())) {
-                        SetLeaveMessageCommand.leaveMessages.put(guild.getId(), "**%USERNAME%** left us :C");
-                        new Thread(() -> PixelSniper.mySQL.setMessage(guild, "**%USERNAME%** left us :C", MessageType.LEAVE)).start();
-                        event.reply("I've set the default leave message :beginner:");
-                    }
-                    String oldChannel = welcomeChannelId == null || welcomeChannelId.equalsIgnoreCase("null") ? "null" : "<#" + welcomeChannelId + ">";
-                    String newChannel = args[0].equalsIgnoreCase("null") ? "null" : "<#" + id + ">";
-                    event.reply("WelcomeChannel has been changed from " + oldChannel + " to " + newChannel);
                 } else {
                     event.reply("Current WelcomeChannel: <#" + welcomeChannelId + ">");
                 }

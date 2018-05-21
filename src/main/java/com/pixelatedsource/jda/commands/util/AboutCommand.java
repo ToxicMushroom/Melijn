@@ -45,7 +45,8 @@ public class AboutCommand extends Command {
                     if (guild.getAudioManager().isConnected() || guild.getAudioManager().isAttemptingToConnect())
                         desc.append("**#").append(++blub).append("** - ").append(guild.getName()).append("\n");
                 }
-                event.getAuthor().openPrivateChannel().queue(s -> s.sendMessage("dis is da wae:\n" + desc.toString()).queue());
+                if (desc.toString().length() > 0)
+                    event.getAuthor().openPrivateChannel().queue(s -> s.sendMessage("dis is da wae:\n" + desc.toString()).queue());
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

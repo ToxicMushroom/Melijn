@@ -24,7 +24,7 @@ public class SetStreamerModeCommand extends Command {
         this.category = Category.MANAGEMENT;
     }
 
-    public static HashMap<String, Boolean> streamerModes = PixelSniper.mySQL.getStreamerModeMap();
+    public static HashMap<Long, Boolean> streamerModes = PixelSniper.mySQL.getStreamerModeMap();
 
     @Override
     protected void execute(CommandEvent event) {
@@ -49,9 +49,9 @@ public class SetStreamerModeCommand extends Command {
                                     if (event.getMember().getVoiceState().inVoiceChannel()) {
                                         guild.getAudioManager().openAudioConnection(musicChannel);
                                     }
-                                    new Thread(() -> PixelSniper.mySQL.setStreamerMode(guild.getId(), true)).start();
-                                    if (streamerModes.containsKey(guild.getId())) streamerModes.replace(guild.getId(), true);
-                                    else streamerModes.put(guild.getId(), true);
+                                    new Thread(() -> PixelSniper.mySQL.setStreamerMode(guild.getIdLong(), true)).start();
+                                    if (streamerModes.containsKey(guild.getIdLong())) streamerModes.replace(guild.getIdLong(), true);
+                                    else streamerModes.put(guild.getIdLong(), true);
                                     event.reply("\uD83D\uDCF6 The streamer mode has been **enabled**.");
                                 } else {
                                     event.reply("The bot has no permission to the configured music channel.");
@@ -59,9 +59,9 @@ public class SetStreamerModeCommand extends Command {
                                 break;
                             case "false":
                             case "off":
-                                new Thread(() -> PixelSniper.mySQL.setStreamerMode(guild.getId(), false)).start();
-                                if (streamerModes.containsKey(guild.getId())) streamerModes.replace(guild.getId(), false);
-                                else streamerModes.put(guild.getId(), false);
+                                new Thread(() -> PixelSniper.mySQL.setStreamerMode(guild.getIdLong(), false)).start();
+                                if (streamerModes.containsKey(guild.getIdLong())) streamerModes.replace(guild.getIdLong(), false);
+                                else streamerModes.put(guild.getIdLong(), false);
                                 event.reply("The streamer mode has been **disabled**.");
                                 break;
                         }

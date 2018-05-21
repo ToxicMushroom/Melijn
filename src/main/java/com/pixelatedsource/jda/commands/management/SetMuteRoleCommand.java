@@ -22,7 +22,7 @@ public class SetMuteRoleCommand extends Command {
         this.category = Category.MANAGEMENT;
     }
 
-    public static HashMap<String, String> muteRoles = PixelSniper.mySQL.getRoleMap(RoleType.MUTE);
+    public static HashMap<Long, Long> muteRoles = PixelSniper.mySQL.getRoleMap(RoleType.MUTE);
 
     @Override
     protected void execute(CommandEvent event) {
@@ -30,20 +30,20 @@ public class SetMuteRoleCommand extends Command {
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                 Guild guild = event.getGuild();
                 String[] args = event.getArgs().split("\\s+");
-                String role = muteRoles.getOrDefault(guild.getId(), null);
+                long roleId = muteRoles.getOrDefault(guild.getIdLong(), -1L);
                 if (args.length == 0 || args[0].equalsIgnoreCase("")) {
-                    if (role != null && role.matches("\\d+") && guild.getRoleById(role) != null) event.reply("Current MuteRole: **@" + guild.getRoleById(role).getName() + "**");
-                    else event.reply("Current MuteRole: **null**");
+                    if (roleId != -1 && guild.getRoleById(roleId) != null) event.reply("Current MuteRole: **@" + guild.getRoleById(roleId).getName() + "**");
+                    else event.reply("MuteRole is unset");
                 } else {
-                    String muteRoleId;
-                    if (args[0].matches("\\d+") && guild.getRoleById(args[0]) != null) muteRoleId = guild.getRoleById(args[0]).getId();
-                    else if (event.getMessage().getMentionedRoles().size() > 0) muteRoleId = event.getMessage().getMentionedRoles().get(0).getId();
-                    else muteRoleId = "null";
-                    new Thread(() -> PixelSniper.mySQL.setRole(guild, muteRoleId, RoleType.MUTE)).start();
-                    if (muteRoles.containsKey(guild.getId())) muteRoles.replace(guild.getId(), muteRoleId);
-                    else muteRoles.put(guild.getId(), muteRoleId);
-                    String oldRoleName = role == null || role.equalsIgnoreCase("null") ? "null" : "@" + guild.getRoleById(role).getName();
-                    String newRoleName = muteRoleId.equalsIgnoreCase("null") ? "null" : "@" + guild.getRoleById(muteRoleId).getName();
+                    long muteRoleId;
+                    if (args[0].matches("\\d+") && guild.getRoleById(args[0]) != null) muteRoleId = Long.parseLong(args[0]);
+                    else if (event.getMessage().getMentionedRoles().size() > 0) muteRoleId = event.getMessage().getMentionedRoles().get(0).getIdLong();
+                    else muteRoleId = -1L;
+                    new Thread(() -> PixelSniper.mySQL.setRole(guild.getIdLong(), muteRoleId, RoleType.MUTE)).start();
+                    if (muteRoles.containsKey(guild.getIdLong())) muteRoles.replace(guild.getIdLong(), muteRoleId);
+                    else muteRoles.put(guild.getIdLong(), muteRoleId);
+                    String oldRoleName = roleId == -1 ? "nothing" : "@" + guild.getRoleById(roleId).getName();
+                    String newRoleName = muteRoleId == -1 ? "nothing" : "@" + guild.getRoleById(muteRoleId).getName();
                     event.reply("JoinRole changed from **" + oldRoleName + "** to **" + newRoleName + "**");
                 }
             } else {

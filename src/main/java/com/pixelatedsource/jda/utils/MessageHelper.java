@@ -1,8 +1,11 @@
 package com.pixelatedsource.jda.utils;
 
+import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.commands.management.SetPrefixCommand;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import net.dv8tion.jda.core.entities.Emote;
 import net.dv8tion.jda.core.entities.User;
 
 import java.util.Calendar;
@@ -73,5 +76,18 @@ public class MessageHelper {
         untilNext -= (untilNext/60000) * 60000;
         String seconds = String.valueOf(untilNext/1000);
         return hours + ":" + minutes + ":" + seconds + "s";
+    }
+
+    public static String progressBar(AudioTrack track, Emote emote) {
+        double procent = ((double)track.getPosition()/(double)track.getDuration())*100D;
+        int procentInt = (int) (procent/1);
+        String s = "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬";
+        StringBuilder sb = new StringBuilder();
+        while (procentInt > 0) {
+            procentInt -= 5;
+            sb.append("▬");
+        }
+
+        return "[" + sb.toString() + "](https://melijn.com/)" + (emote != null ? emote.getAsMention() : "") + s.substring(0, (20-sb.toString().length())) + " (" + Helpers.getDurationBreakdown(track.getPosition()) + "/" + Helpers.getDurationBreakdown(track.getDuration()) + ")";
     }
 }

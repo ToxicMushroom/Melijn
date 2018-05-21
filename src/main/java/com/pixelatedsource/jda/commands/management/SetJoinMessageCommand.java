@@ -22,21 +22,21 @@ public class SetJoinMessageCommand extends Command {
         this.category = Category.MANAGEMENT;
     }
 
-    public static HashMap<String, String> joinMessages = PixelSniper.mySQL.getMessageMap(MessageType.JOIN);
+    public static HashMap<Long, String> joinMessages = PixelSniper.mySQL.getMessageMap(MessageType.JOIN);
 
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
                 Guild guild = event.getGuild();
-                String oldMessage = joinMessages.getOrDefault(guild.getId(), "");
+                String oldMessage = joinMessages.getOrDefault(guild.getIdLong(), "");
                 String newMessage = event.getArgs();
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
-                    if (PixelSniper.mySQL.setMessage(guild, newMessage, MessageType.JOIN)) {
-                        event.reply("JoinMessage has been changed from '" + oldMessage + "' to '" +
-                                PixelSniper.mySQL.getMessage(guild, MessageType.JOIN) + "'");
-                    }
+                    new Thread(() -> PixelSniper.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.JOIN)).start();
+                    if (joinMessages.replace(guild.getIdLong(), newMessage) == null)
+                        joinMessages.put(guild.getIdLong(), newMessage);
+                    event.reply("JoinMessage has been changed from '" + oldMessage + "' to '" + newMessage + "'");
                 } else {
                     event.reply(oldMessage);
                 }

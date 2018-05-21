@@ -22,7 +22,7 @@ public class SetLeaveMessageCommand extends Command {
         this.category = Category.MANAGEMENT;
     }
 
-    public static HashMap<String, String> leaveMessages = PixelSniper.mySQL.getMessageMap(MessageType.LEAVE);
+    public static HashMap<Long, String> leaveMessages = PixelSniper.mySQL.getMessageMap(MessageType.LEAVE);
 
     @Override
     protected void execute(CommandEvent event) {
@@ -33,9 +33,9 @@ public class SetLeaveMessageCommand extends Command {
                 String newMessage = event.getArgs();
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
-                    new Thread(() -> PixelSniper.mySQL.setMessage(guild, newMessage, MessageType.LEAVE)).start();
-                    if (leaveMessages.containsKey(guild.getId())) leaveMessages.replace(guild.getId(), newMessage);
-                    else leaveMessages.put(guild.getId(), newMessage);
+                    new Thread(() -> PixelSniper.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.LEAVE)).start();
+                    if (leaveMessages.replace(guild.getIdLong(), newMessage) == null)
+                        leaveMessages.put(guild.getIdLong(), newMessage);
                     event.reply("LeaveMessage has been changed from '" + oldMessage + "' to '" + newMessage + "'");
                 } else {
                     event.reply(oldMessage);

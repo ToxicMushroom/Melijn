@@ -33,24 +33,28 @@ public class VoteCommand extends Command {
                 User target = event.getAuthor();
                 if (args.length > 1) {
                     if (args[1].matches("\\d+") && event.getJDA().getUserById(args[1]) != null)
-                        target = event.getJDA().getUserById(args[1]);
+                        target = event.getJDA().retrieveUserById(args[1]).complete();
                     else if (event.getMessage().getMentionedUsers().size() > 0)
                         target = event.getMessage().getMentionedUsers().get(0);
+                    else if (event.getGuild().getMembersByName(args[1], true).size() > 0)
+                        target = event.getGuild().getMembersByName(args[1], true).get(0).getUser();
+                    else if (event.getJDA().getUsersByName(args[0], true).size() > 0)
+                        target = event.getJDA().getUsersByName(args[0], true).get(0);
                 }
                 String username = target.getName() + "#" + target.getDiscriminator();
-                JSONObject voteObject = PixelSniper.mySQL.getVotesObject(target.getId());
+                JSONObject voteObject = PixelSniper.mySQL.getVotesObject(target.getIdLong());
                 if (!voteObject.has("votes")) {
-                    event.reply(target.getName() + " has never voted >:(\n Go back to start and wait 1 turn or vote (1 turn = 1 year)");
+                    event.reply(target.getName() + " has never voted.");
                     return;
                 }
                 if (event.getGuild() != null) {
                     if (event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS)) {
                         EmbedBuilder eb = new EmbedBuilder();
                         eb.setTitle("Votes of " + username);
-                        eb.setThumbnail(event.getAuthor().getAvatarUrl());
+                        eb.setThumbnail(target.getAvatarUrl());
                         eb.setColor(Helpers.EmbedColor);
-                        eb.addField("Votes", voteObject.getString("votes"), false);
-                        eb.addField("Streak", voteObject.getString("streak"), false);
+                        eb.addField("Votes", String.valueOf(voteObject.getLong("votes")), false);
+                        eb.addField("Streak", String.valueOf(voteObject.getLong("streak")), false);
                         long untilNext = 86400000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
                         String untilNextFormat = (untilNext > 0) ? MessageHelper.millisToVote(untilNext) : "none (you can vote now)";
                         eb.addField("Time until next vote", untilNextFormat, false);
@@ -66,14 +70,15 @@ public class VoteCommand extends Command {
                     eb.setTitle("Votes of " + username);
                     eb.setThumbnail(target.getAvatarUrl());
                     eb.setColor(Helpers.EmbedColor);
-                    eb.addField("Votes", voteObject.getString("votes"), false);
-                    eb.addField("Streak", voteObject.getString("streak"), false);
-                    long untilNext = 86_400_000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
-                    String untilNextFormat = (untilNext > 0) ? MessageHelper.millisToDate(untilNext) : "none (you can vote now)";
+                    eb.addField("Votes", String.valueOf(voteObject.getLong("votes")), false);
+                    eb.addField("Streak", String.valueOf(voteObject.getLong("streak")), false);
+                    long untilNext = 86400000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
+                    String untilNextFormat = (untilNext > 0) ? MessageHelper.millisToVote(untilNext) : "none (you can vote now)";
                     eb.addField("Time until next vote", untilNextFormat, false);
-                    long untilLoss = (86_400_000 * 2) - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
-                    String untilLossFormat = (untilLoss > 0) ? MessageHelper.millisToDate(untilNext) : "You don't have a streak atm :/";
+                    long untilLoss = 172800000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
+                    String untilLossFormat = (untilLoss > 0) ? MessageHelper.millisToVote(untilLoss) : "You don't have a streak atm :/";
                     eb.addField("Time until los of streak", untilLossFormat, false);
+                    event.reply(eb.build());
                 }
             }).start();
         } else {

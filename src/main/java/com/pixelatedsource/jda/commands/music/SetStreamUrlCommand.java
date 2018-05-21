@@ -36,7 +36,7 @@ public class SetStreamUrlCommand extends Command {
         put("Studio-Brussel", "http://icecast.vrtcdn.be/stubru-high.mp3");
     }};
 
-    public static HashMap<String, String> streamUrls = PixelSniper.mySQL.getStreamUrlMap();
+    public static HashMap<Long, String> streamUrls = PixelSniper.mySQL.getStreamUrlMap();
 
     @Override
     protected void execute(CommandEvent event) {
@@ -49,18 +49,18 @@ public class SetStreamUrlCommand extends Command {
                     event.reply(url);
                 } else if (args.length == 1) {
                     if (args[0].contains("http://") || args[0].contains("https://")) {
-                        new Thread(() -> PixelSniper.mySQL.setStreamUrl(guild, args[0])).start();
-                        if (streamUrls.containsKey(guild.getId())) streamUrls.replace(guild.getId(), args[0]);
-                        else streamUrls.put(guild.getId(), args[0]);
+                        new Thread(() -> PixelSniper.mySQL.setStreamUrl(guild.getIdLong(), args[0])).start();
+                        if (streamUrls.containsKey(guild.getIdLong())) streamUrls.replace(guild.getIdLong(), args[0]);
+                        else streamUrls.put(guild.getIdLong(), args[0]);
                         event.reply("Changed the url from " + url + " to " + args[0]);
                     } else {
                         if (args[0].equalsIgnoreCase("list")) {
                             event.reply("**Radio**\n" + linkjes.keySet().toString().replaceAll("(,\\s+|,)", "\n+ ").replaceFirst("\\[", "+ ").replaceFirst("]", ""));
                         } else {
                             if (linkjes.keySet().contains(args[0])) {
-                                new Thread(() -> PixelSniper.mySQL.setStreamUrl(guild, linkjes.get(args[0]))).start();
-                                if (streamUrls.containsKey(guild.getId())) streamUrls.replace(guild.getId(), linkjes.get(args[0]));
-                                else streamUrls.put(guild.getId(), linkjes.get(args[0]));
+                                new Thread(() -> PixelSniper.mySQL.setStreamUrl(guild.getIdLong(), linkjes.get(args[0]))).start();
+                                if (streamUrls.containsKey(guild.getIdLong())) streamUrls.replace(guild.getIdLong(), linkjes.get(args[0]));
+                                else streamUrls.put(guild.getIdLong(), linkjes.get(args[0]));
                                 event.reply("Changed the url from " + url + " to " + linkjes.get(args[0]));
                             } else {
                                 MessageHelper.sendUsage(this, event);

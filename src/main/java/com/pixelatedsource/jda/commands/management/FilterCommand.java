@@ -35,7 +35,7 @@ public class FilterCommand extends Command {
                             switch (args[1]) {
                                 case "add":
                                     if (args.length > 2) {
-                                        mySQL.addFilter(guild, "allowed", content);
+                                        mySQL.addFilter(guild.getIdLong(), "allowed", content);
                                         event.reply("`" + content + "` has been added to the allowed list.");
                                     } else {
                                         MessageHelper.sendUsage(this, event);
@@ -43,7 +43,7 @@ public class FilterCommand extends Command {
                                     break;
                                 case "remove":
                                     if (args.length > 2) {
-                                        mySQL.removeFilter(guild, "allowed", content);
+                                        mySQL.removeFilter(guild.getIdLong(), "allowed", content);
                                         event.reply("`" + content + "` has been removed from the allowed list.");
                                     } else {
                                         MessageHelper.sendUsage(this, event);
@@ -53,7 +53,7 @@ public class FilterCommand extends Command {
                                     int filterNumber = 0;
                                     StringBuilder partBuilder = new StringBuilder();
                                     partBuilder.append("**Allowed List**\n```Markdown\n");
-                                    for (String s : mySQL.getFilters(guild, "allowed")) {
+                                    for (String s : mySQL.getFilters(guild.getIdLong(), "allowed")) {
                                         if (partBuilder.toString().length() + s.length() > 1900) {
                                             partBuilder.append("```");
                                             event.reply(partBuilder.toString());
@@ -74,7 +74,7 @@ public class FilterCommand extends Command {
                             switch (args[1]) {
                                 case "add":
                                     if (args.length > 2) {
-                                        mySQL.addFilter(guild, "denied", content);
+                                        mySQL.addFilter(guild.getIdLong(), "denied", content);
                                         event.reply("`" + content + "` has been added to the denied list.");
                                     } else {
                                         MessageHelper.sendUsage(this, event);
@@ -82,7 +82,7 @@ public class FilterCommand extends Command {
                                     break;
                                 case "remove":
                                     if (args.length > 2) {
-                                        mySQL.removeFilter(guild, "denied", content);
+                                        mySQL.removeFilter(guild.getIdLong(), "denied", content);
                                         event.reply("`" + content + "` has been removed from the denied list.");
                                     } else {
                                         MessageHelper.sendUsage(this, event);
@@ -92,7 +92,7 @@ public class FilterCommand extends Command {
                                     int filterNumber = 0;
                                     StringBuilder partBuilder = new StringBuilder();
                                     partBuilder.append("**Denied List**\n```Markdown\n");
-                                    for (String s : mySQL.getFilters(guild, "denied")) {
+                                    for (String s : mySQL.getFilters(guild.getIdLong(), "denied")) {
                                         if (partBuilder.toString().length() + s.length() > 1900) {
                                             partBuilder.append("```");
                                             event.reply(partBuilder.toString());

@@ -23,32 +23,37 @@ public class SetLogChannelCommand extends Command {
         this.category = Category.MANAGEMENT;
     }
 
-    public static HashMap<String, String> logChannelIds = PixelSniper.mySQL.getChannelMap(ChannelType.LOG);
+    public static HashMap<Long, Long> guildLogChannelMap = PixelSniper.mySQL.getChannelMap(ChannelType.LOG);
 
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
                 Guild guild = event.getGuild();
-                String logChannelId = logChannelIds.getOrDefault(guild.getId(), "null");
+                String logChannelName = guildLogChannelMap.containsKey(guild.getIdLong()) ? "<#" + guildLogChannelMap.get(guild.getIdLong()) + ">" : "nothing";
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
-                    String id;
+                    Long id;
                     if (event.getMessage().getMentionedChannels().size() == 1) {
-                        id = event.getMessage().getMentionedChannels().get(0).getId();
+                        id = event.getMessage().getMentionedChannels().get(0).getIdLong();
                     } else if (args[0].matches("\\d+") && guild.getTextChannelById(args[0]) != null) {
-                        id = guild.getTextChannelById(args[0]).getId();
+                        id = Long.valueOf(args[0]);
                     } else if (args[0].equalsIgnoreCase("null")) {
-                        id = null;
+                        id = 0L;
                     } else {
                         MessageHelper.sendUsage(this, event);
                         return;
                     }
-                    logChannelIds.put(guild.getId(), id);
-                    new Thread(() -> PixelSniper.mySQL.setChannel(guild.getId(), id, ChannelType.LOG)).start();
-                    event.reply("LogChannel has been changed from <#" + logChannelId + "> to <#" + id + ">");
+                    if (id == 0L) {
+                        guildLogChannelMap.remove(guild.getIdLong());
+                        event.reply("LogChannel has been changed from " + logChannelName + " to nothing");
+                    } else {
+                        guildLogChannelMap.put(guild.getIdLong(), id);
+                        new Thread(() -> PixelSniper.mySQL.setChannel(guild.getIdLong(), id, ChannelType.LOG)).start();
+                        event.reply("LogChannel has been changed from " + logChannelName + " to <#" + id + ">");
+                    }
                 } else {
-                    event.reply("<#" + logChannelId + ">");
+                    event.reply(logChannelName);
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

@@ -1,7 +1,6 @@
 package com.pixelatedsource.jda.commands.management;
 
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
@@ -55,14 +54,14 @@ public class PermCommand extends Command {
                                     case "user":
                                         if (mentionedUsers.size() == 1) {
                                             User target = mentionedUsers.get(0);
-                                            mySQL.addUserPermission(guild, target, args[2]);
+                                            mySQL.addUserPermission(guild.getIdLong(), target.getIdLong(), args[2]);
                                             event.reply("Permission: `" + args[2] + "` added to `" + target.getName() + "#" + target.getDiscriminator() + "`");
                                         }
                                         break;
                                     case "role":
                                         if (mentionedRoles.size() == 1) {
                                             Role target = mentionedRoles.get(0);
-                                            mySQL.addRolePermission(guild, target, args[2]);
+                                            mySQL.addRolePermission(guild.getIdLong(), target.getIdLong(), args[2]);
                                             event.reply("Permission: `" + args[2] + "` added to `@" + target.getName() + "`");
                                         }
                                         break;
@@ -71,11 +70,11 @@ public class PermCommand extends Command {
                                             MessageHelper.sendUsage(this, event);
                                         } else if (guild.getRoleById(args[1]) == null && guild.getMemberById(args[1]) != null) {
                                             User target = jda.getUserById(args[1]);
-                                            mySQL.addUserPermission(guild, target, args[2]);
+                                            mySQL.addUserPermission(guild.getIdLong(), target.getIdLong(), args[2]);
                                             event.reply("Permission: `" + args[2] + "` added to `" + target.getName() + "#" + target.getDiscriminator() + "`");
                                         } else if (guild.getRoleById(args[1]) != null && guild.getMemberById(args[1]) == null) {
                                             Role target =  guild.getRoleById(args[1]);
-                                            mySQL.addRolePermission(guild, target, args[2]);
+                                            mySQL.addRolePermission(guild.getIdLong(), target.getIdLong(), args[2]);
                                             event.reply("Permission: `" + args[2] + "` added to `@" + target.getName() + "`");
                                         } else {
                                             event.reply("NANI!?");
@@ -83,7 +82,7 @@ public class PermCommand extends Command {
                                         }
                                         break;
                                     case "everyone":
-                                        mySQL.addRolePermission(guild, guild.getRoleById(guild.getId()), args[2]);
+                                        mySQL.addRolePermission(guild.getIdLong(), guild.getIdLong(), args[2]);
                                         event.reply("Permission: `" + args[2] + "` added to `@everyone`");
                                         break;
                                     default:
@@ -91,7 +90,7 @@ public class PermCommand extends Command {
                                         break;
                                 }
                             } else {
-                                event.reply(">perm list".replaceFirst(">", mySQL.getPrefix(event.getGuild())));
+                                event.reply(SetPrefixCommand.prefixes.getOrDefault(guild.getIdLong(), ">") + "perm list");
                             }
                         } else {
                             MessageHelper.sendUsage(this, event);
@@ -114,14 +113,14 @@ public class PermCommand extends Command {
                                     case "user":
                                         if (mentionedUsers.size() == 1) {
                                             User target = mentionedUsers.get(0);
-                                            mySQL.removeUserPermission(guild, target, args[2]);
+                                            mySQL.removeUserPermission(guild.getIdLong(), target.getIdLong(), args[2]);
                                             event.reply("Permission: `" + args[2] + "` removed from `" + target.getName() + "#" + target.getDiscriminator() + "`");
                                         }
                                         break;
                                     case "role":
                                         if (mentionedRoles.size() == 1) {
                                             Role target = mentionedRoles.get(0);
-                                            mySQL.removeRolePermission(guild, target, args[2]);
+                                            mySQL.removeRolePermission(guild.getIdLong(), target.getIdLong(), args[2]);
                                             event.reply("Permission: `" + args[2] + "` removed from `@" + target.getName() + "`");
                                         }
                                         break;
@@ -130,11 +129,11 @@ public class PermCommand extends Command {
                                             MessageHelper.sendUsage(this, event);
                                         } else if (guild.getRoleById(args[1]) == null && guild.getMemberById(args[1]) != null) {
                                             User target = jda.getUserById(args[1]);
-                                            mySQL.removeUserPermission(guild, target, args[2]);
+                                            mySQL.removeUserPermission(guild.getIdLong(), target.getIdLong(), args[2]);
                                             event.reply("Permission: `" + args[2] + "` removed from `" + target.getName() + "#" + target.getDiscriminator() + "`");
                                         } else if (guild.getRoleById(args[1]) != null && guild.getMemberById(args[1]) == null) {
                                             Role target =  guild.getRoleById(args[1]);
-                                            mySQL.removeRolePermission(guild, target, args[2]);
+                                            mySQL.removeRolePermission(guild.getIdLong(), target.getIdLong(), args[2]);
                                             event.reply("Permission: `" + args[2] + "` removed from `@" + target.getName() + "`");
                                         } else {
                                             event.reply("NANI!?");
@@ -142,7 +141,7 @@ public class PermCommand extends Command {
                                         }
                                         break;
                                     case "everyone":
-                                        mySQL.removeRolePermission(guild, guild.getRoleById(guild.getId()), args[2]);
+                                        mySQL.removeRolePermission(guild.getIdLong(), guild.getIdLong(), args[2]);
                                         event.reply("Permission: `" + args[2] + "` removed from `@everyone`");
                                         break;
                                     default:
@@ -150,7 +149,7 @@ public class PermCommand extends Command {
                                         break;
                                 }
                             } else {
-                                event.reply(">perm list".replaceFirst(">", PixelSniper.mySQL.getPrefix(event.getGuild())));
+                                event.reply(SetPrefixCommand.prefixes.getOrDefault(guild.getIdLong(), ">") + "perm list");
                             }
                         } else {
                             MessageHelper.sendUsage(this, event);
@@ -174,14 +173,14 @@ public class PermCommand extends Command {
                                 case "user":
                                     if (mentionedUsers.size() == 1) {
                                         User target = mentionedUsers.get(0);
-                                        mySQL.clearUserPermissions(guild, target);
+                                        mySQL.clearUserPermissions(guild.getIdLong(), target.getIdLong());
                                         event.reply("Permissions off `" + target.getName() + "#" + target.getDiscriminator() + "` have been cleared");
                                     }
                                     break;
                                 case "role":
                                     if (mentionedRoles.size() == 1) {
                                         Role target = mentionedRoles.get(0);
-                                        mySQL.clearRolePermissions(guild, target);
+                                        mySQL.clearRolePermissions(guild.getIdLong(), target.getIdLong());
                                         event.reply("Permissions off `@" + target.getName() + "` have been cleared");
                                     }
                                     break;
@@ -190,11 +189,11 @@ public class PermCommand extends Command {
                                         MessageHelper.sendUsage(this, event);
                                     } else if (guild.getRoleById(args[1]) == null && guild.getMemberById(args[1]) != null) {
                                         User target = jda.getUserById(args[1]);
-                                        mySQL.clearUserPermissions(guild, target);
+                                        mySQL.clearUserPermissions(guild.getIdLong(), target.getIdLong());
                                         event.reply("Permissions off `" + target.getName() + "#" + target.getDiscriminator() + "` have been cleared");
                                     } else if (guild.getRoleById(args[1]) != null && guild.getMemberById(args[1]) == null) {
-                                        Role target =  guild.getRoleById(args[1]);
-                                        mySQL.clearRolePermissions(guild, target);
+                                        Role target = guild.getRoleById(args[1]);
+                                        mySQL.clearRolePermissions(guild.getIdLong(), target.getIdLong());
                                         event.reply("Permissions off `@" + target.getName() + "` have been cleared");
                                     } else {
                                         event.reply("NANI!?");
@@ -202,7 +201,7 @@ public class PermCommand extends Command {
                                     }
                                     break;
                                 case "everyone":
-                                    mySQL.clearRolePermissions(guild, guild.getRoleById(guild.getId()));
+                                    mySQL.clearRolePermissions(guild.getIdLong(), guild.getIdLong());
                                     event.reply("Permissions off `@everyone` have been cleared");
                                     break;
                                 default:
@@ -232,13 +231,13 @@ public class PermCommand extends Command {
                             switch (mode) {
                                 case "user":
                                     if (mentionedUsers.size() == 1) {
-                                        lijst = mySQL.getUserPermissions(guild, mentionedUsers.get(0));
+                                        lijst = mySQL.getUserPermissions(guild.getIdLong(), mentionedUsers.get(0).getIdLong());
                                         targetName = mentionedUsers.get(0).getName() + "#" + mentionedUsers.get(0).getDiscriminator();
                                     }
                                     break;
                                 case "role":
                                     if (mentionedRoles.size() == 1) {
-                                        lijst = mySQL.getRolePermissions(guild, mentionedRoles.get(0));
+                                        lijst = mySQL.getRolePermissions(guild.getIdLong(), mentionedRoles.get(0).getIdLong());
                                         targetName = "@" + mentionedRoles.get(0).getName();
 
                                     }
@@ -248,10 +247,10 @@ public class PermCommand extends Command {
                                         MessageHelper.sendUsage(this, event);
                                     } else if (guild.getRoleById(args[1]) == null && guild.getMemberById(args[1]) != null) {
                                         User target = jda.getUserById(args[1]);
-                                        lijst = mySQL.getUserPermissions(guild, target);
+                                        lijst = mySQL.getUserPermissions(guild.getIdLong(), target.getIdLong());
                                         targetName = target.getName() + "#" + target.getDiscriminator();
                                     } else if (guild.getRoleById(args[1]) != null && guild.getMemberById(args[1]) == null) {
-                                        lijst = mySQL.getRolePermissions(guild, guild.getRoleById(args[1]));
+                                        lijst = mySQL.getRolePermissions(guild.getIdLong(), Long.parseLong(args[1]));
                                         targetName = "@" + mentionedRoles.get(0).getName();
                                     } else {
                                         event.reply("NANI!?");
@@ -259,7 +258,7 @@ public class PermCommand extends Command {
                                     }
                                     break;
                                 case "everyone":
-                                    lijst = mySQL.getRolePermissions(guild, guild.getRoleById(guild.getId()));
+                                    lijst = mySQL.getRolePermissions(guild.getIdLong(), guild.getIdLong());
                                     targetName = "@everyone";
                                     break;
                                 default:
@@ -377,14 +376,14 @@ public class PermCommand extends Command {
                             }
 
                             if (transmitter != null && receiver != null) {
-                                mySQL.copyUserPermissions(guild, transmitter, receiver);
+                                mySQL.copyUserPermissions(guild.getIdLong(), transmitter.getIdLong(), receiver.getIdLong());
                                 event.reply("Copied all permissions from `" + transmitter.getName() + "#" + transmitter.getDiscriminator() + "` to `" + receiver.getName() + "#" + receiver.getDiscriminator() + "`");
                             } else if (transmitter != null && receiverRole != null) {
-                                mySQL.copyUserRolePermissions(transmitter, receiverRole);
+                                mySQL.copyUserRolePermissions(guild.getIdLong(), transmitter.getIdLong(), receiverRole.getIdLong());
                             } else if (transmitterRole != null && receiverRole != null) {
-                                mySQL.copyRolePermissions(transmitterRole, receiverRole);
+                                mySQL.copyRolePermissions(guild.getIdLong(), transmitterRole.getIdLong(), receiverRole.getIdLong());
                             } else if (transmitterRole != null && receiver != null) {
-                                mySQL.copyRoleUserPermissions(transmitterRole, receiver);
+                                mySQL.copyRoleUserPermissions(guild.getIdLong(), transmitterRole.getIdLong(), receiver.getIdLong());
                             }
                         }
                     }

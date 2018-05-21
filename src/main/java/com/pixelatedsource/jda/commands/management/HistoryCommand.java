@@ -19,7 +19,7 @@ public class HistoryCommand extends Command {
     public HistoryCommand() {
         this.commandName = "history";
         this.description = "View bans/warns/mutes of a user.";
-        this.usage = PREFIX + commandName + " <mode> <user>";
+        this.usage = PREFIX + commandName + " <bans | mutes | warns> <user>";
         this.category = Category.MANAGEMENT;
     }
 
@@ -36,7 +36,7 @@ public class HistoryCommand extends Command {
                     if (target != null) {
                         switch (args[0]) {
                             case "bans":
-                                ArrayList<String> bans = new ArrayList<>(Arrays.asList(PixelSniper.mySQL.getUserBans(target, event.getGuild(), event.getJDA())));
+                                ArrayList<String> bans = new ArrayList<>(Arrays.asList(PixelSniper.mySQL.getUserBans(event.getGuild().getIdLong(), target.getIdLong(), event.getJDA())));
                                 ArrayList<String> mergedBans = new ArrayList<>();
                                 StringBuilder banBuffer = new StringBuilder();
                                 for (String ban : bans) {
@@ -59,7 +59,7 @@ public class HistoryCommand extends Command {
                                 }
                                 break;
                             case "mutes":
-                                ArrayList<String> mutes = new ArrayList<>(Arrays.asList(PixelSniper.mySQL.getUserMutes(target, event.getGuild(), event.getJDA())));
+                                ArrayList<String> mutes = new ArrayList<>(Arrays.asList(PixelSniper.mySQL.getUserMutes(event.getGuild().getIdLong(), target.getIdLong(), event.getJDA())));
                                 ArrayList<String> mergedMutes = new ArrayList<>();
                                 StringBuilder muteBuffer = new StringBuilder();
                                 for (String mute : mutes) {
@@ -82,7 +82,7 @@ public class HistoryCommand extends Command {
                                 }
                                 break;
                             case "warns":
-                                ArrayList<String> warns = new ArrayList<>(Arrays.asList(PixelSniper.mySQL.getUserWarns(target, event.getGuild(), event.getJDA())));
+                                ArrayList<String> warns = new ArrayList<>(Arrays.asList(PixelSniper.mySQL.getUserWarns(event.getGuild().getIdLong(), target.getIdLong(), event.getJDA())));
                                 ArrayList<String> mergedWarns = new ArrayList<>();
                                 StringBuilder warnsBuffer = new StringBuilder();
                                 for (String warn : warns) {

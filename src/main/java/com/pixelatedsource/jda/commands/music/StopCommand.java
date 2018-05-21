@@ -21,8 +21,8 @@ public class StopCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
-            if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
-                LoopCommand.looped.put(event.getGuild(), false);
+            if (Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
+                LoopCommand.looped.put(event.getGuild().getId(), false);
                 MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
                 player.stopTrack();
                 event.reply("Stopped by **" + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + "**");

@@ -20,20 +20,19 @@ public class AddReaction extends ListenerAdapter {
     @Override
     public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event) {
         Guild guild = event.getGuild();
-        if (SetLogChannelCommand.logChannelIds.getOrDefault(guild.getId(), "a").equalsIgnoreCase(event.getChannel().getId())) {
+        if (SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L) == event.getChannel().getIdLong()) {
             if (event.getReactionEmote().getName().equalsIgnoreCase("\uD83D\uDD30")) {
                 if (Helpers.hasPerm(event.getMember(), "emote.claim", 1)) {
                     new Thread(() -> {
-                        String messageId = PixelSniper.mySQL.getMessageIdByUnclaimedId(event.getMessageId());
-                        if (messageId != null) {
-                            event.getChannel().getMessageById(event.getMessageId()).queue((v) ->
-                                    v.editMessage(PixelSniper.mySQL.unclaimedToClaimed(messageId, event.getJDA(), event.getUser())).queue());
+                        long messageId = PixelSniper.mySQL.getMessageIdByUnclaimedId(event.getMessageIdLong());
+                        if (messageId != -1) {
+                            event.getChannel().getMessageById(event.getMessageId()).queue((v) -> v.editMessage(PixelSniper.mySQL.unclaimedToClaimed(messageId, event.getJDA(), event.getUser())).queue());
                         }
                     }).start();
                 }
             }
         }
-        /*if (SetLogChannelCommand.logChannelIds.containsKey(guild.getId())) {
+        /*if (SetLogChannelCommand.guildLogChannelMap.containsKey(guild.getId())) {
             if (event.getReactionEmote().getName().equalsIgnoreCase("\u274C")) { //:x: emote red cross
                 if (Helpers.hasPerm(event.getMember(), "emote.delete", 1)) {
                     String messageId = event.getMessageId();
@@ -142,8 +141,7 @@ public class AddReaction extends ListenerAdapter {
             }
             if (!wrongemote) {
                 event.getChannel().getMessageById(event.getMessageId()).queue((s) -> {
-                    if (s.getGuild() != null && s.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_MANAGE))
-                        s.clearReactions().queue();
+                    if (s.getGuild() != null && s.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_MANAGE)) s.clearReactions().queue();
                 });
             }
         }

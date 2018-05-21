@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 public class MusicManager {
 
     private final AudioPlayerManager manager = new DefaultAudioPlayerManager();
-    private final Map<String, MusicPlayer> players = new HashMap<>();
+    private final Map<Long, MusicPlayer> players = new HashMap<>();
     private static MusicManager managerinstance = new MusicManager();
     public static HashMap<User, List<AudioTrack>> usersRequest = new HashMap<>();
     public static HashMap<User, Message> usersFormToReply = new HashMap<>();
@@ -38,9 +38,9 @@ public class MusicManager {
     }
 
     public synchronized MusicPlayer getPlayer(Guild guild) {
-        if (!players.containsKey(guild.getId()))
-            players.put(guild.getId(), new MusicPlayer(manager.createPlayer(), guild));
-        return players.get(guild.getId());
+        if (!players.containsKey(guild.getIdLong()))
+            players.put(guild.getIdLong(), new MusicPlayer(manager.createPlayer(), guild));
+        return players.get(guild.getIdLong());
     }
 
     public void loadTrack(final TextChannel channel, final String source, User requester, boolean isPlaylist) {

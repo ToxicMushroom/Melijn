@@ -1,5 +1,7 @@
 package com.pixelatedsource.jda;
 
+import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.commands.util.SetNotifications;
 import com.pixelatedsource.jda.music.MusicManager;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
@@ -98,30 +100,44 @@ public class Helpers {
 
     public static void startTimer(JDA jda, DiscordBotListAPI dbl) {
         Runnable runnable = () -> {
-
             lastRunMillis = System.currentTimeMillis();
             try {
                 ResultSet bans = PixelSniper.mySQL.query("SELECT * FROM active_bans WHERE endTime < " + System.currentTimeMillis());
                 ResultSet mutes = PixelSniper.mySQL.query("SELECT * FROM active_mutes WHERE endTime < " + System.currentTimeMillis());
-
                 while (bans.next()) {
-                    User toUnban = jda.retrieveUserById(bans.getString("victimId")).complete();
-                    PixelSniper.mySQL.unban(toUnban, jda.getGuildById(bans.getString("guildId")), jda, true);
+                    User toUnban = jda.retrieveUserById(bans.getLong("victimId")).complete();
+                    try {
+                        if (jda.getGuildById(bans.getLong("guildId")) != null)
+                            PixelSniper.mySQL.unban(toUnban, jda.getGuildById(bans.getLong("guildId")), jda, true);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 while (mutes.next()) {
-                    User toUnmute = jda.retrieveUserById(mutes.getString("victimId")).complete();
-                    PixelSniper.mySQL.unmute(toUnmute, jda.getGuildById(mutes.getString("guildId")), jda, true);
+                    User toUnmute = jda.retrieveUserById(mutes.getLong("victimId")).complete();
+                    try {
+                        if (jda.getGuildById(mutes.getLong("guildId")) != null)
+                            PixelSniper.mySQL.unmute(jda.getGuildById(mutes.getLong("guildId")), toUnmute, jda, true);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
                 }
-
-                bans.close();
-                mutes.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         };
         Runnable runnable1 = () -> {
             if (dbl != null) dbl.setStats(jda.getSelfUser().getId(), jda.getGuilds().size());
+            ArrayList<Long> votesList = PixelSniper.mySQL.getVoteList();
+            for (long userId : SetNotifications.nextVotes.keySet()) {
+                for (long targetId : SetNotifications.nextVotes.get(userId)) {
+                    if (votesList.contains(targetId)) {
+                        User user = jda.getUserById(userId);
+                        user.openPrivateChannel().queue(s -> s.sendMessage("It's time to vote for **" + user.getName() + "#" + user.getDiscriminator() + "**").queue());
+                    }
+                }
+            }
         };
         executorService.scheduleAtFixedRate(runnable1, 5, 60, TimeUnit.SECONDS);
         executorService.scheduleAtFixedRate(runnable, 1, 2, TimeUnit.SECONDS);
@@ -130,9 +146,9 @@ public class Helpers {
     public static boolean hasPerm(Member member, String permission, int level) {
         if (member.isOwner() || member.hasPermission(Permission.ADMINISTRATOR)) return true;
         if (level == 0) {
-            if (PixelSniper.mySQL.noOneHasPermission(member.getGuild(), permission)) return true;
+            if (PixelSniper.mySQL.noOneHasPermission(member.getGuild().getIdLong(), permission)) return true;
         }
-        return PixelSniper.mySQL.hasPermission(member.getGuild(), member.getUser(), permission) || PixelSniper.mySQL.hasPermission(member.getGuild(), member.getUser(), "*");
+        return PixelSniper.mySQL.hasPermission(member.getGuild(), member.getUser().getIdLong(), permission) || PixelSniper.mySQL.hasPermission(member.getGuild(), member.getUser().getIdLong(), "*");
     }
 
     public static void waitForIt(User user) {
@@ -144,10 +160,10 @@ public class Helpers {
     }
 
     public static String getDurationBreakdown(long millis) {
-        if (millis < 0) {
+        if (millis < 0L) {
             return "error";
         }
-
+        if (millis > 43200000000L) return "LIVE";
         long days = TimeUnit.MILLISECONDS.toDays(millis);
         millis -= TimeUnit.DAYS.toMillis(days);
         long hours = TimeUnit.MILLISECONDS.toHours(millis);
@@ -162,15 +178,18 @@ public class Helpers {
             sb.append("d ");
         }
         if (hours != 0) {
+            if (hours < 10) sb.append(0);
             sb.append(hours);
-            sb.append("h ");
+            sb.append(":");
         }
         if (minutes != 0) {
+            if (minutes < 10) sb.append(0);
             sb.append(minutes);
-            sb.append("m ");
+            sb.append(":");
         }
+        if (seconds < 10) sb.append(0);
         sb.append(seconds);
-        sb.append("s ");
+        sb.append("s");
 
         return (sb.toString());
     }
@@ -226,4 +245,20 @@ public class Helpers {
         }
     }
 
+    public static User getUserByArgs(CommandEvent event, String arg) {//Without null
+        User user = event.getAuthor();
+        if (event.getMessage().getMentionedUsers().size() > 0) user = event.getMessage().getMentionedUsers().get(0);
+        else if (arg.matches("\\d+") && event.getJDA().getUserById(arg) != null) user = event.getJDA().getUserById(arg);
+        else if (event.getGuild() != null && event.getGuild().getMembersByName(arg, true).size() > 0) user = event.getGuild().getMembersByName(arg, true).get(0).getUser();
+        else if (event.getGuild() != null && event.getGuild().getMembersByNickname(arg, true).size() > 0) user = event.getGuild().getMembersByNickname(arg, true).get(0).getUser();
+        return user;
+    }
+    public static User getUserByArgsN(CommandEvent event, String arg) {//With null
+        User user = null;
+        if (event.getMessage().getMentionedUsers().size() > 0) user = event.getMessage().getMentionedUsers().get(0);
+        else if (arg.matches("\\d+") && event.getJDA().getUserById(arg) != null) user = event.getJDA().getUserById(arg);
+        else if (event.getGuild() != null && event.getGuild().getMembersByName(arg, true).size() > 0) user = event.getGuild().getMembersByName(arg, true).get(0).getUser();
+        else if (event.getGuild() != null && event.getGuild().getMembersByNickname(arg, true).size() > 0) user = event.getGuild().getMembersByNickname(arg, true).get(0).getUser();
+        return user;
+    }
 }

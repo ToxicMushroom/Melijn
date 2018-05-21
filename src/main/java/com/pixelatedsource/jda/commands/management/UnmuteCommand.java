@@ -34,7 +34,7 @@ public class UnmuteCommand extends Command {
                         event.reply("Unknown user");
                         return;
                     }
-                    if (PixelSniper.mySQL.unmute(toUnban, event.getGuild(), event.getJDA(), false)) {
+                    if (PixelSniper.mySQL.unmute(event.getGuild(), toUnban, event.getJDA(), false)) {
                         event.getMessage().addReaction("\u2705").queue();
                     } else {
                         event.getMessage().addReaction("\u274C").queue();

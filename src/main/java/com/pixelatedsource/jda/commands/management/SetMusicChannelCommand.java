@@ -16,14 +16,14 @@ import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 public class SetMusicChannelCommand extends Command {
 
     public SetMusicChannelCommand() {
-        this.commandName = "setmusicchannel";
+        this.commandName = "setMusicChannel";
         this.description = "Set the music channel to a channel so the bot wil auto join ect";
-        this.usage = PREFIX + commandName + " [id]";
+        this.usage = PREFIX + commandName + " [id/null]";
         this.aliases = new String[]{"smc"};
         this.category = Category.MANAGEMENT;
     }
 
-    public static HashMap<String, String> musicChannelIds = PixelSniper.mySQL.getChannelMap(ChannelType.MUSIC);
+    public static HashMap<Long, Long> musicChannelIds = PixelSniper.mySQL.getChannelMap(ChannelType.MUSIC);
 
     @Override
     protected void execute(CommandEvent event) {
@@ -31,16 +31,21 @@ public class SetMusicChannelCommand extends Command {
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                 Guild guild = event.getGuild();
                 String[] args = event.getArgs().split("\\s+");
-                String channelId = musicChannelIds.get(guild.getId());
                 if (args.length == 0 || args[0].equalsIgnoreCase("")) {
-                    event.reply("<#" + channelId + ">");
-                } else if (args[0].matches("\\d+") && guild.getVoiceChannelById(args[0]) != null) {
-                    if (musicChannelIds.containsKey(guild.getId())) musicChannelIds.replace(guild.getId(), args[0]);
-                    else musicChannelIds.put(guild.getId(), args[0]);
-                    new Thread(() -> PixelSniper.mySQL.setChannel(guild.getId(), args[0], ChannelType.MUSIC)).start();
-                    event.reply("Music channel changed from <#" + channelId + "> to <#" + args[0] + ">");
+                    event.reply(musicChannelIds.containsKey(guild.getIdLong()) ? "<#" + musicChannelIds.get(guild.getIdLong()) + ">" : "The musicChannel is unset");
                 } else {
-                    MessageHelper.sendUsage(this, event);
+                    if (args[0].matches("\\d+") && guild.getVoiceChannelById(args[0]) != null) {
+                        if (musicChannelIds.replace(guild.getIdLong(), Long.valueOf(args[0])) == null)
+                            musicChannelIds.put(guild.getIdLong(), Long.valueOf(args[0]));
+                        new Thread(() -> PixelSniper.mySQL.setChannel(guild.getIdLong(), Long.parseLong(args[0]), ChannelType.MUSIC)).start();
+                        event.reply("MusicChannel has set to <#" + args[0] + "> by **" + event.getFullAuthorName() + "**");
+                    } else if (args[0].equalsIgnoreCase("null")) {
+                       musicChannelIds.remove(guild.getIdLong());
+                       new Thread(() -> PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.MUSIC)).start();
+                        event.reply("MusicChannel has been unset **" + event.getFullAuthorName() + "**");
+                    } else {
+                        MessageHelper.sendUsage(this, event);
+                    }
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

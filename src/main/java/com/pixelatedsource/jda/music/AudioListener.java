@@ -6,6 +6,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import net.dv8tion.jda.core.entities.Guild;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -37,10 +38,11 @@ public class AudioListener extends AudioEventAdapter {
 
     @Override
     public void onTrackEnd(AudioPlayer player2, AudioTrack track, AudioTrackEndReason endReason) {
-        if (LoopCommand.looped.get(player.getGuild()) == null || !LoopCommand.looped.get(player.getGuild())) {
-            if (endReason.mayStartNext) nextTrack();
-        } else if (LoopCommand.looped.get(player.getGuild())) {
+        Guild guild = player.getGuild();
+        if (LoopCommand.looped.getOrDefault(guild.getId(), false)) {
             MusicManager.getManagerinstance().loadSimpelTrack(player.getGuild(), track.getInfo().uri);
+        } else {
+            if (endReason.mayStartNext) nextTrack();
         }
     }
 

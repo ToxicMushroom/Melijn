@@ -19,7 +19,7 @@ public class MuteCommand extends Command {
     public MuteCommand() {
         this.commandName = "mute";
         this.description = "Mute user on your server and give them a nice message in pm.";
-        this.usage = PREFIX + commandName + " <@user | userId> <reason>";
+        this.usage = PREFIX + commandName + " <member> <reason>";
         this.category = Category.MANAGEMENT;
         this.aliases = new String[]{"permmute"};
     }
@@ -35,21 +35,23 @@ public class MuteCommand extends Command {
                     if (event.getMessage().getMentionedUsers().size() > 0) target = event.getMessage().getMentionedUsers().get(0);
                     else if (args[0].matches("\\d+")) target = event.getJDA().retrieveUserById(args[0]).complete();
                     if (target == null || event.getGuild().getMember(target) == null) {
-                        event.reply("Unknown member! ");
+                        event.reply("Unknown member!");
                         return;
                     }
-                    if (PixelSniper.mySQL.getRoleId(event.getGuild(), RoleType.MUTE) == null) {
+                    if (!SetMuteRoleCommand.muteRoles.containsKey(event.getGuild().getIdLong())) {
                         event.reply("**No mute role set!**\nCreating Role..");
                         if (event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_ROLES)) {
-                            PixelSniper.mySQL.setRole(event.getGuild(), event.getGuild().getController().createRole().setColor(Color.gray).setMentionable(false).setName("muted").setPermissions(Permission.MESSAGE_READ, Permission.MESSAGE_HISTORY, Permission.VOICE_CONNECT).complete().getId(), RoleType.MUTE);
+                            long roleId = event.getGuild().getController().createRole().setColor(Color.gray).setMentionable(false).setName("muted").setPermissions(Permission.MESSAGE_READ, Permission.MESSAGE_HISTORY, Permission.VOICE_CONNECT).complete().getIdLong();
+                            PixelSniper.mySQL.setRole(event.getGuild().getIdLong(), roleId, RoleType.MUTE);
+                            SetMuteRoleCommand.muteRoles.put(event.getGuild().getIdLong(), roleId);
                             event.reply("Role created. You can change the settings of the role to your desires in the role managment tab.\nThis role wil be added to the muted users so it should have no talk permissions!");
                         } else {
-                            event.reply("No permission to create roles.\n" + "You can create a role yourself with the permissions you desire and set it with " + PixelSniper.mySQL.getPrefix(event.getGuild().getId()) + "setmuterole <@role | roleId>\nOr give the bot role managment permissions.");
+                            event.reply("No permission to create roles.\n" + "You can create a role yourself with the permissions you desire and set it with " + SetPrefixCommand.prefixes.getOrDefault(event.getGuild().getIdLong(), ">") + "setmuterole <@role | roleId>\nOr give the bot role managment permissions.");
                             return;
                         }
                     }
                     if (PixelSniper.mySQL.setPermMute(event.getAuthor(), target, event.getGuild(), reason)) {
-                        event.getGuild().getController().addSingleRoleToMember(event.getGuild().getMember(target), event.getGuild().getRoleById(PixelSniper.mySQL.getRoleId(event.getGuild(), RoleType.MUTE))).queue();
+                        event.getGuild().getController().addSingleRoleToMember(event.getGuild().getMember(target), event.getGuild().getRoleById(SetMuteRoleCommand.muteRoles.get(event.getGuild().getIdLong()))).queue();
                         event.getMessage().addReaction("\u2705").queue();
                     } else {
                         event.getMessage().addReaction("\u274C").queue();

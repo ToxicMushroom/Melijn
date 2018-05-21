@@ -25,28 +25,40 @@ public class PauseCommand extends Command {
             if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
                 MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
                 String[] args = event.getArgs().split("\\s+");
-                if (args.length == 0 || args[0].equalsIgnoreCase("")) {
-                    String s = player.getPaused() ? "paused" : "playing";
-                    event.reply("Music is **" + s + "**.");
-                } else if (args.length == 1) {
-                    switch (args[0]) {
-                        case "on":
-                        case "enable":
-                        case "true":
-                            player.getAudioPlayer().setPaused(true);
-                            event.reply("Paused by **" + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + "**");
-                            break;
-                        case "off":
-                        case "disable":
-                        case "false":
+                if (player.getAudioPlayer().getPlayingTrack() != null || player.getListener().getTrackSize() > 0) {
+                    if (args.length == 0 || args[0].equalsIgnoreCase("")) {
+                        if (player.getAudioPlayer().isPaused()) {
                             player.getAudioPlayer().setPaused(false);
                             event.reply("Resumed by **" + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + "**");
-                            break;
-                        default:
-                            MessageHelper.sendUsage(this, event);
-                            break;
+                        } else {
+                            player.getAudioPlayer().setPaused(true);
+                            event.reply("Paused by **" + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + "**");
+                        }
+                    } else if (args.length == 1) {
+                        switch (args[0]) {
+                            case "on":
+                            case "enable":
+                            case "true":
+                                player.getAudioPlayer().setPaused(true);
+                                event.reply("Paused by **" + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + "**");
+                                break;
+                            case "off":
+                            case "disable":
+                            case "false":
+                                player.getAudioPlayer().setPaused(false);
+                                event.reply("Resumed by **" + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + "**");
+                                break;
+                            case "info":
+                                String s = player.getPaused() ? "paused" : "playing";
+                                event.reply("The music is currently **" + s + "**.");
+                                break;
+                            default:
+                                MessageHelper.sendUsage(this, event);
+                                break;
+                        }
                     }
-
+                } else {
+                    event.reply("No music playing atm!");
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

@@ -23,25 +23,19 @@ public class AvatarCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
-            User author = null;
+            User user;
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {
-                author = event.getAuthor();
+                user = event.getAuthor();
             } else {
-                if (event.getMessage().getMentionedUsers().size() > 0) {
-                    author = event.getMessage().getMentionedUsers().get(0);
-                } else {
-                    if (args[0].matches("\\d+")) {
-                        author = event.getJDA().retrieveUserById(args[0]).complete();
-                    }
-                }
+                user = Helpers.getUserByArgsN(event, args[0]);
             }
-            if (author != null) {
-                String url = author.getAvatarUrl() == null ? author.getDefaultAvatarUrl() : author.getAvatarUrl();
+            if (user != null) {
+                String url = user.getAvatarUrl() == null ? user.getDefaultAvatarUrl() : user.getAvatarUrl();
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setColor(Helpers.EmbedColor);
-                eb.setTitle(author.getName() + "#" + author.getDiscriminator() + "'s avatar");
-                eb.setImage(url + "?size=1024");
-                eb.setDescription("[Avatar URL Link](" + url + "?size=1024)");
+                eb.setTitle(user.getName() + "#" + user.getDiscriminator() + "'s avatar");
+                eb.setImage(url + "?size=2048");
+                eb.setDescription("[open](" + url + "?size=4096)");
                  event.reply(eb.build());
             } else {
                 event.reply("Unknown user");

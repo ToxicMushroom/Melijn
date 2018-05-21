@@ -6,6 +6,7 @@ import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.blub.RoleType;
+import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.entities.Guild;
 
 import java.util.HashMap;
@@ -22,7 +23,7 @@ public class SetJoinRoleCommand extends Command {
         this.category = Category.MANAGEMENT;
     }
 
-    public static HashMap<String, String> joinRoles = PixelSniper.mySQL.getRoleMap(RoleType.JOIN);
+    public static HashMap<Long, Long> joinRoles = PixelSniper.mySQL.getRoleMap(RoleType.JOIN);
 
     @Override
     protected void execute(CommandEvent event) {
@@ -30,21 +31,28 @@ public class SetJoinRoleCommand extends Command {
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                 Guild guild = event.getGuild();
                 String[] args = event.getArgs().split("\\s+");
-                String role = joinRoles.getOrDefault(guild.getId(), "null");
+                long role = joinRoles.getOrDefault(guild.getId(), -1L);
                 if (args.length == 0 || args[0].equalsIgnoreCase("")) {
-                    if (role != null && role.matches("\\d+") && guild.getRoleById(role) != null) event.reply("Current JoinRole: **@" + guild.getRoleById(role).getName() + "**");
-                    else event.reply("Current JoinRole: **null**");
+                    if (role != -1 && guild.getRoleById(role) != null) event.reply("Current JoinRole: **@" + guild.getRoleById(role).getName() + "**");
+                    else event.reply("Current JoinRole is unset");
                 } else {
-                    String joinRoleId;
-                    if (args[0].matches("\\d+") && guild.getRoleById(args[0]) != null) joinRoleId = guild.getRoleById(args[0]).getId();
-                    else if (event.getMessage().getMentionedRoles().size() > 0) joinRoleId = event.getMessage().getMentionedRoles().get(0).getId();
-                    else joinRoleId = "null";
-                    if (joinRoles.containsKey(guild.getId())) joinRoles.replace(guild.getId(), joinRoleId);
-                    else joinRoles.put(guild.getId(), joinRoleId);
-                    new Thread(() -> PixelSniper.mySQL.setRole(guild, joinRoleId, RoleType.JOIN)).start();
-                    String oldRoleName = role == null || role.equalsIgnoreCase("null") ? "null" : "@" + guild.getRoleById(role).getName();
-                    String newRoleName = joinRoleId.equalsIgnoreCase("null") ? "null" : "@" + guild.getRoleById(joinRoleId).getName();
-                    event.reply("JoinRole changed from **" + oldRoleName + "** to **" + newRoleName + "**");
+                    if (args[0].equalsIgnoreCase("null")) {
+                        joinRoles.remove(guild.getIdLong());
+                        new Thread(() -> PixelSniper.mySQL.removeRole(guild.getIdLong(), RoleType.JOIN)).start();
+                        event.reply("JoinRole has been unset by **" + event.getFullAuthorName() + "**");
+                    } else {
+                        long joinRoleId;
+                        if (args[0].matches("\\d+") && guild.getRoleById(args[0]) != null) joinRoleId = Long.parseLong(args[0]);
+                        else if (event.getMessage().getMentionedRoles().size() > 0) joinRoleId = event.getMessage().getMentionedRoles().get(0).getIdLong();
+                        else joinRoleId = -1;
+                        if (joinRoleId != -1) {
+                            if (joinRoles.replace(guild.getIdLong(), joinRoleId) == null) joinRoles.put(guild.getIdLong(), joinRoleId);
+                            new Thread(() -> PixelSniper.mySQL.setRole(guild.getIdLong(), joinRoleId, RoleType.JOIN)).start();
+                            event.reply("JoinRole changed to **@" + guild.getRoleById(joinRoleId).getName() + "** by **" + event.getFullAuthorName() + "**");
+                        } else {
+                            MessageHelper.sendUsage(this, event);
+                        }
+                    }
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

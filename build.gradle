@@ -1,7 +1,7 @@
 plugins {
     id'java'
     id'application'
-    id'com.github.johnrengelman.shadow' version '2.0.2'
+    id'com.github.johnrengelman.shadow' version '2.0.4'
 }
 
 mainClassName = 'com.pixelatedsource.jda.PixelSniper'
@@ -18,13 +18,12 @@ repositories {
 
 dependencies {
     compile 'com.sedmelluq:jda-nas:1.0.5'
-    compile 'net.dv8tion:JDA:3.6.0_362'
+    compile 'net.dv8tion:JDA:3.6.0_367'
     compile 'com.sedmelluq:lavaplayer:1.2.63'
-    compile 'mysql:mysql-connector-java:6.0.6'
+    compile 'mysql:mysql-connector-java:8.0.11'
     compile 'com.github.DiscordBotList:DBL-Java-Wrapper:4b27930a6312ff571e688e751e71e5b96bf366fe'
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.10.0'
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.10.0'
     compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.10.0'
 }
-
 compileJava.options.encoding = 'UTF-8'
