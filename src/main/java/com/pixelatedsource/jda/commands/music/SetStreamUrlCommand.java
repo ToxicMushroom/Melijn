@@ -44,24 +44,24 @@ public class SetStreamUrlCommand extends Command {
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                 Guild guild = event.getGuild();
                 String[] args = event.getArgs().split("\\s+");
-                String url = streamUrls.getOrDefault(guild.getId(), "null");
+                String url = streamUrls.getOrDefault(guild.getIdLong(), "nothing");
                 if (args.length == 0 || args[0].equalsIgnoreCase("")) {
-                    event.reply(url);
+                    event.reply("StreamURL: " + url);
                 } else if (args.length == 1) {
                     if (args[0].contains("http://") || args[0].contains("https://")) {
                         new Thread(() -> PixelSniper.mySQL.setStreamUrl(guild.getIdLong(), args[0])).start();
-                        if (streamUrls.containsKey(guild.getIdLong())) streamUrls.replace(guild.getIdLong(), args[0]);
-                        else streamUrls.put(guild.getIdLong(), args[0]);
-                        event.reply("Changed the url from " + url + " to " + args[0]);
+                        if (streamUrls.replace(guild.getIdLong(), args[0]) == null)
+                            streamUrls.put(guild.getIdLong(), args[0]);
+                        event.reply("Changed the url from **" + url + "** to **" + args[0] + "**");
                     } else {
                         if (args[0].equalsIgnoreCase("list")) {
                             event.reply("**Radio**\n" + linkjes.keySet().toString().replaceAll("(,\\s+|,)", "\n+ ").replaceFirst("\\[", "+ ").replaceFirst("]", ""));
                         } else {
                             if (linkjes.keySet().contains(args[0])) {
                                 new Thread(() -> PixelSniper.mySQL.setStreamUrl(guild.getIdLong(), linkjes.get(args[0]))).start();
-                                if (streamUrls.containsKey(guild.getIdLong())) streamUrls.replace(guild.getIdLong(), linkjes.get(args[0]));
-                                else streamUrls.put(guild.getIdLong(), linkjes.get(args[0]));
-                                event.reply("Changed the url from " + url + " to " + linkjes.get(args[0]));
+                                if (streamUrls.replace(guild.getIdLong(), linkjes.get(args[0])) == null)
+                                    streamUrls.put(guild.getIdLong(), linkjes.get(args[0]));
+                                event.reply("Changed the url from **" + url + "** to " + linkjes.get(args[0]));
                             } else {
                                 MessageHelper.sendUsage(this, event);
                             }

@@ -55,13 +55,14 @@ public class NowPlayingCommand extends Command {
                             }
                         }
                         Emote emote = event.getJDA().getEmoteById("445154561313865728");
-                        String looped = LoopCommand.looped.getOrDefault(guild.getId(), false) ? ":repeat: " : "";
+                        String loopedQueue = LoopQueueCommand.looped.getOrDefault(guild.getIdLong(), false) ? " :repeat:" : "";
+                        String looped = LoopCommand.looped.getOrDefault(guild.getIdLong(), false) ? " :arrows_counterclockwise:" : "";
                         event.reply(new EmbedBuilder()
                                 .setTitle("Now " + s)
                                 .setColor(Helpers.EmbedColor)
                                 .setThumbnail(thumbnailUrl)
                                 .addField("title:", "[**" + track.getInfo().title + "**](" + track.getInfo().uri + ")", false)
-                                .addField("status:", looped + (s.equalsIgnoreCase("playing") ? ":arrow_forward:" : ":pause_button:"), false)
+                                .addField("status:", (s.equalsIgnoreCase("playing") ? ":arrow_forward:" : ":pause_button:") + looped + loopedQueue, false)
                                 .addField("progress:", MessageHelper.progressBar(track, emote), false)
                                 .setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon()).build());
                     }

@@ -12,13 +12,13 @@ import java.util.HashMap;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
-public class LoopCommand extends Command {
+public class LoopQueueCommand extends Command {
 
-    public LoopCommand() {
-        this.commandName = "loop";
-        this.description = "Change the looping state or view the looping state of the playing song";
+    public LoopQueueCommand() {
+        this.commandName = "loopQueue";
+        this.description = "Change the looping state or view the looping state of the queue";
         this.usage = PREFIX + this.commandName + " [false/off/yes | true/on/off]";
-        this.aliases = new String[]{"repeat", "loopsong"};
+        this.aliases = new String[]{"repeatq", "loopq"};
         this.category = Category.MUSIC;
     }
 

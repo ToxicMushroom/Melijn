@@ -23,6 +23,7 @@ public class SetNotifications extends Command {
         this.usage = PREFIX + commandName + " [nextVote] [user/info]";
         this.extra = "arg1 -> notification type\narg2 -> either view all notifications of the type or toggle a user on and off";
         this.category = Category.UTILS;
+        this.aliases = new String[]{"sn"};
     }
 
     public static HashMap<Long, ArrayList<Long>> nextVotes = mySQL.getNotificationsMap(NotificationType.NEXTVOTE);
@@ -74,7 +75,7 @@ public class SetNotifications extends Command {
                                 User user; //Yes this has to be 3 lines because of lambda's :(
                                 user = Helpers.getUserByArgs(event, args[1]);
                                 boolean contains = false;
-                                for (long s : nextVotes.getOrDefault(user.getId(), new ArrayList<>())) {
+                                for (long s : nextVotes.getOrDefault(event.getAuthorId(), new ArrayList<>())) {
                                     if (!contains && user.getIdLong() == s) {
                                         contains = true;
                                     }

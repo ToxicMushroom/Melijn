@@ -20,14 +20,14 @@ public class SetJoinLeaveChannelCommand extends Command {
         this.category = Category.MANAGEMENT;
     }
 
-    public static HashMap<Long, Long> welcomChannels = PixelSniper.mySQL.getChannelMap(ChannelType.WELCOME);
+    public static HashMap<Long, Long> welcomeChannels = PixelSniper.mySQL.getChannelMap(ChannelType.WELCOME);
 
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
                 Guild guild = event.getGuild();
-                long welcomeChannelId = welcomChannels.getOrDefault(guild.getIdLong(), -1L);
+                long welcomeChannelId = welcomeChannels.getOrDefault(guild.getIdLong(), -1L);
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     long id;
@@ -53,15 +53,15 @@ public class SetJoinLeaveChannelCommand extends Command {
                             new Thread(() -> PixelSniper.mySQL.setMessage(guild.getIdLong(), "**%USERNAME%** left us :C", MessageType.LEAVE)).start();
                             event.reply("I've set the default leave message :beginner:");
                         }
-                        if (welcomChannels.replace(guild.getIdLong(), welcomeChannelId) == null) {
-                            welcomChannels.put(guild.getIdLong(), welcomeChannelId);
+                        if (welcomeChannels.replace(guild.getIdLong(), welcomeChannelId) == null) {
+                            welcomeChannels.put(guild.getIdLong(), welcomeChannelId);
                         }
                         String oldChannel = welcomeChannelId == -1 ? "nothing" : "<#" + welcomeChannelId + ">";
                         String newChannel = "<#" + id + ">";
                         event.reply("WelcomeChannel has been changed from " + oldChannel + " to " + newChannel);
                     } else {
-                        long oldChannel = welcomChannels.getOrDefault(guild.getIdLong(), -1L);
-                        welcomChannels.remove(guild.getIdLong());
+                        long oldChannel = welcomeChannels.getOrDefault(guild.getIdLong(), -1L);
+                        welcomeChannels.remove(guild.getIdLong());
                         event.reply("WelcomeChannel has been changed from " + (oldChannel == -1L ? "nothing" : "<#" + oldChannel + ">") + " to nothing");
                     }
                 } else {

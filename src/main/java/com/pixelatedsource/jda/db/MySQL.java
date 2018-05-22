@@ -943,9 +943,9 @@ public class MySQL {
 
     public void removeChannel(long guildId, ChannelType type) {
         try {
-            PreparedStatement removeChannel = con.prepareStatement("DELETE * FROM " + type.toString().toLowerCase() + "_channels WHERE guildId= ?");
+            PreparedStatement removeChannel = con.prepareStatement("DELETE FROM " + type.toString().toLowerCase() + "_channels WHERE guildId= ?");
             removeChannel.setLong(1, guildId);
-            removeChannel.executeUpdate();
+             removeChannel.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1267,7 +1267,7 @@ public class MySQL {
     public JSONObject getVotesObject(long userId) {
         JSONObject toReturn = new JSONObject();
         try {
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM votes WHERE userId=?");
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM votes WHERE userId= ?");
             statement.setLong(1, userId);
             ResultSet rs = statement.executeQuery();
             while (rs.next()) {
@@ -1324,7 +1324,7 @@ public class MySQL {
 
     public void removeNotification(long userId, long targetId, NotificationType type) {
         try {
-            PreparedStatement remove = con.prepareStatement("DELETE * FROM " + type.toString().toLowerCase() + "_notifications WHERE userId= ? AND targetId= ?");
+            PreparedStatement remove = con.prepareStatement("DELETE FROM " + type.toString().toLowerCase() + "_notifications WHERE userId= ? AND targetId= ?");
             remove.setLong(1, userId);
             remove.setLong(2, targetId);
             remove.executeUpdate();
@@ -1336,7 +1336,7 @@ public class MySQL {
     public ArrayList<Long> getVoteList() {
         ArrayList<Long> list = new ArrayList<>();
         try {
-            PreparedStatement getVoteMap = con.prepareStatement("SELECT * FROM votes WHERE lastTime <  " + (System.currentTimeMillis() - 84600000) + " AND lastTime > " + (System.currentTimeMillis() - 84540000));
+            PreparedStatement getVoteMap = con.prepareStatement("SELECT * FROM votes WHERE lastTime <  " + (System.currentTimeMillis() - 84600000 + " AND lastTime > " + (System.currentTimeMillis() - 84660000)));
             ResultSet rs = getVoteMap.executeQuery();
             while (rs.next()) {
                 list.add(rs.getLong("userId"));

@@ -22,6 +22,7 @@ public class QueueCommand extends Command {
         this.commandName = "queue";
         this.description = "Shows you a list of all songs wich will play in the future.";
         this.usage = PREFIX + this.commandName;
+        this.aliases = new String[]{"q"};
         this.category = Category.MUSIC;
     }
 
@@ -50,7 +51,9 @@ public class QueueCommand extends Command {
                     totalqueuelength += track.getDuration();
                     lijst.add(String.valueOf("[#" + i + "](" + track.getInfo().uri + ") - " + track.getInfo().title + " `" + Helpers.getDurationBreakdown(track.getInfo().length) + "`"));
                 }
-                lijst.add("-<Info>-");
+                String loopedQueue = LoopQueueCommand.looped.getOrDefault(guild.getIdLong(), false) ? " :repeat:" : "";
+                String looped = LoopCommand.looped.getOrDefault(guild.getIdLong(), false) ? " :arrows_counterclockwise:" : "";
+                lijst.add("Status: " + (player.getAudioPlayer().isPaused() ? ":arrow_forward:" : ":pause_button:") + looped + loopedQueue);
                 lijst.add("Queue size: **" + lijst.size() + "** tracks");
                 lijst.add("Queue length: **" + Helpers.getDurationBreakdown(totalqueuelength) + "**");
                 StringBuilder builder = new StringBuilder();

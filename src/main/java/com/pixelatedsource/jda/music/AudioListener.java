@@ -2,6 +2,7 @@ package com.pixelatedsource.jda.music;
 
 import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.commands.music.LoopCommand;
+import com.pixelatedsource.jda.commands.music.LoopQueueCommand;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -39,7 +40,10 @@ public class AudioListener extends AudioEventAdapter {
     @Override
     public void onTrackEnd(AudioPlayer player2, AudioTrack track, AudioTrackEndReason endReason) {
         Guild guild = player.getGuild();
-        if (LoopCommand.looped.getOrDefault(guild.getId(), false)) {
+        if (LoopCommand.looped.getOrDefault(guild.getIdLong(), false)) {
+            MusicManager.getManagerinstance().loadSimpelTrack(player.getGuild(), track.getInfo().uri);
+        } else if (LoopQueueCommand.looped.getOrDefault(guild.getIdLong(), false)) {
+            if (endReason.mayStartNext) nextTrack();
             MusicManager.getManagerinstance().loadSimpelTrack(player.getGuild(), track.getInfo().uri);
         } else {
             if (endReason.mayStartNext) nextTrack();

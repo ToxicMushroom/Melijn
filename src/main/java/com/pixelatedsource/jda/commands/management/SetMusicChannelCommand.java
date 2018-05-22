@@ -32,13 +32,13 @@ public class SetMusicChannelCommand extends Command {
                 Guild guild = event.getGuild();
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length == 0 || args[0].equalsIgnoreCase("")) {
-                    event.reply(musicChannelIds.containsKey(guild.getIdLong()) ? "<#" + musicChannelIds.get(guild.getIdLong()) + ">" : "The musicChannel is unset");
+                    event.reply(musicChannelIds.containsKey(guild.getIdLong()) ? "MusicChannel: <#" + musicChannelIds.get(guild.getIdLong()) + ">" : "The MusicChannel is unset");
                 } else {
                     if (args[0].matches("\\d+") && guild.getVoiceChannelById(args[0]) != null) {
                         if (musicChannelIds.replace(guild.getIdLong(), Long.valueOf(args[0])) == null)
                             musicChannelIds.put(guild.getIdLong(), Long.valueOf(args[0]));
                         new Thread(() -> PixelSniper.mySQL.setChannel(guild.getIdLong(), Long.parseLong(args[0]), ChannelType.MUSIC)).start();
-                        event.reply("MusicChannel has set to <#" + args[0] + "> by **" + event.getFullAuthorName() + "**");
+                        event.reply("MusicChannel has been set to <#" + args[0] + "> by **" + event.getFullAuthorName() + "**");
                     } else if (args[0].equalsIgnoreCase("null")) {
                        musicChannelIds.remove(guild.getIdLong());
                        new Thread(() -> PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.MUSIC)).start();

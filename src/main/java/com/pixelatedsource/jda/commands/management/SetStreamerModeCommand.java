@@ -31,16 +31,16 @@ public class SetStreamerModeCommand extends Command {
         if (event.getGuild() != null) {
             Guild guild = event.getGuild();
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
-                if (!SetMusicChannelCommand.musicChannelIds.containsKey(guild.getId())) {
-                    event.reply("You first have to set a music channel.\n" + SetPrefixCommand.prefixes.getOrDefault(guild.getId(), ">") + "smc <channelId>");
+                if (!SetMusicChannelCommand.musicChannelIds.containsKey(guild.getIdLong())) {
+                    event.reply("You first have to set a MusicChannel.\n" + SetPrefixCommand.prefixes.getOrDefault(guild.getIdLong(), ">") + "smc <channelId>");
                     return;
                 }
-                VoiceChannel musicChannel = guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelIds.get(guild.getId()));
+                VoiceChannel musicChannel = guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelIds.get(guild.getIdLong()));
                 if (musicChannel != null) {
                     String[] args = event.getArgs().split("\\s+");
                     if (args.length == 0 || args[0].equalsIgnoreCase("")) {
-                        String state = streamerModes.getOrDefault(guild.getId(), false) ? "enabled" : "disabled";
-                        event.reply("state: " + state);
+                        String state = streamerModes.getOrDefault(guild.getIdLong(), false) ? "enabled" : "disabled";
+                        event.reply("StreamerMode: **" + state + "**");
                     } else if (args.length == 1) {
                         switch (args[0]) {
                             case "true":
@@ -52,7 +52,7 @@ public class SetStreamerModeCommand extends Command {
                                     new Thread(() -> PixelSniper.mySQL.setStreamerMode(guild.getIdLong(), true)).start();
                                     if (streamerModes.containsKey(guild.getIdLong())) streamerModes.replace(guild.getIdLong(), true);
                                     else streamerModes.put(guild.getIdLong(), true);
-                                    event.reply("\uD83D\uDCF6 The streamer mode has been **enabled**.");
+                                    event.reply("\uD83D\uDCF6 The StreamerMode has been **enabled** by **" + event.getFullAuthorName() + "**");
                                 } else {
                                     event.reply("The bot has no permission to the configured music channel.");
                                 }
@@ -62,7 +62,7 @@ public class SetStreamerModeCommand extends Command {
                                 new Thread(() -> PixelSniper.mySQL.setStreamerMode(guild.getIdLong(), false)).start();
                                 if (streamerModes.containsKey(guild.getIdLong())) streamerModes.replace(guild.getIdLong(), false);
                                 else streamerModes.put(guild.getIdLong(), false);
-                                event.reply("The streamer mode has been **disabled**.");
+                                event.reply("The streamer mode has been **disabled** by **" + event.getFullAuthorName() + "**");
                                 break;
                         }
                     } else {

@@ -6,6 +6,7 @@ import com.pixelatedsource.jda.music.MusicManager;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.managers.AudioManager;
 import org.apache.logging.log4j.LogManager;
@@ -134,7 +135,8 @@ public class Helpers {
                 for (long targetId : SetNotifications.nextVotes.get(userId)) {
                     if (votesList.contains(targetId)) {
                         User user = jda.getUserById(userId);
-                        user.openPrivateChannel().queue(s -> s.sendMessage("It's time to vote for **" + user.getName() + "#" + user.getDiscriminator() + "**").queue());
+                        User target = jda.getUserById(targetId);
+                        user.openPrivateChannel().queue(s -> s.sendMessage("It's time to vote for **" + target.getName() + "#" + target.getDiscriminator() + "**").queue());
                     }
                 }
             }
@@ -260,5 +262,20 @@ public class Helpers {
         else if (event.getGuild() != null && event.getGuild().getMembersByName(arg, true).size() > 0) user = event.getGuild().getMembersByName(arg, true).get(0).getUser();
         else if (event.getGuild() != null && event.getGuild().getMembersByNickname(arg, true).size() > 0) user = event.getGuild().getMembersByNickname(arg, true).get(0).getUser();
         return user;
+    }
+
+    public static boolean checkChannelPermission(Member member, TextChannel textChannel, Permission permission) {
+        boolean toReturn = member.hasPermission(permission);
+        if (member.getRoles().size() > 0) {
+            if (textChannel.getPermissionOverride(member.getRoles().get(0)) != null) {
+                if (textChannel.getPermissionOverride(member.getRoles().get(0)).getAllowed().contains(permission)) toReturn = true;
+                if (textChannel.getPermissionOverride(member.getRoles().get(0)).getDenied().contains(permission)) toReturn = false;
+            }
+        }
+        if (textChannel.getPermissionOverride(member) != null) {
+            if (textChannel.getPermissionOverride(member).getAllowed().contains(permission)) toReturn = true;
+            if (textChannel.getPermissionOverride(member).getDenied().contains(permission)) toReturn = false;
+        }
+        return toReturn;
     }
 }

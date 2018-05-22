@@ -21,7 +21,9 @@ public class PingCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
-            event.getChannel().sendMessage("Ping... ").queue(m -> m.editMessage("Ping: " + event.getMessage().getCreationTime().until(m.getCreationTime(), ChronoUnit.MILLIS) + "ms | " + "Websocket: " + event.getJDA().getPing() + "ms").queue());
+            event.getChannel().sendMessage("Ping... ").queue((m) ->
+                    m.editMessage("Ping: " +
+                            event.getMessage().getCreationTime().until(m.getCreationTime(), ChronoUnit.MILLIS) + "ms | " + "Websocket: " + event.getJDA().getPing() + "ms").queue());
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
