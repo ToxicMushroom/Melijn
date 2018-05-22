@@ -7,6 +7,7 @@ import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 
@@ -48,6 +49,10 @@ public class PlayCommand extends Command {
             }
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {//no args -> usage:
                 MessageHelper.sendUsage(this, event);
+                return;
+            }
+            if (!event.getGuild().getSelfMember().hasPermission(Permission.VOICE_CONNECT)) {
+                event.reply("I don't have the permission VOICE_CONNECT");
                 return;
             }
             String songname;
@@ -94,7 +99,8 @@ public class PlayCommand extends Command {
                 default:
                     if (songname.contains("https://") || songname.contains("http://")) {
                         if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) || acces) {
-                            if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                            if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
+                                guild.getAudioManager().openAudioConnection(senderVoiceChannel);
                             if (songname.contains("open.spotify.com")) {
                                 event.reply("You can't play spotify links with bots sadly :(\nIf you have a self made playlist you can use http://www.playlist-converter.net/#/ to convert it into a youtube playlist or soundcloud (those are supported).");
                                 return;
