@@ -2,6 +2,7 @@ package com.pixelatedsource.jda.db;
 
 import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.blub.*;
+import com.pixelatedsource.jda.commands.management.SetPrefixCommand;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Guild;
@@ -447,7 +448,7 @@ public class MySQL {
     //Prefix stuff---------------------------------------------------------------
     public void setPrefix(long guildId, String prefix) {
         try {
-            if (getPrefix(guildId).equalsIgnoreCase(">")) {
+            if (!SetPrefixCommand.prefixes.containsKey(guildId)) {
                 PreparedStatement setPrefix = con.prepareStatement("INSERT INTO prefixes (guildId, prefix) VALUES (?, ?)");
                 setPrefix.setLong(1, guildId);
                 setPrefix.setString(2, prefix);

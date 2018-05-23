@@ -61,7 +61,7 @@ public class SetStreamUrlCommand extends Command {
                                 new Thread(() -> PixelSniper.mySQL.setStreamUrl(guild.getIdLong(), linkjes.get(args[0]))).start();
                                 if (streamUrls.replace(guild.getIdLong(), linkjes.get(args[0])) == null)
                                     streamUrls.put(guild.getIdLong(), linkjes.get(args[0]));
-                                event.reply("Changed the url from **" + url + "** to " + linkjes.get(args[0]));
+                                event.reply("Changed the url from **" + url + "** to **" + linkjes.get(args[0]) + "**");
                             } else {
                                 MessageHelper.sendUsage(this, event);
                             }
