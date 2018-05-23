@@ -53,7 +53,7 @@ public class QueueCommand extends Command {
                 }
                 String loopedQueue = LoopQueueCommand.looped.getOrDefault(guild.getIdLong(), false) ? " :repeat:" : "";
                 String looped = LoopCommand.looped.getOrDefault(guild.getIdLong(), false) ? " :arrows_counterclockwise:" : "";
-                lijst.add("Status: " + (player.getAudioPlayer().isPaused() ? ":arrow_forward:" : ":pause_button:") + looped + loopedQueue);
+                lijst.add("Status: " + (player.getAudioPlayer().isPaused() ? ":pause_button:" : ":arrow_forward:") + looped + loopedQueue);
                 lijst.add("Queue size: **" + lijst.size() + "** tracks");
                 lijst.add("Queue length: **" + Helpers.getDurationBreakdown(totalqueuelength) + "**");
                 StringBuilder builder = new StringBuilder();

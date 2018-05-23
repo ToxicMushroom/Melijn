@@ -47,6 +47,7 @@ public class Helpers {
             "stop",
             "volume",
             "loop",
+            "loopqueue",
             "queue",
             "clear",
             "loop",

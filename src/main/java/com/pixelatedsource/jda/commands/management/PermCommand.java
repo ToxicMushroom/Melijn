@@ -245,13 +245,14 @@ public class PermCommand extends Command {
                                 case "id":
                                     if (guild.getRoleById(args[1]) == null && guild.getMemberById(args[1]) == null) {
                                         MessageHelper.sendUsage(this, event);
-                                    } else if (guild.getRoleById(args[1]) == null && guild.getMemberById(args[1]) != null) {
+                                    } else if (guild.getMemberById(args[1]) != null) {
                                         User target = jda.getUserById(args[1]);
                                         lijst = mySQL.getUserPermissions(guild.getIdLong(), target.getIdLong());
                                         targetName = target.getName() + "#" + target.getDiscriminator();
-                                    } else if (guild.getRoleById(args[1]) != null && guild.getMemberById(args[1]) == null) {
-                                        lijst = mySQL.getRolePermissions(guild.getIdLong(), Long.parseLong(args[1]));
-                                        targetName = "@" + mentionedRoles.get(0).getName();
+                                    } else if (guild.getRoleById(args[1]) != null) {
+                                        Role role = guild.getRoleById(args[1]);
+                                        lijst = mySQL.getRolePermissions(guild.getIdLong(), role.getIdLong());
+                                        targetName = "@" + role.getName();
                                     } else {
                                         event.reply("NANI!?");
                                         return;
@@ -293,6 +294,21 @@ public class PermCommand extends Command {
                         return;
                     }
                     break;
+                case "list":
+                    StringBuilder sb = new StringBuilder();
+                    int i = 1;
+                    int count = 0;
+                    for (String s : Helpers.perms) {
+                        sb.append(++count).append(". [").append(s).append("]").append("\n");
+                        if (sb.toString().length() > 1900) {
+                            event.getChannel().sendMessage("Permissions list part **#" + i + "**\n```INI\n" + sb.toString() + "```").queue();
+                            sb = new StringBuilder();
+                            i++;
+                        }
+                    }
+                    if (sb.toString().length() != 0) event.reply("Permissions list part **#" + i + "**\n```INI\n" + sb.toString() + "```");
+
+                    event.reply("```");
                 case "copy":
                     if (Helpers.hasPerm(member, this.commandName + ".copy", 1)) {
                         if (args.length == 3) {
