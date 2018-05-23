@@ -47,38 +47,22 @@ public class VoteCommand extends Command {
                     event.reply(target.getName() + " has never voted.");
                     return;
                 }
-                if (event.getGuild() != null) {
-                    if (event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS)) {
-                        EmbedBuilder eb = new EmbedBuilder();
-                        eb.setTitle("Votes of " + username);
-                        eb.setThumbnail(target.getAvatarUrl());
-                        eb.setColor(Helpers.EmbedColor);
-                        eb.addField("Votes", String.valueOf(voteObject.getLong("votes")), false);
-                        eb.addField("Streak", String.valueOf(voteObject.getLong("streak")), false);
-                        long untilNext = 86400000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
-                        String untilNextFormat = (untilNext > 0) ? MessageHelper.millisToVote(untilNext) : "none (you can vote now)";
-                        eb.addField("Time until next vote", untilNextFormat, false);
-                        long untilLoss = 172800000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
-                        String untilLossFormat = (untilLoss > 0) ? MessageHelper.millisToVote(untilLoss) : "You don't have a streak atm :/";
-                        eb.addField("Time until los of streak", untilLossFormat, false);
-                        event.reply(eb.build());
-                    } else {
-                        event.reply("I don't have permissions to send embeds here.. :( (You can send the command in dm)");
-                    }
-                } else {
-                    EmbedBuilder eb = new EmbedBuilder();
-                    eb.setTitle("Votes of " + username);
-                    eb.setThumbnail(target.getAvatarUrl());
-                    eb.setColor(Helpers.EmbedColor);
-                    eb.addField("Votes", String.valueOf(voteObject.getLong("votes")), false);
-                    eb.addField("Streak", String.valueOf(voteObject.getLong("streak")), false);
-                    long untilNext = 86400000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
-                    String untilNextFormat = (untilNext > 0) ? MessageHelper.millisToVote(untilNext) : "none (you can vote now)";
-                    eb.addField("Time until next vote", untilNextFormat, false);
-                    long untilLoss = 172800000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
-                    String untilLossFormat = (untilLoss > 0) ? MessageHelper.millisToVote(untilLoss) : "You don't have a streak atm :/";
-                    eb.addField("Time until los of streak", untilLossFormat, false);
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.setTitle("Votes of " + username);
+                eb.setThumbnail(target.getAvatarUrl());
+                eb.setColor(Helpers.EmbedColor);
+                eb.addField("Votes", String.valueOf(voteObject.getLong("votes")), false);
+                eb.addField("Streak", String.valueOf(voteObject.getLong("streak")), false);
+                long untilNext = 86400000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
+                String untilNextFormat = (untilNext > 0) ? MessageHelper.millisToVote(untilNext) : "none (you can vote now)";
+                eb.addField("Time until next vote", untilNextFormat, false);
+                long untilLoss = 172800000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
+                String untilLossFormat = (untilLoss > 0) ? MessageHelper.millisToVote(untilLoss) : "You don't have a streak atm :/";
+                eb.addField("Time until los of streak", untilLossFormat, false);
+                if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS)) {
                     event.reply(eb.build());
+                } else {
+                    event.reply("I don't have permissions to send embeds here.. :( (You can send the command in dm)");
                 }
             }).start();
         } else {
