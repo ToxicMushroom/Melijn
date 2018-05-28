@@ -29,10 +29,7 @@ public class HistoryCommand extends Command {
             if (Helpers.hasPerm(event.getMember(), commandName, 0)) {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length == 2) {
-                    User target;
-                    if (event.getMessage().getMentionedUsers().size() > 0) target = event.getMessage().getMentionedUsers().get(0);
-                    else if (event.getJDA().retrieveUserById(args[1]) != null) target = event.getJDA().retrieveUserById(args[1]).complete();
-                    else target = null;
+                    User target = Helpers.getUserByArgsN(event, args[1]);
                     if (target != null) {
                         switch (args[0]) {
                             case "bans":

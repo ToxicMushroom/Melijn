@@ -30,7 +30,7 @@ public class SetLogChannelCommand extends Command {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
                 Guild guild = event.getGuild();
-                String logChannelName = guildLogChannelMap.containsKey(guild.getIdLong()) ? "<#" + guildLogChannelMap.get(guild.getIdLong()) + ">" : "nothing";
+                String logChannelName = guildLogChannelMap.containsKey(guild.getIdLong()) ? "<#" + guildLogChannelMap.get(guild.getIdLong()) + ">" : "LogChannel is unset";
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     Long id;
@@ -46,11 +46,11 @@ public class SetLogChannelCommand extends Command {
                     }
                     if (id == 0L) {
                         guildLogChannelMap.remove(guild.getIdLong());
-                        event.reply("LogChannel has been changed from " + logChannelName + " to nothing");
+                        event.reply("LogChannel has been changed from " + logChannelName + " to nothing by **" + event.getFullAuthorName() + "**");
                     } else {
                         guildLogChannelMap.put(guild.getIdLong(), id);
                         new Thread(() -> PixelSniper.mySQL.setChannel(guild.getIdLong(), id, ChannelType.LOG)).start();
-                        event.reply("LogChannel has been changed from " + logChannelName + " to <#" + id + ">");
+                        event.reply("LogChannel has been changed from " + logChannelName + " to <#" + id + "> by **" + event.getFullAuthorName() + "**");
                     }
                 } else {
                     event.reply(logChannelName);

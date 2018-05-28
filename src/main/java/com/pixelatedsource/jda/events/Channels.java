@@ -43,7 +43,7 @@ public class Channels extends ListenerAdapter {
                 }
             }
         } else if (SetMusicChannelCommand.musicChannelIds.containsKey(guildId) &&
-                SetStreamerModeCommand.streamerModes.getOrDefault(guildId, false) &&
+                SetStreamerModeCommand.streamerModes.contains(guildId) &&
                 event.getChannelJoined().getIdLong() == SetMusicChannelCommand.musicChannelIds.get(guildId) &&
                 !audioManager.isConnected()) {
             audioManager.openAudioConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelIds.get(guildId)));
@@ -59,7 +59,7 @@ public class Channels extends ListenerAdapter {
         Guild guild = event.getGuild();
         long guildId = guild.getIdLong();
         AudioManager audioManager = guild.getAudioManager();
-        if (SetStreamerModeCommand.streamerModes.getOrDefault(guildId, false) &&
+        if (SetStreamerModeCommand.streamerModes.contains(guildId) &&
                 event.getChannelJoined().getIdLong() == (SetMusicChannelCommand.musicChannelIds.getOrDefault(guildId, -1L)) &&
                 SetMusicChannelCommand.musicChannelIds.containsKey(guildId) &&
                 !audioManager.isConnected()) {

@@ -1,6 +1,7 @@
 package com.pixelatedsource.jda.commands.management;
 
 import com.pixelatedsource.jda.Helpers;
+import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
@@ -10,6 +11,7 @@ import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
@@ -19,11 +21,14 @@ public class PermCommand extends Command {
 
     public PermCommand() {
         this.commandName = "perm";
-        this.description = "You can edit the user's acces to your demands ;D";
+        this.description = "You can edit the user's access to your demands ;D";
         this.usage = PREFIX + this.commandName + " <add | remove | clear | copy | info | list> <@role | roleId | @user | userId> [permission]\nA permission is just the name of the command.";
         this.aliases = new String[]{"permission"};
         this.category = Category.MANAGEMENT;
     }
+
+    HashMap<Long, List<Integer>> userPermissions = PixelSniper.mySQL.getPermissionsMap(0);
+    HashMap<Long, List<Integer>> rolePermissions = PixelSniper.mySQL.getPermissionsMap(1);
 
     @Override
     protected void execute(CommandEvent event) {
@@ -35,10 +40,6 @@ public class PermCommand extends Command {
             JDA jda = event.getJDA();
             List<Role> mentionedRoles = message.getMentionedRoles();
             List<User> mentionedUsers = message.getMentionedUsers();
-            if (args.length < 2) {
-                MessageHelper.sendUsage(this, event);
-                return;
-            }
             switch (args[0]) {
                 case "add":
                     if (Helpers.hasPerm(member, this.commandName + ".add", 1)) {
@@ -269,7 +270,7 @@ public class PermCommand extends Command {
                             int partNumber = 0;
                             StringBuilder sb = new StringBuilder();
                             for (String s : lijst) {
-                                sb.append(s);
+                                sb.append(s).append("\n");
                                 if (sb.toString().length() > 1900) {
                                     event.reply(new EmbedBuilder()
                                             .setTitle("Permissions off `" + targetName + "` part #" + partNumber++)
@@ -307,8 +308,7 @@ public class PermCommand extends Command {
                         }
                     }
                     if (sb.toString().length() != 0) event.reply("Permissions list part **#" + i + "**\n```INI\n" + sb.toString() + "```");
-
-                    event.reply("```");
+                    break;
                 case "copy":
                     if (Helpers.hasPerm(member, this.commandName + ".copy", 1)) {
                         if (args.length == 3) {
@@ -401,6 +401,8 @@ public class PermCommand extends Command {
                             } else if (transmitterRole != null && receiver != null) {
                                 mySQL.copyRoleUserPermissions(guild.getIdLong(), transmitterRole.getIdLong(), receiver.getIdLong());
                             }
+                        } else {
+                            MessageHelper.sendUsage(this, event);
                         }
                     }
                     break;

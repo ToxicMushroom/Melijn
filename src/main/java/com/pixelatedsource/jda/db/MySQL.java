@@ -2,7 +2,9 @@ package com.pixelatedsource.jda.db;
 
 import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.blub.*;
+import com.pixelatedsource.jda.commands.management.SetLogChannelCommand;
 import com.pixelatedsource.jda.commands.management.SetPrefixCommand;
+import com.pixelatedsource.jda.commands.management.SetStreamerModeCommand;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Guild;
@@ -56,6 +58,7 @@ public class MySQL {
             update("CREATE TABLE IF NOT EXISTS log_channels(guildId bigint, channelId bigint)");
             update("CREATE TABLE IF NOT EXISTS music_channels(guildId bigint, channelId bigint)");
             update("CREATE TABLE IF NOT EXISTS welcome_channels(guildId bigint, channelId bigint)");
+            update("CREATE TABLE IF NOT EXISTS nowplaying_channels(guildId bigint, channelId bigint)");
             update("CREATE TABLE IF NOT EXISTS streamer_modes(guildId bigint, state boolean)");
             update("CREATE TABLE IF NOT EXISTS filters(guildId bigint, mode varchar(16), content varchar(2000))");
             update("CREATE TABLE IF NOT EXISTS warns(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), moment bigint);");
@@ -466,19 +469,6 @@ public class MySQL {
         }
     }
 
-    public String getPrefix(long guildId) {
-        try {
-            PreparedStatement getPrefix = con.prepareStatement("SELECT * FROM prefixes WHERE guildId= ?");
-            getPrefix.setLong(1, guildId);
-            ResultSet rs = getPrefix.executeQuery();
-            if (rs.next()) return rs.getString("prefix");
-            return ">";
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return ">";
-        }
-    }
-
     //Punishment stuff--------------------------------------------------------------
     public boolean setTempBan(User staff, User victim, Guild guild, String reason, long seconds) {
         if (seconds > 0) {
@@ -494,7 +484,11 @@ public class MySQL {
                 if (victim.getAvatarUrl() == null) banned.setThumbnail(victim.getDefaultAvatarUrl());
                 banned.setAuthor("Banned by: " + namep, null, staff.getAvatarUrl());
                 if (!victim.isFake()) victim.openPrivateChannel().complete().sendMessage(banned.build()).queue();
-                if (getChannelId(guild.getIdLong(), ChannelType.LOG) != -1) guild.getTextChannelById(getChannelId(guild.getIdLong(), ChannelType.LOG)).sendMessage(banned.build()).queue();
+                long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+                if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
+                    if (victim.isFake()) guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget has private messages disabled").queue();
+                    else guild.getTextChannelById(logChannelId).sendMessage(banned.build()).queue();
+                }
                 ResultSet rs = query("SELECT * FROM active_bans WHERE victimId= '" + victim.getId() + "' AND guildId= '" + guild.getId() + "'");
                 if (rs.next()) {//Player was banned so just update the times
                     PreparedStatement banupdate = con.prepareStatement("UPDATE active_bans SET victimId= ?, guildId= ?, reason= ?, startTime= ?, endTime= ?, authorId= ? WHERE victimId= ? AND guildId= ?");
@@ -548,7 +542,11 @@ public class MySQL {
             if (victim.getAvatarUrl() == null) banned.setThumbnail(victim.getDefaultAvatarUrl());
             banned.setAuthor("Permanently banned by: " + namep, null, staff.getAvatarUrl());
             if (!victim.isFake()) victim.openPrivateChannel().complete().sendMessage(banned.build()).queue();
-            if (getChannelId(guild.getIdLong(), ChannelType.LOG) != -1) guild.getTextChannelById(getChannelId(guild.getIdLong(), ChannelType.LOG)).sendMessage(banned.build()).queue();
+            long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+            if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null){
+                if (victim.isFake()) guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget has private messages disabled").queue();
+                else guild.getTextChannelById(logChannelId).sendMessage(banned.build()).queue();
+            }
             ResultSet rs = query("SELECT * FROM active_bans WHERE victimId= '" + victim.getId() + "' AND guildId= '" + guild.getId() + "'");
             if (rs.next()) {//Player was banned so just update the times
                 PreparedStatement banupdate = con.prepareStatement("UPDATE active_bans SET victimId= ?, guildId= ?, reason= ?, startTime= ?, endTime= ?, authorId= ? WHERE victimId= ? AND guildId= ?");
@@ -595,7 +593,6 @@ public class MySQL {
                 getBans.setLong(1, guild.getIdLong());
                 getBans.setLong(2, toUnban.getIdLong());
                 ResultSet rs = getBans.executeQuery();
-                boolean t = false;
                 while (rs.next()) {
                     User author = jda.retrieveUserById(rs.getString("authorId")).complete();
                     guild.getController().unban(toUnban.getId()).queue();
@@ -610,6 +607,7 @@ public class MySQL {
                     deleteBans.setLong(2, toUnban.getIdLong());
                     deleteBans.executeUpdate();
                     deleteBans.close();
+
                     EmbedBuilder eb = new EmbedBuilder();
                     if (auto) author = jda.getSelfUser();
                     eb.setAuthor("Unbanned by: " + author.getName() + "#" + author.getDiscriminator(), null, author.getAvatarUrl());
@@ -617,13 +615,16 @@ public class MySQL {
                     eb.setThumbnail(toUnban.getAvatarUrl());
                     eb.setColor(Helpers.EmbedColor);
                     eb.setColor(Color.green);
+
                     toUnban.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
-                    if (getChannelId(guild.getIdLong(), ChannelType.LOG) != -1) {
-                        guild.getTextChannelById(getChannelId(guild.getIdLong(), ChannelType.LOG)).sendMessage(eb.build()).queue();
+                    long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+                    if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
+                        if (toUnban.isFake()) guild.getTextChannelById(logChannelId).sendMessage(eb.build() + "\nTarget has private messages disabled").queue();
+                        else guild.getTextChannelById(logChannelId).sendMessage(eb.build()).queue();
                     }
-                    t = true;
+                   return true;
                 }
-                return t;
+                return false;
             } catch (SQLException e) {
                 e.printStackTrace();
                 return false;
@@ -647,14 +648,12 @@ public class MySQL {
             embedBuilder.setDescription("```LDIF\n" + "Warned: " + victim.getName() + "#" + victim.getDiscriminator() + "\n" + "Reason: " + reason + "\n" + "Guild: " + guild.getName() + "\n" + "Moment: " + millisToDate(System.currentTimeMillis()) + "\n" + "```");
             embedBuilder.setThumbnail(victim.getAvatarUrl());
             embedBuilder.setColor(Color.yellow);
-            long logChannelId = getChannelId(guild.getIdLong(), ChannelType.LOG);
-            if (logChannelId != -1) {
+            long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+            if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
                 if (victim.isFake()) guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build() + "\nTarget has private messages disabled.").queue();
                 else guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
             }
-            if (!victim.isFake()) {
-                victim.openPrivateChannel().complete().sendMessage(embedBuilder.build()).queue();
-            }
+            if (!victim.isFake()) victim.openPrivateChannel().complete().sendMessage(embedBuilder.build()).queue();
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -676,7 +675,11 @@ public class MySQL {
                 if (victim.getAvatarUrl() == null) muted.setThumbnail(victim.getDefaultAvatarUrl());
                 muted.setAuthor("Muted by: " + namep, null, staff.getAvatarUrl());
                 if (!victim.isFake()) victim.openPrivateChannel().complete().sendMessage(muted.build()).queue();
-                if (getChannelId(guild.getIdLong(), ChannelType.LOG) != -1) guild.getTextChannelById(getChannelId(guild.getIdLong(), ChannelType.LOG)).sendMessage(muted.build()).queue();
+                long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+                if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
+                    if (victim.isFake()) guild.getTextChannelById(logChannelId).sendMessage(muted.build() + "\nTarget has private messages disabled").queue();
+                    else guild.getTextChannelById(logChannelId).sendMessage(muted.build()).queue();
+                }
                 ResultSet rs = query("SELECT * FROM active_mutes WHERE victimId= '" + victim.getIdLong() + "' AND guildId= '" + guild.getIdLong() + "'");
                 if (rs.next()) {//Player was banned so just update the times
                     PreparedStatement muteupdate = con.prepareStatement("UPDATE active_mutes SET victimId= ?, guildId= ?, reason= ?, startTime= ?, endTime= ?, authorId= ? WHERE victimId= ? AND guildId= ?");
@@ -729,7 +732,11 @@ public class MySQL {
             if (victim.getAvatarUrl() == null) muted.setThumbnail(victim.getDefaultAvatarUrl());
             muted.setAuthor("Permanently muted by: " + namep, null, staff.getAvatarUrl());
             if (!victim.isFake()) victim.openPrivateChannel().complete().sendMessage(muted.build()).queue();
-            if (getChannelId(guild.getIdLong(), ChannelType.LOG) != -1) guild.getTextChannelById(getChannelId(guild.getIdLong(), ChannelType.LOG)).sendMessage(muted.build()).queue();
+            long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+            if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
+                if (victim.isFake()) guild.getTextChannelById(logChannelId).sendMessage(muted.build() + "\nTarget has private messages disabled").queue();
+                else guild.getTextChannelById(logChannelId).sendMessage(muted.build()).queue();
+            }
             ResultSet rs = query("SELECT * FROM active_mutes WHERE victimId= '" + victim.getId() + "' AND guildId= '" + guild.getId() + "'");
             if (rs.next()) {
                 PreparedStatement muteupdate = con.prepareStatement("UPDATE active_mutes SET victimId= ?, guildId= ?, reason= ?, startTime= ?, endTime= ?, authorId= ? WHERE victimId= ? AND guildId= ?");
@@ -798,8 +805,10 @@ public class MySQL {
                     eb.setColor(Color.green);
                     guild.getController().removeSingleRoleFromMember(guild.getMember(toUnmute), guild.getRoleById(getRoleId(guild.getIdLong(), RoleType.MUTE))).queue();
                     toUnmute.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
-                    if (getChannelId(guild.getIdLong(), ChannelType.LOG) != -1) {
-                        guild.getTextChannelById(getChannelId(guild.getIdLong(), ChannelType.LOG)).sendMessage(eb.build()).queue();
+                    long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+                    if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
+                        if (toUnmute.isFake()) guild.getTextChannelById(logChannelId).sendMessage(eb.build() + "\nTarget has private messages disabled").queue();
+                        else guild.getTextChannelById(logChannelId).sendMessage(eb.build()).queue();
                     }
                     t = true;
                 }
@@ -953,26 +962,23 @@ public class MySQL {
     }
 
     //streamer stuff------------------------------------------------
-    public boolean setStreamerMode(long guildId, boolean state) {
+    public void setStreamerMode(long guildId, boolean state) {
         try {
-            if (!getStreamerMode(guildId)) {
-                PreparedStatement setPrefix = con.prepareStatement("INSERT INTO streamer_modes (guildId, state) VALUES (?, ?)");
-                setPrefix.setLong(1, guildId);
-                setPrefix.setBoolean(2, state);
-                setPrefix.executeUpdate();
-                setPrefix.close();
-                return true;
+            if (state) {
+                if (!SetStreamerModeCommand.streamerModes.contains(guildId)) {
+                    PreparedStatement setStreamerMode = con.prepareStatement("INSERT INTO streamer_modes (guildId) VALUES (?)");
+                    setStreamerMode.setLong(1, guildId);
+                    setStreamerMode.executeUpdate();
+                    setStreamerMode.close();
+                }
             } else {
-                PreparedStatement updatePrefix = con.prepareStatement("UPDATE streamer_modes SET state= ? WHERE guildId= ?");
-                updatePrefix.setBoolean(1, state);
-                updatePrefix.setLong(2, guildId);
-                updatePrefix.executeUpdate();
-                updatePrefix.close();
-                return true;
+                PreparedStatement deleteStreamerMode = con.prepareStatement("DELETE FROM streamer_modes WHERE guildId= ?");
+                deleteStreamerMode.setLong(1, guildId);
+                deleteStreamerMode.executeUpdate();
+                deleteStreamerMode.close();
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
     }
 
@@ -1251,18 +1257,19 @@ public class MySQL {
         return mapje;
     }
 
-    public HashMap<Long, Boolean> getStreamerModeMap() {
-        HashMap<Long, Boolean> mapje = new HashMap<>();
+    public List<Long> getStreamerModeList() {
+        List<Long> lijstje = new ArrayList<>();
         try {
             PreparedStatement statement = con.prepareStatement("SELECT * FROM streamer_modes");
             ResultSet rs = statement.executeQuery();
             while (rs.next()) {
-                mapje.put(rs.getLong("guildId"), rs.getString("state").equalsIgnoreCase("true"));
+                if (!lijstje.contains(rs.getLong("guildId")))
+                    lijstje.add(rs.getLong("guildId"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return mapje;
+        return lijstje;
     }
 
     public JSONObject getVotesObject(long userId) {
@@ -1346,5 +1353,32 @@ public class MySQL {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public HashMap<Long,List<Integer>> getPermissionsMap(int i) {
+        HashMap<Long, List<Integer>> permissions = new HashMap<>();
+        try {
+            String type = i == 0 ? "user" : "role";
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM perms_" + type + "s");
+            ResultSet rs = statement.executeQuery();
+            List<Long> row = new ArrayList<>();
+            while (rs.next()) {
+                if (!row.contains(rs.getLong(type + "Id")))
+                    row.add(rs.getLong(type + "Id"));
+            }
+            for (long s : row) {
+                rs.beforeFirst();
+                ArrayList<Integer> lijst = new ArrayList<>();
+                while (rs.next()) {
+                    if (rs.getLong(type + "Id") == s) {
+                        lijst.add(Helpers.perms.indexOf(rs.getString("permission")));
+                    }
+                }
+                permissions.put(s, lijst);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return permissions;
     }
 }

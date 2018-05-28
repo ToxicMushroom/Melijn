@@ -29,7 +29,7 @@ public class Helpers {
     public static long lastRunMillis;
     private static ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     public static long starttime;
-    public static String guildOnly = "This is a guildonly command";
+    public static String guildOnly = "This command is to be used in guilds only";
     public static String noPerms = "You don't have the permission: ";
     public static final Logger LOG = LogManager.getLogger(PixelSniper.class.getName());
     public static Color EmbedColor = Color.decode("#00ffd8");
@@ -278,5 +278,19 @@ public class Helpers {
             if (textChannel.getPermissionOverride(member).getDenied().contains(permission)) toReturn = false;
         }
         return toReturn;
+    }
+
+    public static long getChannelByArgsN(CommandEvent event, String arg) {
+        long id = -1L;
+        if (event.getMessage().getMentionedChannels().size() == 1) {
+            id = event.getMessage().getMentionedChannels().get(0).getIdLong();
+        } else if (arg.matches("\\d+") && event.getGuild().getTextChannelById(arg) != null) {
+            id = Long.valueOf(arg);
+        } else if (arg.equalsIgnoreCase("null")) {
+            id = 0L;
+        } else if (event.getGuild().getTextChannelsByName(arg, true).size() > 0) {
+            id = event.getGuild().getTextChannelsByName(arg, true).get(0).getIdLong();
+        }
+        return id;
     }
 }

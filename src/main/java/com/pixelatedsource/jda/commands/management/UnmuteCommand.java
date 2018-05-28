@@ -25,19 +25,17 @@ public class UnmuteCommand extends Command {
             if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length == 1) {
-                    User toUnban;
-                    if (event.getMessage().getMentionedUsers().size() == 1) {
-                        toUnban = event.getMessage().getMentionedUsers().get(0);
-                    } else if (args[0].matches("\\d+") && event.getJDA().retrieveUserById(args[0]).complete() != null) {
-                        toUnban = event.getJDA().retrieveUserById(args[0]).complete();
+                    User target = Helpers.getUserByArgsN(event, args[0]);
+                    if (target != null) {
+                        new Thread(() -> {
+                            if (PixelSniper.mySQL.unmute(event.getGuild(), target, event.getJDA(), false)) {
+                                event.getMessage().addReaction("\u2705").queue();
+                            } else {
+                                event.getMessage().addReaction("\u274C").queue();
+                            }
+                        }).start();
                     } else {
                         event.reply("Unknown user");
-                        return;
-                    }
-                    if (PixelSniper.mySQL.unmute(event.getGuild(), toUnban, event.getJDA(), false)) {
-                        event.getMessage().addReaction("\u2705").queue();
-                    } else {
-                        event.getMessage().addReaction("\u274C").queue();
                     }
                 } else {
                     MessageHelper.sendUsage(this, event);

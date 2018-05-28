@@ -28,20 +28,19 @@ public class BanCommand extends Command {
                 if (event.getGuild().getSelfMember().hasPermission(Permission.BAN_MEMBERS)) {
                     String[] args = event.getArgs().split("\\s+");
                     if (args.length >= 2) {
-                        User target = null;
+                        User target = Helpers.getUserByArgsN(event, args[0]);
                         String reason = event.getArgs().replaceFirst(args[0] + "\\s+", "");
-                        if (event.getMessage().getMentionedUsers().size() > 0) target = event.getMessage().getMentionedUsers().get(0);
-                        else if (args[0].matches("\\d+")) target = event.getJDA().retrieveUserById(args[0]).complete();
-                        if (target == null) {
-                            event.reply("Unknown user!");
-                            return;
-                        }
-                        if (PixelSniper.mySQL.setPermBan(event.getAuthor(), target, event.getGuild(), reason)) {
-                            event.getMessage().addReaction("\u2705").queue();
+                        if (target != null) {
+                            new Thread(() -> {
+                                if (PixelSniper.mySQL.setPermBan(event.getAuthor(), target, event.getGuild(), reason)) {
+                                    event.getMessage().addReaction("\u2705").queue();
+                                } else {
+                                    event.getMessage().addReaction("\u274C").queue();
+                                }
+                            });
                         } else {
-                            event.getMessage().addReaction("\u274C").queue();
+                            event.reply("Unknown user");
                         }
-
                     } else {
                         MessageHelper.sendUsage(this, event);
                     }

@@ -28,13 +28,8 @@ public class PlayerinfoCommand extends Command {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm ss");
             String[] args = event.getArgs().split("\\s+");
-            User user;
-            User usr2;
-            if (args[0].equalsIgnoreCase("")) usr2 = event.getAuthor();
-            else if (event.getMessage().getMentionedUsers().size() == 0) usr2 = event.getJDA().retrieveUserById(args[0]).complete();
-            else usr2 = event.getMessage().getMentionedUsers().get(0);
-            user = usr2;
-            if (user == null) user = event.getAuthor();
+            User user = args.length > 0 ? Helpers.getUserByArgs(event, args[0]) : event.getAuthor();
+
             EmbedBuilder eb = new EmbedBuilder();
             eb.setColor(Helpers.EmbedColor);
             eb.setTitle(user.getName() + "#" + user.getDiscriminator() + "'s profile");

@@ -25,20 +25,22 @@ public class WarnCommand extends Command {
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length >= 2) {
-                    User victim;
-                    if (event.getMessage().getMentionedUsers().size() == 1) {
-                        victim = event.getMessage().getMentionedUsers().get(0);
-                    } else if (args[0].matches("\\d+") && event.getJDA().retrieveUserById(args[0]).complete() != null) {
-                        victim = event.getJDA().retrieveUserById(args[0]).complete();
+                    User target = Helpers.getUserByArgsN(event, args[0]);
+                    if (target != null) {
+                        String reason = event.getArgs().replaceFirst(args[0] + "\\s+", "");
+                        new Thread(() -> {
+                            if (event.getGuild().getMember(target) != null) {
+                                if (PixelSniper.mySQL.addWarn(event.getAuthor(), target, event.getGuild(), reason)) {
+                                    event.getMessage().addReaction("\u2705").queue();
+                                } else {
+                                    event.getMessage().addReaction("\u274C").queue();
+                                }
+                            } else {
+                                event.reply("This user isn't a member of your guild");
+                            }
+                        }).start();
                     } else {
-                        event.reply("Unknown user.");
-                        return;
-                    }
-                    String reason = event.getArgs().replaceFirst(args[0] + "\\s+", "");
-                    if (PixelSniper.mySQL.addWarn(event.getAuthor(), victim, event.getGuild(), reason)) {
-                        event.getMessage().addReaction("\u2705").queue();
-                    } else {
-                        event.getMessage().addReaction("\u274C").queue();
+                        event.reply("Unknown user");
                     }
                 } else {
                     MessageHelper.sendUsage(this, event);

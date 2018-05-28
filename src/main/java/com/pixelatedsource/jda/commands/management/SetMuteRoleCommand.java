@@ -39,12 +39,15 @@ public class SetMuteRoleCommand extends Command {
                     if (args[0].matches("\\d+") && guild.getRoleById(args[0]) != null) muteRoleId = Long.parseLong(args[0]);
                     else if (event.getMessage().getMentionedRoles().size() > 0) muteRoleId = event.getMessage().getMentionedRoles().get(0).getIdLong();
                     else muteRoleId = -1L;
-                    new Thread(() -> PixelSniper.mySQL.setRole(guild.getIdLong(), muteRoleId, RoleType.MUTE)).start();
-                    if (muteRoles.containsKey(guild.getIdLong())) muteRoles.replace(guild.getIdLong(), muteRoleId);
-                    else muteRoles.put(guild.getIdLong(), muteRoleId);
-                    String oldRoleName = roleId == -1 ? "nothing" : "@" + guild.getRoleById(roleId).getName();
+                    new Thread(() -> {
+                        PixelSniper.mySQL.setRole(guild.getIdLong(), muteRoleId, RoleType.MUTE);
+                        if (muteRoles.replace(guild.getIdLong(), muteRoleId) == null)
+                            muteRoles.put(guild.getIdLong(), muteRoleId);
+                    }).start();
+
+                    String oldRoleName = roleId == -1 && guild.getRoleById(roleId) == null ? "nothing" : "@" + guild.getRoleById(roleId).getName();
                     String newRoleName = muteRoleId == -1 ? "nothing" : "@" + guild.getRoleById(muteRoleId).getName();
-                    event.reply("JoinRole changed from **" + oldRoleName + "** to **" + newRoleName + "**");
+                    event.reply("JoinRole changed from **" + oldRoleName + "** to **" + newRoleName + "** by **" + event.getFullAuthorName() + "**");
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

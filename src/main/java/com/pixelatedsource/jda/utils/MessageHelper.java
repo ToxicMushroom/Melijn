@@ -16,7 +16,6 @@ import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 public class MessageHelper {
 
     public static HashMap<String, String> filterDeletedMessages = new HashMap<>();
-    //public static HashMap<String, User> deletedByEmote = new HashMap<>();
     public static HashMap<String, User> purgedMessages = new HashMap<>();
 
     public static String millisToDate(long millis) {
@@ -32,8 +31,7 @@ public class MessageHelper {
     }
 
     public static boolean isRightFormat(String string) {
-        if (string.matches("\\d++[smhdwMy]")) return true;
-        else return false;
+        return string.matches("\\d++[smhdwMy]");
     }
 
     public static long easyFormatToSeconds(String string) {
@@ -63,8 +61,8 @@ public class MessageHelper {
     }
 
     public static void sendUsage(Command cmd, CommandEvent event) {
-        if (SetPrefixCommand.prefixes.containsKey(event.getGuild().getId()))
-            event.reply(cmd.getUsage().replaceFirst(PREFIX, SetPrefixCommand.prefixes.get(event.getGuild().getId())));
+        if (SetPrefixCommand.prefixes.containsKey(event.getGuild().getIdLong()))
+            event.reply(cmd.getUsage().replaceFirst(PREFIX, SetPrefixCommand.prefixes.get(event.getGuild().getIdLong())));
         else
             event.reply(cmd.getUsage());
     }

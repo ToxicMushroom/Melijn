@@ -32,7 +32,7 @@ public class RemoveCommand extends Command {
             if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
                 String[] args = event.getArgs().replaceAll("\\s+", "").split(",");
                 if (args.length == 0) {
-                    event.reply(usage);
+                    MessageHelper.sendUsage(this, event);
                     return;
                 }
                 BlockingQueue<AudioTrack> tracks = manager.getPlayer(event.getGuild()).getListener().getTracks();
@@ -122,10 +122,9 @@ public class RemoveCommand extends Command {
                     c++;
                 }
             } else if (a > b) {
-                int c = a;
                 int d = b;
-                while (c >= d) {
-                    toReturn.add(String.valueOf(c));
+                while (a >= d) {
+                    toReturn.add(String.valueOf(a));
                     d++;
                 }
             } else {
