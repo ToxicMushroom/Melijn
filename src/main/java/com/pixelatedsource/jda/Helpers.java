@@ -8,6 +8,7 @@ import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.managers.AudioManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -292,5 +293,25 @@ public class Helpers {
             id = event.getGuild().getTextChannelsByName(arg, true).get(0).getIdLong();
         }
         return id;
+    }
+
+    public static boolean checkVoiceChannelPermission(Member member, VoiceChannel voiceChannel, Permission permission) {
+        boolean toReturn = member.hasPermission(permission);
+        if (member.getRoles().size() > 0) {
+            if (voiceChannel.getPermissionOverride(member.getRoles().get(0)) != null) {
+                toReturn = voiceChannel.getPermissionOverride(member.getRoles().get(0)).getAllowed().contains(permission);
+                toReturn = !voiceChannel.getPermissionOverride(member.getRoles().get(0)).getDenied().contains(permission);
+            }
+        } else {
+            if (voiceChannel.getPermissionOverride(member.getGuild().getRoleById(member.getGuild().getIdLong())) != null) {
+                toReturn = voiceChannel.getPermissionOverride(member.getGuild().getRoleById(member.getGuild().getIdLong())).getAllowed().contains(permission);
+                toReturn = !voiceChannel.getPermissionOverride(member.getGuild().getRoleById(member.getGuild().getIdLong())).getDenied().contains(permission);
+            }
+        }
+        if (voiceChannel.getPermissionOverride(member) != null) {
+            toReturn = voiceChannel.getPermissionOverride(member).getAllowed().contains(permission);
+            toReturn = !voiceChannel.getPermissionOverride(member).getDenied().contains(permission);
+        }
+        return toReturn;
     }
 }

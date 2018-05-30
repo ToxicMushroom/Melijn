@@ -42,16 +42,19 @@ public class PlayCommand extends Command {
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setTitle("I'm a pet so i follow you everywhere :3");
                 eb.setColor(Helpers.EmbedColor);
-                eb.setDescription("PS: you need to join a voice channel then when you use the command then I'll party with you");
+                eb.setDescription("PS: you need to join a voice channel when you use the command then I'll party with you");
                 eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                 event.reply(eb.build());
                 return;
+            }
+            if (event.getGuild().getSelfMember().getVoiceState().inVoiceChannel() && event.getGuild().getSelfMember().getVoiceState().getChannel() != senderVoiceChannel) {
+                event.reply("You have to be in the same voice channel as me to add music");
             }
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {//no args -> usage:
                 MessageHelper.sendUsage(this, event);
                 return;
             }
-            if (!event.getGuild().getSelfMember().hasPermission(Permission.VOICE_CONNECT)) {
+            if (!Helpers.checkVoiceChannelPermission(event.getGuild().getSelfMember(), senderVoiceChannel, Permission.VOICE_CONNECT)) {
                 event.reply("I don't have the permission VOICE_CONNECT");
                 return;
             }
@@ -113,7 +116,6 @@ public class PlayCommand extends Command {
                         if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".yt", 0) || acces) {
                             if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) guild.getAudioManager().openAudioConnection(senderVoiceChannel);
                             manager.loadTrack(event.getTextChannel(), "ytsearch:" + songname, event.getAuthor(), false);
-
                         } else {
                             event.reply("You need the permission `" + commandName + ".yt` to execute this command.");
                         }
