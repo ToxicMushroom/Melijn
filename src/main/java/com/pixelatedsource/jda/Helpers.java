@@ -34,6 +34,7 @@ public class Helpers {
     public static String noPerms = "You don't have the permission: ";
     public static final Logger LOG = LogManager.getLogger(PixelSniper.class.getName());
     public static Color EmbedColor = Color.decode("#00ffd8");
+    public static int guildCount = 0;
     public static ArrayList<String> perms = new ArrayList<>(Arrays.asList(
             "pause",
             "splay.yt",
@@ -131,14 +132,14 @@ public class Helpers {
             }
         };
         Runnable runnable1 = () -> {
-            if (dbl != null) dbl.setStats(jda.getSelfUser().getId(), jda.getGuilds().size());
+            if (dbl != null) dbl.setStats(jda.getSelfUser().getId(), guildCount == 0 ? jda.getGuilds().size() : guildCount);
             ArrayList<Long> votesList = PixelSniper.mySQL.getVoteList();
             for (long userId : SetNotifications.nextVotes.keySet()) {
                 for (long targetId : SetNotifications.nextVotes.get(userId)) {
                     if (votesList.contains(targetId)) {
-                        User user = jda.getUserById(userId);
-                        User target = jda.getUserById(targetId);
-                        user.openPrivateChannel().queue(s -> s.sendMessage("It's time to vote for **" + target.getName() + "#" + target.getDiscriminator() + "**").queue());
+                        jda.retrieveUserById(userId).queue((u) ->
+                                jda.retrieveUserById(targetId).queue((t) ->
+                                        u.openPrivateChannel().queue((c) -> c.sendMessage("It's time to vote for **" + t.getName() + "#" + t.getDiscriminator() + "**").queue())));
                     }
                 }
             }
@@ -299,18 +300,15 @@ public class Helpers {
         boolean toReturn = member.hasPermission(permission);
         if (member.getRoles().size() > 0) {
             if (voiceChannel.getPermissionOverride(member.getRoles().get(0)) != null) {
-                toReturn = voiceChannel.getPermissionOverride(member.getRoles().get(0)).getAllowed().contains(permission);
-                toReturn = !voiceChannel.getPermissionOverride(member.getRoles().get(0)).getDenied().contains(permission);
+                if (voiceChannel.getPermissionOverride(member.getRoles().get(0)).getDenied().contains(permission)) toReturn = false;
             }
         } else {
             if (voiceChannel.getPermissionOverride(member.getGuild().getRoleById(member.getGuild().getIdLong())) != null) {
-                toReturn = voiceChannel.getPermissionOverride(member.getGuild().getRoleById(member.getGuild().getIdLong())).getAllowed().contains(permission);
-                toReturn = !voiceChannel.getPermissionOverride(member.getGuild().getRoleById(member.getGuild().getIdLong())).getDenied().contains(permission);
+                if (voiceChannel.getPermissionOverride(member.getGuild().getRoleById(member.getGuild().getIdLong())).getDenied().contains(permission)) toReturn = false;
             }
         }
         if (voiceChannel.getPermissionOverride(member) != null) {
-            toReturn = voiceChannel.getPermissionOverride(member).getAllowed().contains(permission);
-            toReturn = !voiceChannel.getPermissionOverride(member).getDenied().contains(permission);
+            if (voiceChannel.getPermissionOverride(member).getDenied().contains(permission)) toReturn = false;
         }
         return toReturn;
     }

@@ -1344,7 +1344,7 @@ public class MySQL {
     public ArrayList<Long> getVoteList() {
         ArrayList<Long> list = new ArrayList<>();
         try {
-            PreparedStatement getVoteMap = con.prepareStatement("SELECT * FROM votes WHERE lastTime <  " + (System.currentTimeMillis() - 84600000 + " AND lastTime > " + (System.currentTimeMillis() - 84660000)));
+            PreparedStatement getVoteMap = con.prepareStatement("SELECT * FROM votes WHERE lastTime BETWEEN  " + (System.currentTimeMillis() - 84660000) + " AND " + (System.currentTimeMillis() - 84600000));
             ResultSet rs = getVoteMap.executeQuery();
             while (rs.next()) {
                 list.add(rs.getLong("userId"));
