@@ -14,6 +14,7 @@ import com.pixelatedsource.jda.events.AddReaction;
 import com.pixelatedsource.jda.events.Channels;
 import com.pixelatedsource.jda.events.Chat;
 import com.pixelatedsource.jda.events.JoinLeave;
+import com.pixelatedsource.jda.utils.WebUtils;
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
@@ -37,6 +38,8 @@ public class PixelSniper extends ListenerAdapter {
     private static String PASS = config.getValue("password");
     private static String DBNAME = config.getValue("database");
     private static String DBLTOKEN = config.getValue("dbltoken");
+    private WebUtils webUtils = new WebUtils();
+
 
     public static DiscordBotListAPI dblAPI = null;
     public static MySQL mySQL = new MySQL(IP, USER, PASS, DBNAME);
@@ -55,8 +58,7 @@ public class PixelSniper extends ListenerAdapter {
 
         JDA jda = new JDABuilder(AccountType.BOT).setToken(TOKEN).setGame(Game.playing(PREFIX + "help | melijn.com")).setAutoReconnect(true)
                 .addEventListener(commandClient).addEventListener(new JoinLeave()).addEventListener(new AddReaction()).addEventListener(new Channels()).addEventListener(new Chat()).setAudioSendFactory(new NativeAudioSendFactory()).buildBlocking();
-
-        Helpers.startTimer(jda, dblAPI);
+        Helpers.startTimer(jda, dblAPI, 0);
         Helpers.starttime = System.currentTimeMillis();
     }
 

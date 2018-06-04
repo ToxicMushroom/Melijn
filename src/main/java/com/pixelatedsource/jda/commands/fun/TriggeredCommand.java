@@ -18,7 +18,10 @@ public class TriggeredCommand extends Command {
         this.usage = PREFIX + commandName;
         this.aliases = new String[]{"rage"};
         this.category = Category.FUN;
+        webUtils = WebUtils.getWebUtilsInstance();
     }
+
+    private WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {
@@ -27,10 +30,10 @@ public class TriggeredCommand extends Command {
                 event.reply(new EmbedBuilder()
                         .setColor(Helpers.EmbedColor)
                         .setDescription("**TRIGGERED**")
-                        .setImage(WebUtils.getUrl("triggered"))
+                        .setImage(webUtils.getUrl("triggered"))
                         .build());
             else
-                event.reply("**TRIGGERED** \n" + WebUtils.getUrl("triggered"));
+                event.reply("**TRIGGERED** \n" + webUtils.getUrl("triggered"));
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }

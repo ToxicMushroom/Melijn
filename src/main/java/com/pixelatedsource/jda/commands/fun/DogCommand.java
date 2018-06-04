@@ -18,7 +18,10 @@ public class DogCommand extends Command {
         this.usage = PREFIX + commandName;
         this.category = Category.FUN;
         this.aliases = new String[]{"hond"};
+        webUtils = WebUtils.getWebUtilsInstance();
     }
+
+    private WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {
@@ -27,10 +30,10 @@ public class DogCommand extends Command {
                 event.reply(new EmbedBuilder()
                         .setColor(Helpers.EmbedColor)
                         .setDescription("Enjoy your \uD83D\uDC36 ~woof~")
-                        .setImage(WebUtils.getDogUrl())
+                        .setImage(webUtils.getDogUrl())
                         .build());
             else
-                event.reply("Enjoy your \uD83D\uDC36 ~woof~\n" + WebUtils.getDogUrl());
+                event.reply("Enjoy your \uD83D\uDC36 ~woof~\n" + webUtils.getDogUrl());
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }

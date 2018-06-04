@@ -19,7 +19,10 @@ public class PatCommand extends Command {
         this.description = "You can pat someone or be patted";
         this.usage = PREFIX + commandName + " [user]";
         this.category = Category.FUN;
+        webUtils = WebUtils.getWebUtilsInstance();
     }
+
+    private WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {
@@ -31,10 +34,10 @@ public class PatCommand extends Command {
                     event.reply(new EmbedBuilder()
                             .setColor(Helpers.EmbedColor)
                             .setDescription("**Melijn** patted you")
-                            .setImage(WebUtils.getUrl("pat"))
+                            .setImage(webUtils.getUrl("pat"))
                             .build());
                 else
-                    event.reply("**Melijn** patted you\n" + WebUtils.getUrl("pat"));
+                    event.reply("**Melijn** patted you\n" + webUtils.getUrl("pat"));
             } else if (args.length == 1) {
                 User author = event.getAuthor();
                 User patted = null;
@@ -49,10 +52,10 @@ public class PatCommand extends Command {
                         event.reply(new EmbedBuilder()
                                 .setColor(Helpers.EmbedColor)
                                 .setDescription("**" + author.getName() + "** patted **" + patted.getName() + "**")
-                                .setImage(WebUtils.getUrl("pat"))
+                                .setImage(webUtils.getUrl("pat"))
                                 .build());
                     else
-                        event.reply("**Melijn** patted you\n" + WebUtils.getUrl("slap"));
+                        event.reply("**Melijn** patted you\n" + webUtils.getUrl("slap"));
                 }
             }
         } else {

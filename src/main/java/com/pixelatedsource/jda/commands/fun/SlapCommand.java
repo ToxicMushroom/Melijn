@@ -19,7 +19,10 @@ public class SlapCommand extends Command {
         this.description = "You can slap someone or be slapped";
         this.usage = PREFIX + commandName + " [user]";
         this.category = Category.FUN;
+        webUtils = WebUtils.getWebUtilsInstance();
     }
+
+    private WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {
@@ -31,10 +34,10 @@ public class SlapCommand extends Command {
                     event.reply(new EmbedBuilder()
                             .setColor(Helpers.EmbedColor)
                             .setDescription("**Melijn** slapped you")
-                            .setImage(WebUtils.getUrl("slap"))
+                            .setImage(webUtils.getUrl("slap"))
                             .build());
                 else
-                    event.reply("**Melijn** slapped you\n" + WebUtils.getUrl("slap"));
+                    event.reply("**Melijn** slapped you\n" + webUtils.getUrl("slap"));
             } else if (args.length == 1) {
                 User author = event.getAuthor();
                 User patted = null;
@@ -49,10 +52,10 @@ public class SlapCommand extends Command {
                         event.reply(new EmbedBuilder()
                                 .setColor(Helpers.EmbedColor)
                                 .setDescription("**" + author.getName() + "** slapped **" + patted.getName() + "**")
-                                .setImage(WebUtils.getUrl("slap"))
+                                .setImage(webUtils.getUrl("slap"))
                                 .build());
                     else
-                        event.reply("**Melijn** slapped you\n" + WebUtils.getUrl("slap"));
+                        event.reply("**Melijn** slapped you\n" + webUtils.getUrl("slap"));
                 }
             }
         } else {

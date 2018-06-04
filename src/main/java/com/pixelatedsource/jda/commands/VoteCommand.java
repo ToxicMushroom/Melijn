@@ -53,7 +53,7 @@ public class VoteCommand extends Command {
                 eb.setColor(Helpers.EmbedColor);
                 eb.addField("Votes", String.valueOf(voteObject.getLong("votes")), false);
                 eb.addField("Streak", String.valueOf(voteObject.getLong("streak")), false);
-                long untilNext = 86400000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
+                long untilNext = 86_400_000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
                 String untilNextFormat = (untilNext > 0) ? MessageHelper.millisToVote(untilNext) : "none (you can vote now)";
                 eb.addField("Time until next vote", untilNextFormat, false);
                 long untilLoss = 172800000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));

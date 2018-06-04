@@ -27,7 +27,8 @@ import java.util.concurrent.TimeUnit;
 
 public class Helpers {
 
-    public static long lastRunMillis;
+    public static long lastRunTimer1, lastRunTimer2;
+
     private static ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     public static long starttime;
     public static String guildOnly = "This command is to be used in guilds only";
@@ -102,50 +103,56 @@ public class Helpers {
             "setjoinrole"
     ));
 
-    public static void startTimer(JDA jda, DiscordBotListAPI dbl) {
-        Runnable runnable = () -> {
-            lastRunMillis = System.currentTimeMillis();
-            try {
-                ResultSet bans = PixelSniper.mySQL.query("SELECT * FROM active_bans WHERE endTime < " + System.currentTimeMillis());
-                ResultSet mutes = PixelSniper.mySQL.query("SELECT * FROM active_mutes WHERE endTime < " + System.currentTimeMillis());
-                while (bans.next()) {
-                    User toUnban = jda.retrieveUserById(bans.getLong("victimId")).complete();
-                    try {
-                        if (jda.getGuildById(bans.getLong("guildId")) != null)
-                            PixelSniper.mySQL.unban(toUnban, jda.getGuildById(bans.getLong("guildId")), jda, true);
-                    } catch (SQLException e) {
-                        e.printStackTrace();
+    public static void startTimer(JDA jda, DiscordBotListAPI dbl, int i) {
+        if (i == 0 || i == 1) {
+            Runnable runnable = () -> {
+                lastRunTimer1 = System.currentTimeMillis();
+                try {
+                    ResultSet bans = PixelSniper.mySQL.query("SELECT * FROM active_bans WHERE endTime < " + System.currentTimeMillis());
+                    ResultSet mutes = PixelSniper.mySQL.query("SELECT * FROM active_mutes WHERE endTime < " + System.currentTimeMillis());
+                    while (bans.next()) {
+                        User toUnban = jda.retrieveUserById(bans.getLong("victimId")).complete();
+                        try {
+                            if (jda.getGuildById(bans.getLong("guildId")) != null)
+                                PixelSniper.mySQL.unban(toUnban, jda.getGuildById(bans.getLong("guildId")), jda, true);
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
                     }
-                }
 
-                while (mutes.next()) {
-                    User toUnmute = jda.retrieveUserById(mutes.getLong("victimId")).complete();
-                    try {
-                        if (jda.getGuildById(mutes.getLong("guildId")) != null)
-                            PixelSniper.mySQL.unmute(jda.getGuildById(mutes.getLong("guildId")), toUnmute, jda, true);
-                    } catch (SQLException e) {
-                        e.printStackTrace();
+                    while (mutes.next()) {
+                        User toUnmute = jda.retrieveUserById(mutes.getLong("victimId")).complete();
+                        try {
+                            if (jda.getGuildById(mutes.getLong("guildId")) != null)
+                                PixelSniper.mySQL.unmute(jda.getGuildById(mutes.getLong("guildId")), toUnmute, jda, true);
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            };
+            executorService.scheduleAtFixedRate(runnable, 1, 2, TimeUnit.SECONDS);
+        }
+        if (i == 0 || i == 2) {
+            Runnable runnable1 = () -> {
+                lastRunTimer2 = System.currentTimeMillis();
+                if (dbl != null)
+                    dbl.setStats(jda.getSelfUser().getId(), guildCount == 0 ? jda.getGuilds().size() : guildCount);
+                ArrayList<Long> votesList = PixelSniper.mySQL.getVoteList();
+                for (long userId : SetNotifications.nextVotes.keySet()) {
+                    for (long targetId : SetNotifications.nextVotes.get(userId)) {
+                        if (votesList.contains(targetId)) {
+                            jda.retrieveUserById(userId).queue((u) ->
+                                    jda.retrieveUserById(targetId).queue((t) ->
+                                            u.openPrivateChannel().queue((c) -> c.sendMessage("It's time to vote for **" + t.getName() + "#" + t.getDiscriminator() + "**").queue())));
+                        }
                     }
                 }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        };
-        Runnable runnable1 = () -> {
-            if (dbl != null) dbl.setStats(jda.getSelfUser().getId(), guildCount == 0 ? jda.getGuilds().size() : guildCount);
-            ArrayList<Long> votesList = PixelSniper.mySQL.getVoteList();
-            for (long userId : SetNotifications.nextVotes.keySet()) {
-                for (long targetId : SetNotifications.nextVotes.get(userId)) {
-                    if (votesList.contains(targetId)) {
-                        jda.retrieveUserById(userId).queue((u) ->
-                                jda.retrieveUserById(targetId).queue((t) ->
-                                        u.openPrivateChannel().queue((c) -> c.sendMessage("It's time to vote for **" + t.getName() + "#" + t.getDiscriminator() + "**").queue())));
-                    }
-                }
-            }
-        };
-        executorService.scheduleAtFixedRate(runnable1, 5, 60, TimeUnit.SECONDS);
-        executorService.scheduleAtFixedRate(runnable, 1, 2, TimeUnit.SECONDS);
+            };
+            executorService.scheduleAtFixedRate(runnable1, 1, 60, TimeUnit.SECONDS);
+        }
     }
 
     public static boolean hasPerm(Member member, String permission, int level) {
@@ -251,19 +258,21 @@ public class Helpers {
     }
 
     public static User getUserByArgs(CommandEvent event, String arg) {//Without null
-        User user = event.getAuthor();
-        if (event.getMessage().getMentionedUsers().size() > 0) user = event.getMessage().getMentionedUsers().get(0);
-        else if (arg.matches("\\d+") && event.getJDA().getUserById(arg) != null) user = event.getJDA().getUserById(arg);
-        else if (event.getGuild() != null && event.getGuild().getMembersByName(arg, true).size() > 0) user = event.getGuild().getMembersByName(arg, true).get(0).getUser();
-        else if (event.getGuild() != null && event.getGuild().getMembersByNickname(arg, true).size() > 0) user = event.getGuild().getMembersByNickname(arg, true).get(0).getUser();
+        User user = getUserByArgsN(event, arg);
+        if (user == null) user = event.getAuthor();
         return user;
     }
     public static User getUserByArgsN(CommandEvent event, String arg) {//With null
         User user = null;
-        if (event.getMessage().getMentionedUsers().size() > 0) user = event.getMessage().getMentionedUsers().get(0);
-        else if (arg.matches("\\d+") && event.getJDA().getUserById(arg) != null) user = event.getJDA().getUserById(arg);
-        else if (event.getGuild() != null && event.getGuild().getMembersByName(arg, true).size() > 0) user = event.getGuild().getMembersByName(arg, true).get(0).getUser();
-        else if (event.getGuild() != null && event.getGuild().getMembersByNickname(arg, true).size() > 0) user = event.getGuild().getMembersByNickname(arg, true).get(0).getUser();
+        if (!arg.matches("\\s+") || !arg.equalsIgnoreCase("")) {
+            if (event.getMessage().getMentionedUsers().size() > 0) user = event.getMessage().getMentionedUsers().get(0);
+            else if (arg.matches("\\d+") && event.getJDA().getUserById(arg) != null)
+                user = event.getJDA().getUserById(arg);
+            else if (event.getGuild() != null && event.getGuild().getMembersByName(arg, true).size() > 0)
+                user = event.getGuild().getMembersByName(arg, true).get(0).getUser();
+            else if (event.getGuild() != null && event.getGuild().getMembersByNickname(arg, true).size() > 0)
+                user = event.getGuild().getMembersByNickname(arg, true).get(0).getUser();
+        }
         return user;
     }
 

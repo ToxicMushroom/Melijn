@@ -18,7 +18,10 @@ public class PotatoCommand extends Command {
         this.usage = PREFIX + commandName;
         this.aliases = new String[]{"aardappel", "patat"};
         this.category = Category.FUN;
+        webUtils = WebUtils.getWebUtilsInstance();
     }
+
+    private WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {
@@ -27,10 +30,10 @@ public class PotatoCommand extends Command {
                 event.reply(new EmbedBuilder()
                         .setColor(Helpers.EmbedColor)
                         .setDescription("Enjoy your delicious \uD83E\uDD54")
-                        .setImage(WebUtils.getUrl("potato"))
+                        .setImage(webUtils.getWeebV1Url("potato"))
                         .build());
             else
-                event.reply("Enjoy your \uD83E\uDD54 \n" + WebUtils.getUrl("potato"));
+                event.reply("Enjoy your \uD83E\uDD54 \n" + webUtils.getWeebV1Url("potato"));
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }

@@ -9,8 +9,13 @@ import java.nio.file.Paths;
 
 public class Config {
 
+    private static Config config;
     private JSONObject configObject;
     private final File configFile = new File("config.json");
+
+    public static Config getConfigInstance() {
+        return config;
+    }
 
     Config() {
         if (!configFile.exists()) {
@@ -29,6 +34,7 @@ public class Config {
             System.err.println("You didn't fill in all the values correct.");
             System.exit(1);
         }
+        config = this;
     }
 
     private void create() {
@@ -60,7 +66,7 @@ public class Config {
         return obj;
     }
 
-    String getValue(String key) {
+    public String getValue(String key) {
         return configObject == null ? null : configObject.get(key).toString();
     }
 }

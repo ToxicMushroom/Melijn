@@ -102,7 +102,8 @@ public class Chat extends ListenerAdapter {
 
     @Override
     public void onGuildMessageDelete(GuildMessageDeleteEvent event) {
-        if (Helpers.lastRunMillis < System.currentTimeMillis() - 60_000) Helpers.startTimer(event.getJDA(), PixelSniper.dblAPI);
+        if (Helpers.lastRunTimer1 < System.currentTimeMillis() - 5_000) Helpers.startTimer(event.getJDA(), PixelSniper.dblAPI, 1);
+        if (Helpers.lastRunTimer2 < System.currentTimeMillis() - 60_000) Helpers.startTimer(event.getJDA(), PixelSniper.dblAPI, 2);
         Guild guild = event.getGuild();
         if (SetLogChannelCommand.guildLogChannelMap.containsKey(guild.getIdLong()) && event.getGuild().getSelfMember().hasPermission(Permission.VIEW_AUDIT_LOGS)) {
             executorService.execute(() -> {
