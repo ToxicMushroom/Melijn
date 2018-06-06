@@ -1,7 +1,6 @@
 package com.pixelatedsource.jda.commands.management;
 
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
@@ -11,7 +10,6 @@ import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
@@ -27,8 +25,10 @@ public class PermCommand extends Command {
         this.category = Category.MANAGEMENT;
     }
 
+    /*
     HashMap<Long, List<Integer>> userPermissions = PixelSniper.mySQL.getPermissionsMap(0);
     HashMap<Long, List<Integer>> rolePermissions = PixelSniper.mySQL.getPermissionsMap(1);
+    */
 
     @Override
     protected void execute(CommandEvent event) {

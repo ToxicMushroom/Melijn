@@ -21,6 +21,7 @@ public class VoteCommand extends Command {
         this.aliases = new String[]{"donate"};
         this.usage = PREFIX + commandName + " [info] [user]";
         this.category = Category.DEFAULT;
+        this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
 
     @Override

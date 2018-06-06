@@ -4,9 +4,11 @@ import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.commands.management.SetPrefixCommand;
+import com.pixelatedsource.jda.commands.music.NowPlayingCommand;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.entities.Emote;
 import net.dv8tion.jda.core.entities.User;
+import okhttp3.HttpUrl;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -27,7 +29,7 @@ public class MessageHelper {
         int mHour = start.get(Calendar.HOUR_OF_DAY);
         int mMinutes = start.get(Calendar.MINUTE);
         int mSeconds = start.get(Calendar.SECOND);
-        return String.valueOf(mHour) + ":" + mMinutes + "-" + mSeconds + "s " + mDay + "/" + mMonth + "/" + mYear;
+        return String.valueOf(mHour) + ":" + mMinutes + ":" + mSeconds + "s " + mDay + "/" + mMonth + "/" + mYear;
     }
 
     public static boolean isRightFormat(String string) {
@@ -87,5 +89,19 @@ public class MessageHelper {
         }
 
         return "[" + sb.toString() + "](https://melijn.com/)" + (emote != null ? emote.getAsMention() : "") + s.substring(0, (20-sb.toString().length())) + " (" + Helpers.getDurationBreakdown(track.getPosition()) + "/" + Helpers.getDurationBreakdown(track.getDuration()) + ")";
+    }
+
+    public static String getThumbnailURL(String url) {
+        HttpUrl httpUrl = HttpUrl.parse(url);
+        if (httpUrl != null) {
+            if (url.matches(NowPlayingCommand.youtubePattern.pattern())) {
+                if (httpUrl.queryParameter("v") != null) {
+                    return "https://img.youtube.com/vi/" + httpUrl.queryParameter("v") + "/hqdefault.jpg";
+                }
+            } else if (url.matches(NowPlayingCommand.youtuBePattern.pattern())) {
+                return "https://img.youtube.com/vi/" + url.replaceFirst(NowPlayingCommand.youtuBePattern.pattern(), "") + "/hqdefault.jpg";
+            }
+        }
+        return null;
     }
 }

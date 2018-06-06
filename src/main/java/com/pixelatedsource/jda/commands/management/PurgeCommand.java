@@ -22,6 +22,9 @@ public class PurgeCommand extends Command {
         this.description = "Deletes messages messages";
         this.usage = PREFIX + commandName + " [1 - 500]";
         this.category = Category.MANAGEMENT;
+        this.permissions = new Permission[] {
+                Permission.MESSAGE_MANAGE
+        };
     }
 
     private ExecutorService service = new ScheduledThreadPoolExecutor(5);

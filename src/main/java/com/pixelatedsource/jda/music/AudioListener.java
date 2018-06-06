@@ -34,7 +34,9 @@ public class AudioListener extends AudioEventAdapter {
                 Helpers.ScheduleClose(player.getGuild().getAudioManager());
             return;
         }
-        player.getAudioPlayer().startTrack(tracks.poll(), false);
+        AudioTrack track = tracks.poll();
+        player.getAudioPlayer().startTrack(track, false);
+        Helpers.postMusicLog(player, track);
     }
 
     @Override
@@ -51,6 +53,8 @@ public class AudioListener extends AudioEventAdapter {
     }
 
     public void queue(AudioTrack track) {
-        if (!player.getAudioPlayer().startTrack(track, true)) tracks.offer(track);
+        boolean succes = player.getAudioPlayer().startTrack(track, true);
+        if (!succes) tracks.offer(track);
+        else Helpers.postMusicLog(player, track);
     }
 }

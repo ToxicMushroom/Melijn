@@ -13,17 +13,17 @@ import java.util.HashMap;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
-public class setMusicLogChannel extends Command {
+public class SetMusicLogChannel extends Command {
 
-    public setMusicLogChannel() {
-        this.commandName = "setMusicLogChannel";
+    public SetMusicLogChannel() {
+        this.commandName = "SetMusicLogChannel";
         this.usage = PREFIX + commandName + " [textChannel]";
         this.description = "Set a musicLogChannel where the bot will send the nowPlaying songs";
         this.aliases = new String[]{"smlc"};
         this.category = Category.MUSIC;
     }
 
-    HashMap<Long, Long> musicLogChannelMap = PixelSniper.mySQL.getChannelMap(ChannelType.NOWPLAYING);
+    public static HashMap<Long, Long> musicLogChannelMap = PixelSniper.mySQL.getChannelMap(ChannelType.NOWPLAYING);
 
     @Override
     protected void execute(CommandEvent event) {
@@ -31,7 +31,7 @@ public class setMusicLogChannel extends Command {
             if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
                 Guild guild = event.getGuild();
                 String[] args = event.getArgs().split("\\s+");
-                String logChannelName = musicLogChannelMap.containsKey(guild.getIdLong()) ? "<#" + musicLogChannelMap.get(guild.getIdLong()) + ">" : "LogChannel is unset";
+                String logChannelName = musicLogChannelMap.containsKey(guild.getIdLong()) ? "<#" + musicLogChannelMap.get(guild.getIdLong()) + ">" : "MusicLogChannel is unset";
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     Long id = Helpers.getChannelByArgsN(event, args[0]);
                     if (id != -1L) {

@@ -1,8 +1,13 @@
 package com.pixelatedsource.jda;
 
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.commands.music.SetMusicLogChannel;
 import com.pixelatedsource.jda.commands.util.SetNotifications;
 import com.pixelatedsource.jda.music.MusicManager;
+import com.pixelatedsource.jda.music.MusicPlayer;
+import com.pixelatedsource.jda.utils.MessageHelper;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
@@ -283,6 +288,11 @@ public class Helpers {
                 if (textChannel.getPermissionOverride(member.getRoles().get(0)).getAllowed().contains(permission)) toReturn = true;
                 if (textChannel.getPermissionOverride(member.getRoles().get(0)).getDenied().contains(permission)) toReturn = false;
             }
+        } else {
+            if (textChannel.getPermissionOverride(member.getGuild().getRoleById(member.getGuild().getIdLong())) != null) {
+                if (textChannel.getPermissionOverride(member.getGuild().getRoleById(member.getGuild().getIdLong())).getAllowed().contains(permission)) toReturn = true;
+                if (textChannel.getPermissionOverride(member.getGuild().getRoleById(member.getGuild().getIdLong())).getDenied().contains(permission)) toReturn = false;
+            }
         }
         if (textChannel.getPermissionOverride(member) != null) {
             if (textChannel.getPermissionOverride(member).getAllowed().contains(permission)) toReturn = true;
@@ -320,5 +330,19 @@ public class Helpers {
             if (voiceChannel.getPermissionOverride(member).getDenied().contains(permission)) toReturn = false;
         }
         return toReturn;
+    }
+
+    public static void postMusicLog(MusicPlayer player, AudioTrack track) {
+        if (SetMusicLogChannel.musicLogChannelMap.containsKey(player.getGuild().getIdLong())) {
+            TextChannel tc = player.getGuild().getTextChannelById(SetMusicLogChannel.musicLogChannelMap.get(player.getGuild().getIdLong()));
+            if (tc.canTalk())
+                tc.sendMessage(new EmbedBuilder()
+                        .setTitle("Now playing")
+                        .setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** `" + Helpers.getDurationBreakdown(track.getDuration()) + "`\n")
+                        .setThumbnail(MessageHelper.getThumbnailURL(track.getInfo().uri))
+                        .setColor(Helpers.EmbedColor)
+                        .setFooter(Helpers.getFooterStamp(), null)
+                        .build()).queue();
+        }
     }
 }

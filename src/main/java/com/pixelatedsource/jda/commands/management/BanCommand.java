@@ -19,6 +19,10 @@ public class BanCommand extends Command {
         this.usage = PREFIX + commandName + " <@user | userId> <reason>";
         this.category = Category.MANAGEMENT;
         this.aliases = new String[]{"permban"};
+        this.permissions = new Permission[] {
+                Permission.MESSAGE_EMBED_LINKS,
+                Permission.BAN_MEMBERS
+        };
     }
 
     @Override

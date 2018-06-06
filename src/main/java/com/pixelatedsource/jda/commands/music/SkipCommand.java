@@ -9,6 +9,7 @@ import com.pixelatedsource.jda.music.MusicPlayer;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 
 import java.util.concurrent.BlockingQueue;
 
@@ -21,6 +22,7 @@ public class SkipCommand extends Command {
         this.description = "Skip to a song in the queue";
         this.usage = PREFIX + this.commandName + " [1-50]";
         this.category = Category.MUSIC;
+        this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
 
     private MusicManager manager = MusicManager.getManagerinstance();
@@ -65,7 +67,8 @@ public class SkipCommand extends Command {
                 eb.setTitle("Skipped");
                 eb.setColor(Helpers.EmbedColor);
                 String songOrSongs = i == 1 ? "song" : "songs";
-                if (nextSong != null) eb.setDescription("Skipped " + i + " " + songOrSongs + ": `" + tracknp.getInfo().title + "`\n" + "Now playing the next song: `" + nextSong.getInfo().title + "` " + Helpers.getDurationBreakdown(nextSong.getInfo().length));
+                if (nextSong != null)
+                    eb.setDescription("Skipped " + i + " " + songOrSongs + ": `" + tracknp.getInfo().title + "`\n" + "Now playing the next song: `" + nextSong.getInfo().title + "` " + Helpers.getDurationBreakdown(nextSong.getInfo().length));
                 else {
                     player.skipTrack();
                     eb.setDescription("Skipped " + i + " " + songOrSongs + ": `" + tracknp.getInfo().title + "`\n" + "No next song to play :/.");

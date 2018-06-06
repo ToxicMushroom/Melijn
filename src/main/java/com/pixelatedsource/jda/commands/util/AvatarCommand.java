@@ -5,6 +5,7 @@ import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.User;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
@@ -17,6 +18,7 @@ public class AvatarCommand extends Command {
         this.description = "Shows you your avatar and link.";
         this.aliases = new String[]{"profilepicture"};
         this.category = Category.UTILS;
+        this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.utils.MessageHelper;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.User;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
@@ -17,6 +18,10 @@ public class UnmuteCommand extends Command {
         this.description = "unmute a muted user";
         this.usage = PREFIX + commandName + " <@user | userId>";
         this.category = Category.MANAGEMENT;
+        this.permissions = new Permission[] {
+                Permission.MESSAGE_EMBED_LINKS,
+                Permission.MANAGE_ROLES
+        };
     }
 
     @Override

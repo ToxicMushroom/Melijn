@@ -22,6 +22,7 @@ public class GuildInfoCommand extends Command {
         this.usage = PREFIX + this.commandName;
         this.aliases = new String[]{"serverinfo"};
         this.category = Category.UTILS;
+        this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
 
     @Override

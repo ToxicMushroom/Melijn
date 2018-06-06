@@ -5,6 +5,7 @@ import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.User;
 
@@ -21,6 +22,7 @@ public class PlayerinfoCommand extends Command {
         this.usage = PREFIX + this.commandName + " <@user|id>";
         this.aliases = new String[]{"profile", "playerinfo", "memberinfo", "playerprofile"};
         this.category = Category.UTILS;
+        this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
 
     @Override

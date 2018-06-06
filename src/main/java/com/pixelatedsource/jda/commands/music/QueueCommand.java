@@ -8,6 +8,7 @@ import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ public class QueueCommand extends Command {
         this.usage = PREFIX + this.commandName;
         this.aliases = new String[]{"q"};
         this.category = Category.MUSIC;
+        this.permissions = new Permission[] {Permission.MESSAGE_EMBED_LINKS};
     }
 
     private MusicManager manager = MusicManager.getManagerinstance();

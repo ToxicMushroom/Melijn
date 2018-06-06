@@ -23,6 +23,10 @@ public class TempMuteCommand extends Command {
         this.description = "Mute people and let the bot unmute them after the specified amount of time";
         this.usage = PREFIX + commandName + " <@user | userid> <time> <reason>\nTime examples: [1d = 1 day, 1s = 1second, 1m = 1minute, 1M = 1month]";
         this.category = Category.MANAGEMENT;
+        this.permissions = new Permission[] {
+                Permission.MESSAGE_EMBED_LINKS,
+                Permission.MANAGE_ROLES
+        };
     }
 
     @Override

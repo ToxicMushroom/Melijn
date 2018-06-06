@@ -18,6 +18,10 @@ public class TempBanCommand extends Command {
         this.description = "Ban people and let the bot unban them after the specified amount of days";
         this.usage = PREFIX + commandName + " <@user | userid> <time> <reason>";
         this.category = Category.MANAGEMENT;
+        this.permissions = new Permission[] {
+                Permission.MESSAGE_EMBED_LINKS,
+                Permission.MANAGE_ROLES
+        };
     }
 
     @Override

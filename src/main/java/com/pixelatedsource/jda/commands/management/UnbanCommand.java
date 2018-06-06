@@ -18,6 +18,10 @@ public class UnbanCommand extends Command {
         this.description = "unban a banned user";
         this.usage = PREFIX + commandName + " <@user | userId>";
         this.category = Category.MANAGEMENT;
+        this.permissions = new Permission[] {
+                Permission.MESSAGE_EMBED_LINKS,
+                Permission.BAN_MEMBERS
+        };
     }
 
     @Override

@@ -22,6 +22,10 @@ public class MuteCommand extends Command {
         this.usage = PREFIX + commandName + " <member> <reason>";
         this.category = Category.MANAGEMENT;
         this.aliases = new String[]{"permmute"};
+        this.permissions = new Permission[] {
+                Permission.MESSAGE_EMBED_LINKS,
+                Permission.MANAGE_ROLES
+        };
     }
 
     @Override

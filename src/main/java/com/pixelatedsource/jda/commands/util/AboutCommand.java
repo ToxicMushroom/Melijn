@@ -5,6 +5,7 @@ import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 
 import static com.pixelatedsource.jda.PixelSniper.OWNERID;
@@ -18,6 +19,7 @@ public class AboutCommand extends Command {
         this.description = "Shows you useful info about the bot itself";
         this.aliases = new String[]{"info", "botinfo", "author"};
         this.category = Category.UTILS;
+        this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
 
     @Override

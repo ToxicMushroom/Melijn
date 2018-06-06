@@ -9,9 +9,9 @@ import com.pixelatedsource.jda.music.MusicPlayer;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Emote;
 import net.dv8tion.jda.core.entities.Guild;
-import okhttp3.HttpUrl;
 
 import java.util.regex.Pattern;
 
@@ -25,11 +25,12 @@ public class NowPlayingCommand extends Command {
         this.usage = PREFIX + this.commandName;
         this.aliases = new String[]{"nowplaying", "playing", "nplaying", "nowp"};
         this.category = Category.MUSIC;
+        this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
 
     private MusicManager musicManager = MusicManager.getManagerinstance();
-    private Pattern youtubePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtube\\.com))/watch(.*?)");
-    private Pattern youtuBePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtu\\.be/))(.*?)");
+    public final static Pattern youtubePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtube\\.com))/watch(.*?)");
+    public final static Pattern youtuBePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtu\\.be/))(.*?)");
 
     @Override
     protected void execute(CommandEvent event) {
@@ -42,26 +43,16 @@ public class NowPlayingCommand extends Command {
                     String s = audioPlayer.getAudioPlayer().isPaused() ? "paused" : "playing";
                     if (track == null) event.reply("There are no songs playing at the moment.");
                     else {
-                        String url = track.getInfo().uri;
-                        HttpUrl httpUrl = HttpUrl.parse(url);
-                        String thumbnailUrl = null;
-                        if (httpUrl != null) {
-                            if (url.matches(youtubePattern.pattern())) {
-                                if (httpUrl.queryParameter("v") != null) {
-                                    thumbnailUrl = "https://img.youtube.com/vi/" + httpUrl.queryParameter("v") + "/hqdefault.jpg";
-                                }
-                            } else if (url.matches(youtuBePattern.pattern())) {
-                                thumbnailUrl = "https://img.youtube.com/vi/" + url.replaceFirst(youtuBePattern.pattern(), "") + "/hqdefault.jpg";
-                            }
-                        }
-                        Emote emote = event.getJDA().getEmoteById("445154561313865728");
+
+                        Emote emote = Helpers.checkChannelPermission(event.getGuild().getSelfMember(), event.getTextChannel(), Permission.MESSAGE_EXT_EMOJI) ?
+                                event.getJDA().getEmoteById("445154561313865728") : null;
                         String loopedQueue = LoopQueueCommand.looped.getOrDefault(guild.getIdLong(), false) ? " :repeat:" : "";
                         String looped = LoopCommand.looped.getOrDefault(guild.getIdLong(), false) ? " :arrows_counterclockwise:" : "";
                         event.reply(new EmbedBuilder()
                                 .setTitle("Now " + s)
                                 .setColor(Helpers.EmbedColor)
-                                .setThumbnail(thumbnailUrl)
-                                .addField("title:", "[**" + track.getInfo().title + "**](" + track.getInfo().uri + ")", false)
+                                .setThumbnail(MessageHelper.getThumbnailURL(track.getInfo().uri))
+                                .setDescription("[**" + track.getInfo().title + "**](" + track.getInfo().uri + ")")
                                 .addField("status:", (s.equalsIgnoreCase("playing") ? ":arrow_forward:" : ":pause_button:") + looped + loopedQueue, false)
                                 .addField("progress:", MessageHelper.progressBar(track, emote), false)
                                 .setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon()).build());

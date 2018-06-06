@@ -8,6 +8,7 @@ import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +23,7 @@ public class RemoveCommand extends Command {
         this.usage = PREFIX + commandName + " [x-x,x]";
         this.aliases = new String[]{"delete"};
         this.category = Category.MUSIC;
+        this.permissions = new Permission[] {Permission.MESSAGE_EMBED_LINKS};
     }
 
     private MusicManager manager = MusicManager.getManagerinstance();

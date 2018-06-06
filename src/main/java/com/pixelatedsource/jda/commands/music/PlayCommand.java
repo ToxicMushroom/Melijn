@@ -26,6 +26,7 @@ public class PlayCommand extends Command {
         this.extra = "You only have to use sc if you want to search on soundcloud";
         this.aliases = new String[]{"p"};
         this.category = Category.MUSIC;
+        this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
 
     private List<String> providers = new ArrayList<>(Arrays.asList("yt", "sc", "link", "youtube", "soundcloud"));
