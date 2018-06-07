@@ -10,34 +10,30 @@ import net.dv8tion.jda.core.Permission;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
-public class CatCommand extends Command {
+public class DiscordMemeCommand extends Command {
 
-    public CatCommand() {
-        this.commandName = "cat";
-        this.description = "Shows you a random kitty";
+    public DiscordMemeCommand() {
+        this.commandName = "DiscordMeme";
+        this.description = "Shows you a nice meme";
         this.usage = PREFIX + commandName;
-        this.aliases = new String[]{"kitten", "kat", "poes"};
+        this.aliases = new String[]{"dmeme"};
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
     }
 
-    private WebUtils webUtils;
+    WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
-            String url = webUtils.getCatUrl();
             if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS))
-                if (url != null)
-                    event.reply(new EmbedBuilder()
+                event.reply(new EmbedBuilder()
                         .setColor(Helpers.EmbedColor)
-                        .setDescription("Enjoy your \uD83D\uDC31 ~meow~")
-                        .setImage(url)
+                        .setDescription("**Discord Meme**")
+                        .setImage(webUtils.getUrl("discord_memes"))
                         .build());
-                else
-                    event.reply("Cat failed to jump into my downloads folder :|\n We need to wait for more cats (402 forbidden)");
             else
-                event.reply("Enjoy your \uD83D\uDC31 ~meow~\n" + url);
+                event.reply("**Discord Meme** \n" + webUtils.getUrl("discord_memes"));
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }

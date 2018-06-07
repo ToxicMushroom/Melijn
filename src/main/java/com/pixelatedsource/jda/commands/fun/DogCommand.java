@@ -26,14 +26,15 @@ public class DogCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
+            String url = webUtils.getDogUrl();
             if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS))
                 event.reply(new EmbedBuilder()
                         .setColor(Helpers.EmbedColor)
                         .setDescription("Enjoy your \uD83D\uDC36 ~woof~")
-                        .setImage(webUtils.getDogUrl())
+                        .setImage(url)
                         .build());
             else
-                event.reply("Enjoy your \uD83D\uDC36 ~woof~\n" + webUtils.getDogUrl());
+                event.reply("Enjoy your \uD83D\uDC36 ~woof~\n" + url);
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
