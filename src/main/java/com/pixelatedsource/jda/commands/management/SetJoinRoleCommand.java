@@ -46,9 +46,14 @@ public class SetJoinRoleCommand extends Command {
                         else if (event.getMessage().getMentionedRoles().size() > 0) joinRoleId = event.getMessage().getMentionedRoles().get(0).getIdLong();
                         else joinRoleId = -1;
                         if (joinRoleId != -1) {
-                            if (joinRoles.replace(guild.getIdLong(), joinRoleId) == null) joinRoles.put(guild.getIdLong(), joinRoleId);
-                            new Thread(() -> PixelSniper.mySQL.setRole(guild.getIdLong(), joinRoleId, RoleType.JOIN)).start();
-                            event.reply("JoinRole changed to **@" + guild.getRoleById(joinRoleId).getName() + "** by **" + event.getFullAuthorName() + "**");
+                            if (guild.getSelfMember().getRoles().size() != 0 && guild.getSelfMember().getRoles().get(0).getPosition() < guild.getRoleById(joinRoleId).getPosition()) {
+                                if (joinRoles.replace(guild.getIdLong(), joinRoleId) == null)
+                                    joinRoles.put(guild.getIdLong(), joinRoleId);
+                                new Thread(() -> PixelSniper.mySQL.setRole(guild.getIdLong(), joinRoleId, RoleType.JOIN)).start();
+                                event.reply("JoinRole changed to **@" + guild.getRoleById(joinRoleId).getName() + "** by **" + event.getFullAuthorName() + "**");
+                            } else {
+                                event.reply("The JoinRole hasn't been changed due: **@" + guild.getRoleById(joinRoleId).getName() + "** is higher in the role-hierarchy then my highest role.\nThis means that I will not be able to give the role to anyone ex.(Mods can't give people Admin it breaks logic)");
+                            }
                         } else {
                             MessageHelper.sendUsage(this, event);
                         }

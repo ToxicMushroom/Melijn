@@ -16,7 +16,7 @@ public class SetJoinMessageCommand extends Command {
 
     public SetJoinMessageCommand() {
         this.commandName = "setjoinmessage";
-        this.description = "Setup a message that a user get's when he/she/it joins\nPlaceholders: `%USER%` = user mention // `%USERNAME%` = user name";
+        this.description = "Setup a message that a user get's when he/she/it joins\nPlaceholders: `%USER%` = user mention // `%USERNAME%` = user name // `%GUILDNAME%` or `%SERVERNAME%` = your discord server's name";
         this.usage = PREFIX + commandName + " <message>";
         this.aliases = new String[]{"sjm"};
         this.category = Category.MANAGEMENT;

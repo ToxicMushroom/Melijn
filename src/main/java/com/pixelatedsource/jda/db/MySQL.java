@@ -483,10 +483,10 @@ public class MySQL {
                 banned.setThumbnail(victim.getAvatarUrl());
                 if (victim.getAvatarUrl() == null) banned.setThumbnail(victim.getDefaultAvatarUrl());
                 banned.setAuthor("Banned by: " + namep, null, staff.getAvatarUrl());
-                if (!victim.isFake()) victim.openPrivateChannel().complete().sendMessage(banned.build()).queue();
+                if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(banned.build()).queue();
                 long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
                 if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                    if (victim.isFake()) guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget has private messages disabled").queue();
+                    if (victim.isBot()) guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget is a bot").queue();
                     else guild.getTextChannelById(logChannelId).sendMessage(banned.build()).queue();
                 }
                 ResultSet rs = query("SELECT * FROM active_bans WHERE victimId= '" + victim.getId() + "' AND guildId= '" + guild.getId() + "'");
@@ -541,10 +541,10 @@ public class MySQL {
             banned.setThumbnail(victim.getAvatarUrl());
             if (victim.getAvatarUrl() == null) banned.setThumbnail(victim.getDefaultAvatarUrl());
             banned.setAuthor("Permanently banned by: " + namep, null, staff.getAvatarUrl());
-            if (!victim.isFake()) victim.openPrivateChannel().complete().sendMessage(banned.build()).queue();
+            if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(banned.build()).queue();
             long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null){
-                if (victim.isFake()) guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget has private messages disabled").queue();
+                if (victim.isBot()) guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget is a bot").queue();
                 else guild.getTextChannelById(logChannelId).sendMessage(banned.build()).queue();
             }
             ResultSet rs = query("SELECT * FROM active_bans WHERE victimId= '" + victim.getId() + "' AND guildId= '" + guild.getId() + "'");
@@ -650,10 +650,10 @@ public class MySQL {
             embedBuilder.setColor(Color.yellow);
             long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                if (victim.isFake()) guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build() + "\nTarget has private messages disabled.").queue();
+                if (victim.isBot()) guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build() + "\nTarget is a bot.").queue();
                 else guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
             }
-            if (!victim.isFake()) victim.openPrivateChannel().complete().sendMessage(embedBuilder.build()).queue();
+            if (!victim.isBot()) victim.openPrivateChannel().queue((m) -> m.sendMessage(embedBuilder.build()).queue());
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -674,10 +674,10 @@ public class MySQL {
                 muted.setThumbnail(victim.getAvatarUrl());
                 if (victim.getAvatarUrl() == null) muted.setThumbnail(victim.getDefaultAvatarUrl());
                 muted.setAuthor("Muted by: " + namep, null, staff.getAvatarUrl());
-                if (!victim.isFake()) victim.openPrivateChannel().complete().sendMessage(muted.build()).queue();
+                if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(muted.build()).queue();
                 long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
                 if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                    if (victim.isFake()) guild.getTextChannelById(logChannelId).sendMessage(muted.build() + "\nTarget has private messages disabled").queue();
+                    if (victim.isBot()) guild.getTextChannelById(logChannelId).sendMessage(muted.build() + "\nTarget is a bot").queue();
                     else guild.getTextChannelById(logChannelId).sendMessage(muted.build()).queue();
                 }
                 ResultSet rs = query("SELECT * FROM active_mutes WHERE victimId= '" + victim.getIdLong() + "' AND guildId= '" + guild.getIdLong() + "'");
@@ -731,10 +731,10 @@ public class MySQL {
             muted.setThumbnail(victim.getAvatarUrl());
             if (victim.getAvatarUrl() == null) muted.setThumbnail(victim.getDefaultAvatarUrl());
             muted.setAuthor("Permanently muted by: " + namep, null, staff.getAvatarUrl());
-            if (!victim.isFake()) victim.openPrivateChannel().complete().sendMessage(muted.build()).queue();
+            if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(muted.build()).queue();
             long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                if (victim.isFake()) guild.getTextChannelById(logChannelId).sendMessage(muted.build() + "\nTarget has private messages disabled").queue();
+                if (victim.isBot()) guild.getTextChannelById(logChannelId).sendMessage(muted.build() + "\nTarget is a bot").queue();
                 else guild.getTextChannelById(logChannelId).sendMessage(muted.build()).queue();
             }
             ResultSet rs = query("SELECT * FROM active_mutes WHERE victimId= '" + victim.getId() + "' AND guildId= '" + guild.getId() + "'");

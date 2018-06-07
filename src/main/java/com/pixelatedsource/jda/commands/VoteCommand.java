@@ -31,17 +31,7 @@ public class VoteCommand extends Command {
             event.reply("Support us by voting and get rewarded: https://discordbots.org/bot/368362411591204865/vote");
         } else if (args[0].equalsIgnoreCase("info")) {
             new Thread(() -> {
-                User target = event.getAuthor();
-                if (args.length > 1) {
-                    if (args[1].matches("\\d+") && event.getJDA().getUserById(args[1]) != null)
-                        target = event.getJDA().retrieveUserById(args[1]).complete();
-                    else if (event.getMessage().getMentionedUsers().size() > 0)
-                        target = event.getMessage().getMentionedUsers().get(0);
-                    else if (event.getGuild().getMembersByName(args[1], true).size() > 0)
-                        target = event.getGuild().getMembersByName(args[1], true).get(0).getUser();
-                    else if (event.getJDA().getUsersByName(args[0], true).size() > 0)
-                        target = event.getJDA().getUsersByName(args[0], true).get(0);
-                }
+                User target = Helpers.getUserByArgs(event, args.length > 1 ? args[1] : "");
                 String username = target.getName() + "#" + target.getDiscriminator();
                 JSONObject voteObject = PixelSniper.mySQL.getVotesObject(target.getIdLong());
                 if (!voteObject.has("votes")) {

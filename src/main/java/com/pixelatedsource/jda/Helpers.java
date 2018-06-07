@@ -269,7 +269,7 @@ public class Helpers {
     }
     public static User getUserByArgsN(CommandEvent event, String arg) {//With null
         User user = null;
-        if (!arg.matches("\\s+") || !arg.equalsIgnoreCase("")) {
+        if (!arg.matches("\\s+") && !arg.equalsIgnoreCase("")) {
             if (event.getMessage().getMentionedUsers().size() > 0) user = event.getMessage().getMentionedUsers().get(0);
             else if (arg.matches("\\d+") && event.getJDA().getUserById(arg) != null)
                 user = event.getJDA().getUserById(arg);
@@ -279,26 +279,6 @@ public class Helpers {
                 user = event.getGuild().getMembersByNickname(arg, true).get(0).getUser();
         }
         return user;
-    }
-
-    public static boolean checkChannelPermission(Member member, TextChannel textChannel, Permission permission) {
-        boolean toReturn = member.hasPermission(permission);
-        if (member.getRoles().size() > 0) {
-            if (textChannel.getPermissionOverride(member.getRoles().get(0)) != null) {
-                if (textChannel.getPermissionOverride(member.getRoles().get(0)).getAllowed().contains(permission)) toReturn = true;
-                if (textChannel.getPermissionOverride(member.getRoles().get(0)).getDenied().contains(permission)) toReturn = false;
-            }
-        } else {
-            if (textChannel.getPermissionOverride(member.getGuild().getRoleById(member.getGuild().getIdLong())) != null) {
-                if (textChannel.getPermissionOverride(member.getGuild().getRoleById(member.getGuild().getIdLong())).getAllowed().contains(permission)) toReturn = true;
-                if (textChannel.getPermissionOverride(member.getGuild().getRoleById(member.getGuild().getIdLong())).getDenied().contains(permission)) toReturn = false;
-            }
-        }
-        if (textChannel.getPermissionOverride(member) != null) {
-            if (textChannel.getPermissionOverride(member).getAllowed().contains(permission)) toReturn = true;
-            if (textChannel.getPermissionOverride(member).getDenied().contains(permission)) toReturn = false;
-        }
-        return toReturn;
     }
 
     public static long getChannelByArgsN(CommandEvent event, String arg) {

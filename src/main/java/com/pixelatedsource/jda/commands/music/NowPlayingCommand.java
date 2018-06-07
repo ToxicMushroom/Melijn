@@ -44,7 +44,7 @@ public class NowPlayingCommand extends Command {
                     if (track == null) event.reply("There are no songs playing at the moment.");
                     else {
 
-                        Emote emote = Helpers.checkChannelPermission(event.getGuild().getSelfMember(), event.getTextChannel(), Permission.MESSAGE_EXT_EMOJI) ?
+                        Emote emote = event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EXT_EMOJI) ?
                                 event.getJDA().getEmoteById("445154561313865728") : null;
                         String loopedQueue = LoopQueueCommand.looped.getOrDefault(guild.getIdLong(), false) ? " :repeat:" : "";
                         String looped = LoopCommand.looped.getOrDefault(guild.getIdLong(), false) ? " :arrows_counterclockwise:" : "";
