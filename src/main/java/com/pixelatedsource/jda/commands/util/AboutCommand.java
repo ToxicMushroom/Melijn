@@ -40,7 +40,7 @@ public class AboutCommand extends Command {
             }
             eb.addField("Playing music count", String.valueOf(i), false);
             event.reply(eb.build());
-            if (event.getAuthor().getId().equalsIgnoreCase(OWNERID)) {
+            if (event.getAuthor().getIdLong() == OWNERID) {
                 StringBuilder desc = new StringBuilder();
                 int blub = 0;
                 for (Guild guild : event.getJDA().getGuilds()) {
