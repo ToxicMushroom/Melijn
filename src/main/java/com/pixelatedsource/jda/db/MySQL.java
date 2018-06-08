@@ -486,7 +486,8 @@ public class MySQL {
                 if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(banned.build()).queue();
                 long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
                 if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                    if (victim.isBot()) guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget is a bot").queue();
+                    if (victim.isBot())
+                        guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget is a bot").queue();
                     else guild.getTextChannelById(logChannelId).sendMessage(banned.build()).queue();
                 }
                 ResultSet rs = query("SELECT * FROM active_bans WHERE victimId= '" + victim.getId() + "' AND guildId= '" + guild.getId() + "'");
@@ -543,8 +544,9 @@ public class MySQL {
             banned.setAuthor("Permanently banned by: " + namep, null, staff.getAvatarUrl());
             if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(banned.build()).queue();
             long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
-            if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null){
-                if (victim.isBot()) guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget is a bot").queue();
+            if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
+                if (victim.isBot())
+                    guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget is a bot").queue();
                 else guild.getTextChannelById(logChannelId).sendMessage(banned.build()).queue();
             }
             ResultSet rs = query("SELECT * FROM active_bans WHERE victimId= '" + victim.getId() + "' AND guildId= '" + guild.getId() + "'");
@@ -619,10 +621,11 @@ public class MySQL {
                     toUnban.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
                     long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
                     if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                        if (toUnban.isFake()) guild.getTextChannelById(logChannelId).sendMessage(eb.build() + "\nTarget has private messages disabled").queue();
+                        if (toUnban.isFake())
+                            guild.getTextChannelById(logChannelId).sendMessage(eb.build() + "\nTarget has private messages disabled").queue();
                         else guild.getTextChannelById(logChannelId).sendMessage(eb.build()).queue();
                     }
-                   return true;
+                    return true;
                 }
                 return false;
             } catch (SQLException e) {
@@ -650,7 +653,8 @@ public class MySQL {
             embedBuilder.setColor(Color.yellow);
             long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                if (victim.isBot()) guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build() + "\nTarget is a bot.").queue();
+                if (victim.isBot())
+                    guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build() + "\nTarget is a bot.").queue();
                 else guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
             }
             if (!victim.isBot()) victim.openPrivateChannel().queue((m) -> m.sendMessage(embedBuilder.build()).queue());
@@ -677,7 +681,8 @@ public class MySQL {
                 if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(muted.build()).queue();
                 long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
                 if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                    if (victim.isBot()) guild.getTextChannelById(logChannelId).sendMessage(muted.build() + "\nTarget is a bot").queue();
+                    if (victim.isBot())
+                        guild.getTextChannelById(logChannelId).sendMessage(muted.build() + "\nTarget is a bot").queue();
                     else guild.getTextChannelById(logChannelId).sendMessage(muted.build()).queue();
                 }
                 ResultSet rs = query("SELECT * FROM active_mutes WHERE victimId= '" + victim.getIdLong() + "' AND guildId= '" + guild.getIdLong() + "'");
@@ -734,7 +739,8 @@ public class MySQL {
             if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(muted.build()).queue();
             long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                if (victim.isBot()) guild.getTextChannelById(logChannelId).sendMessage(muted.build() + "\nTarget is a bot").queue();
+                if (victim.isBot())
+                    guild.getTextChannelById(logChannelId).sendMessage(muted.build() + "\nTarget is a bot").queue();
                 else guild.getTextChannelById(logChannelId).sendMessage(muted.build()).queue();
             }
             ResultSet rs = query("SELECT * FROM active_mutes WHERE victimId= '" + victim.getId() + "' AND guildId= '" + guild.getId() + "'");
@@ -807,7 +813,8 @@ public class MySQL {
                     toUnmute.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
                     long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
                     if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                        if (toUnmute.isFake()) guild.getTextChannelById(logChannelId).sendMessage(eb.build() + "\nTarget has private messages disabled").queue();
+                        if (toUnmute.isFake())
+                            guild.getTextChannelById(logChannelId).sendMessage(eb.build() + "\nTarget has private messages disabled").queue();
                         else guild.getTextChannelById(logChannelId).sendMessage(eb.build()).queue();
                     }
                     t = true;
@@ -955,7 +962,7 @@ public class MySQL {
         try {
             PreparedStatement removeChannel = con.prepareStatement("DELETE FROM " + type.toString().toLowerCase() + "_channels WHERE guildId= ?");
             removeChannel.setLong(1, guildId);
-             removeChannel.executeUpdate();
+            removeChannel.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1187,6 +1194,17 @@ public class MySQL {
         }
     }
 
+    public void removeMessage(long guildId, MessageType type) {
+        try {
+            PreparedStatement setPrefix = con.prepareStatement("REMOVE FROM " + type.toString().toLowerCase() + "_messages WHERE guildId= ?");
+            setPrefix.setLong(1, guildId);
+            setPrefix.executeUpdate();
+            setPrefix.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public HashMap<Long, String> getPrefixMap() {
         HashMap<Long, String> mapje = new HashMap<>();
         try {
@@ -1204,8 +1222,8 @@ public class MySQL {
     public HashMap<Long, Long> getChannelMap(ChannelType type) {
         HashMap<Long, Long> mapje = new HashMap<>();
         try {
-            PreparedStatement GERTJEUH = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_channels");
-            ResultSet rs = GERTJEUH.executeQuery();
+            PreparedStatement getChannelMap = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_channels");
+            ResultSet rs = getChannelMap.executeQuery();
             while (rs.next()) {
                 mapje.put(rs.getLong("guildId"), rs.getLong("channelId"));
             }
@@ -1360,7 +1378,7 @@ public class MySQL {
         return list;
     }
 
-    public HashMap<Long,List<Integer>> getPermissionsMap(int i) {
+    public HashMap<Long, List<Integer>> getPermissionsMap(int i) {
         HashMap<Long, List<Integer>> permissions = new HashMap<>();
         try {
             String type = i == 0 ? "user" : "role";

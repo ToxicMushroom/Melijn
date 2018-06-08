@@ -33,10 +33,16 @@ public class SetJoinMessageCommand extends Command {
                 String newMessage = event.getArgs();
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
-                    new Thread(() -> PixelSniper.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.JOIN)).start();
-                    if (joinMessages.replace(guild.getIdLong(), newMessage) == null)
-                        joinMessages.put(guild.getIdLong(), newMessage);
-                    event.reply("JoinMessage has been changed from '" + oldMessage + "' to '" + newMessage + "'");
+                    if (args.length == 1 && args[0].equalsIgnoreCase("null")) {
+                        new Thread(() -> PixelSniper.mySQL.removeMessage(guild.getIdLong(), MessageType.JOIN)).start();
+                        joinMessages.remove(guild.getIdLong());
+                        event.reply("JoinMessage has been set to nothing by **" + event.getFullAuthorName() + "**");
+                    } else {
+                        new Thread(() -> PixelSniper.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.JOIN)).start();
+                        if (joinMessages.replace(guild.getIdLong(), newMessage) == null)
+                            joinMessages.put(guild.getIdLong(), newMessage);
+                        event.reply("JoinMessage has been changed from '" + oldMessage + "' to '" + newMessage + "' by **" + event.getFullAuthorName() + "**");
+                    }
                 } else {
                     event.reply(oldMessage);
                 }

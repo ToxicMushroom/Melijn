@@ -29,13 +29,13 @@ public class JoinLeave extends ListenerAdapter {
         if (guild.getSelfMember().getRoles().size() > 0) {
             if (SetJoinRoleCommand.joinRoles.containsKey(guild.getIdLong())) {
                 Role joinRole = guild.getRoleById(SetJoinRoleCommand.joinRoles.get(guild.getIdLong()));
-                if (joinRole != null && joinRole.getPosition() > guild.getSelfMember().getRoles().get(0).getPosition())
+                if (joinRole != null && joinRole.getPosition() < guild.getSelfMember().getRoles().get(0).getPosition())
                     guild.getController().addSingleRoleToMember(event.getMember(), guild.getRoleById(SetJoinRoleCommand.joinRoles.get(guild.getIdLong()))).queue();
             }
             new Thread(() -> {
                 if (PixelSniper.mySQL.isUserMuted(joinedUser.getIdLong(), guild.getIdLong()) && SetMuteRoleCommand.muteRoles.containsKey(guild.getIdLong())) {
                     Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoles.get(guild.getIdLong()));
-                    if (muteRole != null && muteRole.getPosition() > guild.getSelfMember().getRoles().get(0).getPosition())
+                    if (muteRole != null && muteRole.getPosition() < guild.getSelfMember().getRoles().get(0).getPosition())
                         guild.getController().addSingleRoleToMember(event.getMember(), muteRole).queue();
                 }
             });

@@ -8,6 +8,7 @@ import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.blub.RoleType;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Role;
 
 import java.util.HashMap;
 
@@ -41,18 +42,15 @@ public class SetJoinRoleCommand extends Command {
                         new Thread(() -> PixelSniper.mySQL.removeRole(guild.getIdLong(), RoleType.JOIN)).start();
                         event.reply("JoinRole has been unset by **" + event.getFullAuthorName() + "**");
                     } else {
-                        long joinRoleId;
-                        if (args[0].matches("\\d+") && guild.getRoleById(args[0]) != null) joinRoleId = Long.parseLong(args[0]);
-                        else if (event.getMessage().getMentionedRoles().size() > 0) joinRoleId = event.getMessage().getMentionedRoles().get(0).getIdLong();
-                        else joinRoleId = -1;
-                        if (joinRoleId != -1) {
-                            if (guild.getSelfMember().getRoles().size() != 0 && guild.getSelfMember().getRoles().get(0).getPosition() < guild.getRoleById(joinRoleId).getPosition()) {
-                                if (joinRoles.replace(guild.getIdLong(), joinRoleId) == null)
-                                    joinRoles.put(guild.getIdLong(), joinRoleId);
-                                new Thread(() -> PixelSniper.mySQL.setRole(guild.getIdLong(), joinRoleId, RoleType.JOIN)).start();
-                                event.reply("JoinRole changed to **@" + guild.getRoleById(joinRoleId).getName() + "** by **" + event.getFullAuthorName() + "**");
+                        Role joinRole = Helpers.getRoleByArgs(event, args[0]);
+                        if (joinRole != null) {
+                            if (guild.getSelfMember().getRoles().size() != 0 && guild.getSelfMember().getRoles().get(0).getPosition() > joinRole.getPosition()) {
+                                if (joinRoles.replace(guild.getIdLong(), joinRole.getIdLong()) == null)
+                                    joinRoles.put(guild.getIdLong(), joinRole.getIdLong());
+                                new Thread(() -> PixelSniper.mySQL.setRole(guild.getIdLong(), joinRole.getIdLong(), RoleType.JOIN)).start();
+                                event.reply("JoinRole changed to **@" + joinRole.getName() + "** by **" + event.getFullAuthorName() + "**");
                             } else {
-                                event.reply("The JoinRole hasn't been changed due: **@" + guild.getRoleById(joinRoleId).getName() + "** is higher in the role-hierarchy then my highest role.\nThis means that I will not be able to give the role to anyone ex.(Mods can't give people Admin it breaks logic)");
+                                event.reply("The JoinRole hasn't been changed due: **@" + joinRole.getName() + "** is higher or equal in the role-hierarchy then my highest role.\nThis means that I will not be able to give the role to anyone ex.(Mods can't give people Admin it breaks logic)");
                             }
                         } else {
                             MessageHelper.sendUsage(this, event);

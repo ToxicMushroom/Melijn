@@ -10,10 +10,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.entities.User;
-import net.dv8tion.jda.core.entities.VoiceChannel;
+import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.managers.AudioManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -324,5 +321,16 @@ public class Helpers {
                         .setFooter(Helpers.getFooterStamp(), null)
                         .build()).queue();
         }
+    }
+
+    public static Role getRoleByArgs(CommandEvent event, String arg) {
+        if (!arg.matches("\\s+") && !arg.equalsIgnoreCase("")) {
+            if (event.getMessage().getMentionedRoles().size() > 0) return event.getMessage().getMentionedRoles().get(0);
+            else if (arg.matches("\\d+") && event.getGuild().getRoleById(arg) != null)
+                return event.getGuild().getRoleById(arg);
+            else if (event.getGuild() != null && event.getGuild().getRolesByName(arg, true).size() > 0)
+                return event.getGuild().getRolesByName(arg, true).get(0);
+        }
+        return null;
     }
 }
