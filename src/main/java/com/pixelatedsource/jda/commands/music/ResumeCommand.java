@@ -26,10 +26,16 @@ public class ResumeCommand extends Command {
             if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
                 MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
                 VoiceChannel voiceChannel = event.getGuild().getMember(event.getAuthor()).getVoiceState().getChannel();
-                event.getGuild().getAudioManager().openAudioConnection(voiceChannel);
-                player.resumeTrack();
-                if (player.getAudioPlayer().getPlayingTrack() == null && player.getListener().getTrackSize() > 0) player.skipTrack();
-                event.reply("Resumed by **" + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + "**");
+                if (voiceChannel == null) voiceChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
+                if (voiceChannel != null) {
+                    event.getGuild().getAudioManager().openAudioConnection(voiceChannel);
+                    player.resumeTrack();
+                    if (player.getAudioPlayer().getPlayingTrack() == null && player.getListener().getTrackSize() > 0)
+                        player.skipTrack();
+                    event.reply("Resumed by **" + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + "**");
+                } else {
+                    event.reply("You or me have to be in a voice channel to resume");
+                }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");
             }

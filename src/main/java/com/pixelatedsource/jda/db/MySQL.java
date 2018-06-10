@@ -277,7 +277,7 @@ public class MySQL {
 
     public void removeUserPermission(long guildId, long userId, String permission) {
         try {
-            PreparedStatement removing = con.prepareStatement("DELETE FROM perms_users WHERE guildId= ? AND usersId= ? AND permission= ?");
+            PreparedStatement removing = con.prepareStatement("DELETE FROM perms_users WHERE guildId= ? AND userId= ? AND permission= ?");
             removing.setLong(1, guildId);
             removing.setLong(2, userId);
             removing.setString(3, permission);
@@ -335,7 +335,7 @@ public class MySQL {
 
     public void clearUserPermissions(long guildId, long userId) {
         try {
-            PreparedStatement clearing = con.prepareStatement("DELETE FROM perm_users WHERE guildId= ? AND userId= ?");
+            PreparedStatement clearing = con.prepareStatement("DELETE FROM perms_users WHERE guildId= ? AND userId= ?");
             clearing.setLong(1, guildId);
             clearing.setLong(2, userId);
             clearing.executeUpdate();
@@ -1376,32 +1376,5 @@ public class MySQL {
             e.printStackTrace();
         }
         return list;
-    }
-
-    public HashMap<Long, List<Integer>> getPermissionsMap(int i) {
-        HashMap<Long, List<Integer>> permissions = new HashMap<>();
-        try {
-            String type = i == 0 ? "user" : "role";
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM perms_" + type + "s");
-            ResultSet rs = statement.executeQuery();
-            List<Long> row = new ArrayList<>();
-            while (rs.next()) {
-                if (!row.contains(rs.getLong(type + "Id")))
-                    row.add(rs.getLong(type + "Id"));
-            }
-            for (long s : row) {
-                rs.beforeFirst();
-                ArrayList<Integer> lijst = new ArrayList<>();
-                while (rs.next()) {
-                    if (rs.getLong(type + "Id") == s) {
-                        lijst.add(Helpers.perms.indexOf(rs.getString("permission")));
-                    }
-                }
-                permissions.put(s, lijst);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return permissions;
     }
 }

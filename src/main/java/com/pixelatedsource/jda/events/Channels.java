@@ -33,7 +33,8 @@ public class Channels extends ListenerAdapter {
                     }
                 }
                 if ((audioManager.getConnectedChannel().getMembers().size() - doveDuiven) == 1) {
-                    audioPlayer.stopTrack();
+                    if (!audioPlayer.isPaused())
+                        audioPlayer.stopTrack();
                     audioManager.closeAudioConnection();
                 } else if (audioPlayer.getPlayingTrack() == null) {
                     if (SetStreamUrlCommand.streamUrls.containsKey(guildId)) {
@@ -84,7 +85,8 @@ public class Channels extends ListenerAdapter {
                 }
             }
             if ((audioManager.getConnectedChannel().getMembers().size() - doveDuiven) == 1) {
-                audioPlayer.stopTrack();
+                if (!audioPlayer.isPaused())
+                    audioPlayer.stopTrack();
                 audioManager.closeAudioConnection();
             }
         }
@@ -103,7 +105,8 @@ public class Channels extends ListenerAdapter {
                 }
             }
             if ((audioManager.getConnectedChannel().getMembers().size() - doveDuiven) == 1) {
-                audioPlayer.stopTrack();
+                if (!audioPlayer.isPaused())
+                    audioPlayer.stopTrack();
                 audioManager.closeAudioConnection();
             }
         }
