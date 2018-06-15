@@ -6,7 +6,6 @@ import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.utils.MessageHelper;
-import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.VoiceChannel;
@@ -39,23 +38,19 @@ public class PlayCommand extends Command {
             boolean acces = Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".*", 1);
             VoiceChannel senderVoiceChannel = guild.getMember(event.getAuthor()).getVoiceState().getChannel();
             String args[] = event.getArgs().split("\\s+");
-            if (senderVoiceChannel == null) {
-                EmbedBuilder eb = new EmbedBuilder();
-                eb.setTitle("I'm a pet so i follow you everywhere :3");
-                eb.setColor(Helpers.EmbedColor);
-                eb.setDescription("PS: you need to join a voice channel when you use the command then I'll party with you");
-                eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
-                event.reply(eb.build());
+            if (senderVoiceChannel == null && !guild.getSelfMember().getVoiceState().inVoiceChannel()) {
+                event.reply("Please join a VoiceChannel");
                 return;
             }
             if (event.getGuild().getSelfMember().getVoiceState().inVoiceChannel() && event.getGuild().getSelfMember().getVoiceState().getChannel() != senderVoiceChannel) {
-                event.reply("You have to be in the same voice channel as me to add music");
+                event.reply("You have to be in the same VoiceChannel as me to add music");
+                return;
             }
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {//no args -> usage:
                 MessageHelper.sendUsage(this, event);
                 return;
             }
-            if (!Helpers.checkVoiceChannelPermission(event.getGuild().getSelfMember(), senderVoiceChannel, Permission.VOICE_CONNECT)) {
+            if (!event.getGuild().getSelfMember().hasPermission(senderVoiceChannel, Permission.VOICE_CONNECT)) {
                 event.reply("I don't have the permission VOICE_CONNECT");
                 return;
             }
@@ -106,7 +101,7 @@ public class PlayCommand extends Command {
                             if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
                                 guild.getAudioManager().openAudioConnection(senderVoiceChannel);
                             if (songname.contains("open.spotify.com")) {
-                                event.reply("You can't play spotify links with bots sadly :(\nIf you have a self made playlist you can use http://www.playlist-converter.net/#/ to convert it into a youtube playlist or soundcloud (those are supported).");
+                                event.reply("You can't play spotify links with bots rn sadly :(\nIf you have a self made playlist you can use http://www.playlist-converter.net/#/ to convert it into a youtube/soundcloud playlist");
                                 return;
                             }
                             manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);

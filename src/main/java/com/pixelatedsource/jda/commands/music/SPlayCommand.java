@@ -7,7 +7,6 @@ import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
@@ -44,17 +43,20 @@ public class SPlayCommand extends Command {
             boolean acces = Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".*", 1);
             VoiceChannel senderVoiceChannel = guild.getMember(event.getAuthor()).getVoiceState().getChannel();
             String args[] = event.getArgs().split("\\s+");
-            if (senderVoiceChannel == null) {
-                EmbedBuilder eb = new EmbedBuilder();
-                eb.setTitle("I'm a pet so i follow you everywhere :3");
-                eb.setColor(Helpers.EmbedColor);
-                eb.setDescription("PS: you need to join a voice channel then when you use the command then I'll party with you");
-                eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
-                event.reply(eb.build());
+            if (senderVoiceChannel == null && !guild.getSelfMember().getVoiceState().inVoiceChannel()) {
+                event.reply("Please join a VoiceChannel");
+                return;
+            }
+            if (event.getGuild().getSelfMember().getVoiceState().inVoiceChannel() && event.getGuild().getSelfMember().getVoiceState().getChannel() != senderVoiceChannel) {
+                event.reply("You have to be in the same voice channel as me to add music");
                 return;
             }
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {//no args -> usage:
                 MessageHelper.sendUsage(this, event);
+                return;
+            }
+            if (!event.getGuild().getSelfMember().hasPermission(senderVoiceChannel, Permission.VOICE_CONNECT)) {
+                event.reply("I don't have the permission VOICE_CONNECT");
                 return;
             }
             String songname;

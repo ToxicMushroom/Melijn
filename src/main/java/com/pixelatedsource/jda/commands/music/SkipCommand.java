@@ -42,14 +42,13 @@ public class SkipCommand extends Command {
                 int i = 1;
                 if (args.length > 0) {
                     if (!args[0].equalsIgnoreCase("")) {
-                        try {
+                        if (args[0].matches("\\d+") && args[0].length() < 4) {
                             i = Integer.parseInt(args[0]);
                             if (i >= 50 || i < 1) {
                                 MessageHelper.sendUsage(this, event);
                                 return;
                             }
-                        } catch (NumberFormatException e) {
-                            e.addSuppressed(e);
+                        } else {
                             MessageHelper.sendUsage(this, event);
                         }
                     }

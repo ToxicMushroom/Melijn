@@ -6,6 +6,7 @@ import com.pixelatedsource.jda.commands.HelpCommand;
 import com.pixelatedsource.jda.commands.InviteCommand;
 import com.pixelatedsource.jda.commands.VoteCommand;
 import com.pixelatedsource.jda.commands.developer.SayCommand;
+import com.pixelatedsource.jda.commands.developer.WeebshCommand;
 import com.pixelatedsource.jda.commands.fun.*;
 import com.pixelatedsource.jda.commands.management.*;
 import com.pixelatedsource.jda.commands.music.*;
@@ -50,7 +51,7 @@ public class PixelSniper extends ListenerAdapter {
         CommandClientBuilder client = new CommandClientBuilder();
         client.setOwnerId(OWNERID);
         client.setPrefix(PREFIX);
-        client.addCommands(new SayCommand(), new DiscordMemeCommand(), new SetMusicLogChannel(), new LoopQueueCommand(), new SetNotifications(), new VoteCommand(), new InviteCommand(), new SetJoinLeaveChannelCommand(), new SetJoinRoleCommand(), new SetJoinMessageCommand(),new SetLeaveMessageCommand(), new TriggeredCommand(), new SlapCommand(), new PatCommand(), new FilterCommand(), new PotatoCommand(), new PauseCommand(), new SPlayCommand(), new BanCommand(), new HistoryCommand(), new MuteCommand(), new SetMuteRoleCommand(), new TempMuteCommand(), new UnmuteCommand(), new AvatarCommand(), new WarnCommand(), new PurgeCommand(), new HelpCommand(), new PingCommand(), new PlayCommand(), new QueueCommand(), new CatCommand(), new SkipCommand(), new ClearCommand(), new StopCommand(), new ResumeCommand(), new VolumeCommand(), new AboutCommand(), new PlayerinfoCommand(), new LoopCommand(), new TexttoemojiCommand(), new SkipXCommand(), new PermCommand(), new NowPlayingCommand(), new RemoveCommand(), new GuildInfoCommand(), new RoleInfoCommand(), new DogCommand(), new SetPrefixCommand(), new SetMusicChannelCommand(), new SetLogChannelCommand(), new TempBanCommand(), new UnbanCommand(), new SetStreamerModeCommand(), new SetStreamUrlCommand());
+        client.addCommands(new WeebshCommand(), new SayCommand(), new DiscordMemeCommand(), new SetMusicLogChannel(), new LoopQueueCommand(), new SetNotifications(), new VoteCommand(), new InviteCommand(), new SetJoinLeaveChannelCommand(), new SetJoinRoleCommand(), new SetJoinMessageCommand(),new SetLeaveMessageCommand(), new TriggeredCommand(), new SlapCommand(), new PatCommand(), new FilterCommand(), new PotatoCommand(), new PauseCommand(), new SPlayCommand(), new BanCommand(), new HistoryCommand(), new MuteCommand(), new SetMuteRoleCommand(), new TempMuteCommand(), new UnmuteCommand(), new AvatarCommand(), new WarnCommand(), new PurgeCommand(), new HelpCommand(), new PingCommand(), new PlayCommand(), new QueueCommand(), new CatCommand(), new SkipCommand(), new ClearCommand(), new StopCommand(), new ResumeCommand(), new VolumeCommand(), new AboutCommand(), new PlayerinfoCommand(), new LoopCommand(), new TexttoemojiCommand(), new SkipXCommand(), new PermCommand(), new NowPlayingCommand(), new RemoveCommand(), new GuildInfoCommand(), new RoleInfoCommand(), new DogCommand(), new SetPrefixCommand(), new SetMusicChannelCommand(), new SetLogChannelCommand(), new TempBanCommand(), new UnbanCommand(), new SetStreamerModeCommand(), new SetStreamUrlCommand());
         CommandClient commandClient = client.build();
 
         dblAPI = new DiscordBotListAPI.Builder()
@@ -61,6 +62,16 @@ public class PixelSniper extends ListenerAdapter {
                 .addEventListener(commandClient).addEventListener(new JoinLeave()).addEventListener(new AddReaction()).addEventListener(new Channels()).addEventListener(new Chat()).setAudioSendFactory(new NativeAudioSendFactory()).buildBlocking();
         Helpers.startTimer(jda, dblAPI, 0);
         Helpers.starttime = System.currentTimeMillis();
+        /*setting avatar & username
+        try {
+            File f = new File(System.getProperty("java.io.tmpdir") + "tmp" + ".png");
+            f.deleteOnExit();
+            FileUtils.copyURLToFile(new URL("https://melijn.com/files/u/13-06-2018--16.15-11s.png"), f);
+            jda.getSelfUser().getManager().setAvatar(Icon.from(f)).queue();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        */
     }
 
     public void onDisconnect(DisconnectEvent e) {
