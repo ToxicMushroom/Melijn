@@ -46,6 +46,7 @@ public class SetLogChannelCommand extends Command {
                     }
                     if (id == 0L) {
                         guildLogChannelMap.remove(guild.getIdLong());
+                        new Thread(() -> PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.LOG)).start();
                         event.reply("LogChannel has been changed from " + logChannelName + " to nothing by **" + event.getFullAuthorName() + "**");
                     } else {
                         guildLogChannelMap.put(guild.getIdLong(), id);

@@ -5,6 +5,7 @@ import com.pixelatedsource.jda.blub.CommandClientBuilder;
 import com.pixelatedsource.jda.commands.HelpCommand;
 import com.pixelatedsource.jda.commands.InviteCommand;
 import com.pixelatedsource.jda.commands.VoteCommand;
+import com.pixelatedsource.jda.commands.developer.EvalCommand;
 import com.pixelatedsource.jda.commands.developer.SayCommand;
 import com.pixelatedsource.jda.commands.developer.WeebshCommand;
 import com.pixelatedsource.jda.commands.fun.*;
@@ -51,7 +52,7 @@ public class PixelSniper extends ListenerAdapter {
         CommandClientBuilder client = new CommandClientBuilder();
         client.setOwnerId(OWNERID);
         client.setPrefix(PREFIX);
-        client.addCommands(new WeebshCommand(), new SayCommand(), new DiscordMemeCommand(), new SetMusicLogChannel(), new LoopQueueCommand(), new SetNotifications(), new VoteCommand(), new InviteCommand(), new SetJoinLeaveChannelCommand(), new SetJoinRoleCommand(), new SetJoinMessageCommand(),new SetLeaveMessageCommand(), new TriggeredCommand(), new SlapCommand(), new PatCommand(), new FilterCommand(), new PotatoCommand(), new PauseCommand(), new SPlayCommand(), new BanCommand(), new HistoryCommand(), new MuteCommand(), new SetMuteRoleCommand(), new TempMuteCommand(), new UnmuteCommand(), new AvatarCommand(), new WarnCommand(), new PurgeCommand(), new HelpCommand(), new PingCommand(), new PlayCommand(), new QueueCommand(), new CatCommand(), new SkipCommand(), new ClearCommand(), new StopCommand(), new ResumeCommand(), new VolumeCommand(), new AboutCommand(), new PlayerinfoCommand(), new LoopCommand(), new TexttoemojiCommand(), new SkipXCommand(), new PermCommand(), new NowPlayingCommand(), new RemoveCommand(), new GuildInfoCommand(), new RoleInfoCommand(), new DogCommand(), new SetPrefixCommand(), new SetMusicChannelCommand(), new SetLogChannelCommand(), new TempBanCommand(), new UnbanCommand(), new SetStreamerModeCommand(), new SetStreamUrlCommand());
+        client.addCommands(new EvalCommand(), new WeebshCommand(), new SayCommand(), new DiscordMemeCommand(), new SetMusicLogChannel(), new LoopQueueCommand(), new SetNotifications(), new VoteCommand(), new InviteCommand(), new SetJoinLeaveChannelCommand(), new SetJoinRoleCommand(), new SetJoinMessageCommand(),new SetLeaveMessageCommand(), new TriggeredCommand(), new SlapCommand(), new PatCommand(), new FilterCommand(), new PotatoCommand(), new PauseCommand(), new SPlayCommand(), new BanCommand(), new HistoryCommand(), new MuteCommand(), new SetMuteRoleCommand(), new TempMuteCommand(), new UnmuteCommand(), new AvatarCommand(), new WarnCommand(), new PurgeCommand(), new HelpCommand(), new PingCommand(), new PlayCommand(), new QueueCommand(), new CatCommand(), new SkipCommand(), new ClearCommand(), new StopCommand(), new ResumeCommand(), new VolumeCommand(), new AboutCommand(), new PlayerinfoCommand(), new LoopCommand(), new TexttoemojiCommand(), new SkipXCommand(), new PermCommand(), new NowPlayingCommand(), new RemoveCommand(), new GuildInfoCommand(), new RoleInfoCommand(), new DogCommand(), new SetPrefixCommand(), new SetMusicChannelCommand(), new SetLogChannelCommand(), new TempBanCommand(), new UnbanCommand(), new SetStreamerModeCommand(), new SetStreamUrlCommand());
         CommandClient commandClient = client.build();
 
         dblAPI = new DiscordBotListAPI.Builder()

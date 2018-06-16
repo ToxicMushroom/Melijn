@@ -34,7 +34,7 @@ public class SkipCommand extends Command {
                 MusicPlayer player = manager.getPlayer(event.getGuild());
                 AudioTrack tracknp = player.getAudioPlayer().getPlayingTrack();
                 if (tracknp == null) {
-                    event.reply("Their are no songs playing at the moment.");
+                    event.reply("There are no songs playing at the moment");
                     return;
                 }
                 String[] args = event.getArgs().split("\\s+");
@@ -67,10 +67,10 @@ public class SkipCommand extends Command {
                 eb.setColor(Helpers.EmbedColor);
                 String songOrSongs = i == 1 ? "song" : "songs";
                 if (nextSong != null)
-                    eb.setDescription("Skipped " + i + " " + songOrSongs + ": `" + tracknp.getInfo().title + "`\n" + "Now playing the next song: `" + nextSong.getInfo().title + "` " + Helpers.getDurationBreakdown(nextSong.getInfo().length));
+                    eb.setDescription("Skipped " + i + " " + songOrSongs + "\nPrevious song: **[" + tracknp.getInfo().title + "](" + tracknp.getInfo().uri + ")**\n" + "Now playing: **[" + nextSong.getInfo().title + "](" + nextSong.getInfo().uri + ")** " + Helpers.getDurationBreakdown(nextSong.getInfo().length));
                 else {
                     player.skipTrack();
-                    eb.setDescription("Skipped " + i + " " + songOrSongs + ": `" + tracknp.getInfo().title + "`\n" + "No next song to play :/.");
+                    eb.setDescription("Skipped " + i + " " + songOrSongs + "\nPrevious song: `" + tracknp.getInfo().title + "`\n" + "No next song to play");
                 }
                 eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                 event.reply(eb.build());

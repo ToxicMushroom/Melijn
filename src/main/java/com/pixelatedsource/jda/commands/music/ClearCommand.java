@@ -6,7 +6,6 @@ import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
-import net.dv8tion.jda.core.Permission;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
@@ -18,7 +17,6 @@ public class ClearCommand extends Command {
         this.usage = PREFIX + this.commandName;
         this.aliases = new String[]{"cls"};
         this.category = Category.MUSIC;
-        this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
 
     @Override
@@ -29,7 +27,7 @@ public class ClearCommand extends Command {
                 if (player.getAudioPlayer().getPlayingTrack() != null)
                     player.getAudioPlayer().getPlayingTrack().stop();
                 if (!player.getListener().getTracks().isEmpty()) player.getListener().getTracks().clear();
-                event.reply("**The queue has been cleared**");
+                event.reply("The queue has been cleared by **" + event.getFullAuthorName() + "**");
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");
             }

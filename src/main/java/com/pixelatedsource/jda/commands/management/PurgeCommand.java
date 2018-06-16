@@ -43,18 +43,24 @@ public class PurgeCommand extends Command {
                                     MessageHelper.sendUsage(this, event);
                                     return;
                                 }
+                                List<Message> toPurge = new ArrayList<>();
+                                while (amount + 1 > 100) {
+                                    toPurge.addAll(event.getTextChannel().getHistory().retrievePast(100).complete());
+                                    amount -= 100;
+                                }
+                                toPurge.addAll(event.getTextChannel().getHistory().retrievePast(amount + 1).complete());
 
-                                List<Message> toPurge = event.getTextChannel().getHistory().retrievePast(Integer.parseInt(args[0]) + 1).complete();
                                 toPurge.forEach(blub -> MessageHelper.purgedMessages.put(blub.getId(), event.getAuthor()));
                                 while (toPurge.size() > 100) {
-                                    List<Message> deleteablePurgeList = new ArrayList<>();
-                                    while (deleteablePurgeList.size() != 100) {
-                                        deleteablePurgeList.add(toPurge.get(deleteablePurgeList.size()));
+                                    List<Message> deleteableMessages = new ArrayList<>();
+                                    while (deleteableMessages.size() != 100) {
+                                        deleteableMessages.add(toPurge.get(deleteableMessages.size()));
                                     }
-                                    toPurge.removeAll(deleteablePurgeList);
-                                    event.getTextChannel().deleteMessages(deleteablePurgeList).queue();
+                                    toPurge.removeAll(deleteableMessages);
+                                    event.getTextChannel().deleteMessages(deleteableMessages).queue();
                                 }
-                                event.getTextChannel().deleteMessages(toPurge).queue();
+                                if (toPurge.size() == 1) event.getTextChannel().deleteMessageById(toPurge.get(0).getId()).queue();
+                                else event.getTextChannel().deleteMessages(toPurge).queue();
                             };
                             service.execute(run);
                         } catch (NumberFormatException e) {
