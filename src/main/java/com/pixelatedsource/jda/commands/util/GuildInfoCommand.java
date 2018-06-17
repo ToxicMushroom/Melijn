@@ -35,7 +35,7 @@ public class GuildInfoCommand extends Command {
                 if (args.length == 1 && !args[0].equalsIgnoreCase("") && jda.getGuildById(args[0]) != null)
                     guild = jda.getGuildById(args[0]);
                 EmbedBuilder eb = new EmbedBuilder();
-                eb.setTitle("Guild info: " + guild.getName());
+                eb.setTitle(guild.getName());
                 eb.setThumbnail(guild.getIconUrl());
                 eb.setColor(Helpers.EmbedColor);
                 eb.addField("Icon", "[Download](" + guild.getIconUrl() + ")", false);

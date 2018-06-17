@@ -53,7 +53,7 @@ public class MusicManager {
                 player.playTrack(track);
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setTitle("Added");
-                eb.setDescription("`" + track.getInfo().title + "` added to the queue at postition **#" + player.getListener().getTrackSize() + "**");
+                eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at postition **#" + player.getListener().getTrackSize() + "**");
                 eb.setFooter(Helpers.getFooterStamp(), null);
                 eb.setColor(Helpers.EmbedColor);
                 channel.sendMessage(eb.build()).queue();
@@ -75,12 +75,13 @@ public class MusicManager {
                         }
                         String toSend = String.valueOf("You're about to add a playlist which contains these songs:\n" + songs + "Hit :white_check_mark: to accept or :negative_squared_cross_mark: to deny").length() < 1999 ?
                                 "You're about to add a playlist which contains these songs:\n" + songs + "Hit :white_check_mark: to accept or :negative_squared_cross_mark: to deny" : //true before :
-                                "You're about to add a playlist which contains " + songs.length() + " songs.\nHit :white_check_mark: to accept or :negative_squared_cross_mark: to deny.";
+                                "You're about to add a playlist which contains " + tracks.size() + " songs.\nHit :white_check_mark: to accept or :negative_squared_cross_mark: to deny.";
                         channel.sendMessage(toSend).queue(v -> {
                             usersFormToReply.put(requester, v);
                             v.addReaction("\u2705").queue();
                             v.addReaction("\u274E").queue();
                             Helpers.waitForIt(requester);
+                            v.delete().queueAfter(30, TimeUnit.SECONDS);
                         });
                     } else {
                         channel.sendMessage("You still have a request to answer. (requests automatically get removed after 30 seconds)")

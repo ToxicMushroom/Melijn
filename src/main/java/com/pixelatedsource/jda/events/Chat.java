@@ -126,26 +126,26 @@ public class Chat extends ListenerAdapter {
 
                         EmbedBuilder eb = new EmbedBuilder();
                         eb.setTitle("Message deleted in #" + event.getChannel().getName());
-                        eb.setThumbnail(user.getAvatarUrl());
+                        eb.setThumbnail(user.getEffectiveAvatarUrl());
                         eb.setColor(Color.decode("#000001"));
                         eb.setDescription("```LDIF" + "\nSender: " + user.getName() + "#" + user.getDiscriminator() + "\nMessage: " + message.getString("content").replaceAll("`", "´").replaceAll("\n", " ") + "\nSender's Id: " + user.getId() + "\nSent Time: " + MessageHelper.millisToDate(message.getLong("sentTime")) + "```");
                         if (MessageHelper.filterDeletedMessages.get(event.getMessageId()) != null) {
                             eb.addField("Detected: ", "`" + MessageHelper.filterDeletedMessages.get(event.getMessageId()).replaceAll("`", "´") + "`", false);
                             eb.setColor(Color.ORANGE);
                             User bot = event.getJDA().getSelfUser();
-                            eb.setFooter("Deleted by: " + bot.getName() + "#" + bot.getDiscriminator(), bot.getAvatarUrl());
+                            eb.setFooter("Deleted by: " + bot.getName() + "#" + bot.getDiscriminator(), bot.getEffectiveAvatarUrl());
                             MessageHelper.filterDeletedMessages.remove(event.getMessageId());
                         } else if (now.toInstant().toEpochMilli() - deletionTime.toInstant().toEpochMilli() < 1000) {
                             User deletor = auditLogEntry.getUser();
-                            if (deletor != null) eb.setFooter("Deleted by: " + deletor.getName() + "#" + deletor.getDiscriminator(), deletor.getAvatarUrl());
+                            if (deletor != null) eb.setFooter("Deleted by: " + deletor.getName() + "#" + deletor.getDiscriminator(), deletor.getEffectiveAvatarUrl());
                         } else if (MessageHelper.purgedMessages.get(event.getMessageId()) != null) {
                             User purger = MessageHelper.purgedMessages.get(event.getMessageId());
                             eb.setColor(Color.decode("#551A8B"));
-                            eb.setFooter("Purged by: " + purger.getName() + "#" + purger.getDiscriminator(), purger.getAvatarUrl());
+                            eb.setFooter("Purged by: " + purger.getName() + "#" + purger.getDiscriminator(), purger.getEffectiveAvatarUrl());
                             MessageHelper.purgedMessages.remove(event.getMessageId());
                         } else {
                             User deletor = sameAsLast ? auditLogEntry.getUser() : event.getJDA().getUserById(PixelSniper.mySQL.getMessageAuthorId(event.getMessageIdLong()));
-                            if (deletor != null) eb.setFooter("Deleted by: " + deletor.getName() + "#" + deletor.getDiscriminator(), deletor.getAvatarUrl());
+                            if (deletor != null) eb.setFooter("Deleted by: " + deletor.getName() + "#" + deletor.getDiscriminator(), deletor.getEffectiveAvatarUrl());
                         }
 
                         guild.getTextChannelById(SetLogChannelCommand.guildLogChannelMap.get(guild.getIdLong())).sendMessage(eb.build()).queue(v -> {

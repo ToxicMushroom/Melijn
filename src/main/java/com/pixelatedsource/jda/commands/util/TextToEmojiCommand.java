@@ -8,9 +8,9 @@ import com.pixelatedsource.jda.utils.MessageHelper;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
-public class TexttoemojiCommand extends Command {
+public class TextToEmojiCommand extends Command {
 
-    public TexttoemojiCommand() {
+    public TextToEmojiCommand() {
         this.commandName = "t2e";
         this.description = "Converts input text and numbers to emotes";
         this.usage = PREFIX + this.commandName + " <text>";

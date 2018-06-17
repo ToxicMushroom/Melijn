@@ -41,7 +41,7 @@ public class NowPlayingCommand extends Command {
                 if (audioPlayer != null) {
                     AudioTrack track = audioPlayer.getAudioPlayer().getPlayingTrack();
                     String s = audioPlayer.getAudioPlayer().isPaused() ? "paused" : "playing";
-                    if (track == null) event.reply("There are no songs playing at the moment.");
+                    if (track == null) event.reply("There are no songs playing at the moment");
                     else {
 
                         Emote emote = event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EXT_EMOJI) ?
@@ -58,7 +58,7 @@ public class NowPlayingCommand extends Command {
                                 .setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon()).build());
                     }
                 } else {
-                    event.reply("There are not songs playing.");
+                    event.reply("There are not songs playing");
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

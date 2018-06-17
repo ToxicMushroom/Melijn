@@ -32,12 +32,11 @@ public class AvatarCommand extends Command {
                 user = Helpers.getUserByArgsN(event, args[0]);
             }
             if (user != null) {
-                String url = user.getAvatarUrl() == null ? user.getDefaultAvatarUrl() : user.getAvatarUrl();
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setColor(Helpers.EmbedColor);
                 eb.setTitle(user.getName() + "#" + user.getDiscriminator() + "'s avatar");
-                eb.setImage(url + "?size=2048");
-                eb.setDescription("[open](" + url + "?size=4096)");
+                eb.setImage(event.getAvatarUrl() + "?size=2048");
+                eb.setDescription("[open](" + event.getAvatarUrl() + "?size=4096)");
                  event.reply(eb.build());
             } else {
                 event.reply("Unknown user");

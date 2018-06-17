@@ -220,7 +220,7 @@ public class MySQL {
             if (rs.next()) {
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setTitle("Message deleted in #" + jda.getTextChannelById(rs.getString("textChannelId")).getName());
-                eb.setThumbnail(jda.retrieveUserById(rs.getString("authorId")).complete().getAvatarUrl());
+                eb.setThumbnail(jda.retrieveUserById(rs.getString("authorId")).complete().getEffectiveAvatarUrl());
                 eb.setFooter(millisToDate(rs.getLong("delTime")), Helpers.getFooterIcon());
                 eb.setColor(Color.magenta);
                 String authorId = rs.getString("authorId");
@@ -480,9 +480,8 @@ public class MySQL {
                 EmbedBuilder banned = new EmbedBuilder();
                 banned.setColor(Color.RED);
                 banned.setDescription("```LDIF" + "\nBanned: " + name + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nFrom: " + millisToDate(moment) + "\nUntil: " + millisToDate(until) + "```");
-                banned.setThumbnail(victim.getAvatarUrl());
-                if (victim.getAvatarUrl() == null) banned.setThumbnail(victim.getDefaultAvatarUrl());
-                banned.setAuthor("Banned by: " + namep, null, staff.getAvatarUrl());
+                banned.setThumbnail(victim.getEffectiveAvatarUrl());
+                banned.setAuthor("Banned by: " + namep, null, staff.getEffectiveAvatarUrl());
                 if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(banned.build()).queue();
                 long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
                 if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
@@ -539,9 +538,8 @@ public class MySQL {
             EmbedBuilder banned = new EmbedBuilder();
             banned.setColor(Color.RED);
             banned.setDescription("```LDIF" + "\nBanned: " + name + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(moment) + "```");
-            banned.setThumbnail(victim.getAvatarUrl());
-            if (victim.getAvatarUrl() == null) banned.setThumbnail(victim.getDefaultAvatarUrl());
-            banned.setAuthor("Permanently banned by: " + namep, null, staff.getAvatarUrl());
+            banned.setThumbnail(victim.getEffectiveAvatarUrl());
+            banned.setAuthor("Permanently banned by: " + namep, null, staff.getEffectiveAvatarUrl());
             if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(banned.build()).queue();
             long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
@@ -612,9 +610,9 @@ public class MySQL {
 
                     EmbedBuilder eb = new EmbedBuilder();
                     if (auto) author = jda.getSelfUser();
-                    eb.setAuthor("Unbanned by: " + author.getName() + "#" + author.getDiscriminator(), null, author.getAvatarUrl());
+                    eb.setAuthor("Unbanned by: " + author.getName() + "#" + author.getDiscriminator(), null, author.getEffectiveAvatarUrl());
                     eb.setDescription("```LDIF" + "\nUnbanned: " + toUnban.getName() + "#" + toUnban.getDiscriminator() + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(System.currentTimeMillis()) + "```");
-                    eb.setThumbnail(toUnban.getAvatarUrl());
+                    eb.setThumbnail(toUnban.getEffectiveAvatarUrl());
                     eb.setColor(Helpers.EmbedColor);
                     eb.setColor(Color.green);
 
@@ -647,9 +645,9 @@ public class MySQL {
             newWarn.setLong(5, System.currentTimeMillis());
             newWarn.executeUpdate();
             EmbedBuilder embedBuilder = new EmbedBuilder();
-            embedBuilder.setAuthor("Warned by: " + staff.getName() + "#" + staff.getDiscriminator(), null, staff.getAvatarUrl());
+            embedBuilder.setAuthor("Warned by: " + staff.getName() + "#" + staff.getDiscriminator(), null, staff.getEffectiveAvatarUrl());
             embedBuilder.setDescription("```LDIF\n" + "Warned: " + victim.getName() + "#" + victim.getDiscriminator() + "\n" + "Reason: " + reason + "\n" + "Guild: " + guild.getName() + "\n" + "Moment: " + millisToDate(System.currentTimeMillis()) + "\n" + "```");
-            embedBuilder.setThumbnail(victim.getAvatarUrl());
+            embedBuilder.setThumbnail(victim.getEffectiveAvatarUrl());
             embedBuilder.setColor(Color.yellow);
             long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
@@ -675,9 +673,8 @@ public class MySQL {
                 EmbedBuilder muted = new EmbedBuilder();
                 muted.setColor(Color.BLUE);
                 muted.setDescription("```LDIF" + "\nMuted: " + name + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nFrom: " + millisToDate(moment) + "\nUntil: " + millisToDate(until) + "```");
-                muted.setThumbnail(victim.getAvatarUrl());
-                if (victim.getAvatarUrl() == null) muted.setThumbnail(victim.getDefaultAvatarUrl());
-                muted.setAuthor("Muted by: " + namep, null, staff.getAvatarUrl());
+                muted.setThumbnail(victim.getEffectiveAvatarUrl());
+                muted.setAuthor("Muted by: " + namep, null, staff.getEffectiveAvatarUrl());
                 if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(muted.build()).queue();
                 long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
                 if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
@@ -733,9 +730,8 @@ public class MySQL {
             EmbedBuilder muted = new EmbedBuilder();
             muted.setColor(Color.BLUE);
             muted.setDescription("```LDIF" + "\nMuted: " + name + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(moment) + "```");
-            muted.setThumbnail(victim.getAvatarUrl());
-            if (victim.getAvatarUrl() == null) muted.setThumbnail(victim.getDefaultAvatarUrl());
-            muted.setAuthor("Permanently muted by: " + namep, null, staff.getAvatarUrl());
+            muted.setThumbnail(victim.getEffectiveAvatarUrl());
+            muted.setAuthor("Permanently muted by: " + namep, null, staff.getEffectiveAvatarUrl());
             if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(muted.build()).queue();
             long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
@@ -804,9 +800,9 @@ public class MySQL {
                     deleteMutes.close();
                     EmbedBuilder eb = new EmbedBuilder();
                     if (auto) author = jda.getSelfUser();
-                    eb.setAuthor("Unmuted by: " + author.getName() + "#" + author.getDiscriminator(), null, author.getAvatarUrl());
+                    eb.setAuthor("Unmuted by: " + author.getName() + "#" + author.getDiscriminator(), null, author.getEffectiveAvatarUrl());
                     eb.setDescription("```LDIF" + "\nUnmuted: " + toUnmute.getName() + "#" + toUnmute.getDiscriminator() + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(System.currentTimeMillis()) + "```");
-                    eb.setThumbnail(toUnmute.getAvatarUrl());
+                    eb.setThumbnail(toUnmute.getEffectiveAvatarUrl());
                     eb.setColor(Helpers.EmbedColor);
                     eb.setColor(Color.green);
                     guild.getController().removeSingleRoleFromMember(guild.getMember(toUnmute), guild.getRoleById(getRoleId(guild.getIdLong(), RoleType.MUTE))).queue();
