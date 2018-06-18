@@ -102,7 +102,10 @@ public class Helpers {
             "setjoinleavechannel",
             "setjoinmessage",
             "setleavemessage",
-            "setjoinrole"
+            "setjoinrole",
+            "randomize",
+            "setmusiclogchannel",
+            "setnotifications"
     ));
 
     public static void startTimer(JDA jda, DiscordBotListAPI dbl, int i) {

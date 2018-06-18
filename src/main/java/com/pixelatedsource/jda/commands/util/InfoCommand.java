@@ -60,7 +60,7 @@ public class InfoCommand extends Command {
                                 + "\n\u0314\u030F\u030A"
                         , false);
                 eb.addField("Stuff",
-                        "\n**Java Version** " + Runtime.class.getPackage().getImplementationVersion() +
+                        "\n**Java Version** " + Runtime.version().toString().replaceFirst("\\+", " build-") +
                                 "\n**JDA Version** " + JDAInfo.VERSION +
                                 "\n**Lavaplayer Version** " + PlayerLibrary.VERSION +
                                 "\n**Weeb.java Version** " + WeebApi.VERSION

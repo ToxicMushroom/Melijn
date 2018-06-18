@@ -6,9 +6,11 @@ import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.utils.MessageHelper;
+import com.pixelatedsource.jda.utils.WebUtils;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.VoiceChannel;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,7 +74,8 @@ public class PlayCommand extends Command {
                 case "sc":
                 case "soundcloud":
                     if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".sc", 0) || acces) {
-                        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
+                            guild.getAudioManager().openAudioConnection(senderVoiceChannel);
                         manager.loadTrack(event.getTextChannel(), "scsearch:" + songname, event.getAuthor(), false);
                     } else {
                         event.reply("You need the permission `" + commandName + ".sc` to execute this command.");
@@ -81,7 +84,8 @@ public class PlayCommand extends Command {
                 case "yt":
                 case "youtube":
                     if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".yt", 0) || acces) {
-                        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
+                            guild.getAudioManager().openAudioConnection(senderVoiceChannel);
                         manager.loadTrack(event.getTextChannel(), "ytsearch:" + songname, event.getAuthor(), false);
                     } else {
                         event.reply("You need the permission `" + commandName + ".yt` to execute this command.");
@@ -89,7 +93,8 @@ public class PlayCommand extends Command {
                     break;
                 case "link":
                     if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) || acces) {
-                        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
+                            guild.getAudioManager().openAudioConnection(senderVoiceChannel);
                         manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
                     } else {
                         event.reply("You need the permission `" + commandName + ".link` to execute this command.");
@@ -97,20 +102,29 @@ public class PlayCommand extends Command {
                     break;
                 default:
                     if (songname.contains("https://") || songname.contains("http://")) {
+                        songname = songname.replaceAll("\\s+", "");
                         if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) || acces) {
                             if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
                                 guild.getAudioManager().openAudioConnection(senderVoiceChannel);
                             if (songname.contains("open.spotify.com")) {
-                                event.reply("You can't play spotify links with bots rn sadly :(\nIf you have a self made playlist you can use http://www.playlist-converter.net/#/ to convert it into a youtube/soundcloud playlist");
-                                return;
-                            }
-                            manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
+                                if (songname.matches("https://open.spotify.com/track/\\S+")) {
+                                    JSONObject object = WebUtils.getWebUtilsInstance().getInfoFromSpotifyUrl(songname);
+                                    if (object.has("name"))
+                                        manager.loadTrack(event.getTextChannel(), "ytsearch:" + object.get("name"), event.getAuthor(), false);
+                                    else event.reply("Invalid spotify url");
+                                } else {
+                                    event.reply("We only support spotify track (no albums) so make sure your url looks like below\n-> (%id% is a long string of nonsense) https://open.spotify.com/track/%id%");
+                                    return;
+                                }
+                            } else
+                                manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
                         } else {
                             event.reply("You need the permission `" + commandName + ".link` to execute this command.");
                         }
                     } else {
                         if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".yt", 0) || acces) {
-                            if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                            if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
+                                guild.getAudioManager().openAudioConnection(senderVoiceChannel);
                             manager.loadTrack(event.getTextChannel(), "ytsearch:" + songname, event.getAuthor(), false);
                         } else {
                             event.reply("You need the permission `" + commandName + ".yt` to execute this command.");
