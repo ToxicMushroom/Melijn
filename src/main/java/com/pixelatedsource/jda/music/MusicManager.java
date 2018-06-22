@@ -22,13 +22,15 @@ import java.util.concurrent.TimeUnit;
 
 public class MusicManager {
 
-    private final AudioPlayerManager manager = new DefaultAudioPlayerManager();
+    public final AudioPlayerManager manager = new DefaultAudioPlayerManager();
     private final Map<Long, MusicPlayer> players = new HashMap<>();
     private static MusicManager managerinstance = new MusicManager();
     public static HashMap<User, List<AudioTrack>> usersRequest = new HashMap<>();
     public static HashMap<User, Message> usersFormToReply = new HashMap<>();
 
     public MusicManager() {
+        manager.getConfiguration().setFilterHotSwapEnabled(true);
+        manager.setFrameBufferDuration(1000);
         AudioSourceManagers.registerRemoteSources(manager);
         AudioSourceManagers.registerLocalSource(manager);
     }

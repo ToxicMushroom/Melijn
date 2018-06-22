@@ -38,7 +38,7 @@ public class RandomizeCommand extends Command {
                 tracks.forEach(s -> tracksToAdd.add((AudioTrack) s));
                 player.getListener().tracks.clear();
                 player.getListener().tracks.addAll(tracksToAdd);
-                event.reply("The queue has been randomized by " + event.getFullAuthorName());
+                event.reply("The queue has been **randomized** by **" + event.getFullAuthorName() + "**");
             }
         }
     }

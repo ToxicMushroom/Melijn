@@ -616,11 +616,11 @@ public class MySQL {
                     eb.setColor(Helpers.EmbedColor);
                     eb.setColor(Color.green);
 
-                    toUnban.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
+                    if (!toUnban.isBot()) toUnban.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
                     long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
                     if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                        if (toUnban.isFake())
-                            guild.getTextChannelById(logChannelId).sendMessage(eb.build() + "\nTarget has private messages disabled").queue();
+                        if (toUnban.isBot())
+                            guild.getTextChannelById(logChannelId).sendMessage(eb.build() + "\nTarget is a bot").queue();
                         else guild.getTextChannelById(logChannelId).sendMessage(eb.build()).queue();
                     }
                     return true;
@@ -806,11 +806,11 @@ public class MySQL {
                     eb.setColor(Helpers.EmbedColor);
                     eb.setColor(Color.green);
                     guild.getController().removeSingleRoleFromMember(guild.getMember(toUnmute), guild.getRoleById(getRoleId(guild.getIdLong(), RoleType.MUTE))).queue();
-                    toUnmute.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
+                    if (!toUnmute.isBot()) toUnmute.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
                     long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
                     if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                        if (toUnmute.isFake())
-                            guild.getTextChannelById(logChannelId).sendMessage(eb.build() + "\nTarget has private messages disabled").queue();
+                        if (toUnmute.isBot())
+                            guild.getTextChannelById(logChannelId).sendMessage(eb.build() + "\nTarget is a bot").queue();
                         else guild.getTextChannelById(logChannelId).sendMessage(eb.build()).queue();
                     }
                     t = true;

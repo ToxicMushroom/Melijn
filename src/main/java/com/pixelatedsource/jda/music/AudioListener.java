@@ -28,14 +28,16 @@ public class AudioListener extends AudioEventAdapter {
         return tracks.size();
     }
 
-    public void nextTrack() {
+    public void nextTrack(AudioTrack lastTrack) {
         if (tracks.isEmpty()) {
             if (player.getGuild().getAudioManager().getConnectedChannel() != null)
                 Helpers.ScheduleClose(player.getGuild().getAudioManager());
             return;
         }
         AudioTrack track = tracks.poll();
-        player.getAudioPlayer().startTrack(track, false);
+        if (track.equals(lastTrack))
+        player.getAudioPlayer().startTrack(track.makeClone(), false);
+        else player.getAudioPlayer().startTrack(track, false);
         Helpers.postMusicLog(player, track);
     }
 
@@ -45,10 +47,10 @@ public class AudioListener extends AudioEventAdapter {
         if (LoopCommand.looped.getOrDefault(guild.getIdLong(), false)) {
             MusicManager.getManagerinstance().loadSimpelTrack(player.getGuild(), track.getInfo().uri);
         } else if (LoopQueueCommand.looped.getOrDefault(guild.getIdLong(), false)) {
-            if (endReason.mayStartNext) nextTrack();
+            if (endReason.mayStartNext) nextTrack(track);
             MusicManager.getManagerinstance().loadSimpelTrack(player.getGuild(), track.getInfo().uri);
         } else {
-            if (endReason.mayStartNext) nextTrack();
+            if (endReason.mayStartNext) nextTrack(track);
         }
     }
 

@@ -3,6 +3,7 @@ package com.pixelatedsource.jda.commands.developer;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.utils.WebUtils;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -27,6 +28,8 @@ public class EvalCommand extends Command {
         se.put("jda", event.getJDA());
         se.put("guild", event.getGuild());
         se.put("channel", event.getChannel());
+        if (event.getTextChannel().isNSFW())
+            se.put("webUtils", WebUtils.getWebUtilsInstance());
         try {
             event.reply("Evaluated Successfully:\n```\n" + se.eval(toEval) + "```");
         } catch (Exception e) {

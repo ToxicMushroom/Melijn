@@ -105,7 +105,10 @@ public class Helpers {
             "setjoinrole",
             "randomize",
             "setmusiclogchannel",
-            "setnotifications"
+            "setnotifications",
+            "pitch",
+            "tremelo",
+            "nightcore"
     ));
 
     public static void startTimer(JDA jda, DiscordBotListAPI dbl, int i) {
@@ -335,5 +338,12 @@ public class Helpers {
                 return event.getGuild().getRolesByName(arg, true).get(0);
         }
         return null;
+    }
+
+    public static User retreiveUserByArgs(String arg, CommandEvent event) {
+        User user = getUserByArgs(event, arg);
+        if (arg.matches("\\d+") && event.getJDA().getUserById(arg) == null)
+            user = event.getJDA().retrieveUserById(arg).complete();
+        return user;
     }
 }

@@ -30,8 +30,7 @@ public class UserInfoCommand extends Command {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm ss");
             String[] args = event.getArgs().split("\\s+");
-            User user = args.length > 0 ? Helpers.getUserByArgs(event, args[0]) : event.getAuthor();
-
+            User user = Helpers.retreiveUserByArgs(args[0], event);
             EmbedBuilder eb = new EmbedBuilder();
             eb.setColor(Helpers.EmbedColor);
             eb.setTitle(user.getName() + "#" + user.getDiscriminator() + "'s profile");
@@ -58,6 +57,7 @@ public class UserInfoCommand extends Command {
                 eb.addField("Owner of this guild:", String.valueOf(member.isOwner()).toLowerCase(), false);
             }
             event.reply(eb.build());
+
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
