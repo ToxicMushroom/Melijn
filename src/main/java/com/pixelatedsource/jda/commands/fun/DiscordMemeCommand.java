@@ -21,7 +21,7 @@ public class DiscordMemeCommand extends Command {
         webUtils = WebUtils.getWebUtilsInstance();
     }
 
-    WebUtils webUtils;
+    private WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {
@@ -31,6 +31,7 @@ public class DiscordMemeCommand extends Command {
                         .setColor(Helpers.EmbedColor)
                         .setDescription("**Discord Meme**")
                         .setImage(webUtils.getUrl("discord_memes"))
+                        .setFooter("Powered by weeb.sh", null)
                         .build());
             else
                 event.reply("**Discord Meme** \n" + webUtils.getUrl("discord_memes"));

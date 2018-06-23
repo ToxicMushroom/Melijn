@@ -108,7 +108,11 @@ public class Helpers {
             "setnotifications",
             "pitch",
             "tremelo",
-            "nightcore"
+            "nightcore",
+            "lewd",
+            "punch",
+            "wasted",
+            "highfive"
     ));
 
     public static void startTimer(JDA jda, DiscordBotListAPI dbl, int i) {

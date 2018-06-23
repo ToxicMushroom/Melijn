@@ -15,7 +15,7 @@ public class NightCoreCommand extends Command {
     public NightCoreCommand() {
         this.commandName = "nightcore";
         this.description = "Toggle the nightcore mode";
-        this.usage = PREFIX + commandName + " <on/enable/true|off/disable/false>";
+        this.usage = PREFIX + commandName + " <on/enable/true | off/disable/false>";
         this.category = Category.MUSIC;
         this.extra = "Sets speed to 1.25 and pitch to 1.20";
     }

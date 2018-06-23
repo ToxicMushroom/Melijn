@@ -26,13 +26,13 @@ public class PitchCommand extends Command {
             if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
                 String[] args = event.getArgs().split("\\s+");
                 MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
-                if (args.length > 0) {
+                if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     if (args[0].matches("[0-9]|[0-9][0-9]|100|[0-9]?[0-9].[0-9]?[0-9]?[0-9]")) {
                         if (player != null && player.getAudioPlayer().getPlayingTrack() != null) {
                             if (Double.parseDouble(args[0]) > 0) {
                                 player.setPitch(Double.parseDouble(args[0]));
                                 player.updateFilters();
-                                event.reply("The playback pitch has been set to **" + args[0] + "** by **" + event.getFullAuthorName() + "**");
+                                event.reply("The pitch has been set to **" + args[0] + "** by **" + event.getFullAuthorName() + "**");
                             } else {
                                 event.reply("Pitch cannot be 0 (just set volume to 0 you'll get the same effect hha");
                             }
@@ -42,12 +42,12 @@ public class PitchCommand extends Command {
                     } else if (args[0].equalsIgnoreCase("default")) {
                         player.setPitch(1);
                         player.updateFilters();
-                        event.reply("The playback pitch has been set to **" + 1 + "** by **" + event.getFullAuthorName() + "**");
+                        event.reply("The pitch has been set to **" + 1 + "** by **" + event.getFullAuthorName() + "**");
                     } else {
                         MessageHelper.sendUsage(this, event);
                     }
                 } else {
-                    event.reply("The configured speed is **" + player.getSpeed() + "**");
+                    event.reply("The configured pitch is **" + player.getSpeed() + "**");
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

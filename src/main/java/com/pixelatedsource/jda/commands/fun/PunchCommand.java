@@ -11,11 +11,11 @@ import net.dv8tion.jda.core.entities.User;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
-public class SlapCommand extends Command {
+public class PunchCommand extends Command {
 
-    public SlapCommand() {
-        this.commandName = "slap";
-        this.description = "You can slap someone or be slapped";
+    public PunchCommand() {
+        this.commandName = "punch";
+        this.description = "You can punch someone or be punched by Melijn";
         this.usage = PREFIX + commandName + " [user]";
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
@@ -31,26 +31,26 @@ public class SlapCommand extends Command {
                 if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS))
                     event.reply(new EmbedBuilder()
                             .setColor(Helpers.EmbedColor)
-                            .setDescription("**" + event.getAuthor().getName() + "** got slapped by **" + event.getJDA().getSelfUser().getName() + "**")
-                            .setImage(webUtils.getUrl("slap"))
+                            .setDescription("**" + event.getAuthor().getName() + "** got punched by **" + event.getJDA().getSelfUser().getName() + "**")
+                            .setImage(webUtils.getUrl("punch"))
                             .setFooter("Powered by weeb.sh", null)
                             .build());
                 else
-                    event.reply(event.getAuthor().getAsMention() + " got slapped by " + event.getJDA().getSelfUser().getAsMention() + "\n" + webUtils.getUrl("slap"));
+                    event.reply("**" + event.getAuthor().getName() + "** got punched by **" + event.getJDA().getSelfUser().getName() + "**" + "\n" + webUtils.getUrl("punch"));
             } else if (args.length == 1) {
-                User slapped = Helpers.getUserByArgsN(event, args[0]);
-                if (slapped == null) {
-                    event.reply("Didn't catch that? Try harder");
+                User punched = Helpers.getUserByArgsN(event, args[0]);
+                if (punched == null) {
+                    event.reply(event.getAuthor().getAsMention() + " is punching at air >.<");
                 } else {
                     if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS))
                         event.reply(new EmbedBuilder()
                                 .setColor(Helpers.EmbedColor)
-                                .setDescription("**" + slapped.getName() + "** got slapped by **" + event.getAuthor().getName() + "**")
-                                .setImage(webUtils.getUrl("slap"))
+                                .setDescription("**" + punched.getName() + "** got punched by **" + event.getAuthor().getName() + "**")
+                                .setImage(webUtils.getUrl("punch"))
                                 .setFooter("Powered by weeb.sh", null)
                                 .build());
                     else
-                        event.reply("**" + slapped.getName() + "** got slapped by **" + event.getAuthor().getName() + "**\n" + webUtils.getUrl("slap"));
+                        event.reply("**" + punched.getName() + "** got punched by **" + event.getAuthor().getName() + "**\n" + webUtils.getUrl("punch"));
                 }
             }
         } else {

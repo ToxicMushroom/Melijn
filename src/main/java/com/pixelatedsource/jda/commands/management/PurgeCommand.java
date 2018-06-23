@@ -44,7 +44,7 @@ public class PurgeCommand extends Command {
                                     return;
                                 }
                                 List<Message> toPurge = new ArrayList<>();
-                                while (amount + 1 > 100) {
+                                while (amount >= 100) {
                                     toPurge.addAll(event.getTextChannel().getHistory().retrievePast(100).complete());
                                     amount -= 100;
                                 }
@@ -61,6 +61,7 @@ public class PurgeCommand extends Command {
                                 }
                                 if (toPurge.size() == 1) event.getTextChannel().deleteMessageById(toPurge.get(0).getId()).queue();
                                 else event.getTextChannel().deleteMessages(toPurge).queue();
+
                             };
                             service.execute(run);
                         } catch (NumberFormatException e) {

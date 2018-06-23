@@ -10,11 +10,11 @@ import net.dv8tion.jda.core.Permission;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
-public class PotatoCommand extends Command {
+public class LewdCommand extends Command {
 
-    public PotatoCommand() {
-        this.commandName = "potato";
-        this.description = "shows you a delicious treat";
+    public LewdCommand() {
+        this.commandName = "lewd";
+        this.description = "Shows a lewd image";
         this.usage = PREFIX + commandName;
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
@@ -28,12 +28,12 @@ public class PotatoCommand extends Command {
             if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS))
                 event.reply(new EmbedBuilder()
                         .setColor(Helpers.EmbedColor)
-                        .setDescription("Enjoy your delicious \uD83E\uDD54")
-                        .setImage(webUtils.getWeebV1Url("potato"))
+                        .setDescription("**" + event.getAuthor().getName() + "** is being lewd")
+                        .setImage(webUtils.getUrl("lewd"))
                         .setFooter("Powered by weeb.sh", null)
                         .build());
             else
-                event.reply("Enjoy your \uD83E\uDD54 \n" + webUtils.getWeebV1Url("potato"));
+                event.reply("**" + event.getAuthor().getName() + "** is being lewd\n" + webUtils.getWeebV1Url("potato") + "\nPowered by weeb.sh");
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }

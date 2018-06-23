@@ -11,11 +11,11 @@ import net.dv8tion.jda.core.entities.User;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
-public class SlapCommand extends Command {
+public class WastedCommand extends Command {
 
-    public SlapCommand() {
-        this.commandName = "slap";
-        this.description = "You can slap someone or be slapped";
+    public WastedCommand() {
+        this.commandName = "wasted";
+        this.description = "Be wasted or make wasted";
         this.usage = PREFIX + commandName + " [user]";
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
@@ -31,26 +31,26 @@ public class SlapCommand extends Command {
                 if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS))
                     event.reply(new EmbedBuilder()
                             .setColor(Helpers.EmbedColor)
-                            .setDescription("**" + event.getAuthor().getName() + "** got slapped by **" + event.getJDA().getSelfUser().getName() + "**")
-                            .setImage(webUtils.getUrl("slap"))
+                            .setDescription("**" + event.getAuthor().getName() + "** got WASTED")
+                            .setImage(webUtils.getUrl("wasted"))
                             .setFooter("Powered by weeb.sh", null)
                             .build());
                 else
-                    event.reply(event.getAuthor().getAsMention() + " got slapped by " + event.getJDA().getSelfUser().getAsMention() + "\n" + webUtils.getUrl("slap"));
+                    event.reply("\n" + webUtils.getUrl("wasted"));
             } else if (args.length == 1) {
-                User slapped = Helpers.getUserByArgsN(event, args[0]);
-                if (slapped == null) {
-                    event.reply("Didn't catch that? Try harder");
+                User wasted = Helpers.getUserByArgsN(event, args[0]);
+                if (wasted == null) {
+                    event.reply("Wind got wasted.. wait whatt!");
                 } else {
                     if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS))
                         event.reply(new EmbedBuilder()
                                 .setColor(Helpers.EmbedColor)
-                                .setDescription("**" + slapped.getName() + "** got slapped by **" + event.getAuthor().getName() + "**")
-                                .setImage(webUtils.getUrl("slap"))
+                                .setDescription("**" + wasted.getName() + "** got WASTED by **" + event.getAuthor().getName() + "**")
+                                .setImage(webUtils.getUrl("wasted"))
                                 .setFooter("Powered by weeb.sh", null)
                                 .build());
                     else
-                        event.reply("**" + slapped.getName() + "** got slapped by **" + event.getAuthor().getName() + "**\n" + webUtils.getUrl("slap"));
+                        event.reply("**" + wasted.getName() + "** got WASTEd by **" + event.getAuthor().getName() + "**\n" + webUtils.getUrl("wasted"));
                 }
             }
         } else {
