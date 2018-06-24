@@ -6,6 +6,7 @@ import com.pixelatedsource.jda.commands.util.SetNotifications;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
 import com.pixelatedsource.jda.utils.MessageHelper;
+import com.pixelatedsource.jda.utils.WebUtils;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
@@ -29,9 +30,9 @@ import java.util.concurrent.TimeUnit;
 
 public class Helpers {
 
-    public static long lastRunTimer1, lastRunTimer2;
+    public static long lastRunTimer1, lastRunTimer2, lastRunTimer3;
 
-    private static ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+    private static ScheduledExecutorService executorPool = Executors.newScheduledThreadPool(4);
     public static long starttime;
     public static String guildOnly = "This command is to be used in guilds only";
     public static String noPerms = "You don't have the permission: ";
@@ -145,9 +146,8 @@ public class Helpers {
                     e.printStackTrace();
                 }
             };
-            executorService.scheduleAtFixedRate(runnable, 1, 2, TimeUnit.SECONDS);
-        }
-        if (i == 0 || i == 2) {
+            executorPool.scheduleAtFixedRate(runnable, 1, 2, TimeUnit.SECONDS);
+        } if (i == 0 || i == 2) {
             Runnable runnable1 = () -> {
                 lastRunTimer2 = System.currentTimeMillis();
                 if (dbl != null)
@@ -163,7 +163,13 @@ public class Helpers {
                     }
                 }
             };
-            executorService.scheduleAtFixedRate(runnable1, 1, 60, TimeUnit.SECONDS);
+            executorPool.scheduleAtFixedRate(runnable1, 1, 60, TimeUnit.SECONDS);
+        } if (i == 0 || i == 3) {
+            Runnable runnable1 = () -> {
+                lastRunTimer3 = System.currentTimeMillis();
+                WebUtils.getWebUtilsInstance().updateSpotifyCredentials();
+            };
+            executorPool.scheduleAtFixedRate(runnable1, 1, 1, TimeUnit.HOURS);
         }
     }
 
@@ -180,7 +186,7 @@ public class Helpers {
             MusicManager.usersRequest.remove(user);
             MusicManager.usersFormToReply.remove(user);
         };
-        executorService.schedule(run, 30, TimeUnit.SECONDS);
+        executorPool.schedule(run, 30, TimeUnit.SECONDS);
     }
 
     public static String getDurationBreakdown(long millis) {
