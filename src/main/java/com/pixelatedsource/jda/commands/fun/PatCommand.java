@@ -4,9 +4,8 @@ import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.utils.MessageHelper;
 import com.pixelatedsource.jda.utils.WebUtils;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.User;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
@@ -28,29 +27,17 @@ public class PatCommand extends Command {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {
-                if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS))
-                    event.reply(new EmbedBuilder()
-                            .setColor(Helpers.EmbedColor)
-                            .setDescription("**Melijn** patted you")
-                            .setImage(webUtils.getUrl("pat"))
-                            .setFooter("Powered by weeb.sh", null)
-                            .build());
-                else
-                    event.reply("**Melijn** patted you\n" + webUtils.getUrl("pat"));
+                webUtils.getImage("pat",
+                        image -> MessageHelper.sendFunText("**" + event.getBotName() + "** patted you", image.getUrl(), event)
+                );
             } else if (args.length == 1) {
-                User patted = Helpers.getUserByArgsN(event, args[0]);
-                if (patted == null) {
+                User target = Helpers.getUserByArgsN(event, args[0]);
+                if (target == null) {
                     event.reply("Didn't catch that? Try harder");
                 } else {
-                    if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS))
-                        event.reply(new EmbedBuilder()
-                                .setColor(Helpers.EmbedColor)
-                                .setDescription("**" + event.getAuthor().getName() + "** patted **" + patted.getName() + "**")
-                                .setImage(webUtils.getUrl("pat"))
-                                .setFooter("Powered by weeb.sh", null)
-                                .build());
-                    else
-                        event.reply("**Melijn** patted you\n" + webUtils.getUrl("slap"));
+                    webUtils.getImage("pat",
+                            image -> MessageHelper.sendFunText("**" + event.getAuthor().getName() + "** patted **" + target.getName() + "**", image.getUrl(), event)
+                    );
                 }
             }
         } else {

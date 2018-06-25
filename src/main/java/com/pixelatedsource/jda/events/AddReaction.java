@@ -1,8 +1,6 @@
 package com.pixelatedsource.jda.events;
 
 import com.pixelatedsource.jda.Helpers;
-import com.pixelatedsource.jda.PixelSniper;
-import com.pixelatedsource.jda.commands.management.SetLogChannelCommand;
 import com.pixelatedsource.jda.commands.music.SPlayCommand;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
@@ -20,27 +18,6 @@ public class AddReaction extends ListenerAdapter {
     @Override
     public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event) {
         Guild guild = event.getGuild();
-        if (SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L) == event.getChannel().getIdLong()) {
-            if (event.getReactionEmote().getName().equalsIgnoreCase("\uD83D\uDD30")) {
-                if (Helpers.hasPerm(event.getMember(), "emote.claim", 1)) {
-                    new Thread(() -> {
-                        long messageId = PixelSniper.mySQL.getMessageIdByUnclaimedId(event.getMessageIdLong());
-                        if (messageId != -1) {
-                            event.getChannel().getMessageById(event.getMessageId()).queue((v) -> v.editMessage(PixelSniper.mySQL.unclaimedToClaimed(messageId, event.getJDA(), event.getUser())).queue());
-                        }
-                    }).start();
-                }
-            }
-        }
-        /*if (SetLogChannelCommand.guildLogChannelMap.containsKey(guild.getId())) {
-            if (event.getReactionEmote().getName().equalsIgnoreCase("\u274C")) { //:x: emote red cross
-                if (Helpers.hasPerm(event.getMember(), "emote.delete", 1)) {
-                    String messageId = event.getMessageId();
-                    MessageHelper.deletedByEmote.put(messageId, event.getUser());
-                    event.getChannel().getMessageById(messageId).queue(v -> v.delete().queue());
-                }
-            }
-        }*/
         if (MusicManager.usersFormToReply.get(event.getUser()) != null && MusicManager.usersFormToReply.get(event.getUser()).getId().equalsIgnoreCase(event.getMessageId())) {
             if (event.getMessageId().equals(MusicManager.usersFormToReply.get(event.getUser()).getId())) {
                 MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
@@ -102,31 +79,31 @@ public class AddReaction extends ListenerAdapter {
                 case "\u0031\u20E3":
                     track = SPlayCommand.userChoices.get(event.getUser()).get(0);
                     player.playTrack(track);
-                    eb.setDescription("`" + track.getInfo().title + "` added to the queue at postition **#" + player.getListener().getTrackSize() + "**");
+                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
                     event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
                     break;
                 case "\u0032\u20E3":
                     track = SPlayCommand.userChoices.get(event.getUser()).get(1);
                     player.playTrack(track);
-                    eb.setDescription("`" + track.getInfo().title + "` added to the queue at postition **#" + player.getListener().getTrackSize() + "**");
+                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
                     event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
                     break;
                 case "\u0033\u20E3":
                     track = SPlayCommand.userChoices.get(event.getUser()).get(2);
                     player.playTrack(track);
-                    eb.setDescription("`" + track.getInfo().title + "` added to the queue at postition **#" + player.getListener().getTrackSize() + "**");
+                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
                     event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
                     break;
                 case "\u0034\u20E3":
                     track = SPlayCommand.userChoices.get(event.getUser()).get(3);
                     player.playTrack(track);
-                    eb.setDescription("`" + track.getInfo().title + "` added to the queue at postition **#" + player.getListener().getTrackSize() + "**");
+                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
                     event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
                     break;
                 case "\u0035\u20E3":
                     track = SPlayCommand.userChoices.get(event.getUser()).get(4);
                     player.playTrack(track);
-                    eb.setDescription("`" + track.getInfo().title + "` added to the queue at postition **#" + player.getListener().getTrackSize() + "**");
+                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
                     event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
                     break;
                 case "\u274E":

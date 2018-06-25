@@ -84,8 +84,6 @@ public class Helpers {
             "setmusicchannel",
             "setstreamermode",
             "setstreamurl",
-            "emote.claim",
-            "emote.delete",
             "warn",
             "purge",
             "ban",
@@ -104,7 +102,7 @@ public class Helpers {
             "setjoinmessage",
             "setleavemessage",
             "setjoinrole",
-            "randomize",
+            "shuffle",
             "setmusiclogchannel",
             "setnotifications",
             "pitch",
@@ -113,7 +111,10 @@ public class Helpers {
             "lewd",
             "punch",
             "wasted",
-            "highfive"
+            "highfive",
+            "dab",
+            "shrug",
+            "cry"
     ));
 
     public static void startTimer(JDA jda, DiscordBotListAPI dbl, int i) {
@@ -167,9 +168,11 @@ public class Helpers {
         } if (i == 0 || i == 3) {
             Runnable runnable1 = () -> {
                 lastRunTimer3 = System.currentTimeMillis();
+
+                if (System.currentTimeMillis() - starttime > 10_000)
                 WebUtils.getWebUtilsInstance().updateSpotifyCredentials();
             };
-            executorPool.scheduleAtFixedRate(runnable1, 1, 1, TimeUnit.HOURS);
+            executorPool.scheduleAtFixedRate(runnable1, 0, 1, TimeUnit.HOURS);
         }
     }
 

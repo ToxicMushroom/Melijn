@@ -6,6 +6,8 @@ import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import com.pixelatedsource.jda.utils.WebUtils;
 
+import java.util.Arrays;
+
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
 public class WeebshCommand extends Command {
@@ -15,9 +17,10 @@ public class WeebshCommand extends Command {
         this.description = "Uses weebsh api to do stuff";
         this.usage = PREFIX + commandName + " <getTags|getTypes|type|tag> [searchTerm]";
         this.category = Category.DEVELOPER;
+        webUtils = WebUtils.getWebUtilsInstance();
     }
 
-    WebUtils webUtils = WebUtils.getWebUtilsInstance();
+    private WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {
@@ -25,21 +28,21 @@ public class WeebshCommand extends Command {
         if (args.length > 0) {
             switch (args[0].toLowerCase()) {
                 case "gettags":
-                    event.reply(webUtils.getTags().toString());
+                    webUtils.getTags(tags -> event.reply(Arrays.toString(tags.toArray())));
                     break;
                 case "gettypes":
-                    event.reply(webUtils.getTypes().toString());
+                    webUtils.getTypes(types -> event.reply(Arrays.toString(types.getTypes().toArray())));
                     break;
                 case "type":
                     if (args.length > 1) {
-                        event.reply(webUtils.getUrl(event.getArgs().replaceFirst(args[0] + "\\s+", "")));
+                       webUtils.getImage(event.getArgs().replaceFirst(args[0] + "\\s+", ""), (image) -> event.reply(image.getUrl()));
                     } else {
                         MessageHelper.sendUsage(this, event);
                     }
                     break;
                 case "tag":
                     if (args.length > 1) {
-                        event.reply(webUtils.getUrlByTag(event.getArgs().replaceFirst(args[0] + "\\s+", "")));
+                        webUtils.getImageByTag(event.getArgs().replaceFirst(args[0] + "\\s+", ""), (image) -> event.reply(image.getUrl()));
                     } else {
                         MessageHelper.sendUsage(this, event);
                     }

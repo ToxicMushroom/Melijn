@@ -37,8 +37,7 @@ public class EvalCommand extends Command {
         se.put("channel", event.getChannel());
         se.put("mysql", PixelSniper.mySQL);
         se.put("eb", new EmbedBuilder());
-        if (event.getTextChannel().isNSFW())
-            se.put("webUtils", WebUtils.getWebUtilsInstance());
+        se.put("webUtils", WebUtils.getWebUtilsInstance());
         try {
             se.eval(toEval);
             event.getMessage().addReaction("\u2705").queue();

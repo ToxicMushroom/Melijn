@@ -6,6 +6,8 @@ import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.commands.management.SetPrefixCommand;
 import com.pixelatedsource.jda.commands.music.NowPlayingCommand;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Emote;
 import net.dv8tion.jda.core.entities.User;
 import okhttp3.HttpUrl;
@@ -103,5 +105,19 @@ public class MessageHelper {
             }
         }
         return null;
+    }
+
+    public static void sendFunText(String desc, String url, CommandEvent event) {
+        if (url == null) url = "https://melijn.com/files/u/07-05-2018--19.42-08s.png";
+        if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS)) {
+            event.reply(new EmbedBuilder()
+                    .setDescription(desc)
+                    .setColor(Helpers.EmbedColor)
+                    .setImage(url)
+                    .setFooter("Powered by weeb.sh & weeb.java", null)
+                    .build());
+        } else {
+            event.reply(desc + "\n" + url + "Powered by weeb.sh & weeb.java");
+        }
     }
 }

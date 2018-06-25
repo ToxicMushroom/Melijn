@@ -36,25 +36,24 @@ public class UserInfoCommand extends Command {
             eb.setTitle(user.getName() + "#" + user.getDiscriminator() + "'s profile");
             eb.setThumbnail(user.getEffectiveAvatarUrl() + "?size=1024");
             if (event.getGuild() == null || event.getGuild().getMember(user) == null) {
-                eb.addField("Avatar:", "[Download](" + user.getEffectiveAvatarUrl() + "?size=1024)", true);
                 eb.addField("ID:", user.getId(), true);
-                eb.addField("Discord join date:", String.valueOf(user.getCreationTime().toLocalDate()), false);
-                eb.addField("Bot:", String.valueOf(user.isBot()), false);
-                eb.addField("Member of this guild:", "false", false);
+                eb.addField("Avatar:", "**[link](" + user.getEffectiveAvatarUrl() + "?size=1024)**", true);
+                eb.addField("Discord join date:", simpleDateFormat.format(Date.from(user.getCreationTime().toInstant())) + "s", true);
+                eb.addField("Is Member:", "no", true);
+                eb.addField("Is Bot:", String.valueOf(user.isBot()), false);
             } else {
                 Member member = event.getGuild().getMember(user);
-                String nickname = member.getNickname();
-                if (nickname == null) nickname = "No nickname";
-                eb.addField("Avatar:", "[Download](" + user.getEffectiveAvatarUrl() + "?size=1024)", true);
-                eb.addField("Nickname:", nickname, false);
-                eb.addField("Status:", member.getOnlineStatus().toString(), false);
-                eb.addField("Playing:", String.valueOf(member.getGame()), false);
+                String nickname = member.getNickname() == null ? "None" : member.getNickname();
                 eb.addField("ID:", user.getId(), false);
-                eb.addField("Discord join date:", String.valueOf(simpleDateFormat.format(Date.from(user.getCreationTime().toInstant()))) + "s", true);
-                eb.addField("Guild join date:", String.valueOf(simpleDateFormat.format(Date.from(member.getJoinDate().toInstant()))) + "s", true);
-                eb.addField("Bot:", String.valueOf(user.isBot()), false);
-                eb.addField("Member of this guild:", "true", false);
-                eb.addField("Owner of this guild:", String.valueOf(member.isOwner()).toLowerCase(), false);
+                eb.addField("Nickname:", nickname, true);
+                eb.addField("Avatar:", "**[link](" + user.getEffectiveAvatarUrl() + "?size=1024)**", true);
+                eb.addField("Status:", member.getOnlineStatus().name().toLowerCase(), true);
+                eb.addField("Playing:", member.getGame().getName(), true);
+                eb.addField("Discord join date:", simpleDateFormat.format(Date.from(user.getCreationTime().toInstant())) + "s", true);
+                eb.addField("Guild join date:", simpleDateFormat.format(Date.from(member.getJoinDate().toInstant())) + "s", true);
+                eb.addField("Is Owner:", member.isOwner() ? "yes" : "no", true);
+                eb.addField("Is Member:", "yes", true);
+                eb.addField("Is Bot:", user.isBot() ? "yes" : "no", false);
             }
             event.reply(eb.build());
 

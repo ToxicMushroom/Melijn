@@ -10,13 +10,14 @@ import net.dv8tion.jda.core.entities.User;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
-public class HighfiveCommand extends Command {
+public class CryCommand extends Command {
 
-    public HighfiveCommand() {
-        this.commandName = "highfive";
-        this.description = "highfive someone";
+    public CryCommand() {
+        this.commandName = "cry";
+        this.description = "cry or let someone make you cry";
         this.usage = PREFIX + commandName + " [user]";
         this.category = Category.FUN;
+        this.aliases = new String[] {"sad", "tears"};
         webUtils = WebUtils.getWebUtilsInstance();
     }
 
@@ -27,14 +28,14 @@ public class HighfiveCommand extends Command {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {
-                webUtils.getImage("highfive", image -> MessageHelper.sendFunText("**" + event.getBotName() + "** highfived you", image.getUrl(), event));
+                webUtils.getImage("cry", image -> MessageHelper.sendFunText("**" + event.getAuthor().getName() + "** is crying", image.getUrl(), event));
             } else if (args.length == 1) {
                 User target = Helpers.getUserByArgsN(event, args[0]);
                 if (target == null) {
-                    event.reply(event.getAuthor().getAsMention() + " is highfiving air");
+                    event.reply(event.getAuthor().getAsMention() + " is crying because of rain");
                 } else {
-                    webUtils.getImage("highfive", image ->
-                            MessageHelper.sendFunText("**" + event.getAuthor().getName() + "** highfived **" + target.getName() + "**", image.getUrl(), event)
+                    webUtils.getImage("cry", image ->
+                            MessageHelper.sendFunText("**" + target.getName() + "** made **" + event.getAuthor().getName() + "** + cry", image.getUrl(), event)
                     );
                 }
             }

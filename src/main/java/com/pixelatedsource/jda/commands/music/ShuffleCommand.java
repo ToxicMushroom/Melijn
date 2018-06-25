@@ -16,13 +16,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
-public class RandomizeCommand extends Command {
+public class ShuffleCommand extends Command {
 
-    public RandomizeCommand() {
-        this.commandName = "randomize";
-        this.description = "randomizes the order of the tracks in the queue";
+    public ShuffleCommand() {
+        this.commandName = "shuffle";
+        this.description = "shuffles the order of the tracks in the queue";
         this.usage = PREFIX + commandName;
-        this.aliases = new String[] {"randomizequeue", "rq"};
+        this.aliases = new String[] {"randomize"};
         this.category = Category.MUSIC;
     }
 
@@ -38,7 +38,7 @@ public class RandomizeCommand extends Command {
                 tracks.forEach(s -> tracksToAdd.add((AudioTrack) s));
                 player.getListener().tracks.clear();
                 player.getListener().tracks.addAll(tracksToAdd);
-                event.reply("The queue has been **randomized** by **" + event.getFullAuthorName() + "**");
+                event.reply("The queue has been **shuffled** by **" + event.getFullAuthorName() + "**");
             }
         }
     }
