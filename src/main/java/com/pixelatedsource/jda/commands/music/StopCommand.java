@@ -22,11 +22,19 @@ public class StopCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
-                LoopCommand.looped.replace(event.getGuild().getIdLong(), false);
-                LoopQueueCommand.looped.replace(event.getGuild().getIdLong(), false);
-                MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
-                player.stopTrack();
-                event.reply("Stopped by **" + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + "**");
+                if (event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {
+                    if (event.getMember().getVoiceState().getChannel() == event.getGuild().getSelfMember().getVoiceState().getChannel()) {
+                        LoopCommand.looped.replace(event.getGuild().getIdLong(), false);
+                        LoopQueueCommand.looped.replace(event.getGuild().getIdLong(), false);
+                        MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
+                        player.stopTrack();
+                        event.reply("Stopped by **" + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + "**");
+                    } else {
+                        event.reply("You have to be in the same voice channel as me to stop the music");
+                    }
+                } else {
+                    event.reply("I'm not in a voiceChannel");
+                }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");
             }

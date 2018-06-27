@@ -1,7 +1,6 @@
 package com.pixelatedsource.jda.music;
 
 import com.github.natanbc.lavadsp.chain.ChainedFilterBuilder;
-import com.github.natanbc.lavadsp.chain.UnlinkedChainedFilter;
 import com.github.natanbc.lavadsp.timescale.TimescalePcmAudioFilter;
 import com.github.natanbc.lavadsp.tremolo.TremoloPcmAudioFilter;
 import com.pixelatedsource.jda.Helpers;
@@ -17,12 +16,11 @@ public class MusicPlayer {
     private final AudioListener listener;
     private final Guild guild;
     private HashMap<Long, Double> filters = new HashMap<>();
-    private boolean timeEnabled = false;
-    private boolean tremoloEnabled = false;
-    UnlinkedChainedFilter filter;
 
     public void updateFilters() {
         ChainedFilterBuilder builder = new ChainedFilterBuilder();
+        boolean timeEnabled = false;
+        boolean tremoloEnabled = false;
         if (getSpeed() > 0 && getPitch() > 0) {
             builder.add(TimescalePcmAudioFilter::new);
             builder.addConfigurator(TimescalePcmAudioFilter.class, timescalePcmAudioFilter -> {
@@ -30,7 +28,7 @@ public class MusicPlayer {
                 timescalePcmAudioFilter.setSpeed(getSpeed());
             });
             timeEnabled = true;
-        } else timeEnabled = false;
+        }
         if (getFrequency() > 0 && getDepth() > 0 && getDepth() < 1) {
             builder.add(TremoloPcmAudioFilter::new);
             builder.addConfigurator(TremoloPcmAudioFilter.class, tremoloPcmAudioFilter -> {
@@ -38,10 +36,9 @@ public class MusicPlayer {
                 tremoloPcmAudioFilter.setFrequency(getFrequency());
             });
             tremoloEnabled = true;
-        } else tremoloEnabled = false;
+        }
         if (tremoloEnabled || timeEnabled) {
-            filter = builder.buildUnlinked(MusicManager.getManagerinstance().manager.getConfiguration().getOutputFormat());
-            audioPlayer.setFilterFactory(filter);
+            audioPlayer.setFilterFactory(builder);
         }
     }
 

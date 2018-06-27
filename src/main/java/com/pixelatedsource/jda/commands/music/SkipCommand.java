@@ -31,49 +31,58 @@ public class SkipCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
-                MusicPlayer player = manager.getPlayer(event.getGuild());
-                AudioTrack tracknp = player.getAudioPlayer().getPlayingTrack();
-                if (tracknp == null) {
-                    event.reply("There are no songs playing at the moment");
-                    return;
-                }
-                String[] args = event.getArgs().split("\\s+");
-                BlockingQueue<AudioTrack> audioTracks = player.getListener().getTracks();
-                int i = 1;
-                if (args.length > 0) {
-                    if (!args[0].equalsIgnoreCase("")) {
-                        if (args[0].matches("\\d+") && args[0].length() < 4) {
-                            i = Integer.parseInt(args[0]);
-                            if (i >= 50 || i < 1) {
-                                MessageHelper.sendUsage(this, event);
-                                return;
-                            }
-                        } else {
-                            MessageHelper.sendUsage(this, event);
+                if (event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {
+                    if (event.getMember().getVoiceState().getChannel() == event.getGuild().getSelfMember().getVoiceState().getChannel()) {
+                        MusicPlayer player = manager.getPlayer(event.getGuild());
+                        AudioTrack skipableTrack = player.getAudioPlayer().getPlayingTrack();
+                        if (skipableTrack == null) {
+                            event.reply("There are no songs playing at the moment");
+                            return;
                         }
+                        String[] args = event.getArgs().split("\\s+");
+                        BlockingQueue<AudioTrack> audioTracks = player.getListener().getTracks();
+                        int i = 1;
+                        if (args.length > 0) {
+                            if (!args[0].equalsIgnoreCase("")) {
+                                if (args[0].matches("\\d+") && args[0].length() < 4) {
+                                    i = Integer.parseInt(args[0]);
+                                    if (i >= 50 || i < 1) {
+                                        MessageHelper.sendUsage(this, event);
+                                        return;
+                                    }
+                                } else {
+                                    MessageHelper.sendUsage(this, event);
+                                    return;
+                                }
+                            }
+                        }
+                        AudioTrack nextSong = null;
+                        int c = 0;
+                        for (AudioTrack track : audioTracks) {
+                            if (i != c) {
+                                nextSong = track;
+                                player.skipTrack();
+                                c++;
+                            }
+                        }
+                        EmbedBuilder eb = new EmbedBuilder();
+                        eb.setTitle("Skipped");
+                        eb.setColor(Helpers.EmbedColor);
+                        String songOrSongs = i == 1 ? "song" : "songs";
+                        if (nextSong != null)
+                            eb.setDescription("Skipped " + i + " " + songOrSongs + "\nPrevious song: **[" + skipableTrack.getInfo().title + "](" + skipableTrack.getInfo().uri + ")**\n" + "Now playing: **[" + nextSong.getInfo().title + "](" + nextSong.getInfo().uri + ")** " + Helpers.getDurationBreakdown(nextSong.getInfo().length));
+                        else {
+                            player.skipTrack();
+                            eb.setDescription("Skipped " + i + " " + songOrSongs + "\nPrevious song: `" + skipableTrack.getInfo().title + "`\n" + "No next song to play");
+                        }
+                        eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
+                        event.reply(eb.build());
+                    } else {
+                        event.reply("You have to be in the same voice channel as me to skip tracks");
                     }
+                } else {
+                    event.reply("I'm not in a voiceChannel");
                 }
-                AudioTrack nextSong = null;
-                int c = 0;
-                for (AudioTrack track : audioTracks) {
-                    if (i != c) {
-                        nextSong = track;
-                        player.skipTrack();
-                        c++;
-                    }
-                }
-                EmbedBuilder eb = new EmbedBuilder();
-                eb.setTitle("Skipped");
-                eb.setColor(Helpers.EmbedColor);
-                String songOrSongs = i == 1 ? "song" : "songs";
-                if (nextSong != null)
-                    eb.setDescription("Skipped " + i + " " + songOrSongs + "\nPrevious song: **[" + tracknp.getInfo().title + "](" + tracknp.getInfo().uri + ")**\n" + "Now playing: **[" + nextSong.getInfo().title + "](" + nextSong.getInfo().uri + ")** " + Helpers.getDurationBreakdown(nextSong.getInfo().length));
-                else {
-                    player.skipTrack();
-                    eb.setDescription("Skipped " + i + " " + songOrSongs + "\nPrevious song: `" + tracknp.getInfo().title + "`\n" + "No next song to play");
-                }
-                eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
-                event.reply(eb.build());
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");
             }

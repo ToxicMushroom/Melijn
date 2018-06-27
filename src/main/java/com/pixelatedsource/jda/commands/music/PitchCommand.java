@@ -27,28 +27,37 @@ public class PitchCommand extends Command {
                 String[] args = event.getArgs().split("\\s+");
                 MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
-                    if (args[0].matches("[0-9]|[0-9][0-9]|100|[0-9]?[0-9].[0-9]?[0-9]?[0-9]")) {
-                        if (player != null && player.getAudioPlayer().getPlayingTrack() != null) {
-                            if (Double.parseDouble(args[0]) > 0) {
-                                player.setPitch(Double.parseDouble(args[0]));
+                    if (event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {
+                        if (event.getMember().getVoiceState().getChannel() == event.getGuild().getSelfMember().getVoiceState().getChannel()) {
+                            if (args[0].matches("[0-9]|[0-9][0-9]|100|[0-9]?[0-9].[0-9]?[0-9]?[0-9]")) {
+                                if (player != null && player.getAudioPlayer().getPlayingTrack() != null) {
+                                    if (Double.parseDouble(args[0]) > 0) {
+                                        player.setPitch(Double.parseDouble(args[0]));
+                                        player.updateFilters();
+                                        event.reply("The pitch has been set to **" + args[0] + "** by **" + event.getFullAuthorName() + "**");
+                                    } else {
+                                        event.reply("Pitch cannot be 0 (just set volume to 0 you'll get the same effect hha");
+                                    }
+                                } else {
+                                    event.reply("There is no music playing");
+                                }
+                            } else if (args[0].equalsIgnoreCase("default")) {
+                                player.setPitch(1);
                                 player.updateFilters();
-                                event.reply("The pitch has been set to **" + args[0] + "** by **" + event.getFullAuthorName() + "**");
+                                event.reply("The pitch has been set to **" + 1 + "** by **" + event.getFullAuthorName() + "**");
                             } else {
-                                event.reply("Pitch cannot be 0 (just set volume to 0 you'll get the same effect hha");
+                                MessageHelper.sendUsage(this, event);
                             }
                         } else {
-                            event.reply("There is no music playing");
+                            event.reply("You have to be in the same voice channel as me to change the pitch");
                         }
-                    } else if (args[0].equalsIgnoreCase("default")) {
-                        player.setPitch(1);
-                        player.updateFilters();
-                        event.reply("The pitch has been set to **" + 1 + "** by **" + event.getFullAuthorName() + "**");
                     } else {
-                        MessageHelper.sendUsage(this, event);
+                        event.reply("I'm not in a voiceChannel");
                     }
                 } else {
                     event.reply("The configured pitch is **" + player.getSpeed() + "**");
                 }
+
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");
             }

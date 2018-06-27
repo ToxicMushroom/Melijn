@@ -27,27 +27,36 @@ public class SpeedCommand extends Command {
                 String[] args = event.getArgs().split("\\s+");
                 MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
-                    if (args[0].matches("[0-9]|[0-9][0-9]|100|[0-9]?[0-9].[0-9]?[0-9]?[0-9]")) {
-                        if (player != null && player.getAudioPlayer().getPlayingTrack() != null) {
-                            if (Double.parseDouble(args[0]) > 0) {
-                                player.getAudioPlayer().setPaused(false);
-                                player.setSpeed(Double.parseDouble(args[0]));
-                                player.updateFilters();
+                    if (event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {
+                        if (event.getMember().getVoiceState().getChannel() == event.getGuild().getSelfMember().getVoiceState().getChannel()) {
+                            if (args[0].matches("[0-9]|[0-9][0-9]|100|[0-9]?[0-9].[0-9]?[0-9]?[0-9]")) {
+                                if (player != null && player.getAudioPlayer().getPlayingTrack() != null) {
+                                    if (Double.parseDouble(args[0]) > 0) {
+                                        player.getAudioPlayer().setPaused(false);
+                                        player.setSpeed(Double.parseDouble(args[0]));
+                                        player.updateFilters();
+                                    } else {
+                                        player.setSpeed(0);
+                                        player.getAudioPlayer().setPaused(true);
+                                        player.updateFilters();
+                                    }
+                                    event.reply("The music speed has been set to **" + args[0] + "** by **" + event.getFullAuthorName() + "**");
+                                } else {
+                                    event.reply("There is no music playing");
+                                }
                             } else {
-                                player.setSpeed(0);
-                                player.getAudioPlayer().setPaused(true);
-                                player.updateFilters();
+                                MessageHelper.sendUsage(this, event);
                             }
-                            event.reply("The music speed has been set to **" + args[0] + "** by **" + event.getFullAuthorName() + "**");
                         } else {
-                            event.reply("There is no music playing");
+                            event.reply("You have to be in the same voice channel as me to change the speed");
                         }
                     } else {
-                        MessageHelper.sendUsage(this, event);
+                        event.reply("I'm not in a voiceChannel");
                     }
                 } else {
                     event.reply("The configured speed is **" + player.getSpeed() + "**");
                 }
+
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");
             }

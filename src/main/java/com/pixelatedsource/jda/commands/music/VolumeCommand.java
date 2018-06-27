@@ -16,7 +16,7 @@ public class VolumeCommand extends Command {
         this.commandName = "volume";
         this.usage = PREFIX + this.commandName + " <0-100>";
         this.description = "Change or view the volume of the music for everyone";
-        this.aliases = new String[] {"vol"};
+        this.aliases = new String[]{"vol"};
         this.category = Category.MUSIC;
     }
 
@@ -34,13 +34,22 @@ public class VolumeCommand extends Command {
                 try {
                     volume = Integer.parseInt(args[0]);
                 } catch (NumberFormatException e) {
+                    MessageHelper.sendUsage(this, event);
                     return;
                 }
-                if (volume >= 0 && volume <= 100) {
-                    player.getAudioPlayer().setVolume(Integer.parseInt(String.valueOf(Math.round(volume * 1.5))));
-                    event.reply("Volume has been set to **" + String.valueOf(Math.round((double) volume)) + "%**");
+                if (event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {
+                    if (event.getMember().getVoiceState().getChannel() == event.getGuild().getSelfMember().getVoiceState().getChannel()) {
+                        if (volume >= 0 && volume <= 100) {
+                            player.getAudioPlayer().setVolume(Integer.parseInt(String.valueOf(Math.round(volume * 1.5))));
+                            event.reply("Volume has been set to **" + String.valueOf(Math.round((double) volume)) + "%**");
+                        } else {
+                            MessageHelper.sendUsage(this, event);
+                        }
+                    } else {
+                        event.reply("You have to be in the same voice channel as me to change my volume");
+                    }
                 } else {
-                    MessageHelper.sendUsage(this, event);
+                    event.reply("I'm not in a voiceChannel");
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

@@ -1,5 +1,6 @@
 package com.pixelatedsource.jda;
 
+import com.pixelatedsource.jda.blub.ChannelType;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.commands.music.SetMusicLogChannel;
 import com.pixelatedsource.jda.commands.util.SetNotifications;
@@ -27,12 +28,13 @@ import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class Helpers {
 
     public static long lastRunTimer1, lastRunTimer2, lastRunTimer3;
 
-    private static ScheduledExecutorService executorPool = Executors.newScheduledThreadPool(4);
+    private static ScheduledExecutorService executorPool = Executors.newScheduledThreadPool(10);
     public static long starttime;
     public static String guildOnly = "This command is to be used in guilds only";
     public static String noPerms = "You don't have the permission: ";
@@ -114,7 +116,8 @@ public class Helpers {
             "highfive",
             "dab",
             "shrug",
-            "cry"
+            "cry",
+            "kick"
     ));
 
     public static void startTimer(JDA jda, DiscordBotListAPI dbl, int i) {
@@ -128,7 +131,7 @@ public class Helpers {
                         User toUnban = jda.retrieveUserById(bans.getLong("victimId")).complete();
                         try {
                             if (jda.getGuildById(bans.getLong("guildId")) != null)
-                                PixelSniper.mySQL.unban(toUnban, jda.getGuildById(bans.getLong("guildId")), jda, true);
+                                PixelSniper.mySQL.unban(toUnban, jda.getGuildById(bans.getLong("guildId")), jda.getSelfUser());
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }
@@ -138,7 +141,7 @@ public class Helpers {
                         User toUnmute = jda.retrieveUserById(mutes.getLong("victimId")).complete();
                         try {
                             if (jda.getGuildById(mutes.getLong("guildId")) != null)
-                                PixelSniper.mySQL.unmute(jda.getGuildById(mutes.getLong("guildId")), toUnmute, jda, true);
+                                PixelSniper.mySQL.unmute(jda.getGuildById(mutes.getLong("guildId")), toUnmute, jda.getSelfUser());
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }
@@ -331,6 +334,11 @@ public class Helpers {
     public static void postMusicLog(MusicPlayer player, AudioTrack track) {
         if (SetMusicLogChannel.musicLogChannelMap.containsKey(player.getGuild().getIdLong())) {
             TextChannel tc = player.getGuild().getTextChannelById(SetMusicLogChannel.musicLogChannelMap.get(player.getGuild().getIdLong()));
+            if (tc == null) {
+                SetMusicLogChannel.musicLogChannelMap.remove(player.getGuild().getIdLong());
+                PixelSniper.mySQL.removeChannel(player.getGuild().getIdLong(), ChannelType.MUSIC);
+                return;
+            }
             if (tc.canTalk())
                 tc.sendMessage(new EmbedBuilder()
                         .setTitle("Now playing")
@@ -353,10 +361,55 @@ public class Helpers {
         return null;
     }
 
-    public static User retreiveUserByArgs(String arg, CommandEvent event) {
-        User user = getUserByArgs(event, arg);
-        if (arg.matches("\\d+") && event.getJDA().getUserById(arg) == null)
-            user = event.getJDA().retrieveUserById(arg).complete();
-        return user;
+    public static void retrieveUserByArgs(CommandEvent event, String arg, Consumer<User> success) {
+        Runnable run = () -> {
+            User user = getUserByArgsN(event, arg);
+            if (user == null && arg.matches("\\d+") && event.getJDA().getUserById(arg) == null) user = event.getJDA().retrieveUserById(arg).complete();
+            if (user == null) user = event.getAuthor();
+            success.accept(user);
+        };
+        executorPool.execute(run);
+    }
+
+    public static void retrieveUserByArgsN(CommandEvent event, String arg, Consumer<User> success) {
+        Runnable run = () -> {
+            User user = getUserByArgsN(event, arg);
+            if (user == null && arg.matches("\\d+") && event.getJDA().getUserById(arg) == null) event.getJDA().retrieveUserById(arg).queue(success);
+            else success.accept(user);
+        };
+        executorPool.execute(run);
+    }
+
+    public static long parseTimeFromArgs(String[] args) {
+        long millis = -1;
+        switch (args.length) {
+            case 0:
+                break;
+            case 1: {
+                if (args[0].matches("(\\d)|(\\d\\d)")) {
+                    millis = 1000 * Short.parseShort(args[0]);
+                }
+                break;
+            }
+            case 2: {
+                if (args[0].matches("(\\d)|(\\d\\d)") && args[1].matches("(\\d)|(\\d\\d)")) {
+                    millis = 60000 * Short.parseShort(args[0]) + 1000 * Short.parseShort(args[1]);
+                }
+                break;
+            }
+            case 3: {
+                if (args[0].matches("(\\d)|(\\d\\d)") && args[1].matches("(\\d)|(\\d\\d)") && args[2].matches("(\\d)|(\\d\\d)")) {
+                    millis = 3600000 * Short.parseShort(args[0]) + 60000 * Short.parseShort(args[1]) + 1000 * Short.parseShort(args[2]);
+                }
+                break;
+            }
+            default: {
+                if (args[0].matches("(\\d)|(\\d\\d)") && args[1].matches("(\\d)|(\\d\\d)") && args[2].matches("(\\d)|(\\d\\d)")) {
+                    millis = 3600000 * Short.parseShort(args[0]) + 60000 * Short.parseShort(args[1]) + 1000 * Short.parseShort(args[2]);
+                }
+                break;
+            }
+        }
+        return millis;
     }
 }

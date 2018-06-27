@@ -1,12 +1,8 @@
 package com.pixelatedsource.jda.commands.music;
 
-import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
-import com.pixelatedsource.jda.music.MusicManager;
-import com.pixelatedsource.jda.utils.MessageHelper;
-import net.dv8tion.jda.core.entities.Guild;
 
 import java.util.HashMap;
 
@@ -26,57 +22,6 @@ public class LoopQueueCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() != null) {
-            if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
-                String[] args = event.getArgs().split("\\s+");
-                Guild guild = event.getGuild();
-                if (MusicManager.getManagerinstance().getPlayer(guild).getListener().getTrackSize() > 0 || MusicManager.getManagerinstance().getPlayer(guild).getAudioPlayer().getPlayingTrack() != null) {
-                    if (args.length == 0 || args[0].equalsIgnoreCase("")) {
-                        if (looped.containsKey(guild.getIdLong())) {
-                            if (looped.get(guild.getIdLong())) {
-                                looped.replace(guild.getIdLong(), false);
-                                event.reply("Looping has been **disabled**");
-                            } else {
-                                looped.replace(guild.getIdLong(), true);
-                                event.reply("Looping has been **enabled**");
-                            }
-                        } else {
-                            looped.put(guild.getIdLong(), true);
-                            event.reply("Looping has been **enabled**");
-                        }
-                    } else {
-                        switch (args[0]) {
-                            case "on":
-                            case "yes":
-                            case "true":
-                                if (looped.replace(guild.getIdLong(), true) == null)
-                                    looped.put(guild.getIdLong(), true);
-                                event.reply("Looping has been **enabled**");
-                                break;
-                            case "off":
-                            case "no":
-                            case "false":
-                                if (looped.replace(guild.getIdLong(), false) == null)
-                                    looped.put(guild.getIdLong(), false);
-                                event.reply("Looping has been **disabled**");
-                                break;
-                            case "info":
-                                String ts = looped.getOrDefault(guild.getIdLong(), false) ? "enabled" : "disabled";
-                                event.reply("Looping is currently **" + ts + "**");
-                                break;
-                            default:
-                                MessageHelper.sendUsage(this, event);
-                                break;
-                        }
-                    }
-                } else {
-                    event.reply("There is no music playing");
-                }
-            } else {
-                event.reply("You need the permission `" + commandName + "` to execute this command.");
-            }
-        } else {
-            event.reply(Helpers.guildOnly);
-        }
+        LoopCommand.executorLoops(this, event, looped);
     }
 }

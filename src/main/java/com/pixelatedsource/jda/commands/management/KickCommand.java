@@ -7,24 +7,18 @@ import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.User;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
-public class MuteCommand extends Command {
+public class KickCommand extends Command {
 
-    public MuteCommand() {
-        this.commandName = "mute";
-        this.description = "Mute user on your server and give them a nice message in pm.";
+    public KickCommand() {
+        this.commandName = "kick";
+        this.description = "kick a person with a reason (the bot will dm the reason to the person)";
         this.usage = PREFIX + commandName + " <member> [reason]";
         this.category = Category.MANAGEMENT;
-        this.aliases = new String[]{"permmute"};
-        this.permissions = new Permission[]{
-                Permission.MESSAGE_EMBED_LINKS,
-                Permission.MANAGE_ROLES
-        };
+        this.permissions = new Permission[]{Permission.KICK_MEMBERS};
     }
 
     @Override
@@ -32,27 +26,20 @@ public class MuteCommand extends Command {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                 String[] args = event.getArgs().split("\\s+");
-                Guild guild = event.getGuild();
-                if (args.length >= 1) {
+                if (args.length > 0) {
                     User target = Helpers.getUserByArgsN(event, args[0]);
                     String reason = event.getArgs().replaceFirst(args[0] + "\\s+|" + args[0], "");
                     if (target != null) {
-                        if (SetMuteRoleCommand.muteRoles.getOrDefault(guild.getIdLong(), -1L) == -1) {
-                            event.reply("**No mute role set!**\nCreating Role..");
-                            TempMuteCommand.createMuteRole(guild);
-                            event.reply("Role created. You can change the settings of the role to your desires in the role managment tab.\nThis role wil be added to the muted users so it should have no talk permissions!");
-                        }
-                        Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoles.getOrDefault(guild.getIdLong(), -1L));
-                        if (muteRole != null) {
-                            guild.getController().addSingleRoleToMember(guild.getMember(target), muteRole).queue(s -> {
-                                if (reason.length() <= 1000 && PixelSniper.mySQL.setPermMute(event.getAuthor(), target, guild, reason)) {
+                        if (event.getGuild().getMember(target) != null) {
+                            new Thread(() -> {
+                                if (reason.length() <= 1000 && PixelSniper.mySQL.addKick(event.getAuthor(), target, event.getGuild(), reason)) {
                                     event.getMessage().addReaction("\u2705").queue();
                                 } else {
                                     event.getMessage().addReaction("\u274C").queue();
                                 }
-                            });
+                            }).start();
                         } else {
-                            event.reply("Mute role is unset (cannot mute)");
+                            event.reply("This user isn't a member of this guild");
                         }
                     } else {
                         event.reply("Unknown user");

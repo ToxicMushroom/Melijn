@@ -25,36 +25,40 @@ public class NightCoreCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), commandName, 0)) {
-                if (event.getMember().getVoiceState().getChannel() == event.getGuild().getSelfMember().getVoiceState().getChannel() && event.getMember().getVoiceState().getChannel() != null) {
-                    String[] args = event.getArgs().split("\\s+");
-                    MusicPlayer musicPlayer = MusicManager.getManagerinstance().getPlayer(event.getGuild());
-                    if (args.length == 1) {
-                        switch (args[0]) {
-                            case "true":
-                            case "on":
-                            case "enabled":
-                                musicPlayer.setSpeed(1.25);
-                                musicPlayer.setPitch(1.20);
-                                musicPlayer.updateFilters();
-                                event.reply("The NightCore filter has been **enabled** by **" + event.getFullAuthorName() + "**");
-                                break;
-                            case "false":
-                            case "off":
-                            case "disabled":
-                                musicPlayer.setSpeed(1);
-                                musicPlayer.setPitch(1);
-                                musicPlayer.updateFilters();
-                                event.reply("The NightCore filter has been **disabled** by **" + event.getFullAuthorName() + "**");
-                                break;
-                            default:
-                                MessageHelper.sendUsage(this, event);
-                                break;
+                if (event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {
+                    if (event.getMember().getVoiceState().getChannel() == event.getGuild().getSelfMember().getVoiceState().getChannel()) {
+                        String[] args = event.getArgs().split("\\s+");
+                        MusicPlayer musicPlayer = MusicManager.getManagerinstance().getPlayer(event.getGuild());
+                        if (args.length == 1) {
+                            switch (args[0]) {
+                                case "true":
+                                case "on":
+                                case "enabled":
+                                    musicPlayer.setSpeed(1.25);
+                                    musicPlayer.setPitch(1.20);
+                                    musicPlayer.updateFilters();
+                                    event.reply("The NightCore filter has been **enabled** by **" + event.getFullAuthorName() + "**");
+                                    break;
+                                case "false":
+                                case "off":
+                                case "disabled":
+                                    musicPlayer.setSpeed(1);
+                                    musicPlayer.setPitch(1);
+                                    musicPlayer.updateFilters();
+                                    event.reply("The NightCore filter has been **disabled** by **" + event.getFullAuthorName() + "**");
+                                    break;
+                                default:
+                                    MessageHelper.sendUsage(this, event);
+                                    break;
+                            }
+                        } else {
+                            MessageHelper.sendUsage(this, event);
                         }
                     } else {
-                        MessageHelper.sendUsage(this, event);
+                        event.reply("You have to be in the same voice channel as me to apply the nightcore filer");
                     }
                 } else {
-                    event.reply("You have to be in the same channel as the bot");
+                    event.reply("I'm not in a voiceChannel");
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

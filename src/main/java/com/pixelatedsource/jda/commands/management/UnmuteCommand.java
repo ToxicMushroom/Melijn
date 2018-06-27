@@ -7,7 +7,6 @@ import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.User;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
@@ -18,7 +17,7 @@ public class UnmuteCommand extends Command {
         this.description = "unmute a muted user";
         this.usage = PREFIX + commandName + " <@user | userId>";
         this.category = Category.MANAGEMENT;
-        this.permissions = new Permission[] {
+        this.permissions = new Permission[]{
                 Permission.MESSAGE_EMBED_LINKS,
                 Permission.MANAGE_ROLES
         };
@@ -30,18 +29,20 @@ public class UnmuteCommand extends Command {
             if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length == 1) {
-                    User target = Helpers.getUserByArgsN(event, args[0]);
-                    if (target != null) {
-                        new Thread(() -> {
-                            if (PixelSniper.mySQL.unmute(event.getGuild(), target, event.getJDA(), false)) {
-                                event.getMessage().addReaction("\u2705").queue();
-                            } else {
-                                event.getMessage().addReaction("\u274C").queue();
-                            }
-                        }).start();
-                    } else {
-                        event.reply("Unknown user");
-                    }
+                    Helpers.retrieveUserByArgsN(event, args[0], user -> {
+                        if (user != null) {
+                            new Thread(() -> {
+                                if (PixelSniper.mySQL.unmute(event.getGuild(), user, event.getAuthor())) {
+                                    event.getMessage().addReaction("\u2705").queue();
+                                } else {
+                                    event.getMessage().addReaction("\u274C").queue();
+                                }
+                            }).start();
+                        } else {
+                            event.reply("Unknown user");
+                        }
+                    });
+
                 } else {
                     MessageHelper.sendUsage(this, event);
                 }

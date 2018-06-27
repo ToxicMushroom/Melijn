@@ -28,33 +28,41 @@ public class TremoloCommand extends Command {
                 MusicPlayer musicPlayer = MusicManager.getManagerinstance().getPlayer(event.getGuild());
                 if (musicPlayer.getAudioPlayer().getPlayingTrack() != null) {
                     if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
-                        if (args[0].equalsIgnoreCase("off")) {
-                            musicPlayer.setDepth(0);
-                            musicPlayer.setFrequency(0);
-                            musicPlayer.updateFilters();
-                            event.reply("The tremolo effect has been **disabled** by **" + event.getFullAuthorName() + "**");
-                        } else if (args.length > 1) {
-                            if (args[0].toLowerCase().matches("depth|d")) {
-                                if (args[1].matches("([0-9]%)|[0-9][0-9]%|100%")) {
-                                    double i = Double.parseDouble(args[1].replace("%", ""))/100D;
-                                    musicPlayer.setDepth(i);
+                        if (event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {
+                            if (event.getMember().getVoiceState().getChannel() == event.getGuild().getSelfMember().getVoiceState().getChannel()) {
+                                if (args[0].equalsIgnoreCase("off")) {
+                                    musicPlayer.setDepth(0);
+                                    musicPlayer.setFrequency(0);
                                     musicPlayer.updateFilters();
-                                    event.reply("The depth has been set to **" + args[1] + "** by **" + event.getFullAuthorName() + "**");
-                                } else {
-                                    MessageHelper.sendUsage(this, event);
-                                }
-                            } else if (args[0].toLowerCase().matches("frequency|fr|f")) {
-                                if (args[1].matches("[0-9]|[0-9][0-9]|100|[0-9]?[0-9].[0-9]?[0-9]?[0-9]")) {
-                                    double i =  Double.parseDouble(args[1]);
-                                    musicPlayer.setFrequency(i);
-                                    musicPlayer.updateFilters();
-                                    event.reply("The frequency has been set to **" + args[1] + "** by **" + event.getFullAuthorName() + "**");
-                                } else {
-                                    MessageHelper.sendUsage(this, event);
+                                    event.reply("The tremolo effect has been **disabled** by **" + event.getFullAuthorName() + "**");
+                                } else if (args.length > 1) {
+                                    if (args[0].toLowerCase().matches("depth|d")) {
+                                        if (args[1].matches("([0-9]%)|[0-9][0-9]%|100%")) {
+                                            double i = Double.parseDouble(args[1].replace("%", "")) / 100D;
+                                            musicPlayer.setDepth(i);
+                                            musicPlayer.updateFilters();
+                                            event.reply("The depth has been set to **" + args[1] + "** by **" + event.getFullAuthorName() + "**");
+                                        } else {
+                                            MessageHelper.sendUsage(this, event);
+                                        }
+                                    } else if (args[0].toLowerCase().matches("frequency|fr|f")) {
+                                        if (args[1].matches("[0-9]|[0-9][0-9]|100|[0-9]?[0-9].[0-9]?[0-9]?[0-9]")) {
+                                            double i = Double.parseDouble(args[1]);
+                                            musicPlayer.setFrequency(i);
+                                            musicPlayer.updateFilters();
+                                            event.reply("The frequency has been set to **" + args[1] + "** by **" + event.getFullAuthorName() + "**");
+                                        } else {
+                                            MessageHelper.sendUsage(this, event);
+                                        }
+                                    } else {
+                                        MessageHelper.sendUsage(this, event);
+                                    }
                                 }
                             } else {
-                                MessageHelper.sendUsage(this, event);
+                                event.reply("You have to be in the same voice channel as me to apply tremolo effects");
                             }
+                        } else {
+                            event.reply("I'm not in a voiceChannel");
                         }
                     } else {
                         event.reply("The configured depth is **" + musicPlayer.getDepth() + "** and frequency is **" + musicPlayer.getFrequency() + "**");

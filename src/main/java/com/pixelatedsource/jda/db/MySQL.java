@@ -8,7 +8,6 @@ import com.pixelatedsource.jda.commands.management.SetStreamerModeCommand;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.User;
 import org.json.JSONObject;
@@ -62,6 +61,7 @@ public class MySQL {
             update("CREATE TABLE IF NOT EXISTS streamer_modes(guildId bigint, state boolean)");
             update("CREATE TABLE IF NOT EXISTS filters(guildId bigint, mode varchar(16), content varchar(2000))");
             update("CREATE TABLE IF NOT EXISTS warns(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), moment bigint);");
+            update("CREATE TABLE IF NOT EXISTS kicks(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), moment bigint);");
             update("CREATE TABLE IF NOT EXISTS active_bans(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), startTime bigint, endTime bigint);");
             update("CREATE TABLE IF NOT EXISTS history_bans(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), startTime bigint, endTime bigint, active boolean);");
             update("CREATE TABLE IF NOT EXISTS active_mutes(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), startTime bigint, endTime bigint);");
@@ -80,6 +80,7 @@ public class MySQL {
         }
     }
 
+    /*
     public void close() {
         try {
             if (con != null) {
@@ -89,7 +90,7 @@ public class MySQL {
         } catch (SQLException e) {
             System.out.println("[MySQL] did not disconnect proparily error:" + e.getMessage());
         }
-    }
+    }*/
 
     public void update(String qry) {
         try {
@@ -118,7 +119,7 @@ public class MySQL {
             PreparedStatement getAuthor = con.prepareStatement("SELECT * FROM history_messages WHERE messageId= ?");
             getAuthor.setLong(1, messageId);
             ResultSet rs = getAuthor.executeQuery();
-            while (rs.next()) {
+            if (rs.next()) {
                 return rs.getLong("authorId");
             }
         } catch (SQLException e) {
@@ -161,30 +162,6 @@ public class MySQL {
         }
     }
 
-    public void saveDeletedMessage(long messageId) {
-        ResultSet rs = query("SELECT * FROM history_messages WHERE messageId= '" + messageId + "'");
-        try {
-            if (rs.next()) {
-                long guildId = rs.getLong("guildId");
-                long authorId = rs.getLong("authorId");
-                String content = rs.getString("content");
-                long channelId = rs.getLong("textChannelId");
-                long sentTime = rs.getLong("sentTime");
-                PreparedStatement createMessage = con.prepareStatement("INSERT INTO deleted_messages (guildId, authorId, messageId, content, textChannelId, sentTime, delTime) VALUES (?, ?, ?, ?, ?, ?, ?)");
-                createMessage.setLong(1, guildId);
-                createMessage.setLong(2, authorId);
-                createMessage.setLong(3, messageId);
-                createMessage.setString(4, content);
-                createMessage.setLong(5, channelId);
-                createMessage.setLong(6, sentTime);
-                createMessage.setLong(7, System.currentTimeMillis());
-                createMessage.executeUpdate();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void addUnclaimed(long deletedMessageId, long unclaimedId) {
         try {
             PreparedStatement addunclaimed = con.prepareStatement("INSERT INTO unclaimed_messages (deletedMessageId, logMessageId) VALUES (?, ?)");
@@ -194,45 +171,6 @@ public class MySQL {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-
-    public long getMessageIdByUnclaimedId(long unclaimedId) {
-        try {
-            PreparedStatement getMessageId = con.prepareStatement("SELECT * FROM unclaimed_messages WHERE logMessageId= ?");
-            getMessageId.setLong(1, unclaimedId);
-            ResultSet rs = getMessageId.executeQuery();
-            long s = -1;
-            while (rs.next()) {
-                s = rs.getLong("deletedMessageId");
-            }
-            return s;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
-
-    public MessageEmbed unclaimedToClaimed(long messageId, JDA jda, User staff) {
-        try {
-            PreparedStatement getdeletedmessage = con.prepareStatement("SELECT * FROM deleted_messages WHERE messageId= ?");
-            getdeletedmessage.setLong(1, messageId);
-            ResultSet rs = getdeletedmessage.executeQuery();
-            if (rs.next()) {
-                EmbedBuilder eb = new EmbedBuilder();
-                eb.setTitle("Message deleted in #" + jda.getTextChannelById(rs.getString("textChannelId")).getName());
-                eb.setThumbnail(jda.retrieveUserById(rs.getString("authorId")).complete().getEffectiveAvatarUrl());
-                eb.setFooter(millisToDate(rs.getLong("delTime")), Helpers.getFooterIcon());
-                eb.setColor(Color.magenta);
-                String authorId = rs.getString("authorId");
-                User author = jda.retrieveUserById(authorId).complete();
-                eb.setDescription("```LDIF" + "\nSender: " + author.getName() + "#" + author.getDiscriminator() + "\nMessage: " + rs.getString("content").replaceAll("`", "´").replaceAll("\n", " ") + "\nSender's ID: " + rs.getString("authorId") + "\nSent Time: " + millisToDate(rs.getLong("sentTime")) + "```");
-                eb.addField("Deleted by: ", staff.getName() + "#" + staff.getDiscriminator(), false);
-                return eb.build();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     //Permissions stuff---------------------------------------------------------
@@ -387,9 +325,8 @@ public class MySQL {
             statement.setLong(1, guildId);
             statement.setString(2, permission);
             ResultSet rs = statement.executeQuery();
-            while (rs.next()) {
-                return false;
-            }
+            if (rs.next()) return false;
+
             statement.close();
             rs.close();
 
@@ -397,9 +334,8 @@ public class MySQL {
             statement1.setLong(1, guildId);
             statement1.setString(2, permission);
             ResultSet rs1 = statement1.executeQuery();
-            while (rs1.next()) {
-                return false;
-            }
+            if (rs1.next()) return false;
+
             statement1.close();
             rs1.close();
         } catch (SQLException e) {
@@ -471,6 +407,7 @@ public class MySQL {
 
     //Punishment stuff--------------------------------------------------------------
     public boolean setTempBan(User staff, User victim, Guild guild, String reason, long seconds) {
+        reason = reason.matches("\\s+|") ? "none" : reason;
         if (seconds > 0) {
             Long moment = System.currentTimeMillis();
             Long until = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(seconds);
@@ -531,6 +468,7 @@ public class MySQL {
     }
 
     public boolean setPermBan(User staff, User victim, Guild guild, String reason) {
+        reason = reason.matches("\\s+|") ? "none" : reason;
         Long moment = System.currentTimeMillis();
         String name = victim.getName() + "#" + victim.getDiscriminator();
         String namep = staff.getName() + "#" + staff.getDiscriminator();
@@ -586,15 +524,14 @@ public class MySQL {
         }
     }
 
-    public boolean unban(User toUnban, Guild guild, JDA jda, boolean auto) {
+    public boolean unban(User toUnban, Guild guild, User author) {
         if (toUnban != null) {
             try {
                 PreparedStatement getBans = con.prepareStatement("SELECT * FROM active_bans WHERE guildId= ? AND victimId= ?");
                 getBans.setLong(1, guild.getIdLong());
                 getBans.setLong(2, toUnban.getIdLong());
                 ResultSet rs = getBans.executeQuery();
-                while (rs.next()) {
-                    User author = jda.retrieveUserById(rs.getString("authorId")).complete();
+                if (rs.next()) {
                     guild.getController().unban(toUnban.getId()).queue();
                     PreparedStatement unban = con.prepareStatement("UPDATE history_bans SET ACTIVE= ? WHERE victimId= ? AND guildId= ?");
                     unban.setBoolean(1, false);
@@ -608,8 +545,7 @@ public class MySQL {
                     deleteBans.executeUpdate();
                     deleteBans.close();
 
-                    EmbedBuilder eb = new EmbedBuilder();
-                    if (auto) author = jda.getSelfUser();
+                    EmbedBuilder eb = new EmbedBuilder();;
                     eb.setAuthor("Unbanned by: " + author.getName() + "#" + author.getDiscriminator(), null, author.getEffectiveAvatarUrl());
                     eb.setDescription("```LDIF" + "\nUnbanned: " + toUnban.getName() + "#" + toUnban.getDiscriminator() + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(System.currentTimeMillis()) + "```");
                     eb.setThumbnail(toUnban.getEffectiveAvatarUrl());
@@ -636,7 +572,7 @@ public class MySQL {
 
     public boolean addWarn(User staff, User victim, Guild guild, String reason) {
         try {
-            reason = reason.replaceFirst(" ", "");
+            reason = reason.matches("\\s+|") ? "none" : reason;
             PreparedStatement newWarn = con.prepareStatement("INSERT INTO warns(guildId, victimId, authorId, reason, moment) VALUES (?, ?, ?, ?, ?);");
             newWarn.setLong(1, guild.getIdLong());
             newWarn.setLong(2, victim.getIdLong());
@@ -665,6 +601,7 @@ public class MySQL {
 
     public boolean setTempMute(User staff, User victim, Guild guild, String reason, long seconds) {
         if (seconds > 0) {
+            reason = reason.matches("\\s+|") ? "none" : reason;
             Long moment = System.currentTimeMillis();
             Long until = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(seconds);
             String name = victim.getName() + "#" + victim.getDiscriminator();
@@ -723,6 +660,7 @@ public class MySQL {
     }
 
     public boolean setPermMute(User staff, User victim, Guild guild, String reason) {
+        reason = reason.matches("\\s+|") ? "none" : reason;
         Long moment = System.currentTimeMillis();
         String name = victim.getName() + "#" + victim.getDiscriminator();
         String namep = staff.getName() + "#" + staff.getDiscriminator();
@@ -777,16 +715,14 @@ public class MySQL {
         }
     }
 
-    public boolean unmute(Guild guild, User toUnmute, JDA jda, boolean auto) {
+    public boolean unmute(Guild guild, User toUnmute, User author) {
         if (toUnmute != null) {
             try {
                 PreparedStatement getMutes = con.prepareStatement("SELECT * FROM active_mutes WHERE guildId= ? AND victimId= ?");
                 getMutes.setLong(1, guild.getIdLong());
                 getMutes.setLong(2, toUnmute.getIdLong());
                 ResultSet rs = getMutes.executeQuery();
-                boolean t = false;
-                while (rs.next()) {
-                    User author = jda.retrieveUserById(rs.getString("authorId")).complete();
+                if (rs.next()) {
                     PreparedStatement unmute = con.prepareStatement("UPDATE history_mutes SET ACTIVE= ? WHERE victimId= ? AND guildId= ?");
                     unmute.setBoolean(1, false);
                     unmute.setLong(2, toUnmute.getIdLong());
@@ -798,14 +734,13 @@ public class MySQL {
                     deleteMutes.setLong(2, toUnmute.getIdLong());
                     deleteMutes.executeUpdate();
                     deleteMutes.close();
+
                     EmbedBuilder eb = new EmbedBuilder();
-                    if (auto) author = jda.getSelfUser();
                     eb.setAuthor("Unmuted by: " + author.getName() + "#" + author.getDiscriminator(), null, author.getEffectiveAvatarUrl());
                     eb.setDescription("```LDIF" + "\nUnmuted: " + toUnmute.getName() + "#" + toUnmute.getDiscriminator() + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(System.currentTimeMillis()) + "```");
                     eb.setThumbnail(toUnmute.getEffectiveAvatarUrl());
                     eb.setColor(Helpers.EmbedColor);
                     eb.setColor(Color.green);
-                    guild.getController().removeSingleRoleFromMember(guild.getMember(toUnmute), guild.getRoleById(getRoleId(guild.getIdLong(), RoleType.MUTE))).queue();
                     if (!toUnmute.isBot()) toUnmute.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
                     long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
                     if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
@@ -813,12 +748,45 @@ public class MySQL {
                             guild.getTextChannelById(logChannelId).sendMessage(eb.build() + "\nTarget is a bot").queue();
                         else guild.getTextChannelById(logChannelId).sendMessage(eb.build()).queue();
                     }
-                    t = true;
+
+                    guild.getController().removeSingleRoleFromMember(guild.getMember(toUnmute), guild.getRoleById(getRoleId(guild.getIdLong(), RoleType.MUTE))).queue();
+                    return true;
                 }
-                return t;
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+        }
+        return false;
+    }
+
+    public boolean addKick(User author, User target, Guild guild, String reason) {
+        try {
+            reason = reason.matches("\\s+|") ? "none" : reason;
+            PreparedStatement newWarn = con.prepareStatement("INSERT INTO kicks(guildId, victimId, authorId, reason, moment) VALUES (?, ?, ?, ?, ?);");
+            newWarn.setLong(1, guild.getIdLong());
+            newWarn.setLong(2, target.getIdLong());
+            newWarn.setLong(3, author.getIdLong());
+            newWarn.setString(4, reason);
+            newWarn.setLong(5, System.currentTimeMillis());
+            newWarn.executeUpdate();
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+            embedBuilder.setAuthor("Kicked by: " + author.getName() + "#" + author.getDiscriminator(), null, author.getEffectiveAvatarUrl());
+            embedBuilder.setDescription("```LDIF\n" + "Kicked: " + target.getName() + "#" + target.getDiscriminator() + "\n" + "Reason: " + reason + "\n" + "Guild: " + guild.getName() + "\n" + "Moment: " + millisToDate(System.currentTimeMillis()) + "\n" + "```");
+            embedBuilder.setThumbnail(target.getEffectiveAvatarUrl());
+            embedBuilder.setColor(Color.ORANGE);
+            long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+            if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
+                if (target.isBot())
+                    guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build() + "\nTarget is a bot.").queue();
+                else guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
+            }
+            if (!target.isBot()) target.openPrivateChannel().queue((channel) -> {
+                channel.sendMessage(embedBuilder.build()).queue();
+                guild.getController().kick(guild.getMember(target)).queueAfter(1, TimeUnit.SECONDS);
+            });
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return false;
     }
@@ -863,7 +831,7 @@ public class MySQL {
             int progress = 0;
             while (rs2.next()) {
                 User staff = jda.retrieveUserById(rs2.getString("authorId")).complete();
-                String endTime = rs2.getString("endTime").equalsIgnoreCase("NULL") ? "Infinity" : millisToDate(rs2.getLong("endTime"));
+                String endTime = rs2.getString("endTime") == null ? "Infinity" : millisToDate(rs2.getLong("endTime"));
                 bans[progress] = String.valueOf("```ini\n" + "[Muted by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs2.getString("reason") + "\n[From]: " + millisToDate(rs2.getLong("startTime")) + "\n[Until]: " + endTime + "\n[active]: " + rs2.getString("active") + "```");
                 progress++;
             }
@@ -905,6 +873,30 @@ public class MySQL {
             while (rs2.next()) {
                 User staff = jda.retrieveUserById(rs2.getString("authorId")).complete();
                 bans[progress] = String.valueOf("```ini\n" + "[Warned by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs2.getString("reason") + "\n[Moment]: " + millisToDate(rs2.getLong("moment")) + "```");
+                progress++;
+            }
+            return bans;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return new String[]{"no warns"};
+    }
+
+    public String[] getUserKicks(long guildId, long userId, JDA jda) {
+        try {
+            PreparedStatement getbans = con.prepareStatement("SELECT * FROM kicks WHERE victimId= ? AND guildId= ?");
+            getbans.setLong(1, userId);
+            getbans.setLong(2, guildId);
+            ResultSet rs = getbans.executeQuery();
+            int amount = 0;
+            while (rs.next()) amount++;
+            String[] bans = new String[amount];
+            ResultSet rs2 = getbans.executeQuery();
+            if (amount == 0) return new String[]{"no kicks"};
+            int progress = 0;
+            while (rs2.next()) {
+                User staff = jda.retrieveUserById(rs2.getString("authorId")).complete();
+                bans[progress] = String.valueOf("```ini\n" + "[Kicked by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs2.getString("reason") + "\n[Moment]: " + millisToDate(rs2.getLong("moment")) + "```");
                 progress++;
             }
             return bans;
