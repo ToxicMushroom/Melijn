@@ -3,6 +3,7 @@ package com.pixelatedsource.jda.commands.music;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.blub.Need;
 
 import java.util.HashMap;
 
@@ -15,6 +16,7 @@ public class LoopQueueCommand extends Command {
         this.description = "Change the looping state or view the looping state of the queue";
         this.usage = PREFIX + this.commandName + " [false/off/yes | true/on/off]";
         this.aliases = new String[]{"repeatq", "loopq"};
+        this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};
         this.category = Category.MUSIC;
     }
 

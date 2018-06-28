@@ -4,6 +4,7 @@ import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.blub.Need;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
 import com.pixelatedsource.jda.utils.MessageHelper;
@@ -17,13 +18,13 @@ public class NightCoreCommand extends Command {
         this.description = "Toggle the nightcore mode";
         this.usage = PREFIX + commandName + " <on/enable/true | off/disable/false>";
         this.category = Category.MUSIC;
+        this.needs = new Need[]{Need.GUILD};
         this.extra = "Sets speed to 1.25 and pitch to 1.20";
     }
 
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), commandName, 0)) {
                 if (event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {
                     if (event.getMember().getVoiceState().getChannel() == event.getGuild().getSelfMember().getVoiceState().getChannel()) {
@@ -63,8 +64,5 @@ public class NightCoreCommand extends Command {
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");
             }
-        } else {
-            event.reply(Helpers.guildOnly);
-        }
     }
 }

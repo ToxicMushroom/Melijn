@@ -67,16 +67,16 @@ public class MusicManager {
                 if (!isPlaylist) {
                     trackLoaded(tracks.get(0));
                 } else {
-                    if (tracks.size() > 50)
-                        tracks = tracks.subList(0, 50);
+                    if (tracks.size() > 200)
+                        tracks = tracks.subList(0, 200);
                     if (usersRequest.get(requester) == null && usersFormToReply.get(requester) == null) {
                         usersRequest.put(requester, tracks);
                         StringBuilder songs = new StringBuilder();
                         for (AudioTrack track : tracks) {
                             songs.append(track.getInfo().title).append("\n");
                         }
-                        String toSend = String.valueOf("You're about to add a playlist which contains these songs:\n" + songs + "Hit :white_check_mark: to accept or :negative_squared_cross_mark: to deny").length() < 1999 ?
-                                "You're about to add a playlist which contains these songs:\n" + songs + "Hit :white_check_mark: to accept or :negative_squared_cross_mark: to deny" : //true before :
+                        String toSend = String.valueOf("You're about to add a playlist which contains these songs:\n" + songs + "Hit :white_check_mark: to accept or :negative_squared_cross_mark: to deny").length() < 2000 ?
+                                "You're about to add a playlist which contains these songs:\n" + songs + "Hit :white_check_mark: to accept or :negative_squared_cross_mark: to deny" :
                                 "You're about to add a playlist which contains " + tracks.size() + " songs.\nHit :white_check_mark: to accept or :negative_squared_cross_mark: to deny.";
                         channel.sendMessage(toSend).queue(v -> {
                             usersFormToReply.put(requester, v);

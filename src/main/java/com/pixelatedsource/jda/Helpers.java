@@ -117,7 +117,8 @@ public class Helpers {
             "dab",
             "shrug",
             "cry",
-            "kick"
+            "kick",
+            "bypass.sameVoiceChannel"
     ));
 
     public static void startTimer(JDA jda, DiscordBotListAPI dbl, int i) {
@@ -152,7 +153,7 @@ public class Helpers {
             };
             executorPool.scheduleAtFixedRate(runnable, 1, 2, TimeUnit.SECONDS);
         } if (i == 0 || i == 2) {
-            Runnable runnable1 = () -> {
+            Runnable runnable2 = () -> {
                 lastRunTimer2 = System.currentTimeMillis();
                 if (dbl != null)
                     dbl.setStats(jda.getSelfUser().getId(), guildCount == 0 ? jda.getGuilds().size() : guildCount);
@@ -167,15 +168,15 @@ public class Helpers {
                     }
                 }
             };
-            executorPool.scheduleAtFixedRate(runnable1, 1, 60, TimeUnit.SECONDS);
+            executorPool.scheduleAtFixedRate(runnable2, 1, 60, TimeUnit.SECONDS);
         } if (i == 0 || i == 3) {
-            Runnable runnable1 = () -> {
+            Runnable runnable3 = () -> {
                 lastRunTimer3 = System.currentTimeMillis();
 
                 if (System.currentTimeMillis() - starttime > 10_000)
                 WebUtils.getWebUtilsInstance().updateSpotifyCredentials();
             };
-            executorPool.scheduleAtFixedRate(runnable1, 0, 1, TimeUnit.HOURS);
+            executorPool.scheduleAtFixedRate(runnable3, 0, 1, TimeUnit.HOURS);
         }
     }
 
@@ -312,23 +313,6 @@ public class Helpers {
             id = event.getGuild().getTextChannelsByName(arg, true).get(0).getIdLong();
         }
         return id;
-    }
-
-    public static boolean checkVoiceChannelPermission(Member member, VoiceChannel voiceChannel, Permission permission) {
-        boolean toReturn = member.hasPermission(permission);
-        if (member.getRoles().size() > 0) {
-            if (voiceChannel.getPermissionOverride(member.getRoles().get(0)) != null) {
-                if (voiceChannel.getPermissionOverride(member.getRoles().get(0)).getDenied().contains(permission)) toReturn = false;
-            }
-        } else {
-            if (voiceChannel.getPermissionOverride(member.getGuild().getRoleById(member.getGuild().getIdLong())) != null) {
-                if (voiceChannel.getPermissionOverride(member.getGuild().getRoleById(member.getGuild().getIdLong())).getDenied().contains(permission)) toReturn = false;
-            }
-        }
-        if (voiceChannel.getPermissionOverride(member) != null) {
-            if (voiceChannel.getPermissionOverride(member).getDenied().contains(permission)) toReturn = false;
-        }
-        return toReturn;
     }
 
     public static void postMusicLog(MusicPlayer player, AudioTrack track) {

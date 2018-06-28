@@ -4,6 +4,7 @@ import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.blub.Need;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -16,6 +17,7 @@ public class ForwardCommand extends Command {
         this.commandName = "forward";
         this.description = "forward inside the song (20s/2m50s + 5s -> 25s/2m50s)";
         this.usage = PREFIX + commandName + " [xx:xx:xx]";
+        this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};
         this.category = Category.MUSIC;
     }
 

@@ -4,6 +4,7 @@ import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.blub.Need;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
 import com.pixelatedsource.jda.utils.MessageHelper;
@@ -25,6 +26,7 @@ public class NowPlayingCommand extends Command {
         this.usage = PREFIX + this.commandName;
         this.aliases = new String[]{"nowplaying", "playing", "nplaying", "nowp"};
         this.category = Category.MUSIC;
+        this.needs = new Need[]{Need.GUILD};
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
 
