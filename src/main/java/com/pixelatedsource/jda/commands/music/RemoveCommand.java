@@ -35,7 +35,7 @@ public class RemoveCommand extends Command {
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
             String[] args = event.getArgs().replaceAll("\\s+", "").split(",");
-            if (args.length == 0) {
+            if (args.length == 0 || args[0].equalsIgnoreCase("")) {
                 MessageHelper.sendUsage(this, event);
                 return;
             }
@@ -63,6 +63,7 @@ public class RemoveCommand extends Command {
                             }
                         } else {
                             event.reply("Wrong format!");
+                            return;
                         }
                     }
                 } else if (s.matches("\\d+")) {
@@ -73,6 +74,7 @@ public class RemoveCommand extends Command {
                     }
                 } else {
                     MessageHelper.sendUsage(this, event);
+                    return;
                 }
             }
             if (sb.toString().length() > 1900) {
