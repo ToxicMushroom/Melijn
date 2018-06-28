@@ -29,7 +29,7 @@ public class SPlayCommand extends Command {
         this.usage = PREFIX + commandName + " [sc] [songname]\nsc only has to be used when you want to search on soundcloud";
         this.aliases = new String[]{"search", "searchplay", "sp"};
         this.category = Category.MUSIC;
-        this.needs = new Need[] {Need.GUILD, Need.SAME_VOICECHANNEL_OR_DISCONNECTED};
+        this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL_OR_DISCONNECTED};
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.VOICE_CONNECT};
     }
 

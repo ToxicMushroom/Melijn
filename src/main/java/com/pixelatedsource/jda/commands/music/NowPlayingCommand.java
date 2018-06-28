@@ -26,7 +26,7 @@ public class NowPlayingCommand extends Command {
         this.usage = PREFIX + this.commandName;
         this.aliases = new String[]{"nowplaying", "playing", "nplaying", "nowp"};
         this.category = Category.MUSIC;
-        this.needs = new Need[]{Need.GUILD};
+        this.needs = new Need[]{Need.GUILD, Need.VOICECHANNEL};
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
 
