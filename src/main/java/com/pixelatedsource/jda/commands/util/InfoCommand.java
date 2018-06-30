@@ -47,7 +47,7 @@ public class InfoCommand extends Command {
                 eb.setColor(Helpers.EmbedColor);
                 eb.setThumbnail(event.getJDA().getSelfUser().getAvatarUrl());
                 eb.addField("About", "Melijn is a powerful discord bot coded in java and developed by **ToxicMushroom#2610**\nMore commands/features are being added each month and almost all commands will be configurable in the future" +
-                        "\n\n**[Support Server](https://discord.gg/cCDnvNg)** • **[Invite](https://melijn.com/invite?perms=true)** • **[Website](https://melijn.com/)**\n\u0314\u030F\u030A", false);
+                        "\n\n**[Support Server](https://discord.gg/cCDnvNg)** • **[Invite](https://melijn.com/invite?perms=true)** • **[Website](https://melijn.com/)**" + "\n\u200B", false);
                 eb.addField("Stats and info",
                         "**Guilds** " + event.getJDA().getGuilds().size()
                                 + "\n**Unique users** " + event.getJDA().getUsers().size()
@@ -57,10 +57,10 @@ public class InfoCommand extends Command {
                                 + "\n**RAM Usage** " + (ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed() >> 20) + "MB/" +  (ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax() >> 20) + "MB"
                                 + "\n**Threads** " + Thread.activeCount()
                                 + "\n**Uptime** " + Helpers.getOnlineTime()
-                                + "\n\u0314\u030F\u030A"
+                                + "\n\u200B"
                         , false);
                 eb.addField("Stuff",
-                        "\n**Java Version** " + Runtime.version().toString().replaceFirst("\\+", " build-") +
+                        "**Java Version** " + Runtime.version().toString().replaceFirst("\\+", " build-") +
                                 "\n**JDA Version** " + JDAInfo.VERSION +
                                 "\n**Lavaplayer Version** " + PlayerLibrary.VERSION +
                                 "\n**Weeb.java Version** " + WeebApi.VERSION

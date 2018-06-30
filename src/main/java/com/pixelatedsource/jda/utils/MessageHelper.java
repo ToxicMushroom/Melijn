@@ -14,6 +14,7 @@ import okhttp3.HttpUrl;
 
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Random;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
@@ -119,5 +120,10 @@ public class MessageHelper {
         } else {
             event.reply(desc + "\n" + url + "Powered by weeb.sh & weeb.java");
         }
+    }
+
+    public static int randInt(int start, int end) {
+        Random random = new Random();
+        return random.nextInt(end + 1 - start) + start;
     }
 }

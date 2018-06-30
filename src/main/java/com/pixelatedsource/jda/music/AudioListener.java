@@ -55,8 +55,8 @@ public class AudioListener extends AudioEventAdapter {
     }
 
     public void queue(AudioTrack track) {
-        boolean succes = player.getAudioPlayer().startTrack(track, true);
-        if (!succes) tracks.offer(track);
+        boolean success = player.getAudioPlayer().startTrack(track, true);
+        if (!success) tracks.offer(track);
         else Helpers.postMusicLog(player, track);
     }
 }

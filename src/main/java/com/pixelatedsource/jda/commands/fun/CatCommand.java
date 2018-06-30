@@ -4,6 +4,7 @@ import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.utils.MessageHelper;
 import com.pixelatedsource.jda.utils.WebUtils;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
@@ -30,12 +31,13 @@ public class CatCommand extends Command {
             if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS))
                 if (url != null)
                     event.reply(new EmbedBuilder()
-                        .setColor(Helpers.EmbedColor)
-                        .setDescription("Enjoy your \uD83D\uDC31 ~meow~")
-                        .setImage(url)
-                        .build());
-                else
-                    event.reply("Cat failed to jump into my downloads folder :|\n We need to wait for more cats (402 forbidden)");
+                            .setColor(Helpers.EmbedColor)
+                            .setDescription("Enjoy your \uD83D\uDC31 ~meow~")
+                            .setImage(url)
+                            .build());
+                else {
+                    webUtils.getImage("animal_cat", image -> MessageHelper.sendFunText("Enjoy your \uD83D\uDC31 ~meow~", image.getUrl(), event));
+                }
             else
                 event.reply("Enjoy your \uD83D\uDC31 ~meow~\n" + url);
         } else {

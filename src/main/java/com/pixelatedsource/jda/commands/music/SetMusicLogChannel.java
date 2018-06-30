@@ -14,7 +14,7 @@ public class SetMusicLogChannel extends Command {
 
     public SetMusicLogChannel() {
         this.commandName = "SetMusicLogChannel";
-        this.usage = PREFIX + commandName + " [textChannel]";
+        this.usage = PREFIX + commandName + " [TextChannel]";
         this.description = "Set a musicLogChannel where the bot will send the nowPlaying songs";
         this.aliases = new String[]{"smlc"};
         this.needs = new Need[]{Need.GUILD};
@@ -30,7 +30,7 @@ public class SetMusicLogChannel extends Command {
             String[] args = event.getArgs().split("\\s+");
             String logChannelName = musicLogChannelMap.containsKey(guild.getIdLong()) ? "<#" + musicLogChannelMap.get(guild.getIdLong()) + ">" : "MusicLogChannel is unset";
             if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
-                Long id = Helpers.getChannelByArgsN(event, args[0]);
+                Long id = Helpers.getTextChannelByArgsN(event, args[0]);
                 if (id != -1L) {
                     if (id == 0L) {
                         musicLogChannelMap.remove(guild.getIdLong());

@@ -40,6 +40,7 @@ public class Helpers {
     public static String noPerms = "You don't have the permission: ";
     public static final Logger LOG = LogManager.getLogger(PixelSniper.class.getName());
     public static Color EmbedColor = Color.decode("#00ffd8");
+    public static boolean voteChecks = true;
     public static int guildCount = 0;
     public static ArrayList<String> perms = new ArrayList<>(Arrays.asList(
             "pause",
@@ -118,7 +119,9 @@ public class Helpers {
             "shrug",
             "cry",
             "kick",
-            "bypass.sameVoiceChannel"
+            "bypass.sameVoiceChannel",
+            "summon",
+            "nyancat"
     ));
 
     public static void startTimer(JDA jda, DiscordBotListAPI dbl, int i) {
@@ -176,7 +179,7 @@ public class Helpers {
                 if (System.currentTimeMillis() - starttime > 10_000)
                 WebUtils.getWebUtilsInstance().updateSpotifyCredentials();
             };
-            executorPool.scheduleAtFixedRate(runnable3, 0, 1, TimeUnit.HOURS);
+            executorPool.scheduleAtFixedRate(runnable3, 0, 30, TimeUnit.MINUTES);
         }
     }
 
@@ -301,7 +304,7 @@ public class Helpers {
         return user;
     }
 
-    public static long getChannelByArgsN(CommandEvent event, String arg) {
+    public static long getTextChannelByArgsN(CommandEvent event, String arg) {
         long id = -1L;
         if (event.getMessage().getMentionedChannels().size() == 1) {
             id = event.getMessage().getMentionedChannels().get(0).getIdLong();
@@ -311,6 +314,20 @@ public class Helpers {
             id = 0L;
         } else if (event.getGuild().getTextChannelsByName(arg, true).size() > 0) {
             id = event.getGuild().getTextChannelsByName(arg, true).get(0).getIdLong();
+        }
+        return id;
+    }
+
+    public static long getVoiceChannelByArgsN(CommandEvent event, String arg) {
+        long id = -1L;
+        if (event.getMessage().getMentionedChannels().size() == 1) {
+            id = event.getMessage().getMentionedChannels().get(0).getIdLong();
+        } else if (arg.matches("\\d+") && event.getGuild().getVoiceChannelById(arg) != null) {
+            id = Long.valueOf(arg);
+        } else if (arg.equalsIgnoreCase("null")) {
+            id = 0L;
+        } else if (event.getGuild().getVoiceChannelsByName(arg, true).size() > 0) {
+            id = event.getGuild().getVoiceChannelsByName(arg, true).get(0).getIdLong();
         }
         return id;
     }

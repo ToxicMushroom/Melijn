@@ -46,8 +46,8 @@ public class MusicPlayer {
         this.audioPlayer = audioPlayer;
         this.guild = guild;
         listener = new AudioListener(this);
-        audioPlayer.addListener(listener);
-        audioPlayer.setVolume(35);
+        this.audioPlayer.addListener(listener);
+        this.audioPlayer.setVolume(100);
         filters.put(1L, 0D); //Depth (cannot be disabled without removing the whole effect class from the builder)
         filters.put(2L, 0D); //Frequency (cannot be disabled without removing the whole effect class from the builder)
         filters.put(3L, 1D); //speed default 1

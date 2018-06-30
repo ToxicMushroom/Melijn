@@ -15,9 +15,9 @@ import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 public class SetLeaveMessageCommand extends Command {
 
     public SetLeaveMessageCommand() {
-        this.commandName = "setleavemessage";
-        this.description = "Setup a message that a user get's when he/she/it leaves\nPlaceholders: `%USER%` = user mention // `%USERNAME%` = user name";
-        this.usage = PREFIX + commandName + " <message>";
+        this.commandName = "setLeaveMessage";
+        this.description = "Setup a message that a user get's when he/she/it leaves\nPlaceholders: `%USER%` = user mention // `%USERNAME%` = user name // `%GUILDNAME%` // `%JOINCOUNT%`";
+        this.usage = PREFIX + commandName + " [message | null]";
         this.aliases = new String[]{"slm"};
         this.category = Category.MANAGEMENT;
     }

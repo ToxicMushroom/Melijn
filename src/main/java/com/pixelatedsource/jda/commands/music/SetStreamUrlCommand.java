@@ -19,7 +19,7 @@ public class SetStreamUrlCommand extends Command {
     public SetStreamUrlCommand() {
         this.commandName = "setstreamurl";
         this.description = "set the stream url of the bot";
-        this.usage = PREFIX + commandName + " [stream url]";
+        this.usage = PREFIX + commandName + " [list | url]";
         this.aliases = new String[]{"ssu"};
         this.needs = new Need[]{Need.GUILD};
         this.category = Category.MUSIC;

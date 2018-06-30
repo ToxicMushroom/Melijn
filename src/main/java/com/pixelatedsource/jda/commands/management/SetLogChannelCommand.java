@@ -16,9 +16,9 @@ import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 public class SetLogChannelCommand extends Command {
 
     public SetLogChannelCommand() {
-        this.commandName = "setlogchannel";
+        this.commandName = "setLogChannel";
         this.description = "Set change or view the text channel where the bot has to send the messages";
-        this.usage = PREFIX + commandName + " [channelId | #channel | null]";
+        this.usage = PREFIX + commandName + " [TextChannel | null]";
         this.aliases = new String[]{"slc"};
         this.category = Category.MANAGEMENT;
     }
@@ -33,18 +33,10 @@ public class SetLogChannelCommand extends Command {
                 String logChannelName = guildLogChannelMap.containsKey(guild.getIdLong()) ? "<#" + guildLogChannelMap.get(guild.getIdLong()) + ">" : "LogChannel is unset";
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
-                    Long id;
-                    if (event.getMessage().getMentionedChannels().size() == 1) {
-                        id = event.getMessage().getMentionedChannels().get(0).getIdLong();
-                    } else if (args[0].matches("\\d+") && guild.getTextChannelById(args[0]) != null) {
-                        id = Long.valueOf(args[0]);
-                    } else if (args[0].equalsIgnoreCase("null")) {
-                        id = 0L;
-                    } else {
+                    long id = Helpers.getTextChannelByArgsN(event, args[0]);
+                    if (id == -1) {
                         MessageHelper.sendUsage(this, event);
-                        return;
-                    }
-                    if (id == 0L) {
+                    } else if (id == 0L) {
                         guildLogChannelMap.remove(guild.getIdLong());
                         new Thread(() -> PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.LOG)).start();
                         event.reply("LogChannel has been changed from " + logChannelName + " to nothing by **" + event.getFullAuthorName() + "**");

@@ -15,9 +15,10 @@ import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 public class SetPrefixCommand extends Command {
 
     public SetPrefixCommand() {
-        this.commandName = "setprefix";
+        this.commandName = "setPrefix";
         this.description = "Change the prefix for the commands for your guild";
-        this.usage = PREFIX + this.commandName;
+        this.usage = PREFIX + this.commandName + " [prefix]";
+        this.aliases = new String[]{"prefix"};
         this.category = Category.MANAGEMENT;
     }
 
@@ -26,19 +27,23 @@ public class SetPrefixCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
-            if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+            if (Helpers.hasPerm(event.getMember(), commandName, 0)) {
                 Guild guild = event.getGuild();
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length == 0 || args[0].equalsIgnoreCase("")) event.reply(prefixes.containsKey(guild.getIdLong()) ? prefixes.get(guild.getIdLong()) : PREFIX);
-                else if (Arrays.toString(args).length() <= 100) {
-                    new Thread(() -> {
-                        PixelSniper.mySQL.setPrefix(guild.getIdLong(), args[0]);
-                        if (prefixes.replace(guild.getIdLong(), args[0]) == null)
-                            prefixes.put(guild.getIdLong(), args[0]);
-                        event.reply("The prefix has been set to `" + args[0] + "`");
-                    }).start();
+                else if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+                    if (Arrays.toString(args).length() <= 100) {
+                        new Thread(() -> {
+                            PixelSniper.mySQL.setPrefix(guild.getIdLong(), args[0]);
+                            if (prefixes.replace(guild.getIdLong(), args[0]) == null)
+                                prefixes.put(guild.getIdLong(), args[0]);
+                            event.reply("The prefix has been set to `" + args[0] + "`");
+                        }).start();
+                    } else {
+                        event.reply("The maximum prefix size is 100 characters");
+                    }
                 } else {
-                    event.reply("The maximum prefix size is 100 characters");
+                    event.reply("You need the permission `" + commandName + "` to change the prefix.");
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

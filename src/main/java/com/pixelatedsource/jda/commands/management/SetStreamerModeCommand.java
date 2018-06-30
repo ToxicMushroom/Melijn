@@ -17,7 +17,7 @@ import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 public class SetStreamerModeCommand extends Command {
 
     public SetStreamerModeCommand() {
-        this.commandName = "setstreamermode";
+        this.commandName = "setStreamerMode";
         this.description = "A special mode that lets the bot play a stream in the music channel";
         this.usage = PREFIX + commandName + " [true/on | false/off]";
         this.aliases = new String[]{"ssm"};

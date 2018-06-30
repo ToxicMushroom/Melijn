@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MusicManager {
 
-    public final AudioPlayerManager manager = new DefaultAudioPlayerManager();
+    private final AudioPlayerManager manager = new DefaultAudioPlayerManager();
     private final Map<Long, MusicPlayer> players = new HashMap<>();
     private static MusicManager managerinstance = new MusicManager();
     public static HashMap<User, List<AudioTrack>> usersRequest = new HashMap<>();
@@ -55,7 +55,7 @@ public class MusicManager {
                 player.playTrack(track);
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setTitle("Added");
-                eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at postition **#" + player.getListener().getTrackSize() + "**");
+                eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
                 eb.setFooter(Helpers.getFooterStamp(), null);
                 eb.setColor(Helpers.EmbedColor);
                 channel.sendMessage(eb.build()).queue();
@@ -174,7 +174,7 @@ public class MusicManager {
 
             @Override
             public void noMatches() {
-                channel.sendMessage("I couldn't find a song called " + source + ". Check on spelling mistakes.").queue();
+                channel.sendMessage("I couldn't find a song named " + source + ". Check on spelling mistakes.").queue();
             }
 
             @Override

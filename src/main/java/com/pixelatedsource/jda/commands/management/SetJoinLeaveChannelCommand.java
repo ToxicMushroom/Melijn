@@ -12,10 +12,10 @@ import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 public class SetJoinLeaveChannelCommand extends Command {
 
     public SetJoinLeaveChannelCommand() {
-        this.commandName = "setjoinleavechannel";
-        this.description = "Setup a textchannel where users will be welcomed or leave";
+        this.commandName = "setJoinLeaveChannel";
+        this.description = "Setup a TextChannel where users will be welcomed or leave";
         this.usage = PREFIX + commandName + " <TextChannel | null>";
-        this.aliases = new String[]{"sjlc", "setwelcomechannel", "swc"};
+        this.aliases = new String[]{"sjlc", "SetWelcomeChannel", "swc"};
         this.category = Category.MANAGEMENT;
     }
 
@@ -29,11 +29,11 @@ public class SetJoinLeaveChannelCommand extends Command {
                 long welcomeChannelId = welcomeChannels.getOrDefault(guild.getIdLong(), -1L);
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
-                    long id = Helpers.getChannelByArgsN(event, args[0]);
+                    long id = Helpers.getTextChannelByArgsN(event, args[0]);
                     if (id != -1L && id != 0L) {
                         new Thread(() -> PixelSniper.mySQL.setChannel(guild.getIdLong(), id, ChannelType.WELCOME)).start();
                         if (!SetJoinMessageCommand.joinMessages.containsKey(guild.getIdLong())) {
-                            SetJoinMessageCommand.joinMessages.put(guild.getIdLong(), "Welcome %USER% to our awesome discord server :D");
+                            SetJoinMessageCommand.joinMessages.put(guild.getIdLong(), "Welcome %USER% to the %GUILDNAME% discord server you are me");
                             new Thread(() -> PixelSniper.mySQL.setMessage(guild.getIdLong(), "Welcome %USER% to our awesome discord server :D", MessageType.JOIN)).start();
                             event.reply("I've set the default join message :beginner:");
                         }
