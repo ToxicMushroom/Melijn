@@ -1279,13 +1279,14 @@ public class MySQL {
     }
 
     public JSONObject getVotesObject(long userId) {
-        JSONObject toReturn = new JSONObject();
+        JSONObject toReturn = new JSONObject().put("streak", 0);
         try {
             PreparedStatement statement = con.prepareStatement("SELECT * FROM votes WHERE userId= ?");
             statement.setLong(1, userId);
             ResultSet rs = statement.executeQuery();
             while (rs.next()) {
                 toReturn.put("votes", rs.getLong("votes"));
+                toReturn.remove("streak");
                 toReturn.put("streak", rs.getLong("streak"));
                 toReturn.put("lastTime", rs.getLong("lastTime"));
             }
@@ -1364,5 +1365,62 @@ public class MySQL {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public HashMap<Long, JSONObject> getVoteMap() {
+        HashMap<Long, JSONObject> map = new HashMap<>();
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM votes");
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                map.putIfAbsent(rs.getLong("userId"),
+                        new JSONObject()
+                                .put("streak", rs.getLong("streak"))
+                                .put("votes", rs.getLong("votes"))
+                                .put("lastTime", rs.getLong("lastTime")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return map;
+    }
+
+    public HashMap<Long, Long> getVoteStreakMap() {
+        HashMap<Long, Long> map = new HashMap<>();
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM votes");
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                map.putIfAbsent(rs.getLong("userId"), rs.getLong("streak"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return map;
+    }
+
+    public HashMap<Long, Long> getVoteTimeMap() {
+        HashMap<Long, Long> map = new HashMap<>();
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM votes");
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                map.putIfAbsent(rs.getLong("userId"), rs.getLong("lastTime"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return map;
+    }
+
+    public void updateVoteStreak() {
+        try {
+            PreparedStatement statement = con.prepareStatement("UPDATE votes SET streak=? WHERE lastTime<?");
+            statement.setLong(1, 0);
+            statement.setLong(2, System.currentTimeMillis() - 172_800_000);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -126,7 +126,7 @@ public class Helpers {
 
     public static void startTimer(JDA jda, DiscordBotListAPI dbl, int i) {
         if (i == 0 || i == 1) {
-            Runnable runnable = () -> {
+            executorPool.scheduleAtFixedRate(() -> {
                 lastRunTimer1 = System.currentTimeMillis();
                 try {
                     ResultSet bans = PixelSniper.mySQL.query("SELECT * FROM active_bans WHERE endTime < " + System.currentTimeMillis());
@@ -153,10 +153,9 @@ public class Helpers {
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-            };
-            executorPool.scheduleAtFixedRate(runnable, 1, 2, TimeUnit.SECONDS);
+            }, 1, 2, TimeUnit.SECONDS);
         } if (i == 0 || i == 2) {
-            Runnable runnable2 = () -> {
+            executorPool.scheduleAtFixedRate(() -> {
                 lastRunTimer2 = System.currentTimeMillis();
                 if (dbl != null)
                     dbl.setStats(jda.getSelfUser().getId(), guildCount == 0 ? jda.getGuilds().size() : guildCount);
@@ -170,16 +169,14 @@ public class Helpers {
                         }
                     }
                 }
-            };
-            executorPool.scheduleAtFixedRate(runnable2, 1, 60, TimeUnit.SECONDS);
+            }, 1, 60, TimeUnit.SECONDS);
         } if (i == 0 || i == 3) {
-            Runnable runnable3 = () -> {
+            executorPool.scheduleAtFixedRate(() -> {
                 lastRunTimer3 = System.currentTimeMillis();
-
                 if (System.currentTimeMillis() - starttime > 10_000)
-                WebUtils.getWebUtilsInstance().updateSpotifyCredentials();
-            };
-            executorPool.scheduleAtFixedRate(runnable3, 0, 30, TimeUnit.MINUTES);
+                    WebUtils.getWebUtilsInstance().updateSpotifyCredentials();
+                PixelSniper.mySQL.updateVoteStreak();
+            }, 0, 30, TimeUnit.MINUTES);
         }
     }
 
