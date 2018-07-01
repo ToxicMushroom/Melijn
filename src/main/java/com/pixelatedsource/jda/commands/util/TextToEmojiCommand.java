@@ -29,8 +29,11 @@ public class TextToEmojiCommand extends Command {
                     } else if (Character.isDigit(s.charAt(0))) {
                         sb.append(":").append(Helpers.numberToString(Integer.valueOf(s))).append(":");
                     } else {
-                        if (" ".equals(s)) sb.append(" ");
                         sb.append(s);
+                    }
+                    if (sb.toString().length() > 1900)  {
+                        event.reply(sb.toString());
+                        sb = new StringBuilder();
                     }
                 }
                 event.reply(sb.toString());

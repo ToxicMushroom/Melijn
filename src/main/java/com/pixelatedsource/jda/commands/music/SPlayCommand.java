@@ -55,47 +55,34 @@ public class SPlayCommand extends Command {
             case "sc":
             case "soundcloud":
                 if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".sc", 0) || access) {
-                    if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
-                        guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                    if (isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
                     manager.searchTracks(event.getTextChannel(), "scsearch:" + songName, event.getAuthor());
                 } else {
                     event.reply("You need the permission `" + commandName + ".sc` to execute this command.");
                 }
                 break;
-            case "link":
-                if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) || access) {
-                    if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
-                        guild.getAudioManager().openAudioConnection(senderVoiceChannel);
-                    manager.searchTracks(event.getTextChannel(), args[(args.length - 1)], event.getAuthor());
-                } else {
-                    event.reply("You need the permission `" + commandName + ".link` to execute this command.");
-                }
-                break;
             default:
-                if (songName.contains("https://") || songName.contains("http://")) {
-                    if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) || access) {
-                        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
-                            guild.getAudioManager().openAudioConnection(senderVoiceChannel);
-                        if (songName.contains("open.spotify.com")) {
-                            event.reply("You can't play spotify links with bots sadly :(\nIf you have a self made playlist you can use http://www.playlist-converter.net/#/ to convert it into a youtube playlist or soundcloud (those are supported).");
-                            return;
-                        }
-                        manager.searchTracks(event.getTextChannel(), args[(args.length - 1)], event.getAuthor());
-                    } else {
-                        event.reply("You need the permission `" + commandName + ".link` to execute this command.");
-                    }
+                if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".yt", 0) || access) {
+                    if (isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
+                    manager.searchTracks(event.getTextChannel(), "ytsearch:" + songName, event.getAuthor());
                 } else {
-                    if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".yt", 0) || access) {
-                        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
-                            guild.getAudioManager().openAudioConnection(senderVoiceChannel);
-                        manager.searchTracks(event.getTextChannel(), "ytsearch:" + songName, event.getAuthor());
-                    } else {
-                        event.reply("You need the permission `" + commandName + ".yt` to execute this command.");
-                    }
+                    event.reply("You need the permission `" + commandName + ".yt` to execute this command.");
                 }
                 break;
 
         }
+    }
+
+    static boolean isConnectedOrConnecting(CommandEvent event, Guild guild, VoiceChannel senderVoiceChannel) {
+        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) {
+            if (senderVoiceChannel.getUserLimit() == 0 || (senderVoiceChannel.getUserLimit() > senderVoiceChannel.getMembers().size() || guild.getSelfMember().hasPermission(senderVoiceChannel, Permission.VOICE_MOVE_OTHERS))) {
+                guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+            } else {
+                event.reply("Your channel is full. I need the **Move Members** permission to join full channels");
+                return true;
+            }
+        }
+        return false;
     }
 
     static void argsToSongName(String[] args, StringBuilder sb, List<String> providers) {

@@ -54,8 +54,7 @@ public class PlayCommand extends Command {
                 case "sc":
                 case "soundcloud":
                     if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".sc", 0) || access) {
-                        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
-                            guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                        if (SPlayCommand.isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
                         manager.loadTrack(event.getTextChannel(), "scsearch:" + songName, event.getAuthor(), false);
                     } else {
                         event.reply("You need the permission `" + commandName + ".sc` to execute this command.");
@@ -63,8 +62,7 @@ public class PlayCommand extends Command {
                     break;
                 case "link":
                     if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) || access) {
-                        if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
-                            guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                        if (SPlayCommand.isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
                         manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
                     } else {
                         event.reply("You need the permission `" + commandName + ".link` to execute this command.");
@@ -74,8 +72,7 @@ public class PlayCommand extends Command {
                     if (songName.contains("https://") || songName.contains("http://")) {
                         songName = songName.replaceAll("\\s+", "");
                         if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) || access) {
-                            if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
-                                guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                            if (SPlayCommand.isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
                             if (songName.contains("open.spotify.com")) {
                                 if (songName.matches("https://open.spotify.com/track/\\S+")) {
                                     JSONObject object = WebUtils.getWebUtilsInstance().getInfoFromSpotifyUrl(songName);
@@ -93,8 +90,7 @@ public class PlayCommand extends Command {
                         }
                     } else {
                         if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".yt", 0) || access) {
-                            if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect())
-                                guild.getAudioManager().openAudioConnection(senderVoiceChannel);
+                            if (SPlayCommand.isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
                             manager.loadTrack(event.getTextChannel(), "ytsearch:" + songName, event.getAuthor(), false);
                         } else {
                             event.reply("You need the permission `" + commandName + ".yt` to execute this command.");

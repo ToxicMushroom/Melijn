@@ -64,6 +64,10 @@ public class MusicManager {
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
                 List<AudioTrack> tracks = playlist.getTracks();
+                if (tracks.size() == 0) {
+                    channel.sendMessage("No songs found with this request '" + source.replaceFirst("ytsearch:|scsearch:", "") + "'").queue();
+                    return;
+                }
                 if (!isPlaylist) {
                     trackLoaded(tracks.get(0));
                 } else {
@@ -100,8 +104,10 @@ public class MusicManager {
             @Override
             public void loadFailed(FriendlyException exception) {
                 channel.sendMessage("Error: " + exception.getMessage()).queue();
+                exception.addSuppressed(exception);
             }
         });
+
     }
 
     public void loadSimpelTrack(Guild guild, final String source) {
@@ -156,7 +162,7 @@ public class MusicManager {
                 int i = 0;
                 for (AudioTrack track : tracks) {
                     map.put(i, track);
-                    if (i != 5)
+                    if (i == 5) break;
                     sb.append("[").append(++i).append("](").append(track.getInfo().uri).append(") - ").append(track.getInfo().title).append(" `[").append(Helpers.getDurationBreakdown(track.getInfo().length)).append("]`\n");
                 }
                 eb.setDescription(sb.toString());
