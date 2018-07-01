@@ -5,6 +5,7 @@ import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.blub.Need;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.User;
@@ -15,43 +16,47 @@ public class KickCommand extends Command {
 
     public KickCommand() {
         this.commandName = "kick";
-        this.description = "kick a person with a reason (the bot will dm the reason to the person)";
+        this.description = "kick a member";
         this.usage = PREFIX + commandName + " <member> [reason]";
         this.category = Category.MANAGEMENT;
+        this.extra = "the bot will dm the reason to the target if one is provided";
+        this.needs = new Need[]{Need.GUILD, Need.ROLE};
         this.permissions = new Permission[]{Permission.KICK_MEMBERS};
     }
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() != null) {
-            if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
-                String[] args = event.getArgs().split("\\s+");
-                if (args.length > 0) {
-                    User target = Helpers.getUserByArgsN(event, args[0]);
-                    String reason = event.getArgs().replaceFirst(args[0] + "\\s+|" + args[0], "");
-                    if (target != null) {
-                        if (event.getGuild().getMember(target) != null) {
-                            new Thread(() -> {
-                                if (reason.length() <= 1000 && PixelSniper.mySQL.addKick(event.getAuthor(), target, event.getGuild(), reason)) {
-                                    event.getMessage().addReaction("\u2705").queue();
-                                } else {
-                                    event.getMessage().addReaction("\u274C").queue();
+        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+            String[] args = event.getArgs().split("\\s+");
+            if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
+                User target = Helpers.getUserByArgsN(event, args[0]);
+                String reason = event.getArgs().replaceFirst(args[0] + "\\s+|" + args[0], "");
+                if (target != null) {
+                    if (event.getGuild().getMember(target) != null) {
+                        new Thread(() -> {
+                            if (event.getGuild().getMember(target).getRoles().size() > 1) {
+                                if (event.getGuild().getMember(target).getRoles().get(0).getPosition() <= event.getGuild().getSelfMember().getRoles().get(0).getPosition()) {
+                                    event.reply("I can't modify a member with higher or equal highest role than myself");
+                                    return;
                                 }
-                            }).start();
-                        } else {
-                            event.reply("This user isn't a member of this guild");
-                        }
+                            }
+                            if (reason.length() <= 1000 && PixelSniper.mySQL.addKick(event.getAuthor(), target, event.getGuild(), reason)) {
+                                event.getMessage().addReaction("\u2705").queue();
+                            } else {
+                                event.getMessage().addReaction("\u274C").queue();
+                            }
+                        }).start();
                     } else {
-                        event.reply("Unknown user");
+                        event.reply("This user isn't a member of this guild");
                     }
                 } else {
-                    MessageHelper.sendUsage(this, event);
+                    event.reply("Unknown user");
                 }
             } else {
-                event.reply("You need the permission `" + commandName + "` to execute this command.");
+                MessageHelper.sendUsage(this, event);
             }
         } else {
-            event.reply(Helpers.guildOnly);
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
     }
 }

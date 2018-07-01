@@ -5,6 +5,7 @@ import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.blub.Need;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 
@@ -17,7 +18,8 @@ public class UnbanCommand extends Command {
         this.description = "unban a banned user";
         this.usage = PREFIX + commandName + " <@user | userId>";
         this.category = Category.MANAGEMENT;
-        this.permissions = new Permission[] {
+        this.needs = new Need[]{Need.GUILD};
+        this.permissions = new Permission[]{
                 Permission.MESSAGE_EMBED_LINKS,
                 Permission.BAN_MEMBERS
         };
@@ -25,36 +27,27 @@ public class UnbanCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() != null) {
-            if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
-                if (event.getGuild().getSelfMember().hasPermission(Permission.BAN_MEMBERS)) {
-                    String[] args = event.getArgs().split("\\s+");
-                    if (args.length == 1) {
-                        Helpers.retrieveUserByArgsN(event, args[0], user -> {
-                            if (user != null) {
-                                new Thread(() -> {
-                                    if (PixelSniper.mySQL.unban(user, event.getGuild(), event.getAuthor())) {
-                                        event.getMessage().addReaction("\u2705").queue();
-                                    } else {
-                                        event.getMessage().addReaction("\u274C").queue();
-                                    }
-                                }).start();
+        if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
+            String[] args = event.getArgs().split("\\s+");
+            if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
+                Helpers.retrieveUserByArgsN(event, args[0], user -> {
+                    if (user != null) {
+                        new Thread(() -> {
+                            if (PixelSniper.mySQL.unban(user, event.getGuild(), event.getAuthor())) {
+                                event.getMessage().addReaction("\u2705").queue();
                             } else {
-                                event.reply("Unknown user");
+                                event.getMessage().addReaction("\u274C").queue();
                             }
-                        });
-
+                        }).start();
                     } else {
-                        MessageHelper.sendUsage(this, event);
+                        event.reply("Unknown user");
                     }
-                } else {
-                    event.reply("I have no permission to unban users.");
-                }
+                });
             } else {
-                event.reply("You need the permission `" + commandName + "` to execute this command.");
+                MessageHelper.sendUsage(this, event);
             }
         } else {
-            event.reply(Helpers.guildOnly);
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
     }
 }

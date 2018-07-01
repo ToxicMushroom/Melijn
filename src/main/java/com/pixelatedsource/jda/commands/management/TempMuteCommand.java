@@ -2,10 +2,7 @@ package com.pixelatedsource.jda.commands.management;
 
 import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.PixelSniper;
-import com.pixelatedsource.jda.blub.Category;
-import com.pixelatedsource.jda.blub.Command;
-import com.pixelatedsource.jda.blub.CommandEvent;
-import com.pixelatedsource.jda.blub.RoleType;
+import com.pixelatedsource.jda.blub.*;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
@@ -21,9 +18,10 @@ public class TempMuteCommand extends Command {
     public TempMuteCommand() {
         this.commandName = "tempmute";
         this.description = "Mute people and let the bot unmute them after the specified amount of time";
-        this.usage = PREFIX + commandName + " <@user | userid> <time> [reason]";
+        this.usage = PREFIX + commandName + " <member> <time> [reason]";
         this.extra = "Time examples: [1s = 1second, 1m = 1minute, 1h = 1hour, 1w = 1week, 1M = 1month, 1y = 1year]";
         this.category = Category.MANAGEMENT;
+        this.needs = new Need[]{Need.GUILD, Need.ROLE};
         this.permissions = new Permission[]{
                 Permission.MESSAGE_EMBED_LINKS,
                 Permission.MANAGE_ROLES
@@ -32,14 +30,13 @@ public class TempMuteCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                 String[] args = event.getArgs().split("\\s+");
                 Guild guild = event.getGuild();
-                if (args.length >= 2) {
+                if (args.length > 1) {
                     User target = Helpers.getUserByArgsN(event, args[0]);
                     String time = args[1];
-                    String reason = event.getArgs().replaceFirst(args[0] + "\\s+" + args[1] + "\\s+|" + args[0] + "\\s+" + args[1], "");
+
                     if (target != null && guild.getMember(target) != null) {
                         if (MessageHelper.isRightFormat(time)) {
                             if (SetMuteRoleCommand.muteRoles.getOrDefault(guild.getIdLong(), -1L) == -1) {
@@ -49,7 +46,14 @@ public class TempMuteCommand extends Command {
                             }
                             Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoles.getOrDefault(guild.getIdLong(), -1L));
                             if (muteRole != null) {
+                                if (event.getGuild().getMember(target).getRoles().size() > 1) {
+                                    if (event.getGuild().getMember(target).getRoles().get(0).getPosition() <= event.getGuild().getSelfMember().getRoles().get(0).getPosition()) {
+                                        event.reply("I can't modify a member with higher or equal highest role than myself");
+                                        return;
+                                    }
+                                }
                                 guild.getController().addSingleRoleToMember(guild.getMember(target), muteRole).queue(s -> {
+                                    String reason = event.getArgs().replaceFirst(args[0] + "\\s+" + args[1] + "\\s+|" + args[0] + "\\s+" + args[1], "");
                                     if (reason.length() <= 1000 && PixelSniper.mySQL.setTempMute(event.getAuthor(), target, guild, reason, MessageHelper.easyFormatToSeconds(time))) {
                                         event.getMessage().addReaction("\u2705").queue();
                                     } else {
@@ -71,12 +75,9 @@ public class TempMuteCommand extends Command {
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");
             }
-        } else {
-            event.reply(Helpers.guildOnly);
-        }
     }
 
-    public static void createMuteRole(Guild guild) {
+    static void createMuteRole(Guild guild) {
         long roleId = guild.getController().createRole()
                 .setColor(Color.gray)
                 .setMentionable(false)

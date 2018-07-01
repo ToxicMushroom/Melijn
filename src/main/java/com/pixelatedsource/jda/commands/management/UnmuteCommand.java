@@ -28,7 +28,7 @@ public class UnmuteCommand extends Command {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
                 String[] args = event.getArgs().split("\\s+");
-                if (args.length == 1) {
+                if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     Helpers.retrieveUserByArgsN(event, args[0], user -> {
                         if (user != null) {
                             new Thread(() -> {

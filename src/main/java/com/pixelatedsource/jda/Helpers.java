@@ -370,12 +370,11 @@ public class Helpers {
     }
 
     public static void retrieveUserByArgsN(CommandEvent event, String arg, Consumer<User> success) {
-        Runnable run = () -> {
+        executorPool.execute(() -> {
             User user = getUserByArgsN(event, arg);
             if (user == null && arg.matches("\\d+") && event.getJDA().getUserById(arg) == null) event.getJDA().retrieveUserById(arg).queue(success);
             else success.accept(user);
-        };
-        executorPool.execute(run);
+        });
     }
 
     public static long parseTimeFromArgs(String[] args) {

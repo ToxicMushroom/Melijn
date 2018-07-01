@@ -24,9 +24,9 @@ public class WarnCommand extends Command {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                 String[] args = event.getArgs().split("\\s+");
-                if (args.length >= 2) {
+                if (args.length > 1) {
                     User target = Helpers.getUserByArgsN(event, args[0]);
-                    if (target != null) {
+                    if (target != null && event.getGuild().getMember(target) != null) {
                         String reason = event.getArgs().replaceFirst(args[0] + "\\s+|" + args[0], "");
                         new Thread(() -> {
                             if (event.getGuild().getMember(target) != null) {
@@ -40,7 +40,7 @@ public class WarnCommand extends Command {
                             }
                         }).start();
                     } else {
-                        event.reply("Unknown user");
+                        event.reply("Unknown member");
                     }
                 } else {
                     MessageHelper.sendUsage(this, event);

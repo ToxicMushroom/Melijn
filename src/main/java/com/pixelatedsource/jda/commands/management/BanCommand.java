@@ -5,6 +5,7 @@ import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.blub.Need;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 
@@ -14,10 +15,11 @@ public class BanCommand extends Command {
 
     public BanCommand() {
         this.commandName = "ban";
-        this.description = "Bans users from your server and give them a nice message in pm.";
-        this.usage = PREFIX + commandName + " <@user | userId> [reason]";
+        this.description = "Bans specified users from your server and gives them a nice message in dm";
+        this.usage = PREFIX + commandName + " <user> [reason]";
         this.category = Category.MANAGEMENT;
         this.aliases = new String[]{"permban"};
+        this.needs = new Need[]{Need.ROLE, Need.GUILD};
         this.permissions = new Permission[]{
                 Permission.MESSAGE_EMBED_LINKS,
                 Permission.BAN_MEMBERS
@@ -26,30 +28,32 @@ public class BanCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() != null) {
-            if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
-                String[] args = event.getArgs().split("\\s+");
-                if (args.length >= 1) {
-                    Helpers.retrieveUserByArgsN(event, args[0], target -> {
-                        String reason = event.getArgs().replaceFirst(args[0] + "\\s+|" + args[0], "");
-                        if (target != null) {
-                            if (reason.length() <= 1000 && PixelSniper.mySQL.setPermBan(event.getAuthor(), target, event.getGuild(), reason)) {
-                                event.getMessage().addReaction("\u2705").queue();
-                            } else {
-                                event.getMessage().addReaction("\u274C").queue();
+        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+            String[] args = event.getArgs().split("\\s+");
+            if (args.length > 0  && !args[0].equalsIgnoreCase("")) {
+                Helpers.retrieveUserByArgsN(event, args[0], target -> {
+                    if (target != null) {
+                        if (event.getGuild().getMember(target).getRoles().size() > 1) {
+                            if (event.getGuild().getMember(target).getRoles().get(0).getPosition() <= event.getGuild().getSelfMember().getRoles().get(0).getPosition()) {
+                                event.reply("I can't modify a member with higher or equal highest role than myself");
+                                return;
                             }
-                        } else {
-                            event.reply("Unknown user");
                         }
-                    });
-                } else {
-                    MessageHelper.sendUsage(this, event);
-                }
+                        String reason = event.getArgs().replaceFirst(args[0] + "\\s+|" + args[0], "");
+                        if (reason.length() <= 1000 && PixelSniper.mySQL.setPermBan(event.getAuthor(), target, event.getGuild(), reason)) {
+                            event.getMessage().addReaction("\u2705").queue();
+                        } else {
+                            event.getMessage().addReaction("\u274C").queue();
+                        }
+                    } else {
+                        event.reply("Unknown user");
+                    }
+                });
             } else {
-                event.reply("You need the permission `" + commandName + "` to execute this command.");
+                MessageHelper.sendUsage(this, event);
             }
         } else {
-            event.reply(Helpers.guildOnly);
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
     }
 }
