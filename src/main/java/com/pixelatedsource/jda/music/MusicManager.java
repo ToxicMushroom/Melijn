@@ -87,11 +87,15 @@ public class MusicManager {
                             v.addReaction("\u2705").queue();
                             v.addReaction("\u274E").queue();
                             Helpers.waitForIt(requester);
-                            v.delete().queueAfter(30, TimeUnit.SECONDS);
+                            v.delete().queueAfter(30, TimeUnit.SECONDS, null,
+                                    (failure) -> {
+                                    });
                         });
                     } else {
                         channel.sendMessage("You still have a request to answer. (requests automatically get removed after 30 seconds)")
-                                .queue(v -> v.delete().queueAfter(10, TimeUnit.SECONDS));
+                                .queue(v -> v.delete().queueAfter(10, TimeUnit.SECONDS, null,
+                                        (failure) -> {
+                                        }));
                     }
                 }
             }

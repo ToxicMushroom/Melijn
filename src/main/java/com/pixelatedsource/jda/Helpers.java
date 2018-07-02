@@ -121,7 +121,8 @@ public class Helpers {
             "kick",
             "bypass.sameVoiceChannel",
             "summon",
-            "nyancat"
+            "nyancat",
+            "clearchannel"
     ));
 
     public static void startTimer(JDA jda, DiscordBotListAPI dbl, int i) {

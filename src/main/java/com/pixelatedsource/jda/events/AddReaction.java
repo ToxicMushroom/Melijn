@@ -1,6 +1,7 @@
 package com.pixelatedsource.jda.events;
 
 import com.pixelatedsource.jda.Helpers;
+import com.pixelatedsource.jda.commands.management.ClearChannelCommand;
 import com.pixelatedsource.jda.commands.music.SPlayCommand;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
@@ -8,10 +9,13 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class AddReaction extends ListenerAdapter {
 
@@ -118,8 +122,46 @@ public class AddReaction extends ListenerAdapter {
             }
             if (!wrongemote) {
                 event.getChannel().getMessageById(event.getMessageId()).queue((s) -> {
-                    if (s.getGuild() != null && s.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_MANAGE)) s.clearReactions().queue();
+                    if (s.getGuild() != null && s.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_MANAGE))
+                        s.clearReactions().queue();
                 });
+            }
+        }
+        if (ClearChannelCommand.possibleDeletes.containsKey(event.getGuild().getIdLong())) {
+            HashMap<Long, Long> messageChannel = new HashMap<>();
+            messageChannel.put(event.getMessageIdLong(), event.getChannel().getIdLong());
+            if (ClearChannelCommand.possibleDeletes.values().contains(messageChannel)
+                    && ClearChannelCommand.messageUser.get(event.getMessageIdLong()) == event.getUser().getIdLong()
+                    && Helpers.hasPerm(event.getGuild().getMember(event.getUser()), "clearChannel", 1)) {
+                if (event.getReactionEmote().getEmote() != null)
+                    switch (event.getReactionEmote().getEmote().getId()) {
+                        case "463250265026330634"://yes
+                            TextChannel toDelete = event.getGuild().getTextChannelById(ClearChannelCommand.possibleDeletes.get(event.getGuild().getIdLong()).get(event.getMessageIdLong()));
+                            toDelete.createCopy().queue(s -> {
+                                guild.getController().modifyTextChannelPositions().selectPosition((TextChannel) s).moveTo(toDelete.getPosition()).queue(done -> {
+                                    toDelete.delete().queue();
+                                    ((TextChannel) s).sendMessage("**#" + toDelete.getName() + "** has been cleared")
+                                            .queue(message ->
+                                                    message.delete().queueAfter(5, TimeUnit.SECONDS, null, (failure) -> {
+                                                    }));
+                                });
+                            });
+
+                            ClearChannelCommand.possibleDeletes.get(guild.getIdLong()).remove(messageChannel);
+                            HashMap<Long, Long> messageUser = new HashMap<>();
+                            messageUser.put(event.getMessageIdLong(), event.getUser().getIdLong());
+                            ClearChannelCommand.messageUser.remove(messageUser);
+                            break;
+                        case "463250264653299713"://no
+                            event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.delete().queue());
+                            ClearChannelCommand.possibleDeletes.get(guild.getIdLong()).remove(messageChannel);
+                            HashMap<Long, Long> messageUser2 = new HashMap<>();
+                            messageUser2.put(event.getMessageIdLong(), event.getUser().getIdLong());
+                            ClearChannelCommand.messageUser.remove(messageUser2);
+                            break;
+                        default:
+                            break;
+                    }
             }
         }
     }
