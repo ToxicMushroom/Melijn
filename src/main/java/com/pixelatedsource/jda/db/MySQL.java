@@ -1184,7 +1184,7 @@ public class MySQL {
 
     public void removeMessage(long guildId, MessageType type) {
         try {
-            PreparedStatement setPrefix = con.prepareStatement("REMOVE FROM " + type.toString().toLowerCase() + "_messages WHERE guildId= ?");
+            PreparedStatement setPrefix = con.prepareStatement("DELETE FROM " + type.toString().toLowerCase() + "_messages WHERE guildId= ?");
             setPrefix.setLong(1, guildId);
             setPrefix.executeUpdate();
             setPrefix.close();
