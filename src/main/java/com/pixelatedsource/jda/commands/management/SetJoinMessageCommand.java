@@ -15,9 +15,10 @@ import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 public class SetJoinMessageCommand extends Command {
 
     public SetJoinMessageCommand() {
-        this.commandName = "setjoinmessage";
-        this.description = "Setup a message that a user get's when he/she/it joins\nPlaceholders: `%USER%` = user mention // `%USERNAME%` = user name // `%GUILDNAME%` or `%SERVERNAME%` = your discord server's name";
+        this.commandName = "setJoinMessage";
+        this.description = "Setup a message that a user get's when he/she/it joins";
         this.usage = PREFIX + commandName + " [message | null]";
+        this.extra = "\nPlaceholders: `%USER%` = user mention // `%USERNAME%` = user name // `%GUILDNAME%` = your discord server's name // `%JOINPOSITION%` = member position";
         this.aliases = new String[]{"sjm"};
         this.category = Category.MANAGEMENT;
     }
