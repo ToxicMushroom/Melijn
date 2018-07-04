@@ -25,6 +25,7 @@ import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.events.DisconnectEvent;
+import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.discordbots.api.client.DiscordBotListAPI;
 
@@ -46,21 +47,31 @@ public class PixelSniper extends ListenerAdapter {
 
     public static DiscordBotListAPI dblAPI = null;
     public static MySQL mySQL = new MySQL(IP, USER, PASS, DBNAME);
+    private static JDA jda;
 
     public static void main(String[] args) throws LoginException, InterruptedException {
         mySQL.update("TRUNCATE TABLE commands");
         CommandClientBuilder client = new CommandClientBuilder();
         client.setOwnerId(OWNERID);
         client.setPrefix(PREFIX);
-        client.addCommands(new ClearChannelCommand(), new NyanCatCommand(), new SummonCommand(), new ForwardCommand(), new RewindCommand(), new NightCoreCommand(), new TremoloCommand(), new PitchCommand(), new SpeedCommand(), new CryCommand(), new ShrugCommand(), new DabCommand(), new HighfiveCommand(), new WastedCommand(), new LewdCommand(), new PunchCommand(), new ShuffleCommand(), new EvalCommand(), new WeebshCommand(), new SayCommand(), new DiscordMemeCommand(), new SetMusicLogChannel(), new LoopQueueCommand(), new SetNotifications(), new VoteCommand(), new InviteCommand(), new SetJoinLeaveChannelCommand(), new SetJoinRoleCommand(), new SetJoinMessageCommand(),new SetLeaveMessageCommand(), new TriggeredCommand(), new SlapCommand(), new PatCommand(), new FilterCommand(), new PotatoCommand(), new PauseCommand(), new SPlayCommand(), new BanCommand(), new HistoryCommand(), new MuteCommand(), new SetMuteRoleCommand(), new TempMuteCommand(), new UnmuteCommand(), new KickCommand(), new AvatarCommand(), new WarnCommand(), new PurgeCommand(), new HelpCommand(), new PingCommand(), new PlayCommand(), new QueueCommand(), new CatCommand(), new SkipCommand(), new ClearCommand(), new StopCommand(), new ResumeCommand(), new VolumeCommand(), new InfoCommand(), new UserInfoCommand(), new LoopCommand(), new TextToEmojiCommand(), new SeekCommand(), new PermCommand(), new NowPlayingCommand(), new RemoveCommand(), new GuildInfoCommand(), new RoleInfoCommand(), new DogCommand(), new SetPrefixCommand(), new SetMusicChannelCommand(), new SetLogChannelCommand(), new TempBanCommand(), new UnbanCommand(), new SetStreamerModeCommand(), new SetStreamUrlCommand());
+        client.addCommands(new ClearChannelCommand(), new NyanCatCommand(), new SummonCommand(), new ForwardCommand(), new RewindCommand(), new NightCoreCommand(), new TremoloCommand(), new PitchCommand(), new SpeedCommand(), new CryCommand(), new ShrugCommand(), new DabCommand(), new HighfiveCommand(), new WastedCommand(), new LewdCommand(), new PunchCommand(), new ShuffleCommand(), new EvalCommand(), new WeebshCommand(), new SayCommand(), new DiscordMemeCommand(), new SetMusicLogChannel(), new LoopQueueCommand(), new SetNotifications(), new VoteCommand(), new InviteCommand(), new SetJoinLeaveChannelCommand(), new SetJoinRoleCommand(), new SetJoinMessageCommand(), new SetLeaveMessageCommand(), new TriggeredCommand(), new SlapCommand(), new PatCommand(), new FilterCommand(), new PotatoCommand(), new PauseCommand(), new SPlayCommand(), new BanCommand(), new HistoryCommand(), new MuteCommand(), new SetMuteRoleCommand(), new TempMuteCommand(), new UnmuteCommand(), new KickCommand(), new AvatarCommand(), new WarnCommand(), new PurgeCommand(), new HelpCommand(), new PingCommand(), new PlayCommand(), new QueueCommand(), new CatCommand(), new SkipCommand(), new ClearCommand(), new StopCommand(), new ResumeCommand(), new VolumeCommand(), new InfoCommand(), new UserInfoCommand(), new LoopCommand(), new TextToEmojiCommand(), new SeekCommand(), new PermCommand(), new NowPlayingCommand(), new RemoveCommand(), new GuildInfoCommand(), new RoleInfoCommand(), new DogCommand(), new SetPrefixCommand(), new SetMusicChannelCommand(), new SetLogChannelCommand(), new TempBanCommand(), new UnbanCommand(), new SetStreamerModeCommand(), new SetStreamUrlCommand());
         CommandClient commandClient = client.build();
 
         dblAPI = new DiscordBotListAPI.Builder()
                 .token(DBLTOKEN)
                 .build();
 
-        JDA jda = new JDABuilder(AccountType.BOT).setToken(TOKEN).setGame(Game.playing(PREFIX + "help | melijn.com")).setAutoReconnect(true)
-                .addEventListener(commandClient).addEventListener(new JoinLeave()).addEventListener(new AddReaction()).addEventListener(new Channels()).addEventListener(new Chat()).setAudioSendFactory(new NativeAudioSendFactory()).buildBlocking();
+        jda = new JDABuilder(AccountType.BOT)
+                .setToken(TOKEN)
+                .setGame(Game.playing(PREFIX + "help | melijn.com"))
+                .setAutoReconnect(true)
+                .addEventListener(commandClient)
+                .addEventListener(new JoinLeave())
+                .addEventListener(new AddReaction())
+                .addEventListener(new Channels())
+                .addEventListener(new Chat())
+                .setAudioSendFactory(new NativeAudioSendFactory())
+                .buildBlocking();
         Helpers.startTimer(jda, dblAPI, 0);
         Helpers.starttime = System.currentTimeMillis();
         /*setting avatar & username
@@ -73,6 +84,13 @@ public class PixelSniper extends ListenerAdapter {
             e.printStackTrace();
         }
         */
+    }
+
+    public void onReady(ReadyEvent event) {
+    }
+
+    public static JDA getJdaInstance() {
+        return jda;
     }
 
     public void onDisconnect(DisconnectEvent e) {

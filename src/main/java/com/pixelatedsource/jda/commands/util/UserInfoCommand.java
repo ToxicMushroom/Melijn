@@ -47,7 +47,7 @@ public class UserInfoCommand extends Command {
                     eb.addField("Nickname:", nickname, true);
                     eb.addField("Avatar:", "**[link](" + user.getEffectiveAvatarUrl() + "?size=1024)**", true);
                     eb.addField("Status:", member.getOnlineStatus().name().toLowerCase(), true);
-                    eb.addField("Playing:", member.getGame().getName(), true);
+                    eb.addField("Playing:", member.getGame() == null ? "none" : member.getGame().getName(), true);
                     eb.addField("Discord join date:", simpleDateFormat.format(Date.from(user.getCreationTime().toInstant())) + "s", true);
                     eb.addField("Guild join date:", simpleDateFormat.format(Date.from(member.getJoinDate().toInstant())) + "s", true);
                     eb.addField("Is Owner:", member.isOwner() ? "yes" : "no", true);

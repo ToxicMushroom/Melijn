@@ -114,6 +114,7 @@ public class AddReaction extends ListenerAdapter {
                     SPlayCommand.usersFormToReply.remove(event.getUser());
                     SPlayCommand.userChoices.remove(event.getUser());
                     event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.delete().queue());
+                    wrongemote = true;
                     break;
                 default:
                     wrongemote = true;
