@@ -18,7 +18,7 @@ public class UserInfoCommand extends Command {
     public UserInfoCommand() {
         this.commandName = "userinfo";
         this.description = "Shows you useful information about a user/member";
-        this.usage = PREFIX + this.commandName + " <@user|id>";
+        this.usage = PREFIX + this.commandName + " <user>";
         this.aliases = new String[]{"profile", "playerinfo", "memberinfo", "playerprofile"};
         this.category = Category.UTILS;
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
@@ -46,8 +46,8 @@ public class UserInfoCommand extends Command {
                     eb.addField("ID:", user.getId(), false);
                     eb.addField("Nickname:", nickname, true);
                     eb.addField("Avatar:", "**[link](" + user.getEffectiveAvatarUrl() + "?size=1024)**", true);
-                    eb.addField("Status:", member.getOnlineStatus().name().toLowerCase(), true);
                     eb.addField("Playing:", member.getGame() == null ? "none" : member.getGame().getName(), true);
+                    eb.addField("Status:", member.getOnlineStatus().name().toLowerCase(), true);
                     eb.addField("Discord join date:", simpleDateFormat.format(Date.from(user.getCreationTime().toInstant())) + "s", true);
                     eb.addField("Guild join date:", simpleDateFormat.format(Date.from(member.getJoinDate().toInstant())) + "s", true);
                     eb.addField("Is Owner:", member.isOwner() ? "yes" : "no", true);

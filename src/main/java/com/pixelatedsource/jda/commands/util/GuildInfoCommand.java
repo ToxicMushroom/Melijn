@@ -18,7 +18,7 @@ public class GuildInfoCommand extends Command {
 
     public GuildInfoCommand() {
         this.commandName = "guildinfo";
-        this.description = "Show you information about the guild where you execute it";
+        this.description = "Show you information about the guild";
         this.usage = PREFIX + this.commandName;
         this.aliases = new String[]{"serverinfo"};
         this.category = Category.UTILS;
