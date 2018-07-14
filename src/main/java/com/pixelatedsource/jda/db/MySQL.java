@@ -54,10 +54,20 @@ public class MySQL {
             update("CREATE TABLE IF NOT EXISTS join_roles(guildId bigint, roleId bigint);");
             update("CREATE TABLE IF NOT EXISTS perms_roles(guildId bigint, roleId bigint, permission varchar(256));");
             update("CREATE TABLE IF NOT EXISTS perms_users(guildId bigint, userId bigint, permission varchar(256));");
-            update("CREATE TABLE IF NOT EXISTS log_channels(guildId bigint, channelId bigint)");
+
+            //channels
+            update("CREATE TABLE IF NOT EXISTS ban_log_channels(guildId bigint, channelId bigint)");
+            update("CREATE TABLE IF NOT EXISTS mute_log_channels(guildId bigint, channelId bigint)");
+            update("CREATE TABLE IF NOT EXISTS kick_log_channels(guildId bigint, channelId bigint)");
+            update("CREATE TABLE IF NOT EXISTS warn_log_channels(guildId bigint, channelId bigint)");
+            update("CREATE TABLE IF NOT EXISTS sdm_log_channels(guildId bigint, channelId bigint)");
+            update("CREATE TABLE IF NOT EXISTS odm_log_channels(guildId bigint, channelId bigint)");
+            update("CREATE TABLE IF NOT EXISTS pm_log_channels(guildId bigint, channelId bigint)");
+            update("CREATE TABLE IF NOT EXISTS fm_log_channels(guildId bigint, channelId bigint)");
             update("CREATE TABLE IF NOT EXISTS music_channels(guildId bigint, channelId bigint)");
             update("CREATE TABLE IF NOT EXISTS welcome_channels(guildId bigint, channelId bigint)");
-            update("CREATE TABLE IF NOT EXISTS nowplaying_channels(guildId bigint, channelId bigint)");
+            update("CREATE TABLE IF NOT EXISTS music_log_channels(guildId bigint, channelId bigint)");
+
             update("CREATE TABLE IF NOT EXISTS streamer_modes(guildId bigint, state boolean)");
             update("CREATE TABLE IF NOT EXISTS filters(guildId bigint, mode varchar(16), content varchar(2000))");
             update("CREATE TABLE IF NOT EXISTS warns(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), moment bigint);");
@@ -420,7 +430,7 @@ public class MySQL {
                 banned.setThumbnail(victim.getEffectiveAvatarUrl());
                 banned.setAuthor("Banned by: " + namep, null, staff.getEffectiveAvatarUrl());
                 if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(banned.build()).queue();
-                long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+                long logChannelId = SetLogChannelCommand.banLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
                 if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
                     if (victim.isBot())
                         guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget is a bot").queue();
@@ -479,7 +489,7 @@ public class MySQL {
             banned.setThumbnail(victim.getEffectiveAvatarUrl());
             banned.setAuthor("Permanently banned by: " + namep, null, staff.getEffectiveAvatarUrl());
             if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(banned.build()).queue();
-            long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+            long logChannelId = SetLogChannelCommand.banLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
                 if (victim.isBot())
                     guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget is a bot").queue();
@@ -553,7 +563,7 @@ public class MySQL {
                     eb.setColor(Color.green);
 
                     if (!toUnban.isBot()) toUnban.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
-                    long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+                    long logChannelId = SetLogChannelCommand.banLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
                     if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
                         if (toUnban.isBot())
                             guild.getTextChannelById(logChannelId).sendMessage(eb.build() + "\nTarget is a bot").queue();
@@ -585,7 +595,7 @@ public class MySQL {
             embedBuilder.setDescription("```LDIF\n" + "Warned: " + victim.getName() + "#" + victim.getDiscriminator() + "\n" + "Reason: " + reason + "\n" + "Guild: " + guild.getName() + "\n" + "Moment: " + millisToDate(System.currentTimeMillis()) + "\n" + "```");
             embedBuilder.setThumbnail(victim.getEffectiveAvatarUrl());
             embedBuilder.setColor(Color.yellow);
-            long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+            long logChannelId = SetLogChannelCommand.warnLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
                 if (victim.isBot())
                     guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build() + "\nTarget is a bot.").queue();
@@ -613,7 +623,7 @@ public class MySQL {
                 muted.setThumbnail(victim.getEffectiveAvatarUrl());
                 muted.setAuthor("Muted by: " + namep, null, staff.getEffectiveAvatarUrl());
                 if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(muted.build()).queue();
-                long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+                long logChannelId = SetLogChannelCommand.muteLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
                 if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
                     if (victim.isBot())
                         guild.getTextChannelById(logChannelId).sendMessage(muted.build() + "\nTarget is a bot").queue();
@@ -671,7 +681,7 @@ public class MySQL {
             muted.setThumbnail(victim.getEffectiveAvatarUrl());
             muted.setAuthor("Permanently muted by: " + namep, null, staff.getEffectiveAvatarUrl());
             if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(muted.build()).queue();
-            long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+            long logChannelId = SetLogChannelCommand.muteLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
                 if (victim.isBot())
                     guild.getTextChannelById(logChannelId).sendMessage(muted.build() + "\nTarget is a bot").queue();
@@ -742,7 +752,7 @@ public class MySQL {
                     eb.setColor(Helpers.EmbedColor);
                     eb.setColor(Color.green);
                     if (!toUnmute.isBot()) toUnmute.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
-                    long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+                    long logChannelId = SetLogChannelCommand.muteLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
                     if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
                         if (toUnmute.isBot())
                             guild.getTextChannelById(logChannelId).sendMessage(eb.build() + "\nTarget is a bot").queue();
@@ -774,7 +784,7 @@ public class MySQL {
             embedBuilder.setDescription("```LDIF\n" + "Kicked: " + target.getName() + "#" + target.getDiscriminator() + "\n" + "Reason: " + reason + "\n" + "Guild: " + guild.getName() + "\n" + "Moment: " + millisToDate(System.currentTimeMillis()) + "\n" + "```");
             embedBuilder.setThumbnail(target.getEffectiveAvatarUrl());
             embedBuilder.setColor(Color.ORANGE);
-            long logChannelId = SetLogChannelCommand.guildLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+            long logChannelId = SetLogChannelCommand.kickLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
                 if (target.isBot())
                     guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build() + "\nTarget is a bot.").queue();
@@ -805,7 +815,7 @@ public class MySQL {
             if (amount == 0) return new String[]{"no bans"};
             int progress = 0;
             while (rs2.next()) {
-                String endTime = rs2.getString("endTime").equalsIgnoreCase("NULL") ? "Infinity" : millisToDate(rs2.getLong("endTime"));
+                String endTime = rs2.getString("endTime") == null ? "Infinity" : millisToDate(rs2.getLong("endTime"));
                 User staff = jda.retrieveUserById(rs2.getString("authorId")).complete();
                 bans[progress] = String.valueOf("```ini\n" + "[Banned by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs2.getString("reason") + "\n[From]: " + millisToDate(rs2.getLong("startTime")) + "\n[Until]: " + endTime + "\n[active]: " + rs2.getString("active") + "```");
                 progress++;

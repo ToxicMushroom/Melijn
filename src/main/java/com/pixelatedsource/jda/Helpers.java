@@ -2,7 +2,7 @@ package com.pixelatedsource.jda;
 
 import com.pixelatedsource.jda.blub.ChannelType;
 import com.pixelatedsource.jda.blub.CommandEvent;
-import com.pixelatedsource.jda.commands.music.SetMusicLogChannel;
+import com.pixelatedsource.jda.commands.management.SetLogChannelCommand;
 import com.pixelatedsource.jda.commands.util.SetNotifications;
 import com.pixelatedsource.jda.music.MusicManager;
 import com.pixelatedsource.jda.music.MusicPlayer;
@@ -331,11 +331,11 @@ public class Helpers {
     }
 
     public static void postMusicLog(MusicPlayer player, AudioTrack track) {
-        if (SetMusicLogChannel.musicLogChannelMap.containsKey(player.getGuild().getIdLong())) {
-            TextChannel tc = player.getGuild().getTextChannelById(SetMusicLogChannel.musicLogChannelMap.get(player.getGuild().getIdLong()));
+        if (SetLogChannelCommand.musicLogChannelMap.containsKey(player.getGuild().getIdLong())) {
+            TextChannel tc = player.getGuild().getTextChannelById(SetLogChannelCommand.musicLogChannelMap.get(player.getGuild().getIdLong()));
             if (tc == null) {
-                SetMusicLogChannel.musicLogChannelMap.remove(player.getGuild().getIdLong());
-                PixelSniper.mySQL.removeChannel(player.getGuild().getIdLong(), ChannelType.MUSIC);
+                SetLogChannelCommand.musicLogChannelMap.remove(player.getGuild().getIdLong());
+                PixelSniper.mySQL.removeChannel(player.getGuild().getIdLong(), ChannelType.MUSIC_LOG);
                 return;
             }
             if (tc.canTalk())

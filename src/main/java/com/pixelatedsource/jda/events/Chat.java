@@ -106,7 +106,10 @@ public class Chat extends ListenerAdapter {
         if (Helpers.lastRunTimer2 < System.currentTimeMillis() - 61_000) Helpers.startTimer(event.getJDA(), PixelSniper.dblAPI, 2);
         if (Helpers.lastRunTimer3 < System.currentTimeMillis() - 1_810_000) Helpers.startTimer(event.getJDA(), PixelSniper.dblAPI, 3);
         Guild guild = event.getGuild();
-        if (SetLogChannelCommand.guildLogChannelMap.containsKey(guild.getIdLong()) && event.getGuild().getSelfMember().hasPermission(Permission.VIEW_AUDIT_LOGS)) {
+        if ((SetLogChannelCommand.pmLogChannelMap.containsKey(guild.getIdLong()) ||
+                SetLogChannelCommand.odmLogChannelMap.containsKey(guild.getIdLong()) ||
+                SetLogChannelCommand.sdmLogChannelMap.containsKey(guild.getIdLong()) ||
+                SetLogChannelCommand.fmLogChannelMap.containsKey(guild.getIdLong())) && event.getGuild().getSelfMember().hasPermission(Permission.VIEW_AUDIT_LOGS)) {
             executorService.execute(() -> {
                 JSONObject message = mySQL.getMessageObject(event.getMessageIdLong());
                 User user = event.getJDA().retrieveUserById(message.getLong("authorId")).complete();
@@ -136,26 +139,40 @@ public class Chat extends ListenerAdapter {
                             User bot = event.getJDA().getSelfUser();
                             eb.setFooter("Deleted by: " + bot.getName() + "#" + bot.getDiscriminator(), bot.getEffectiveAvatarUrl());
                             MessageHelper.filterDeletedMessages.remove(event.getMessageId());
+                            if (SetLogChannelCommand.fmLogChannelMap.containsKey(guild.getIdLong())) {
+                                guild.getTextChannelById(SetLogChannelCommand.fmLogChannelMap.get(guild.getIdLong())).sendMessage(eb.build()).queue();
+                            }
                         } else if (now.toInstant().toEpochMilli() - deletionTime.toInstant().toEpochMilli() < 1000) {
                             User deletor = auditLogEntry.getUser();
-                            if (deletor != null) eb.setFooter("Deleted by: " + deletor.getName() + "#" + deletor.getDiscriminator(), deletor.getEffectiveAvatarUrl());
+                            log(guild, user, eb, deletor);
                         } else if (MessageHelper.purgedMessages.get(event.getMessageId()) != null) {
                             User purger = MessageHelper.purgedMessages.get(event.getMessageId());
                             eb.setColor(Color.decode("#551A8B"));
                             eb.setFooter("Purged by: " + purger.getName() + "#" + purger.getDiscriminator(), purger.getEffectiveAvatarUrl());
                             MessageHelper.purgedMessages.remove(event.getMessageId());
+                            if (SetLogChannelCommand.pmLogChannelMap.containsKey(guild.getIdLong())) {
+                                guild.getTextChannelById(SetLogChannelCommand.pmLogChannelMap.get(guild.getIdLong())).sendMessage(eb.build()).queue();
+                            }
                         } else {
                             User deletor = sameAsLast ? auditLogEntry.getUser() : event.getJDA().getUserById(PixelSniper.mySQL.getMessageAuthorId(event.getMessageIdLong()));
-                            if (deletor != null) eb.setFooter("Deleted by: " + deletor.getName() + "#" + deletor.getDiscriminator(), deletor.getEffectiveAvatarUrl());
+                            log(guild, user, eb, deletor);
                         }
 
-                        guild.getTextChannelById(SetLogChannelCommand.guildLogChannelMap.get(guild.getIdLong())).sendMessage(eb.build()).queue(v -> {
-                            if (eb.build().getColor().equals(Color.decode("#000001"))) mySQL.addUnclaimed(event.getMessageIdLong(), v.getIdLong());
-                        });
                     }
-                    new Thread(() -> mySQL.update("DELETE FROM history_messages WHERE sentTime < " + (System.currentTimeMillis() - 604_800_000L)));
+                    new Thread(() -> mySQL.update("DELETE FROM history_messages WHERE sentTime < " + (System.currentTimeMillis() - 604_800_000L))).start();
                 }
             });
+        }
+    }
+
+    private void log(Guild guild, User user, EmbedBuilder eb, User deletor) {
+        if (deletor != null) {
+            eb.setFooter("Deleted by: " + deletor.getName() + "#" + deletor.getDiscriminator(), deletor.getEffectiveAvatarUrl());
+            if (user == deletor && SetLogChannelCommand.sdmLogChannelMap.containsKey(guild.getIdLong())) {
+                guild.getTextChannelById(SetLogChannelCommand.sdmLogChannelMap.get(guild.getIdLong())).sendMessage(eb.build()).queue();
+            } else if (SetLogChannelCommand.odmLogChannelMap.containsKey(guild.getIdLong())) {
+                guild.getTextChannelById(SetLogChannelCommand.odmLogChannelMap.get(guild.getIdLong())).sendMessage(eb.build()).queue();
+            }
         }
     }
 }
