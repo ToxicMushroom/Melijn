@@ -42,7 +42,7 @@ public class SetLogChannelCommand extends Command {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 1) {
                     HashMap<Long, Long> chosenMap = new HashMap<>();
-                    ChannelType chosenType = null;
+                    ChannelType chosenType;
                     switch (args[0].toLowerCase()) {
                         case "all":
                             long id = Helpers.getTextChannelByArgsN(event, args[0]);
@@ -126,7 +126,7 @@ public class SetLogChannelCommand extends Command {
                             break;
                         case "sdm":
                         case "s-d-m":
-                        case "sther-deleted-messages":
+                        case "self-deleted-messages":
                             chosenMap = sdmLogChannelMap;
                             chosenType = ChannelType.SDM_LOG;
                             break;
@@ -148,25 +148,121 @@ public class SetLogChannelCommand extends Command {
                             chosenMap = fmLogChannelMap;
                             chosenType = ChannelType.FM_LOG;
                             break;
+                        default:
+                            MessageHelper.sendUsage(this, event);
+                            return;
                     }
 
-                    if (chosenType != null) {
                         long id = Helpers.getTextChannelByArgsN(event, args[0]);
                         if (id == -1) {
                             MessageHelper.sendUsage(this, event);
                         } else if (id == 0L) {
-                            ChannelType finalChosenType = chosenType;
                             event.reply("LogChannel has been changed from " + (chosenMap.containsKey(guild.getIdLong()) ? "<#" + chosenMap.get(guild.getIdLong()) + ">" : "nothing") + " to nothing by **" + event.getFullAuthorName() + "**");
                             chosenMap.remove(guild.getIdLong());
-                            new Thread(() -> PixelSniper.mySQL.removeChannel(guild.getIdLong(), finalChosenType)).start();
+                            new Thread(() -> PixelSniper.mySQL.removeChannel(guild.getIdLong(), chosenType)).start();
                         } else {
-                            ChannelType finalChosenType1 = chosenType;
                             event.reply("LogChannel has been changed from " + (chosenMap.containsKey(guild.getIdLong()) ? "<#" + chosenMap.get(guild.getIdLong()) + ">" : "nothing") + " to <#" + id + "> by **" + event.getFullAuthorName() + "**");
                             if (chosenMap.replace(guild.getIdLong(), id) == null) chosenMap.put(guild.getIdLong(), id);
-                            new Thread(() -> PixelSniper.mySQL.setChannel(guild.getIdLong(), id, finalChosenType1)).start();
+                            new Thread(() -> PixelSniper.mySQL.setChannel(guild.getIdLong(), id, chosenType)).start();
                         }
-                    } else {
-                        MessageHelper.sendUsage(this, event);
+                } else if (args.length == 1 && !args[0].equalsIgnoreCase("")) {
+                    switch (args[0].toLowerCase()) {
+                        case "all":
+                            StringBuilder builder = new StringBuilder();
+                            long banChannelId = !banLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(banLogChannelMap.get(guild.getIdLong())) == null ? -1L : banLogChannelMap.get(guild.getIdLong());
+                            long muteChannelId = !muteLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(muteLogChannelMap.get(guild.getIdLong())) == null ? -1L : muteLogChannelMap.get(guild.getIdLong());
+                            long kickChannelId = !kickLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(kickLogChannelMap.get(guild.getIdLong())) == null ? -1L : kickLogChannelMap.get(guild.getIdLong());
+                            long warnChannelId = !warnLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(warnLogChannelMap.get(guild.getIdLong())) == null ? -1L : warnLogChannelMap.get(guild.getIdLong());
+                            long sdmChannelId = !sdmLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(sdmLogChannelMap.get(guild.getIdLong())) == null ? -1L : sdmLogChannelMap.get(guild.getIdLong());
+                            long odmChannelId = !odmLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(odmLogChannelMap.get(guild.getIdLong())) == null ? -1L : odmLogChannelMap.get(guild.getIdLong());
+                            long pmChannelId = !pmLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(pmLogChannelMap.get(guild.getIdLong())) == null ? -1L : pmLogChannelMap.get(guild.getIdLong());
+                            long fmChannelId = !fmLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(fmLogChannelMap.get(guild.getIdLong())) == null ? -1L : fmLogChannelMap.get(guild.getIdLong());
+                            long musicChannelId = !musicLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(musicLogChannelMap.get(guild.getIdLong())) == null ? -1L : musicLogChannelMap.get(guild.getIdLong());
+
+                            builder.append("**Log Channels :clipboard:**\n")
+                                    .append("  Bans: ").append(banChannelId == -1L ? "unset" : "<#" + banChannelId + ">").append("\n")
+                                    .append("  Mutes: ").append(muteChannelId == -1L ? "unset" : "<#" + muteChannelId + ">").append("\n")
+                                    .append("  Kicks: ").append(kickChannelId == -1L ? "unset" : "<#" + kickChannelId + ">").append("\n")
+                                    .append("  Warns: ").append(warnChannelId == -1L ? "unset" : "<#" + warnChannelId + ">").append("\n")
+                                    .append("  SelfDeleteMessages: ").append(sdmChannelId == -1L ? "unset" : "<#" + sdmChannelId + ">").append("\n")
+                                    .append("  OtherDeleteMessages: ").append(odmChannelId == -1L ? "unset" : "<#" + odmChannelId + ">").append("\n")
+                                    .append("  PurgedMessages: ").append(pmChannelId == -1L ? "unset" : "<#" + pmChannelId + ">").append("\n")
+                                    .append("  FilteredMessages: ").append(fmChannelId == -1L ? "unset" : "<#" + fmChannelId + ">").append("\n")
+                                    .append("  Music: ").append(musicChannelId == -1L ? "unset" : "<#" + musicChannelId + ">").append("\n");
+                                event.reply(builder.toString());
+                            break;
+                        case "ban":
+                            event.reply("**Ban Log :hammer:**\n- " +
+                                    ((!banLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(banLogChannelMap.get(guild.getIdLong())) == null) ?
+                                            "unset" :
+                                            "<#" + banLogChannelMap.get(guild.getIdLong()) + ">"));
+                            break;
+                        case "mute":
+                            event.reply("**Mute Log :zipper_mouth:**\n- " +
+                                    ((!muteLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(muteLogChannelMap.get(guild.getIdLong())) == null) ?
+                                            "unset" :
+                                            "<#" + muteLogChannelMap.get(guild.getIdLong()) + ">"));
+
+                            break;
+                        case "kick":
+                            event.reply("**Kick Log :right_facing_fist::anger:**\n- " +
+                                    ((!kickLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(kickLogChannelMap.get(guild.getIdLong())) == null) ?
+                                            "unset" :
+                                            "<#" + kickLogChannelMap.get(guild.getIdLong()) + ">"));
+
+                            break;
+                        case "warn":
+                            event.reply("**Warn Log :bangbang:**\n- " +
+                                    ((!warnLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(warnLogChannelMap.get(guild.getIdLong())) == null) ?
+                                            "unset" :
+                                            "<#" + warnLogChannelMap.get(guild.getIdLong()) + ">"));
+
+                            break;
+                        case "music":
+                            event.reply("**Music Log :musical_note:**\n- " +
+                                    ((!musicLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(musicLogChannelMap.get(guild.getIdLong())) == null) ?
+                                            "unset" :
+                                            "<#" + musicLogChannelMap.get(guild.getIdLong()) + ">"));
+
+                            break;
+                        case "sdm":
+                        case "s-d-m":
+                        case "self-deleted-messages":
+                            event.reply("**Self Deleted Log :bust_in_silhouette:**\n- " +
+                                    ((!sdmLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(sdmLogChannelMap.get(guild.getIdLong())) == null) ?
+                                            "unset" :
+                                            "<#" + sdmLogChannelMap.get(guild.getIdLong()) + ">"));
+
+                            break;
+                        case "odm":
+                        case "o-d-m":
+                        case "other-deleted-messages":
+                            event.reply("**Other Deleted Log :busts_in_silhouette:**\n- " +
+                                    ((!odmLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(odmLogChannelMap.get(guild.getIdLong())) == null) ?
+                                            "unset" :
+                                            "<#" + odmLogChannelMap.get(guild.getIdLong()) + ">"));
+
+                            break;
+                        case "pm":
+                        case "p-m":
+                        case "purged-messages":
+                            event.reply("**Purge Log :recycle:**\n- " +
+                                    ((!pmLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(pmLogChannelMap.get(guild.getIdLong())) == null) ?
+                                            "unset" :
+                                            "<#" + pmLogChannelMap.get(guild.getIdLong()) + ">"));
+
+                            break;
+                        case "fm":
+                        case "f-m":
+                        case "filtered-messages":
+                            event.reply("**Filter Log :no_bicycles:**\n- " +
+                                    ((!fmLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(fmLogChannelMap.get(guild.getIdLong())) == null) ?
+                                            "unset" :
+                                            "<#" + fmLogChannelMap.get(guild.getIdLong()) + ">"));
+                            break;
+                        default:
+                            MessageHelper.sendUsage(this, event);
+                            break;
                     }
                 } else {
                     MessageHelper.sendUsage(this, event);
