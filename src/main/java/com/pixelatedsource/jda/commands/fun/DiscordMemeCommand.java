@@ -13,7 +13,7 @@ public class DiscordMemeCommand extends Command {
 
     public DiscordMemeCommand() {
         this.commandName = "DiscordMeme";
-        this.description = "Shows you a nice meme";
+        this.description = "Shows you a discord meme";
         this.usage = PREFIX + commandName;
         this.aliases = new String[]{"dmeme"};
         this.category = Category.FUN;

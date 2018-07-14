@@ -20,7 +20,8 @@ public class PermCommand extends Command {
     public PermCommand() {
         this.commandName = "perm";
         this.description = "You can edit the user's access to your demands ;D";
-        this.usage = PREFIX + this.commandName + " <add | remove | clear | copy | info | list> <@role | roleId | @user | userId> [permission]\nA permission is just the name of the command.";
+        this.usage = PREFIX + this.commandName + " <add | remove | clear | copy | info | list> <role | user> [permission]";
+        this.extra = "A permission is just the name of the command.";
         this.aliases = new String[]{"permission"};
         this.category = Category.MANAGEMENT;
     }

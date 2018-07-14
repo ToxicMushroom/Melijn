@@ -16,7 +16,7 @@ public class ShrugCommand extends Command {
         this.description = "shrug";
         this.usage = PREFIX + commandName;
         this.category = Category.FUN;
-        this.aliases = new String[]{"idc"};
+        this.aliases = new String[]{"idk"};
         webUtils = WebUtils.getWebUtilsInstance();
     }
 

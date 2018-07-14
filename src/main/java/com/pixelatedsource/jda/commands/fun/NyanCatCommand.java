@@ -14,7 +14,7 @@ public class NyanCatCommand extends Command {
 
     public NyanCatCommand() {
         this.commandName = "nyancat";
-        this.description = "Enjoy random nyan cats";
+        this.description = "shows a random nyancat";
         this.usage = PREFIX + commandName;
         this.category = Category.FUN;
     }

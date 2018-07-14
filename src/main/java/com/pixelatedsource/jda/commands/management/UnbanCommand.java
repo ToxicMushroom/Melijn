@@ -16,7 +16,7 @@ public class UnbanCommand extends Command {
     public UnbanCommand() {
         this.commandName = "unban";
         this.description = "unban a banned user";
-        this.usage = PREFIX + commandName + " <@user | userId>";
+        this.usage = PREFIX + commandName + " <user>";
         this.category = Category.MANAGEMENT;
         this.needs = new Need[]{Need.GUILD};
         this.permissions = new Permission[]{

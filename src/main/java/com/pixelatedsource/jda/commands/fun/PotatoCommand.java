@@ -14,7 +14,7 @@ public class PotatoCommand extends Command {
 
     public PotatoCommand() {
         this.commandName = "potato";
-        this.description = "shows you a delicious treat";
+        this.description = "Shows you a delicious treat";
         this.usage = PREFIX + commandName;
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();

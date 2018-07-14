@@ -15,7 +15,7 @@ public class WeebshCommand extends Command {
     public WeebshCommand() {
         this.commandName = "weebsh";
         this.description = "Uses weebsh api to do stuff";
-        this.usage = PREFIX + commandName + " <getTags|getTypes|type|tag> [searchTerm]";
+        this.usage = PREFIX + commandName + " <getTags|getTypes|type|tag> [arg]";
         this.category = Category.DEVELOPER;
         webUtils = WebUtils.getWebUtilsInstance();
     }

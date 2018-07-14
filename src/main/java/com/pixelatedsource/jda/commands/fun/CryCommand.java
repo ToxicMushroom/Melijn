@@ -17,7 +17,7 @@ public class CryCommand extends Command {
         this.description = "cry or let someone make you cry";
         this.usage = PREFIX + commandName + " [user]";
         this.category = Category.FUN;
-        this.aliases = new String[] {"sad", "tears"};
+        this.aliases = new String[] {"sad"};
         webUtils = WebUtils.getWebUtilsInstance();
     }
 

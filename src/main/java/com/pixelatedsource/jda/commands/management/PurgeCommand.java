@@ -21,7 +21,7 @@ public class PurgeCommand extends Command {
 
     public PurgeCommand() {
         this.commandName = "purge";
-        this.description = "Deletes messages messages";
+        this.description = "Deletes messages";
         this.usage = PREFIX + commandName + " [1 - 500]";
         this.category = Category.MANAGEMENT;
         this.permissions = new Permission[]{
