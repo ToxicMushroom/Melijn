@@ -24,7 +24,7 @@ dependencies {
     compile 'mysql:mysql-connector-java:8.0.11'
     compile 'com.github.natanbc:lavadsp:0.2'
     compile 'se.michaelthelin.spotify:spotify-web-api-java:2.0.3'
-    compile 'com.github.DiscordBotList:DBL-Java-Wrapper:4b27930a6312ff571e688e751e71e5b96bf366fe'
+    compile 'com.github.DiscordBotList:DBL-Java-Library:74b97b6218b3cc3bfc2be920ca1ab1cc83accd76'
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.0'
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'
     compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.11.0'
