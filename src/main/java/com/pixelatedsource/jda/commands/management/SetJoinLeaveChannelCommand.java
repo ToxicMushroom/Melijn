@@ -66,4 +66,6 @@ public class SetJoinLeaveChannelCommand extends Command {
             event.reply(Helpers.guildOnly);
         }
     }
+
+
 }
