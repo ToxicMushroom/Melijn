@@ -25,7 +25,6 @@ import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.events.DisconnectEvent;
-import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.discordbots.api.client.DiscordBotListAPI;
 
@@ -84,13 +83,6 @@ public class PixelSniper extends ListenerAdapter {
             e.printStackTrace();
         }
         */
-    }
-
-    public void onReady(ReadyEvent event) {
-    }
-
-    public static JDA getJdaInstance() {
-        return jda;
     }
 
     public void onDisconnect(DisconnectEvent e) {
