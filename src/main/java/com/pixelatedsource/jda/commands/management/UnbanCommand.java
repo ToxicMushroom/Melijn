@@ -21,7 +21,8 @@ public class UnbanCommand extends Command {
         this.needs = new Need[]{Need.GUILD};
         this.permissions = new Permission[]{
                 Permission.MESSAGE_EMBED_LINKS,
-                Permission.BAN_MEMBERS
+                Permission.BAN_MEMBERS,
+                Permission.MESSAGE_HISTORY
         };
     }
 

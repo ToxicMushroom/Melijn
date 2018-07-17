@@ -26,7 +26,8 @@ public class MuteCommand extends Command {
         this.needs = new Need[]{Need.GUILD, Need.ROLE};
         this.permissions = new Permission[]{
                 Permission.MESSAGE_EMBED_LINKS,
-                Permission.MANAGE_ROLES
+                Permission.MANAGE_ROLES,
+                Permission.MESSAGE_HISTORY
         };
     }
 

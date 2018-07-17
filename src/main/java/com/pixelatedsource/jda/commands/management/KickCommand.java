@@ -21,7 +21,8 @@ public class KickCommand extends Command {
         this.category = Category.MANAGEMENT;
         this.extra = "the bot will dm the reason to the target if one is provided";
         this.needs = new Need[]{Need.GUILD, Need.ROLE};
-        this.permissions = new Permission[]{Permission.KICK_MEMBERS};
+        this.permissions = new Permission[]{Permission.KICK_MEMBERS,
+                Permission.MESSAGE_HISTORY};
     }
 
     @Override

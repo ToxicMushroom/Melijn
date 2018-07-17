@@ -20,7 +20,8 @@ public class TempBanCommand extends Command {
         this.category = Category.MANAGEMENT;
         this.permissions = new Permission[]{
                 Permission.MESSAGE_EMBED_LINKS,
-                Permission.BAN_MEMBERS
+                Permission.BAN_MEMBERS,
+                Permission.MESSAGE_HISTORY
         };
     }
 

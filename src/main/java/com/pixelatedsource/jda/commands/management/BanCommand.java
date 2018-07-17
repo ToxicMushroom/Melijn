@@ -22,7 +22,8 @@ public class BanCommand extends Command {
         this.needs = new Need[]{Need.ROLE, Need.GUILD};
         this.permissions = new Permission[]{
                 Permission.MESSAGE_EMBED_LINKS,
-                Permission.BAN_MEMBERS
+                Permission.BAN_MEMBERS,
+                Permission.MESSAGE_HISTORY
         };
     }
 
