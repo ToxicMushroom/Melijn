@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -42,7 +43,7 @@ public class Helpers {
     public static Color EmbedColor = Color.decode("#00ffd8");
     public static boolean voteChecks = true;
     public static int guildCount = 0;
-    public static ArrayList<String> perms = new ArrayList<>(Arrays.asList(
+    public static List<String> perms = Arrays.asList(
             "pause",
             "splay.yt",
             "splay.sc",
@@ -123,7 +124,7 @@ public class Helpers {
             "summon",
             "nyancat",
             "clearchannel"
-    ));
+    );
 
     public static void startTimer(JDA jda, DiscordBotListAPI dbl, int i) {
         if (i == 0 || i == 1) {

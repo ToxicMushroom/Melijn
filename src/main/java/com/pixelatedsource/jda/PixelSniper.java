@@ -23,14 +23,11 @@ import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.Game;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.events.DisconnectEvent;
-import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.discordbots.api.client.DiscordBotListAPI;
 
 import javax.security.auth.login.LoginException;
 
-public class PixelSniper extends ListenerAdapter {
+public class PixelSniper {
 
     private static final Config config = new Config();
     public static long OWNERID = Long.parseLong(config.getValue("ownerid"));
@@ -83,11 +80,5 @@ public class PixelSniper extends ListenerAdapter {
             e.printStackTrace();
         }
         */
-    }
-
-    public void onDisconnect(DisconnectEvent e) {
-        for (Guild guild : e.getJDA().getGuilds()) {
-            guild.getAudioManager().closeAudioConnection();
-        }
     }
 }
