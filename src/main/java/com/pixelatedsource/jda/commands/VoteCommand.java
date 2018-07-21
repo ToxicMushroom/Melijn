@@ -28,7 +28,7 @@ public class VoteCommand extends Command {
     protected void execute(CommandEvent event) {
         String[] args = event.getArgs().split("\\s+");
         if (args.length == 0 || args[0].equalsIgnoreCase("")) {
-            event.reply("Support us by voting and get rewarded: https://discordbots.org/bot/368362411591204865/vote");
+            event.reply("Support us by voting and get access to locked commands\nhttps://discordbots.org/bot/melijn/vote");
         } else if (args[0].equalsIgnoreCase("info")) {
             new Thread(() -> {
                 User target = Helpers.getUserByArgs(event, args.length > 1 ? args[1] : "");
@@ -44,7 +44,7 @@ public class VoteCommand extends Command {
                 eb.setColor(Helpers.EmbedColor);
                 eb.addField("Votes", String.valueOf(voteObject.getLong("votes")), false);
                 eb.addField("Streak", String.valueOf(voteObject.getLong("streak")), false);
-                long untilNext = 86_400_000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
+                long untilNext = 43_200_000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
                 String untilNextFormat = (untilNext > 0) ? MessageHelper.millisToVote(untilNext) : "none (you can vote now)";
                 eb.addField("Time until next vote", untilNextFormat, false);
                 long untilLoss = 172800000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));

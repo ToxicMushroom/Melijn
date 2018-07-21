@@ -1362,8 +1362,8 @@ public class MySQL {
         ArrayList<Long> list = new ArrayList<>();
         try {
             long currentTime = System.currentTimeMillis();
-            long yesterdayandminute = currentTime - 86_460_000L;
-            long yesterday = currentTime - 86_400_000L;
+            long yesterdayandminute = currentTime - 43_260_000L;
+            long yesterday = currentTime - 43_200_000L;
             PreparedStatement getVoteMap = con.prepareStatement("SELECT * FROM votes WHERE lastTime BETWEEN ? AND ?");
             getVoteMap.setLong(1, yesterdayandminute);
             getVoteMap.setLong(2, yesterday);
