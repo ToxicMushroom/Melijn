@@ -1,6 +1,7 @@
 package com.pixelatedsource.jda.events;
 
 import com.pixelatedsource.jda.Helpers;
+import com.pixelatedsource.jda.commands.developer.EvalCommand;
 import com.pixelatedsource.jda.commands.management.ClearChannelCommand;
 import com.pixelatedsource.jda.commands.music.SPlayCommand;
 import com.pixelatedsource.jda.music.MusicManager;
@@ -21,6 +22,7 @@ public class AddReaction extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event) {
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
         Guild guild = event.getGuild();
         if (MusicManager.usersFormToReply.get(event.getUser()) != null && MusicManager.usersFormToReply.get(event.getUser()).getId().equalsIgnoreCase(event.getMessageId())) {
             if (event.getMessageId().equals(MusicManager.usersFormToReply.get(event.getUser()).getId())) {

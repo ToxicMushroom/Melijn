@@ -1,5 +1,6 @@
 package com.pixelatedsource.jda.events;
 
+import com.pixelatedsource.jda.commands.developer.EvalCommand;
 import com.pixelatedsource.jda.commands.management.SetMusicChannelCommand;
 import com.pixelatedsource.jda.commands.management.SetStreamerModeCommand;
 import com.pixelatedsource.jda.commands.music.SetStreamUrlCommand;
@@ -20,6 +21,7 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceMove(GuildVoiceMoveEvent event) {
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
         Guild guild = event.getGuild();
         long guildId = guild.getIdLong();
         AudioManager audioManager = guild.getAudioManager();
@@ -57,6 +59,7 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceJoin(GuildVoiceJoinEvent event) {
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
         Guild guild = event.getGuild();
         long guildId = guild.getIdLong();
         AudioManager audioManager = guild.getAudioManager();
@@ -74,8 +77,13 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
         Guild guild = event.getGuild();
         AudioManager audioManager = guild.getAudioManager();
+        luisteraarsCheck(guild, audioManager);
+    }
+
+    private void luisteraarsCheck(Guild guild, AudioManager audioManager) {
         if (audioManager.isConnected()) {
             AudioPlayer audioPlayer = manager.getPlayer(guild).getAudioPlayer();
             int doveDuiven = 0;
@@ -94,21 +102,9 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceDeafen(GuildVoiceDeafenEvent event) {
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
         Guild guild = event.getGuild();
         AudioManager audioManager = guild.getAudioManager();
-        if (audioManager.isConnected()) {
-            AudioPlayer audioPlayer = manager.getPlayer(guild).getAudioPlayer();
-            int doveDuiven = 0;
-            for (Member member : audioManager.getConnectedChannel().getMembers()) {
-                if (member.getVoiceState().isDeafened() || member.getVoiceState().isGuildDeafened()) {
-                    if (member != guild.getSelfMember()) doveDuiven++;
-                }
-            }
-            if ((audioManager.getConnectedChannel().getMembers().size() - doveDuiven) == 1) {
-                if (!audioPlayer.isPaused())
-                    audioPlayer.stopTrack();
-                audioManager.closeAudioConnection();
-            }
-        }
+        luisteraarsCheck(guild, audioManager);
     }
 }

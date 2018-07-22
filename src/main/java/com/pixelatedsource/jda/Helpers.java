@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -126,9 +127,13 @@ public class Helpers {
             "clearchannel"
     );
 
+
+    private static ScheduledFuture<?> een, twee, drie;
     public static void startTimer(JDA jda, DiscordBotListAPI dbl, int i) {
         if (i == 0 || i == 1) {
-            executorPool.scheduleAtFixedRate(() -> {
+            lastRunTimer1 = System.currentTimeMillis();
+            if (een != null) een.cancel(true);
+            een = executorPool.scheduleAtFixedRate(() -> {
                 lastRunTimer1 = System.currentTimeMillis();
                 try {
                     ResultSet bans = PixelSniper.mySQL.query("SELECT * FROM active_bans WHERE endTime < " + System.currentTimeMillis());
@@ -157,7 +162,9 @@ public class Helpers {
                 }
             }, 1, 2, TimeUnit.SECONDS);
         } if (i == 0 || i == 2) {
-            executorPool.scheduleAtFixedRate(() -> {
+            lastRunTimer2 = System.currentTimeMillis();
+            if (twee != null) twee.cancel(true);
+            twee = executorPool.scheduleAtFixedRate(() -> {
                 lastRunTimer2 = System.currentTimeMillis();
                 if (dbl != null)
                     dbl.setStats(jda.getSelfUser().getId(), guildCount == 0 ? jda.getGuilds().size() : guildCount);
@@ -173,7 +180,9 @@ public class Helpers {
                 }
             }, 1, 60, TimeUnit.SECONDS);
         } if (i == 0 || i == 3) {
-            executorPool.scheduleAtFixedRate(() -> {
+            lastRunTimer3 = System.currentTimeMillis();
+            if (drie != null) drie.cancel(true);
+            drie = executorPool.scheduleAtFixedRate(() -> {
                 lastRunTimer3 = System.currentTimeMillis();
                 if (System.currentTimeMillis() - starttime > 10_000)
                     WebUtils.getWebUtilsInstance().updateSpotifyCredentials();

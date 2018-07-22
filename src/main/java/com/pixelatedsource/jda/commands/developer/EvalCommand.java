@@ -10,6 +10,8 @@ import net.dv8tion.jda.core.EmbedBuilder;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import java.util.Arrays;
+import java.util.List;
 
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
@@ -21,6 +23,9 @@ public class EvalCommand extends Command {
         this.usage = PREFIX + commandName + " <engine> [insert crappy code]";
         this.category = Category.DEVELOPER;
     }
+
+    public static EvalCommand INSTANCE = new EvalCommand();
+    private List<Long> blackList = Arrays.asList(110373943822540800L, 264445053596991498L);
 
     @Override
     protected void execute(CommandEvent event) {
@@ -38,12 +43,20 @@ public class EvalCommand extends Command {
         se.put("mysql", PixelSniper.mySQL);
         se.put("eb", new EmbedBuilder());
         se.put("webUtils", WebUtils.getWebUtilsInstance());
+        se.put("blacklist", blackList);
         try {
-            se.eval(toEval);
+            if (toEval.contains("event.reply("))
+                se.eval(toEval);
+            else
+                event.reply(se.eval(toEval).toString());
             event.getMessage().addReaction("\u2705").queue();
         } catch (Exception e) {
             event.getMessage().addReaction("\u274C").queue();
             event.reply("An exception was thrown:\n```\n" + e + "```");
         }
+    }
+
+    public List<Long> getBlackList() {
+        return blackList;
     }
 }

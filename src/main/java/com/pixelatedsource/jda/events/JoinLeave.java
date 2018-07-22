@@ -1,6 +1,7 @@
 package com.pixelatedsource.jda.events;
 
 import com.pixelatedsource.jda.PixelSniper;
+import com.pixelatedsource.jda.commands.developer.EvalCommand;
 import com.pixelatedsource.jda.commands.management.*;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
@@ -15,6 +16,7 @@ public class JoinLeave extends ListenerAdapter {
 
     @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
         Guild guild = event.getGuild();
         User joinedUser = event.getUser();
         if (SetJoinLeaveChannelCommand.welcomeChannels.containsKey(guild.getIdLong()) && SetJoinMessageCommand.joinMessages.containsKey(guild.getIdLong())) {
@@ -44,6 +46,7 @@ public class JoinLeave extends ListenerAdapter {
 
     @Override
     public void onGuildMemberLeave(GuildMemberLeaveEvent event) {
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
         Guild guild = event.getGuild();
         User leftUser = event.getUser();
         if (SetJoinLeaveChannelCommand.welcomeChannels.containsKey(guild.getIdLong()) && SetLeaveMessageCommand.leaveMessages.containsKey(guild.getIdLong())) {

@@ -2,6 +2,7 @@ package com.pixelatedsource.jda.events;
 
 import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.PixelSniper;
+import com.pixelatedsource.jda.commands.developer.EvalCommand;
 import com.pixelatedsource.jda.commands.management.SetLogChannelCommand;
 import com.pixelatedsource.jda.db.MySQL;
 import com.pixelatedsource.jda.utils.MessageHelper;
@@ -41,7 +42,8 @@ public class Chat extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-        if (event != null && event.getMember() != null) {
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
+        if (event.getMember() != null) {
             Guild guild = event.getGuild();
             User author = event.getAuthor();
             Helpers.guildCount = event.getJDA().getGuilds().size();
@@ -102,6 +104,7 @@ public class Chat extends ListenerAdapter {
 
     @Override
     public void onGuildMessageDelete(GuildMessageDeleteEvent event) {
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
         if (Helpers.lastRunTimer1 < (System.currentTimeMillis() - 4_000))
             Helpers.startTimer(event.getJDA(), PixelSniper.dblAPI, 1);
         if (Helpers.lastRunTimer2 < (System.currentTimeMillis() - 61_000))
