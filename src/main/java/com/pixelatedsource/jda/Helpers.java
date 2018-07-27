@@ -174,7 +174,7 @@ public class Helpers {
                         if (votesList.contains(targetId)) {
                             jda.retrieveUserById(userId).queue((u) ->
                                     jda.retrieveUserById(targetId).queue((t) ->
-                                            u.openPrivateChannel().queue((c) -> c.sendMessage("It's time to vote for **" + t.getName() + "#" + t.getDiscriminator() + "**").queue())));
+                                            u.openPrivateChannel().queue((c) -> c.sendMessage(String.format("It's time to vote for **%#s**", t)).queue())));
                         }
                     }
                 }
