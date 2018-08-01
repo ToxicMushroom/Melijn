@@ -46,7 +46,7 @@ public class SetStreamerModeCommand extends Command {
                             case "true":
                             case "on":
                             case "enabled":
-                                if (event.getMember().hasPermission(musicChannel, Permission.VOICE_CONNECT)) {
+                                if (guild.getSelfMember().hasPermission(musicChannel, Permission.VOICE_CONNECT)) {
                                     if (event.getMember().getVoiceState().inVoiceChannel()) {
                                         guild.getAudioManager().openAudioConnection(musicChannel);
                                     }
@@ -56,7 +56,7 @@ public class SetStreamerModeCommand extends Command {
                                     }).start();
                                     event.reply("\uD83D\uDCF6 The StreamerMode has been **enabled** by **" + event.getFullAuthorName() + "**");
                                 } else {
-                                    event.reply("The bot has no permission to connect to the MusicChannel.");
+                                    event.reply(String.format("I have no permission to connect to the configured MusicChannel: %s", musicChannel.getName()));
                                 }
                                 break;
                             case "false":
@@ -73,7 +73,7 @@ public class SetStreamerModeCommand extends Command {
                         MessageHelper.sendUsage(this, event);
                     }
                 } else {
-                    event.reply("You have to have set a music channel to enable this mode!");
+                    event.reply("You have to have set a MusicChannel to enable this mode :p");
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");
