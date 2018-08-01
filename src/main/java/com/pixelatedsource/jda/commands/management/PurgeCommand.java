@@ -86,7 +86,7 @@ public class PurgeCommand extends Command {
                                 event.getTextChannel().deleteMessages(deleteableMessages).queue();
                             }
                             if (toPurge.size() == 1) event.getTextChannel().deleteMessageById(toPurge.get(0).getIdLong()).queue();
-                            else event.getTextChannel().deleteMessages(toPurge).queue();
+                            else if (toPurge.size() > 1) event.getTextChannel().deleteMessages(toPurge).queue();
 
                         });
                     } catch (NumberFormatException e) {

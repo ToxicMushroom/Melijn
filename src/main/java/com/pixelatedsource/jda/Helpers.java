@@ -166,8 +166,7 @@ public class Helpers {
             if (twee != null) twee.cancel(true);
             twee = executorPool.scheduleAtFixedRate(() -> {
                 lastRunTimer2 = System.currentTimeMillis();
-                if (dbl != null)
-                    dbl.setStats(jda.getSelfUser().getId(), guildCount == 0 ? jda.getGuilds().size() : guildCount);
+                if (dbl != null) dbl.setStats(guildCount == 0 ? jda.getGuilds().size() : guildCount);
                 ArrayList<Long> votesList = PixelSniper.mySQL.getVoteList();
                 for (long userId : SetNotifications.nextVotes.keySet()) {
                     for (long targetId : SetNotifications.nextVotes.get(userId)) {

@@ -1102,7 +1102,7 @@ public class MySQL {
 
     public void removeRole(long guildId, RoleType type) {
         try {
-            PreparedStatement remove = con.prepareStatement("DELETE * FROM " + type.toString().toLowerCase() + "_roles WHERE guildId= ?");
+            PreparedStatement remove = con.prepareStatement("DELETE FROM " + type.toString().toLowerCase() + "_roles WHERE guildId= ?");
             remove.setLong(1, guildId);
             remove.executeUpdate();
         } catch (SQLException e) {
