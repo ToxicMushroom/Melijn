@@ -44,7 +44,7 @@ public class SetMuteRoleCommand extends Command {
                     Role muteRole = Helpers.getRoleByArgs(event, args[0]);
                     if (muteRole != null) {
                         if (muteRole.getIdLong() != guild.getIdLong()) {
-                            if (guild.getSelfMember().getRoles().size() != 0 && guild.getSelfMember().getRoles().get(0).getPosition() > muteRole.getPosition()) {
+                            if (guild.getSelfMember().getRoles().size() != 0 && guild.getSelfMember().getRoles().get(0).canInteract(muteRole)) {
                                 if (muteRoles.replace(guild.getIdLong(), muteRole.getIdLong()) == null)
                                     muteRoles.put(guild.getIdLong(), muteRole.getIdLong());
                                 new Thread(() -> PixelSniper.mySQL.setRole(guild.getIdLong(), muteRole.getIdLong(), RoleType.MUTE)).start();
@@ -53,7 +53,7 @@ public class SetMuteRoleCommand extends Command {
                                 event.reply("The MuteRole hasn't been changed due: **@" + muteRole.getName() + "** is higher or equal in the role-hierarchy then my highest role.\nThis means that I will not be able to give the role to anyone ex.(Mods can't give people Admin it breaks logic)");
                             }
                         } else {
-                            event.reply("The @everyone role cannot be the JoinRole because everyone has it");
+                            event.reply("The @everyone role cannot be as the MuteRole because everyone has it");
                         }
                     } else {
                         MessageHelper.sendUsage(this, event);

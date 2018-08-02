@@ -126,4 +126,8 @@ public class MessageHelper {
         Random random = new Random();
         return random.nextInt(end + 1 - start) + start;
     }
+
+    public static String capFirstChar(String input) {
+        return input.substring(0, 1).toUpperCase() + input.substring(1);
+    }
 }

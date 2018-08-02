@@ -45,7 +45,7 @@ public class SetJoinRoleCommand extends Command {
                         Role joinRole = Helpers.getRoleByArgs(event, args[0]);
                         if (joinRole != null) {
                             if (joinRole.getIdLong() != guild.getIdLong()) {
-                                if (guild.getSelfMember().getRoles().size() != 0 && guild.getSelfMember().getRoles().get(0).getPosition() > joinRole.getPosition()) {
+                                if (guild.getSelfMember().getRoles().size() != 0 && guild.getSelfMember().getRoles().get(0).canInteract(joinRole)) {
                                     if (joinRoles.replace(guild.getIdLong(), joinRole.getIdLong()) == null)
                                         joinRoles.put(guild.getIdLong(), joinRole.getIdLong());
                                     new Thread(() -> PixelSniper.mySQL.setRole(guild.getIdLong(), joinRole.getIdLong(), RoleType.JOIN)).start();
@@ -54,7 +54,7 @@ public class SetJoinRoleCommand extends Command {
                                     event.reply("The JoinRole hasn't been changed due: **@" + joinRole.getName() + "** is higher or equal in the role-hierarchy then my highest role.\nThis means that I will not be able to give the role to anyone ex.(Mods can't give people Admin it breaks logic)");
                                 }
                             } else {
-                                event.reply("The @everyone role cannot be the JoinRole because everyone has it");
+                                event.reply("The @everyone role cannot be as the JoinRole because everyone has it");
                             }
                         } else {
                             MessageHelper.sendUsage(this, event);
