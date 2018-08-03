@@ -46,7 +46,7 @@ public class Chat extends ListenerAdapter {
         if (event.getMember() != null) {
             Guild guild = event.getGuild();
             User author = event.getAuthor();
-            Helpers.guildCount = event.getJDA().getGuilds().size();
+            Helpers.guildCount = event.getJDA().asBot().getShardManager().getGuilds().size();
             new Thread(() -> mySQL.createMessage(event.getMessageIdLong(), event.getMessage().getContentRaw(), author.getIdLong(), guild.getIdLong(), event.getChannel().getIdLong())).start();
 
             if (guild.getSelfMember().hasPermission(Permission.MESSAGE_MANAGE) && !event.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {

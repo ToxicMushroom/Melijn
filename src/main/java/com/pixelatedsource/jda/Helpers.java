@@ -124,7 +124,8 @@ public class Helpers {
             "bypass.sameVoiceChannel",
             "summon",
             "nyancat",
-            "clearchannel"
+            "clearchannel",
+            "shards"
     );
 
 
@@ -141,8 +142,9 @@ public class Helpers {
                     while (bans.next()) {
                         User toUnban = jda.retrieveUserById(bans.getLong("victimId")).complete();
                         try {
-                            if (jda.getGuildById(bans.getLong("guildId")) != null)
-                                PixelSniper.mySQL.unban(toUnban, jda.getGuildById(bans.getLong("guildId")), jda.getSelfUser());
+                            Guild guild = jda.asBot().getShardManager().getGuildById(bans.getLong("guildId"));
+                            if (guild != null)
+                                PixelSniper.mySQL.unban(toUnban, guild, jda.getSelfUser());
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }
@@ -151,8 +153,9 @@ public class Helpers {
                     while (mutes.next()) {
                         User toUnmute = jda.retrieveUserById(mutes.getLong("victimId")).complete();
                         try {
-                            if (jda.getGuildById(mutes.getLong("guildId")) != null)
-                                PixelSniper.mySQL.unmute(jda.getGuildById(mutes.getLong("guildId")), toUnmute, jda.getSelfUser());
+                            Guild guild = jda.asBot().getShardManager().getGuildById(mutes.getLong("guildId"));
+                            if (guild != null)
+                                PixelSniper.mySQL.unmute(guild, toUnmute, jda.getSelfUser());
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }
@@ -166,7 +169,7 @@ public class Helpers {
             if (twee != null) twee.cancel(true);
             twee = executorPool.scheduleAtFixedRate(() -> {
                 lastRunTimer2 = System.currentTimeMillis();
-                if (dbl != null) dbl.setStats(guildCount == 0 ? jda.getGuilds().size() : guildCount);
+                if (dbl != null) dbl.setStats(guildCount == 0 ? jda.asBot().getShardManager().getGuilds().size() : guildCount);
                 ArrayList<Long> votesList = PixelSniper.mySQL.getVoteList();
                 for (long userId : SetNotifications.nextVotes.keySet()) {
                     for (long targetId : SetNotifications.nextVotes.get(userId)) {

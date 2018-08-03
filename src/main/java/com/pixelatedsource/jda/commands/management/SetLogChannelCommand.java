@@ -45,7 +45,7 @@ public class SetLogChannelCommand extends Command {
                     ChannelType chosenType;
                     switch (args[0].toLowerCase()) {
                         case "all":
-                            long id = Helpers.getTextChannelByArgsN(event, args[0]);
+                            long id = Helpers.getTextChannelByArgsN(event, args[1]);
                             if (id == -1) {
                                 MessageHelper.sendUsage(this, event);
                             } else if (id == 0L) {

@@ -49,8 +49,9 @@ public class InfoCommand extends Command {
                 eb.addField("About", "Melijn is a powerful discord bot coded in java and developed by **ToxicMushroom#2610**\nMore commands/features are being added each month and almost all commands will be configurable in the future" +
                         "\n\n**[Support Server](https://discord.gg/cCDnvNg)** • **[Invite](https://melijn.com/invite?perms=true)** • **[Website](https://melijn.com/)**" + "\n\u200B", false);
                 eb.addField("Stats and info",
-                        "**Guilds** " + event.getJDA().getGuilds().size()
-                                + "\n**Unique users** " + event.getJDA().getUsers().size()
+                        "**Guilds** " + event.getJDA().asBot().getShardManager().getGuilds().size()
+                                + "\n**Unique users** " + event.getJDA().asBot().getShardManager().getUsers().size()
+                                + "\n**Shards** " + event.getJDA().asBot().getShardManager().getShardsRunning()
                                 + "\n**Playing Music Count** " + i
                                 + "\n**Operating System** " + os
                                 + "\n**CPU Usage** " + getProcessCpuLoad() + "%"
