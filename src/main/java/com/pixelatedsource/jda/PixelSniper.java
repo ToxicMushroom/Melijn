@@ -63,7 +63,7 @@ public class PixelSniper {
                 .addEventListener(new Channels())
                 .addEventListener(new Chat())
                 .setAudioSendFactory(new NativeAudioSendFactory())
-                .buildBlocking();
+                .build().awaitReady();
 
         dblAPI = new DiscordBotListAPI.Builder()
                 .token(DBLTOKEN)

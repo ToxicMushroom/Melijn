@@ -35,7 +35,7 @@ public class CryCommand extends Command {
                     event.reply(event.getAuthor().getAsMention() + " is crying because of rain");
                 } else {
                     webUtils.getImage("cry", image ->
-                            MessageHelper.sendFunText("**" + target.getName() + "** made **" + event.getAuthor().getName() + "** + cry", image.getUrl(), event)
+                            MessageHelper.sendFunText("**" + target.getName() + "** made **" + event.getAuthor().getName() + "** cry", image.getUrl(), event)
                     );
                 }
             }
