@@ -53,7 +53,7 @@ public class PixelSniper {
         CommandClient commandClient = client.build();
 
         shardManager = new DefaultShardManagerBuilder()
-                .setShardsTotal(2)
+                .setShardsTotal(1)
                 .setToken(TOKEN)
                 .setGame(Game.playing(PREFIX + "help | melijn.com"))
                 .setAutoReconnect(true)

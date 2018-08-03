@@ -35,7 +35,7 @@ public class ShardsCommand extends Command {
                 vcs += jvcs;
                 tableBuilder.addRow(Arrays.asList(String.valueOf(shardCount++), String.valueOf(jda.getPing()), String.valueOf(jda.getUsers().size()), String.valueOf(jda.getGuilds().size()), String.valueOf(jvcs)));
             }
-            avgping = avgping/shardCount;
+            avgping = avgping/(shardCount-1);
             tableBuilder.setFooterRow(Arrays.asList("Sum/Avg", String.valueOf(avgping), String.valueOf(shardManager.getUsers().size()), String.valueOf(shardManager.getGuilds().size()), String.valueOf(vcs)));
 
             for (String part : tableBuilder.build()) {

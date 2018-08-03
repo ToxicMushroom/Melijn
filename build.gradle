@@ -5,7 +5,7 @@ plugins {
 }
 
 mainClassName = 'com.pixelatedsource.jda.PixelSniper'
-version = '1.0'
+version = '1.1'
 sourceCompatibility = 10.0
 
 repositories {
@@ -25,7 +25,6 @@ dependencies {
     compile 'com.github.natanbc:lavadsp:0.3'
     compile 'se.michaelthelin.spotify:spotify-web-api-java:2.0.4'
     compile 'com.github.DiscordBotList:DBL-Java-Library:304b5461208076d27f932608a361cd051ea0ad33'
-    //compile group: 'jmagick', name: 'jmagick', version: '6.6.9'
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.1'
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.1'
     compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.11.1'
