@@ -30,7 +30,7 @@ public class SetMuteRoleCommand extends Command {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
             String[] args = event.getArgs().split("\\s+");
-            long role = muteRoles.getOrDefault(guild.getId(), -1L);
+            long role = muteRoles.getOrDefault(guild.getIdLong(), -1L);
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {
                 if (role != -1 && guild.getRoleById(role) != null)
                     event.reply("Current MuteRole: **@" + guild.getRoleById(role).getName() + "**");
