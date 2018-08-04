@@ -13,6 +13,7 @@ import net.dv8tion.jda.core.audit.AuditLogEntry;
 import net.dv8tion.jda.core.audit.AuditLogOption;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Guild.Ban;
+import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
@@ -47,7 +48,12 @@ public class Chat extends ListenerAdapter {
             Guild guild = event.getGuild();
             User author = event.getAuthor();
             Helpers.guildCount = event.getJDA().asBot().getShardManager().getGuilds().size();
-            new Thread(() -> mySQL.createMessage(event.getMessageIdLong(), event.getMessage().getContentRaw(), author.getIdLong(), guild.getIdLong(), event.getChannel().getIdLong())).start();
+            String content = event.getMessage().getContentRaw();
+            for (Message.Attachment a : event.getMessage().getAttachments()) {
+                content += "\n" + a.getUrl();
+            }
+            String finalContent = content;
+            new Thread(() -> mySQL.createMessage(event.getMessageIdLong(), finalContent, author.getIdLong(), guild.getIdLong(), event.getChannel().getIdLong())).start();
 
             if (guild.getSelfMember().hasPermission(Permission.MESSAGE_MANAGE) && !event.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
                 new Thread(() -> {
