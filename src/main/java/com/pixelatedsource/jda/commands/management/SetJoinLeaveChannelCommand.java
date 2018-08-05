@@ -30,7 +30,14 @@ public class SetJoinLeaveChannelCommand extends Command {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     long id = Helpers.getTextChannelByArgsN(event, args[0]);
-                    if (id != -1L && id != 0L) {
+                    if (id == -1L) {
+                        event.reply("Unknown TextChannel");
+                    } else if (id == 0L) {
+                        welcomeChannels.remove(guild.getIdLong());
+                        new Thread(() -> PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.WELCOME)).start();
+                        long oldChannel = welcomeChannels.getOrDefault(guild.getIdLong(), -1L);
+                        event.reply("WelcomeChannel has been changed from " + (oldChannel == -1L ? "nothing" : "<#" + oldChannel + ">") + " to nothing");
+                    } else  {
                         new Thread(() -> PixelSniper.mySQL.setChannel(guild.getIdLong(), id, ChannelType.WELCOME)).start();
                         if (!SetJoinMessageCommand.joinMessages.containsKey(guild.getIdLong())) {
                             SetJoinMessageCommand.joinMessages.put(guild.getIdLong(), "Welcome %USER% to the %GUILDNAME% discord server you are me");
@@ -48,10 +55,6 @@ public class SetJoinLeaveChannelCommand extends Command {
                         String oldChannel = welcomeChannelId == -1  ? "nothing" : "<#" + welcomeChannelId + ">";
                         String newChannel = "<#" + id + ">";
                         event.reply("WelcomeChannel has been changed from " + oldChannel + " to " + newChannel);
-                    } else {
-                        long oldChannel = welcomeChannels.getOrDefault(guild.getIdLong(), -1L);
-                        welcomeChannels.remove(guild.getIdLong());
-                        event.reply("WelcomeChannel has been changed from " + (oldChannel == -1L ? "nothing" : "<#" + oldChannel + ">") + " to nothing");
                     }
                 } else {
                     if (welcomeChannelId != -1)

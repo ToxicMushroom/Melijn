@@ -1,5 +1,6 @@
 package com.pixelatedsource.jda.commands.developer;
 
+import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
@@ -44,6 +45,7 @@ public class EvalCommand extends Command {
         se.put("eb", new EmbedBuilder());
         se.put("webUtils", WebUtils.getWebUtilsInstance());
         se.put("blacklist", blackList);
+        se.put("voteReq", Helpers.voteChecks);
         try {
             if (toEval.contains("event.reply("))
                 se.eval(toEval);

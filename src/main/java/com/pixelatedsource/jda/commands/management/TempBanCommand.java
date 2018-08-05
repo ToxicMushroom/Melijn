@@ -5,6 +5,7 @@ import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
+import com.pixelatedsource.jda.blub.Need;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 
@@ -22,6 +23,9 @@ public class TempBanCommand extends Command {
                 Permission.MESSAGE_EMBED_LINKS,
                 Permission.BAN_MEMBERS,
                 Permission.MESSAGE_HISTORY
+        };
+        this.needs = new Need[]{
+                Need.GUILD
         };
     }
 
