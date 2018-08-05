@@ -63,7 +63,7 @@ public class PurgeCommand extends Command {
                                 toPurgeAmount -= 100;
                             }
                             List<Message> buffer = messageHistory.retrievePast(toPurgeAmount + 1).complete();
-                            if (OffsetDateTime.now().toEpochSecond() - buffer.get(buffer.size() - 1).getCreationTime().toEpochSecond() > 336 * 3600) {
+                            if ((buffer.size() > 0) && OffsetDateTime.now().toEpochSecond() - buffer.get(buffer.size() - 1).getCreationTime().toEpochSecond() > 336 * 3600) {
                                 int youngMessages = initAmount - toPurgeAmount;
                                 for (Message msg : buffer) {
                                     if (OffsetDateTime.now().toEpochSecond() - msg.getCreationTime().toEpochSecond() < 336 * 3600)

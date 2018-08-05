@@ -37,7 +37,7 @@ public class SetJoinLeaveChannelCommand extends Command {
                         new Thread(() -> PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.WELCOME)).start();
                         long oldChannel = welcomeChannels.getOrDefault(guild.getIdLong(), -1L);
                         event.reply("WelcomeChannel has been changed from " + (oldChannel == -1L ? "nothing" : "<#" + oldChannel + ">") + " to nothing");
-                    } else  {
+                    } else {
                         new Thread(() -> PixelSniper.mySQL.setChannel(guild.getIdLong(), id, ChannelType.WELCOME)).start();
                         if (!SetJoinMessageCommand.joinMessages.containsKey(guild.getIdLong())) {
                             SetJoinMessageCommand.joinMessages.put(guild.getIdLong(), "Welcome %USER% to the %GUILDNAME% discord server you are me");

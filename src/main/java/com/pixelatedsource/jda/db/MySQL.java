@@ -14,9 +14,7 @@ import org.json.JSONObject;
 
 import java.awt.*;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -68,6 +66,7 @@ public class MySQL {
             update("CREATE TABLE IF NOT EXISTS welcome_channels(guildId bigint, channelId bigint)");
             update("CREATE TABLE IF NOT EXISTS music_log_channels(guildId bigint, channelId bigint)");
 
+            update("CREATE TABLE IF NOT EXISTS unverified_users(guildId bigint, userId bigint)");
             update("CREATE TABLE IF NOT EXISTS streamer_modes(guildId bigint, state boolean)");
             update("CREATE TABLE IF NOT EXISTS filters(guildId bigint, mode varchar(16), content varchar(2000))");
             update("CREATE TABLE IF NOT EXISTS warns(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), moment bigint);");
@@ -1432,5 +1431,47 @@ public class MySQL {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public void addUnverifiedUser(long guildId, long userId) {
+        try {
+            PreparedStatement statement = con.prepareStatement("INSERT INTO unverified_users (guildId, userId) VALUES (?, ?)");
+            statement.setLong(1, guildId);
+            statement.setLong(2, userId);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void removeUnverifiedUser(long guildId, long userId) {
+        try {
+            PreparedStatement statement = con.prepareStatement("DELETE FROM unverified_users WHERE guildId= ? AND userId= ?");
+            statement.setLong(1, guildId);
+            statement.setLong(2, userId);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public HashMap<Long, ArrayList<Long>> getUnverifiedUserMap() {
+        HashMap<Long, ArrayList<Long>> toreturn = new HashMap<>();
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM unverified_users");
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                if (toreturn.containsKey(rs.getLong("guildId"))) {
+                    ArrayList<Long> buffertje = toreturn.get(rs.getLong("guildId"));
+                    buffertje.add(rs.getLong("userId"));
+                    toreturn.replace(rs.getLong("guildId"), buffertje);
+                } else {
+                    toreturn.put(rs.getLong("guildId"), new ArrayList<>(Collections.singleton(rs.getLong("userId"))));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return toreturn;
     }
 }

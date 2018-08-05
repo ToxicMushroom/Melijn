@@ -7,10 +7,6 @@ import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.EmbedBuilder;
 
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import static com.pixelatedsource.jda.PixelSniper.PREFIX;
 
 public class TextToEmojiCommand extends Command {
@@ -30,16 +26,6 @@ public class TextToEmojiCommand extends Command {
             if (event.getArgs().length() > 0) {
                 StringBuilder sb = new StringBuilder();
                 String[] args = event.getArgs().split("\\s+");
-                String text = event.getArgs();
-                String pattern1 = "([a-z])|([A-Z])|([0-9])";
-                Pattern r1 = Pattern.compile(pattern1);
-                Matcher m1 = r1.matcher(text);
-                if (m1.find()) {
-                    Logger.getLogger(this.getClass().getName()).info("groupcount: " + m1.groupCount());
-                    Logger.getLogger(this.getClass().getName()).info("groupcount: " + m1.group(1));
-                }
-
-
                 for (String s : event.getArgs().replaceFirst("%spaces%", "").split("")) {
                     if (Character.isLetter(s.toLowerCase().charAt(0))) {
                         sb.append(":regional_indicator_").append(s.toLowerCase()).append(":");
