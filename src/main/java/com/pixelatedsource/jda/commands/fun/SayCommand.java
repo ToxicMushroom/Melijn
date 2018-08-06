@@ -1,4 +1,4 @@
-package com.pixelatedsource.jda.commands.developer;
+package com.pixelatedsource.jda.commands.fun;
 
 import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.blub.Category;
@@ -32,7 +32,7 @@ public class SayCommand extends Command {
                 try {
                     String resourcename = event.getExecutor().equalsIgnoreCase("zeg") ? "melijn_zegt.png" : "melijn_says.png";
                     if (getClass().getClassLoader().getResource(resourcename) == null) return;
-                    image = ImageIO.read(new File(getClass().getClassLoader().getResource(resourcename).getFile()));
+                    image = ImageIO.read(new File(resourcename));
                     Graphics g = image.getGraphics();
                     g.setFont(g.getFont().deriveFont(40f));
                     if (event.getArgs().length() < 26) {

@@ -6,7 +6,7 @@ import com.pixelatedsource.jda.commands.HelpCommand;
 import com.pixelatedsource.jda.commands.InviteCommand;
 import com.pixelatedsource.jda.commands.VoteCommand;
 import com.pixelatedsource.jda.commands.developer.EvalCommand;
-import com.pixelatedsource.jda.commands.developer.SayCommand;
+import com.pixelatedsource.jda.commands.fun.SayCommand;
 import com.pixelatedsource.jda.commands.developer.WeebshCommand;
 import com.pixelatedsource.jda.commands.fun.*;
 import com.pixelatedsource.jda.commands.management.*;
