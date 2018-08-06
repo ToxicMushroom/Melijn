@@ -4,6 +4,9 @@ import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.commands.developer.EvalCommand;
 import com.pixelatedsource.jda.commands.management.SetLogChannelCommand;
+import com.pixelatedsource.jda.commands.management.SetVerificationChannel;
+import com.pixelatedsource.jda.commands.management.SetVerificationCode;
+import com.pixelatedsource.jda.commands.management.SetVerificationThreshold;
 import com.pixelatedsource.jda.db.MySQL;
 import com.pixelatedsource.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -39,6 +42,7 @@ public class Chat extends ListenerAdapter {
     private MySQL mySQL = PixelSniper.mySQL;
     private String latestId = "";
     private int latestChanges = 0;
+    HashMap<Long, HashMap<Long, Integer>> guildUserVerifyTries = new HashMap<>();
 
 
     @Override
@@ -68,7 +72,8 @@ public class Chat extends ListenerAdapter {
                         Pattern word = Pattern.compile(Pattern.quote(toFind.toLowerCase()));
                         Matcher match = word.matcher(message.toLowerCase());
                         while (match.find()) {
-                            if (deniedPositions.keySet().contains(match.start()) && deniedPositions.get(match.start()) < match.end()) deniedPositions.replace(match.start(), match.end());
+                            if (deniedPositions.keySet().contains(match.start()) && deniedPositions.get(match.start()) < match.end())
+                                deniedPositions.replace(match.start(), match.end());
                             else deniedPositions.put(match.start(), match.end());
                         }
                     }
@@ -77,7 +82,8 @@ public class Chat extends ListenerAdapter {
                         Pattern word = Pattern.compile(Pattern.quote(toFind.toLowerCase()));
                         Matcher match = word.matcher(message.toLowerCase());
                         while (match.find()) {
-                            if (allowedPositions.keySet().contains(match.start()) && allowedPositions.get(match.start()) < match.end()) allowedPositions.replace(match.start(), match.end());
+                            if (allowedPositions.keySet().contains(match.start()) && allowedPositions.get(match.start()) < match.end())
+                                allowedPositions.replace(match.start(), match.end());
                             else allowedPositions.put(match.start(), match.end());
                         }
                     }
@@ -104,6 +110,45 @@ public class Chat extends ListenerAdapter {
                         event.getMessage().delete().reason("Use of prohibited words").queue();
                     }
                 }).start();
+            }
+        }
+
+        if (SetVerificationChannel.verificationChannels.values().contains(event.getChannel().getIdLong())) {
+            if (SetVerificationCode.guildCodes.containsKey(event.getGuild().getIdLong())) {
+                if (event.getMessage().getContentRaw().equalsIgnoreCase(SetVerificationCode.guildCodes.get(event.getGuild().getIdLong()))) {
+                    event.getMessage().delete().queue();
+                    JoinLeave.verify(event.getGuild(), event.getAuthor());
+                    if (SetVerificationThreshold.guildVerificationThresholds.containsKey(event.getGuild().getIdLong()) && guildUserVerifyTries.containsKey(event.getGuild().getIdLong())) {
+                        HashMap<Long, Integer> userTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
+                        userTriesBuffer.remove(event.getAuthor().getIdLong());
+                        guildUserVerifyTries.replace(event.getGuild().getIdLong(), userTriesBuffer);
+                    }
+                } else if (SetVerificationThreshold.guildVerificationThresholds.containsKey(event.getGuild().getIdLong())) {
+                    event.getMessage().delete().queue();
+                    if (guildUserVerifyTries.containsKey(event.getGuild().getIdLong())) {
+                        if (guildUserVerifyTries.get(event.getGuild().getIdLong()).containsKey(event.getAuthor().getIdLong())) {
+                            HashMap<Long, Integer> userTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
+                            userTriesBuffer.replace(event.getAuthor().getIdLong(), userTriesBuffer.get(event.getAuthor().getIdLong()) + 1);
+                            guildUserVerifyTries.replace(event.getGuild().getIdLong(), userTriesBuffer);
+                        } else {
+                            HashMap<Long, Integer> userTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
+                            userTriesBuffer.put(event.getAuthor().getIdLong(), 1);
+                            guildUserVerifyTries.replace(event.getGuild().getIdLong(), userTriesBuffer);
+                        }
+                    } else {
+                        HashMap<Long, Integer> userTriesBuffer = new HashMap<>();
+                        userTriesBuffer.put(event.getAuthor().getIdLong(), 1);
+                        guildUserVerifyTries.put(event.getGuild().getIdLong(), userTriesBuffer);
+                    }
+                    if (guildUserVerifyTries.get(event.getGuild().getIdLong()).get(event.getAuthor().getIdLong()) == SetVerificationThreshold.guildVerificationThresholds.get(event.getGuild().getIdLong())) {
+                        event.getGuild().getController().kick(event.getMember()).reason("Failed verification").queue();
+                        if (SetVerificationThreshold.guildVerificationThresholds.containsKey(event.getGuild().getIdLong()) && guildUserVerifyTries.containsKey(event.getGuild().getIdLong())) {
+                            HashMap<Long, Integer> userTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
+                            userTriesBuffer.remove(event.getAuthor().getIdLong());
+                            guildUserVerifyTries.replace(event.getGuild().getIdLong(), userTriesBuffer);
+                        }
+                    }
+                }
             }
         }
     }

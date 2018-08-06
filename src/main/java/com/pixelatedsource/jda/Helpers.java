@@ -125,7 +125,11 @@ public class Helpers {
             "summon",
             "nyancat",
             "clearchannel",
-            "shards"
+            "shards",
+            "setVerificationCode",
+            "setVerificationChannel",
+            "setUnverifiedRole",
+            "setVerificationThreshold"
     );
 
 

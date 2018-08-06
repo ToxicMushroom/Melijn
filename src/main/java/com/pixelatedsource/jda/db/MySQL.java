@@ -2,9 +2,7 @@ package com.pixelatedsource.jda.db;
 
 import com.pixelatedsource.jda.Helpers;
 import com.pixelatedsource.jda.blub.*;
-import com.pixelatedsource.jda.commands.management.SetLogChannelCommand;
-import com.pixelatedsource.jda.commands.management.SetPrefixCommand;
-import com.pixelatedsource.jda.commands.management.SetStreamerModeCommand;
+import com.pixelatedsource.jda.commands.management.*;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Guild;
@@ -50,6 +48,7 @@ public class MySQL {
             update("CREATE TABLE IF NOT EXISTS prefixes(guildId bigint, prefix bigint);");
             update("CREATE TABLE IF NOT EXISTS mute_roles(guildId bigint, roleId bigint);");
             update("CREATE TABLE IF NOT EXISTS join_roles(guildId bigint, roleId bigint);");
+            update("CREATE TABLE IF NOT EXISTS unverified_roles(guildId bigint, roleId bigint);");
             update("CREATE TABLE IF NOT EXISTS perms_roles(guildId bigint, roleId bigint, permission varchar(256));");
             update("CREATE TABLE IF NOT EXISTS perms_users(guildId bigint, userId bigint, permission varchar(256));");
 
@@ -65,8 +64,11 @@ public class MySQL {
             update("CREATE TABLE IF NOT EXISTS music_channels(guildId bigint, channelId bigint)");
             update("CREATE TABLE IF NOT EXISTS welcome_channels(guildId bigint, channelId bigint)");
             update("CREATE TABLE IF NOT EXISTS music_log_channels(guildId bigint, channelId bigint)");
+            update("CREATE TABLE IF NOT EXISTS verification_channels(guildId bigint, channelId bigint)");
 
-            update("CREATE TABLE IF NOT EXISTS unverified_users(guildId bigint, userId bigint)");
+            update("CREATE TABLE IF NOT EXISTS verification_thresholds(guildId bigint, threshold tinyint);");
+            update("CREATE TABLE IF NOT EXISTS unverified_users(guildId bigint, userId bigint);");
+            update("CREATE TABLE IF NOT EXISTS verification_codes(guildId bigint, code varchar(2000));");
             update("CREATE TABLE IF NOT EXISTS streamer_modes(guildId bigint, state boolean)");
             update("CREATE TABLE IF NOT EXISTS filters(guildId bigint, mode varchar(16), content varchar(2000))");
             update("CREATE TABLE IF NOT EXISTS warns(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), moment bigint);");
@@ -105,6 +107,16 @@ public class MySQL {
         try {
             Statement st = con.createStatement();
             st.executeUpdate(qry);
+            st.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void bigUpdate(String qry) {
+        try {
+            Statement st = con.createStatement();
+            st.executeLargeUpdate(qry);
             st.close();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -554,7 +566,8 @@ public class MySQL {
                     deleteBans.executeUpdate();
                     deleteBans.close();
 
-                    EmbedBuilder eb = new EmbedBuilder();;
+                    EmbedBuilder eb = new EmbedBuilder();
+                    ;
                     eb.setAuthor("Unbanned by: " + author.getName() + "#" + author.getDiscriminator(), null, author.getEffectiveAvatarUrl());
                     eb.setDescription("```LDIF" + "\nUnbanned: " + toUnban.getName() + "#" + toUnban.getDiscriminator() + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(System.currentTimeMillis()) + "```");
                     eb.setThumbnail(toUnban.getEffectiveAvatarUrl());
@@ -1376,52 +1389,6 @@ public class MySQL {
         return list;
     }
 
-    public HashMap<Long, JSONObject> getVoteMap() {
-        HashMap<Long, JSONObject> map = new HashMap<>();
-        try {
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM votes");
-            ResultSet rs = statement.executeQuery();
-            while (rs.next()) {
-                map.putIfAbsent(rs.getLong("userId"),
-                        new JSONObject()
-                                .put("streak", rs.getLong("streak"))
-                                .put("votes", rs.getLong("votes"))
-                                .put("lastTime", rs.getLong("lastTime")));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return map;
-    }
-
-    public HashMap<Long, Long> getVoteStreakMap() {
-        HashMap<Long, Long> map = new HashMap<>();
-        try {
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM votes");
-            ResultSet rs = statement.executeQuery();
-            while (rs.next()) {
-                map.putIfAbsent(rs.getLong("userId"), rs.getLong("streak"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return map;
-    }
-
-    public HashMap<Long, Long> getVoteTimeMap() {
-        HashMap<Long, Long> map = new HashMap<>();
-        try {
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM votes");
-            ResultSet rs = statement.executeQuery();
-            while (rs.next()) {
-                map.putIfAbsent(rs.getLong("userId"), rs.getLong("lastTime"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return map;
-    }
-
     public void updateVoteStreak() {
         try {
             PreparedStatement statement = con.prepareStatement("UPDATE votes SET streak=? WHERE lastTime<?");
@@ -1473,5 +1440,91 @@ public class MySQL {
             e.printStackTrace();
         }
         return toreturn;
+    }
+
+    public void setVerificationCode(long guildId, String code) {
+        try {
+            if (SetVerificationCode.guildCodes.containsKey(guildId)) {
+                PreparedStatement statement = con.prepareStatement("UPDATE verification_codes SET code= ? WHERE guildId= ?");
+                statement.setLong(1, guildId);
+                statement.setString(2, code);
+                statement.executeUpdate();
+            } else {
+                PreparedStatement statement = con.prepareStatement("INSERT INTO verification_codes (guildId, code) VALUES (?, ?)");
+                statement.setLong(1, guildId);
+                statement.setString(2, code);
+                statement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void removeVerificationCode(long guildId) {
+        try {
+            PreparedStatement statement = con.prepareStatement("DELETE FROM verification_codes WHERE guildId= ?");
+            statement.setLong(1, guildId);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public HashMap<Long, String> getVerificationCodeMap() {
+        HashMap<Long, String> toReturn = new HashMap<>();
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM verification_codes");
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                toReturn.putIfAbsent(rs.getLong("guildId"), rs.getString("code"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return toReturn;
+    }
+
+    public void setVerificationThreshold(long guildId, int threshold) {
+        try {
+            if (SetVerificationThreshold.guildVerificationThresholds.containsKey(guildId)) {
+                PreparedStatement statement = con.prepareStatement("UPDATE verification_thresholds SET threshold= ? WHERE guildId= ?");
+                statement.setLong(1, guildId);
+                statement.setInt(2, threshold);
+                statement.executeUpdate();
+            } else {
+                PreparedStatement statement = con.prepareStatement("INSERT INTO verification_thresholds (guildId, threshold) VALUES (?, ?)");
+                statement.setLong(1, guildId);
+                statement.setInt(2, threshold);
+                statement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void removeVerificationThreshold(long guildId) {
+        try {
+            PreparedStatement statement = con.prepareStatement("DELETE FROM verification_thresholds WHERE guildId= ?");
+            statement.setLong(1, guildId);
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public HashMap<Long, Integer> getGuildVerificationThresholdMap() {
+        HashMap<Long, Integer> toReturn = new HashMap<>();
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM verification_thresholds");
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                toReturn.putIfAbsent(rs.getLong("guildId"), rs.getInt("threshold"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return toReturn;
     }
 }

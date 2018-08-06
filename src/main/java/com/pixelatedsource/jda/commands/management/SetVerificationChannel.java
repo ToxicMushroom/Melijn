@@ -8,10 +8,13 @@ import net.dv8tion.jda.core.entities.Guild;
 
 import java.util.HashMap;
 
+import static com.pixelatedsource.jda.PixelSniper.PREFIX;
+
 public class SetVerificationChannel extends Command {
 
     public SetVerificationChannel() {
         this.commandName = "setVerificationChannel";
+        this.usage = PREFIX + commandName + " [TextChannel | null]";
         this.description = "set a channel in which the user will have to prove that he or she is not a bot by answering a captcha or question";
         this.aliases = new String[]{"svc"};
         this.extra = "You can manually approve users by using the verify command";
@@ -45,10 +48,6 @@ public class SetVerificationChannel extends Command {
                         String oldChannel = verificationChannelId == -1 ? "nothing" : "<#" + verificationChannelId + ">";
                         String newChannel = "<#" + id + ">";
                         event.reply("VerificationChannel has been changed from " + oldChannel + " to " + newChannel);
-
-                        if (!SetJoinRoleCommand.joinRoles.containsKey(event.getGuild().getIdLong())) {
-                            event.reply("Now it's time to set the role that people will receive after verification to get access to other channels\nUse >setJoinRole <role>");
-                        }
                     } else {
                         event.reply("I need to be able to attach files and manage messages in <#" + verificationChannelId + "> in order to set it as my VerificationChannel\nYou might also want to give me kick permissions so bot's get kicked after 3 tries/incorrect answers");
                     }

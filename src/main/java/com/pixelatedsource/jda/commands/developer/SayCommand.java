@@ -35,7 +35,36 @@ public class SayCommand extends Command {
                     image = ImageIO.read(new File(getClass().getClassLoader().getResource(resourcename).getFile()));
                     Graphics g = image.getGraphics();
                     g.setFont(g.getFont().deriveFont(40f));
-                    g.drawString(event.getArgs(), 650, 100);
+                    if (event.getArgs().length() < 26) {
+                        g.drawString(event.getArgs(), 650, 200);
+                    } else {
+                        StringBuilder sb = new StringBuilder();
+                        String[] parts = event.getArgs().split("\\s+");
+                        for (String part : parts) {
+                            if (part.length() > 25) {
+                                String[] characters = part.split("");
+                                int i = 0;
+                                for (String charl : characters) {
+                                    sb.append(charl);
+                                    if (i++ == 22) {
+                                        sb.append("-\n");
+                                        i = 0;
+                                    }
+                                }
+                            } else if ((sb.toString().split("\n")[sb.toString().split("\n").length - 1].length() + part.length()) > 28) {
+                                sb.append("\n").append(part);
+                            } else {
+                                if (sb.toString().length() > 0) sb.append(" ");
+                                sb.append(part);
+                            }
+                        }
+                        int i = 0;
+                        String[] lines = sb.toString().split("\n");
+                        for (String line : lines) {
+                            g.drawString(line, 640, 220 - (40 * lines.length/2) + (i++ * 40));
+
+                        }
+                    }
                     g.dispose();
                     String imageName = String.valueOf(System.currentTimeMillis());
                     ImageIO.write(image, "png", new File(imageName + ".png"));

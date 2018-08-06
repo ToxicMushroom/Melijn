@@ -22,7 +22,8 @@ public class JoinLeave extends ListenerAdapter {
 
     @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+            return;
         Guild guild = event.getGuild();
         User joinedUser = event.getUser();
         if (SetVerificationChannel.verificationChannels.containsKey(guild.getIdLong())) {
@@ -34,6 +35,8 @@ public class JoinLeave extends ListenerAdapter {
                     unVerifiedGuildMembers.put(guild.getIdLong(), newList);
                 }
                 PixelSniper.mySQL.addUnverifiedUser(guild.getIdLong(), joinedUser.getIdLong());
+                if (SetUnverifiedRole.unverifiedRoles.containsKey(guild.getIdLong()) && guild.getRoleById(SetUnverifiedRole.unverifiedRoles.get(guild.getIdLong())) != null)
+                    guild.getController().addSingleRoleToMember(event.getMember(), guild.getRoleById(SetUnverifiedRole.unverifiedRoles.get(guild.getIdLong()))).reason("unverified user").queue();
             } else {
                 SetVerificationChannel.verificationChannels.remove(event.getGuild().getIdLong());
                 new Thread(() -> PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.VERIFICATION)).start();
@@ -45,7 +48,8 @@ public class JoinLeave extends ListenerAdapter {
 
     @Override
     public void onGuildMemberLeave(GuildMemberLeaveEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+            return;
         Guild guild = event.getGuild();
         User leftUser = event.getUser();
         if (unVerifiedGuildMembers.get(guild.getIdLong()) == null || !unVerifiedGuildMembers.get(guild.getIdLong()).contains(leftUser.getIdLong())) {
@@ -95,10 +99,12 @@ public class JoinLeave extends ListenerAdapter {
 
     private static void removeUnverified(Guild guild, User user) {
         if (unVerifiedGuildMembers.get(guild.getIdLong()) != null) {
-                ArrayList<Long> newList = unVerifiedGuildMembers.get(guild.getIdLong());
-                newList.remove(user.getIdLong());
-                unVerifiedGuildMembers.replace(guild.getIdLong(), newList);
-                new Thread(() -> PixelSniper.mySQL.removeUnverifiedUser(guild.getIdLong(), user.getIdLong())).start();
+            ArrayList<Long> newList = unVerifiedGuildMembers.get(guild.getIdLong());
+            newList.remove(user.getIdLong());
+            unVerifiedGuildMembers.replace(guild.getIdLong(), newList);
+            new Thread(() -> PixelSniper.mySQL.removeUnverifiedUser(guild.getIdLong(), user.getIdLong())).start();
+            if (guild.getMember(user) != null && SetUnverifiedRole.unverifiedRoles.containsKey(guild.getIdLong()) && guild.getRoleById(SetUnverifiedRole.unverifiedRoles.get(guild.getIdLong())) != null)
+                guild.getController().removeSingleRoleFromMember(guild.getMember(user), guild.getRoleById(SetUnverifiedRole.unverifiedRoles.get(guild.getIdLong()))).reason("verified user").queue();
         }
     }
 }
