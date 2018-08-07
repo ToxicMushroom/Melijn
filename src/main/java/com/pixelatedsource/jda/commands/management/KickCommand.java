@@ -35,9 +35,9 @@ public class KickCommand extends Command {
                 if (target != null) {
                     if (event.getGuild().getMember(target) != null) {
                         new Thread(() -> {
-                            if (event.getGuild().getMember(target).getRoles().size() > 1) {
-                                if (event.getGuild().getMember(target).getRoles().get(0).getPosition() <= event.getGuild().getSelfMember().getRoles().get(0).getPosition()) {
-                                    event.reply("I can't modify a member with higher or equal highest role than myself");
+                            if (event.getGuild().getMember(target).getRoles().size() > 0 && event.getGuild().getSelfMember().getRoles().size() > 0) {
+                                if (event.getGuild().getSelfMember().getRoles().get(0).canInteract(event.getGuild().getMember(target).getRoles().get(0))) {
+                                    event.reply("Can't modify a member with higher or equal highest role than myself");
                                     return;
                                 }
                             }

@@ -5,6 +5,7 @@ import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
 import com.pixelatedsource.jda.utils.MessageHelper;
+import net.dv8tion.jda.core.Permission;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -21,6 +22,7 @@ public class SayCommand extends Command {
         this.description = "Makes the bot say stuff";
         this.usage = PREFIX + commandName + " <message>";
         this.aliases = new String[]{"zeg"};
+        this.permissions = new Permission[]{Permission.MESSAGE_ATTACH_FILES};
         this.category = Category.FUN;
     }
 
