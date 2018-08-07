@@ -4,7 +4,7 @@ plugins {
     id'com.github.johnrengelman.shadow' version '2.0.4'
 }
 
-mainClassName = 'com.pixelatedsource.jda.PixelSniper'
+mainClassName = 'me.melijn.jda.Melijn'
 version = '1.1'
 sourceCompatibility = 10.0
 
@@ -18,13 +18,14 @@ repositories {
 
 dependencies {
     compile 'com.sedmelluq:jda-nas:1.0.6'
-    compile 'net.dv8tion:JDA:3.7.1_390'
+    compile 'net.dv8tion:JDA:3.7.1_391'
     compile 'com.sedmelluq:lavaplayer:1.3.7'
     compile 'me.duncte123:weebJava:2.0.1'
     compile 'mysql:mysql-connector-java:8.0.11'
     compile 'com.github.natanbc:lavadsp:0.3'
-    compile 'se.michaelthelin.spotify:spotify-web-api-java:2.0.4'
     compile 'com.github.DiscordBotList:DBL-Java-Library:304b5461208076d27f932608a361cd051ea0ad33'
+    compile 'se.michaelthelin.spotify:spotify-web-api-java:2.0.4'
+    compile "org.kohsuke:groovy-sandbox:1.6"
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.1'
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.1'
     compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.11.1'
