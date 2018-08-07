@@ -32,9 +32,8 @@ public class HistoryCommand extends Command {
                 if (args.length == 2) {
                     Helpers.retrieveUserByArgsN(event, args[1], (success) -> {
                         if (success != null) {
-                            String spaces = "                                                                                                                                                   ";
+                            String spaces = "                                                  ";
                             switch (args[0]) {
-
                                 case "ban":
                                 case "bans":
                                     PixelSniper.MAIN_THREAD.submit(() -> {
@@ -45,7 +44,7 @@ public class HistoryCommand extends Command {
                                                     int size = Integer.parseInt(parts.get(parts.size() - 1));
                                                     parts.remove(parts.size() - 1);
                                                     for (String part : parts) {
-                                                        ebBan.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s bans " + ++partnumber + "/" + size, null, success.getEffectiveAvatarUrl());
+                                                        ebBan.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s bans " + ++partnumber + "/" + size + spaces.substring(0, 45-success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                                         ebBan.setDescription(part);
                                                         ebBan.setColor(Helpers.EmbedColor);
                                                         event.reply(ebBan.build());
@@ -64,7 +63,7 @@ public class HistoryCommand extends Command {
                                                     int size = Integer.parseInt(parts.get(parts.size() - 1));
                                                     parts.remove(parts.size() - 1);
                                                     for (String part : parts) {
-                                                        ebMute.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s mutes " + ++partnumber + "/" + size, null, success.getEffectiveAvatarUrl());
+                                                        ebMute.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s mutes " + ++partnumber + "/" + size + spaces.substring(0, 45-success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                                         ebMute.setDescription(part);
                                                         ebMute.setColor(Helpers.EmbedColor);
                                                         event.reply(ebMute.build());
@@ -83,9 +82,7 @@ public class HistoryCommand extends Command {
                                                     int size = Integer.parseInt(parts.get(parts.size() - 1));
                                                     parts.remove(parts.size() - 1);
                                                     for (String part : parts) {
-                                                        ebWarn.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s warns " + ++partnumber + "/" + size +
-                                                                spaces.substring(0, 32-success.getName().length()) + ""
-                                                                , null, success.getEffectiveAvatarUrl());
+                                                        ebWarn.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s warns " + ++partnumber + "/" + size + spaces.substring(0, 45-success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                                         ebWarn.setDescription(part);
                                                         ebWarn.setColor(Helpers.EmbedColor);
                                                         event.reply(ebWarn.build());
@@ -104,7 +101,7 @@ public class HistoryCommand extends Command {
                                                     int size = Integer.parseInt(parts.get(parts.size() - 1));
                                                     parts.remove(parts.size() - 1);
                                                     for (String part : parts) {
-                                                        ebKick.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s kicks " + ++partnumber + "/" + size, null, success.getEffectiveAvatarUrl());
+                                                        ebKick.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s kicks " + ++partnumber + "/" + size + spaces.substring(0, 45-success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                                         ebKick.setDescription(part);
                                                         ebKick.setColor(Helpers.EmbedColor);
                                                         event.reply(ebKick.build());

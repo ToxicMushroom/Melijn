@@ -26,6 +26,7 @@ public class MySQL {
     private String pass;
     private String user;
     private String dbname;
+    private String spaces = "                                                  ";
     private static Connection con;
 
     public MySQL(String ip, String user, String pass, String dbname) {
@@ -427,43 +428,44 @@ public class MySQL {
     }
 
     //Punishment stuff--------------------------------------------------------------
-    public boolean setTempBan(User staff, User victim, Guild guild, String reason, long seconds) {
+    public boolean setTempBan(User author, User target, Guild guild, String reason, long seconds) {
         reason = reason.matches("\\s+|") ? "none" : reason;
         if (seconds > 0) {
-            Long moment = System.currentTimeMillis();
-            Long until = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(seconds);
-            String name = victim.getName() + "#" + victim.getDiscriminator();
-            String namep = staff.getName() + "#" + staff.getDiscriminator();
+            long moment = System.currentTimeMillis();
+            long until = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(seconds);
+            String namet = target.getName() + "#" + target.getDiscriminator();
+            String name = author.getName() + "#" + author.getDiscriminator();
             try {
                 EmbedBuilder banned = new EmbedBuilder();
                 banned.setColor(Color.RED);
-                banned.setDescription("```LDIF" + "\nBanned: " + name + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nFrom: " + millisToDate(moment) + "\nUntil: " + millisToDate(until) + "```");
-                banned.setThumbnail(victim.getEffectiveAvatarUrl());
-                banned.setAuthor("Banned by: " + namep, null, staff.getEffectiveAvatarUrl());
-                if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(banned.build()).queue();
+                banned.setDescription("```LDIF\nBanned: " + namet + "\nTargetID: " + target.getId() + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nFrom: " + millisToDate(moment) + "\nUntil: " + millisToDate(until) + "```");
+                banned.setThumbnail(target.getEffectiveAvatarUrl());
+                banned.setAuthor("Banned by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
+
+                if (!target.isBot()) target.openPrivateChannel().complete().sendMessage(banned.build()).queue();
                 long logChannelId = SetLogChannelCommand.banLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
                 if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                    if (victim.isBot())
+                    if (target.isBot())
                         guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget is a bot").queue();
                     else guild.getTextChannelById(logChannelId).sendMessage(banned.build()).queue();
                 }
-                ResultSet rs = query("SELECT * FROM active_bans WHERE victimId= '" + victim.getId() + "' AND guildId= '" + guild.getId() + "'");
+                ResultSet rs = query("SELECT * FROM active_bans WHERE victimId= '" + target.getId() + "' AND guildId= '" + guild.getId() + "'");
                 if (rs.next()) {//Player was banned so just update the times
                     PreparedStatement banupdate = con.prepareStatement("UPDATE active_bans SET victimId= ?, guildId= ?, reason= ?, startTime= ?, endTime= ?, authorId= ? WHERE victimId= ? AND guildId= ?");
-                    banupdate.setLong(1, victim.getIdLong());
+                    banupdate.setLong(1, target.getIdLong());
                     banupdate.setLong(2, guild.getIdLong());
                     banupdate.setString(3, reason);
                     banupdate.setLong(4, moment);
                     banupdate.setLong(5, until);
-                    banupdate.setLong(6, staff.getIdLong());
-                    banupdate.setLong(7, victim.getIdLong());
+                    banupdate.setLong(6, author.getIdLong());
+                    banupdate.setLong(7, target.getIdLong());
                     banupdate.setLong(8, guild.getIdLong());
                     banupdate.executeUpdate();
                 } else {//nieuwe ban
                     PreparedStatement ban = con.prepareStatement("INSERT INTO active_bans (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?)");
                     ban.setLong(1, guild.getIdLong());
-                    ban.setLong(2, victim.getIdLong());
-                    ban.setLong(3, staff.getIdLong());
+                    ban.setLong(2, target.getIdLong());
+                    ban.setLong(3, author.getIdLong());
                     ban.setString(4, reason);
                     ban.setLong(5, moment);
                     ban.setLong(6, until);
@@ -472,14 +474,14 @@ public class MySQL {
                 //add to history as active
                 PreparedStatement banhistoire = con.prepareStatement("INSERT INTO history_bans (guildId, victimId, authorId, reason, startTime, endTime, active) VALUES (?, ?, ?, ?, ?, ?, ?)");
                 banhistoire.setLong(1, guild.getIdLong());
-                banhistoire.setLong(2, victim.getIdLong());
-                banhistoire.setLong(3, staff.getIdLong());
+                banhistoire.setLong(2, target.getIdLong());
+                banhistoire.setLong(3, author.getIdLong());
                 banhistoire.setString(4, reason);
                 banhistoire.setLong(5, moment);
                 banhistoire.setLong(6, until);
                 banhistoire.setBoolean(7, true);
                 banhistoire.executeUpdate();
-                guild.getController().ban(victim.getId(), 7, reason).queue();
+                guild.getController().ban(target.getId(), 7, reason).queue();
                 return true;
             } catch (SQLException | IllegalStateException e) {
                 return false;
@@ -488,41 +490,42 @@ public class MySQL {
         return false;
     }
 
-    public boolean setPermBan(User staff, User victim, Guild guild, String reason) {
+    public boolean setPermBan(User author, User target, Guild guild, String reason) {
         reason = reason.matches("\\s+|") ? "none" : reason;
-        Long moment = System.currentTimeMillis();
-        String name = victim.getName() + "#" + victim.getDiscriminator();
-        String namep = staff.getName() + "#" + staff.getDiscriminator();
+        long moment = System.currentTimeMillis();
+        String namet = target.getName() + "#" + target.getDiscriminator();
+        String name = author.getName() + "#" + author.getDiscriminator();
         try {
             EmbedBuilder banned = new EmbedBuilder();
             banned.setColor(Color.RED);
-            banned.setDescription("```LDIF" + "\nBanned: " + name + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(moment) + "```");
-            banned.setThumbnail(victim.getEffectiveAvatarUrl());
-            banned.setAuthor("Permanently banned by: " + namep, null, staff.getEffectiveAvatarUrl());
-            if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(banned.build()).queue();
+            banned.setDescription("```LDIF\nBanned: " + namet + "\nTargetID:" + target.getId() + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(moment) + "```");
+            banned.setThumbnail(target.getEffectiveAvatarUrl());
+            banned.setAuthor("Permanently banned by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
+
+            if (!target.isBot()) target.openPrivateChannel().complete().sendMessage(banned.build()).queue();
             long logChannelId = SetLogChannelCommand.banLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                if (victim.isBot())
+                if (target.isBot())
                     guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget is a bot").queue();
                 else guild.getTextChannelById(logChannelId).sendMessage(banned.build()).queue();
             }
-            ResultSet rs = query("SELECT * FROM active_bans WHERE victimId= '" + victim.getId() + "' AND guildId= '" + guild.getId() + "'");
+            ResultSet rs = query("SELECT * FROM active_bans WHERE victimId= '" + target.getId() + "' AND guildId= '" + guild.getId() + "'");
             if (rs.next()) {//Player was banned so just update the times
                 PreparedStatement banupdate = con.prepareStatement("UPDATE active_bans SET victimId= ?, guildId= ?, reason= ?, startTime= ?, endTime= ?, authorId= ? WHERE victimId= ? AND guildId= ?");
-                banupdate.setLong(1, victim.getIdLong());
+                banupdate.setLong(1, target.getIdLong());
                 banupdate.setLong(2, guild.getIdLong());
                 banupdate.setString(3, reason);
                 banupdate.setLong(4, moment);
                 banupdate.setBigDecimal(5, null);
-                banupdate.setLong(6, staff.getIdLong());
-                banupdate.setLong(7, victim.getIdLong());
+                banupdate.setLong(6, author.getIdLong());
+                banupdate.setLong(7, target.getIdLong());
                 banupdate.setLong(8, guild.getIdLong());
                 banupdate.executeUpdate();
             } else {//nieuwe ban
                 PreparedStatement ban = con.prepareStatement("INSERT INTO active_bans (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?)");
                 ban.setLong(1, guild.getIdLong());
-                ban.setLong(2, victim.getIdLong());
-                ban.setLong(3, staff.getIdLong());
+                ban.setLong(2, target.getIdLong());
+                ban.setLong(3, author.getIdLong());
                 ban.setString(4, reason);
                 ban.setLong(5, moment);
                 ban.setBigDecimal(6, null);
@@ -531,14 +534,14 @@ public class MySQL {
             //add to history as active
             PreparedStatement banhistoire = con.prepareStatement("INSERT INTO history_bans (guildId, victimId, authorId, reason, startTime, endTime, active) VALUES (?, ?, ?, ?, ?, ?, ?)");
             banhistoire.setLong(1, guild.getIdLong());
-            banhistoire.setLong(2, victim.getIdLong());
-            banhistoire.setLong(3, staff.getIdLong());
+            banhistoire.setLong(2, target.getIdLong());
+            banhistoire.setLong(3, author.getIdLong());
             banhistoire.setString(4, reason);
             banhistoire.setLong(5, moment);
             banhistoire.setBigDecimal(6, null);
             banhistoire.setBoolean(7, true);
             banhistoire.executeUpdate();
-            guild.getController().ban(victim.getId(), 7, reason).queue();
+            guild.getController().ban(target.getId(), 7, reason).queue();
             return true;
         } catch (SQLException | IllegalStateException e) {
             return false;
@@ -567,11 +570,9 @@ public class MySQL {
                     deleteBans.close();
 
                     EmbedBuilder eb = new EmbedBuilder();
-                    ;
-                    eb.setAuthor("Unbanned by: " + author.getName() + "#" + author.getDiscriminator(), null, author.getEffectiveAvatarUrl());
-                    eb.setDescription("```LDIF" + "\nUnbanned: " + toUnban.getName() + "#" + toUnban.getDiscriminator() + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(System.currentTimeMillis()) + "```");
+                    eb.setAuthor("Unbanned by: " + author.getName() + "#" + author.getDiscriminator() + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
+                    eb.setDescription("```LDIF\nUnbanned: " + toUnban.getName() + "#" + toUnban.getDiscriminator() + "\nTargetID: " + toUnban.getId() + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(System.currentTimeMillis()) + "```");
                     eb.setThumbnail(toUnban.getEffectiveAvatarUrl());
-                    eb.setColor(Helpers.EmbedColor);
                     eb.setColor(Color.green);
 
                     if (!toUnban.isBot()) toUnban.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
@@ -592,28 +593,29 @@ public class MySQL {
         return false;
     }
 
-    public boolean addWarn(User staff, User victim, Guild guild, String reason) {
+    public boolean addWarn(User author, User target, Guild guild, String reason) {
         try {
             reason = reason.matches("\\s+|") ? "none" : reason;
             PreparedStatement newWarn = con.prepareStatement("INSERT INTO warns(guildId, victimId, authorId, reason, moment) VALUES (?, ?, ?, ?, ?);");
             newWarn.setLong(1, guild.getIdLong());
-            newWarn.setLong(2, victim.getIdLong());
-            newWarn.setLong(3, staff.getIdLong());
+            newWarn.setLong(2, target.getIdLong());
+            newWarn.setLong(3, author.getIdLong());
             newWarn.setString(4, reason);
             newWarn.setLong(5, System.currentTimeMillis());
             newWarn.executeUpdate();
             EmbedBuilder embedBuilder = new EmbedBuilder();
-            embedBuilder.setAuthor("Warned by: " + staff.getName() + "#" + staff.getDiscriminator(), null, staff.getEffectiveAvatarUrl());
-            embedBuilder.setDescription("```LDIF\n" + "Warned: " + victim.getName() + "#" + victim.getDiscriminator() + "\n" + "Reason: " + reason + "\n" + "Guild: " + guild.getName() + "\n" + "Moment: " + millisToDate(System.currentTimeMillis()) + "\n" + "```");
-            embedBuilder.setThumbnail(victim.getEffectiveAvatarUrl());
+            embedBuilder.setAuthor("Warned by: " + author.getName() + "#" + author.getDiscriminator() + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
+            embedBuilder.setDescription("```LDIF\nWarned: " + target.getName() + "#" + target.getDiscriminator() + "\nTargetID: " + target.getId() + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(System.currentTimeMillis()) + "\n```");
+            embedBuilder.setThumbnail(target.getEffectiveAvatarUrl());
             embedBuilder.setColor(Color.yellow);
+
             long logChannelId = SetLogChannelCommand.warnLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                if (victim.isBot())
+                if (target.isBot())
                     guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build() + "\nTarget is a bot.").queue();
                 else guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
             }
-            if (!victim.isBot()) victim.openPrivateChannel().queue((m) -> m.sendMessage(embedBuilder.build()).queue());
+            if (!target.isBot()) target.openPrivateChannel().queue((m) -> m.sendMessage(embedBuilder.build()).queue());
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -621,43 +623,44 @@ public class MySQL {
         return false;
     }
 
-    public boolean setTempMute(User staff, User victim, Guild guild, String reason, long seconds) {
+    public boolean setTempMute(User author, User target, Guild guild, String reason, long seconds) {
         if (seconds > 0) {
             reason = reason.matches("\\s+|") ? "none" : reason;
-            Long moment = System.currentTimeMillis();
-            Long until = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(seconds);
-            String name = victim.getName() + "#" + victim.getDiscriminator();
-            String namep = staff.getName() + "#" + staff.getDiscriminator();
+            long moment = System.currentTimeMillis();
+            long until = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(seconds);
+            String namet = target.getName() + "#" + target.getDiscriminator();
+            String name = author.getName() + "#" + author.getDiscriminator();
             try {
                 EmbedBuilder muted = new EmbedBuilder();
                 muted.setColor(Color.BLUE);
-                muted.setDescription("```LDIF" + "\nMuted: " + name + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nFrom: " + millisToDate(moment) + "\nUntil: " + millisToDate(until) + "```");
-                muted.setThumbnail(victim.getEffectiveAvatarUrl());
-                muted.setAuthor("Muted by: " + namep, null, staff.getEffectiveAvatarUrl());
-                if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(muted.build()).queue();
+                muted.setDescription("```LDIF\nMuted: " + namet + "\nTargetID: " + target.getId() + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nFrom: " + millisToDate(moment) + "\nUntil: " + millisToDate(until) + "```");
+                muted.setThumbnail(target.getEffectiveAvatarUrl());
+                muted.setAuthor("Muted by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
+
+                if (!target.isBot()) target.openPrivateChannel().complete().sendMessage(muted.build()).queue();
                 long logChannelId = SetLogChannelCommand.muteLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
                 if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                    if (victim.isBot())
+                    if (target.isBot())
                         guild.getTextChannelById(logChannelId).sendMessage(muted.build() + "\nTarget is a bot").queue();
                     else guild.getTextChannelById(logChannelId).sendMessage(muted.build()).queue();
                 }
-                ResultSet rs = query("SELECT * FROM active_mutes WHERE victimId= '" + victim.getIdLong() + "' AND guildId= '" + guild.getIdLong() + "'");
+                ResultSet rs = query("SELECT * FROM active_mutes WHERE victimId= '" + target.getIdLong() + "' AND guildId= '" + guild.getIdLong() + "'");
                 if (rs.next()) {//Player was banned so just update the times
                     PreparedStatement muteupdate = con.prepareStatement("UPDATE active_mutes SET victimId= ?, guildId= ?, reason= ?, startTime= ?, endTime= ?, authorId= ? WHERE victimId= ? AND guildId= ?");
-                    muteupdate.setLong(1, victim.getIdLong());
+                    muteupdate.setLong(1, target.getIdLong());
                     muteupdate.setLong(2, guild.getIdLong());
                     muteupdate.setString(3, reason);
                     muteupdate.setLong(4, moment);
                     muteupdate.setLong(5, until);
-                    muteupdate.setLong(6, staff.getIdLong());
-                    muteupdate.setLong(7, victim.getIdLong());
+                    muteupdate.setLong(6, author.getIdLong());
+                    muteupdate.setLong(7, target.getIdLong());
                     muteupdate.setLong(8, guild.getIdLong());
                     muteupdate.executeUpdate();
                 } else {//nieuwe mute
                     PreparedStatement mute = con.prepareStatement("INSERT INTO active_mutes (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?)");
                     mute.setLong(1, guild.getIdLong());
-                    mute.setLong(2, victim.getIdLong());
-                    mute.setLong(3, staff.getIdLong());
+                    mute.setLong(2, target.getIdLong());
+                    mute.setLong(3, author.getIdLong());
                     mute.setString(4, reason);
                     mute.setLong(5, moment);
                     mute.setLong(6, until);
@@ -666,8 +669,8 @@ public class MySQL {
                 //add to history as active
                 PreparedStatement mutehistoire = con.prepareStatement("INSERT INTO history_mutes (guildId, victimId, authorId, reason, startTime, endTime, active) VALUES (?, ?, ?, ?, ?, ?, ?)");
                 mutehistoire.setLong(1, guild.getIdLong());
-                mutehistoire.setLong(2, victim.getIdLong());
-                mutehistoire.setLong(3, staff.getIdLong());
+                mutehistoire.setLong(2, target.getIdLong());
+                mutehistoire.setLong(3, author.getIdLong());
                 mutehistoire.setString(4, reason);
                 mutehistoire.setLong(5, moment);
                 mutehistoire.setLong(6, until);
@@ -681,41 +684,42 @@ public class MySQL {
         return false;
     }
 
-    public boolean setPermMute(User staff, User victim, Guild guild, String reason) {
+    public boolean setPermMute(User author, User target, Guild guild, String reason) {
         reason = reason.matches("\\s+|") ? "none" : reason;
-        Long moment = System.currentTimeMillis();
-        String name = victim.getName() + "#" + victim.getDiscriminator();
-        String namep = staff.getName() + "#" + staff.getDiscriminator();
+        long moment = System.currentTimeMillis();
+        String namet = target.getName() + "#" + target.getDiscriminator();
+        String name = author.getName() + "#" + author.getDiscriminator();
         try {
             EmbedBuilder muted = new EmbedBuilder();
             muted.setColor(Color.BLUE);
-            muted.setDescription("```LDIF" + "\nMuted: " + name + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(moment) + "```");
-            muted.setThumbnail(victim.getEffectiveAvatarUrl());
-            muted.setAuthor("Permanently muted by: " + namep, null, staff.getEffectiveAvatarUrl());
-            if (!victim.isBot()) victim.openPrivateChannel().complete().sendMessage(muted.build()).queue();
+            muted.setDescription("```LDIF\nMuted: " + namet + "\nTargetID: " + target.getId() + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(moment) + "```");
+            muted.setThumbnail(target.getEffectiveAvatarUrl());
+            muted.setAuthor("Permanently muted by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
+
+            if (!target.isBot()) target.openPrivateChannel().complete().sendMessage(muted.build()).queue();
             long logChannelId = SetLogChannelCommand.muteLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                if (victim.isBot())
+                if (target.isBot())
                     guild.getTextChannelById(logChannelId).sendMessage(muted.build() + "\nTarget is a bot").queue();
                 else guild.getTextChannelById(logChannelId).sendMessage(muted.build()).queue();
             }
-            ResultSet rs = query("SELECT * FROM active_mutes WHERE victimId= '" + victim.getId() + "' AND guildId= '" + guild.getId() + "'");
+            ResultSet rs = query("SELECT * FROM active_mutes WHERE victimId= '" + target.getId() + "' AND guildId= '" + guild.getId() + "'");
             if (rs.next()) {
                 PreparedStatement muteupdate = con.prepareStatement("UPDATE active_mutes SET victimId= ?, guildId= ?, reason= ?, startTime= ?, endTime= ?, authorId= ? WHERE victimId= ? AND guildId= ?");
-                muteupdate.setLong(1, victim.getIdLong());
+                muteupdate.setLong(1, target.getIdLong());
                 muteupdate.setLong(2, guild.getIdLong());
                 muteupdate.setString(3, reason);
                 muteupdate.setLong(4, moment);
                 muteupdate.setBigDecimal(5, null);
-                muteupdate.setLong(6, staff.getIdLong());
-                muteupdate.setLong(7, victim.getIdLong());
+                muteupdate.setLong(6, author.getIdLong());
+                muteupdate.setLong(7, target.getIdLong());
                 muteupdate.setLong(8, guild.getIdLong());
                 muteupdate.executeUpdate();
             } else {//nieuwe mute
                 PreparedStatement mute = con.prepareStatement("INSERT INTO active_mutes (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?)");
                 mute.setLong(1, guild.getIdLong());
-                mute.setLong(2, victim.getIdLong());
-                mute.setLong(3, staff.getIdLong());
+                mute.setLong(2, target.getIdLong());
+                mute.setLong(3, author.getIdLong());
                 mute.setString(4, reason);
                 mute.setLong(5, moment);
                 mute.setBigDecimal(6, null);
@@ -724,8 +728,8 @@ public class MySQL {
             //add to history as active
             PreparedStatement mutehistoire = con.prepareStatement("INSERT INTO history_mutes (guildId, victimId, authorId, reason, startTime, endTime, active) VALUES (?, ?, ?, ?, ?, ?, ?)");
             mutehistoire.setLong(1, guild.getIdLong());
-            mutehistoire.setLong(2, victim.getIdLong());
-            mutehistoire.setLong(3, staff.getIdLong());
+            mutehistoire.setLong(2, target.getIdLong());
+            mutehistoire.setLong(3, author.getIdLong());
             mutehistoire.setString(4, reason);
             mutehistoire.setLong(5, moment);
             mutehistoire.setBigDecimal(6, null);
@@ -758,11 +762,12 @@ public class MySQL {
                     deleteMutes.close();
 
                     EmbedBuilder eb = new EmbedBuilder();
-                    eb.setAuthor("Unmuted by: " + author.getName() + "#" + author.getDiscriminator(), null, author.getEffectiveAvatarUrl());
-                    eb.setDescription("```LDIF" + "\nUnmuted: " + toUnmute.getName() + "#" + toUnmute.getDiscriminator() + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(System.currentTimeMillis()) + "```");
+                    eb.setAuthor("Unmuted by: " + author.getName() + "#" + author.getDiscriminator() + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
+                    eb.setDescription("```LDIF" + "\nUnmuted: " + toUnmute.getName() + "#" + toUnmute.getDiscriminator() + "\nTargetID: " + toUnmute.getId() + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(System.currentTimeMillis()) + "```");
                     eb.setThumbnail(toUnmute.getEffectiveAvatarUrl());
                     eb.setColor(Helpers.EmbedColor);
                     eb.setColor(Color.green);
+
                     if (!toUnmute.isBot()) toUnmute.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
                     long logChannelId = SetLogChannelCommand.muteLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
                     if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
@@ -791,11 +796,13 @@ public class MySQL {
             newWarn.setString(4, reason);
             newWarn.setLong(5, System.currentTimeMillis());
             newWarn.executeUpdate();
+
             EmbedBuilder embedBuilder = new EmbedBuilder();
-            embedBuilder.setAuthor("Kicked by: " + author.getName() + "#" + author.getDiscriminator(), null, author.getEffectiveAvatarUrl());
-            embedBuilder.setDescription("```LDIF\n" + "Kicked: " + target.getName() + "#" + target.getDiscriminator() + "\n" + "Reason: " + reason + "\n" + "Guild: " + guild.getName() + "\n" + "Moment: " + millisToDate(System.currentTimeMillis()) + "\n" + "```");
+            embedBuilder.setAuthor("Kicked by: " + author.getName() + "#" + author.getDiscriminator() + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
+            embedBuilder.setDescription("```LDIF\nKicked: " + target.getName() + "#" + target.getDiscriminator() + "\nTargetID: " + target.getId() + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nMoment: " + millisToDate(System.currentTimeMillis()) + "```");
             embedBuilder.setThumbnail(target.getEffectiveAvatarUrl());
             embedBuilder.setColor(Color.ORANGE);
+
             long logChannelId = SetLogChannelCommand.kickLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
                 if (target.isBot())

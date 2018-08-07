@@ -28,15 +28,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class Helpers {
 
+    private static ScheduledExecutorService executorPool = Executors.newScheduledThreadPool(6);
     public static long lastRunTimer1, lastRunTimer2, lastRunTimer3;
 
-    private static ScheduledExecutorService executorPool = Executors.newScheduledThreadPool(10);
     public static long starttime;
     public static String guildOnly = "This command is to be used in guilds only";
     public static String noPerms = "You don't have the permission: ";
@@ -133,12 +132,10 @@ public class Helpers {
     );
 
 
-    private static ScheduledFuture<?> een, twee, drie;
     public static void startTimer(JDA jda, DiscordBotListAPI dbl, int i) {
         if (i == 0 || i == 1) {
             lastRunTimer1 = System.currentTimeMillis();
-            if (een != null) een.cancel(true);
-            een = executorPool.scheduleAtFixedRate(() -> {
+            executorPool.scheduleAtFixedRate(() -> {
                 lastRunTimer1 = System.currentTimeMillis();
                 try {
                     ResultSet bans = PixelSniper.mySQL.query("SELECT * FROM active_bans WHERE endTime < " + System.currentTimeMillis());
@@ -170,8 +167,7 @@ public class Helpers {
             }, 1, 2, TimeUnit.SECONDS);
         } if (i == 0 || i == 2) {
             lastRunTimer2 = System.currentTimeMillis();
-            if (twee != null) twee.cancel(true);
-            twee = executorPool.scheduleAtFixedRate(() -> {
+            executorPool.scheduleAtFixedRate(() -> {
                 lastRunTimer2 = System.currentTimeMillis();
                 if (dbl != null) dbl.setStats(guildCount == 0 ? jda.asBot().getShardManager().getGuilds().size() : guildCount);
                 ArrayList<Long> votesList = PixelSniper.mySQL.getVoteList();
@@ -187,8 +183,7 @@ public class Helpers {
             }, 1, 60, TimeUnit.SECONDS);
         } if (i == 0 || i == 3) {
             lastRunTimer3 = System.currentTimeMillis();
-            if (drie != null) drie.cancel(true);
-            drie = executorPool.scheduleAtFixedRate(() -> {
+            executorPool.scheduleAtFixedRate(() -> {
                 lastRunTimer3 = System.currentTimeMillis();
                 if (System.currentTimeMillis() - starttime > 10_000)
                     WebUtils.getWebUtilsInstance().updateSpotifyCredentials();
