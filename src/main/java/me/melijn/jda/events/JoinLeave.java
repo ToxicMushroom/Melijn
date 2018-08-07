@@ -3,7 +3,6 @@ package me.melijn.jda.events;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.commands.developer.EvalCommand;
-import com.pixelatedsource.jda.commands.management.*;
 import me.melijn.jda.commands.management.*;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;

@@ -1,8 +1,6 @@
 package me.melijn.jda.db;
 
 import me.melijn.jda.Helpers;
-import com.pixelatedsource.jda.blub.*;
-import com.pixelatedsource.jda.commands.management.*;
 import me.melijn.jda.blub.*;
 import me.melijn.jda.commands.management.*;
 import me.melijn.jda.utils.MessageHelper;
