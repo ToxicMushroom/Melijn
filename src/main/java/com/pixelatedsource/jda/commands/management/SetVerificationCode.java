@@ -31,17 +31,17 @@ public class SetVerificationCode extends Command {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     if (args[0].equalsIgnoreCase("null")) {
-                        new Thread(() -> {
+                        PixelSniper.MAIN_THREAD.submit(() -> {
                             PixelSniper.mySQL.removeVerificationCode(guild.getIdLong());
                             guildCodes.remove(guild.getIdLong());
-                        }).start();
+                        });
                         event.reply("The VerificationCode has been set to nothing by **" + event.getFullAuthorName() + "**");
                     } else {
-                        new Thread(() -> {
+                        PixelSniper.MAIN_THREAD.submit(() -> {
                             PixelSniper.mySQL.setVerificationCode(guild.getIdLong(), args[0]);
                             if (guildCodes.replace(guild.getIdLong(), args[0]) == null)
                                 guildCodes.put(guild.getIdLong(), args[0]);
-                        }).start();
+                        });
                         event.reply("The VerificationCode has been set to " + args[0] + " by **" + event.getFullAuthorName() + "**");
                     }
                 } else {

@@ -35,11 +35,11 @@ public class SetLeaveMessageCommand extends Command {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     if (args.length == 1 && args[0].equalsIgnoreCase("null")) {
-                        new Thread(() -> PixelSniper.mySQL.removeMessage(guild.getIdLong(), MessageType.JOIN)).start();
+                        PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.removeMessage(guild.getIdLong(), MessageType.JOIN));
                         leaveMessages.remove(guild.getIdLong());
                         event.reply("LeaveMessage has been set to nothing by **" + event.getFullAuthorName() + "**");
                     } else {
-                        new Thread(() -> PixelSniper.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.LEAVE)).start();
+                        PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.LEAVE));
                         if (leaveMessages.replace(guild.getIdLong(), newMessage) == null)
                             leaveMessages.put(guild.getIdLong(), newMessage);
                         event.reply("LeaveMessage has been changed from '" + oldMessage + "' to '" + newMessage + "' by **" + event.getFullAuthorName() + "**");

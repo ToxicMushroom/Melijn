@@ -32,13 +32,13 @@ public class UnmuteCommand extends Command {
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     Helpers.retrieveUserByArgsN(event, args[0], user -> {
                         if (user != null) {
-                            new Thread(() -> {
+                            PixelSniper.MAIN_THREAD.submit(() -> {
                                 if (PixelSniper.mySQL.unmute(event.getGuild(), user, event.getAuthor())) {
                                     event.getMessage().addReaction("\u2705").queue();
                                 } else {
                                     event.getMessage().addReaction("\u274C").queue();
                                 }
-                            }).start();
+                            });
                         } else {
                             event.reply("Unknown user");
                         }

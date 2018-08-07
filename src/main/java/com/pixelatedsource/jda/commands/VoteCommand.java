@@ -30,7 +30,7 @@ public class VoteCommand extends Command {
         if (args.length == 0 || args[0].equalsIgnoreCase("")) {
             event.reply("Support us by voting and get access to locked commands\nhttps://discordbots.org/bot/melijn/vote");
         } else if (args[0].equalsIgnoreCase("info")) {
-            new Thread(() -> {
+            PixelSniper.MAIN_THREAD.submit(() -> {
                 User target = Helpers.getUserByArgs(event, args.length > 1 ? args[1] : "");
                 String username = target.getName() + "#" + target.getDiscriminator();
                 JSONObject voteObject = PixelSniper.mySQL.getVotesObject(target.getIdLong());
@@ -55,7 +55,7 @@ public class VoteCommand extends Command {
                 } else {
                     event.reply("I don't have permissions to send embeds here.. :( (You can send the command in dm)");
                 }
-            }).start();
+            });
         } else {
             MessageHelper.sendUsage(this, event);
         }

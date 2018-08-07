@@ -50,7 +50,7 @@ public class SetStreamUrlCommand extends Command {
                 event.reply("StreamURL: " + url);
             } else if (args.length == 1) {
                 if (args[0].contains("http://") || args[0].contains("https://")) {
-                    new Thread(() -> PixelSniper.mySQL.setStreamUrl(guild.getIdLong(), args[0])).start();
+                    PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.setStreamUrl(guild.getIdLong(), args[0]));
                     if (streamUrls.replace(guild.getIdLong(), args[0]) == null)
                         streamUrls.put(guild.getIdLong(), args[0]);
                     event.reply("Changed the url from **" + url + "** to **" + args[0] + "**");
@@ -59,7 +59,7 @@ public class SetStreamUrlCommand extends Command {
                         event.reply("**Radio**\n" + linkjes.keySet().toString().replaceAll("(,\\s+|,)", "\n+ ").replaceFirst("\\[", "+ ").replaceFirst("]", ""));
                     } else {
                         if (linkjes.keySet().contains(args[0])) {
-                            new Thread(() -> PixelSniper.mySQL.setStreamUrl(guild.getIdLong(), linkjes.get(args[0]))).start();
+                            PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.setStreamUrl(guild.getIdLong(), linkjes.get(args[0])));
                             if (streamUrls.replace(guild.getIdLong(), linkjes.get(args[0])) == null)
                                 streamUrls.put(guild.getIdLong(), linkjes.get(args[0]));
                             event.reply("Changed the url from **" + url + "** to **" + linkjes.get(args[0]) + "**");

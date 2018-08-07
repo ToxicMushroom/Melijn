@@ -36,12 +36,12 @@ public class SetMusicChannelCommand extends Command {
                     MessageHelper.sendUsage(this, event);
                 } else if (channelId == 0) {
                     musicChannelIds.remove(guild.getIdLong());
-                    new Thread(() -> PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.MUSIC)).start();
+                    PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.MUSIC));
                     event.reply("The MusicChannel has been unset by **" + event.getFullAuthorName() + "**");
                 } else {
                     if (musicChannelIds.replace(guild.getIdLong(), channelId) == null)
                         musicChannelIds.put(guild.getIdLong(), channelId);
-                    new Thread(() -> PixelSniper.mySQL.setChannel(guild.getIdLong(), channelId, ChannelType.MUSIC)).start();
+                    PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.setChannel(guild.getIdLong(), channelId, ChannelType.MUSIC));
                     event.reply("The MusicChannel has been set to <#" + args[0] + "> by **" + event.getFullAuthorName() + "**");
                 }
             }

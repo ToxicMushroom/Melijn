@@ -34,19 +34,19 @@ public class SetJoinLeaveChannelCommand extends Command {
                         event.reply("Unknown TextChannel");
                     } else if (id == 0L) {
                         welcomeChannels.remove(guild.getIdLong());
-                        new Thread(() -> PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.WELCOME)).start();
+                        PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.WELCOME));
                         long oldChannel = welcomeChannels.getOrDefault(guild.getIdLong(), -1L);
                         event.reply("WelcomeChannel has been changed from " + (oldChannel == -1L ? "nothing" : "<#" + oldChannel + ">") + " to nothing");
                     } else {
-                        new Thread(() -> PixelSniper.mySQL.setChannel(guild.getIdLong(), id, ChannelType.WELCOME)).start();
+                        PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.setChannel(guild.getIdLong(), id, ChannelType.WELCOME));
                         if (!SetJoinMessageCommand.joinMessages.containsKey(guild.getIdLong())) {
                             SetJoinMessageCommand.joinMessages.put(guild.getIdLong(), "Welcome %USER% to the %GUILDNAME% discord server you are me");
-                            new Thread(() -> PixelSniper.mySQL.setMessage(guild.getIdLong(), "Welcome %USER% to our awesome discord server :D", MessageType.JOIN)).start();
+                            PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.setMessage(guild.getIdLong(), "Welcome %USER% to our awesome discord server :D", MessageType.JOIN));
                             event.reply("I've set the default join message :beginner:");
                         }
                         if (!SetLeaveMessageCommand.leaveMessages.containsKey(guild.getIdLong())) {
                             SetLeaveMessageCommand.leaveMessages.put(guild.getIdLong(), "**%USERNAME%** left us :C");
-                            new Thread(() -> PixelSniper.mySQL.setMessage(guild.getIdLong(), "**%USERNAME%** left us :C", MessageType.LEAVE)).start();
+                            PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.setMessage(guild.getIdLong(), "**%USERNAME%** left us :C", MessageType.LEAVE));
                             event.reply("I've set the default leave message :beginner:");
                         }
                         if (welcomeChannels.replace(guild.getIdLong(), id) == null)

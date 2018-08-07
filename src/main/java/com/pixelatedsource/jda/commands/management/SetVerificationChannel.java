@@ -36,12 +36,12 @@ public class SetVerificationChannel extends Command {
                     event.reply("Unknown TextChannel");
                 } else if (id == 0L) {
                     verificationChannels.remove(guild.getIdLong());
-                    new Thread(() -> PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.VERIFICATION)).start();
+                    PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.VERIFICATION));
                     long oldChannel = verificationChannels.getOrDefault(guild.getIdLong(), -1L);
                     event.reply("VerificationChannel has been changed from " + (oldChannel == -1L ? "nothing" : "<#" + oldChannel + ">") + " to nothing");
                 } else  {
                     if (event.getGuild().getSelfMember().hasPermission(guild.getTextChannelById(id), Permission.MESSAGE_ATTACH_FILES, Permission.MESSAGE_MANAGE)) {
-                        new Thread(() -> PixelSniper.mySQL.setChannel(guild.getIdLong(), id, ChannelType.VERIFICATION)).start();
+                        PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.setChannel(guild.getIdLong(), id, ChannelType.VERIFICATION));
                         if (verificationChannels.replace(guild.getIdLong(), id) == null)
                             verificationChannels.put(guild.getIdLong(), id);
 

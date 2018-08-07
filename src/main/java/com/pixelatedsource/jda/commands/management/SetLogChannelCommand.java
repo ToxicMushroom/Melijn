@@ -58,7 +58,7 @@ public class SetLogChannelCommand extends Command {
                                 odmLogChannelMap.remove(guild.getIdLong());
                                 pmLogChannelMap.remove(guild.getIdLong());
                                 fmLogChannelMap.remove(guild.getIdLong());
-                                new Thread(() -> {
+                                PixelSniper.MAIN_THREAD.submit(() -> {
                                     PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.BAN_LOG);
                                     PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.MUSIC_LOG);
                                     PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.KICK_LOG);
@@ -68,7 +68,7 @@ public class SetLogChannelCommand extends Command {
                                     PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.ODM_LOG);
                                     PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.PM_LOG);
                                     PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.FM_LOG);
-                                }).start();
+                                });
                                 event.reply("All LogChannels have been changed to nothing by **" + event.getFullAuthorName() + "**");
                             } else {
                                 if (banLogChannelMap.replace(guild.getIdLong(), id) == null)
@@ -90,7 +90,7 @@ public class SetLogChannelCommand extends Command {
                                 if (fmLogChannelMap.replace(guild.getIdLong(), id) == null)
                                     fmLogChannelMap.put(guild.getIdLong(), id);
                                 chosenMap.put(guild.getIdLong(), id);
-                                new Thread(() -> {
+                                PixelSniper.MAIN_THREAD.submit(() -> {
                                     PixelSniper.mySQL.setChannel(guild.getIdLong(), id, ChannelType.BAN_LOG);
                                     PixelSniper.mySQL.setChannel(guild.getIdLong(), id, ChannelType.MUSIC_LOG);
                                     PixelSniper.mySQL.setChannel(guild.getIdLong(), id, ChannelType.KICK_LOG);
@@ -100,7 +100,7 @@ public class SetLogChannelCommand extends Command {
                                     PixelSniper.mySQL.setChannel(guild.getIdLong(), id, ChannelType.ODM_LOG);
                                     PixelSniper.mySQL.setChannel(guild.getIdLong(), id, ChannelType.PM_LOG);
                                     PixelSniper.mySQL.setChannel(guild.getIdLong(), id, ChannelType.FM_LOG);
-                                }).start();
+                                });
                                 event.reply("All LogChannels have been changed to <#" + id + "> by **" + event.getFullAuthorName() + "**");
                             }
                             return;
@@ -153,18 +153,18 @@ public class SetLogChannelCommand extends Command {
                             return;
                     }
 
-                        long id = Helpers.getTextChannelByArgsN(event, args[0]);
-                        if (id == -1) {
-                            MessageHelper.sendUsage(this, event);
-                        } else if (id == 0L) {
-                            event.reply("LogChannel has been changed from " + (chosenMap.containsKey(guild.getIdLong()) ? "<#" + chosenMap.get(guild.getIdLong()) + ">" : "nothing") + " to nothing by **" + event.getFullAuthorName() + "**");
-                            chosenMap.remove(guild.getIdLong());
-                            new Thread(() -> PixelSniper.mySQL.removeChannel(guild.getIdLong(), chosenType)).start();
-                        } else {
-                            event.reply("LogChannel has been changed from " + (chosenMap.containsKey(guild.getIdLong()) ? "<#" + chosenMap.get(guild.getIdLong()) + ">" : "nothing") + " to <#" + id + "> by **" + event.getFullAuthorName() + "**");
-                            if (chosenMap.replace(guild.getIdLong(), id) == null) chosenMap.put(guild.getIdLong(), id);
-                            new Thread(() -> PixelSniper.mySQL.setChannel(guild.getIdLong(), id, chosenType)).start();
-                        }
+                    long id = Helpers.getTextChannelByArgsN(event, args[0]);
+                    if (id == -1) {
+                        MessageHelper.sendUsage(this, event);
+                    } else if (id == 0L) {
+                        event.reply("LogChannel has been changed from " + (chosenMap.containsKey(guild.getIdLong()) ? "<#" + chosenMap.get(guild.getIdLong()) + ">" : "nothing") + " to nothing by **" + event.getFullAuthorName() + "**");
+                        chosenMap.remove(guild.getIdLong());
+                        PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.removeChannel(guild.getIdLong(), chosenType));
+                    } else {
+                        event.reply("LogChannel has been changed from " + (chosenMap.containsKey(guild.getIdLong()) ? "<#" + chosenMap.get(guild.getIdLong()) + ">" : "nothing") + " to <#" + id + "> by **" + event.getFullAuthorName() + "**");
+                        if (chosenMap.replace(guild.getIdLong(), id) == null) chosenMap.put(guild.getIdLong(), id);
+                        PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.setChannel(guild.getIdLong(), id, chosenType));
+                    }
                 } else if (args.length == 1 && !args[0].equalsIgnoreCase("")) {
                     switch (args[0].toLowerCase()) {
                         case "all":
@@ -189,7 +189,7 @@ public class SetLogChannelCommand extends Command {
                                     .append("  PurgedMessages: ").append(pmChannelId == -1L ? "unset" : "<#" + pmChannelId + ">").append("\n")
                                     .append("  FilteredMessages: ").append(fmChannelId == -1L ? "unset" : "<#" + fmChannelId + ">").append("\n")
                                     .append("  Music: ").append(musicChannelId == -1L ? "unset" : "<#" + musicChannelId + ">").append("\n");
-                                event.reply(builder.toString());
+                            event.reply(builder.toString());
                             break;
                         case "ban":
                             event.reply("**Ban Log :hammer:**\n- " +

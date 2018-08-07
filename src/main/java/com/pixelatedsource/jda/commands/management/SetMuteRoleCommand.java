@@ -38,7 +38,7 @@ public class SetMuteRoleCommand extends Command {
             } else {
                 if (args[0].equalsIgnoreCase("null")) {
                     muteRoles.remove(guild.getIdLong());
-                    new Thread(() -> PixelSniper.mySQL.removeRole(guild.getIdLong(), RoleType.JOIN)).start();
+                    PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.removeRole(guild.getIdLong(), RoleType.JOIN));
                     event.reply("MuteRole has been unset by **" + event.getFullAuthorName() + "**");
                 } else {
                     Role muteRole = Helpers.getRoleByArgs(event, args[0]);
@@ -47,7 +47,7 @@ public class SetMuteRoleCommand extends Command {
                             if (guild.getSelfMember().getRoles().size() != 0 && guild.getSelfMember().getRoles().get(0).canInteract(muteRole)) {
                                 if (muteRoles.replace(guild.getIdLong(), muteRole.getIdLong()) == null)
                                     muteRoles.put(guild.getIdLong(), muteRole.getIdLong());
-                                new Thread(() -> PixelSniper.mySQL.setRole(guild.getIdLong(), muteRole.getIdLong(), RoleType.MUTE)).start();
+                                PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.setRole(guild.getIdLong(), muteRole.getIdLong(), RoleType.MUTE));
                                 event.reply("MuteRole changed to **@" + muteRole.getName() + "** by **" + event.getFullAuthorName() + "**");
                             } else {
                                 event.reply("The MuteRole hasn't been changed due: **@" + muteRole.getName() + "** is higher or equal in the role-hierarchy then my highest role.\nThis means that I will not be able to give the role to anyone ex.(Mods can't give people Admin it breaks logic)");

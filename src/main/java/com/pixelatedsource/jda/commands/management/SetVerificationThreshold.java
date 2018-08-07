@@ -36,17 +36,17 @@ public class SetVerificationThreshold extends Command {
                 if (i <= 20 && i >= 0) {
                     Guild guild = event.getGuild();
                     if (i == 0) {
-                        new Thread(() -> {
+                        PixelSniper.MAIN_THREAD.submit(() -> {
                             PixelSniper.mySQL.removeVerificationThreshold(guild.getIdLong());
                             guildVerificationThresholds.remove(guild.getIdLong());
-                        }).start();
+                        });
                         event.reply("The VerificationThreshold has been disabled by **" + event.getFullAuthorName() + "**");
                     } else {
-                        new Thread(() -> {
+                        PixelSniper.MAIN_THREAD.submit(() -> {
                             PixelSniper.mySQL.setVerificationThreshold(guild.getIdLong(), i);
                             if (guildVerificationThresholds.replace(guild.getIdLong(), i) == null)
                                 guildVerificationThresholds.put(guild.getIdLong(), i);
-                        }).start();
+                        });
                         event.reply("The VerificationThreshold has been set to **" + i + "** by **" + event.getFullAuthorName() + "**");
                     }
                 } else {

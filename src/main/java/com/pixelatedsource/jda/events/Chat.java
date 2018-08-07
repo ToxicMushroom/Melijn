@@ -44,7 +44,6 @@ public class Chat extends ListenerAdapter {
     private int latestChanges = 0;
     HashMap<Long, HashMap<Long, Integer>> guildUserVerifyTries = new HashMap<>();
 
-
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
         if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
@@ -57,10 +56,10 @@ public class Chat extends ListenerAdapter {
                 content += "\n" + a.getUrl();
             }
             String finalContent = content;
-            new Thread(() -> mySQL.createMessage(event.getMessageIdLong(), finalContent, author.getIdLong(), guild.getIdLong(), event.getChannel().getIdLong())).start();
+            PixelSniper.MAIN_THREAD.submit(() -> mySQL.createMessage(event.getMessageIdLong(), finalContent, author.getIdLong(), guild.getIdLong(), event.getChannel().getIdLong()));
 
             if (guild.getSelfMember().hasPermission(Permission.MESSAGE_MANAGE) && !event.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
-                new Thread(() -> {
+                PixelSniper.MAIN_THREAD.submit(() ->  {
                     String message = event.getMessage().getContentRaw();
                     String detectedWord = null;
                     HashMap<Integer, Integer> deniedPositions = new HashMap<>();
@@ -109,7 +108,7 @@ public class Chat extends ListenerAdapter {
                         MessageHelper.filterDeletedMessages.put(event.getMessageId(), detectedWord.substring(0, detectedWord.length() - 2));
                         event.getMessage().delete().reason("Use of prohibited words").queue();
                     }
-                }).start();
+                });
             }
         }
 
@@ -216,7 +215,7 @@ public class Chat extends ListenerAdapter {
                         }
 
                     }
-                    new Thread(() -> mySQL.update("DELETE FROM history_messages WHERE sentTime < " + (System.currentTimeMillis() - 604_800_000L))).start();
+                    PixelSniper.MAIN_THREAD.submit(() -> mySQL.update("DELETE FROM history_messages WHERE sentTime < " + (System.currentTimeMillis() - 604_800_000L)));
                 }
             });
         }

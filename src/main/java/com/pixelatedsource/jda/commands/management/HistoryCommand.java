@@ -32,10 +32,12 @@ public class HistoryCommand extends Command {
                 if (args.length == 2) {
                     Helpers.retrieveUserByArgsN(event, args[1], (success) -> {
                         if (success != null) {
+                            String spaces = "                                                                                                                                                   ";
                             switch (args[0]) {
+
                                 case "ban":
                                 case "bans":
-                                    new Thread(() -> {
+                                    PixelSniper.MAIN_THREAD.submit(() -> {
                                         ArrayList<String> bans = new ArrayList<>(Arrays.asList(PixelSniper.mySQL.getUserBans(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA())));
                                         EmbedBuilder ebBan = new EmbedBuilder();
                                         getLongMessageInParts(bans, parts -> {
@@ -50,11 +52,11 @@ public class HistoryCommand extends Command {
                                                     }
                                                 }
                                         );
-                                    }).start();
+                                    });
                                     break;
                                 case "mute":
                                 case "mutes":
-                                    new Thread(() -> {
+                                    PixelSniper.MAIN_THREAD.submit(() -> {
                                         ArrayList<String> mutes = new ArrayList<>(Arrays.asList(PixelSniper.mySQL.getUserMutes(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA())));
                                         EmbedBuilder ebMute = new EmbedBuilder();
                                         getLongMessageInParts(mutes, parts -> {
@@ -69,11 +71,11 @@ public class HistoryCommand extends Command {
                                                     }
                                                 }
                                         );
-                                    }).start();
+                                    });
                                     break;
                                 case "warn":
                                 case "warns":
-                                    new Thread(() -> {
+                                    PixelSniper.MAIN_THREAD.submit(() -> {
                                         ArrayList<String> warns = new ArrayList<>(Arrays.asList(PixelSniper.mySQL.getUserWarns(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA())));
                                         EmbedBuilder ebWarn = new EmbedBuilder();
                                         getLongMessageInParts(warns, parts -> {
@@ -81,18 +83,20 @@ public class HistoryCommand extends Command {
                                                     int size = Integer.parseInt(parts.get(parts.size() - 1));
                                                     parts.remove(parts.size() - 1);
                                                     for (String part : parts) {
-                                                        ebWarn.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s warns " + ++partnumber + "/" + size, null, success.getEffectiveAvatarUrl());
+                                                        ebWarn.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s warns " + ++partnumber + "/" + size +
+                                                                spaces.substring(0, 32-success.getName().length()) + ""
+                                                                , null, success.getEffectiveAvatarUrl());
                                                         ebWarn.setDescription(part);
                                                         ebWarn.setColor(Helpers.EmbedColor);
                                                         event.reply(ebWarn.build());
                                                     }
                                                 }
                                         );
-                                    }).start();
+                                    });
                                     break;
                                 case "kick":
                                 case "kicks":
-                                    new Thread(() -> {
+                                    PixelSniper.MAIN_THREAD.submit(() -> {
                                         ArrayList<String> kicks = new ArrayList<>(Arrays.asList(PixelSniper.mySQL.getUserKicks(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA())));
                                         EmbedBuilder ebKick = new EmbedBuilder();
                                         getLongMessageInParts(kicks, parts -> {
@@ -107,7 +111,7 @@ public class HistoryCommand extends Command {
                                                     }
                                                 }
                                         );
-                                    }).start();
+                                    });
                                     break;
                             }
                         } else {

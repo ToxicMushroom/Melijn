@@ -6,7 +6,6 @@ import com.pixelatedsource.jda.commands.HelpCommand;
 import com.pixelatedsource.jda.commands.InviteCommand;
 import com.pixelatedsource.jda.commands.VoteCommand;
 import com.pixelatedsource.jda.commands.developer.EvalCommand;
-import com.pixelatedsource.jda.commands.fun.SayCommand;
 import com.pixelatedsource.jda.commands.developer.WeebshCommand;
 import com.pixelatedsource.jda.commands.fun.*;
 import com.pixelatedsource.jda.commands.management.*;
@@ -25,6 +24,8 @@ import net.dv8tion.jda.core.entities.Game;
 import org.discordbots.api.client.DiscordBotListAPI;
 
 import javax.security.auth.login.LoginException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class PixelSniper {
 
@@ -37,6 +38,7 @@ public class PixelSniper {
     private static String PASS = config.getValue("password");
     private static String DBNAME = config.getValue("database");
     private static String DBLTOKEN = config.getValue("dbltoken");
+    public static final ExecutorService MAIN_THREAD = Executors.newCachedThreadPool(t -> new Thread(t, "Melijn-main-thread"));
 
 
     public static DiscordBotListAPI dblAPI = null;

@@ -39,7 +39,7 @@ public class JoinLeave extends ListenerAdapter {
                     guild.getController().addSingleRoleToMember(event.getMember(), guild.getRoleById(SetUnverifiedRole.unverifiedRoles.get(guild.getIdLong()))).reason("unverified user").queue();
             } else {
                 SetVerificationChannel.verificationChannels.remove(event.getGuild().getIdLong());
-                new Thread(() -> PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.VERIFICATION)).start();
+                PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.removeChannel(guild.getIdLong(), ChannelType.VERIFICATION));
             }
         } else {
             joinCode(guild, joinedUser);
@@ -87,7 +87,7 @@ public class JoinLeave extends ListenerAdapter {
                 if (joinRole != null && joinRole.getPosition() < guild.getSelfMember().getRoles().get(0).getPosition())
                     guild.getController().addSingleRoleToMember(guild.getMember(user), guild.getRoleById(SetJoinRoleCommand.joinRoles.get(guild.getIdLong()))).queue();
             }
-            new Thread(() -> {
+            PixelSniper.MAIN_THREAD.submit(() ->  {
                 if (PixelSniper.mySQL.isUserMuted(user.getIdLong(), guild.getIdLong()) && SetMuteRoleCommand.muteRoles.containsKey(guild.getIdLong())) {
                     Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoles.get(guild.getIdLong()));
                     if (muteRole != null && muteRole.getPosition() < guild.getSelfMember().getRoles().get(0).getPosition())
@@ -102,7 +102,7 @@ public class JoinLeave extends ListenerAdapter {
             ArrayList<Long> newList = unVerifiedGuildMembers.get(guild.getIdLong());
             newList.remove(user.getIdLong());
             unVerifiedGuildMembers.replace(guild.getIdLong(), newList);
-            new Thread(() -> PixelSniper.mySQL.removeUnverifiedUser(guild.getIdLong(), user.getIdLong())).start();
+            PixelSniper.MAIN_THREAD.submit(() ->  PixelSniper.mySQL.removeUnverifiedUser(guild.getIdLong(), user.getIdLong()));
             if (guild.getMember(user) != null && SetUnverifiedRole.unverifiedRoles.containsKey(guild.getIdLong()) && guild.getRoleById(SetUnverifiedRole.unverifiedRoles.get(guild.getIdLong())) != null)
                 guild.getController().removeSingleRoleFromMember(guild.getMember(user), guild.getRoleById(SetUnverifiedRole.unverifiedRoles.get(guild.getIdLong()))).reason("verified user").queue();
         }

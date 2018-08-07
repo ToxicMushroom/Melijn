@@ -84,7 +84,7 @@ public class TempMuteCommand extends Command {
                 .setMentionable(false)
                 .setName("muted")
                 .setPermissions(Permission.MESSAGE_READ, Permission.MESSAGE_HISTORY, Permission.VOICE_CONNECT).complete().getIdLong();
-        new Thread(() -> PixelSniper.mySQL.setRole(guild.getIdLong(), roleId, RoleType.MUTE)).start();
+        PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.setRole(guild.getIdLong(), roleId, RoleType.MUTE));
         SetMuteRoleCommand.muteRoles.putIfAbsent(guild.getIdLong(), roleId);
     }
 }

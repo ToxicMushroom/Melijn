@@ -34,7 +34,7 @@ public class KickCommand extends Command {
                 String reason = event.getArgs().replaceFirst(args[0] + "\\s+|" + args[0], "");
                 if (target != null) {
                     if (event.getGuild().getMember(target) != null) {
-                        new Thread(() -> {
+                        PixelSniper.MAIN_THREAD.submit(() -> {
                             if (event.getGuild().getMember(target).getRoles().size() > 0 && event.getGuild().getSelfMember().getRoles().size() > 0) {
                                 if (event.getGuild().getSelfMember().getRoles().get(0).canInteract(event.getGuild().getMember(target).getRoles().get(0))) {
                                     event.reply("Can't modify a member with higher or equal highest role than myself");
@@ -46,7 +46,7 @@ public class KickCommand extends Command {
                             } else {
                                 event.getMessage().addReaction("\u274C").queue();
                             }
-                        }).start();
+                        });
                     } else {
                         event.reply("This user isn't a member of this guild");
                     }

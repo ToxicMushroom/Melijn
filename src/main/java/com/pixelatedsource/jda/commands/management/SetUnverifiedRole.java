@@ -37,7 +37,7 @@ public class SetUnverifiedRole extends Command {
             } else {
                 if (args[0].equalsIgnoreCase("null")) {
                     unverifiedRoles.remove(guild.getIdLong());
-                    new Thread(() -> PixelSniper.mySQL.removeRole(guild.getIdLong(), RoleType.UNVERIFIED)).start();
+                    PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.removeRole(guild.getIdLong(), RoleType.UNVERIFIED));
                     event.reply("UnverifiedRole has been unset by **" + event.getFullAuthorName() + "**");
                 } else {
                     Role unverifiedRole = Helpers.getRoleByArgs(event, args[0]);
@@ -46,7 +46,7 @@ public class SetUnverifiedRole extends Command {
                             if (guild.getSelfMember().getRoles().size() != 0 && guild.getSelfMember().getRoles().get(0).canInteract(unverifiedRole)) {
                                 if (unverifiedRoles.replace(guild.getIdLong(), unverifiedRole.getIdLong()) == null)
                                     unverifiedRoles.put(guild.getIdLong(), unverifiedRole.getIdLong());
-                                new Thread(() -> PixelSniper.mySQL.setRole(guild.getIdLong(), unverifiedRole.getIdLong(), RoleType.UNVERIFIED)).start();
+                                PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.setRole(guild.getIdLong(), unverifiedRole.getIdLong(), RoleType.UNVERIFIED));
                                 event.reply("UnverifiedRole changed to **@" + unverifiedRole.getName() + "** by **" + event.getFullAuthorName() + "**");
                             }
                             else {

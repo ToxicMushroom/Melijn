@@ -1,6 +1,7 @@
 package com.pixelatedsource.jda.commands.util;
 
 import com.pixelatedsource.jda.Helpers;
+import com.pixelatedsource.jda.PixelSniper;
 import com.pixelatedsource.jda.blub.Category;
 import com.pixelatedsource.jda.blub.Command;
 import com.pixelatedsource.jda.blub.CommandEvent;
@@ -84,20 +85,20 @@ public class SetNotifications extends Command {
                                     ArrayList<Long> list = nextVotes.get(event.getAuthorId());
                                     list.remove(user.getIdLong());
                                     nextVotes.replace(event.getAuthorId(), list);
-                                    new Thread(() -> {
-                                        mySQL.removeNotification(event.getAuthorId(), user.getIdLong(), NotificationType.NEXTVOTE);
+                                    PixelSniper.MAIN_THREAD.submit(() -> {
+                                            mySQL.removeNotification(event.getAuthorId(), user.getIdLong(), NotificationType.NEXTVOTE);
                                         event.reply("NextVote notifications for **" + user.getName() + "#" + user.getDiscriminator() + "** have been **disabled**");
-                                    }).start();
+                                    });
                                 } else {
                                     ArrayList<Long> list = nextVotes.getOrDefault(event.getAuthorId(), new ArrayList<>());
                                     list.add(user.getIdLong());
                                     if (nextVotes.get(event.getAuthorId()) != null)
                                         nextVotes.replace(event.getAuthorId(), list);
                                     else nextVotes.put(event.getAuthorId(), list);
-                                    new Thread(() -> {
+                                    PixelSniper.MAIN_THREAD.submit(() -> {
                                         mySQL.putNotifcation(event.getAuthorId(), user.getIdLong(), NotificationType.NEXTVOTE);
                                         event.reply("NextVote notifications for **" + user.getName() + "#" + user.getDiscriminator() + "** have been **enabled**");
-                                    }).start();
+                                    });
                                 }
                             }
                             break;

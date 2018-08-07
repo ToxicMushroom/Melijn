@@ -33,12 +33,12 @@ public class SetPrefixCommand extends Command {
                 if (args.length == 0 || args[0].equalsIgnoreCase("")) event.reply(prefixes.containsKey(guild.getIdLong()) ? prefixes.get(guild.getIdLong()) : PREFIX);
                 else if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                     if (Arrays.toString(args).length() <= 100) {
-                        new Thread(() -> {
+                        PixelSniper.MAIN_THREAD.submit(() -> {
                             PixelSniper.mySQL.setPrefix(guild.getIdLong(), args[0]);
                             if (prefixes.replace(guild.getIdLong(), args[0]) == null)
                                 prefixes.put(guild.getIdLong(), args[0]);
                             event.reply("The prefix has been set to `" + args[0] + "`");
-                        }).start();
+                        });
                     } else {
                         event.reply("The maximum prefix size is 100 characters");
                     }

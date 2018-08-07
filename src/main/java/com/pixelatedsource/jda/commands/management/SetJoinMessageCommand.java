@@ -35,11 +35,11 @@ public class SetJoinMessageCommand extends Command {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     if (args.length == 1 && args[0].equalsIgnoreCase("null")) {
-                        new Thread(() -> PixelSniper.mySQL.removeMessage(guild.getIdLong(), MessageType.JOIN)).start();
+                        PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.removeMessage(guild.getIdLong(), MessageType.JOIN));
                         joinMessages.remove(guild.getIdLong());
                         event.reply("JoinMessage has been set to nothing by **" + event.getFullAuthorName() + "**");
                     } else {
-                        new Thread(() -> PixelSniper.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.JOIN)).start();
+                        PixelSniper.MAIN_THREAD.submit(() -> PixelSniper.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.JOIN));
                         if (joinMessages.replace(guild.getIdLong(), newMessage) == null)
                             joinMessages.put(guild.getIdLong(), newMessage);
                         event.reply("JoinMessage has been changed from '" + oldMessage + "' to '" + newMessage + "' by **" + event.getFullAuthorName() + "**");

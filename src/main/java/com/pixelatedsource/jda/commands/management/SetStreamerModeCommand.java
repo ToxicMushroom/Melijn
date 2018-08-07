@@ -50,10 +50,10 @@ public class SetStreamerModeCommand extends Command {
                                     if (event.getMember().getVoiceState().inVoiceChannel()) {
                                         guild.getAudioManager().openAudioConnection(musicChannel);
                                     }
-                                    new Thread(() -> {
+                                    PixelSniper.MAIN_THREAD.submit(() -> {
                                         PixelSniper.mySQL.setStreamerMode(guild.getIdLong(), true);
                                         if (!streamerModes.contains(guild.getIdLong())) streamerModes.add(guild.getIdLong());
-                                    }).start();
+                                    });
                                     event.reply("\uD83D\uDCF6 The StreamerMode has been **enabled** by **" + event.getFullAuthorName() + "**");
                                 } else {
                                     event.reply(String.format("I have no permission to connect to the configured MusicChannel: %s", musicChannel.getName()));
@@ -62,10 +62,10 @@ public class SetStreamerModeCommand extends Command {
                             case "false":
                             case "off":
                             case "disabled":
-                                new Thread(() -> {
+                                PixelSniper.MAIN_THREAD.submit(() -> {
                                     PixelSniper.mySQL.setStreamerMode(guild.getIdLong(), false);
                                     streamerModes.remove(guild.getIdLong());
-                                }).start();
+                                });
                                 event.reply("The streamer mode has been **disabled** by **" + event.getFullAuthorName() + "**");
                                 break;
                         }

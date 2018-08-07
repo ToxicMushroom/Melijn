@@ -30,8 +30,8 @@ public class WarnCommand extends Command {
                     User target = Helpers.getUserByArgsN(event, args[0]);
                     if (target != null && event.getGuild().getMember(target) != null) {
                         String reason = event.getArgs().replaceFirst(args[0] + "\\s+|" + args[0], "");
-                        new Thread(() -> {
-                            if (event.getGuild().getMember(target) != null) {
+                        PixelSniper.MAIN_THREAD.submit(() -> {
+                        if (event.getGuild().getMember(target) != null) {
                                 if (reason.length() <= 1000 && PixelSniper.mySQL.addWarn(event.getAuthor(), target, event.getGuild(), reason)) {
                                     event.getMessage().addReaction("\u2705").queue();
                                 } else {
@@ -40,7 +40,7 @@ public class WarnCommand extends Command {
                             } else {
                                 event.reply("This user isn't a member of this guild");
                             }
-                        }).start();
+                        });
                     } else {
                         event.reply("Unknown member");
                     }
