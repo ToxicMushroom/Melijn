@@ -24,12 +24,8 @@ public class BlurpleCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
-            BufferedImage img = null;
-            img = imageUtils.getBufferedImage(event, img);
-            if (img == null) {
-                event.reply("Unknown image");
-                return;
-            }
+            BufferedImage img = imageUtils.getBufferedImage(event);
+            if (img == null) return;
 
             for (int y = 0; y < img.getHeight(); y++) {
                 for (int x = 0; x < img.getWidth(); x++) {

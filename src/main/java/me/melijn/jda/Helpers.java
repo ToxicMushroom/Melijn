@@ -304,7 +304,8 @@ public class Helpers {
     public static User getUserByArgsN(CommandEvent event, String arg) {//With null
         User user = null;
         if (!arg.matches("\\s+") && !arg.equalsIgnoreCase("")) {
-            if (event.getMessage().getMentionedUsers().size() > event.getOffset()) user = event.getMessage().getMentionedUsers().get(event.getOffset());
+            if (event.getMessage().getMentionedUsers().size() > event.getOffset())
+                user = event.getMessage().getMentionedUsers().get(event.getOffset());
             else if (arg.matches("\\d+") && event.getJDA().getUserById(arg) != null)
                 user = event.getJDA().getUserById(arg);
             else if (event.getGuild() != null && event.getGuild().getMembersByName(arg, true).size() > event.getOffset())

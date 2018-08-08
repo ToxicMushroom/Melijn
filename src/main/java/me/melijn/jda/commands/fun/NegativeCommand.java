@@ -25,12 +25,8 @@ public class NegativeCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
-            BufferedImage img = null;
-            img = imageUtils.getBufferedImage(event, img);
-            if (img == null) {
-                event.reply("Unknown image");
-                return;
-            }
+            BufferedImage img = imageUtils.getBufferedImage(event);
+            if (img == null) return;
             /* >> Right shift in bits
                     p >> n     n is hier het aantal bits dat je de p verschuift naar rechts
                     & 0xff;    door & neem je alleen de laatste bits gespecifieerd door de hex erachter, in dit geval 0xff of 8 bits;

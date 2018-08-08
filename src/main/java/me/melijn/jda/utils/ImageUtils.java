@@ -27,8 +27,9 @@ public class ImageUtils {
             return new int[]{78, 93, 148}; //dark blurple
     }
 
-    public BufferedImage getBufferedImage(CommandEvent event, BufferedImage img) {
+    public BufferedImage getBufferedImage(CommandEvent event) {
         String[] args = event.getArgs().split("\\s+");
+        BufferedImage img = null;
         if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
             User user = Helpers.getUserByArgsN(event, args[0]);
             if (user != null) {
