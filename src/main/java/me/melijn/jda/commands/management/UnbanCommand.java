@@ -9,12 +9,14 @@ import me.melijn.jda.blub.Need;
 import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 
+import static me.melijn.jda.Melijn.PREFIX;
+
 public class UnbanCommand extends Command {
 
     public UnbanCommand() {
         this.commandName = "unban";
         this.description = "unban a banned user";
-        this.usage = Melijn.PREFIX + commandName + " <user>";
+        this.usage = PREFIX + commandName + " <user>";
         this.category = Category.MANAGEMENT;
         this.needs = new Need[]{Need.GUILD};
         this.permissions = new Permission[]{
