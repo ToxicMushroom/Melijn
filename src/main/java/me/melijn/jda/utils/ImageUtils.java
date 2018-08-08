@@ -36,14 +36,12 @@ public class ImageUtils {
                     img = ImageIO.read(new URL(user.getEffectiveAvatarUrl() + "?size=4096"));
                 } catch (IOException e) {
                     event.reply("Something went wrong");
-                    e.addSuppressed(e);
                 }
             } else {
                 try {
                     img = ImageIO.read(new URL(args[0]));
                 } catch (IOException e) {
                     event.reply("That url isn't an image or is invalid");
-                    e.addSuppressed(e);
                 }
             }
         } else if (event.getMessage().getAttachments().size() > 0) {
@@ -51,13 +49,12 @@ public class ImageUtils {
                 img = ImageIO.read(new URL(event.getMessage().getAttachments().get(0).getUrl()));
             } catch (IOException e) {
                 event.reply("That attachment isn't an image");
-                e.addSuppressed(e);
             }
         } else {
             try {
                 img = ImageIO.read(new URL(event.getAvatarUrl() + "?size=4096"));
             } catch (IOException e) {
-                e.printStackTrace();
+                event.reply("Something went wrong");
             }
         }
         return img;
