@@ -33,11 +33,13 @@ import java.util.function.Consumer;
 
 public class Helpers {
 
+
     private static ScheduledExecutorService executorPool = Executors.newScheduledThreadPool(6);
     public static long lastRunTimer1, lastRunTimer2, lastRunTimer3;
 
     public static long starttime;
     public static String guildOnly = "This command is to be used in guilds only";
+    public static String nsfwOnly = "This command is to be used in (not safe for wor) better known as [NSFW] channels only and can contain 18+ content";
     public static String noPerms = "You don't have the permission: ";
     public static final Logger LOG = LogManager.getLogger(Melijn.class.getName());
     public static Color EmbedColor = Color.decode("#00ffd8");
