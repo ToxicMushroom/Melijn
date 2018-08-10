@@ -110,7 +110,7 @@ public class MessageHelper {
 
     public static void sendFunText(String desc, String url, CommandEvent event) {
         if (url == null) url = "https://melijn.com/files/u/07-05-2018--19.42-08s.png";
-        if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS)) {
+        if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EMBED_LINKS)) {
             event.reply(new EmbedBuilder()
                     .setDescription(desc)
                     .setColor(Helpers.EmbedColor)

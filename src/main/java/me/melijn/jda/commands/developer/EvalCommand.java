@@ -50,9 +50,7 @@ public class EvalCommand extends Command {
                 se.eval(event.getArgs());
             else
                 event.reply(se.eval(event.getArgs()).toString());
-            event.getMessage().addReaction("\u2705").queue();
         } catch (Exception e) {
-            event.getMessage().addReaction("\u274C").queue();
             event.reply("An exception was thrown:\n```\n" + e + "```");
         }
     }

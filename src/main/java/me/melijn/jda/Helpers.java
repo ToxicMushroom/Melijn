@@ -130,7 +130,8 @@ public class Helpers {
             "setUnverifiedRole",
             "setVerificationThreshold",
             "negative",
-            "blurple"
+            "blurple",
+            "urban"
     );
 
 
