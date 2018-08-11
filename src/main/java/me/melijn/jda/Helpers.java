@@ -131,7 +131,7 @@ public class Helpers {
             "setVerificationChannel",
             "setUnverifiedRole",
             "setVerificationThreshold",
-            "negative",
+            "invert",
             "blurple",
             "urban"
     );

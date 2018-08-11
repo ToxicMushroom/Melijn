@@ -10,13 +10,13 @@ import java.awt.image.BufferedImage;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
-public class NegativeCommand extends Command {
+public class InvertCommand extends Command {
 
-    public NegativeCommand() {
-        this.commandName = "negative";
+    public InvertCommand() {
+        this.commandName = "invert";
         this.usage = PREFIX + commandName + " [image]";
-        this.description = "change an image to negative";
-        this.aliases = new String[]{"invert"};
+        this.description = "inverts the color of each pixel of the provided image";
+        this.aliases = new String[]{"negative"};
         this.category = Category.FUN;
     }
 
@@ -50,7 +50,7 @@ public class NegativeCommand extends Command {
                     img.setRGB(x, y, pixel);
                 }
             }
-            imageUtils.sendImage(event, img);
+            event.reply(img);
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }

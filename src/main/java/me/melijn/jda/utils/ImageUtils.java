@@ -6,7 +6,6 @@ import net.dv8tion.jda.core.entities.User;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
@@ -59,15 +58,5 @@ public class ImageUtils {
             }
         }
         return img;
-    }
-
-    public void sendImage(CommandEvent event, BufferedImage img) {
-        try {
-            long time = System.currentTimeMillis();
-            ImageIO.write(img, "png", new File(time + ".png"));
-            event.getTextChannel().sendFile(new File(time + ".png")).queue(done -> new File(time + ".png").delete());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }

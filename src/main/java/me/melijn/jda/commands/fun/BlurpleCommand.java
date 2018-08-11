@@ -45,7 +45,7 @@ public class BlurpleCommand extends Command {
                     img.setRGB(x, y, pixel);
                 }
             }
-            imageUtils.sendImage(event, img);
+            event.reply(img);
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
