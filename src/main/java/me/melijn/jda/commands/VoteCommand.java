@@ -50,11 +50,8 @@ public class VoteCommand extends Command {
                 long untilLoss = 172800000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
                 String untilLossFormat = (untilLoss > 0) ? MessageHelper.millisToVote(untilLoss) : "You don't have a streak atm :/";
                 eb.addField("Time until los of streak", untilLossFormat, false);
-                if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS)) {
-                    event.reply(eb.build());
-                } else {
-                    event.reply("I don't have permissions to send embeds here.. :( (You can send the command in dm)");
-                }
+                event.reply(eb.build());
+
             });
         } else {
             MessageHelper.sendUsage(this, event);
