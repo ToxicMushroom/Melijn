@@ -44,12 +44,7 @@ public class MuteCommand extends Command {
                     }
                     Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoles.getOrDefault(guild.getIdLong(), -1L));
                     if (muteRole != null) {
-                        if (event.getGuild().getMember(target).getRoles().size() > 1) {
-                            if (event.getGuild().getMember(target).getRoles().get(0).getPosition() <= event.getGuild().getSelfMember().getRoles().get(0).getPosition()) {
-                                event.reply("I can't modify a member with higher or equal highest role than myself");
-                                return;
-                            }
-                        }
+                        if (Helpers.canNotInteract(event, target)) return;
                         guild.getController().addSingleRoleToMember(guild.getMember(target), muteRole).queue(s -> {
                             String reason = event.getArgs().replaceFirst(args[0] + "\\s+|" + args[0], "");
                             if (reason.length() <= 1000 && Melijn.mySQL.setPermMute(event.getAuthor(), target, guild, reason)) {

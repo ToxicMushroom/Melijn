@@ -37,12 +37,7 @@ public class TempBanCommand extends Command {
                     if (target != null) {
                         if (MessageHelper.isRightFormat(time)) {
                             try {
-                                if (event.getGuild().getMember(target).getRoles().size() > 1) {
-                                    if (event.getGuild().getMember(target).getRoles().get(0).getPosition() <= event.getGuild().getSelfMember().getRoles().get(0).getPosition()) {
-                                        event.reply("I can't modify a member with higher or equal highest role than myself");
-                                        return;
-                                    }
-                                }
+                                if (Helpers.canNotInteract(event, target)) return;
                                 String reason = event.getArgs().replaceFirst(args[0] + "\\s+" + args[1] + "\\s+|" + args[0] + "\\s+" + args[1], "");
                                 if (reason.length() <= 1000 && Melijn.mySQL.setTempBan(event.getAuthor(), target, event.getGuild(), reason, MessageHelper.easyFormatToSeconds(time))) {
                                     event.getMessage().addReaction("\u2705").queue();

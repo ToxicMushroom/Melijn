@@ -427,4 +427,17 @@ public class Helpers {
         }
         return millis;
     }
+
+    public static boolean canNotInteract(CommandEvent event, User target) {
+        if (event.getGuild().getMember(target).getRoles().size() > 0 && event.getGuild().getSelfMember().getRoles().size() > 0) {
+            if (!event.getGuild().getSelfMember().getRoles().get(0).canInteract(event.getGuild().getMember(target).getRoles().get(0))) {
+                event.reply("Can't modify a member with higher or equal highest role than myself");
+                return true;
+            }
+        } else if (event.getGuild().getSelfMember().getRoles().size() == 0) {
+            event.reply("Can't modify a member with higher or equal highest role than myself");
+            return true;
+        }
+        return false;
+    }
 }

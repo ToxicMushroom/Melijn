@@ -33,12 +33,7 @@ public class KickCommand extends Command {
                 if (target != null) {
                     if (event.getGuild().getMember(target) != null) {
                         Melijn.MAIN_THREAD.submit(() -> {
-                            if (event.getGuild().getMember(target).getRoles().size() > 0 && event.getGuild().getSelfMember().getRoles().size() > 0) {
-                                if (event.getGuild().getSelfMember().getRoles().get(0).canInteract(event.getGuild().getMember(target).getRoles().get(0))) {
-                                    event.reply("Can't modify a member with higher or equal highest role than myself");
-                                    return;
-                                }
-                            }
+                            if (Helpers.canNotInteract(event, target)) return;
                             if (reason.length() <= 1000 && Melijn.mySQL.addKick(event.getAuthor(), target, event.getGuild(), reason)) {
                                 event.getMessage().addReaction("\u2705").queue();
                             } else {
