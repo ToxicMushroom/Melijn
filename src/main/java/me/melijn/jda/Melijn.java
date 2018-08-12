@@ -39,8 +39,6 @@ public class Melijn {
     private static String DBNAME = config.getValue("database");
     private static String DBLTOKEN = config.getValue("dbltoken");
     public static final ExecutorService MAIN_THREAD = Executors.newCachedThreadPool(t -> new Thread(t, "Melijn-main-thread"));
-
-
     public static DiscordBotListAPI dblAPI = null;
     public static MySQL mySQL = new MySQL(IP, USER, PASS, DBNAME);
     private static ShardManager shardManager = null;
