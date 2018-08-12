@@ -499,7 +499,7 @@ public class MySQL {
             banned.setColor(Color.RED);
             banned.setDescription("```LDIF\nBanned: " + namet + "\nTargetID:" + target.getId() + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nMoment: " + MessageHelper.millisToDate(moment) + "```");
             banned.setThumbnail(target.getEffectiveAvatarUrl());
-            banned.setAuthor("Permanently banned by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
+            banned.setAuthor("Banned by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
             if (!target.isBot()) target.openPrivateChannel().complete().sendMessage(banned.build()).queue();
             long logChannelId = SetLogChannelCommand.banLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
@@ -693,7 +693,7 @@ public class MySQL {
             muted.setColor(Color.BLUE);
             muted.setDescription("```LDIF\nMuted: " + namet + "\nTargetID: " + target.getId() + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nMoment: " + MessageHelper.millisToDate(moment) + "```");
             muted.setThumbnail(target.getEffectiveAvatarUrl());
-            muted.setAuthor("Permanently muted by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
+            muted.setAuthor("Muted by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
             if (!target.isBot()) target.openPrivateChannel().complete().sendMessage(muted.build()).queue();
             long logChannelId = SetLogChannelCommand.muteLogChannelMap.getOrDefault(guild.getIdLong(), -1L);

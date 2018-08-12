@@ -1,5 +1,6 @@
 package me.melijn.jda;
 
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.commands.management.SetLogChannelCommand;
@@ -8,7 +9,6 @@ import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.music.MusicPlayer;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.WebUtils;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -34,7 +35,7 @@ import java.util.function.Consumer;
 public class Helpers {
 
 
-    private static ScheduledExecutorService executorPool = Executors.newScheduledThreadPool(6);
+    private static ScheduledExecutorService executorPool = Executors.newScheduledThreadPool(10);
     public static long lastRunTimer1, lastRunTimer2, lastRunTimer3;
 
     public static long starttime;
@@ -206,11 +207,10 @@ public class Helpers {
     }
 
     public static void waitForIt(User user) {
-        Runnable run = () -> {
+        executorPool.schedule(() -> {
             MusicManager.usersRequest.remove(user);
             MusicManager.usersFormToReply.remove(user);
-        };
-        executorPool.schedule(run, 30, TimeUnit.SECONDS);
+        }, 30, TimeUnit.SECONDS);
     }
 
     public static String getDurationBreakdown(long millis) {
@@ -248,7 +248,7 @@ public class Helpers {
         return (sb.toString());
     }
 
-    private static ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    private static ForkJoinPool executor = ForkJoinPool.commonPool();
 
     public static void ScheduleClose(AudioManager manager) {
         if (!manager.isConnected() && !manager.isAttemptingToConnect()) return;
@@ -378,19 +378,18 @@ public class Helpers {
     }
 
     public static void retrieveUserByArgs(CommandEvent event, String arg, Consumer<User> success) {
-        Runnable run = () -> {
+        executor.execute(() -> {
             User user = getUserByArgsN(event, arg);
             if (user == null && arg.matches("\\d+") && event.getJDA().getUserById(arg) == null) user = event.getJDA().retrieveUserById(arg).complete();
             if (user == null) user = event.getAuthor();
             success.accept(user);
-        };
-        executorPool.execute(run);
+        });
     }
 
     public static void retrieveUserByArgsN(CommandEvent event, String arg, Consumer<User> success) {
-        executorPool.execute(() -> {
+        executor.execute(() -> {
             User user = getUserByArgsN(event, arg);
-            if (user == null && arg.matches("\\d+") && event.getJDA().getUserById(arg) == null) event.getJDA().retrieveUserById(arg).queue(success);
+            if (user == null && arg.matches("\\d+") && event.getJDA().getUserById(arg) == null) success.accept(event.getJDA().retrieveUserById(arg).complete());
             else success.accept(user);
         });
     }
