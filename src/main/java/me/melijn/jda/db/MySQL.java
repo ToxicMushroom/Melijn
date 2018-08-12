@@ -1452,8 +1452,8 @@ public class MySQL {
         try {
             if (SetVerificationCode.guildCodes.containsKey(guildId)) {
                 PreparedStatement statement = con.prepareStatement("UPDATE verification_codes SET code= ? WHERE guildId= ?");
-                statement.setLong(1, guildId);
-                statement.setString(2, code);
+                statement.setString(1, code);
+                statement.setLong(2, guildId);
                 statement.executeUpdate();
             } else {
                 PreparedStatement statement = con.prepareStatement("INSERT INTO verification_codes (guildId, code) VALUES (?, ?)");
@@ -1495,8 +1495,8 @@ public class MySQL {
         try {
             if (SetVerificationThreshold.guildVerificationThresholds.containsKey(guildId)) {
                 PreparedStatement statement = con.prepareStatement("UPDATE verification_thresholds SET threshold= ? WHERE guildId= ?");
-                statement.setLong(1, guildId);
-                statement.setInt(2, threshold);
+                statement.setInt(1, threshold);
+                statement.setLong(2, guildId);
                 statement.executeUpdate();
             } else {
                 PreparedStatement statement = con.prepareStatement("INSERT INTO verification_thresholds (guildId, threshold) VALUES (?, ?)");
