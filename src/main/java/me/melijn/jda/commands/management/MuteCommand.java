@@ -44,7 +44,7 @@ public class MuteCommand extends Command {
                     }
                     Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoles.getOrDefault(guild.getIdLong(), -1L));
                     if (muteRole != null) {
-                        if (Helpers.canNotInteract(event, target)) return;
+                        if (Helpers.canNotInteract(event, muteRole)) return;
                         guild.getController().addSingleRoleToMember(guild.getMember(target), muteRole).queue(s -> {
                             String reason = event.getArgs().replaceFirst(args[0] + "\\s+|" + args[0], "");
                             if (reason.length() <= 1000 && Melijn.mySQL.setPermMute(event.getAuthor(), target, guild, reason)) {

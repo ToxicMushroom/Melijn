@@ -440,4 +440,17 @@ public class Helpers {
         }
         return false;
     }
+
+    public static boolean canNotInteract(CommandEvent event, Role target) {
+        if (event.getGuild().getSelfMember().getRoles().size() > 0) {
+            if (!event.getGuild().getSelfMember().getRoles().get(0).canInteract(target)) {
+                event.reply("Can't modify a member with higher or equal highest role than myself");
+                return true;
+            }
+        } else {
+            event.reply("Can't modify a member with higher or equal highest role than myself");
+            return true;
+        }
+        return false;
+    }
 }
