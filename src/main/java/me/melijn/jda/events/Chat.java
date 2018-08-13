@@ -152,6 +152,8 @@ public class Chat extends ListenerAdapter {
         }
     }
 
+    private String spaces = "                                                                                  ";
+
     @Override
     public void onGuildMessageDelete(GuildMessageDeleteEvent event) {
         if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
@@ -185,10 +187,10 @@ public class Chat extends ListenerAdapter {
                         deletionTime = deletionTime.plusSeconds(1).plusNanos((event.getJDA().getPing() * 1_000_000));
 
                         EmbedBuilder eb = new EmbedBuilder();
-                        eb.setTitle("Message deleted in #" + event.getChannel().getName());
+                        eb.setTitle("Message deleted in #" + event.getChannel().getName() + spaces.substring(0, 45 + user.getName().length()) + "\u200B");
                         eb.setThumbnail(user.getEffectiveAvatarUrl());
                         eb.setColor(Color.decode("#000001"));
-                        eb.setDescription("```LDIF" + "\nSender: " + user.getName() + "#" + user.getDiscriminator() + "\nMessage: " + message.getString("content").replaceAll("`", "´").replaceAll("\n", " ") + "\nSender's Id: " + user.getId() + "\nSent Time: " + MessageHelper.millisToDate(message.getLong("sentTime")) + "```");
+                        eb.setDescription("```LDIF" + "\nSender: " + user.getName() + "#" + user.getDiscriminator() + "\nMessage: " + message.getString("content").replaceAll("`", "´").replaceAll("\n", " ") + "\nSenderID: " + user.getId() + "\nSent Time: " + MessageHelper.millisToDate(message.getLong("sentTime")) + "```");
                         if (MessageHelper.filterDeletedMessages.get(event.getMessageId()) != null) {
                             eb.addField("Detected: ", "`" + MessageHelper.filterDeletedMessages.get(event.getMessageId()).replaceAll("`", "´") + "`", false);
                             eb.setColor(Color.ORANGE);

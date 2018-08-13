@@ -134,7 +134,8 @@ public class Helpers {
             "setVerificationThreshold",
             "invert",
             "blurple",
-            "urban"
+            "urban",
+            "bird"
     );
 
 
