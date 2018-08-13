@@ -58,6 +58,7 @@ public class SetLogChannelCommand extends Command {
                                 fmLogChannelMap.remove(guild.getIdLong());
                                 Melijn.MAIN_THREAD.submit(() -> {
                                     Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.BAN_LOG);
+                                    Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.MUTE_LOG);
                                     Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.MUSIC_LOG);
                                     Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.KICK_LOG);
                                     Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.WARN_LOG);
@@ -90,6 +91,7 @@ public class SetLogChannelCommand extends Command {
                                 chosenMap.put(guild.getIdLong(), id);
                                 Melijn.MAIN_THREAD.submit(() -> {
                                     Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.BAN_LOG);
+                                    Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.MUTE_LOG);
                                     Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.MUSIC_LOG);
                                     Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.KICK_LOG);
                                     Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.WARN_LOG);
