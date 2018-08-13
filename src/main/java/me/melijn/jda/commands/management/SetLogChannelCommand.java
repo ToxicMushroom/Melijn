@@ -103,21 +103,26 @@ public class SetLogChannelCommand extends Command {
                             }
                             return;
                         case "ban":
+                        case "bans":
                             chosenMap = banLogChannelMap;
                             chosenType = ChannelType.BAN_LOG;
                             break;
+                        case "mutes":
                         case "mute":
                             chosenMap = muteLogChannelMap;
                             chosenType = ChannelType.MUTE_LOG;
                             break;
+                        case "kicks":
                         case "kick":
                             chosenMap = kickLogChannelMap;
                             chosenType = ChannelType.KICK_LOG;
                             break;
+                        case "warns":
                         case "warn":
                             chosenMap = warnLogChannelMap;
                             chosenType = ChannelType.WARN_LOG;
                             break;
+                        case "songs":
                         case "music":
                             chosenMap = musicLogChannelMap;
                             chosenType = ChannelType.MUSIC_LOG;
