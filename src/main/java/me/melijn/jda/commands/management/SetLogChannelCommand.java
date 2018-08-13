@@ -17,7 +17,7 @@ public class SetLogChannelCommand extends Command {
         this.commandName = "setLogChannel";
         this.description = "configures log channels so you can keep track of what's happening in your server";
         this.usage = Melijn.PREFIX + commandName + " <type> [TextChannel | null]";
-        this.extra = "Types: all, ban, mute, warn, kick, music, self-deleted-messages,other-deleted-messages, purged-messages, filtered-messages";
+        this.extra = "Types: all, ban, mute, warn, kick, music, self-deleted-messages, other-deleted-messages, purged-messages, filtered-messages";
         this.aliases = new String[]{"slc"};
         this.category = Category.MANAGEMENT;
     }
@@ -155,11 +155,11 @@ public class SetLogChannelCommand extends Command {
                     if (id == -1) {
                         MessageHelper.sendUsage(this, event);
                     } else if (id == 0L) {
-                        event.reply("LogChannel has been changed from " + (chosenMap.containsKey(guild.getIdLong()) ? "<#" + chosenMap.get(guild.getIdLong()) + ">" : "nothing") + " to nothing by **" + event.getFullAuthorName() + "**");
+                        event.reply(chosenType.toString() + "_CHANNEL has been changed from " + (chosenMap.containsKey(guild.getIdLong()) ? "<#" + chosenMap.get(guild.getIdLong()) + ">" : "nothing") + " to nothing by **" + event.getFullAuthorName() + "**");
                         chosenMap.remove(guild.getIdLong());
                         Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.removeChannel(guild.getIdLong(), chosenType));
                     } else {
-                        event.reply("LogChannel has been changed from " + (chosenMap.containsKey(guild.getIdLong()) ? "<#" + chosenMap.get(guild.getIdLong()) + ">" : "nothing") + " to <#" + id + "> by **" + event.getFullAuthorName() + "**");
+                        event.reply(chosenType.toString() + "_CHANNEL has been changed from " + (chosenMap.containsKey(guild.getIdLong()) ? "<#" + chosenMap.get(guild.getIdLong()) + ">" : "nothing") + " to <#" + id + "> by **" + event.getFullAuthorName() + "**");
                         if (chosenMap.replace(guild.getIdLong(), id) == null) chosenMap.put(guild.getIdLong(), id);
                         Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setChannel(guild.getIdLong(), id, chosenType));
                     }
