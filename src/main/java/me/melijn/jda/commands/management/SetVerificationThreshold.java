@@ -31,10 +31,10 @@ public class SetVerificationThreshold extends Command {
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
+            Guild guild = event.getGuild();
             if (args.length > 0 && args[0].matches("\\d+") && args[0].length() < 4) {
                 int i = Integer.parseInt(args[0]);
                 if (i <= 20 && i >= 0) {
-                    Guild guild = event.getGuild();
                     if (i == 0) {
                         Melijn.MAIN_THREAD.submit(() -> {
                             Melijn.mySQL.removeVerificationThreshold(guild.getIdLong());
@@ -53,7 +53,7 @@ public class SetVerificationThreshold extends Command {
                     MessageHelper.sendUsage(this, event);
                 }
             } else {
-                MessageHelper.sendUsage(this, event);
+                event.reply("The VerificationThreshold is **" + (guildVerificationThresholds.containsKey(guild.getIdLong()) ? guildVerificationThresholds.get(guild.getIdLong()) : "disabled") + "**");
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

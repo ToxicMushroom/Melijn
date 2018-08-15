@@ -35,10 +35,10 @@ public class SetVerificationChannel extends Command {
                 if (id == -1L) {
                     event.reply("Unknown TextChannel");
                 } else if (id == 0L) {
-                    verificationChannels.remove(guild.getIdLong());
-                    Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.VERIFICATION));
                     long oldChannel = verificationChannels.getOrDefault(guild.getIdLong(), -1L);
                     event.reply("VerificationChannel has been changed from " + (oldChannel == -1L ? "nothing" : "<#" + oldChannel + ">") + " to nothing");
+                    verificationChannels.remove(guild.getIdLong());
+                    Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.VERIFICATION));
                 } else  {
                     if (event.getGuild().getSelfMember().hasPermission(guild.getTextChannelById(id), Permission.MESSAGE_ATTACH_FILES, Permission.MESSAGE_MANAGE)) {
                         Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.VERIFICATION));
