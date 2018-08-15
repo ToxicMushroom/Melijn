@@ -175,11 +175,13 @@ public class Helpers {
                     e.printStackTrace();
                 }
             }, 1, 2, TimeUnit.SECONDS);
-        } if (i == 0 || i == 2) {
+        }
+        if (i == 0 || i == 2) {
             lastRunTimer2 = System.currentTimeMillis();
             executorPool.scheduleAtFixedRate(() -> {
                 lastRunTimer2 = System.currentTimeMillis();
-                if (dbl != null) dbl.setStats(guildCount == 0 ? jda.asBot().getShardManager().getGuilds().size() : guildCount);
+                if (dbl != null)
+                    dbl.setStats(guildCount == 0 ? jda.asBot().getShardManager().getGuilds().size() : guildCount);
                 ArrayList<Long> votesList = Melijn.mySQL.getVoteList();
                 for (long userId : SetNotifications.nextVotes.keySet()) {
                     for (long targetId : SetNotifications.nextVotes.get(userId)) {
@@ -191,7 +193,8 @@ public class Helpers {
                     }
                 }
             }, 1, 60, TimeUnit.SECONDS);
-        } if (i == 0 || i == 3) {
+        }
+        if (i == 0 || i == 3) {
             lastRunTimer3 = System.currentTimeMillis();
             executorPool.scheduleAtFixedRate(() -> {
                 lastRunTimer3 = System.currentTimeMillis();
@@ -308,6 +311,7 @@ public class Helpers {
         if (user == null) user = event.getAuthor();
         return user;
     }
+
     public static User getUserByArgsN(CommandEvent event, String arg) {//With null
         User user = null;
         if (!arg.matches("\\s+") && !arg.equalsIgnoreCase("")) {
@@ -384,7 +388,8 @@ public class Helpers {
     public static void retrieveUserByArgs(CommandEvent event, String arg, Consumer<User> success) {
         executor.execute(() -> {
             User user = getUserByArgsN(event, arg);
-            if (user == null && arg.matches("\\d+") && event.getJDA().getUserById(arg) == null) user = event.getJDA().retrieveUserById(arg).complete();
+            if (user == null && arg.matches("\\d+") && event.getJDA().getUserById(arg) == null)
+                user = event.getJDA().retrieveUserById(arg).complete();
             if (user == null) user = event.getAuthor();
             success.accept(user);
         });
@@ -393,7 +398,8 @@ public class Helpers {
     public static void retrieveUserByArgsN(CommandEvent event, String arg, Consumer<User> success) {
         executor.execute(() -> {
             User user = getUserByArgsN(event, arg);
-            if (user == null && arg.matches("\\d+") && event.getJDA().getUserById(arg) == null) success.accept(event.getJDA().retrieveUserById(arg).complete());
+            if (user == null && arg.matches("\\d+") && event.getJDA().getUserById(arg) == null)
+                success.accept(event.getJDA().retrieveUserById(arg).complete());
             else success.accept(user);
         });
     }
