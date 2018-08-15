@@ -36,7 +36,7 @@ public class AvatarCommand extends Command {
                 eb.setColor(Helpers.EmbedColor);
                 eb.setTitle(user.getName() + "#" + user.getDiscriminator() + "'s avatar");
                 eb.setImage(user.getEffectiveAvatarUrl() + "?size=2048");
-                eb.setDescription("[open](" + user.getEffectiveAvatarUrl() + "?size=4096)");
+                eb.setDescription("[open](" + user.getEffectiveAvatarUrl() + "?size=2048)");
                  event.reply(eb.build());
             } else {
                 event.reply("Unknown user");

@@ -33,10 +33,10 @@ public class UserInfoCommand extends Command {
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setColor(Helpers.EmbedColor);
                 eb.setTitle(user.getName() + "#" + user.getDiscriminator() + "'s profile");
-                eb.setThumbnail(user.getEffectiveAvatarUrl() + "?size=1024");
+                eb.setThumbnail(user.getEffectiveAvatarUrl() + "?size=2048");
                 if (event.getGuild() == null || event.getGuild().getMember(user) == null) {
                     eb.addField("ID:", user.getId(), true);
-                    eb.addField("Avatar:", "**[link](" + user.getEffectiveAvatarUrl() + "?size=1024)**", true);
+                    eb.addField("Avatar:", "**[link](" + user.getEffectiveAvatarUrl() + "?size=2048)**", true);
                     eb.addField("Discord join date:", simpleDateFormat.format(Date.from(user.getCreationTime().toInstant())) + "s", true);
                     eb.addField("Is Member:", "no", true);
                     eb.addField("Is Bot:", String.valueOf(user.isBot()), false);
@@ -45,7 +45,7 @@ public class UserInfoCommand extends Command {
                     String nickname = member.getNickname() == null ? "None" : member.getNickname();
                     eb.addField("ID:", user.getId(), false);
                     eb.addField("Nickname:", nickname, true);
-                    eb.addField("Avatar:", "**[link](" + user.getEffectiveAvatarUrl() + "?size=1024)**", true);
+                    eb.addField("Avatar:", "**[link](" + user.getEffectiveAvatarUrl() + "?size=2048)**", true);
                     eb.addField("Playing:", member.getGame() == null ? "none" : member.getGame().getName(), true);
                     eb.addField("Status:", member.getOnlineStatus().name().toLowerCase(), true);
                     eb.addField("Discord join date:", simpleDateFormat.format(Date.from(user.getCreationTime().toInstant())) + "s", true);

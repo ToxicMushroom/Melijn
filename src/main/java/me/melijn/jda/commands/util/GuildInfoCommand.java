@@ -36,9 +36,9 @@ public class GuildInfoCommand extends Command {
                     guild = jda.getGuildById(args[0]);
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setTitle(guild.getName());
-                eb.setThumbnail(guild.getIconUrl());
+                eb.setThumbnail(guild.getIconUrl().replace(".jpg", ".png") + "?size=2048");
                 eb.setColor(Helpers.EmbedColor);
-                eb.addField("Icon", "[Download](" + guild.getIconUrl() + ")", false);
+                eb.addField("Icon", "[Download](" + guild.getIconUrl().replace(".jpg", ".png") + "?size=2048)", false);
                 eb.addField("Creation date", guild.getCreationTime().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG, FormatStyle.SHORT)), false);
                 eb.addField("Region", guild.getRegion().getName(), true);
                 eb.addField("Vip servers", String.valueOf(guild.getRegion().isVip()), true);

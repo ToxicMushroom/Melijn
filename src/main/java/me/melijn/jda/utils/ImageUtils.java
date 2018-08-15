@@ -33,7 +33,7 @@ public class ImageUtils {
             User user = Helpers.getUserByArgsN(event, args[0]);
             if (user != null) {
                 try {
-                    img = ImageIO.read(new URL(user.getEffectiveAvatarUrl() + "?size=4096"));
+                    img = ImageIO.read(new URL(user.getEffectiveAvatarUrl() + "?size=2048"));
                 } catch (IOException e) {
                     event.reply("Something went wrong");
                 }
@@ -52,7 +52,7 @@ public class ImageUtils {
             }
         } else {
             try {
-                img = ImageIO.read(new URL(event.getAvatarUrl() + "?size=4096"));
+                img = ImageIO.read(new URL(event.getAvatarUrl() + "?size=2048"));
             } catch (IOException e) {
                 event.reply("Something went wrong");
             }
