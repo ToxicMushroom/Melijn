@@ -44,6 +44,7 @@ public class MySQL {
             statement.close();
             Logger.getLogger(this.getClass().getName()).info("[MySQL] has connected");
             update("CREATE TABLE IF NOT EXISTS commands(commandName varchar(1000), gebruik varchar(1000), description varchar(2000), extra varchar(2000), category varchar(100), aliases varchar(200));");
+            update("CREATE TABLE IF NOT EXISTS disabled_commands(guildId bigint, command int)");
             update("CREATE TABLE IF NOT EXISTS stream_urls(guildId bigint, url varchar(1500))");
             update("CREATE TABLE IF NOT EXISTS prefixes(guildId bigint, prefix bigint);");
             update("CREATE TABLE IF NOT EXISTS mute_roles(guildId bigint, roleId bigint);");
@@ -1532,5 +1533,56 @@ public class MySQL {
             e.printStackTrace();
         }
         return toReturn;
+    }
+
+
+    public HashMap<Long, ArrayList<Integer>> getDisabledCommandsMap() {
+        HashMap<Long, ArrayList<Integer>> toreturn = new HashMap<>();
+        try {
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM disabled_commands");
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                if (toreturn.containsKey(rs.getLong("guildId"))) {
+                    ArrayList<Integer> buffertje = toreturn.get(rs.getLong("guildId"));
+                    buffertje.add(rs.getInt("command"));
+                    toreturn.replace(rs.getLong("guildId"), buffertje);
+                } else {
+                    toreturn.put(rs.getLong("guildId"), new ArrayList<>(Collections.singleton(rs.getInt("command"))));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return toreturn;
+    }
+
+    public void removeDisabledCommands(long guildId, ArrayList<Integer> buffer) {
+        ArrayList<Integer> toRemove = DisableCommand.disabledGuildCommands.getOrDefault(guildId, new ArrayList<>());
+        toRemove.removeAll(buffer);
+        try {
+            PreparedStatement statement = con.prepareStatement("DELETE FROM disabled_commands WHERE guildId= ? AND command= ?");
+            statement.setLong(1, guildId);
+            for (int i : toRemove) {
+                statement.setInt(2, i);
+                statement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addDisabledCommands(long guildId, ArrayList<Integer> buffer) {
+        ArrayList<Integer> toAdd = buffer;
+        toAdd.removeAll(DisableCommand.disabledGuildCommands.getOrDefault(guildId, new ArrayList<>()));
+        try {
+            PreparedStatement statement = con.prepareStatement("INSERT INTO disabled_commands (guildId, command) VALUES (?, ?)");
+            statement.setLong(1, guildId);
+            for (int i : toAdd) {
+                statement.setInt(2, i);
+                statement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
