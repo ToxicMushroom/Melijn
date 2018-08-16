@@ -1557,7 +1557,7 @@ public class MySQL {
     }
 
     public void removeDisabledCommands(long guildId, ArrayList<Integer> buffer) {
-        ArrayList<Integer> toRemove = DisableCommand.disabledGuildCommands.getOrDefault(guildId, new ArrayList<>());
+        ArrayList<Integer> toRemove = new ArrayList<>(DisableCommand.disabledGuildCommands.getOrDefault(guildId, new ArrayList<>()));
         toRemove.removeAll(buffer);
         try {
             PreparedStatement statement = con.prepareStatement("DELETE FROM disabled_commands WHERE guildId= ? AND command= ?");
@@ -1572,7 +1572,7 @@ public class MySQL {
     }
 
     public void addDisabledCommands(long guildId, ArrayList<Integer> buffer) {
-        ArrayList<Integer> toAdd = buffer;
+        ArrayList<Integer> toAdd = new ArrayList<>(buffer);
         toAdd.removeAll(DisableCommand.disabledGuildCommands.getOrDefault(guildId, new ArrayList<>()));
         try {
             PreparedStatement statement = con.prepareStatement("INSERT INTO disabled_commands (guildId, command) VALUES (?, ?)");

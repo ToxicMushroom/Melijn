@@ -42,7 +42,8 @@ public class EnableCommand extends Command {
                         }
                     }
                     if (cmd.getCategory().toString().equalsIgnoreCase(args[0]))
-                        buffer.remove(buffer.indexOf(HelpCommand.commandList.indexOf(cmd)));
+                        if (buffer.contains(HelpCommand.commandList.indexOf(cmd)))
+                            buffer.remove(buffer.indexOf(HelpCommand.commandList.indexOf(cmd)));
                 }
                 if (buffer.size() == DisableCommand.disabledGuildCommands.getOrDefault(guild.getIdLong(), new ArrayList<>()).size()) {
                     event.reply("The given command or category was unknown");
