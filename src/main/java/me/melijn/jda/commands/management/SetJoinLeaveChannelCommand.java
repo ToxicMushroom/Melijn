@@ -38,7 +38,7 @@ public class SetJoinLeaveChannelCommand extends Command {
                     } else {
                         Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.WELCOME));
                         if (!SetJoinMessageCommand.joinMessages.containsKey(guild.getIdLong())) {
-                            SetJoinMessageCommand.joinMessages.put(guild.getIdLong(), "Welcome %USER% to the %GUILDNAME% discord server you are me");
+                            SetJoinMessageCommand.joinMessages.put(guild.getIdLong(), "Welcome %USER% to the %GUILDNAME% discord server");
                             Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setMessage(guild.getIdLong(), "Welcome %USER% to our awesome discord server :D", MessageType.JOIN));
                             event.reply("I've set the default join message :beginner:");
                         }
