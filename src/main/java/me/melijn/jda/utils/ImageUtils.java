@@ -18,12 +18,9 @@ public class ImageUtils {
 
     public int[] getBurpleForPixel(int r, int g, int b) {
         int brightness = getBrightness(r, g, b);
-        if (brightness >= 170)
-            return new int[]{255, 255, 255}; //wit
-        else if (brightness >= 85)
-            return new int[]{114, 137, 218}; //blurple
-        else
-            return new int[]{78, 93, 148}; //dark blurple
+        if (brightness >= 170) return new int[]{255, 255, 255}; //wit
+        else if (brightness >= 85) return new int[]{114, 137, 218}; //blurple
+        else return new int[]{78, 93, 148}; //dark blurple
     }
 
     public BufferedImage getBufferedImage(CommandEvent event) {
