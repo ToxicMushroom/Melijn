@@ -428,7 +428,7 @@ public class MySQL {
 
     //Punishment stuff--------------------------------------------------------------
     public boolean setTempBan(User author, User target, Guild guild, String reason, long seconds) {
-        reason = reason.matches("\\s+|") ? "none" : reason;
+        reason = reason.matches("\\s+|") ? "N/A" : reason;
         if (seconds > 0) {
             long moment = System.currentTimeMillis();
             long until = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(seconds);
@@ -490,7 +490,7 @@ public class MySQL {
     }
 
     public boolean setPermBan(User author, User target, Guild guild, String reason) {
-        reason = reason.matches("\\s+|") ? "none" : reason;
+        reason = reason.matches("\\s+|") ? "N/A" : reason;
         long moment = System.currentTimeMillis();
         String namet = target.getName() + "#" + target.getDiscriminator();
         String name = author.getName() + "#" + author.getDiscriminator();
@@ -595,7 +595,7 @@ public class MySQL {
 
     public boolean addWarn(User author, User target, Guild guild, String reason) {
         try {
-            reason = reason.matches("\\s+|") ? "none" : reason;
+            reason = reason.matches("\\s+|") ? "N/A" : reason;
             PreparedStatement newWarn = con.prepareStatement("INSERT INTO warns(guildId, victimId, authorId, reason, moment) VALUES (?, ?, ?, ?, ?);");
             newWarn.setLong(1, guild.getIdLong());
             newWarn.setLong(2, target.getIdLong());
@@ -625,7 +625,7 @@ public class MySQL {
 
     public boolean setTempMute(User author, User target, Guild guild, String reason, long seconds) {
         if (seconds > 0) {
-            reason = reason.matches("\\s+|") ? "none" : reason;
+            reason = reason.matches("\\s+|") ? "N/A" : reason;
             long moment = System.currentTimeMillis();
             long until = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(seconds);
             String namet = target.getName() + "#" + target.getDiscriminator();
@@ -685,7 +685,7 @@ public class MySQL {
     }
 
     public boolean setPermMute(User author, User target, Guild guild, String reason) {
-        reason = reason.matches("\\s+|") ? "none" : reason;
+        reason = reason.matches("\\s+|") ? "N/A" : reason;
         long moment = System.currentTimeMillis();
         String namet = target.getName() + "#" + target.getDiscriminator();
         String name = author.getName() + "#" + author.getDiscriminator();
@@ -789,7 +789,7 @@ public class MySQL {
 
     public boolean addKick(User author, User target, Guild guild, String reason) {
         try {
-            reason = reason.matches("\\s+|") ? "none" : reason;
+            reason = reason.matches("\\s+|") ? "N/A" : reason;
             PreparedStatement newWarn = con.prepareStatement("INSERT INTO kicks(guildId, victimId, authorId, reason, moment) VALUES (?, ?, ?, ?, ?);");
             newWarn.setLong(1, guild.getIdLong());
             newWarn.setLong(2, target.getIdLong());
@@ -840,7 +840,7 @@ public class MySQL {
                 if (rs2.getInt("active") == 1)
                     bans[progress] = String.valueOf("```ini\n" + "[Banned by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs2.getString("reason") + "\n[From]: " + MessageHelper.millisToDate(rs2.getLong("startTime")) + "\n[Until]: " + endTime + "\n[active]: " + rs2.getString("active") + "```");
                 else
-                    bans[progress] = String.valueOf("```ini\n" + "[Banned by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs2.getString("reason") + "\n[From]: " + MessageHelper.millisToDate(rs2.getLong("startTime")) + "\n[Until]: " + endTime + "\n[active]: " + rs2.getString("active") + "```");
+                    bans[progress] = String.valueOf("```ini\n" + "[Banned by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs2.getString("reason") + "\n[UnbanReason]: " + rs.getString("unbanReason") + "\n[From]: " + MessageHelper.millisToDate(rs2.getLong("startTime")) + "\n[Until]: " + endTime + "\n[active]: " + rs2.getString("active") + "```");
                 progress++;
             }
             return bans;
@@ -858,17 +858,20 @@ public class MySQL {
             ResultSet rs = getMutes.executeQuery();
             int amount = 0;
             while (rs.next()) amount++;
-            String[] bans = new String[amount];
+            String[] mutes = new String[amount];
             ResultSet rs2 = getMutes.executeQuery();
             if (amount == 0) return new String[]{"no mutes"};
             int progress = 0;
             while (rs2.next()) {
                 User staff = jda.retrieveUserById(rs2.getString("authorId")).complete();
                 String endTime = rs2.getString("endTime") == null ? "Infinity" : MessageHelper.millisToDate(rs2.getLong("endTime"));
-                bans[progress] = String.valueOf("```ini\n" + "[Muted by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs2.getString("reason") + "\n[From]: " + MessageHelper.millisToDate(rs2.getLong("startTime")) + "\n[Until]: " + endTime + "\n[active]: " + rs2.getString("active") + "```");
+                if (rs.getInt("active") == 1)
+                    mutes[progress] = String.valueOf("```ini\n" + "[Muted by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs2.getString("reason") + "\n[From]: " + MessageHelper.millisToDate(rs2.getLong("startTime")) + "\n[Until]: " + endTime + "\n[active]: " + rs2.getString("active") + "```");
+                else
+                    mutes[progress] = String.valueOf("```ini\n" + "[Muted by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs2.getString("reason") + "\n[UnmuteReason]: " + rs.getString("unmuteReason") + "\n[From]: " + MessageHelper.millisToDate(rs2.getLong("startTime")) + "\n[Until]: " + endTime + "\n[active]: " + rs2.getString("active") + "```");
                 progress++;
             }
-            return bans;
+            return mutes;
         } catch (SQLException e) {
             e.printStackTrace();
         }
