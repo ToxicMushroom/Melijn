@@ -34,7 +34,9 @@ public class UnbanCommand extends Command {
                 Helpers.retrieveUserByArgsN(event, args[0], user -> {
                     if (user != null) {
                         Melijn.MAIN_THREAD.submit(() -> {
-                            if (Melijn.mySQL.unban(user, event.getGuild(), event.getAuthor())) {
+                            String reason = event.getArgs().length() > 1 ? event.getArgs().replaceFirst(args[0], "") : "N/A";
+                            if (reason.substring(0, 1).equalsIgnoreCase(" ")) reason = reason.replaceFirst("\\s+", "");
+                            if (Melijn.mySQL.unban(user, event.getGuild(), event.getAuthor(), reason)) {
                                 event.getMessage().addReaction("\u2705").queue();
                             } else {
                                 event.getMessage().addReaction("\u274C").queue();

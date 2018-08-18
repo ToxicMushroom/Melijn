@@ -155,7 +155,7 @@ public class Helpers {
                         try {
                             Guild guild = jda.asBot().getShardManager().getGuildById(bans.getLong("guildId"));
                             if (guild != null)
-                                Melijn.mySQL.unban(toUnban, guild, jda.getSelfUser());
+                                Melijn.mySQL.unban(toUnban, guild, jda.getSelfUser(), "Ban expired");
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }
@@ -166,7 +166,7 @@ public class Helpers {
                         try {
                             Guild guild = jda.asBot().getShardManager().getGuildById(mutes.getLong("guildId"));
                             if (guild != null)
-                                Melijn.mySQL.unmute(guild, toUnmute, jda.getSelfUser());
+                                Melijn.mySQL.unmute(guild, toUnmute, jda.getSelfUser(), "Mute expired");
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }

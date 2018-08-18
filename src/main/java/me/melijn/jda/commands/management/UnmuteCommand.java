@@ -13,7 +13,7 @@ public class UnmuteCommand extends Command {
     public UnmuteCommand() {
         this.commandName = "unmute";
         this.description = "unmute a muted user";
-        this.usage = Melijn.PREFIX + commandName + " <user>";
+        this.usage = Melijn.PREFIX + commandName + " <user> [reason]";
         this.category = Category.MANAGEMENT;
         this.permissions = new Permission[]{
                 Permission.MESSAGE_EMBED_LINKS,
@@ -31,7 +31,9 @@ public class UnmuteCommand extends Command {
                     Helpers.retrieveUserByArgsN(event, args[0], user -> {
                         if (user != null) {
                             Melijn.MAIN_THREAD.submit(() -> {
-                                if (Melijn.mySQL.unmute(event.getGuild(), user, event.getAuthor())) {
+                                String reason = event.getArgs().length() > 1 ? event.getArgs().replaceFirst(args[0], "") : "N/A";
+                                if (reason.substring(0, 1).equalsIgnoreCase(" ")) reason = reason.replaceFirst("\\s+", "");
+                                if (Melijn.mySQL.unmute(event.getGuild(), user, event.getAuthor(), reason)) {
                                     event.getMessage().addReaction("\u2705").queue();
                                 } else {
                                     event.getMessage().addReaction("\u274C").queue();
@@ -41,7 +43,6 @@ public class UnmuteCommand extends Command {
                             event.reply("Unknown user");
                         }
                     });
-
                 } else {
                     MessageHelper.sendUsage(this, event);
                 }

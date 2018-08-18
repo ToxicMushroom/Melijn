@@ -75,14 +75,13 @@ public class MySQL {
             update("CREATE TABLE IF NOT EXISTS warns(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), moment bigint);");
             update("CREATE TABLE IF NOT EXISTS kicks(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), moment bigint);");
             update("CREATE TABLE IF NOT EXISTS active_bans(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), startTime bigint, endTime bigint);");
-            update("CREATE TABLE IF NOT EXISTS history_bans(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), startTime bigint, endTime bigint, active boolean);");
+            update("CREATE TABLE IF NOT EXISTS history_bans(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), unbanReason varchar(2000), startTime bigint, endTime bigint, active boolean);");
             update("CREATE TABLE IF NOT EXISTS active_mutes(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), startTime bigint, endTime bigint);");
-            update("CREATE TABLE IF NOT EXISTS history_mutes(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), startTime bigint, endTime bigint, active boolean);");
+            update("CREATE TABLE IF NOT EXISTS history_mutes(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), unmuteReason varchar(2000), startTime bigint, endTime bigint, active boolean);");
             update("CREATE TABLE IF NOT EXISTS history_messages(guildId bigint, authorId bigint, messageId bigint, content varchar(2000), textChannelId bigint, sentTime bigint);");
             update("CREATE TABLE IF NOT EXISTS deleted_messages(guildId bigint, authorId bigint, messageId bigint, content varchar(2000), textChannelId bigint, sentTime bigint, delTime bigint);");
             update("CREATE TABLE IF NOT EXISTS join_messages(guildId bigint, content varchar(2000))");
             update("CREATE TABLE IF NOT EXISTS leave_messages(guildId bigint, content varchar(2000))");
-            update("CREATE TABLE IF NOT EXISTS unclaimed_messages(deletedMessageId bigint, logMessageId bigint);");
             update("CREATE TABLE IF NOT EXISTS votes(userId bigint, votes bigint, streak bigint, lastTime bigint);");
             update("CREATE TABLE IF NOT EXISTS nextvote_notifications(userId bigint, targetId bigint);");
         } catch (SQLException e) {
@@ -548,7 +547,7 @@ public class MySQL {
         }
     }
 
-    public boolean unban(User toUnban, Guild guild, User author) {
+    public boolean unban(User toUnban, Guild guild, User author, String reason) {
         if (toUnban != null) {
             try {
                 PreparedStatement getBans = con.prepareStatement("SELECT * FROM active_bans WHERE guildId= ? AND victimId= ?");
@@ -557,10 +556,11 @@ public class MySQL {
                 ResultSet rs = getBans.executeQuery();
                 if (rs.next()) {
                     guild.getController().unban(toUnban.getId()).queue();
-                    PreparedStatement unban = con.prepareStatement("UPDATE history_bans SET ACTIVE= ? WHERE victimId= ? AND guildId= ?");
+                    PreparedStatement unban = con.prepareStatement("UPDATE history_bans SET active= ? AND unbanReason= ? WHERE victimId= ? AND guildId= ?");
                     unban.setBoolean(1, false);
-                    unban.setString(2, toUnban.getId());
-                    unban.setString(3, guild.getId());
+                    unban.setString(2, reason);
+                    unban.setString(3, toUnban.getId());
+                    unban.setString(4, guild.getId());
                     unban.executeUpdate();
                     unban.close();
                     PreparedStatement deleteBans = con.prepareStatement("DELETE FROM active_bans WHERE guildId= ? AND victimId= ?");
@@ -571,7 +571,7 @@ public class MySQL {
 
                     EmbedBuilder eb = new EmbedBuilder();
                     eb.setAuthor("Unbanned by: " + author.getName() + "#" + author.getDiscriminator() + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
-                    eb.setDescription("```LDIF\nUnbanned: " + toUnban.getName() + "#" + toUnban.getDiscriminator() + "\nTargetID: " + toUnban.getId() + "\nGuild: " + guild.getName() + "\nMoment: " + MessageHelper.millisToDate(System.currentTimeMillis()) + "```");
+                    eb.setDescription("```LDIF\nUnbanned: " + toUnban.getName() + "#" + toUnban.getDiscriminator() + "\nTargetID: " + toUnban.getId() + "\nReason: " + reason + "\nGuild: " + guild.getName() + "\nMoment: " + MessageHelper.millisToDate(System.currentTimeMillis()) + "```");
                     eb.setThumbnail(toUnban.getEffectiveAvatarUrl());
                     eb.setColor(Color.green);
 
@@ -741,7 +741,7 @@ public class MySQL {
         }
     }
 
-    public boolean unmute(Guild guild, User toUnmute, User author) {
+    public boolean unmute(Guild guild, User toUnmute, User author, String reason) {
         if (toUnmute != null) {
             try {
                 PreparedStatement getMutes = con.prepareStatement("SELECT * FROM active_mutes WHERE guildId= ? AND victimId= ?");
@@ -749,10 +749,11 @@ public class MySQL {
                 getMutes.setLong(2, toUnmute.getIdLong());
                 ResultSet rs = getMutes.executeQuery();
                 if (rs.next()) {
-                    PreparedStatement unmute = con.prepareStatement("UPDATE history_mutes SET ACTIVE= ? WHERE victimId= ? AND guildId= ?");
+                    PreparedStatement unmute = con.prepareStatement("UPDATE history_mutes SET active= ? AND unmuteReason= ? WHERE victimId= ? AND guildId= ?");
                     unmute.setBoolean(1, false);
-                    unmute.setLong(2, toUnmute.getIdLong());
-                    unmute.setLong(3, guild.getIdLong());
+                    unmute.setString(2, reason);
+                    unmute.setLong(3, toUnmute.getIdLong());
+                    unmute.setLong(4, guild.getIdLong());
                     unmute.executeUpdate();
                     unmute.close();
                     PreparedStatement deleteMutes = con.prepareStatement("DELETE FROM active_mutes WHERE guildId= ? AND victimId= ?");
@@ -763,7 +764,7 @@ public class MySQL {
 
                     EmbedBuilder eb = new EmbedBuilder();
                     eb.setAuthor("Unmuted by: " + author.getName() + "#" + author.getDiscriminator() + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
-                    eb.setDescription("```LDIF" + "\nUnmuted: " + toUnmute.getName() + "#" + toUnmute.getDiscriminator() + "\nTargetID: " + toUnmute.getId() + "\nGuild: " + guild.getName() + "\nMoment: " + MessageHelper.millisToDate(System.currentTimeMillis()) + "```");
+                    eb.setDescription("```LDIF" + "\nUnmuted: " + toUnmute.getName() + "#" + toUnmute.getDiscriminator() + "\nTargetID: " + toUnmute.getId() + "\nReason: " + reason + "\nGuild: " + guild.getName() + "\nMoment: " + MessageHelper.millisToDate(System.currentTimeMillis()) + "```");
                     eb.setThumbnail(toUnmute.getEffectiveAvatarUrl());
                     eb.setColor(Helpers.EmbedColor);
                     eb.setColor(Color.green);
@@ -836,7 +837,10 @@ public class MySQL {
             while (rs2.next()) {
                 String endTime = rs2.getString("endTime") == null ? "Infinity" : MessageHelper.millisToDate(rs2.getLong("endTime"));
                 User staff = jda.retrieveUserById(rs2.getString("authorId")).complete();
-                bans[progress] = String.valueOf("```ini\n" + "[Banned by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs2.getString("reason") + "\n[From]: " + MessageHelper.millisToDate(rs2.getLong("startTime")) + "\n[Until]: " + endTime + "\n[active]: " + rs2.getString("active") + "```");
+                if (rs2.getInt("active") == 1)
+                    bans[progress] = String.valueOf("```ini\n" + "[Banned by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs2.getString("reason") + "\n[From]: " + MessageHelper.millisToDate(rs2.getLong("startTime")) + "\n[Until]: " + endTime + "\n[active]: " + rs2.getString("active") + "```");
+                else
+                    bans[progress] = String.valueOf("```ini\n" + "[Banned by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs2.getString("reason") + "\n[From]: " + MessageHelper.millisToDate(rs2.getLong("startTime")) + "\n[Until]: " + endTime + "\n[active]: " + rs2.getString("active") + "```");
                 progress++;
             }
             return bans;
