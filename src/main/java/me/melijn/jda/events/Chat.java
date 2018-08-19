@@ -42,7 +42,7 @@ public class Chat extends ListenerAdapter {
     private MySQL mySQL = Melijn.mySQL;
     private String latestId = "";
     private int latestChanges = 0;
-    HashMap<Long, HashMap<Long, Integer>> guildUserVerifyTries = new HashMap<>();
+    private HashMap<Long, HashMap<Long, Integer>> guildUserVerifyTries = new HashMap<>();
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
@@ -105,7 +105,7 @@ public class Chat extends ListenerAdapter {
                         }
                     }
                     if (detectedWord != null) {
-                        MessageHelper.filterDeletedMessages.put(event.getMessageId(), detectedWord.substring(0, detectedWord.length() - 2));
+                        MessageHelper.filterDeletedMessages.put(event.getMessageIdLong(), detectedWord.substring(0, detectedWord.length() - 2));
                         event.getMessage().delete().reason("Use of prohibited words").queue();
                     }
                 });
@@ -115,7 +115,7 @@ public class Chat extends ListenerAdapter {
         if (SetVerificationChannel.verificationChannels.values().contains(event.getChannel().getIdLong())) {
             if (SetVerificationCode.guildCodes.containsKey(event.getGuild().getIdLong())) {
                 if (event.getMessage().getContentRaw().equalsIgnoreCase(SetVerificationCode.guildCodes.get(event.getGuild().getIdLong()))) {
-                    event.getMessage().delete().queue();
+                    event.getMessage().delete().reason("Verification Channel").queue(s -> MessageHelper.selfDeletedMessages.add(event.getMessageIdLong()));
                     JoinLeave.verify(event.getGuild(), event.getAuthor());
                     if (SetVerificationThreshold.guildVerificationThresholds.containsKey(event.getGuild().getIdLong()) && guildUserVerifyTries.containsKey(event.getGuild().getIdLong())) {
                         HashMap<Long, Integer> userTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
@@ -191,29 +191,33 @@ public class Chat extends ListenerAdapter {
                         eb.setThumbnail(user.getEffectiveAvatarUrl());
                         eb.setColor(Color.decode("#000001"));
                         eb.setDescription("```LDIF" + "\nSender: " + user.getName() + "#" + user.getDiscriminator() + "\nMessage: " + message.getString("content").replaceAll("`", "´").replaceAll("\n", " ") + "\nSenderID: " + user.getId() + "\nSent Time: " + MessageHelper.millisToDate(message.getLong("sentTime")) + "```");
-                        if (MessageHelper.filterDeletedMessages.get(event.getMessageId()) != null) {
-                            eb.addField("Detected: ", "`" + MessageHelper.filterDeletedMessages.get(event.getMessageId()).replaceAll("`", "´") + "`", false);
+                        if (MessageHelper.filterDeletedMessages.get(event.getMessageIdLong()) != null) {
+                            eb.addField("Detected: ", "`" + MessageHelper.filterDeletedMessages.get(event.getMessageIdLong()).replaceAll("`", "´") + "`", false);
                             eb.setColor(Color.ORANGE);
                             User bot = event.getJDA().getSelfUser();
                             eb.setFooter("Deleted by: " + bot.getName() + "#" + bot.getDiscriminator(), bot.getEffectiveAvatarUrl());
-                            MessageHelper.filterDeletedMessages.remove(event.getMessageId());
+                            MessageHelper.filterDeletedMessages.remove(event.getMessageIdLong());
                             if (SetLogChannelCommand.fmLogChannelMap.containsKey(guild.getIdLong())) {
                                 guild.getTextChannelById(SetLogChannelCommand.fmLogChannelMap.get(guild.getIdLong())).sendMessage(eb.build()).queue();
                             }
                         } else if (now.toInstant().toEpochMilli() - deletionTime.toInstant().toEpochMilli() < 1000) {
-                            User deletor = auditLogEntry.getUser();
-                            log(guild, user, eb, deletor);
-                        } else if (MessageHelper.purgedMessages.get(event.getMessageId()) != null) {
-                            User purger = MessageHelper.purgedMessages.get(event.getMessageId());
+                            User deleter = auditLogEntry.getUser();
+                            log(guild, user, eb, deleter);
+                        } else if (MessageHelper.purgedMessages.get(event.getMessageIdLong()) != null) {
+                            User purger = event.getJDA().asBot().getShardManager().getUserById(MessageHelper.purgedMessages.get(event.getMessageIdLong()));
                             eb.setColor(Color.decode("#551A8B"));
-                            eb.setFooter("Purged by: " + purger.getName() + "#" + purger.getDiscriminator(), purger.getEffectiveAvatarUrl());
-                            MessageHelper.purgedMessages.remove(event.getMessageId());
+                            if (purger != null)
+                                eb.setFooter("Purged by: " + purger.getName() + "#" + purger.getDiscriminator(), purger.getEffectiveAvatarUrl());
+                            MessageHelper.purgedMessages.remove(event.getMessageIdLong());
                             if (SetLogChannelCommand.pmLogChannelMap.containsKey(guild.getIdLong())) {
                                 guild.getTextChannelById(SetLogChannelCommand.pmLogChannelMap.get(guild.getIdLong())).sendMessage(eb.build()).queue();
                             }
+                        } else if (MessageHelper.selfDeletedMessages.remove(event.getMessageIdLong())) {
+                            User deleter = event.getJDA().getSelfUser();
+                            log(guild, user, eb, deleter);
                         } else {
-                            User deletor = sameAsLast ? auditLogEntry.getUser() : event.getJDA().getUserById(Melijn.mySQL.getMessageAuthorId(event.getMessageIdLong()));
-                            log(guild, user, eb, deletor);
+                            User deleter = sameAsLast ? auditLogEntry.getUser() : event.getJDA().asBot().getShardManager().getUserById(Melijn.mySQL.getMessageAuthorId(event.getMessageIdLong()));
+                            log(guild, user, eb, deleter);
                         }
 
                     }
@@ -223,10 +227,10 @@ public class Chat extends ListenerAdapter {
         }
     }
 
-    private void log(Guild guild, User user, EmbedBuilder eb, User deletor) {
-        if (deletor != null) {
-            eb.setFooter("Deleted by: " + deletor.getName() + "#" + deletor.getDiscriminator(), deletor.getEffectiveAvatarUrl());
-            if (user == deletor && SetLogChannelCommand.sdmLogChannelMap.containsKey(guild.getIdLong())) {
+    private void log(Guild guild, User user, EmbedBuilder eb, User deleter) {
+        if (deleter != null) {
+            eb.setFooter("Deleted by: " + deleter.getName() + "#" + deleter.getDiscriminator(), deleter.getEffectiveAvatarUrl());
+            if (user == deleter && SetLogChannelCommand.sdmLogChannelMap.containsKey(guild.getIdLong())) {
                 guild.getTextChannelById(SetLogChannelCommand.sdmLogChannelMap.get(guild.getIdLong())).sendMessage(eb.build()).queue();
             } else if (SetLogChannelCommand.odmLogChannelMap.containsKey(guild.getIdLong())) {
                 guild.getTextChannelById(SetLogChannelCommand.odmLogChannelMap.get(guild.getIdLong())).sendMessage(eb.build()).queue();

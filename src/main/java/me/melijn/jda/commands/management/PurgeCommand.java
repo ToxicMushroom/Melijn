@@ -77,7 +77,7 @@ public class PurgeCommand extends Command {
                             toPurge.clear();
                             toPurge.addAll(toPurgeSet);
                             toPurgeSet.clear();
-                            toPurge.forEach(blub -> MessageHelper.purgedMessages.put(blub.getId(), event.getAuthor()));
+                            toPurge.forEach(blub -> MessageHelper.purgedMessages.put(blub.getIdLong(), event.getAuthorId()));
                             while (toPurge.size() > 100) {
                                 List<Message> deleteableMessages = new ArrayList<>();
                                 while (deleteableMessages.size() != 100) {

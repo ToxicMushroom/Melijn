@@ -1,27 +1,25 @@
 package me.melijn.jda.utils;
 
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.commands.management.SetPrefixCommand;
 import me.melijn.jda.commands.music.NowPlayingCommand;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Emote;
-import net.dv8tion.jda.core.entities.User;
 import okhttp3.HttpUrl;
 
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class MessageHelper {
 
-    public static HashMap<String, String> filterDeletedMessages = new HashMap<>();
-    public static HashMap<String, User> purgedMessages = new HashMap<>();
+    public static HashMap<Long, String> filterDeletedMessages = new HashMap<>();
+    public static HashMap<Long, Long> purgedMessages = new HashMap<>();
+    public static List<Long> selfDeletedMessages = new ArrayList<>();
 
     public static String millisToDate(long millis) {
         Calendar start = Calendar.getInstance();
