@@ -38,9 +38,9 @@ public class HelpCommand extends Command {
             }
         }
         if (event.getGuild() != null) {
-            event.reply("https://melijn.com/commands/index.php?id=" + event.getGuild().getId());
+            event.reply("https://melijn.com/server/" + event.getGuild().getId() + "/commands");
         } else {
-            event.reply("https://melijn.com/commands/");
+            event.reply("https://melijn.com/commands");
         }
     }
 }

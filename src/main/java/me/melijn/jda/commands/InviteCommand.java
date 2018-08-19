@@ -23,7 +23,7 @@ public class InviteCommand extends Command {
             event.reply("With permissions included: https://melijn.com/invite?perms=true\n or without https://melijn.com/invite");
         } else {
             if (event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_ADD_REACTION)) event.getMessage().addReaction("\u2705").queue();
-            else if (event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_WRITE)) event.reply("Check your pm's");
+            else if (event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_WRITE)) event.reply("Check your dm's");
             event.getAuthor().openPrivateChannel().queue(s -> s.sendMessage("With permissions included: https://melijn.com/invite?perms=true\n or without https://melijn.com/invite").queue());
         }
     }
