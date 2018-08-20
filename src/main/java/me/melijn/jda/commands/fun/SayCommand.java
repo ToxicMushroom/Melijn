@@ -62,7 +62,7 @@ public class SayCommand extends Command {
                         int i = 0;
                         String[] lines = sb.toString().split("\n");
                         for (String line : lines) {
-                            g.drawString(line, 640, 220 - (40 * lines.length/2) + (i++ * 40));
+                            g.drawString(line, 640, 220 - (20 * lines.length) + (i++ * 40));
 
                         }
                     }

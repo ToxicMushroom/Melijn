@@ -4,17 +4,15 @@ import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
+import me.melijn.jda.utils.Collector;
 import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageHistory;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
@@ -30,65 +28,51 @@ public class PurgeCommand extends Command {
         };
     }
 
-    private Executor service = Executors.newFixedThreadPool(5);
-
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                 String[] args = event.getArgs().split("\\s+");
-                if (args.length == 1 && args[0].matches("\\d+")) {
+                if (args.length == 1 && args[0].matches("0*([1-9]|[1-8][0-9]|9[0-9]|[1-4][0-9]{2}|500)")) {
                     try {
-                        service.execute(() -> {
-                            int initAmount = Integer.parseInt(args[0]);
-                            int toPurgeAmount = initAmount;
-                            if (toPurgeAmount < 1) {
-                                MessageHelper.sendUsage(this, event);
-                                return;
-                            }
-                            MessageHistory messageHistory = event.getTextChannel().getHistory();
-                            List<Message> toPurge = new ArrayList<>();
-                            while (toPurgeAmount >= 100) {
-                                List<Message> buffer = messageHistory.retrievePast(100).complete();
-                                if ((buffer.size() > 0) && OffsetDateTime.now().toEpochSecond() - buffer.get(buffer.size() - 1).getCreationTime().toEpochSecond() > 336 * 3600) {
-                                    int youngMessages = initAmount - toPurgeAmount;
-                                    for (Message msg : buffer) {
-                                        if (OffsetDateTime.now().toEpochSecond() - msg.getCreationTime().toEpochSecond() < 336 * 3600)
-                                            youngMessages++;
-                                    }
-                                    event.reply("Max purge size of this chat is **" + ++youngMessages + "** because I can't bulk delete messages older then 2 weeks");
-                                    return;
-                                }
-                                toPurge.addAll(buffer);
-                                toPurgeAmount -= 100;
-                            }
-                            List<Message> buffer = messageHistory.retrievePast(toPurgeAmount + 1).complete();
-                            if ((buffer.size() > 0) && OffsetDateTime.now().toEpochSecond() - buffer.get(buffer.size() - 1).getCreationTime().toEpochSecond() > 336 * 3600) {
-                                int youngMessages = initAmount - toPurgeAmount;
-                                for (Message msg : buffer) {
-                                    if (OffsetDateTime.now().toEpochSecond() - msg.getCreationTime().toEpochSecond() < 336 * 3600)
-                                        youngMessages++;
-                                }
-                                event.reply("Max purge size of this chat is **" + (youngMessages + 1) + "** because I can't bulk delete messages older then 2 weeks");
-                                return;
-                            }
-                            toPurge.addAll(buffer);
-                            LinkedHashSet<Message> toPurgeSet = new LinkedHashSet<>(toPurge);
-                            toPurge.clear();
-                            toPurge.addAll(toPurgeSet);
-                            toPurgeSet.clear();
-                            toPurge.forEach(blub -> MessageHelper.purgedMessages.put(blub.getIdLong(), event.getAuthorId()));
-                            while (toPurge.size() > 100) {
-                                List<Message> deleteableMessages = new ArrayList<>();
-                                while (deleteableMessages.size() != 100) {
-                                    deleteableMessages.add(toPurge.get(deleteableMessages.size()));
-                                }
-                                toPurge.removeAll(deleteableMessages);
-                                event.getTextChannel().deleteMessages(deleteableMessages).queue();
-                            }
-                            if (toPurge.size() == 1) event.getTextChannel().deleteMessageById(toPurge.get(0).getIdLong()).queue();
-                            else if (toPurge.size() > 1) event.getTextChannel().deleteMessages(toPurge).queue();
+                        int toPurgeAmount = Integer.parseInt(args[0]);
 
+                        MessageHistory messageHistory = event.getTextChannel().getHistory();
+                        Collector<Message> collector = new Collector<>("Purge-thread");
+                        while (toPurgeAmount > 0) {
+                            if (toPurgeAmount > 99) {
+                                messageHistory.retrievePast(100).queue(collector::accept);
+                                collector.increment();
+                                toPurgeAmount -= 100;
+                            } else {
+                                messageHistory.retrievePast(toPurgeAmount + 1).queue(collector::accept);
+                                collector.increment();
+                                toPurgeAmount = 0;
+                            }
+                        }
+                        collector.collect(collection -> {
+                            int old = areNotDeletable(collection);
+                            if (old > 0) {
+                                event.reply("Max purge size of this chat is **" + (collection.size()-old) + "** because I can't bulk delete messages older then 2 weeks");
+                            } else {
+                                int toDeleteSize = collection.size();
+                                collection.forEach(message -> MessageHelper.purgedMessages.putIfAbsent(message.getIdLong(), event.getAuthorId()));
+                                while (toDeleteSize > 0) {
+                                    if (toDeleteSize > 99) {
+                                        event.getTextChannel().deleteMessages(collection.subList(0, 100)).queue();
+                                        collection.removeAll(collection.subList(0, 100));
+                                        toDeleteSize -= 100;
+                                    } else if (toDeleteSize > 1) {
+                                        event.getTextChannel().deleteMessages(collection.subList(0, collection.size())).queue();
+                                        collection.clear();
+                                        toDeleteSize = 0;
+                                    }
+                                }
+                                event.getTextChannel().sendMessage("**Done**").queue(m -> {
+                                    m.delete().queueAfter(3, TimeUnit.SECONDS);
+                                    MessageHelper.selfDeletedMessages.add(m.getIdLong());
+                                });
+                            }
                         });
                     } catch (NumberFormatException e) {
                         MessageHelper.sendUsage(this, event);
@@ -102,5 +86,16 @@ public class PurgeCommand extends Command {
         } else {
             event.reply(Helpers.guildOnly);
         }
+    }
+
+    private int areNotDeletable(List<Message> toDelete) {
+        int foundOldMessage = 0;
+        if (toDelete.size() == 0 || OffsetDateTime.now().toEpochSecond() - toDelete.get(toDelete.size() - 1).getCreationTime().toEpochSecond() < 336 * 3600) return foundOldMessage;
+        for (Message msg : toDelete) {
+            if (OffsetDateTime.now().toEpochSecond() - msg.getCreationTime().toEpochSecond() > 336 * 3600) {
+                foundOldMessage++;
+            }
+        }
+        return foundOldMessage;
     }
 }

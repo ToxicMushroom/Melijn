@@ -399,7 +399,7 @@ public class Helpers {
         executor.execute(() -> {
             User user = getUserByArgsN(event, arg);
             if (user == null && arg.matches("\\d+") && event.getJDA().getUserById(arg) == null)
-                success.accept(event.getJDA().retrieveUserById(arg).complete());
+                event.getJDA().retrieveUserById(arg).queue(success);
             else success.accept(user);
         });
     }

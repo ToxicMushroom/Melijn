@@ -637,7 +637,7 @@ public class MySQL {
                 muted.setThumbnail(target.getEffectiveAvatarUrl());
                 muted.setAuthor("Muted by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
-                if (!target.isBot()) target.openPrivateChannel().complete().sendMessage(muted.build()).queue();
+                if (!target.isBot()) target.openPrivateChannel().queue(pc -> pc.sendMessage(muted.build()).queue());
                 long logChannelId = SetLogChannelCommand.muteLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
                 if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
                     if (target.isBot())
@@ -696,7 +696,7 @@ public class MySQL {
             muted.setThumbnail(target.getEffectiveAvatarUrl());
             muted.setAuthor("Muted by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
-            if (!target.isBot()) target.openPrivateChannel().complete().sendMessage(muted.build()).queue();
+            if (!target.isBot()) target.openPrivateChannel().queue(pc -> pc.sendMessage(muted.build()).queue());
             long logChannelId = SetLogChannelCommand.muteLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
                 if (target.isBot())
