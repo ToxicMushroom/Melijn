@@ -68,8 +68,9 @@ public class SayCommand extends Command {
                     }
                     g.dispose();
                     String imageName = String.valueOf(System.currentTimeMillis());
-                    ImageIO.write(image, "png", new File(imageName + ".png"));
-                    event.getTextChannel().sendFile(new File(imageName + ".png")).queue(q -> new File(imageName + ".png").delete());
+                    File file = new File(imageName + ".png");
+                    ImageIO.write(image, "png", file);
+                    event.getTextChannel().sendFile(file).queue(q -> file.delete());
 
                 } catch (IOException e) {
                     e.printStackTrace();
