@@ -386,25 +386,21 @@ public class Helpers {
     }
 
     public static void retrieveUserByArgs(CommandEvent event, String arg, Consumer<User> success) {
-        executor.execute(() -> {
-            User user = getUserByArgsN(event, arg);
-            if (user != null)
-                success.accept(user);
-            else if (arg.matches("\\d+"))
-                event.getJDA().asBot().getShardManager().retrieveUserById(arg).queue(success);
-            else success.accept(event.getAuthor());
-        });
+        User user = getUserByArgsN(event, arg);
+        if (user != null)
+            success.accept(user);
+        else if (arg.matches("\\d+"))
+            event.getJDA().asBot().getShardManager().retrieveUserById(arg).queue(success);
+        else success.accept(event.getAuthor());
     }
 
     public static void retrieveUserByArgsN(CommandEvent event, String arg, Consumer<User> success) {
-        executor.execute(() -> {
-            User user = getUserByArgsN(event, arg);
-            if (user != null)
-                success.accept(user);
-            else if (arg.matches("\\d+"))
-                event.getJDA().asBot().getShardManager().retrieveUserById(arg).queue(success);
-            else success.accept(null);
-        });
+        User user = getUserByArgsN(event, arg);
+        if (user != null)
+            success.accept(user);
+        else if (arg.matches("\\d+"))
+            event.getJDA().asBot().getShardManager().retrieveUserById(arg).queue(success);
+        else success.accept(null);
     }
 
     public static long parseTimeFromArgs(String[] args) {
