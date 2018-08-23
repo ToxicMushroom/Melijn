@@ -20,7 +20,7 @@ public class DisableCommand extends Command {
     public DisableCommand() {
         this.commandName = "disable";
         this.description = "Fully disables a command from being used";
-        this.usage = PREFIX + commandName + " <commandName|commandSet>";
+        this.usage = PREFIX + commandName + " <commandName | category>";
         this.needs = new Need[]{Need.GUILD};
         this.aliases = new String[]{"disabled"};
         this.extra = "You can use >disabled to get a list";
@@ -38,14 +38,14 @@ public class DisableCommand extends Command {
                 ArrayList<Integer> buffer = new ArrayList<>(disabledGuildCommands.getOrDefault(guild.getIdLong(), new ArrayList<>()));
                 for (Command cmd : HelpCommand.commandList) {
                     if (cmd.getCommandName().equalsIgnoreCase(args[0]))
-                        if (!buffer.contains(HelpCommand.commandList.indexOf(cmd)))
+                        if (!buffer.contains(HelpCommand.commandList.indexOf(cmd)) && !cmd.getCommandName().equalsIgnoreCase("enable"))
                             buffer.add(HelpCommand.commandList.indexOf(cmd));
                         else {
                             event.reply("**" + cmd.getCommandName() + "** was already disabled");
                             return;
                         }
                     if (cmd.getCategory().toString().equalsIgnoreCase(args[0]))
-                        if (!buffer.contains(HelpCommand.commandList.indexOf(cmd)))
+                        if (!buffer.contains(HelpCommand.commandList.indexOf(cmd)) && !cmd.getCommandName().equalsIgnoreCase("enable"))
                             buffer.add(HelpCommand.commandList.indexOf(cmd));
                 }
                 if (buffer.size() == disabledGuildCommands.getOrDefault(guild.getIdLong(), new ArrayList<>()).size()) {
