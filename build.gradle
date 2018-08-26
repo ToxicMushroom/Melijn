@@ -18,7 +18,7 @@ repositories {
 
 dependencies {
     compile 'com.sedmelluq:jda-nas:1.0.6'
-    compile ('net.dv8tion:JDA:3.7.1_401') {
+    compile ('net.dv8tion:JDA:3.7.1_399') {
         exclude module: 'opus-java'
     }
     compile 'com.sedmelluq:lavaplayer:1.3.7'
