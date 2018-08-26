@@ -865,7 +865,7 @@ public class MySQL {
             while (rs2.next()) {
                 User staff = jda.retrieveUserById(rs2.getString("authorId")).complete();
                 String endTime = rs2.getString("endTime") == null ? "Infinity" : MessageHelper.millisToDate(rs2.getLong("endTime"));
-                if (rs.getInt("active") == 1)
+                if (rs2.getInt("active") == 1)
                     mutes[progress] = String.valueOf("```ini\n" + "[Muted by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs2.getString("reason") + "\n[From]: " + MessageHelper.millisToDate(rs2.getLong("startTime")) + "\n[Until]: " + endTime + "\n[active]: " + rs2.getString("active") + "```");
                 else
                     mutes[progress] = String.valueOf("```ini\n" + "[Muted by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs2.getString("reason") + "\n[UnmuteReason]: " + rs.getString("unmuteReason") + "\n[From]: " + MessageHelper.millisToDate(rs2.getLong("startTime")) + "\n[Until]: " + endTime + "\n[active]: " + rs2.getString("active") + "```");

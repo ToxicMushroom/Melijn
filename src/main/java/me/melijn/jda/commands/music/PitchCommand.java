@@ -30,7 +30,7 @@ public class PitchCommand extends Command {
             if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                 if (event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {
                     if (event.getMember().getVoiceState().getChannel() == event.getGuild().getSelfMember().getVoiceState().getChannel()) {
-                        if (args[0].matches("[0-9]|[0-9][0-9]|100|[0-9]?[0-9].[0-9]?[0-9]?[0-9]")) {
+                        if (args[0].matches("[0-9](\\.[0-9]{1,3})?|10")) {
                             if (player != null && player.getAudioPlayer().getPlayingTrack() != null) {
                                 if (Double.parseDouble(args[0]) > 0) {
                                     player.setPitch(Double.parseDouble(args[0]));
