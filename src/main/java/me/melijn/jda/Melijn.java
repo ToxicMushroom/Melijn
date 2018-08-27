@@ -150,7 +150,6 @@ public class Melijn {
                 .addEventListeners(commandClient, new JoinLeave(), new AddReaction(), new Channels(), new Chat())
                 .setAudioSendFactory(new NativeAudioSendFactory())
                 .build();
-
         dblAPI = new DiscordBotListAPI.Builder()
                 .token(DBLTOKEN)
                 .botId("368362411591204865")

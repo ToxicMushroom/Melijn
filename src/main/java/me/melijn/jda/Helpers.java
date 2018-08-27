@@ -151,7 +151,7 @@ public class Helpers {
                     ResultSet bans = Melijn.mySQL.query("SELECT * FROM active_bans WHERE endTime < " + System.currentTimeMillis());
                     ResultSet mutes = Melijn.mySQL.query("SELECT * FROM active_mutes WHERE endTime < " + System.currentTimeMillis());
                     while (bans.next()) {
-                        User toUnban = jda.retrieveUserById(bans.getLong("victimId")).complete();
+                        User toUnban = jda.asBot().getShardManager().retrieveUserById(bans.getLong("victimId")).complete();
                         try {
                             Guild guild = jda.asBot().getShardManager().getGuildById(bans.getLong("guildId"));
                             if (guild != null)
@@ -162,7 +162,7 @@ public class Helpers {
                     }
 
                     while (mutes.next()) {
-                        User toUnmute = jda.retrieveUserById(mutes.getLong("victimId")).complete();
+                        User toUnmute = jda.asBot().getShardManager().retrieveUserById(mutes.getLong("victimId")).complete();
                         try {
                             Guild guild = jda.asBot().getShardManager().getGuildById(mutes.getLong("guildId"));
                             if (guild != null)
@@ -186,8 +186,8 @@ public class Helpers {
                 for (long userId : SetNotifications.nextVotes.keySet()) {
                     for (long targetId : SetNotifications.nextVotes.get(userId)) {
                         if (votesList.contains(targetId)) {
-                            jda.retrieveUserById(userId).queue((u) ->
-                                    jda.retrieveUserById(targetId).queue((t) ->
+                            jda.asBot().getShardManager().retrieveUserById(userId).queue((u) ->
+                                    jda.asBot().getShardManager().retrieveUserById(targetId).queue((t) ->
                                             u.openPrivateChannel().queue((c) -> c.sendMessage(String.format("It's time to vote for **%#s**", t)).queue())));
                         }
                     }
