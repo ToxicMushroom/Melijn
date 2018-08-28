@@ -138,7 +138,8 @@ public class Helpers {
             "urban",
             "bird",
             "enable",
-            "disabled"
+            "disabled",
+            "setEvalEngine"
     );
 
 

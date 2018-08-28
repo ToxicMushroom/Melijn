@@ -15,7 +15,7 @@ public class WeebshCommand extends Command {
     public WeebshCommand() {
         this.commandName = "weebsh";
         this.description = "Uses weebsh api to do stuff";
-        this.usage = PREFIX + commandName + " <getTags|getTypes|type|tag> [arg]";
+        this.usage = PREFIX + commandName + " <tags | types | type | tag> [arg]";
         this.category = Category.DEVELOPER;
         webUtils = WebUtils.getWebUtilsInstance();
     }
@@ -27,10 +27,10 @@ public class WeebshCommand extends Command {
         String[] args = event.getArgs().split("\\s+");
         if (args.length > 0) {
             switch (args[0].toLowerCase()) {
-                case "gettags":
+                case "tags":
                     webUtils.getTags(tags -> event.reply(Arrays.toString(tags.toArray())));
                     break;
-                case "gettypes":
+                case "types":
                     webUtils.getTypes(types -> event.reply(Arrays.toString(types.getTypes().toArray())));
                     break;
                 case "type":

@@ -10,6 +10,7 @@ import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.core.EmbedBuilder;
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
 
+import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import java.util.Arrays;
 import java.util.List;
@@ -21,21 +22,34 @@ public class EvalCommand extends Command {
     public EvalCommand() {
         this.commandName = "eval";
         this.description = "eval stuff";
-        this.usage = PREFIX + commandName + " <engine> [insert crappy code]";
+        this.usage = PREFIX + commandName + " [insert crappy code]";
         this.category = Category.DEVELOPER;
     }
 
     public static EvalCommand INSTANCE = new EvalCommand();
     private List<Long> blackList = Arrays.asList(110373943822540800L, 264445053596991498L);
+    String engineName = "groovy";
 
     @Override
     protected void execute(CommandEvent event) {
-        GroovyScriptEngineImpl se = (GroovyScriptEngineImpl) new ScriptEngineManager().getEngineByName("groovy");
-        if (se == null) {
-            MessageHelper.sendUsage(this, event);
-            return;
+        if (engineName.equalsIgnoreCase("groovy")) {
+            GroovyScriptEngineImpl se = (GroovyScriptEngineImpl) new ScriptEngineManager().getEngineByName(engineName);
+            if (se == null) {
+                MessageHelper.sendUsage(this, event);
+                return;
+            }
+            evaluate(event, se);
+        } else {
+            ScriptEngine se = new ScriptEngineManager().getEngineByName(engineName);
+            if (se == null) {
+                MessageHelper.sendUsage(this, event);
+                return;
+            }
+            evaluate(event, se);
         }
+    }
 
+    private void evaluate(CommandEvent event, ScriptEngine se) {
         se.put("event", event);
         se.put("jda", event.getJDA());
         se.put("guild", event.getGuild());

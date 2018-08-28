@@ -7,6 +7,7 @@ import me.melijn.jda.commands.HelpCommand;
 import me.melijn.jda.commands.InviteCommand;
 import me.melijn.jda.commands.VoteCommand;
 import me.melijn.jda.commands.developer.EvalCommand;
+import me.melijn.jda.commands.developer.SetEvalEngineCommand;
 import me.melijn.jda.commands.developer.WeebshCommand;
 import me.melijn.jda.commands.fun.*;
 import me.melijn.jda.commands.management.*;
@@ -137,7 +138,8 @@ public class Melijn {
                 new SetStreamUrlCommand(),
                 new VerifyCommand(),
                 new EnableCommand(),
-                new DisableCommand()
+                new DisableCommand(),
+                new SetEvalEngineCommand()
         );
 
         CommandClient commandClient = client.build();
