@@ -1,5 +1,8 @@
 package me.melijn.jda.commands.management;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
@@ -7,8 +10,9 @@ import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.MessageType;
 import net.dv8tion.jda.core.entities.Guild;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 public class SetJoinMessageCommand extends Command {
 
@@ -21,26 +25,34 @@ public class SetJoinMessageCommand extends Command {
         this.category = Category.MANAGEMENT;
     }
 
-    public static HashMap<Long, String> joinMessages = Melijn.mySQL.getMessageMap(MessageType.JOIN);
+    public static final LoadingCache<Long, String> joinMessages = CacheBuilder.newBuilder()
+            .maximumSize(100)
+            .expireAfterAccess(1, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                public String load(@NotNull Long key) {
+                    return Melijn.mySQL.getMessage(key, MessageType.JOIN);
+                }
+            });
 
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
                 Guild guild = event.getGuild();
-                String oldMessage = joinMessages.getOrDefault(guild.getIdLong(), "");
+                String oldMessage = joinMessages.getUnchecked(guild.getIdLong()) == null ? "nothing" : ("'" + joinMessages.getUnchecked(guild.getIdLong()) + "'");
                 String newMessage = event.getArgs();
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     if (args.length == 1 && args[0].equalsIgnoreCase("null")) {
-                        Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.removeMessage(guild.getIdLong(), MessageType.JOIN));
-                        joinMessages.remove(guild.getIdLong());
+                        Melijn.MAIN_THREAD.submit(() -> {
+                            Melijn.mySQL.removeMessage(guild.getIdLong(), MessageType.JOIN);
+                            joinMessages.invalidate(guild.getIdLong());
+                        });
                         event.reply("JoinMessage has been set to nothing by **" + event.getFullAuthorName() + "**");
                     } else {
                         Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.JOIN));
-                        if (joinMessages.replace(guild.getIdLong(), newMessage) == null)
-                            joinMessages.put(guild.getIdLong(), newMessage);
-                        event.reply("JoinMessage has been changed from '" + oldMessage + "' to '" + newMessage + "' by **" + event.getFullAuthorName() + "**");
+                        joinMessages.put(guild.getIdLong(), newMessage);
+                        event.reply("JoinMessage has been changed from " + oldMessage + " to '" + newMessage + "' by **" + event.getFullAuthorName() + "**");
                     }
                 } else {
                     event.reply(oldMessage);

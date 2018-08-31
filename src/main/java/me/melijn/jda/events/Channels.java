@@ -21,7 +21,8 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceMove(GuildVoiceMoveEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+            return;
         Guild guild = event.getGuild();
         long guildId = guild.getIdLong();
         AudioManager audioManager = guild.getAudioManager();
@@ -45,11 +46,9 @@ public class Channels extends ListenerAdapter {
                     }
                 }
             }
-        } else if (SetMusicChannelCommand.musicChannelIds.containsKey(guildId) &&
-                SetStreamerModeCommand.streamerModes.contains(guildId) &&
-                event.getChannelJoined().getIdLong() == SetMusicChannelCommand.musicChannelIds.get(guildId) &&
-                !audioManager.isConnected()) {
-            audioManager.openAudioConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelIds.get(guildId)));
+        } else if (SetStreamerModeCommand.streamerModeCache.getUnchecked(guildId) &&
+                !audioManager.isConnected() && event.getChannelJoined().getIdLong() == SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)) {
+            audioManager.openAudioConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)));
             if (SetStreamUrlCommand.streamUrls.containsKey(guildId) && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null) {
                 manager.getPlayer(guild).getListener().tracks.clear();
                 manager.loadSimpelTrack(guild, SetStreamUrlCommand.streamUrls.get(guildId));
@@ -59,15 +58,13 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceJoin(GuildVoiceJoinEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+            return;
         Guild guild = event.getGuild();
         long guildId = guild.getIdLong();
         AudioManager audioManager = guild.getAudioManager();
-        if (SetStreamerModeCommand.streamerModes.contains(guildId) &&
-                event.getChannelJoined().getIdLong() == (SetMusicChannelCommand.musicChannelIds.getOrDefault(guildId, -1L)) &&
-                SetMusicChannelCommand.musicChannelIds.containsKey(guildId) &&
-                !audioManager.isConnected()) {
-            audioManager.openAudioConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelIds.get(guildId)));
+        if (SetStreamerModeCommand.streamerModeCache.getUnchecked(guildId) && !audioManager.isConnected() && event.getChannelJoined().getIdLong() == (SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId))) {
+            audioManager.openAudioConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)));
             if (SetStreamUrlCommand.streamUrls.containsKey(guildId) && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null) {
                 manager.getPlayer(guild).getListener().tracks.clear();
                 manager.loadSimpelTrack(guild, SetStreamUrlCommand.streamUrls.get(guildId));
@@ -77,7 +74,8 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+            return;
         Guild guild = event.getGuild();
         AudioManager audioManager = guild.getAudioManager();
         luisteraarsCheck(guild, audioManager);
@@ -102,7 +100,8 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceDeafen(GuildVoiceDeafenEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+            return;
         Guild guild = event.getGuild();
         AudioManager audioManager = guild.getAudioManager();
         luisteraarsCheck(guild, audioManager);

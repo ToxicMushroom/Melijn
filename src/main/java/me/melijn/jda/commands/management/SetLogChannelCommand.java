@@ -1,5 +1,8 @@
 package me.melijn.jda.commands.management;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
@@ -8,8 +11,10 @@ import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.entities.Guild;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 public class SetLogChannelCommand extends Command {
 
@@ -22,6 +27,22 @@ public class SetLogChannelCommand extends Command {
         this.category = Category.MANAGEMENT;
     }
 
+    public static final LoadingCache<Long, Long> banLogChannelCache = CacheBuilder.newBuilder()
+            .maximumSize(10)
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                public Long load(@NotNull Long key) {
+                    return Melijn.mySQL.getChannelId(key, ChannelType.BAN_LOG);
+                }
+            });
+    public static final LoadingCache<Long, Long> LogChannelCache = CacheBuilder.newBuilder()
+            .maximumSize(10)
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                public Long load(@NotNull Long key) {
+                    return Melijn.mySQL.getChannelId(key, ChannelType.BAN_LOG);
+                }
+            });
     public static HashMap<Long, Long> banLogChannelMap = Melijn.mySQL.getChannelMap(ChannelType.BAN_LOG);
     public static HashMap<Long, Long> muteLogChannelMap = Melijn.mySQL.getChannelMap(ChannelType.MUTE_LOG);
     public static HashMap<Long, Long> kickLogChannelMap = Melijn.mySQL.getChannelMap(ChannelType.KICK_LOG);

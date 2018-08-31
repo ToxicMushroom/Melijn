@@ -1,5 +1,8 @@
 package me.melijn.jda.commands.management;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
@@ -7,6 +10,9 @@ import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.MessageType;
 import net.dv8tion.jda.core.entities.Guild;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.concurrent.TimeUnit;
 
 public class SetLeaveMessageCommand extends Command {
 
@@ -19,29 +25,39 @@ public class SetLeaveMessageCommand extends Command {
         this.category = Category.MANAGEMENT;
     }
 
+    public static final LoadingCache<Long, String> leaveMessages = CacheBuilder.newBuilder()
+            .maximumSize(50)
+            .expireAfterAccess(1, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                public String load(@NotNull Long key) {
+                    return Melijn.mySQL.getMessage(key, MessageType.LEAVE);
+                }
+            });
+
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
                 Guild guild = event.getGuild();
+                String oldMessage = leaveMessages.getUnchecked(guild.getIdLong()) == null ? "nothing" : ("'" + leaveMessages.getUnchecked(guild.getIdLong()) + "'");
                 String newMessage = event.getArgs();
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
-                    if (args.length == 1 && args[0].equalsIgnoreCase("null")) {
+                    if (args.length == 1 && newMessage.equalsIgnoreCase("null")) {
                         Melijn.MAIN_THREAD.submit(() -> {
-                            String message = Melijn.mySQL.getMessage(guild.getIdLong(), MessageType.LEAVE);
                             Melijn.mySQL.removeMessage(guild.getIdLong(), MessageType.JOIN);
-                            event.reply("LeaveMessage has been changed from " + (message == null ? "nothing" : "'" + message + "'") + " to nothing by **" + event.getFullAuthorName() + "**");
+                            leaveMessages.invalidate(guild.getIdLong());
                         });
+                        event.reply("LeaveMessage has been changed from " + oldMessage + " to nothing by **" + event.getFullAuthorName() + "**");
                     } else {
                         Melijn.MAIN_THREAD.submit(() -> {
-                            String message = Melijn.mySQL.getMessage(guild.getIdLong(), MessageType.LEAVE);
                             Melijn.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.LEAVE);
-                            event.reply("LeaveMessage has been changed from " + (message == null ? "nothing" : "'" + message + "'") + " to '" + newMessage + "' by **" + event.getFullAuthorName() + "**");
+                            leaveMessages.put(guild.getIdLong(), newMessage);
                         });
+                        event.reply("LeaveMessage has been changed from " + oldMessage + " to '" + newMessage + "' by **" + event.getFullAuthorName() + "**");
                     }
                 } else {
-                    event.reply(Melijn.mySQL.getMessage(guild.getIdLong(), MessageType.LEAVE));
+                    event.reply(leaveMessages.getUnchecked(guild.getIdLong()));
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

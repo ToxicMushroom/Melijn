@@ -53,6 +53,7 @@ public class MySQL {
             config.addDataSourceProperty("useLegacyDatetimeCode", "false");
             config.addDataSourceProperty("serverTimezone", "UTC");
             //https://github.com/brettwooldridge/HikariCP/wiki/MySQL-Configuration
+            config.addDataSourceProperty("allowMultiQueries", "true");
             config.addDataSourceProperty("prepStmtCacheSize", "350");
             config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
             config.addDataSourceProperty("cachePrepStmts", "true");
@@ -460,21 +461,9 @@ public class MySQL {
                     guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget is a bot").queue();
                 else guild.getTextChannelById(logChannelId).sendMessage(banned.build()).queue();
             }
-            executeQuery("SELECT * FROM active_bans WHERE victimId= ? AND guildId= ?", rs -> {
-                try {
-                    if (rs.next()) {
-                        executeUpdate("UPDATE active_bans SET victimId= ?, guildId= ?, reason= ?, startTime= ?, endTime= ?, authorId= ? WHERE victimId= ? AND guildId= ?",
-                                target.getIdLong(), guild.getIdLong(), reason, moment, until, author.getIdLong(), target.getIdLong(), guild.getIdLong());
-                    } else {
-                        executeUpdate("INSERT INTO active_bans (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?)",
-                                guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, until);
-                    }
-                    rs.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }, target.getIdLong(), guild.getIdLong());
-            executeUpdate("INSERT INTO history_bans (guildId, victimId, authorId, reason, startTime, endTime, active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            executeUpdate("INSERT INTO active_bans (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE authorId= ?, reason= ?, startTime= ?, endTime= ?; " +
+                            "INSERT INTO history_bans (guildId, victimId, authorId, reason, startTime, endTime, active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, until, author.getIdLong(), reason, moment, until,
                     guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, until, true);
             guild.getController().ban(target.getId(), 7, reason).queue();
             return true;
@@ -485,11 +474,11 @@ public class MySQL {
     public boolean setPermBan(User author, User target, Guild guild, String reasone) {
         final String reason = reasone.matches("\\s+|") ? "N/A" : reasone;
         long moment = System.currentTimeMillis();
-        String namet = target.getName() + "#" + target.getDiscriminator();
+        String nameTarget = target.getName() + "#" + target.getDiscriminator();
         String name = author.getName() + "#" + author.getDiscriminator();
         EmbedBuilder banned = new EmbedBuilder();
         banned.setColor(Color.RED);
-        banned.setDescription("```LDIF\nBanned: " + namet + "\nTargetID:" + target.getId() + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nMoment: " + MessageHelper.millisToDate(moment) + "```");
+        banned.setDescription("```LDIF\nBanned: " + nameTarget + "\nTargetID: " + target.getId() + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nMoment: " + MessageHelper.millisToDate(moment) + "```");
         banned.setThumbnail(target.getEffectiveAvatarUrl());
         banned.setAuthor("Banned by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
@@ -500,21 +489,9 @@ public class MySQL {
                 guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget is a bot").queue();
             else guild.getTextChannelById(logChannelId).sendMessage(banned.build()).queue();
         }
-        executeQuery("SELECT * FROM active_bans WHERE victimId= ? AND guildId= ?", rs -> {
-            try {
-                if (rs.next()) {
-                    executeUpdate("UPDATE active_bans SET victimId= ?, guildId= ?, reason= ?, startTime= ?, endTime= ?, authorId= ? WHERE victimId= ? AND guildId= ?",
-                            target.getIdLong(), guild.getIdLong(), reason, moment, null, author.getIdLong(), target.getIdLong(), guild.getIdLong());
-                } else {
-                    executeUpdate("INSERT INTO active_bans (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?)",
-                            guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, null);
-                }
-                rs.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }, target.getId(), guild.getId());
-        executeUpdate("INSERT INTO history_bans (guildId, victimId, authorId, reason, startTime, endTime, active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        executeUpdate("INSERT INTO active_bans (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE authorId= ?, reason= ?, startTime= ?, endTime= ?; " +
+                        "INSERT INTO history_bans (guildId, victimId, authorId, reason, startTime, endTime, active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, null, author.getIdLong(), reason, moment, null,
                 guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, null, true);
         guild.getController().ban(target.getId(), 7, reason).queue();
         return true;
@@ -525,32 +502,32 @@ public class MySQL {
             executeQuery("SELECT * FROM active_bans WHERE guildId= ? AND victimId= ?", rs -> {
                 try {
                     if (rs.next()) {
-                        guild.getController().unban(toUnban.getId()).queue();
-                        executeUpdate("UPDATE history_bans SET active= ? AND unbanReason= ? WHERE victimId= ? AND guildId= ?",
-                                false, reason, toUnban.getIdLong(), guild.getIdLong());
-                        executeUpdate("DELETE FROM active_bans WHERE guildId= ? AND victimId= ?",
+                        executeUpdate("UPDATE history_bans SET active= ? AND unbanReason= ? WHERE victimId= ? AND guildId= ?; " +
+                                        "DELETE FROM active_bans WHERE guildId= ? AND victimId= ?",
+                                false, reason, toUnban.getIdLong(), guild.getIdLong(),
                                 guild.getIdLong(), toUnban.getIdLong());
-
-                        EmbedBuilder eb = new EmbedBuilder();
-                        eb.setAuthor("Unbanned by: " + author.getName() + "#" + author.getDiscriminator() + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
-                        eb.setDescription("```LDIF\nUnbanned: " + toUnban.getName() + "#" + toUnban.getDiscriminator() + "\nTargetID: " + toUnban.getId() + "\nReason: " + reason + "\nGuild: " + guild.getName() + "\nMoment: " + MessageHelper.millisToDate(System.currentTimeMillis()) + "```");
-                        eb.setThumbnail(toUnban.getEffectiveAvatarUrl());
-                        eb.setColor(Color.green);
-
-                        if (!toUnban.isBot())
-                            toUnban.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
-                        long logChannelId = SetLogChannelCommand.banLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
-                        if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                            if (toUnban.isBot())
-                                guild.getTextChannelById(logChannelId).sendMessage(eb.build() + "\nTarget is a bot").queue();
-                            else guild.getTextChannelById(logChannelId).sendMessage(eb.build()).queue();
-                        }
                     }
                     rs.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }, guild.getIdLong(), toUnban.getIdLong());
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.setAuthor("Unbanned by: " + author.getName() + "#" + author.getDiscriminator() + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
+            eb.setDescription("```LDIF\nUnbanned: " + toUnban.getName() + "#" + toUnban.getDiscriminator() + "\nTargetID: " + toUnban.getId() + "\nReason: " + reason + "\nGuild: " + guild.getName() + "\nMoment: " + MessageHelper.millisToDate(System.currentTimeMillis()) + "```");
+            eb.setThumbnail(toUnban.getEffectiveAvatarUrl());
+            eb.setColor(Color.green);
+
+            if (!toUnban.isBot())
+                toUnban.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
+            long logChannelId = SetLogChannelCommand.banLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+            if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
+                if (toUnban.isBot())
+                    guild.getTextChannelById(logChannelId).sendMessage(eb.build() + "\nTarget is a bot").queue();
+                else guild.getTextChannelById(logChannelId).sendMessage(eb.build()).queue();
+            }
+
+            guild.getController().unban(toUnban.getId()).queue();
             return true;
         }
         return false;
@@ -596,21 +573,11 @@ public class MySQL {
                     guild.getTextChannelById(logChannelId).sendMessage(muted.build() + "\nTarget is a bot").queue();
                 else guild.getTextChannelById(logChannelId).sendMessage(muted.build()).queue();
             }
-            executeQuery("SELECT * FROM active_mutes WHERE victimId= ? AND guildId= ?", rs -> {
-                try {
-                    if (rs.next()) {
-                        executeUpdate("UPDATE active_mutes SET victimId= ?, guildId= ?, reason= ?, startTime= ?, endTime= ?, authorId= ? WHERE victimId= ? AND guildId= ?",
-                                target.getIdLong(), guild.getIdLong(), reason, moment, until, author.getIdLong(), target.getIdLong(), guild.getIdLong());
-                    } else {
-                        executeUpdate("INSERT INTO active_mutes (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?)",
-                                guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, until);
-                    }
-                    rs.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }, target.getIdLong(), guild.getIdLong());
-            executeUpdate("INSERT INTO history_mutes (guildId, victimId, authorId, reason, startTime, endTime, active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            executeUpdate("INSERT INTO active_mutes (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?) " +
+                            "ON DUPLICATE KEY UPDATE authorId= ?, reason= ?, startTime= ?, endTime= ?; " +
+                            "INSERT INTO history_mutes (guildId, victimId, authorId, reason, startTime, endTime, active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, until,
+                    author.getIdLong(), reason, moment, until,
                     guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, until, true);
             return true;
         }
@@ -635,20 +602,11 @@ public class MySQL {
                 guild.getTextChannelById(logChannelId).sendMessage(muted.build() + "\nTarget is a bot").queue();
             else guild.getTextChannelById(logChannelId).sendMessage(muted.build()).queue();
         }
-        executeQuery("SELECT * FROM active_mutes WHERE victimId= ? AND guildId= ?", rs -> {
-            try {
-                if (rs.next()) {
-                    executeUpdate("UPDATE active_mutes SET victimId= ?, guildId= ?, reason= ?, startTime= ?, endTime= ?, authorId= ? WHERE victimId= ? AND guildId= ?",
-                            target.getIdLong(), guild.getIdLong(), reason, moment, null, author.getIdLong(), target.getIdLong(), guild.getIdLong());
-                } else {
-                    executeUpdate("INSERT INTO active_mutes (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?)",
-                            guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, null);
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }, target.getIdLong(), guild.getIdLong());
-        executeUpdate("INSERT INTO history_mutes (guildId, victimId, authorId, reason, startTime, endTime, active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        executeUpdate("INSERT INTO active_mutes (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?) " +
+                        "ON DUPLICATE KEY UPDATE authorId= ?, reason= ?, startTime= ?, endTime= ?; " +
+                        "INSERT INTO history_mutes (guildId, victimId, authorId, reason, startTime, endTime, active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, null,
+                author.getIdLong(), reason, moment, null,
                 guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, null, true);
         return true;
     }
@@ -658,9 +616,9 @@ public class MySQL {
             executeQuery("SELECT * FROM active_mutes WHERE guildId= ? AND victimId= ?", rs -> {
                 try {
                     if (rs.next()) {
-                        executeUpdate("UPDATE history_mutes SET active= ? AND unmuteReason= ? WHERE victimId= ? AND guildId= ?",
-                                false, reason, toUnmute.getIdLong(), guild.getIdLong());
-                        executeUpdate("DELETE FROM active_mutes WHERE guildId= ? AND victimId= ?",
+                        executeUpdate("UPDATE history_mutes SET active= ? AND unmuteReason= ? WHERE victimId= ? AND guildId= ?; " +
+                                        "DELETE FROM active_mutes WHERE guildId= ? AND victimId= ?",
+                                false, reason, toUnmute.getIdLong(), guild.getIdLong(),
                                 guild.getIdLong(), toUnmute.getIdLong());
 
                         EmbedBuilder eb = new EmbedBuilder();
@@ -860,15 +818,10 @@ public class MySQL {
     //log channel stuff----------------------------------------------------------340081887265685504-467770083326951446
 
     public boolean setChannel(long guildId, long channelId, ChannelType type) {
-        if (getChannelId(guildId, type) == -1) {
-            executeUpdate("INSERT INTO " + type.toString().toLowerCase() + "_channels (guildId, channelId) VALUES (?, ?)",
-                    guildId, channelId);
-            return true;
-        } else {
-            executeUpdate("UPDATE " + type.toString().toLowerCase() + "_channels SET channelId= ? WHERE guildId= ?",
-                    channelId, guildId);
-            return true;
-        }
+        executeUpdate("INSERT INTO " + type.toString().toLowerCase() + "_channels (guildId, channelId) VALUES (?, ?) " +
+                        "ON DUPLICATE KEY UPDATE channelId= ?",
+                guildId, channelId, channelId);
+        return true;
     }
 
     public long getChannelId(long guildId, ChannelType type) {
@@ -895,7 +848,7 @@ public class MySQL {
     //streamer stuff------------------------------------------------
     public void setStreamerMode(long guildId, boolean state) {
         if (state) {
-            if (!SetStreamerModeCommand.streamerModes.contains(guildId)) {
+            if (!SetStreamerModeCommand.streamerModeCache.getUnchecked(guildId)) {
                 executeUpdate("INSERT INTO streamer_modes (guildId) VALUES (?)", guildId);
             }
         } else {
@@ -920,13 +873,9 @@ public class MySQL {
     }
 
     public boolean setStreamUrl(long guildId, String url) {
-        if (getStreamUrl(guildId) == null) {
-            executeUpdate("INSERT INTO stream_urls(guildId, url) VALUES (?, ?)", guildId, url);
-            return true;
-        } else {
-            executeUpdate("UPDATE stream_urls SET url= ? WHERE guildId= ?");
-            return true;
-        }
+        executeUpdate("INSERT INTO stream_urls(guildId, url) VALUES (?, ?) ON DUPLICATE KEY UPDATE url= ?",
+                guildId, url, url);
+        return true;
     }
 
     public String getStreamUrl(long guildId) {
@@ -1034,14 +983,8 @@ public class MySQL {
     }
 
     public boolean setMessage(long guildId, String content, MessageType type) {
-        if (getMessage(guildId, type) == null) {
-            executeUpdate("INSERT INTO " + type.toString().toLowerCase() + "_messages (guildId, content) VALUES (?, ?)",
-                    guildId, content);
-        } else {
-            executeUpdate("UPDATE " + type.toString().toLowerCase() + "_messages SET content= ? WHERE guildId= ?",
-                    content, guildId);
-            return true;
-        }
+        executeUpdate("INSERT INTO " + type.toString().toLowerCase() + "_messages (guildId, content) VALUES (?, ?) ON DUPLICATE KEY UPDATE content= ?",
+                guildId, content, content);
         return true;
     }
 
@@ -1245,11 +1188,8 @@ public class MySQL {
     }
 
     public void setVerificationCode(long guildId, String code) {
-        if (SetVerificationCode.guildCodes.containsKey(guildId)) {
-            executeUpdate("UPDATE verification_codes SET code= ? WHERE guildId= ?", code, guildId);
-        } else {
-            executeUpdate("INSERT INTO verification_codes (guildId, code) VALUES (?, ?)", guildId, code);
-        }
+        executeUpdate("INSERT INTO verification_codes (guildId, code) VALUES (?, ?) ON DUPLICATE KEY UPDATE code= ?",
+                guildId, code, code);
     }
 
     public void removeVerificationCode(long guildId) {
@@ -1273,11 +1213,9 @@ public class MySQL {
     }
 
     public void setVerificationThreshold(long guildId, int threshold) {
-        if (SetVerificationThreshold.guildVerificationThresholds.containsKey(guildId)) {
-            executeUpdate("UPDATE verification_thresholds SET threshold= ? WHERE guildId= ?", threshold, guildId);
-        } else {
-            executeUpdate("INSERT INTO verification_thresholds (guildId, threshold) VALUES (?, ?)", guildId, threshold);
-        }
+        executeUpdate("INSERT INTO verification_thresholds (guildId, threshold) VALUES (?, ?) " +
+                        "ON DUPLICATE KEY UPDATE threshold= ?",
+                guildId, threshold, threshold);
     }
 
     public void removeVerificationThreshold(long guildId) {

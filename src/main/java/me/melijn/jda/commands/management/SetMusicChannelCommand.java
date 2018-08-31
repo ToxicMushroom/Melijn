@@ -1,12 +1,16 @@
 package me.melijn.jda.commands.management;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
-import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.blub.*;
+import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.entities.Guild;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 public class SetMusicChannelCommand extends Command {
 
@@ -19,7 +23,14 @@ public class SetMusicChannelCommand extends Command {
         this.category = Category.MANAGEMENT;
     }
 
-    public static HashMap<Long, Long> musicChannelIds = Melijn.mySQL.getChannelMap(ChannelType.MUSIC);
+    public static final LoadingCache<Long, Long> musicChannelCache = CacheBuilder.newBuilder()
+            .maximumSize(15)
+            .expireAfterAccess(2, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                public Long load(@NotNull Long key) {
+                    return Melijn.mySQL.getChannelId(key, ChannelType.MUSIC);
+                }
+            });
 
     @Override
     protected void execute(CommandEvent event) {
@@ -27,19 +38,22 @@ public class SetMusicChannelCommand extends Command {
             Guild guild = event.getGuild();
             String[] args = event.getArgs().split("\\s+");
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {
-                event.reply(musicChannelIds.containsKey(guild.getIdLong()) ? "MusicChannel: <#" + musicChannelIds.get(guild.getIdLong()) + ">" : "The MusicChannel is unset");
+                event.reply(musicChannelCache.getUnchecked(guild.getIdLong()) == -1 ? "The MusicChannel is unset" : "MusicChannel: <#" + musicChannelCache.getUnchecked(guild.getIdLong()) + ">");
             } else {
                 long channelId = Helpers.getVoiceChannelByArgsN(event, args[0]);
                 if (channelId == -1) {
                     MessageHelper.sendUsage(this, event);
                 } else if (channelId == 0) {
-                    musicChannelIds.remove(guild.getIdLong());
-                    Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.MUSIC));
+                    Melijn.MAIN_THREAD.submit(() -> {
+                        Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.MUSIC);
+                        musicChannelCache.invalidate(guild.getIdLong());
+                    });
                     event.reply("The MusicChannel has been unset by **" + event.getFullAuthorName() + "**");
                 } else {
-                    if (musicChannelIds.replace(guild.getIdLong(), channelId) == null)
-                        musicChannelIds.put(guild.getIdLong(), channelId);
-                    Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setChannel(guild.getIdLong(), channelId, ChannelType.MUSIC));
+                    Melijn.MAIN_THREAD.submit(() -> {
+                        Melijn.mySQL.setChannel(guild.getIdLong(), channelId, ChannelType.MUSIC);
+                        musicChannelCache.put(guild.getIdLong(), channelId);
+                    });
                     event.reply("The MusicChannel has been set to <#" + args[0] + "> by **" + event.getFullAuthorName() + "**");
                 }
             }

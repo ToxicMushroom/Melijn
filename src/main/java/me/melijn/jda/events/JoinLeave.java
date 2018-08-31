@@ -2,7 +2,6 @@ package me.melijn.jda.events;
 
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.ChannelType;
-import me.melijn.jda.blub.MessageType;
 import me.melijn.jda.commands.developer.EvalCommand;
 import me.melijn.jda.commands.management.*;
 import net.dv8tion.jda.core.Permission;
@@ -55,15 +54,11 @@ public class JoinLeave extends ListenerAdapter {
         User leftUser = event.getUser();
         if (unVerifiedGuildMembers.get(guild.getIdLong()) == null || !unVerifiedGuildMembers.get(guild.getIdLong()).contains(leftUser.getIdLong())) {
             Melijn.MAIN_THREAD.submit(() -> {
-                String message = Melijn.mySQL.getMessage(guild.getIdLong(), MessageType.LEAVE);
+                String message = SetLeaveMessageCommand.leaveMessages.getUnchecked(guild.getIdLong());
                 if (SetJoinLeaveChannelCommand.welcomeChannels.containsKey(guild.getIdLong()) && message != null) {
                     TextChannel welcomeChannel = guild.getTextChannelById(SetJoinLeaveChannelCommand.welcomeChannels.get(guild.getIdLong()));
                     if (welcomeChannel != null && guild.getSelfMember().hasPermission(welcomeChannel, Permission.MESSAGE_WRITE))
-                        welcomeChannel.sendMessage(message
-                                .replaceAll("%USER%", "<@" + leftUser.getId() + ">")
-                                .replaceAll("%USERNAME%", leftUser.getName() + "#" + leftUser.getDiscriminator())
-                                .replaceAll("%GUILDNAME%", guild.getName())
-                                .replaceAll("%SERVERNAME%", guild.getName())).queue();
+                        welcomeChannel.sendMessage(variableFormat(message, guild, leftUser)).queue();
                 }
             });
         }
@@ -76,14 +71,10 @@ public class JoinLeave extends ListenerAdapter {
     }
 
     private static void joinCode(Guild guild, User user) {
-        if (SetJoinLeaveChannelCommand.welcomeChannels.containsKey(guild.getIdLong()) && SetJoinMessageCommand.joinMessages.containsKey(guild.getIdLong())) {
+        if (SetJoinLeaveChannelCommand.welcomeChannels.containsKey(guild.getIdLong()) && SetJoinMessageCommand.joinMessages.getUnchecked(guild.getIdLong()) != null) {
             TextChannel welcomeChannel = guild.getTextChannelById(SetJoinLeaveChannelCommand.welcomeChannels.get(guild.getIdLong()));
             if (welcomeChannel != null && guild.getSelfMember().hasPermission(welcomeChannel, Permission.MESSAGE_WRITE))
-                welcomeChannel.sendMessage(SetJoinMessageCommand.joinMessages.get(guild.getIdLong())
-                        .replaceAll("%USER%", "<@" + user.getIdLong() + ">")
-                        .replaceAll("%USERNAME%", user.getName() + "#" + user.getDiscriminator())
-                        .replaceAll("%GUILDNAME%", guild.getName())
-                        .replaceAll("%SERVERNAME%", guild.getName())).queue();
+                welcomeChannel.sendMessage(variableFormat(SetJoinMessageCommand.joinMessages.getUnchecked(guild.getIdLong()), guild, user)).queue();
         }
         if (guild.getSelfMember().getRoles().size() > 0) {
             if (SetJoinRoleCommand.joinRoles.containsKey(guild.getIdLong())) {
@@ -112,10 +103,11 @@ public class JoinLeave extends ListenerAdapter {
         }
     }
 
-    private String variableFormat(String s, Guild guild, User user) {
-        return s.replaceAll("%USER%", "<@" + user.getIdLong() + ">")
+    private static String variableFormat(String s, Guild guild, User user) {
+        return s.replaceAll("%USER%", guild.getMember(user).getAsMention())
                 .replaceAll("%USERNAME%", user.getName() + "#" + user.getDiscriminator())
                 .replaceAll("%GUILDNAME%", guild.getName())
-                .replaceAll("%SERVERNAME%", guild.getName());
+                .replaceAll("%SERVERNAME%", guild.getName())
+                .replaceAll("%JOINPOSITION%", String.valueOf(guild.getMembers().size()));
     }
 }
