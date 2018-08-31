@@ -36,23 +36,24 @@ public class SetJoinLeaveChannelCommand extends Command {
                         long oldChannel = welcomeChannels.getOrDefault(guild.getIdLong(), -1L);
                         event.reply("WelcomeChannel has been changed from " + (oldChannel == -1L ? "nothing" : "<#" + oldChannel + ">") + " to nothing");
                     } else {
-                        Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.WELCOME));
-                        if (!SetJoinMessageCommand.joinMessages.containsKey(guild.getIdLong())) {
-                            SetJoinMessageCommand.joinMessages.put(guild.getIdLong(), "Welcome %USER% to the %GUILDNAME% discord server");
-                            Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setMessage(guild.getIdLong(), "Welcome %USER% to our awesome discord server :D", MessageType.JOIN));
-                            event.reply("I've set the default join message :beginner:");
-                        }
-                        if (!SetLeaveMessageCommand.leaveMessages.containsKey(guild.getIdLong())) {
-                            SetLeaveMessageCommand.leaveMessages.put(guild.getIdLong(), "**%USERNAME%** left us :C");
-                            Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setMessage(guild.getIdLong(), "**%USERNAME%** left us :C", MessageType.LEAVE));
-                            event.reply("I've set the default leave message :beginner:");
-                        }
-                        if (welcomeChannels.replace(guild.getIdLong(), id) == null)
-                            welcomeChannels.put(guild.getIdLong(), id);
+                        Melijn.MAIN_THREAD.submit(() -> {
+                            Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.WELCOME);
+                            if (!SetJoinMessageCommand.joinMessages.containsKey(guild.getIdLong())) {
+                                SetJoinMessageCommand.joinMessages.put(guild.getIdLong(), "Welcome %USER% to the %GUILDNAME% discord server");
+                                Melijn.mySQL.setMessage(guild.getIdLong(), "Welcome %USER% to our awesome discord server :D", MessageType.JOIN);
+                                event.reply("I've set the default join message :beginner:");
+                            }
+                            if (Melijn.mySQL.getMessage(guild.getIdLong(), MessageType.LEAVE) == null) {
+                                Melijn.mySQL.setMessage(guild.getIdLong(), "**%USERNAME%** left us :C", MessageType.LEAVE);
+                                event.reply("I've set the default leave message :beginner:");
+                            }
+                            if (welcomeChannels.replace(guild.getIdLong(), id) == null)
+                                welcomeChannels.put(guild.getIdLong(), id);
 
-                        String oldChannel = welcomeChannelId == -1  ? "nothing" : "<#" + welcomeChannelId + ">";
-                        String newChannel = "<#" + id + ">";
-                        event.reply("WelcomeChannel has been changed from " + oldChannel + " to " + newChannel);
+                            String oldChannel = welcomeChannelId == -1 ? "nothing" : "<#" + welcomeChannelId + ">";
+                            String newChannel = "<#" + id + ">";
+                            event.reply("WelcomeChannel has been changed from " + oldChannel + " to " + newChannel);
+                        });
                     }
                 } else {
                     if (welcomeChannelId != -1)

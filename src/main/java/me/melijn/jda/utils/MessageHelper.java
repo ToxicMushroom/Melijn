@@ -64,10 +64,7 @@ public class MessageHelper {
     }
 
     public static void sendUsage(Command cmd, CommandEvent event) {
-        if (SetPrefixCommand.prefixes.containsKey(event.getGuild().getIdLong()))
-            event.reply(cmd.getUsage().replaceFirst(PREFIX, SetPrefixCommand.prefixes.get(event.getGuild().getIdLong())));
-        else
-            event.reply(cmd.getUsage());
+        event.reply(cmd.getUsage().replaceFirst(PREFIX, SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong())));
     }
 
     public static String millisToVote(long untilNext) {

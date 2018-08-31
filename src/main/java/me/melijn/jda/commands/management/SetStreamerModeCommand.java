@@ -30,7 +30,7 @@ public class SetStreamerModeCommand extends Command {
             Guild guild = event.getGuild();
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                 if (!SetMusicChannelCommand.musicChannelIds.containsKey(guild.getIdLong())) {
-                    event.reply("You first have to set a MusicChannel.\n" + SetPrefixCommand.prefixes.getOrDefault(guild.getIdLong(), ">") + "smc <channelId>");
+                    event.reply("You first have to set a MusicChannel.\n" + SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + "smc <channelId>");
                     return;
                 }
                 VoiceChannel musicChannel = guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelIds.get(guild.getIdLong()));

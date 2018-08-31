@@ -19,7 +19,6 @@ import org.apache.logging.log4j.Logger;
 import org.discordbots.api.client.DiscordBotListAPI;
 
 import java.awt.*;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -148,33 +147,44 @@ public class Helpers {
             lastRunTimer1 = System.currentTimeMillis();
             executorPool.scheduleAtFixedRate(() -> {
                 lastRunTimer1 = System.currentTimeMillis();
-                try {
-                    ResultSet bans = Melijn.mySQL.query("SELECT * FROM active_bans WHERE endTime < " + System.currentTimeMillis());
-                    ResultSet mutes = Melijn.mySQL.query("SELECT * FROM active_mutes WHERE endTime < " + System.currentTimeMillis());
-                    while (bans.next()) {
-                        User toUnban = jda.asBot().getShardManager().retrieveUserById(bans.getLong("victimId")).complete();
-                        try {
-                            Guild guild = jda.asBot().getShardManager().getGuildById(bans.getLong("guildId"));
-                            if (guild != null)
-                                Melijn.mySQL.unban(toUnban, guild, jda.getSelfUser(), "Ban expired");
-                        } catch (SQLException e) {
-                            e.printStackTrace();
+                Melijn.mySQL.executeQuery("SELECT * FROM active_bans WHERE endTime < ?", bans -> {
+                    try {
+                        while (bans.next()) {
+                            jda.asBot().getShardManager().retrieveUserById(bans.getLong("victimId")).queue(user -> {
+                                try {
+                                    Guild guild = jda.asBot().getShardManager().getGuildById(bans.getLong("guildId"));
+                                    if (guild != null && user != null)
+                                        Melijn.mySQL.unban(user, guild, jda.getSelfUser(), "Ban expired");
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                }
+                            });
                         }
+                        bans.close();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
                     }
+                }, System.currentTimeMillis());
 
-                    while (mutes.next()) {
-                        User toUnmute = jda.asBot().getShardManager().retrieveUserById(mutes.getLong("victimId")).complete();
-                        try {
-                            Guild guild = jda.asBot().getShardManager().getGuildById(mutes.getLong("guildId"));
-                            if (guild != null)
-                                Melijn.mySQL.unmute(guild, toUnmute, jda.getSelfUser(), "Mute expired");
-                        } catch (SQLException e) {
-                            e.printStackTrace();
+                Melijn.mySQL.executeQuery("SELECT * FROM active_mutes WHERE endTime < ?", mutes -> {
+                    try {
+                        while (mutes.next()) {
+                            jda.asBot().getShardManager().retrieveUserById(mutes.getLong("victimId")).queue(user -> {
+                                try {
+                                    Guild guild = jda.asBot().getShardManager().getGuildById(mutes.getLong("guildId"));
+                                    if (guild != null)
+                                        Melijn.mySQL.unmute(guild, user, jda.getSelfUser(), "Mute expired");
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                }
+                            });
                         }
+                    } catch (SQLException e) {
+                        e.printStackTrace();
                     }
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+                }, System.currentTimeMillis());
+
+
             }, 1, 2, TimeUnit.SECONDS);
         }
         if (i == 0 || i == 2) {

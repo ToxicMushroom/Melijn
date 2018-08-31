@@ -2,6 +2,7 @@ package me.melijn.jda.events;
 
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.ChannelType;
+import me.melijn.jda.blub.MessageType;
 import me.melijn.jda.commands.developer.EvalCommand;
 import me.melijn.jda.commands.management.*;
 import net.dv8tion.jda.core.Permission;
@@ -53,15 +54,18 @@ public class JoinLeave extends ListenerAdapter {
         Guild guild = event.getGuild();
         User leftUser = event.getUser();
         if (unVerifiedGuildMembers.get(guild.getIdLong()) == null || !unVerifiedGuildMembers.get(guild.getIdLong()).contains(leftUser.getIdLong())) {
-            if (SetJoinLeaveChannelCommand.welcomeChannels.containsKey(guild.getIdLong()) && SetLeaveMessageCommand.leaveMessages.containsKey(guild.getIdLong())) {
-                TextChannel welcomeChannel = guild.getTextChannelById(SetJoinLeaveChannelCommand.welcomeChannels.get(guild.getIdLong()));
-                if (welcomeChannel != null && guild.getSelfMember().hasPermission(welcomeChannel, Permission.MESSAGE_WRITE))
-                    welcomeChannel.sendMessage(SetLeaveMessageCommand.leaveMessages.get(guild.getIdLong())
-                            .replaceAll("%USER%", "<@" + leftUser.getId() + ">")
-                            .replaceAll("%USERNAME%", leftUser.getName() + "#" + leftUser.getDiscriminator())
-                            .replaceAll("%GUILDNAME%", guild.getName())
-                            .replaceAll("%SERVERNAME%", guild.getName())).queue();
-            }
+            Melijn.MAIN_THREAD.submit(() -> {
+                String message = Melijn.mySQL.getMessage(guild.getIdLong(), MessageType.LEAVE);
+                if (SetJoinLeaveChannelCommand.welcomeChannels.containsKey(guild.getIdLong()) && message != null) {
+                    TextChannel welcomeChannel = guild.getTextChannelById(SetJoinLeaveChannelCommand.welcomeChannels.get(guild.getIdLong()));
+                    if (welcomeChannel != null && guild.getSelfMember().hasPermission(welcomeChannel, Permission.MESSAGE_WRITE))
+                        welcomeChannel.sendMessage(message
+                                .replaceAll("%USER%", "<@" + leftUser.getId() + ">")
+                                .replaceAll("%USERNAME%", leftUser.getName() + "#" + leftUser.getDiscriminator())
+                                .replaceAll("%GUILDNAME%", guild.getName())
+                                .replaceAll("%SERVERNAME%", guild.getName())).queue();
+                }
+            });
         }
         removeUnverified(guild, leftUser);
     }
@@ -106,5 +110,12 @@ public class JoinLeave extends ListenerAdapter {
             if (guild.getMember(user) != null && SetUnverifiedRole.unverifiedRoles.containsKey(guild.getIdLong()) && guild.getRoleById(SetUnverifiedRole.unverifiedRoles.get(guild.getIdLong())) != null)
                 guild.getController().removeSingleRoleFromMember(guild.getMember(user), guild.getRoleById(SetUnverifiedRole.unverifiedRoles.get(guild.getIdLong()))).reason("verified user").queue();
         }
+    }
+
+    private String variableFormat(String s, Guild guild, User user) {
+        return s.replaceAll("%USER%", "<@" + user.getIdLong() + ">")
+                .replaceAll("%USERNAME%", user.getName() + "#" + user.getDiscriminator())
+                .replaceAll("%GUILDNAME%", guild.getName())
+                .replaceAll("%SERVERNAME%", guild.getName());
     }
 }

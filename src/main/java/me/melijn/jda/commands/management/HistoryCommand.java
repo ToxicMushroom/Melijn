@@ -136,6 +136,8 @@ public class HistoryCommand extends Command {
                 parts.add(part.toString());
                 part = new StringBuilder();
                 part.append(stuffdeel);
+            } else {
+                part.append(".");
             }
         }
         if (part.toString().length() > 0) parts.add(part.toString());

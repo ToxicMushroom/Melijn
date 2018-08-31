@@ -8,8 +8,6 @@ import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.MessageType;
 import net.dv8tion.jda.core.entities.Guild;
 
-import java.util.HashMap;
-
 public class SetLeaveMessageCommand extends Command {
 
     public SetLeaveMessageCommand() {
@@ -21,29 +19,29 @@ public class SetLeaveMessageCommand extends Command {
         this.category = Category.MANAGEMENT;
     }
 
-    public static HashMap<Long, String> leaveMessages = Melijn.mySQL.getMessageMap(MessageType.LEAVE);
-
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
                 Guild guild = event.getGuild();
-                String oldMessage = leaveMessages.getOrDefault(guild.getIdLong(), "");
                 String newMessage = event.getArgs();
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     if (args.length == 1 && args[0].equalsIgnoreCase("null")) {
-                        Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.removeMessage(guild.getIdLong(), MessageType.JOIN));
-                        leaveMessages.remove(guild.getIdLong());
-                        event.reply("LeaveMessage has been set to nothing by **" + event.getFullAuthorName() + "**");
+                        Melijn.MAIN_THREAD.submit(() -> {
+                            String message = Melijn.mySQL.getMessage(guild.getIdLong(), MessageType.LEAVE);
+                            Melijn.mySQL.removeMessage(guild.getIdLong(), MessageType.JOIN);
+                            event.reply("LeaveMessage has been changed from " + (message == null ? "nothing" : "'" + message + "'") + " to nothing by **" + event.getFullAuthorName() + "**");
+                        });
                     } else {
-                        Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.LEAVE));
-                        if (leaveMessages.replace(guild.getIdLong(), newMessage) == null)
-                            leaveMessages.put(guild.getIdLong(), newMessage);
-                        event.reply("LeaveMessage has been changed from '" + oldMessage + "' to '" + newMessage + "' by **" + event.getFullAuthorName() + "**");
+                        Melijn.MAIN_THREAD.submit(() -> {
+                            String message = Melijn.mySQL.getMessage(guild.getIdLong(), MessageType.LEAVE);
+                            Melijn.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.LEAVE);
+                            event.reply("LeaveMessage has been changed from " + (message == null ? "nothing" : "'" + message + "'") + " to '" + newMessage + "' by **" + event.getFullAuthorName() + "**");
+                        });
                     }
                 } else {
-                    event.reply(oldMessage);
+                    event.reply(Melijn.mySQL.getMessage(guild.getIdLong(), MessageType.LEAVE));
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

@@ -27,7 +27,7 @@ public class PermCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
-            String prefix = SetPrefixCommand.prefixes.getOrDefault(event.getGuild().getIdLong(), ">");
+            String prefix = SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong());
             String[] args = event.getArgs().split("\\s+");
             Member member = event.getGuild().getMember(event.getAuthor());
             Guild guild = event.getGuild();

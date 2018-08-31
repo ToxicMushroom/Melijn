@@ -19,9 +19,10 @@ repositories {
 dependencies {
     compile 'com.sedmelluq:jda-nas:1.0.6'
     compile "com.zaxxer:HikariCP:3.1.0"
-    compile ('net.dv8tion:JDA:3.7.1_405') {
+    compile ('net.dv8tion:JDA:3.7.1_407') {
         exclude module: 'opus-java'
     }
+
     compile 'com.sedmelluq:lavaplayer:1.3.7'
     compile 'me.duncte123:weebJava:2.1.0'
     compile 'mysql:mysql-connector-java:8.0.12'
@@ -29,6 +30,7 @@ dependencies {
     compile 'com.github.DiscordBotList:DBL-Java-Library:d0ca7283e55def0f828ee33c0c2bf86266223854'
     compile 'se.michaelthelin.spotify:spotify-web-api-java:2.0.4'
     compile "org.kohsuke:groovy-sandbox:1.6"
+    compile group: 'com.google.guava', name: 'guava', version: '26.0-jre'
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.1'
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.1'
     compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.11.1'

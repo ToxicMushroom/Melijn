@@ -96,7 +96,7 @@ public class SetNotifications extends Command {
                                         nextVotes.replace(event.getAuthorId(), list);
                                     else nextVotes.put(event.getAuthorId(), list);
                                     Melijn.MAIN_THREAD.submit(() -> {
-                                        mySQL.putNotifcation(event.getAuthorId(), user.getIdLong(), NotificationType.NEXTVOTE);
+                                        mySQL.putNotification(event.getAuthorId(), user.getIdLong(), NotificationType.NEXTVOTE);
                                         event.reply("NextVote notifications for **" + user.getName() + "#" + user.getDiscriminator() + "** have been **enabled**");
                                     });
                                 }

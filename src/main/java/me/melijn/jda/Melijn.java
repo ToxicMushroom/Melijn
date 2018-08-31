@@ -46,7 +46,7 @@ public class Melijn {
 
     public static void main(String[] args) throws LoginException {
         new WebUtils();
-        mySQL.update("TRUNCATE TABLE commands");
+        mySQL.executeUpdate("TRUNCATE TABLE commands");
         CommandClientBuilder client = new CommandClientBuilder();
 
         client.setOwnerId(OWNERID);

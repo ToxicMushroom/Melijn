@@ -33,23 +33,20 @@ public class EvalCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (engineName.equalsIgnoreCase("groovy")) {
-            GroovyScriptEngineImpl se = (GroovyScriptEngineImpl) new ScriptEngineManager().getEngineByName(engineName);
-            if (se == null) {
-                MessageHelper.sendUsage(this, event);
-                return;
-            }
+            GroovyScriptEngineImpl se = (GroovyScriptEngineImpl) new ScriptEngineManager().getEngineByName("groovy");
             evaluate(event, se);
         } else {
             ScriptEngine se = new ScriptEngineManager().getEngineByName(engineName);
-            if (se == null) {
-                MessageHelper.sendUsage(this, event);
-                return;
-            }
             evaluate(event, se);
         }
     }
 
     private void evaluate(CommandEvent event, ScriptEngine se) {
+        if (se == null) {
+            MessageHelper.sendUsage(this, event);
+            return;
+        }
+
         se.put("event", event);
         se.put("jda", event.getJDA());
         se.put("guild", event.getGuild());

@@ -221,7 +221,7 @@ public class Chat extends ListenerAdapter {
                         }
 
                     }
-                    Melijn.MAIN_THREAD.submit(() -> mySQL.update("DELETE FROM history_messages WHERE sentTime < " + (System.currentTimeMillis() - 604_800_000L)));
+                    Melijn.MAIN_THREAD.submit(() -> mySQL.executeUpdate("DELETE FROM history_messages WHERE sentTime < " + (System.currentTimeMillis() - 604_800_000L)));
                 }
             });
         }
