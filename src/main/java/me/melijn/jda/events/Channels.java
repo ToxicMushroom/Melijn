@@ -1,11 +1,11 @@
 package me.melijn.jda.events;
 
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
+import me.melijn.jda.Melijn;
 import me.melijn.jda.commands.developer.EvalCommand;
 import me.melijn.jda.commands.management.SetMusicChannelCommand;
 import me.melijn.jda.commands.management.SetStreamerModeCommand;
-import me.melijn.jda.commands.music.SetStreamUrlCommand;
 import me.melijn.jda.music.MusicManager;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceDeafenEvent;
@@ -40,19 +40,17 @@ public class Channels extends ListenerAdapter {
                         audioPlayer.stopTrack();
                     audioManager.closeAudioConnection();
                 } else if (audioPlayer.getPlayingTrack() == null) {
-                    if (SetStreamUrlCommand.streamUrls.containsKey(guildId)) {
+                    String url = Melijn.mySQL.getStreamUrl(guildId);
+                    if (url != null) {
                         manager.getPlayer(guild).getListener().tracks.clear();
-                        manager.loadSimpelTrack(guild, SetStreamUrlCommand.streamUrls.get(guildId));
+                        manager.loadSimpelTrack(guild, url);
                     }
                 }
             }
         } else if (SetStreamerModeCommand.streamerModeCache.getUnchecked(guildId) &&
                 !audioManager.isConnected() && event.getChannelJoined().getIdLong() == SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)) {
             audioManager.openAudioConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)));
-            if (SetStreamUrlCommand.streamUrls.containsKey(guildId) && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null) {
-                manager.getPlayer(guild).getListener().tracks.clear();
-                manager.loadSimpelTrack(guild, SetStreamUrlCommand.streamUrls.get(guildId));
-            }
+            tryPlayStreamUrl(guild, guildId);
         }
     }
 
@@ -65,9 +63,16 @@ public class Channels extends ListenerAdapter {
         AudioManager audioManager = guild.getAudioManager();
         if (SetStreamerModeCommand.streamerModeCache.getUnchecked(guildId) && !audioManager.isConnected() && event.getChannelJoined().getIdLong() == (SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId))) {
             audioManager.openAudioConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)));
-            if (SetStreamUrlCommand.streamUrls.containsKey(guildId) && manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null) {
+            tryPlayStreamUrl(guild, guildId);
+        }
+    }
+
+    private void tryPlayStreamUrl(Guild guild, long guildId) {
+        if (manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null) {
+            String url = Melijn.mySQL.getStreamUrl(guildId);
+            if (url != null) {
                 manager.getPlayer(guild).getListener().tracks.clear();
-                manager.loadSimpelTrack(guild, SetStreamUrlCommand.streamUrls.get(guildId));
+                manager.loadSimpelTrack(guild, url);
             }
         }
     }

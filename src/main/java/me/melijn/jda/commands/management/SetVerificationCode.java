@@ -25,7 +25,7 @@ public class SetVerificationCode extends Command {
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
-            if (guild.getTextChannelById(SetVerificationChannel.verificationChannels.getOrDefault(guild.getIdLong(), -1L)) != null) {
+            if (guild.getTextChannelById(SetVerificationChannel.verificationChannelsCache.getUnchecked(guild.getIdLong())) != null) {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     if (args[0].equalsIgnoreCase("null")) {

@@ -863,8 +863,7 @@ public class MySQL {
             PreparedStatement getLogChannel = con.prepareStatement("SELECT * FROM streamer_modes WHERE guildId= ?");
             getLogChannel.setLong(1, guildId);
             ResultSet rs = getLogChannel.executeQuery();
-            boolean s = false;
-            while (rs.next()) s = rs.getBoolean("state");
+            boolean s = rs.next();
             rs.close();
             getLogChannel.close();
             return s;
@@ -1293,5 +1292,38 @@ public class MySQL {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public ArrayList<Long> getUnverifiedMembers(long guildId) {
+        ArrayList<Long> members = new ArrayList<>();
+        try (Connection con = ds.getConnection()) {
+            PreparedStatement getUnverifiedMembers = con.prepareStatement("SELECT * FROM unverified_users WHERE guildId= ?");
+            getUnverifiedMembers.setLong(1, guildId);
+            ResultSet rs = getUnverifiedMembers.executeQuery();
+            while (rs.next()) {
+                members.add(rs.getLong("userId"));
+            }
+            rs.close();
+            getUnverifiedMembers.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return members;
+    }
+
+    public Long getVerificationChannel(Long guildId) {
+        long retval = -1;
+        try (Connection con = ds.getConnection()) {
+            PreparedStatement getVerificationChannel = con.prepareStatement("SELECT * FROM verification_channels WHERE guildId= ?");
+            getVerificationChannel.setLong(1, guildId);
+            ResultSet rs = getVerificationChannel.executeQuery();
+            if (rs.next())
+                retval = rs.getLong("channelId");
+            rs.close();
+            getVerificationChannel.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return retval;
     }
 }

@@ -17,7 +17,7 @@ public class SetStreamUrlCommand extends Command {
 
 
     public SetStreamUrlCommand() {
-        this.commandName = "setstreamurl";
+        this.commandName = "setStreamUrl";
         this.description = "set the stream url of the bot";
         this.usage = PREFIX + commandName + " [list | url]";
         this.aliases = new String[]{"ssu"};
@@ -36,23 +36,22 @@ public class SetStreamUrlCommand extends Command {
         put("Radio1", "http://icecast.vrtcdn.be/radio1-high.mp3");
         put("Radio2", "http://icecast.vrtcdn.be/ra2wvl-high.mp3");
         put("Studio-Brussel", "http://icecast.vrtcdn.be/stubru-high.mp3");
+        put("BBC Radio 1", "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio1_mf_p");
+        put("BBC Radio 4FM", "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio4fm_mf_p");
+        put("BBC Radio 6 Music", "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_6music_mf_p");
     }};
-
-    public static HashMap<Long, String> streamUrls = Melijn.mySQL.getStreamUrlMap();
 
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
             String[] args = event.getArgs().split("\\s+");
-            String url = streamUrls.getOrDefault(guild.getIdLong(), "nothing");
+            String url = Melijn.mySQL.getStreamUrl(guild.getIdLong());
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {
                 event.reply("StreamURL: " + url);
             } else if (args.length == 1) {
                 if (args[0].contains("http://") || args[0].contains("https://")) {
                     Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setStreamUrl(guild.getIdLong(), args[0]));
-                    if (streamUrls.replace(guild.getIdLong(), args[0]) == null)
-                        streamUrls.put(guild.getIdLong(), args[0]);
                     event.reply("Changed the url from **" + url + "** to **" + args[0] + "**");
                 } else {
                     if (args[0].equalsIgnoreCase("list")) {
@@ -60,8 +59,6 @@ public class SetStreamUrlCommand extends Command {
                     } else {
                         if (linkjes.keySet().contains(args[0])) {
                             Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setStreamUrl(guild.getIdLong(), linkjes.get(args[0])));
-                            if (streamUrls.replace(guild.getIdLong(), linkjes.get(args[0])) == null)
-                                streamUrls.put(guild.getIdLong(), linkjes.get(args[0]));
                             event.reply("Changed the url from **" + url + "** to **" + linkjes.get(args[0]) + "**");
                         } else {
                             MessageHelper.sendUsage(this, event);

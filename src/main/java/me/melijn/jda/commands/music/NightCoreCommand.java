@@ -22,7 +22,6 @@ public class NightCoreCommand extends Command {
         this.extra = "Sets speed to 1.25 and pitch to 1.20";
     }
 
-
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), commandName, 0)) {

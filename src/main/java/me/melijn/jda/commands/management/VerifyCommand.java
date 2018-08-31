@@ -32,7 +32,7 @@ public class VerifyCommand extends Command {
             if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                 User user = Helpers.getUserByArgsN(event, args[0]);
                 if (user != null && event.getGuild().getMember(user) != null) {
-                    ArrayList<Long> unVerifiedUsers = JoinLeave.unVerifiedGuildMembers.getOrDefault(event.getGuild().getIdLong(), new ArrayList<>());
+                    ArrayList<Long> unVerifiedUsers = JoinLeave.unVerifiedGuildMembersCache.getUnchecked(event.getGuild().getIdLong());
                     if (unVerifiedUsers.contains(user.getIdLong())) {
                         JoinLeave.verify(event.getGuild(), user);
                         event.reply("Successfully verified **" + user.getName() + "#" + user.getDiscriminator() + "**");

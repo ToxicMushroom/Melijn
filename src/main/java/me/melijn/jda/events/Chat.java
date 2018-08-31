@@ -112,7 +112,7 @@ public class Chat extends ListenerAdapter {
             }
         }
 
-        if (SetVerificationChannel.verificationChannels.values().contains(event.getChannel().getIdLong())) {
+        if (SetVerificationChannel.verificationChannelsCache.getUnchecked(event.getChannel().getIdLong()) != -1) {
             if (SetVerificationCode.guildCodes.containsKey(event.getGuild().getIdLong())) {
                 if (event.getMessage().getContentRaw().equalsIgnoreCase(SetVerificationCode.guildCodes.get(event.getGuild().getIdLong()))) {
                     event.getMessage().delete().reason("Verification Channel").queue(s -> MessageHelper.selfDeletedMessages.add(event.getMessageIdLong()));
