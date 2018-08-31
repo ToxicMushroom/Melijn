@@ -12,6 +12,9 @@ import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.User;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 import java.awt.*;
@@ -20,8 +23,6 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class MySQL {
 
@@ -31,6 +32,7 @@ public class MySQL {
     private String dbname;
     private String spaces = "                                                  ";
     private HikariDataSource ds;
+    Logger logger = LogManager.getLogger(MySQL.class.getName());
 
     public MySQL(String ip, String user, String pass, String dbname) {
         this.ip = ip;
@@ -61,16 +63,15 @@ public class MySQL {
             config.addDataSourceProperty("rewriteBatchedStatements", "true");
             config.addDataSourceProperty("useLocalTransactionState", "true");
 
-
             ds = new HikariDataSource(config);
 
             Statement statement = ds.getConnection().createStatement();
             statement.executeQuery("SET NAMES 'utf8mb4'");
             statement.close();
-            Logger.getLogger(this.getClass().getName()).info("[MySQL] has connected");
+            logger.info("[MySQL] has connected & Loading init");
             executeUpdate("CREATE TABLE IF NOT EXISTS commands(commandName varchar(1000), gebruik varchar(1000), description varchar(2000), extra varchar(2000), category varchar(100), aliases varchar(200));");
             executeUpdate("CREATE TABLE IF NOT EXISTS disabled_commands(guildId bigint, command int)");
-            executeUpdate("CREATE TABLE IF NOT EXISTS stream_urls(guildId bigint, url varchar(1500))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS stream_urls(guildId bigint, url varchar(2000))");
             executeUpdate("CREATE TABLE IF NOT EXISTS prefixes(guildId bigint, prefix bigint);");
             executeUpdate("CREATE TABLE IF NOT EXISTS mute_roles(guildId bigint, roleId bigint);");
             executeUpdate("CREATE TABLE IF NOT EXISTS join_roles(guildId bigint, roleId bigint);");
@@ -108,10 +109,11 @@ public class MySQL {
             executeUpdate("CREATE TABLE IF NOT EXISTS leave_messages(guildId bigint, content varchar(2000))");
             executeUpdate("CREATE TABLE IF NOT EXISTS votes(userId bigint, votes bigint, streak bigint, lastTime bigint);");
             executeUpdate("CREATE TABLE IF NOT EXISTS nextvote_notifications(userId bigint, targetId bigint);");
+            logger.info("[MySQL] init loaded");
         } catch (SQLException e) {
-            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "[MySQL] did not connect");
+            logger.log(Level.ERROR, "[MySQL] did not connect -> ");
             e.printStackTrace();
-            System.exit(44);
+            System.exit(500);
         }
     }
 
