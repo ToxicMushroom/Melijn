@@ -150,15 +150,14 @@ public class Helpers {
                 Melijn.mySQL.executeQuery("SELECT * FROM active_bans WHERE endTime < ?", bans -> {
                     try {
                         while (bans.next()) {
-                            jda.asBot().getShardManager().retrieveUserById(bans.getLong("victimId")).queue(user -> {
-                                try {
-                                    Guild guild = jda.asBot().getShardManager().getGuildById(bans.getLong("guildId"));
-                                    if (guild != null && user != null)
-                                        Melijn.mySQL.unban(user, guild, jda.getSelfUser(), "Ban expired");
-                                } catch (SQLException e) {
-                                    e.printStackTrace();
-                                }
-                            });
+                            User user = jda.asBot().getShardManager().retrieveUserById(bans.getLong("victimId")).complete();
+                            try {
+                                Guild guild = jda.asBot().getShardManager().getGuildById(bans.getLong("guildId"));
+                                if (guild != null && user != null)
+                                    Melijn.mySQL.unban(user, guild, jda.getSelfUser(), "Ban expired");
+                            } catch (SQLException e) {
+                                e.printStackTrace();
+                            }
                         }
                         bans.close();
                     } catch (SQLException e) {
@@ -169,23 +168,23 @@ public class Helpers {
                 Melijn.mySQL.executeQuery("SELECT * FROM active_mutes WHERE endTime < ?", mutes -> {
                     try {
                         while (mutes.next()) {
-                            jda.asBot().getShardManager().retrieveUserById(mutes.getLong("victimId")).queue(user -> {
-                                try {
-                                    Guild guild = jda.asBot().getShardManager().getGuildById(mutes.getLong("guildId"));
-                                    if (guild != null)
-                                        Melijn.mySQL.unmute(guild, user, jda.getSelfUser(), "Mute expired");
-                                } catch (SQLException e) {
-                                    e.printStackTrace();
-                                }
-                            });
+                            User user = jda.asBot().getShardManager().retrieveUserById(mutes.getLong("victimId")).complete();
+                            try {
+                                Guild guild = jda.asBot().getShardManager().getGuildById(mutes.getLong("guildId"));
+                                if (guild != null)
+                                    Melijn.mySQL.unmute(guild, user, jda.getSelfUser(), "Mute expired");
+                            } catch (SQLException e) {
+                                e.printStackTrace();
+                            }
                         }
+                        mutes.close();
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
                 }, System.currentTimeMillis());
 
 
-            }, 1, 2, TimeUnit.SECONDS);
+            }, 5, 2, TimeUnit.SECONDS);
         }
         if (i == 0 || i == 2) {
             lastRunTimer2 = System.currentTimeMillis();

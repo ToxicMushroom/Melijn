@@ -1,7 +1,6 @@
 package me.melijn.jda;
 
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
-import me.melijn.jda.blub.CommandClient;
 import me.melijn.jda.blub.CommandClientBuilder;
 import me.melijn.jda.commands.HelpCommand;
 import me.melijn.jda.commands.InviteCommand;
@@ -142,16 +141,15 @@ public class Melijn {
                 new SetEvalEngineCommand()
         );
 
-        CommandClient commandClient = client.build();
-
         shardManager = new DefaultShardManagerBuilder()
                 .setShardsTotal(1)
                 .setToken(TOKEN)
                 .setGame(Game.playing(PREFIX + "help | melijn.com"))
                 .setAutoReconnect(true)
-                .addEventListeners(commandClient, new JoinLeave(), new AddReaction(), new Channels(), new Chat())
+                .addEventListeners(client.build(), new JoinLeave(), new AddReaction(), new Channels(), new Chat())
                 .setAudioSendFactory(new NativeAudioSendFactory())
                 .build();
+
         dblAPI = new DiscordBotListAPI.Builder()
                 .token(DBLTOKEN)
                 .botId("368362411591204865")
