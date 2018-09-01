@@ -17,7 +17,7 @@ import net.dv8tion.jda.core.managers.AudioManager;
 
 public class Channels extends ListenerAdapter {
 
-    private MusicManager manager = MusicManager.getManagerinstance();
+    private MusicManager manager = MusicManager.getManagerInstance();
 
     @Override
     public void onGuildVoiceMove(GuildVoiceMoveEvent event) {

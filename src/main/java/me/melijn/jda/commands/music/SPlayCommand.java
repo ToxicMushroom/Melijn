@@ -34,7 +34,7 @@ public class SPlayCommand extends Command {
     }
 
     private List<String> providers = new ArrayList<>(Arrays.asList("yt", "sc", "link", "youtube", "soundcloud"));
-    private MusicManager manager = MusicManager.getManagerinstance();
+    private MusicManager manager = MusicManager.getManagerInstance();
     public static HashMap<User, Message> usersFormToReply = new HashMap<>();
     public static HashMap<User, HashMap<Integer, AudioTrack>> userChoices = new HashMap<>();
 

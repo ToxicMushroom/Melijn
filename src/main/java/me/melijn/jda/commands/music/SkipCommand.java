@@ -27,7 +27,7 @@ public class SkipCommand extends Command {
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
 
-    private MusicManager manager = MusicManager.getManagerinstance();
+    private MusicManager manager = MusicManager.getManagerInstance();
 
     @Override
     protected void execute(CommandEvent event) {

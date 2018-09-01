@@ -25,7 +25,7 @@ public class ShardsCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             ShardManager shardManager = event.getJDA().asBot().getShardManager();
-            TableBuilder tableBuilder = new TableBuilder().setColumns(List.of("Shard ID", "Ping", "Users", "Guilds", "VCs"));
+            TableBuilder tableBuilder = new TableBuilder(true).setColumns(List.of("Shard ID", "Ping", "Users", "Guilds", "VCs"));
             int shardCount = 1;
             int avgping = 0;
             int vcs = 0;

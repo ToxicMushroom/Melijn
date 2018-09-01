@@ -217,10 +217,10 @@ public class Helpers {
         return Melijn.mySQL.hasPermission(member.getGuild(), member.getUser().getIdLong(), permission) || Melijn.mySQL.hasPermission(member.getGuild(), member.getUser().getIdLong(), "*");
     }
 
-    public static void waitForIt(User user) {
+    public static void waitForIt(long userId) {
         TaskScheduler.async(() -> {
-            MusicManager.usersRequest.remove(user);
-            MusicManager.usersFormToReply.remove(user);
+            MusicManager.userRequestedSongs.remove(userId);
+            MusicManager.userMessageToAnswer.remove(userId);
         }, 30_000);
     }
 

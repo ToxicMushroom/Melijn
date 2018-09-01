@@ -21,16 +21,19 @@ import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.entities.Game;
+import okhttp3.OkHttpClient;
 import org.discordbots.api.client.DiscordBotListAPI;
 
 import javax.security.auth.login.LoginException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Melijn {
 
     private static final Config config = new Config();
     public static long OWNERID = Long.parseLong(config.getValue("ownerid"));
     public static String PREFIX = config.getValue("prefix");
-    public static DiscordBotListAPI dblAPI = null;
+    static DiscordBotListAPI dblAPI = null;
     public static MySQL mySQL = new MySQL(
             config.getValue("ipadress"),
             config.getValue("username"),
@@ -149,11 +152,12 @@ public class Melijn {
 
         Helpers.startTimer(shardManager.getShardById(0), 0);
         Helpers.startTime = System.currentTimeMillis();
+        Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
         /*setting avatar & username
         try {
             File f = new File(System.getProperty("java.io.tmpdir") + "tmp" + ".png");
             f.deleteOnExit();
-            FileUtils.copyURLToFile(new URL("https://melijn.com/files/u/13-06-2018--16.15-11s.png"), f);
+            FileUtils.copyURLToFile(new URL(""), f);
             jda.getSelfUser().getManager().setAvatar(Icon.from(f)).queue();
         } catch (IOException e) {
             e.printStackTrace();

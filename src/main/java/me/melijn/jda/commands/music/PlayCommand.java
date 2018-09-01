@@ -11,7 +11,6 @@ import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.VoiceChannel;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +32,7 @@ public class PlayCommand extends Command {
     }
 
     private List<String> providers = new ArrayList<>(Arrays.asList("yt", "sc", "link", "youtube", "soundcloud"));
-    private MusicManager manager = MusicManager.getManagerinstance();
+    private MusicManager manager = MusicManager.getManagerInstance();
 
     @Override
     protected void execute(CommandEvent event) {
@@ -73,25 +72,16 @@ public class PlayCommand extends Command {
                         songName = songName.replaceAll("\\s+", "");
                         if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) || access) {
                             if (SPlayCommand.isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
-                            if (songName.contains("open.spotify.com")) {
-                                if (songName.matches("https://open.spotify.com/track/\\S+")) {
-                                    JSONObject object = WebUtils.getWebUtilsInstance().getInfoFromSpotifyUrl(songName);
-                                    if (object.has("name"))
-                                        manager.loadTrack(event.getTextChannel(), "ytsearch:" + object.get("name"), event.getAuthor(), false);
-                                    else event.reply("Could not retrieve data from url");
-                                } else {
-                                    event.reply("We only support spotify track (no albums) so make sure your url looks like below\n-> (%id% is a long string of nonsense) https://open.spotify.com/track/%id%");
-                                    return;
-                                }
-                            } else
-                                manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
+                            if (songName.contains("open.spotify.com")) spotiSearch(event, songName);
+                            else manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
                         } else {
                             event.reply("You need the permission `" + commandName + ".link` to execute this command.");
                         }
                     } else {
                         if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".yt", 0) || access) {
                             if (SPlayCommand.isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
-                            manager.loadTrack(event.getTextChannel(), "ytsearch:" + songName, event.getAuthor(), false);
+                            if (WebUtils.getWebUtilsInstance().spotifyTrackUri.matcher(songName).matches()) spotiSearch(event, songName);
+                            else manager.loadTrack(event.getTextChannel(), "ytsearch:" + songName, event.getAuthor(), false);
                         } else {
                             event.reply("You need the permission `" + commandName + ".yt` to execute this command.");
                         }
@@ -101,5 +91,12 @@ public class PlayCommand extends Command {
         } else {
             event.reply(Helpers.guildOnly);
         }
+    }
+
+    private void spotiSearch(CommandEvent event, String url) {
+        WebUtils.getWebUtilsInstance().getTracksFromSpotifyUrl(url,
+                (track) -> manager.loadSpotifyTrack(event.getTextChannel(), track.getName(), track.getArtists(), track.getDurationMs()),
+                (tracks) -> manager.loadSpotifyPlaylist(event.getTextChannel(), tracks),
+                (rip) -> event.reply("Could not retrieve data from spotify"));
     }
 }

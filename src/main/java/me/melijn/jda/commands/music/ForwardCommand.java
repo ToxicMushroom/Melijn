@@ -29,7 +29,7 @@ public class ForwardCommand extends Command {
                     if (event.getMember().getVoiceState().getChannel() == event.getGuild().getSelfMember().getVoiceState().getChannel()) {
                         String[] args = event.getArgs().replaceAll(":", " ").split("\\s+");
                         if (args.length == 1 && args[0].equalsIgnoreCase("")) args = new String[0];
-                        AudioTrack player = MusicManager.getManagerinstance().getPlayer(event.getGuild()).getAudioPlayer().getPlayingTrack();
+                        AudioTrack player = MusicManager.getManagerInstance().getPlayer(event.getGuild()).getAudioPlayer().getPlayingTrack();
                         if (player != null) {
                             long millis = Helpers.parseTimeFromArgs(args);
                             if (millis != -1) {

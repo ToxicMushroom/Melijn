@@ -35,7 +35,7 @@ public class LoopCommand extends Command {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), cmd.getCommandName(), 0)) {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
-            if (MusicManager.getManagerinstance().getPlayer(guild).getListener().getTrackSize() > 0 || MusicManager.getManagerinstance().getPlayer(guild).getAudioPlayer().getPlayingTrack() != null) {
+            if (MusicManager.getManagerInstance().getPlayer(guild).getListener().getTrackSize() > 0 || MusicManager.getManagerInstance().getPlayer(guild).getAudioPlayer().getPlayingTrack() != null) {
                 if (args.length == 0 || args[0].equalsIgnoreCase("")) {
                     if (looped.containsKey(guild.getIdLong())) {
                         if (looped.get(guild.getIdLong())) {

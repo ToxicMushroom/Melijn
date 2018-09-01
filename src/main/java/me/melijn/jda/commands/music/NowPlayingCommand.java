@@ -30,7 +30,7 @@ public class NowPlayingCommand extends Command {
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
 
-    private MusicManager musicManager = MusicManager.getManagerinstance();
+    private MusicManager musicManager = MusicManager.getManagerInstance();
     public final static Pattern youtubePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtube\\.com))/watch(.*?)");
     public final static Pattern youtuBePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtu\\.be/))(.*?)");
 

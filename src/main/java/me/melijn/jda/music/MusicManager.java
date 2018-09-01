@@ -1,5 +1,7 @@
 package me.melijn.jda.music;
 
+import com.wrapper.spotify.model_objects.specification.ArtistSimplified;
+import com.wrapper.spotify.model_objects.specification.PlaylistTrack;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.commands.music.SPlayCommand;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
@@ -11,7 +13,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 
@@ -24,9 +25,9 @@ public class MusicManager {
 
     private final AudioPlayerManager manager = new DefaultAudioPlayerManager();
     private final Map<Long, MusicPlayer> players = new HashMap<>();
-    private static MusicManager managerinstance = new MusicManager();
-    public static HashMap<User, List<AudioTrack>> usersRequest = new HashMap<>();
-    public static HashMap<User, Message> usersFormToReply = new HashMap<>();
+    private static MusicManager managerInstance = new MusicManager();
+    public static HashMap<Long, List<AudioTrack>> userRequestedSongs = new HashMap<>();
+    public static HashMap<Long, Long> userMessageToAnswer = new HashMap<>();
 
     public MusicManager() {
         manager.getConfiguration().setFilterHotSwapEnabled(true);
@@ -35,8 +36,8 @@ public class MusicManager {
         AudioSourceManagers.registerLocalSource(manager);
     }
 
-    public static MusicManager getManagerinstance() {
-        return managerinstance;
+    public static MusicManager getManagerInstance() {
+        return managerInstance;
     }
 
     public synchronized MusicPlayer getPlayer(Guild guild) {
@@ -73,8 +74,8 @@ public class MusicManager {
                 } else {
                     if (tracks.size() > 200)
                         tracks = tracks.subList(0, 200);
-                    if (usersRequest.get(requester) == null && usersFormToReply.get(requester) == null) {
-                        usersRequest.put(requester, tracks);
+                    if (userRequestedSongs.get(requester.getIdLong()) == null && userMessageToAnswer.get(requester.getIdLong()) == null) {
+                        userRequestedSongs.put(requester.getIdLong(), tracks);
                         StringBuilder songs = new StringBuilder();
                         for (AudioTrack track : tracks) {
                             songs.append(track.getInfo().title).append("\n");
@@ -82,20 +83,16 @@ public class MusicManager {
                         String toSend = String.valueOf("You're about to add a playlist which contains these songs:\n" + songs + "Hit :white_check_mark: to accept or :negative_squared_cross_mark: to deny").length() < 2000 ?
                                 "You're about to add a playlist which contains these songs:\n" + songs + "Hit :white_check_mark: to accept or :negative_squared_cross_mark: to deny" :
                                 "You're about to add a playlist which contains " + tracks.size() + " songs.\nHit :white_check_mark: to accept or :negative_squared_cross_mark: to deny.";
-                        channel.sendMessage(toSend).queue(v -> {
-                            usersFormToReply.put(requester, v);
-                            v.addReaction("\u2705").queue();
-                            v.addReaction("\u274E").queue();
-                            Helpers.waitForIt(requester);
-                            v.delete().queueAfter(30, TimeUnit.SECONDS, null,
-                                    (failure) -> {
-                                    });
+                        channel.sendMessage(toSend).queue(message -> {
+                            userMessageToAnswer.put(requester.getIdLong(), message.getIdLong());
+                            message.addReaction("\u2705").queue();
+                            message.addReaction("\u274E").queue();
+                            Helpers.waitForIt(requester.getIdLong());
+                            message.delete().queueAfter(30, TimeUnit.SECONDS, null, (failure) -> {});
                         });
                     } else {
-                        channel.sendMessage("You still have a request to answer. (requests automatically get removed after 30 seconds)")
-                                .queue(v -> v.delete().queueAfter(10, TimeUnit.SECONDS, null,
-                                        (failure) -> {
-                                        }));
+                        channel.sendMessage("You still have a request to answer. (request automatically gets removed after 30 seconds)")
+                                .queue((message) -> message.delete().queueAfter(10, TimeUnit.SECONDS, null, (failure) -> {}));
                     }
                 }
             }
@@ -106,10 +103,7 @@ public class MusicManager {
             }
 
             @Override
-            public void loadFailed(FriendlyException exception) {
-                channel.sendMessage("Error: " + exception.getMessage()).queue();
-                exception.addSuppressed(exception);
-            }
+            public void loadFailed(FriendlyException ignored) {}
         });
 
     }
@@ -139,8 +133,7 @@ public class MusicManager {
             }
 
             @Override
-            public void loadFailed(FriendlyException exception) {
-            }
+            public void loadFailed(FriendlyException ignored) {}
         });
     }
 
@@ -188,9 +181,15 @@ public class MusicManager {
             }
 
             @Override
-            public void loadFailed(FriendlyException exception) {
-                channel.sendMessage("Error: " + exception.getMessage()).queue();
-            }
+            public void loadFailed(FriendlyException ignored) {}
         });
+    }
+
+    public void loadSpotifyTrack(TextChannel textChannel, String name, ArtistSimplified[] artists, Integer durationMs) {
+
+    }
+
+    public void loadSpotifyPlaylist(TextChannel textChannel, PlaylistTrack[] tracks) {
+
     }
 }

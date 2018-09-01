@@ -25,7 +25,7 @@ public class ResumeCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
-            MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
+            MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
             VoiceChannel voiceChannel = event.getGuild().getMember(event.getAuthor()).getVoiceState().getChannel();
             if (voiceChannel == null) voiceChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
             if (voiceChannel != null) {

@@ -24,7 +24,7 @@ public class PauseCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
-            MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
+            MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
             String[] args = event.getArgs().split("\\s+");
             if (player.getAudioPlayer().getPlayingTrack() != null || player.getListener().getTrackSize() > 0) {
                 if (args.length == 0 || args[0].equalsIgnoreCase("")) {

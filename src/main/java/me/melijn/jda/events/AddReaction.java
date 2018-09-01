@@ -22,39 +22,21 @@ public class AddReaction extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+            return;
         Guild guild = event.getGuild();
-        if (MusicManager.usersFormToReply.get(event.getUser()) != null && MusicManager.usersFormToReply.get(event.getUser()).getId().equalsIgnoreCase(event.getMessageId())) {
-            if (event.getMessageId().equals(MusicManager.usersFormToReply.get(event.getUser()).getId())) {
-                MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
-                if (event.getReactionEmote().getName().equalsIgnoreCase("✅")) {
-                    List<AudioTrack> tracks = MusicManager.usersRequest.get(event.getUser());
-                    StringBuilder songs = new StringBuilder();
-                    int i = player.getListener().getTrackSize();
-                    int t = 0;
-                    for (AudioTrack track : tracks) {
-                        i++;
-                        player.playTrack(track);
-                        songs.append("[#").append(i).append("](").append(track.getInfo().uri).append(") - ").append(track.getInfo().title).append("\n");
-                        if (songs.length() > 1700) {
-                            t++;
-                            EmbedBuilder eb = new EmbedBuilder();
-                            eb.setTitle("Added part **#" + t + "**");
-                            eb.setColor(Helpers.EmbedColor);
-                            eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
-                            eb.setDescription(songs);
-                            event.getChannel().sendMessage(eb.build()).queue();
-                            songs = new StringBuilder();
-                        }
-                    }
-                    if (t == 0) {
-                        EmbedBuilder eb = new EmbedBuilder();
-                        eb.setTitle("Added");
-                        eb.setColor(Helpers.EmbedColor);
-                        eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
-                        eb.setDescription(songs);
-                        event.getChannel().sendMessage(eb.build()).queue();
-                    } else {
+        if (MusicManager.userMessageToAnswer.get(event.getUser().getIdLong()) != null && MusicManager.userMessageToAnswer.get(event.getUser().getIdLong()) == event.getMessageIdLong()) {
+            MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
+            if (event.getReactionEmote().getName().equalsIgnoreCase("✅")) {
+                List<AudioTrack> tracks = MusicManager.userRequestedSongs.get(event.getUser().getIdLong());
+                StringBuilder songs = new StringBuilder();
+                int i = player.getListener().getTrackSize();
+                int t = 0;
+                for (AudioTrack track : tracks) {
+                    i++;
+                    player.playTrack(track);
+                    songs.append("[#").append(i).append("](").append(track.getInfo().uri).append(") - ").append(track.getInfo().title).append("\n");
+                    if (songs.length() > 1700) {
                         t++;
                         EmbedBuilder eb = new EmbedBuilder();
                         eb.setTitle("Added part **#" + t + "**");
@@ -62,19 +44,36 @@ public class AddReaction extends ListenerAdapter {
                         eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                         eb.setDescription(songs);
                         event.getChannel().sendMessage(eb.build()).queue();
+                        songs = new StringBuilder();
                     }
-                    MusicManager.usersFormToReply.get(event.getUser()).delete().queue();
-                    MusicManager.usersFormToReply.remove(event.getUser());
-                    MusicManager.usersRequest.remove(event.getUser());
-                } else if (event.getReactionEmote().getName().equalsIgnoreCase("❎")) {
-                    MusicManager.usersFormToReply.get(event.getUser()).delete().queue();
-                    MusicManager.usersFormToReply.remove(event.getUser());
-                    MusicManager.usersRequest.remove(event.getUser());
                 }
+                if (t == 0) {
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.setTitle("Added");
+                    eb.setColor(Helpers.EmbedColor);
+                    eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
+                    eb.setDescription(songs);
+                    event.getChannel().sendMessage(eb.build()).queue();
+                } else {
+                    t++;
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.setTitle("Added part **#" + t + "**");
+                    eb.setColor(Helpers.EmbedColor);
+                    eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
+                    eb.setDescription(songs);
+                    event.getChannel().sendMessage(eb.build()).queue();
+                }
+                event.getChannel().getMessageById(MusicManager.userMessageToAnswer.get(event.getUser().getIdLong())).queue(message -> message.delete().queue());
+                MusicManager.userMessageToAnswer.remove(event.getUser().getIdLong());
+                MusicManager.userRequestedSongs.remove(event.getUser().getIdLong());
+            } else if (event.getReactionEmote().getName().equalsIgnoreCase("❎")) {
+                event.getChannel().getMessageById(MusicManager.userMessageToAnswer.get(event.getUser().getIdLong())).queue(message -> message.delete().queue());
+                MusicManager.userMessageToAnswer.remove(event.getUser().getIdLong());
+                MusicManager.userRequestedSongs.remove(event.getUser().getIdLong());
             }
         }
         if (SPlayCommand.usersFormToReply.get(event.getUser()) != null && SPlayCommand.usersFormToReply.get(event.getUser()).getId().equalsIgnoreCase(event.getMessageId())) {
-            MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
+            MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
             AudioTrack track;
             EmbedBuilder eb = new EmbedBuilder();
             eb.setTitle("Added");

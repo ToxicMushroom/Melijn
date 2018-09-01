@@ -29,7 +29,7 @@ public class VolumeCommand extends Command {
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
             String args[] = event.getArgs().split("\\s+");
-            MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
+            MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
             int volume;
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {
                 event.reply("Current volume: **" + player.getAudioPlayer().getVolume() + "**");

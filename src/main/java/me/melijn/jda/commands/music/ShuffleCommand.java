@@ -31,7 +31,7 @@ public class ShuffleCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
-            MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
+            MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
             Object[] array = player.getListener().tracks.toArray();
             List<Object> tracks = Arrays.asList(array);
             Collections.shuffle(tracks);

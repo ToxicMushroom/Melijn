@@ -27,7 +27,7 @@ public class SeekCommand extends Command {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
             String[] args = event.getArgs().replaceAll(":", " ").split("\\s+");
             if (args.length == 1 && args[0].equalsIgnoreCase("")) args = new String[0];
-            AudioTrack track = MusicManager.getManagerinstance().getPlayer(event.getGuild()).getAudioPlayer().getPlayingTrack();
+            AudioTrack track = MusicManager.getManagerInstance().getPlayer(event.getGuild()).getAudioPlayer().getPlayingTrack();
             if (track != null) {
                 if (args.length != 0 && !args[0].equalsIgnoreCase("")) {
                     if (event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {

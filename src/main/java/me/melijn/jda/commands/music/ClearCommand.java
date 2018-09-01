@@ -24,7 +24,7 @@ public class ClearCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
-            MusicPlayer player = MusicManager.getManagerinstance().getPlayer(event.getGuild());
+            MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
             if (!player.getListener().getTracks().isEmpty()) player.getListener().getTracks().clear();
             event.reply("The queue has been cleared by **" + event.getFullAuthorName() + "**");
         } else {

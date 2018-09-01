@@ -26,7 +26,7 @@ public class NightCoreCommand extends Command {
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
-            MusicPlayer musicPlayer = MusicManager.getManagerinstance().getPlayer(event.getGuild());
+            MusicPlayer musicPlayer = MusicManager.getManagerInstance().getPlayer(event.getGuild());
             if (args.length == 1) {
                 switch (args[0]) {
                     case "true":
