@@ -24,38 +24,28 @@ public class TableBuilder {
 
     public TableBuilder setColumns(Collection<String> headerNames) {
         headerRow.addAll(headerNames);
-        int i = 0;
-        findWidest(headerNames, i);
+        findWidest(headerNames, 0);
         return this;
     }
 
     public TableBuilder addRow(Collection<String> rowValues) {
         valueRows.put(valueRows.size(), new ArrayList<>(rowValues));
-        for (String s : rowValues) {
-            if (columnWidth.getOrDefault(0, 0) < s.length()) {
-                if (columnWidth.replace(0, s.length()) != null) {
-                    columnWidth.put(0, s.length());
-                }
-            }
-        }
+        findWidest(rowValues, 0);
         return this;
     }
 
     public TableBuilder setFooterRow(Collection<String> footerNames) {
         footerRow.addAll(footerNames);
-        int i = 0;
-        findWidest(footerNames, i);
+        findWidest(footerNames, 0);
         return this;
     }
 
-    private void findWidest(Collection<String> footerNames, int i) {
+    private void findWidest(Collection<String> footerNames, int startColumn) {
         for (String s : footerNames) {
-            if (columnWidth.getOrDefault(i, 0) < s.length()) {
-                if (columnWidth.replace(i, s.length()) == null) {
-                    columnWidth.put(i, s.length());
-                }
-                i++;
+            if (columnWidth.getOrDefault(startColumn, 0) < s.length()) {
+                columnWidth.put(startColumn, s.length());
             }
+            startColumn++;
         }
     }
 
@@ -67,7 +57,6 @@ public class TableBuilder {
         if (footerRow.size() > headerRow.size()) {
             throw new IllegalArgumentException("A footer row cannot have more values then the header (you can make empty header slots)");
         }
-
 
 
         int maxRowWidth = (columnWidth.size() * 3) - 2;
@@ -105,10 +94,10 @@ public class TableBuilder {
         for (ArrayList<String> array : valueRows.values()) {
             int numm = 0;
             if (split)
-            if (sb.toString().length() + maxRowWidth > 1997 - (footerRow.size() > 0 ? maxRowWidth * 3 : maxRowWidth)) {
-                toReturn.add(sb.toString() + "```");
-                sb = new StringBuilder();
-            }
+                if (sb.toString().length() + maxRowWidth > 1997 - (footerRow.size() > 0 ? maxRowWidth * 3 : maxRowWidth)) {
+                    toReturn.add(sb.toString() + "```");
+                    sb = new StringBuilder();
+                }
             sb.append("║");
             for (String value : array) {
                 sb.append(" ").append(value).append(spaces, 0, columnWidth.get(numm++) - value.length()).append(" ║");
