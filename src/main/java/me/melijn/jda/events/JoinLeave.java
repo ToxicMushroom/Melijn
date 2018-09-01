@@ -60,15 +60,14 @@ public class JoinLeave extends ListenerAdapter {
 
     @Override
     public void onGuildMemberLeave(GuildMemberLeaveEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
-            return;
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
         Guild guild = event.getGuild();
         User leftUser = event.getUser();
         if (unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong()).contains(leftUser.getIdLong())) {
             Melijn.MAIN_THREAD.submit(() -> {
                 String message = SetLeaveMessageCommand.leaveMessages.getUnchecked(guild.getIdLong());
-                if (SetJoinLeaveChannelCommand.welcomeChannels.containsKey(guild.getIdLong()) && message != null) {
-                    TextChannel welcomeChannel = guild.getTextChannelById(SetJoinLeaveChannelCommand.welcomeChannels.get(guild.getIdLong()));
+                if (message != null && SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guild.getIdLong()) != -1) {
+                    TextChannel welcomeChannel = guild.getTextChannelById(SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guild.getIdLong()));
                     if (welcomeChannel != null && guild.getSelfMember().hasPermission(welcomeChannel, Permission.MESSAGE_WRITE))
                         welcomeChannel.sendMessage(variableFormat(message, guild, leftUser)).queue();
                 }
@@ -83,8 +82,8 @@ public class JoinLeave extends ListenerAdapter {
     }
 
     private static void joinCode(Guild guild, User user) {
-        if (SetJoinLeaveChannelCommand.welcomeChannels.containsKey(guild.getIdLong()) && SetJoinMessageCommand.joinMessages.getUnchecked(guild.getIdLong()) != null) {
-            TextChannel welcomeChannel = guild.getTextChannelById(SetJoinLeaveChannelCommand.welcomeChannels.get(guild.getIdLong()));
+        if (SetJoinMessageCommand.joinMessages.getUnchecked(guild.getIdLong()) != null && SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guild.getIdLong()) != -1) {
+            TextChannel welcomeChannel = guild.getTextChannelById(SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guild.getIdLong()));
             if (welcomeChannel != null && guild.getSelfMember().hasPermission(welcomeChannel, Permission.MESSAGE_WRITE))
                 welcomeChannel.sendMessage(variableFormat(SetJoinMessageCommand.joinMessages.getUnchecked(guild.getIdLong()), guild, user)).queue();
         }
