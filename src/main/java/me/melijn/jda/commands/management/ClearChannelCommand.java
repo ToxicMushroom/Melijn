@@ -60,7 +60,9 @@ public class ClearChannelCommand extends Command {
         messageUser.put(s.getIdLong(), authorId);
         s.addReaction(channel.getJDA().getEmoteById(463250265026330634L)).queue();
         s.addReaction(channel.getJDA().getEmoteById(463250264653299713L)).queue();
-        s.delete().queueAfter(60, TimeUnit.SECONDS, null,
-                (failure) -> {});
+        s.delete().queueAfter(60, TimeUnit.SECONDS, (success) -> {
+            possibleDeletes.remove(channel.getGuild().getIdLong(), messageChannel);
+            messageUser.remove(s.getIdLong(), authorId);
+                }, (failure) -> {});
     }
 }
