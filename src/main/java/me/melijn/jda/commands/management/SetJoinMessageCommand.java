@@ -10,7 +10,6 @@ import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.MessageType;
 import net.dv8tion.jda.core.entities.Guild;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.TimeUnit;
 
@@ -26,11 +25,15 @@ public class SetJoinMessageCommand extends Command {
     }
 
     public static final LoadingCache<Long, String> joinMessages = CacheBuilder.newBuilder()
-            .maximumSize(100)
+            .maximumSize(10)
             .expireAfterAccess(1, TimeUnit.MINUTES)
             .build(new CacheLoader<>() {
-                public String load(@NotNull Long key) {
-                    return Melijn.mySQL.getMessage(key, MessageType.JOIN);
+                public String load(Long key) throws Exception {
+                    String message = Melijn.mySQL.getMessage(key, MessageType.JOIN);
+                    if (message == null) {
+                        throw new Exception("Message not found");
+                    } else
+                    return message;
                 }
             });
 

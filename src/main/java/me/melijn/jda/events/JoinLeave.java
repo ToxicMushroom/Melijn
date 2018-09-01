@@ -18,6 +18,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class JoinLeave extends ListenerAdapter {
@@ -54,7 +55,9 @@ public class JoinLeave extends ListenerAdapter {
                 });
             }
         } else {
-            joinCode(guild, joinedUser);
+            try {
+                joinCode(guild, joinedUser);
+            } catch (ExecutionException ignore) { }
         }
     }
 
@@ -78,11 +81,13 @@ public class JoinLeave extends ListenerAdapter {
 
     public static void verify(Guild guild, User user) {
         removeUnverified(guild, user);
-        joinCode(guild, user);
+        try {
+            joinCode(guild, user);
+        } catch (ExecutionException ignore) { }
     }
 
-    private static void joinCode(Guild guild, User user) {
-        if (SetJoinMessageCommand.joinMessages.getUnchecked(guild.getIdLong()) != null && SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guild.getIdLong()) != -1) {
+    private static void joinCode(Guild guild, User user) throws ExecutionException {
+        if (SetJoinMessageCommand.joinMessages.get(guild.getIdLong()) != null && SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guild.getIdLong()) != -1) {
             TextChannel welcomeChannel = guild.getTextChannelById(SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guild.getIdLong()));
             if (welcomeChannel != null && guild.getSelfMember().hasPermission(welcomeChannel, Permission.MESSAGE_WRITE))
                 welcomeChannel.sendMessage(variableFormat(SetJoinMessageCommand.joinMessages.getUnchecked(guild.getIdLong()), guild, user)).queue();
