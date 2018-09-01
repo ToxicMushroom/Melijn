@@ -366,11 +366,11 @@ public class Helpers {
     }
 
     public static void postMusicLog(MusicPlayer player, AudioTrack track) {
-        if (SetLogChannelCommand.musicLogChannelMap.containsKey(player.getGuild().getIdLong())) {
-            TextChannel tc = player.getGuild().getTextChannelById(SetLogChannelCommand.musicLogChannelMap.get(player.getGuild().getIdLong()));
+        if (SetLogChannelCommand.musicLogChannelCache.getUnchecked(player.getGuild().getIdLong()) != -1) {
+            TextChannel tc = player.getGuild().getTextChannelById(SetLogChannelCommand.musicLogChannelCache.getUnchecked(player.getGuild().getIdLong()));
             if (tc == null) {
-                SetLogChannelCommand.musicLogChannelMap.remove(player.getGuild().getIdLong());
                 Melijn.mySQL.removeChannel(player.getGuild().getIdLong(), ChannelType.MUSIC_LOG);
+                SetLogChannelCommand.musicLogChannelCache.invalidate(player.getGuild().getIdLong());
                 return;
             }
             if (tc.canTalk())

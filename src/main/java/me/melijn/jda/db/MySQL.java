@@ -457,7 +457,7 @@ public class MySQL {
             banned.setAuthor("Banned by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
             if (!target.isBot()) target.openPrivateChannel().complete().sendMessage(banned.build()).queue();
-            long logChannelId = SetLogChannelCommand.banLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+            long logChannelId = SetLogChannelCommand.banLogChannelCache.getUnchecked(guild.getIdLong());
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
                 if (target.isBot())
                     guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget is a bot").queue();
@@ -485,7 +485,7 @@ public class MySQL {
         banned.setAuthor("Banned by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
         if (!target.isBot()) target.openPrivateChannel().complete().sendMessage(banned.build()).queue();
-        long logChannelId = SetLogChannelCommand.banLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+        long logChannelId = SetLogChannelCommand.banLogChannelCache.getUnchecked(guild.getIdLong());
         if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
             if (target.isBot())
                 guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget is a bot").queue();
@@ -522,7 +522,7 @@ public class MySQL {
 
             if (!toUnban.isBot())
                 toUnban.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
-            long logChannelId = SetLogChannelCommand.banLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+            long logChannelId = SetLogChannelCommand.banLogChannelCache.getUnchecked(guild.getIdLong());
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
                 if (toUnban.isBot())
                     guild.getTextChannelById(logChannelId).sendMessage(eb.build() + "\nTarget is a bot").queue();
@@ -545,7 +545,7 @@ public class MySQL {
         embedBuilder.setThumbnail(target.getEffectiveAvatarUrl());
         embedBuilder.setColor(Color.yellow);
 
-        long logChannelId = SetLogChannelCommand.warnLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+        long logChannelId = SetLogChannelCommand.warnLogChannelCache.getUnchecked(guild.getIdLong());
         if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
             if (target.isBot())
                 guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build() + "\nTarget is a bot.").queue();
@@ -569,7 +569,7 @@ public class MySQL {
             muted.setAuthor("Muted by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
             if (!target.isBot()) target.openPrivateChannel().queue(pc -> pc.sendMessage(muted.build()).queue());
-            long logChannelId = SetLogChannelCommand.muteLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+            long logChannelId = SetLogChannelCommand.muteLogChannelCache.getUnchecked(guild.getIdLong());
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
                 if (target.isBot())
                     guild.getTextChannelById(logChannelId).sendMessage(muted.build() + "\nTarget is a bot").queue();
@@ -598,7 +598,7 @@ public class MySQL {
         muted.setAuthor("Muted by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
         if (!target.isBot()) target.openPrivateChannel().queue(pc -> pc.sendMessage(muted.build()).queue());
-        long logChannelId = SetLogChannelCommand.muteLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+        long logChannelId = SetLogChannelCommand.muteLogChannelCache.getUnchecked(guild.getIdLong());
         if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
             if (target.isBot())
                 guild.getTextChannelById(logChannelId).sendMessage(muted.build() + "\nTarget is a bot").queue();
@@ -632,7 +632,7 @@ public class MySQL {
 
                         if (!toUnmute.isBot())
                             toUnmute.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
-                        long logChannelId = SetLogChannelCommand.muteLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+                        long logChannelId = SetLogChannelCommand.muteLogChannelCache.getUnchecked(guild.getIdLong());
                         if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
                             if (toUnmute.isBot())
                                 guild.getTextChannelById(logChannelId).sendMessage(eb.build() + "\nTarget is a bot").queue();
@@ -660,7 +660,7 @@ public class MySQL {
         embedBuilder.setThumbnail(target.getEffectiveAvatarUrl());
         embedBuilder.setColor(Color.ORANGE);
 
-        long logChannelId = SetLogChannelCommand.kickLogChannelMap.getOrDefault(guild.getIdLong(), -1L);
+        long logChannelId = SetLogChannelCommand.kickLogChannelCache.getUnchecked(guild.getIdLong());
         if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
             if (target.isBot())
                 guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build() + "\nTarget is a bot.").queue();
@@ -1241,17 +1241,17 @@ public class MySQL {
 
 
     public HashMap<Long, ArrayList<Integer>> getDisabledCommandsMap() {
-        HashMap<Long, ArrayList<Integer>> toreturn = new HashMap<>();
+        HashMap<Long, ArrayList<Integer>> toReturn = new HashMap<>();
         try (Connection con = ds.getConnection()) {
             PreparedStatement statement = con.prepareStatement("SELECT * FROM disabled_commands");
             ResultSet rs = statement.executeQuery();
             while (rs.next()) {
-                if (toreturn.containsKey(rs.getLong("guildId"))) {
-                    ArrayList<Integer> buffertje = toreturn.get(rs.getLong("guildId"));
+                if (toReturn.containsKey(rs.getLong("guildId"))) {
+                    ArrayList<Integer> buffertje = toReturn.get(rs.getLong("guildId"));
                     buffertje.add(rs.getInt("command"));
-                    toreturn.replace(rs.getLong("guildId"), buffertje);
+                    toReturn.replace(rs.getLong("guildId"), buffertje);
                 } else {
-                    toreturn.put(rs.getLong("guildId"), new ArrayList<>(Collections.singleton(rs.getInt("command"))));
+                    toReturn.put(rs.getLong("guildId"), new ArrayList<>(Collections.singleton(rs.getInt("command"))));
                 }
             }
             rs.close();
@@ -1259,7 +1259,7 @@ public class MySQL {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return toreturn;
+        return toReturn;
     }
 
     public void removeDisabledCommands(long guildId, ArrayList<Integer> buffer) {

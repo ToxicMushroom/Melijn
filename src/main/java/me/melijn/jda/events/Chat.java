@@ -164,10 +164,10 @@ public class Chat extends ListenerAdapter {
         if (Helpers.lastRunTimer3 < (System.currentTimeMillis() - 1_810_000))
             Helpers.startTimer(event.getJDA(), Melijn.dblAPI, 3);
         Guild guild = event.getGuild();
-        if ((SetLogChannelCommand.pmLogChannelMap.containsKey(guild.getIdLong()) ||
-                SetLogChannelCommand.odmLogChannelMap.containsKey(guild.getIdLong()) ||
-                SetLogChannelCommand.sdmLogChannelMap.containsKey(guild.getIdLong()) ||
-                SetLogChannelCommand.fmLogChannelMap.containsKey(guild.getIdLong())) && event.getGuild().getSelfMember().hasPermission(Permission.VIEW_AUDIT_LOGS)) {
+        if (event.getGuild().getSelfMember().hasPermission(Permission.VIEW_AUDIT_LOGS) && (SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
+                SetLogChannelCommand.odmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
+                SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
+                SetLogChannelCommand.fmLogChannelCache.getUnchecked(guild.getIdLong()) != -1)) {
             executorService.execute(() -> {
                 JSONObject message = mySQL.getMessageObject(event.getMessageIdLong());
                 User user = event.getJDA().retrieveUserById(message.getLong("authorId")).complete();
@@ -197,8 +197,8 @@ public class Chat extends ListenerAdapter {
                             User bot = event.getJDA().getSelfUser();
                             eb.setFooter("Deleted by: " + bot.getName() + "#" + bot.getDiscriminator(), bot.getEffectiveAvatarUrl());
                             MessageHelper.filterDeletedMessages.remove(event.getMessageIdLong());
-                            if (SetLogChannelCommand.fmLogChannelMap.containsKey(guild.getIdLong())) {
-                                guild.getTextChannelById(SetLogChannelCommand.fmLogChannelMap.get(guild.getIdLong())).sendMessage(eb.build()).queue();
+                            if (SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong()) != -1) {
+                                guild.getTextChannelById(SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong())).sendMessage(eb.build()).queue();
                             }
                         } else if (now.toInstant().toEpochMilli() - deletionTime.toInstant().toEpochMilli() < 1000) {
                             User deleter = auditLogEntry.getUser();
@@ -209,8 +209,8 @@ public class Chat extends ListenerAdapter {
                             if (purger != null)
                                 eb.setFooter("Purged by: " + purger.getName() + "#" + purger.getDiscriminator(), purger.getEffectiveAvatarUrl());
                             MessageHelper.purgedMessages.remove(event.getMessageIdLong());
-                            if (SetLogChannelCommand.pmLogChannelMap.containsKey(guild.getIdLong())) {
-                                guild.getTextChannelById(SetLogChannelCommand.pmLogChannelMap.get(guild.getIdLong())).sendMessage(eb.build()).queue();
+                            if (SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong()) != -1) {
+                                guild.getTextChannelById(SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong())).sendMessage(eb.build()).queue();
                             }
                         } else if (MessageHelper.selfDeletedMessages.remove(event.getMessageIdLong())) {
                             User deleter = event.getJDA().getSelfUser();
@@ -230,10 +230,10 @@ public class Chat extends ListenerAdapter {
     private void log(Guild guild, User user, EmbedBuilder eb, User deleter) {
         if (deleter != null) {
             eb.setFooter("Deleted by: " + deleter.getName() + "#" + deleter.getDiscriminator(), deleter.getEffectiveAvatarUrl());
-            if (user == deleter && SetLogChannelCommand.sdmLogChannelMap.containsKey(guild.getIdLong())) {
-                guild.getTextChannelById(SetLogChannelCommand.sdmLogChannelMap.get(guild.getIdLong())).sendMessage(eb.build()).queue();
-            } else if (SetLogChannelCommand.odmLogChannelMap.containsKey(guild.getIdLong())) {
-                guild.getTextChannelById(SetLogChannelCommand.odmLogChannelMap.get(guild.getIdLong())).sendMessage(eb.build()).queue();
+            if (user == deleter && SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guild.getIdLong()) != -1) {
+                guild.getTextChannelById(SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guild.getIdLong())).sendMessage(eb.build()).queue();
+            } else if (SetLogChannelCommand.odmLogChannelCache.getUnchecked(guild.getIdLong()) != -1) {
+                guild.getTextChannelById(SetLogChannelCommand.odmLogChannelCache.getUnchecked(guild.getIdLong())).sendMessage(eb.build()).queue();
             }
         }
     }

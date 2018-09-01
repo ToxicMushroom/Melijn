@@ -13,7 +13,6 @@ import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.entities.Guild;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 public class SetLogChannelCommand extends Command {
@@ -29,29 +28,76 @@ public class SetLogChannelCommand extends Command {
 
     public static final LoadingCache<Long, Long> banLogChannelCache = CacheBuilder.newBuilder()
             .maximumSize(10)
-            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .expireAfterAccess(2, TimeUnit.MINUTES)
             .build(new CacheLoader<>() {
                 public Long load(@NotNull Long key) {
                     return Melijn.mySQL.getChannelId(key, ChannelType.BAN_LOG);
                 }
             });
-    public static final LoadingCache<Long, Long> LogChannelCache = CacheBuilder.newBuilder()
+    public static final LoadingCache<Long, Long> muteLogChannelCache = CacheBuilder.newBuilder()
             .maximumSize(10)
-            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .expireAfterAccess(2, TimeUnit.MINUTES)
             .build(new CacheLoader<>() {
                 public Long load(@NotNull Long key) {
-                    return Melijn.mySQL.getChannelId(key, ChannelType.BAN_LOG);
+                    return Melijn.mySQL.getChannelId(key, ChannelType.MUTE_LOG);
                 }
             });
-    public static HashMap<Long, Long> banLogChannelMap = Melijn.mySQL.getChannelMap(ChannelType.BAN_LOG);
-    public static HashMap<Long, Long> muteLogChannelMap = Melijn.mySQL.getChannelMap(ChannelType.MUTE_LOG);
-    public static HashMap<Long, Long> kickLogChannelMap = Melijn.mySQL.getChannelMap(ChannelType.KICK_LOG);
-    public static HashMap<Long, Long> warnLogChannelMap = Melijn.mySQL.getChannelMap(ChannelType.WARN_LOG);
-    public static HashMap<Long, Long> musicLogChannelMap = Melijn.mySQL.getChannelMap(ChannelType.MUSIC_LOG);
-    public static HashMap<Long, Long> sdmLogChannelMap = Melijn.mySQL.getChannelMap(ChannelType.SDM_LOG);
-    public static HashMap<Long, Long> odmLogChannelMap = Melijn.mySQL.getChannelMap(ChannelType.ODM_LOG);
-    public static HashMap<Long, Long> pmLogChannelMap = Melijn.mySQL.getChannelMap(ChannelType.PM_LOG);
-    public static HashMap<Long, Long> fmLogChannelMap = Melijn.mySQL.getChannelMap(ChannelType.FM_LOG);
+    public static final LoadingCache<Long, Long> kickLogChannelCache = CacheBuilder.newBuilder()
+            .maximumSize(10)
+            .expireAfterAccess(2, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                public Long load(@NotNull Long key) {
+                    return Melijn.mySQL.getChannelId(key, ChannelType.KICK_LOG);
+                }
+            });
+    public static final LoadingCache<Long, Long> warnLogChannelCache = CacheBuilder.newBuilder()
+            .maximumSize(10)
+            .expireAfterAccess(2, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                public Long load(@NotNull Long key) {
+                    return Melijn.mySQL.getChannelId(key, ChannelType.WARN_LOG);
+                }
+            });
+    public static final LoadingCache<Long, Long> musicLogChannelCache = CacheBuilder.newBuilder()
+            .maximumSize(10)
+            .expireAfterAccess(2, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                public Long load(@NotNull Long key) {
+                    return Melijn.mySQL.getChannelId(key, ChannelType.MUSIC_LOG);
+                }
+            });
+    public static final LoadingCache<Long, Long> sdmLogChannelCache = CacheBuilder.newBuilder()
+            .maximumSize(10)
+            .expireAfterAccess(2, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                public Long load(@NotNull Long key) {
+                    return Melijn.mySQL.getChannelId(key, ChannelType.SDM_LOG);
+                }
+            });
+    public static final LoadingCache<Long, Long> odmLogChannelCache = CacheBuilder.newBuilder()
+            .maximumSize(10)
+            .expireAfterAccess(2, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                public Long load(@NotNull Long key) {
+                    return Melijn.mySQL.getChannelId(key, ChannelType.ODM_LOG);
+                }
+            });
+    public static final LoadingCache<Long, Long> pmLogChannelCache = CacheBuilder.newBuilder()
+            .maximumSize(10)
+            .expireAfterAccess(2, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                public Long load(@NotNull Long key) {
+                    return Melijn.mySQL.getChannelId(key, ChannelType.PM_LOG);
+                }
+            });
+    public static final LoadingCache<Long, Long> fmLogChannelCache = CacheBuilder.newBuilder()
+            .maximumSize(10)
+            .expireAfterAccess(2, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                public Long load(@NotNull Long key) {
+                    return Melijn.mySQL.getChannelId(key, ChannelType.FM_LOG);
+                }
+            });
 
     @Override
     protected void execute(CommandEvent event) {
@@ -60,23 +106,13 @@ public class SetLogChannelCommand extends Command {
                 Guild guild = event.getGuild();
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 1) {
-                    HashMap<Long, Long> chosenMap = new HashMap<>();
                     ChannelType chosenType;
+                    long id = Helpers.getTextChannelByArgsN(event, args[1]);
                     switch (args[0].toLowerCase()) {
                         case "all":
-                            long id = Helpers.getTextChannelByArgsN(event, args[1]);
                             if (id == -1) {
                                 MessageHelper.sendUsage(this, event);
                             } else if (id == 0L) {
-                                banLogChannelMap.remove(guild.getIdLong());
-                                muteLogChannelMap.remove(guild.getIdLong());
-                                kickLogChannelMap.remove(guild.getIdLong());
-                                warnLogChannelMap.remove(guild.getIdLong());
-                                musicLogChannelMap.remove(guild.getIdLong());
-                                sdmLogChannelMap.remove(guild.getIdLong());
-                                odmLogChannelMap.remove(guild.getIdLong());
-                                pmLogChannelMap.remove(guild.getIdLong());
-                                fmLogChannelMap.remove(guild.getIdLong());
                                 Melijn.MAIN_THREAD.submit(() -> {
                                     Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.BAN_LOG);
                                     Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.MUTE_LOG);
@@ -88,28 +124,18 @@ public class SetLogChannelCommand extends Command {
                                     Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.ODM_LOG);
                                     Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.PM_LOG);
                                     Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.FM_LOG);
+                                    banLogChannelCache.invalidate(guild.getIdLong());
+                                    muteLogChannelCache.invalidate(guild.getIdLong());
+                                    kickLogChannelCache.invalidate(guild.getIdLong());
+                                    warnLogChannelCache.invalidate(guild.getIdLong());
+                                    musicLogChannelCache.invalidate(guild.getIdLong());
+                                    sdmLogChannelCache.invalidate(guild.getIdLong());
+                                    odmLogChannelCache.invalidate(guild.getIdLong());
+                                    pmLogChannelCache.invalidate(guild.getIdLong());
+                                    fmLogChannelCache.invalidate(guild.getIdLong());
                                 });
                                 event.reply("All LogChannels have been changed to nothing by **" + event.getFullAuthorName() + "**");
                             } else {
-                                if (banLogChannelMap.replace(guild.getIdLong(), id) == null)
-                                    banLogChannelMap.put(guild.getIdLong(), id);
-                                if (muteLogChannelMap.replace(guild.getIdLong(), id) == null)
-                                    muteLogChannelMap.put(guild.getIdLong(), id);
-                                if (kickLogChannelMap.replace(guild.getIdLong(), id) == null)
-                                    kickLogChannelMap.put(guild.getIdLong(), id);
-                                if (warnLogChannelMap.replace(guild.getIdLong(), id) == null)
-                                    warnLogChannelMap.put(guild.getIdLong(), id);
-                                if (musicLogChannelMap.replace(guild.getIdLong(), id) == null)
-                                    musicLogChannelMap.put(guild.getIdLong(), id);
-                                if (sdmLogChannelMap.replace(guild.getIdLong(), id) == null)
-                                    sdmLogChannelMap.put(guild.getIdLong(), id);
-                                if (odmLogChannelMap.replace(guild.getIdLong(), id) == null)
-                                    odmLogChannelMap.put(guild.getIdLong(), id);
-                                if (pmLogChannelMap.replace(guild.getIdLong(), id) == null)
-                                    pmLogChannelMap.put(guild.getIdLong(), id);
-                                if (fmLogChannelMap.replace(guild.getIdLong(), id) == null)
-                                    fmLogChannelMap.put(guild.getIdLong(), id);
-                                chosenMap.put(guild.getIdLong(), id);
                                 Melijn.MAIN_THREAD.submit(() -> {
                                     Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.BAN_LOG);
                                     Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.MUTE_LOG);
@@ -121,89 +147,84 @@ public class SetLogChannelCommand extends Command {
                                     Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.ODM_LOG);
                                     Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.PM_LOG);
                                     Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.FM_LOG);
+                                    banLogChannelCache.put(guild.getIdLong(), id);
+                                    muteLogChannelCache.put(guild.getIdLong(), id);
+                                    kickLogChannelCache.put(guild.getIdLong(), id);
+                                    warnLogChannelCache.put(guild.getIdLong(), id);
+                                    musicLogChannelCache.put(guild.getIdLong(), id);
+                                    sdmLogChannelCache.put(guild.getIdLong(), id);
+                                    odmLogChannelCache.put(guild.getIdLong(), id);
+                                    pmLogChannelCache.put(guild.getIdLong(), id);
+                                    fmLogChannelCache.put(guild.getIdLong(), id);
                                 });
                                 event.reply("All LogChannels have been changed to <#" + id + "> by **" + event.getFullAuthorName() + "**");
                             }
                             return;
                         case "ban":
                         case "bans":
-                            chosenMap = banLogChannelMap;
                             chosenType = ChannelType.BAN_LOG;
+                            setLogChannel(event, chosenType, id, banLogChannelCache);
                             break;
                         case "mutes":
                         case "mute":
-                            chosenMap = muteLogChannelMap;
                             chosenType = ChannelType.MUTE_LOG;
+                            setLogChannel(event, chosenType, id, muteLogChannelCache);
                             break;
                         case "kicks":
                         case "kick":
-                            chosenMap = kickLogChannelMap;
                             chosenType = ChannelType.KICK_LOG;
+                            setLogChannel(event, chosenType, id, kickLogChannelCache);
                             break;
                         case "warns":
                         case "warn":
-                            chosenMap = warnLogChannelMap;
                             chosenType = ChannelType.WARN_LOG;
+                            setLogChannel(event, chosenType, id, warnLogChannelCache);
                             break;
                         case "songs":
                         case "music":
-                            chosenMap = musicLogChannelMap;
                             chosenType = ChannelType.MUSIC_LOG;
+                            setLogChannel(event, chosenType, id, musicLogChannelCache);
                             break;
                         case "sdm":
                         case "s-d-m":
                         case "self-deleted-messages":
-                            chosenMap = sdmLogChannelMap;
                             chosenType = ChannelType.SDM_LOG;
+                            setLogChannel(event, chosenType, id, sdmLogChannelCache);
                             break;
                         case "odm":
                         case "o-d-m":
                         case "other-deleted-messages":
-                            chosenMap = odmLogChannelMap;
                             chosenType = ChannelType.ODM_LOG;
+                            setLogChannel(event, chosenType, id, odmLogChannelCache);
                             break;
                         case "pm":
                         case "p-m":
                         case "purged-messages":
-                            chosenMap = pmLogChannelMap;
                             chosenType = ChannelType.PM_LOG;
+                            setLogChannel(event, chosenType, id, pmLogChannelCache);
                             break;
                         case "fm":
                         case "f-m":
                         case "filtered-messages":
-                            chosenMap = fmLogChannelMap;
                             chosenType = ChannelType.FM_LOG;
+                            setLogChannel(event, chosenType, id, fmLogChannelCache);
                             break;
                         default:
                             MessageHelper.sendUsage(this, event);
-                            return;
-                    }
-
-                    long id = Helpers.getTextChannelByArgsN(event, args[1]);
-                    if (id == -1) {
-                        MessageHelper.sendUsage(this, event);
-                    } else if (id == 0L) {
-                        event.reply(chosenType.toString() + "_CHANNEL has been changed from " + (chosenMap.containsKey(guild.getIdLong()) ? "<#" + chosenMap.get(guild.getIdLong()) + ">" : "nothing") + " to nothing by **" + event.getFullAuthorName() + "**");
-                        chosenMap.remove(guild.getIdLong());
-                        Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.removeChannel(guild.getIdLong(), chosenType));
-                    } else {
-                        event.reply(chosenType.toString() + "_CHANNEL has been changed from " + (chosenMap.containsKey(guild.getIdLong()) ? "<#" + chosenMap.get(guild.getIdLong()) + ">" : "nothing") + " to <#" + id + "> by **" + event.getFullAuthorName() + "**");
-                        if (chosenMap.replace(guild.getIdLong(), id) == null) chosenMap.put(guild.getIdLong(), id);
-                        Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setChannel(guild.getIdLong(), id, chosenType));
                     }
                 } else if (args.length == 1 && !args[0].equalsIgnoreCase("")) {
                     switch (args[0].toLowerCase()) {
                         case "all":
                             StringBuilder builder = new StringBuilder();
-                            long banChannelId = !banLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(banLogChannelMap.get(guild.getIdLong())) == null ? -1L : banLogChannelMap.get(guild.getIdLong());
-                            long muteChannelId = !muteLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(muteLogChannelMap.get(guild.getIdLong())) == null ? -1L : muteLogChannelMap.get(guild.getIdLong());
-                            long kickChannelId = !kickLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(kickLogChannelMap.get(guild.getIdLong())) == null ? -1L : kickLogChannelMap.get(guild.getIdLong());
-                            long warnChannelId = !warnLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(warnLogChannelMap.get(guild.getIdLong())) == null ? -1L : warnLogChannelMap.get(guild.getIdLong());
-                            long sdmChannelId = !sdmLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(sdmLogChannelMap.get(guild.getIdLong())) == null ? -1L : sdmLogChannelMap.get(guild.getIdLong());
-                            long odmChannelId = !odmLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(odmLogChannelMap.get(guild.getIdLong())) == null ? -1L : odmLogChannelMap.get(guild.getIdLong());
-                            long pmChannelId = !pmLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(pmLogChannelMap.get(guild.getIdLong())) == null ? -1L : pmLogChannelMap.get(guild.getIdLong());
-                            long fmChannelId = !fmLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(fmLogChannelMap.get(guild.getIdLong())) == null ? -1L : fmLogChannelMap.get(guild.getIdLong());
-                            long musicChannelId = !musicLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(musicLogChannelMap.get(guild.getIdLong())) == null ? -1L : musicLogChannelMap.get(guild.getIdLong());
+                            long banChannelId = banLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(banLogChannelCache.getUnchecked(guild.getIdLong())) == null ? -1L : banLogChannelCache.getUnchecked(guild.getIdLong());
+                            long muteChannelId = muteLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(muteLogChannelCache.getUnchecked(guild.getIdLong())) == null ? -1L : muteLogChannelCache.getUnchecked(guild.getIdLong());
+                            long kickChannelId = kickLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(kickLogChannelCache.getUnchecked(guild.getIdLong())) == null ? -1L : kickLogChannelCache.getUnchecked(guild.getIdLong());
+                            long warnChannelId = warnLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(warnLogChannelCache.getUnchecked(guild.getIdLong())) == null ? -1L : warnLogChannelCache.getUnchecked(guild.getIdLong());
+                            long sdmChannelId = sdmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(sdmLogChannelCache.getUnchecked(guild.getIdLong())) == null ? -1L : sdmLogChannelCache.getUnchecked(guild.getIdLong());
+                            long odmChannelId = odmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(odmLogChannelCache.getUnchecked(guild.getIdLong())) == null ? -1L : odmLogChannelCache.getUnchecked(guild.getIdLong());
+                            long pmChannelId = pmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(pmLogChannelCache.getUnchecked(guild.getIdLong())) == null ? -1L : pmLogChannelCache.getUnchecked(guild.getIdLong());
+                            long fmChannelId = fmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(fmLogChannelCache.getUnchecked(guild.getIdLong())) == null ? -1L : fmLogChannelCache.getUnchecked(guild.getIdLong());
+                            long musicChannelId = musicLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(musicLogChannelCache.getUnchecked(guild.getIdLong())) == null ? -1L : musicLogChannelCache.getUnchecked(guild.getIdLong());
 
                             builder.append("**Log Channels :clipboard:**\n")
                                     .append("  Bans: ").append(banChannelId == -1L ? "unset" : "<#" + banChannelId + ">").append("\n")
@@ -218,73 +239,77 @@ public class SetLogChannelCommand extends Command {
                             event.reply(builder.toString());
                             break;
                         case "ban":
+                        case "bans":
                             event.reply("**Ban Log :hammer:**\n- " +
-                                    ((!banLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(banLogChannelMap.get(guild.getIdLong())) == null) ?
+                                    ((banLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(banLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
                                             "unset" :
-                                            "<#" + banLogChannelMap.get(guild.getIdLong()) + ">"));
+                                            "<#" + banLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
                             break;
                         case "mute":
+                        case "mutes":
                             event.reply("**Mute Log :zipper_mouth:**\n- " +
-                                    ((!muteLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(muteLogChannelMap.get(guild.getIdLong())) == null) ?
+                                    ((muteLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(muteLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
                                             "unset" :
-                                            "<#" + muteLogChannelMap.get(guild.getIdLong()) + ">"));
+                                            "<#" + muteLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
 
                             break;
                         case "kick":
+                        case "kicks":
                             event.reply("**Kick Log :right_facing_fist::anger:**\n- " +
-                                    ((!kickLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(kickLogChannelMap.get(guild.getIdLong())) == null) ?
+                                    ((kickLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(kickLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
                                             "unset" :
-                                            "<#" + kickLogChannelMap.get(guild.getIdLong()) + ">"));
+                                            "<#" + kickLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
 
                             break;
                         case "warn":
+                        case "warns":
                             event.reply("**Warn Log :bangbang:**\n- " +
-                                    ((!warnLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(warnLogChannelMap.get(guild.getIdLong())) == null) ?
+                                    ((warnLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(warnLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
                                             "unset" :
-                                            "<#" + warnLogChannelMap.get(guild.getIdLong()) + ">"));
+                                            "<#" + warnLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
 
                             break;
                         case "music":
                             event.reply("**Music Log :musical_note:**\n- " +
-                                    ((!musicLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(musicLogChannelMap.get(guild.getIdLong())) == null) ?
+                                    ((musicLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(musicLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
                                             "unset" :
-                                            "<#" + musicLogChannelMap.get(guild.getIdLong()) + ">"));
+                                            "<#" + musicLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
 
                             break;
                         case "sdm":
                         case "s-d-m":
                         case "self-deleted-messages":
                             event.reply("**Self Deleted Log :bust_in_silhouette:**\n- " +
-                                    ((!sdmLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(sdmLogChannelMap.get(guild.getIdLong())) == null) ?
+                                    ((sdmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(sdmLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
                                             "unset" :
-                                            "<#" + sdmLogChannelMap.get(guild.getIdLong()) + ">"));
+                                            "<#" + sdmLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
 
                             break;
                         case "odm":
                         case "o-d-m":
                         case "other-deleted-messages":
                             event.reply("**Other Deleted Log :busts_in_silhouette:**\n- " +
-                                    ((!odmLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(odmLogChannelMap.get(guild.getIdLong())) == null) ?
+                                    ((odmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(odmLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
                                             "unset" :
-                                            "<#" + odmLogChannelMap.get(guild.getIdLong()) + ">"));
+                                            "<#" + odmLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
 
                             break;
                         case "pm":
                         case "p-m":
                         case "purged-messages":
                             event.reply("**Purge Log :recycle:**\n- " +
-                                    ((!pmLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(pmLogChannelMap.get(guild.getIdLong())) == null) ?
+                                    ((pmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(pmLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
                                             "unset" :
-                                            "<#" + pmLogChannelMap.get(guild.getIdLong()) + ">"));
+                                            "<#" + pmLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
 
                             break;
                         case "fm":
                         case "f-m":
                         case "filtered-messages":
                             event.reply("**Filter Log :no_bicycles:**\n- " +
-                                    ((!fmLogChannelMap.containsKey(guild.getIdLong()) || guild.getTextChannelById(fmLogChannelMap.get(guild.getIdLong())) == null) ?
+                                    ((fmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(fmLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
                                             "unset" :
-                                            "<#" + fmLogChannelMap.get(guild.getIdLong()) + ">"));
+                                            "<#" + fmLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
                             break;
                         default:
                             MessageHelper.sendUsage(this, event);
@@ -298,6 +323,25 @@ public class SetLogChannelCommand extends Command {
             }
         } else {
             event.reply(Helpers.guildOnly);
+        }
+    }
+
+    private void setLogChannel(CommandEvent event, ChannelType chosenType, long channelId, LoadingCache<Long, Long> chosenChannelCache) {
+        Guild guild = event.getGuild();
+        if (channelId == -1) {
+            MessageHelper.sendUsage(this, event);
+        } else if (channelId == 0L) {
+            event.reply(chosenType.toString() + "_CHANNEL has been changed from " + (muteLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ? "<#" + muteLogChannelCache.getUnchecked(guild.getIdLong()) + ">" : "nothing") + " to nothing by **" + event.getFullAuthorName() + "**");
+            Melijn.MAIN_THREAD.submit(() -> {
+                Melijn.mySQL.removeChannel(guild.getIdLong(), chosenType);
+                muteLogChannelCache.invalidate(guild.getIdLong());
+            });
+        } else {
+            event.reply(chosenType.toString() + "_CHANNEL has been changed from " + (muteLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ? "<#" + muteLogChannelCache.getUnchecked(guild.getIdLong()) + ">" : "nothing") + " to <#" + channelId + "> by **" + event.getFullAuthorName() + "**");
+            Melijn.MAIN_THREAD.submit(() -> {
+                Melijn.mySQL.setChannel(guild.getIdLong(), channelId, chosenType);
+                muteLogChannelCache.put(guild.getIdLong(), channelId);
+            });
         }
     }
 }
