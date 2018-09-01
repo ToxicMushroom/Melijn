@@ -26,7 +26,7 @@ public class SetPrefixCommand extends Command {
     }
 
     public static final LoadingCache<Long, String> prefixes = CacheBuilder.newBuilder()
-            .maximumSize(200)
+            .maximumSize(100)
             .expireAfterAccess(10, TimeUnit.MINUTES)
             .build(new CacheLoader<>() {
                 public String load(@NotNull Long key) {

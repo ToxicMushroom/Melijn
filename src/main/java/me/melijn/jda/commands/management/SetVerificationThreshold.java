@@ -1,5 +1,8 @@
 package me.melijn.jda.commands.management;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
@@ -9,8 +12,9 @@ import me.melijn.jda.blub.Need;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
@@ -23,10 +27,17 @@ public class SetVerificationThreshold extends Command {
         this.aliases = new String[]{"svt"};
         this.needs = new Need[]{Need.GUILD};
         this.category = Category.MANAGEMENT;
-        this.extra = "0 disables the threshold any higher number is the amount of times the user can answer incorrect before being hit with stick";
+        this.extra = "0 disables the threshold any higher number is the amount of times the user can answer incorrect before getting kicked";
     }
 
-    public static HashMap<Long, Integer> guildVerificationThresholds = Melijn.mySQL.getGuildVerificationThresholdMap();
+    public static final LoadingCache<Long, Integer> verificationThresholdCache = CacheBuilder.newBuilder()
+            .maximumSize(10)
+            .expireAfterAccess(2, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                public Integer load(@NotNull Long key) {
+                    return Melijn.mySQL.getGuildVerificationThreshold(key);
+                }
+            });
 
     @Override
     protected void execute(CommandEvent event) {
@@ -39,14 +50,13 @@ public class SetVerificationThreshold extends Command {
                     if (i == 0) {
                         TaskScheduler.async(() -> {
                             Melijn.mySQL.removeVerificationThreshold(guild.getIdLong());
-                            guildVerificationThresholds.remove(guild.getIdLong());
+                            verificationThresholdCache.invalidate(guild.getIdLong());
                         });
                         event.reply("The VerificationThreshold has been disabled by **" + event.getFullAuthorName() + "**");
                     } else {
                         TaskScheduler.async(() -> {
                             Melijn.mySQL.setVerificationThreshold(guild.getIdLong(), i);
-                            if (guildVerificationThresholds.replace(guild.getIdLong(), i) == null)
-                                guildVerificationThresholds.put(guild.getIdLong(), i);
+                            verificationThresholdCache.put(guild.getIdLong(), i);
                         });
                         event.reply("The VerificationThreshold has been set to **" + i + "** by **" + event.getFullAuthorName() + "**");
                     }
@@ -54,7 +64,7 @@ public class SetVerificationThreshold extends Command {
                     MessageHelper.sendUsage(this, event);
                 }
             } else {
-                event.reply("The VerificationThreshold is **" + (guildVerificationThresholds.containsKey(guild.getIdLong()) ? guildVerificationThresholds.get(guild.getIdLong()) : "disabled") + "**");
+                event.reply("The VerificationThreshold is **" + (verificationThresholdCache.getUnchecked(guild.getIdLong()) == 0 ? "disabled" : verificationThresholdCache.getUnchecked(guild.getIdLong())) + "**");
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

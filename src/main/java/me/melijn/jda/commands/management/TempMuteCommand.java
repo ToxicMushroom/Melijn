@@ -30,55 +30,58 @@ public class TempMuteCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-            if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
-                String[] args = event.getArgs().split("\\s+");
-                Guild guild = event.getGuild();
-                if (args.length > 1) {
-                    User target = Helpers.getUserByArgsN(event, args[0]);
-                    String time = args[1];
+        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+            String[] args = event.getArgs().split("\\s+");
+            Guild guild = event.getGuild();
+            if (args.length > 1) {
+                User target = Helpers.getUserByArgsN(event, args[0]);
+                String time = args[1];
 
-                    if (target != null && guild.getMember(target) != null) {
-                        if (MessageHelper.isRightFormat(time)) {
-                            if (SetMuteRoleCommand.muteRoles.getOrDefault(guild.getIdLong(), -1L) == -1) {
-                                event.reply("**No mute role set!**\nCreating Role..");
-                                createMuteRole(guild);
-                                event.reply("Role created. You can change the settings of the role to your desires in the role managment tab.\nThis role wil be added to the muted users so it should have no talk permissions!");
-                            }
-                            Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoles.getOrDefault(guild.getIdLong(), -1L));
-                            if (muteRole != null) {
-                                if (Helpers.canNotInteract(event, muteRole)) return;
-                                guild.getController().addSingleRoleToMember(guild.getMember(target), muteRole).queue(s -> {
-                                    String reason = event.getArgs().replaceFirst(args[0] + "\\s+" + args[1] + "\\s+|" + args[0] + "\\s+" + args[1], "");
-                                    if (reason.length() <= 1000 && Melijn.mySQL.setTempMute(event.getAuthor(), target, guild, reason, MessageHelper.easyFormatToSeconds(time))) {
-                                        event.getMessage().addReaction("\u2705").queue();
-                                    } else {
-                                        event.getMessage().addReaction("\u274C").queue();
-                                    }
-                                });
-                            } else {
-                                event.reply("Mute role is unset (cannot mute)");
-                            }
+                if (target != null && guild.getMember(target) != null) {
+                    if (MessageHelper.isRightFormat(time)) {
+                        Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoleCache.getUnchecked(guild.getIdLong()));
+                        if (muteRole == null) {
+                            event.reply("**No mute role set!**\nCreating Role..");
+                            muteRole = guild.getRoleById(createMuteRole(guild));
+                            event.reply("Role created. You can change the settings of the role to your desires in the role managment tab.\nThis role wil be added to the muted members so it shouldn't have talk permissions!");
+                        }
+                        if (muteRole != null) {
+                            if (Helpers.canNotInteract(event, muteRole)) return;
+                            guild.getController().addSingleRoleToMember(guild.getMember(target), muteRole).queue(s -> {
+                                String reason = event.getArgs().replaceFirst(args[0] + "\\s+" + args[1] + "\\s+|" + args[0] + "\\s+" + args[1], "");
+                                if (reason.length() <= 1000 && Melijn.mySQL.setTempMute(event.getAuthor(), target, guild, reason, MessageHelper.easyFormatToSeconds(time))) {
+                                    event.getMessage().addReaction("\u2705").queue();
+                                } else {
+                                    event.getMessage().addReaction("\u274C").queue();
+                                }
+                            });
                         } else {
-                            event.reply("`" + time + "` is not the right format.\n**Format:** (number)(*timeunit*) *timeunit* = s, m, h, d, M or y\n**Example:** 1__m__ (1 __minute__)");
+                            event.reply("Error: contact support -> err: 'TempMuteCommand <-> muterole is null'");
                         }
                     } else {
-                        event.reply("Unknown " + (target == null ? "user" : "member"));
+                        event.reply("`" + time + "` is not the right format.\n**Format:** (number)(*timeunit*) *timeunit* = s, m, h, d, M or y\n**Example:** 1__m__ (1 __minute__)");
                     }
                 } else {
-                    MessageHelper.sendUsage(this, event);
+                    event.reply("Unknown " + (target == null ? "user" : "member"));
                 }
             } else {
-                event.reply("You need the permission `" + commandName + "` to execute this command.");
+                MessageHelper.sendUsage(this, event);
             }
+        } else {
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
+        }
     }
 
-    static void createMuteRole(Guild guild) {
+    static long createMuteRole(Guild guild) {
         long roleId = guild.getController().createRole()
                 .setColor(Color.gray)
                 .setMentionable(false)
                 .setName("muted")
                 .setPermissions(Permission.MESSAGE_READ, Permission.MESSAGE_HISTORY, Permission.VOICE_CONNECT).complete().getIdLong();
-        TaskScheduler.async(() -> Melijn.mySQL.setRole(guild.getIdLong(), roleId, RoleType.MUTE));
-        SetMuteRoleCommand.muteRoles.putIfAbsent(guild.getIdLong(), roleId);
+        TaskScheduler.async(() -> {
+            Melijn.mySQL.setRole(guild.getIdLong(), roleId, RoleType.MUTE);
+            SetMuteRoleCommand.muteRoleCache.put(guild.getIdLong(), roleId);
+        });
+        return roleId;
     }
 }

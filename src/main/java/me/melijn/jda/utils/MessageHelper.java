@@ -20,6 +20,7 @@ public class MessageHelper {
     public static HashMap<Long, String> filterDeletedMessages = new HashMap<>();
     public static HashMap<Long, Long> purgedMessages = new HashMap<>();
     public static List<Long> selfDeletedMessages = new ArrayList<>();
+    public static String spaces = "                                                                                                    ";
 
     public static String millisToDate(long millis) {
         Calendar start = Calendar.getInstance();

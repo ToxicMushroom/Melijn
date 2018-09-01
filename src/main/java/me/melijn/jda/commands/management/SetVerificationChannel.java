@@ -29,10 +29,10 @@ public class SetVerificationChannel extends Command {
 
     public static final LoadingCache<Long, Long> verificationChannelsCache = CacheBuilder.newBuilder()
             .maximumSize(10)
-            .expireAfterAccess(1, TimeUnit.MINUTES)
+            .expireAfterAccess(2, TimeUnit.MINUTES)
             .build(new CacheLoader<>() {
                 public Long load(@NotNull Long key) {
-                    return Melijn.mySQL.getVerificationChannel(key);
+                    return Melijn.mySQL.getChannelId(key, ChannelType.VERIFICATION);
                 }
             });
 

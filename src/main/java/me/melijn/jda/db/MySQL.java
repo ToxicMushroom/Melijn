@@ -24,13 +24,14 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import static me.melijn.jda.utils.MessageHelper.spaces;
+
 public class MySQL {
 
     private String ip;
     private String pass;
     private String user;
     private String dbname;
-    private String spaces = "                                                  ";
     private HikariDataSource ds;
     Logger logger = LogManager.getLogger(MySQL.class.getName());
 
@@ -925,12 +926,9 @@ public class MySQL {
 
     public boolean setRole(long guildId, long roleId, RoleType type) {
         if (roleId == -1L) {
-            executeUpdate("DELETE FROM " + type.toString().toLowerCase() + "_roles guildId= ?", guildId);
-        }
-        if (getRoleId(guildId, type) == -1) {
-            executeUpdate("INSERT INTO " + type.toString().toLowerCase() + "_roles (guildId, roleId) VALUES (?, ?)", guildId, roleId);
+            removeRole(guildId, type);
         } else {
-            executeUpdate("UPDATE " + type.toString().toLowerCase() + "_roles SET roleId= ? WHERE guildId= ?", roleId, guildId);
+            executeUpdate("INSERT INTO " + type.toString().toLowerCase() + "_roles (guildId, roleId) VALUES (?, ?) ON DUPLICATE KEY UPDATE roleId= ?", guildId, roleId, roleId);
         }
         return true;
     }
@@ -1311,19 +1309,36 @@ public class MySQL {
         return members;
     }
 
-    public Long getVerificationChannel(Long guildId) {
-        long retval = -1;
+    public int getGuildVerificationThreshold(Long guildId) {
+        int threshold = 0;
         try (Connection con = ds.getConnection()) {
-            PreparedStatement getVerificationChannel = con.prepareStatement("SELECT * FROM verification_channels WHERE guildId= ?");
-            getVerificationChannel.setLong(1, guildId);
-            ResultSet rs = getVerificationChannel.executeQuery();
+            PreparedStatement getVerificationThreshold = con.prepareStatement("SELECT * FROM verification_thresholds WHERE guildId= ?");
+            getVerificationThreshold.setLong(1, guildId);
+            ResultSet rs = getVerificationThreshold.executeQuery();
             if (rs.next())
-                retval = rs.getLong("channelId");
+                threshold = rs.getInt("guildId");
             rs.close();
-            getVerificationChannel.close();
+            getVerificationThreshold.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return retval;
+        return threshold;
     }
+
+    public String getGuildVerificationCode(Long guildId) {
+        String code = null;
+        try (Connection con = ds.getConnection()) {
+            PreparedStatement getVerificationThreshold = con.prepareStatement("SELECT * FROM verification_codes WHERE guildId= ?");
+            getVerificationThreshold.setLong(1, guildId);
+            ResultSet rs = getVerificationThreshold.executeQuery();
+            if (rs.next())
+                code = rs.getString("guildId");
+            rs.close();
+            getVerificationThreshold.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return code;
+    }
+
 }

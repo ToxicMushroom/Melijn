@@ -5,6 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.ChannelType;
+import me.melijn.jda.blub.RoleType;
 import me.melijn.jda.commands.developer.EvalCommand;
 import me.melijn.jda.commands.management.*;
 import me.melijn.jda.utils.TaskScheduler;
@@ -47,8 +48,8 @@ public class JoinLeave extends ListenerAdapter {
                 newList.add(joinedUser.getIdLong());
                 Melijn.mySQL.addUnverifiedUser(guild.getIdLong(), joinedUser.getIdLong());
                 unVerifiedGuildMembersCache.put(guild.getIdLong(), newList);
-                if (SetUnverifiedRole.unverifiedRoles.containsKey(guild.getIdLong()) && guild.getRoleById(SetUnverifiedRole.unverifiedRoles.get(guild.getIdLong())) != null)
-                    guild.getController().addSingleRoleToMember(event.getMember(), guild.getRoleById(SetUnverifiedRole.unverifiedRoles.get(guild.getIdLong()))).reason("unverified user").queue();
+                if (guild.getRoleById(SetUnverifiedRole.unverifiedRoleCache.getUnchecked(guild.getIdLong())) != null)
+                    guild.getController().addSingleRoleToMember(event.getMember(), guild.getRoleById(SetUnverifiedRole.unverifiedRoleCache.getUnchecked(guild.getIdLong()))).reason("unverified user").queue();
             } else {
                 TaskScheduler.async(() -> {
                     Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.VERIFICATION);
@@ -58,19 +59,21 @@ public class JoinLeave extends ListenerAdapter {
         } else {
             try {
                 joinCode(guild, joinedUser);
-            } catch (ExecutionException ignore) { }
+            } catch (ExecutionException ignore) {
+            }
         }
     }
 
     @Override
     public void onGuildMemberLeave(GuildMemberLeaveEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+            return;
         Guild guild = event.getGuild();
         User leftUser = event.getUser();
         if (unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong()).contains(leftUser.getIdLong())) {
             TaskScheduler.async(() -> {
                 String message = SetLeaveMessageCommand.leaveMessages.getUnchecked(guild.getIdLong());
-                if (message != null && SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guild.getIdLong()) != -1) {
+                if (message != null) {
                     TextChannel welcomeChannel = guild.getTextChannelById(SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guild.getIdLong()));
                     if (welcomeChannel != null && guild.getSelfMember().hasPermission(welcomeChannel, Permission.MESSAGE_WRITE))
                         welcomeChannel.sendMessage(variableFormat(message, guild, leftUser)).queue();
@@ -84,25 +87,24 @@ public class JoinLeave extends ListenerAdapter {
         removeUnverified(guild, user);
         try {
             joinCode(guild, user);
-        } catch (ExecutionException ignore) { }
+        } catch (ExecutionException ignore) {
+        }
     }
 
     private static void joinCode(Guild guild, User user) throws ExecutionException {
-        if (SetJoinMessageCommand.joinMessages.get(guild.getIdLong()) != null && SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guild.getIdLong()) != -1) {
+        if (SetJoinMessageCommand.joinMessages.get(guild.getIdLong()) != null) {
             TextChannel welcomeChannel = guild.getTextChannelById(SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guild.getIdLong()));
             if (welcomeChannel != null && guild.getSelfMember().hasPermission(welcomeChannel, Permission.MESSAGE_WRITE))
                 welcomeChannel.sendMessage(variableFormat(SetJoinMessageCommand.joinMessages.getUnchecked(guild.getIdLong()), guild, user)).queue();
         }
         if (guild.getSelfMember().getRoles().size() > 0) {
-            if (SetJoinRoleCommand.joinRoles.containsKey(guild.getIdLong())) {
-                Role joinRole = guild.getRoleById(SetJoinRoleCommand.joinRoles.get(guild.getIdLong()));
-                if (joinRole != null && joinRole.getPosition() < guild.getSelfMember().getRoles().get(0).getPosition())
-                    guild.getController().addSingleRoleToMember(guild.getMember(user), guild.getRoleById(SetJoinRoleCommand.joinRoles.get(guild.getIdLong()))).queue();
-            }
+            Role joinRole = guild.getRoleById(SetJoinRoleCommand.joinRoleCache.get(guild.getIdLong()));
+            if (joinRole != null && guild.getSelfMember().getRoles().get(0).canInteract(joinRole))
+                guild.getController().addSingleRoleToMember(guild.getMember(user), joinRole).queue();
             TaskScheduler.async(() -> {
-                if (Melijn.mySQL.isUserMuted(user.getIdLong(), guild.getIdLong()) && SetMuteRoleCommand.muteRoles.containsKey(guild.getIdLong())) {
-                    Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoles.get(guild.getIdLong()));
-                    if (muteRole != null && muteRole.getPosition() < guild.getSelfMember().getRoles().get(0).getPosition())
+                Role muteRole = guild.getRoleById(Melijn.mySQL.getRoleId(guild.getIdLong(), RoleType.MUTE));
+                if (muteRole != null && Melijn.mySQL.isUserMuted(user.getIdLong(), guild.getIdLong())) {
+                    if (guild.getSelfMember().getRoles().get(0).canInteract(muteRole))
                         guild.getController().addSingleRoleToMember(guild.getMember(user), muteRole).queue();
                 }
             });
@@ -116,8 +118,8 @@ public class JoinLeave extends ListenerAdapter {
             Melijn.mySQL.removeUnverifiedUser(guild.getIdLong(), user.getIdLong());
             unVerifiedGuildMembersCache.put(guild.getIdLong(), newList);
         });
-        if (guild.getMember(user) != null && SetUnverifiedRole.unverifiedRoles.containsKey(guild.getIdLong()) && guild.getRoleById(SetUnverifiedRole.unverifiedRoles.get(guild.getIdLong())) != null)
-            guild.getController().removeSingleRoleFromMember(guild.getMember(user), guild.getRoleById(SetUnverifiedRole.unverifiedRoles.get(guild.getIdLong()))).reason("verified user").queue();
+        if (guild.getMember(user) != null && guild.getRoleById(SetUnverifiedRole.unverifiedRoleCache.getUnchecked(guild.getIdLong())) != null)
+            guild.getController().removeSingleRoleFromMember(guild.getMember(user), guild.getRoleById(SetUnverifiedRole.unverifiedRoleCache.getUnchecked(guild.getIdLong()))).reason("verified user").queue();
     }
 
     private static String variableFormat(String s, Guild guild, User user) {

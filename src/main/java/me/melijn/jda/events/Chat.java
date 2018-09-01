@@ -31,6 +31,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -112,46 +113,52 @@ public class Chat extends ListenerAdapter {
         }
 
         if (SetVerificationChannel.verificationChannelsCache.getUnchecked(event.getGuild().getIdLong()) == event.getChannel().getIdLong()) {
-            if (SetVerificationCode.guildCodes.containsKey(event.getGuild().getIdLong())) {
-                if (event.getMessage().getContentRaw().equalsIgnoreCase(SetVerificationCode.guildCodes.get(event.getGuild().getIdLong()))) {
-                    event.getMessage().delete().reason("Verification Channel").queue(s -> MessageHelper.selfDeletedMessages.add(event.getMessageIdLong()));
-                    JoinLeave.verify(event.getGuild(), event.getAuthor());
-                    if (SetVerificationThreshold.guildVerificationThresholds.containsKey(event.getGuild().getIdLong()) && guildUserVerifyTries.containsKey(event.getGuild().getIdLong())) {
-                        HashMap<Long, Integer> userTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
-                        userTriesBuffer.remove(event.getAuthor().getIdLong());
-                        guildUserVerifyTries.replace(event.getGuild().getIdLong(), userTriesBuffer);
-                    }
-                } else if (SetVerificationThreshold.guildVerificationThresholds.containsKey(event.getGuild().getIdLong())) {
-                    event.getMessage().delete().queue();
-                    if (guildUserVerifyTries.containsKey(event.getGuild().getIdLong())) {
-                        if (guildUserVerifyTries.get(event.getGuild().getIdLong()).containsKey(event.getAuthor().getIdLong())) {
-                            HashMap<Long, Integer> userTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
-                            userTriesBuffer.replace(event.getAuthor().getIdLong(), userTriesBuffer.get(event.getAuthor().getIdLong()) + 1);
-                            guildUserVerifyTries.replace(event.getGuild().getIdLong(), userTriesBuffer);
+            try {
+                if (SetVerificationCode.verificationCodeCache.get(event.getGuild().getIdLong()) != null) {
+                    if (event.getMessage().getContentRaw().equalsIgnoreCase(SetVerificationCode.verificationCodeCache.get(event.getGuild().getIdLong()))) {
+                        event.getMessage().delete().reason("Verification Channel").queue(s -> MessageHelper.selfDeletedMessages.add(event.getMessageIdLong()));
+                        JoinLeave.verify(event.getGuild(), event.getAuthor());
+                        removeMemberFromTriesCache(event);
+                    } else if (SetVerificationThreshold.verificationThresholdCache.get(event.getGuild().getIdLong()) != 0) {
+                        event.getMessage().delete().reason("Verification Channel").queue(s -> MessageHelper.selfDeletedMessages.add(event.getMessageIdLong()));
+                        if (guildUserVerifyTries.containsKey(event.getGuild().getIdLong())) {
+                            if (guildUserVerifyTries.get(event.getGuild().getIdLong()).containsKey(event.getAuthor().getIdLong())) {
+                                HashMap<Long, Integer> userTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
+                                userTriesBuffer.replace(event.getAuthor().getIdLong(), userTriesBuffer.get(event.getAuthor().getIdLong()) + 1);
+                                guildUserVerifyTries.replace(event.getGuild().getIdLong(), userTriesBuffer);
+                            } else {
+                                HashMap<Long, Integer> userTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
+                                userTriesBuffer.put(event.getAuthor().getIdLong(), 1);
+                                guildUserVerifyTries.replace(event.getGuild().getIdLong(), userTriesBuffer);
+                            }
                         } else {
-                            HashMap<Long, Integer> userTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
+                            HashMap<Long, Integer> userTriesBuffer = new HashMap<>();
                             userTriesBuffer.put(event.getAuthor().getIdLong(), 1);
-                            guildUserVerifyTries.replace(event.getGuild().getIdLong(), userTriesBuffer);
+                            guildUserVerifyTries.put(event.getGuild().getIdLong(), userTriesBuffer);
+                        }
+                        if (guildUserVerifyTries.get(event.getGuild().getIdLong()).get(event.getAuthor().getIdLong()) == SetVerificationThreshold.verificationThresholdCache.get(event.getGuild().getIdLong())) {
+                            event.getGuild().getController().kick(event.getMember()).reason("Failed verification").queue();
+                            removeMemberFromTriesCache(event);
                         }
                     } else {
-                        HashMap<Long, Integer> userTriesBuffer = new HashMap<>();
-                        userTriesBuffer.put(event.getAuthor().getIdLong(), 1);
-                        guildUserVerifyTries.put(event.getGuild().getIdLong(), userTriesBuffer);
-                    }
-                    if (guildUserVerifyTries.get(event.getGuild().getIdLong()).get(event.getAuthor().getIdLong()) == SetVerificationThreshold.guildVerificationThresholds.get(event.getGuild().getIdLong())) {
-                        event.getGuild().getController().kick(event.getMember()).reason("Failed verification").queue();
-                        if (SetVerificationThreshold.guildVerificationThresholds.containsKey(event.getGuild().getIdLong()) && guildUserVerifyTries.containsKey(event.getGuild().getIdLong())) {
-                            HashMap<Long, Integer> userTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
-                            userTriesBuffer.remove(event.getAuthor().getIdLong());
-                            guildUserVerifyTries.replace(event.getGuild().getIdLong(), userTriesBuffer);
-                        }
+                        event.getMessage().delete().reason("Verification Channel").queue(s -> MessageHelper.selfDeletedMessages.add(event.getMessageIdLong()));
                     }
                 }
+            } catch (ExecutionException e) {
+                e.printStackTrace();
             }
         }
     }
 
-    private String spaces = "                                                                                  ";
+    private void removeMemberFromTriesCache(GuildMessageReceivedEvent event) {
+        if (guildUserVerifyTries.containsKey(event.getGuild().getIdLong())) {
+            HashMap<Long, Integer> memberTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
+            memberTriesBuffer.remove(event.getAuthor().getIdLong());
+            if (memberTriesBuffer.size() > 0) guildUserVerifyTries.put(event.getGuild().getIdLong(), memberTriesBuffer);
+            else guildUserVerifyTries.remove(event.getGuild().getIdLong());
+        }
+    }
+
 
     @Override
     public void onGuildMessageDelete(GuildMessageDeleteEvent event) {
@@ -186,7 +193,7 @@ public class Chat extends ListenerAdapter {
                         deletionTime = deletionTime.plusSeconds(1).plusNanos((event.getJDA().getPing() * 1_000_000));
 
                         EmbedBuilder eb = new EmbedBuilder();
-                        eb.setTitle("Message deleted in #" + event.getChannel().getName() + spaces.substring(0, 45 + user.getName().length()) + "\u200B");
+                        eb.setTitle("Message deleted in #" + event.getChannel().getName() + MessageHelper.spaces.substring(0, 45 + user.getName().length()) + "\u200B");
                         eb.setThumbnail(user.getEffectiveAvatarUrl());
                         eb.setColor(Color.decode("#000001"));
                         eb.setDescription("```LDIF" + "\nSender: " + user.getName() + "#" + user.getDiscriminator() + "\nMessage: " + message.getString("content").replaceAll("`", "´").replaceAll("\n", " ") + "\nSenderID: " + user.getId() + "\nSent Time: " + MessageHelper.millisToDate(message.getLong("sentTime")) + "```");

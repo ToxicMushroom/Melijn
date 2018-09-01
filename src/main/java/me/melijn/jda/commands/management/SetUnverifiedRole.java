@@ -1,5 +1,8 @@
 package me.melijn.jda.commands.management;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.*;
@@ -7,8 +10,9 @@ import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
@@ -23,31 +27,41 @@ public class SetUnverifiedRole extends Command {
         this.aliases = new String[]{"sur"};
     }
 
-    public static HashMap<Long, Long> unverifiedRoles = Melijn.mySQL.getRoleMap(RoleType.UNVERIFIED);
+    public static final LoadingCache<Long, Long> unverifiedRoleCache = CacheBuilder.newBuilder()
+            .maximumSize(10)
+            .expireAfterAccess(2, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                public Long load(@NotNull Long key) {
+                    return Melijn.mySQL.getRoleId(key, RoleType.UNVERIFIED);
+                }
+            });
 
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
             String[] args = event.getArgs().split("\\s+");
-            long role = unverifiedRoles.getOrDefault(guild.getIdLong(), -1L);
+            long role = unverifiedRoleCache.getUnchecked(guild.getIdLong());
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {
                 if (role != -1 && guild.getRoleById(role) != null)
                     event.reply("Current UnverifiedRole: **@" + guild.getRoleById(role).getName() + "**");
                 else event.reply("Current UnverifiedRole is unset");
             } else {
                 if (args[0].equalsIgnoreCase("null")) {
-                    unverifiedRoles.remove(guild.getIdLong());
-                    TaskScheduler.async(() -> Melijn.mySQL.removeRole(guild.getIdLong(), RoleType.UNVERIFIED));
+                    TaskScheduler.async(() -> {
+                        Melijn.mySQL.removeRole(guild.getIdLong(), RoleType.UNVERIFIED);
+                        unverifiedRoleCache.invalidate(guild.getIdLong());
+                    });
                     event.reply("UnverifiedRole has been unset by **" + event.getFullAuthorName() + "**");
                 } else {
                     Role unverifiedRole = Helpers.getRoleByArgs(event, args[0]);
                     if (unverifiedRole != null) {
                         if (unverifiedRole.getIdLong() != guild.getIdLong()) {
                             if (guild.getSelfMember().getRoles().size() != 0 && guild.getSelfMember().getRoles().get(0).canInteract(unverifiedRole)) {
-                                if (unverifiedRoles.replace(guild.getIdLong(), unverifiedRole.getIdLong()) == null)
-                                    unverifiedRoles.put(guild.getIdLong(), unverifiedRole.getIdLong());
-                                TaskScheduler.async(() -> Melijn.mySQL.setRole(guild.getIdLong(), unverifiedRole.getIdLong(), RoleType.UNVERIFIED));
+                                TaskScheduler.async(() -> {
+                                    Melijn.mySQL.setRole(guild.getIdLong(), unverifiedRole.getIdLong(), RoleType.UNVERIFIED);
+                                    unverifiedRoleCache.put(guild.getIdLong(), unverifiedRole.getIdLong());
+                                });
                                 event.reply("UnverifiedRole changed to **@" + unverifiedRole.getName() + "** by **" + event.getFullAuthorName() + "**");
                             }
                             else {

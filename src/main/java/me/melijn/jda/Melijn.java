@@ -40,11 +40,9 @@ public class Melijn {
     public static void main(String[] args) throws LoginException {
         new WebUtils();
         mySQL.executeUpdate("TRUNCATE TABLE commands");
+
         CommandClientBuilder client = new CommandClientBuilder();
-
         client.setOwnerId(OWNERID);
-        client.setPrefix(PREFIX);
-
         client.addCommands(new BirdCommand(),
                 new UrbanCommand(),
                 new BlurpleCommand(),

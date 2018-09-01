@@ -37,12 +37,12 @@ public class MuteCommand extends Command {
             if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                 User target = Helpers.getUserByArgsN(event, args[0]);
                 if (target != null && event.getGuild().getMember(target) != null) {
-                    if (SetMuteRoleCommand.muteRoles.getOrDefault(guild.getIdLong(), -1L) == -1) {
+                    Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoleCache.getUnchecked(guild.getIdLong()));
+                    if (muteRole == null) {
                         event.reply("**No mute role set!**\nCreating Role..");
                         TempMuteCommand.createMuteRole(guild);
                         event.reply("Role created. You can change the settings of the role to your desires in the role managment tab.\nThis role wil be added to the muted users so it should have no talk permissions!");
                     }
-                    Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoles.getOrDefault(guild.getIdLong(), -1L));
                     if (muteRole != null) {
                         if (Helpers.canNotInteract(event, muteRole)) return;
                         guild.getController().addSingleRoleToMember(guild.getMember(target), muteRole).queue(s -> {

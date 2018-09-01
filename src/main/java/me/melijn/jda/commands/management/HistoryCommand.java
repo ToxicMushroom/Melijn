@@ -14,6 +14,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static me.melijn.jda.utils.MessageHelper.spaces;
+
 public class HistoryCommand extends Command {
 
     public HistoryCommand() {
@@ -31,7 +33,6 @@ public class HistoryCommand extends Command {
                 if (args.length == 2) {
                     Helpers.retrieveUserByArgsN(event, args[1], (success) -> {
                         if (success != null) {
-                            String spaces = "                                                  ";
                             switch (args[0]) {
                                 case "ban":
                                 case "bans":

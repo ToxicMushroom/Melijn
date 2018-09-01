@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
+import static me.melijn.jda.utils.MessageHelper.spaces;
+
 public class TableBuilder {
 
 
@@ -65,7 +67,6 @@ public class TableBuilder {
         }
 
         String lijn = "══════════════════════════════════════════════════════════════════════════════════";
-        String spaces = "                                                                     ";
         StringBuilder sb = new StringBuilder();
         List<String> toReturn = new ArrayList<>();
         //firstline
