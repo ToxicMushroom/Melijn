@@ -78,7 +78,7 @@ public class PlayCommand extends Command {
                                     JSONObject object = WebUtils.getWebUtilsInstance().getInfoFromSpotifyUrl(songName);
                                     if (object.has("name"))
                                         manager.loadTrack(event.getTextChannel(), "ytsearch:" + object.get("name"), event.getAuthor(), false);
-                                    else event.reply("Invalid spotify url");
+                                    else event.reply("Could not retrieve data from url");
                                 } else {
                                     event.reply("We only support spotify track (no albums) so make sure your url looks like below\n-> (%id% is a long string of nonsense) https://open.spotify.com/track/%id%");
                                     return;
