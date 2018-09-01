@@ -31,17 +31,14 @@ public class Melijn {
 
     private static final Config config = new Config();
     public static long OWNERID = Long.parseLong(config.getValue("ownerid"));
-    private static String TOKEN = config.getValue("token");
     public static String PREFIX = config.getValue("prefix");
-    private static String IP = config.getValue("ipadress");
-    private static String USER = config.getValue("username");
-    private static String PASS = config.getValue("password");
-    private static String DBNAME = config.getValue("database");
-    private static String DBLTOKEN = config.getValue("dbltoken");
     public static final ExecutorService MAIN_THREAD = Executors.newCachedThreadPool(t -> new Thread(t, "Melijn-main-thread"));
     public static DiscordBotListAPI dblAPI = null;
-    public static MySQL mySQL = new MySQL(IP, USER, PASS, DBNAME);
-    private static ShardManager shardManager = null;
+    public static MySQL mySQL = new MySQL(
+            config.getValue("ipadress"),
+            config.getValue("username"),
+            config.getValue("password"),
+            config.getValue("database"));
 
     public static void main(String[] args) throws LoginException {
         new WebUtils();
@@ -141,9 +138,9 @@ public class Melijn {
                 new SetEvalEngineCommand()
         );
 
-        shardManager = new DefaultShardManagerBuilder()
+        ShardManager shardManager = new DefaultShardManagerBuilder()
                 .setShardsTotal(1)
-                .setToken(TOKEN)
+                .setToken(config.getValue("token"))
                 .setGame(Game.playing(PREFIX + "help | melijn.com"))
                 .setAutoReconnect(true)
                 .addEventListeners(client.build(), new JoinLeave(), new AddReaction(), new Channels(), new Chat())
@@ -151,11 +148,11 @@ public class Melijn {
                 .build();
 
         dblAPI = new DiscordBotListAPI.Builder()
-                .token(DBLTOKEN)
+                .token(config.getValue("dbltoken"))
                 .botId("368362411591204865")
                 .build();
 
-        Helpers.startTimer(shardManager.getShardById(0), dblAPI, 0);
+        Helpers.startTimer(shardManager.getShardById(0), 0);
         Helpers.starttime = System.currentTimeMillis();
         /*setting avatar & username
         try {
@@ -167,9 +164,5 @@ public class Melijn {
             e.printStackTrace();
         }
         */
-    }
-
-    public ShardManager getShardManager() {
-        return shardManager;
     }
 }

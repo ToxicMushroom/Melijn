@@ -16,7 +16,6 @@ import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.managers.AudioManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.discordbots.api.client.DiscordBotListAPI;
 
 import java.awt.*;
 import java.sql.SQLException;
@@ -142,7 +141,7 @@ public class Helpers {
     );
 
 
-    public static void startTimer(JDA jda, DiscordBotListAPI dbl, int i) {
+    public static void startTimer(JDA jda, int i) {
         if (i == 0 || i == 1) {
             lastRunTimer1 = System.currentTimeMillis();
             executorPool.scheduleAtFixedRate(() -> {
@@ -190,8 +189,8 @@ public class Helpers {
             lastRunTimer2 = System.currentTimeMillis();
             executorPool.scheduleAtFixedRate(() -> {
                 lastRunTimer2 = System.currentTimeMillis();
-                if (dbl != null)
-                    dbl.setStats(guildCount == 0 ? jda.asBot().getShardManager().getGuilds().size() : guildCount);
+                if (Melijn.dblAPI != null)
+                    Melijn.dblAPI.setStats(guildCount == 0 ? jda.asBot().getShardManager().getGuilds().size() : guildCount);
                 ArrayList<Long> votesList = Melijn.mySQL.getVoteList();
                 for (long userId : SetNotifications.nextVotes.keySet()) {
                     for (long targetId : SetNotifications.nextVotes.get(userId)) {

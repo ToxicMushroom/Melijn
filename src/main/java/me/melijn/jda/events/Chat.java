@@ -30,15 +30,12 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Chat extends ListenerAdapter {
 
-    private ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-    public static List<User> black = new ArrayList<>();
+    private List<User> black = new ArrayList<>();
     private MySQL mySQL = Melijn.mySQL;
     private String latestId = "";
     private int latestChanges = 0;
@@ -46,7 +43,8 @@ public class Chat extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+            return;
         if (event.getMember() != null) {
             Guild guild = event.getGuild();
             User author = event.getAuthor();
@@ -59,7 +57,7 @@ public class Chat extends ListenerAdapter {
             Melijn.MAIN_THREAD.submit(() -> mySQL.createMessage(event.getMessageIdLong(), finalContent, author.getIdLong(), guild.getIdLong(), event.getChannel().getIdLong()));
 
             if (guild.getSelfMember().hasPermission(Permission.MESSAGE_MANAGE) && !event.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
-                Melijn.MAIN_THREAD.submit(() ->  {
+                Melijn.MAIN_THREAD.submit(() -> {
                     String message = event.getMessage().getContentRaw();
                     String detectedWord = null;
                     HashMap<Integer, Integer> deniedPositions = new HashMap<>();
@@ -156,21 +154,21 @@ public class Chat extends ListenerAdapter {
 
     @Override
     public void onGuildMessageDelete(GuildMessageDeleteEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+            return;
         if (Helpers.lastRunTimer1 < (System.currentTimeMillis() - 4_000))
-            Helpers.startTimer(event.getJDA(), Melijn.dblAPI, 1);
+            Helpers.startTimer(event.getJDA(), 1);
         if (Helpers.lastRunTimer2 < (System.currentTimeMillis() - 61_000))
-            Helpers.startTimer(event.getJDA(), Melijn.dblAPI, 2);
+            Helpers.startTimer(event.getJDA(), 2);
         if (Helpers.lastRunTimer3 < (System.currentTimeMillis() - 1_810_000))
-            Helpers.startTimer(event.getJDA(), Melijn.dblAPI, 3);
+            Helpers.startTimer(event.getJDA(), 3);
         Guild guild = event.getGuild();
         if (event.getGuild().getSelfMember().hasPermission(Permission.VIEW_AUDIT_LOGS) && (SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
                 SetLogChannelCommand.odmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
                 SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
                 SetLogChannelCommand.fmLogChannelCache.getUnchecked(guild.getIdLong()) != -1)) {
-            executorService.execute(() -> {
-                JSONObject message = mySQL.getMessageObject(event.getMessageIdLong());
-                User user = event.getJDA().retrieveUserById(message.getLong("authorId")).complete();
+            JSONObject message = mySQL.getMessageObject(event.getMessageIdLong());
+            event.getJDA().retrieveUserById(message.getLong("authorId")).queue(user -> {
                 if (user != null && !black.contains(user)) {
                     if (guild.getBanList().complete().stream().map(Ban::getUser).anyMatch(user::equals)) {
                         black.add(user);
@@ -221,7 +219,7 @@ public class Chat extends ListenerAdapter {
                         }
 
                     }
-                    Melijn.MAIN_THREAD.submit(() -> mySQL.executeUpdate("DELETE FROM history_messages WHERE sentTime < " + (System.currentTimeMillis() - 604_800_000L)));
+                    mySQL.executeUpdate("DELETE FROM history_messages WHERE sentTime < " + (System.currentTimeMillis() - 604_800_000L));
                 }
             });
         }
