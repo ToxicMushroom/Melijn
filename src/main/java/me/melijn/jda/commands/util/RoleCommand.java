@@ -1,17 +1,18 @@
 package me.melijn.jda.commands.util;
 
 import me.melijn.jda.Helpers;
+import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.MessageHelper;
-import me.melijn.jda.Melijn;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
 
 import java.awt.*;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 
 public class RoleCommand extends Command {
 
@@ -39,7 +40,7 @@ public class RoleCommand extends Command {
                                 .setColor(roleColor)
                                 .addField("Name", role.getName(), true)
                                 .addField("ID", role.getId(), true)
-                                .addField("Creation time", role.getCreationTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a")), false)
+                                .addField("Creation time", role.getCreationTime().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG, FormatStyle.SHORT)), false)
                                 .addField("Position", (guild.getRoles().size() - role.getPosition() - 1) + "/" + guild.getRoles().size(), true)
                                 .addField("Members", String.valueOf(guild.getMembers().stream().filter(member -> member.getRoles().contains(role)).count()), true)
                                 .addField("Color", roleColor == null ? "none" : "Hex: **" + String.format("#%02X%02X%02X", roleColor.getRed(), roleColor.getGreen(), roleColor.getBlue()) +
@@ -47,7 +48,7 @@ public class RoleCommand extends Command {
                                 .addField("Mentionable", MessageHelper.capFirstChar(String.valueOf(role.isMentionable())), true)
                                 .addField("Hoisted", MessageHelper.capFirstChar(String.valueOf(role.isHoisted())), true)
                                 .addField("Managed", MessageHelper.capFirstChar(String.valueOf(role.isManaged())), true)
-                                .setFooter("Requested by " + event.getFullAuthorName() + " | " + Helpers.getFooterStamp(), event.getAvatarUrl())
+                                .setFooter(Helpers.getFooterStamp(), event.getAvatarUrl())
                                 .build());
                     } else {
                         MessageHelper.sendUsage(this, event);
