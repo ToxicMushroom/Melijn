@@ -6,7 +6,6 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.commands.HelpCommand;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
@@ -33,18 +32,18 @@ public class EnableCommand extends Command {
             if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                 ArrayList<Integer> buffer = new ArrayList<>(DisableCommand.disabledGuildCommands.getOrDefault(guild.getIdLong(), new ArrayList<>()));
 
-                for (Command cmd : HelpCommand.commandList) {
+                for (Command cmd : event.getClient().getCommands()) {
                     if (cmd.getCommandName().equalsIgnoreCase(args[0])) {
-                        if (buffer.contains(HelpCommand.commandList.indexOf(cmd))) {
-                            buffer.remove(buffer.indexOf(HelpCommand.commandList.indexOf(cmd)));
+                        if (buffer.contains(event.getClient().getCommands().indexOf(cmd))) {
+                            buffer.remove(buffer.indexOf(event.getClient().getCommands().indexOf(cmd)));
                         } else {
                             event.reply("**" + cmd.getCommandName() + "** was already enabled");
                             return;
                         }
                     }
                     if (cmd.getCategory().toString().equalsIgnoreCase(args[0]))
-                        if (buffer.contains(HelpCommand.commandList.indexOf(cmd)))
-                            buffer.remove(buffer.indexOf(HelpCommand.commandList.indexOf(cmd)));
+                        if (buffer.contains(event.getClient().getCommands().indexOf(cmd)))
+                            buffer.remove(buffer.indexOf(event.getClient().getCommands().indexOf(cmd)));
                 }
                 if (buffer.size() == DisableCommand.disabledGuildCommands.getOrDefault(guild.getIdLong(), new ArrayList<>()).size()) {
                     event.reply("The given command or category was unknown");

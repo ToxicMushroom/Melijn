@@ -20,13 +20,11 @@ public class HelpCommand extends Command {
         this.category = Category.DEFAULT;
     }
 
-    public static ArrayList<Command> commandList = new ArrayList<>();
-
     @Override
     protected void execute(CommandEvent event) {
         String[] args = event.getArgs().split("\\s+");
         if (args.length > 0) {
-            for (Command command : commandList) {
+            for (Command command : event.getClient().getCommands()) {
                 List<String> aliases = new ArrayList<>(Arrays.asList(command.getAliases()));
                 if (command.getCommandName().equalsIgnoreCase(args[0]) || aliases.contains(args[0])) {
                     event.reply("**Help off " + command.getCommandName() +

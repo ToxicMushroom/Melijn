@@ -6,7 +6,6 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.commands.HelpCommand;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
@@ -35,19 +34,20 @@ public class DisableCommand extends Command {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
+
             if (event.getExecutor().equalsIgnoreCase("disable") && args.length > 0 && !args[0].equalsIgnoreCase("")) {
                 ArrayList<Integer> buffer = new ArrayList<>(disabledGuildCommands.getOrDefault(guild.getIdLong(), new ArrayList<>()));
-                for (Command cmd : HelpCommand.commandList) {
+                for (Command cmd : event.getClient().getCommands()) {
                     if (cmd.getCommandName().equalsIgnoreCase(args[0]))
-                        if (!buffer.contains(HelpCommand.commandList.indexOf(cmd)) && !cmd.getCommandName().equalsIgnoreCase("enable"))
-                            buffer.add(HelpCommand.commandList.indexOf(cmd));
+                        if (!buffer.contains(event.getClient().getCommands().indexOf(cmd)) && !cmd.getCommandName().equalsIgnoreCase("enable"))
+                            buffer.add(event.getClient().getCommands().indexOf(cmd));
                         else {
                             event.reply("**" + cmd.getCommandName() + "** was already disabled");
                             return;
                         }
                     if (cmd.getCategory().toString().equalsIgnoreCase(args[0]))
-                        if (!buffer.contains(HelpCommand.commandList.indexOf(cmd)) && !cmd.getCommandName().equalsIgnoreCase("enable"))
-                            buffer.add(HelpCommand.commandList.indexOf(cmd));
+                        if (!buffer.contains(event.getClient().getCommands().indexOf(cmd)) && !cmd.getCommandName().equalsIgnoreCase("enable"))
+                            buffer.add(event.getClient().getCommands().indexOf(cmd));
                 }
                 if (buffer.size() == disabledGuildCommands.getOrDefault(guild.getIdLong(), new ArrayList<>()).size()) {
                     event.reply("The given command or category was unknown");
@@ -64,8 +64,8 @@ public class DisableCommand extends Command {
                 int part = 1;
                 sb.append("Part **#").append(part++).append("** of disabled commands```INI\n");
                 for (int i : disabledGuildCommands.getOrDefault(event.getGuild().getIdLong(), new ArrayList<>())) {
-                    if (sb.toString().length() + HelpCommand.commandList.get(i).getCommandName().length() < 1950) {
-                        sb.append(i).append(" - [").append(HelpCommand.commandList.get(i).getCommandName()).append("]\n");
+                    if (sb.toString().length() + event.getClient().getCommands().get(i).getCommandName().length() < 1950) {
+                        sb.append(i).append(" - [").append(event.getClient().getCommands().get(i).getCommandName()).append("]\n");
                     } else {
                         sb.append("```");
                         event.reply(sb.toString());
