@@ -35,73 +35,48 @@ public class SetNotifications extends Command {
         if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
             switch (args[0].toLowerCase()) {
                 case "nextvote": {
-                    switch (args.length) {
-                        case 1: {
-                            ArrayList<Long> list = nextVotes.getOrDefault(event.getAuthorId(), new ArrayList<>());
-                            StringBuilder contentBuilder = new StringBuilder();
-                            contentBuilder.append("```INI\n");
-                            int i = 0;
-                            if (list.size() != 0) {
-                                for (long s : list) {
-                                    User user = event.getJDA().retrieveUserById(s).complete();
-                                    if (user != null) {
-                                        contentBuilder.append(++i).append(". ").append("[").append(user.getName()).append("#").append(user.getDiscriminator()).append("]\n");
-                                    }
+                    if (args.length == 1 || args[1].equalsIgnoreCase("info")) {
+                        ArrayList<Long> list = nextVotes.getOrDefault(event.getAuthorId(), new ArrayList<>());
+                        StringBuilder contentBuilder = new StringBuilder();
+                        contentBuilder.append("```INI\n");
+                        int i = 0;
+                        if (list.size() != 0) {
+                            for (long s : list) {
+                                User user = event.getJDA().retrieveUserById(s).complete();
+                                if (user != null) {
+                                    contentBuilder.append(++i).append(". ").append("[").append(user.getName()).append("#").append(user.getDiscriminator()).append("]\n");
                                 }
-                                if (i == 0) contentBuilder.append(";none");
                             }
-                            contentBuilder.append("```");
-                            event.reply("**" + event.getFullAuthorName() + "'s** nextVote notifications\n" + contentBuilder.toString());
-                            break;
+                            if (i == 0) contentBuilder.append(";none");
                         }
-                        case 2: {
-                            if (args[1].equalsIgnoreCase("info")) {
-                                ArrayList<Long> list = nextVotes.getOrDefault(event.getAuthorId(), new ArrayList<>());
-                                StringBuilder contentBuilder = new StringBuilder();
-                                contentBuilder.append("```INI\n");
-                                int i = 0;
-                                if (list.size() != 0) {
-                                    for (long s : list) {
-                                        User user = event.getJDA().retrieveUserById(s).complete();
-                                        if (user != null) {
-                                            contentBuilder.append(++i).append(". ").append("[").append(user.getName()).append("#").append(user.getDiscriminator()).append("]\n");
-                                        }
-                                    }
-                                    if (i == 0) contentBuilder.append(";none");
-                                }
-                                contentBuilder.append("```");
-                                event.reply("**" + event.getFullAuthorName() + "'s** nextVote notifications\n" + contentBuilder.toString());
-                                break;
-                            } else {
-                                User user; //Yes this has to be 3 lines because of lambda's :(
-                                user = Helpers.getUserByArgs(event, args[1]);
-                                boolean contains = false;
-                                for (long s : nextVotes.getOrDefault(event.getAuthorId(), new ArrayList<>())) {
-                                    if (!contains && user.getIdLong() == s) {
-                                        contains = true;
-                                    }
-                                }
-                                if (contains) {
-                                    ArrayList<Long> list = nextVotes.get(event.getAuthorId());
-                                    list.remove(user.getIdLong());
-                                    nextVotes.replace(event.getAuthorId(), list);
-                                    TaskScheduler.async(() -> {
-                                            mySQL.removeNotification(event.getAuthorId(), user.getIdLong(), NotificationType.NEXTVOTE);
-                                        event.reply("NextVote notifications for **" + user.getName() + "#" + user.getDiscriminator() + "** have been **disabled**");
-                                    });
-                                } else {
-                                    ArrayList<Long> list = nextVotes.getOrDefault(event.getAuthorId(), new ArrayList<>());
-                                    list.add(user.getIdLong());
-                                    if (nextVotes.get(event.getAuthorId()) != null)
-                                        nextVotes.replace(event.getAuthorId(), list);
-                                    else nextVotes.put(event.getAuthorId(), list);
-                                    TaskScheduler.async(() -> {
-                                        mySQL.putNotification(event.getAuthorId(), user.getIdLong(), NotificationType.NEXTVOTE);
-                                        event.reply("NextVote notifications for **" + user.getName() + "#" + user.getDiscriminator() + "** have been **enabled**");
-                                    });
-                                }
+                        contentBuilder.append("```");
+                        event.reply("**" + event.getFullAuthorName() + "'s** nextVote notifications\n" + contentBuilder.toString());
+                        break;
+                    } else {
+                        User user; //Yes this has to be 3 lines because of lambda's :(
+                        user = Helpers.getUserByArgs(event, args[1]);
+                        boolean shouldRemove = false;
+                        for (long s : nextVotes.getOrDefault(event.getAuthorId(), new ArrayList<>())) {
+                            if (!shouldRemove && user.getIdLong() == s) {
+                                shouldRemove = true;
                             }
-                            break;
+                        }
+                        if (shouldRemove) {
+                            ArrayList<Long> list = nextVotes.get(event.getAuthorId());
+                            list.remove(user.getIdLong());
+                            nextVotes.put(event.getAuthorId(), list);
+                            TaskScheduler.async(() -> {
+                                mySQL.removeNotification(event.getAuthorId(), user.getIdLong(), NotificationType.NEXTVOTE);
+                                event.reply("NextVote notifications for **" + user.getName() + "#" + user.getDiscriminator() + "** have been **disabled**");
+                            });
+                        } else {
+                            ArrayList<Long> list = nextVotes.getOrDefault(event.getAuthorId(), new ArrayList<>());
+                            list.add(user.getIdLong());
+                            nextVotes.put(event.getAuthorId(), list);
+                            TaskScheduler.async(() -> {
+                                mySQL.putNotification(event.getAuthorId(), user.getIdLong(), NotificationType.NEXTVOTE);
+                                event.reply("NextVote notifications for **" + user.getName() + "#" + user.getDiscriminator() + "** have been **enabled**");
+                            });
                         }
                     }
                 }

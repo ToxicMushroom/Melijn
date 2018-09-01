@@ -51,8 +51,7 @@ public class EnableCommand extends Command {
                     event.reply("Successfully enabled **" + args[0] + "**");
                     TaskScheduler.async(() -> {
                         Melijn.mySQL.removeDisabledCommands(guild.getIdLong(), buffer);
-                        if (DisableCommand.disabledGuildCommands.replace(guild.getIdLong(), buffer) == null)
-                            DisableCommand.disabledGuildCommands.put(guild.getIdLong(), buffer);
+                        DisableCommand.disabledGuildCommands.put(guild.getIdLong(), buffer);
                     });
                 }
             } else {
