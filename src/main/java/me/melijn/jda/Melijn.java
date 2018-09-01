@@ -24,15 +24,12 @@ import net.dv8tion.jda.core.entities.Game;
 import org.discordbots.api.client.DiscordBotListAPI;
 
 import javax.security.auth.login.LoginException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class Melijn {
 
     private static final Config config = new Config();
     public static long OWNERID = Long.parseLong(config.getValue("ownerid"));
     public static String PREFIX = config.getValue("prefix");
-    public static final ExecutorService MAIN_THREAD = Executors.newCachedThreadPool(t -> new Thread(t, "Melijn-main-thread"));
     public static DiscordBotListAPI dblAPI = null;
     public static MySQL mySQL = new MySQL(
             config.getValue("ipadress"),
@@ -153,7 +150,7 @@ public class Melijn {
                 .build();
 
         Helpers.startTimer(shardManager.getShardById(0), 0);
-        Helpers.starttime = System.currentTimeMillis();
+        Helpers.startTime = System.currentTimeMillis();
         /*setting avatar & username
         try {
             File f = new File(System.getProperty("java.io.tmpdir") + "tmp" + ".png");

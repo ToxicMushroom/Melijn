@@ -4,6 +4,7 @@ import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.*;
 import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
 
@@ -37,7 +38,7 @@ public class SetUnverifiedRole extends Command {
             } else {
                 if (args[0].equalsIgnoreCase("null")) {
                     unverifiedRoles.remove(guild.getIdLong());
-                    Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.removeRole(guild.getIdLong(), RoleType.UNVERIFIED));
+                    TaskScheduler.async(() -> Melijn.mySQL.removeRole(guild.getIdLong(), RoleType.UNVERIFIED));
                     event.reply("UnverifiedRole has been unset by **" + event.getFullAuthorName() + "**");
                 } else {
                     Role unverifiedRole = Helpers.getRoleByArgs(event, args[0]);
@@ -46,7 +47,7 @@ public class SetUnverifiedRole extends Command {
                             if (guild.getSelfMember().getRoles().size() != 0 && guild.getSelfMember().getRoles().get(0).canInteract(unverifiedRole)) {
                                 if (unverifiedRoles.replace(guild.getIdLong(), unverifiedRole.getIdLong()) == null)
                                     unverifiedRoles.put(guild.getIdLong(), unverifiedRole.getIdLong());
-                                Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setRole(guild.getIdLong(), unverifiedRole.getIdLong(), RoleType.UNVERIFIED));
+                                TaskScheduler.async(() -> Melijn.mySQL.setRole(guild.getIdLong(), unverifiedRole.getIdLong(), RoleType.UNVERIFIED));
                                 event.reply("UnverifiedRole changed to **@" + unverifiedRole.getName() + "** by **" + event.getFullAuthorName() + "**");
                             }
                             else {

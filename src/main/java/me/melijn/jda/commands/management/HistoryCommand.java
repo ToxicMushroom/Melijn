@@ -6,6 +6,7 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.EmbedBuilder;
 
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ public class HistoryCommand extends Command {
                             switch (args[0]) {
                                 case "ban":
                                 case "bans":
-                                    Melijn.MAIN_THREAD.submit(() -> {
+                                    TaskScheduler.async(() -> {
                                         ArrayList<String> bans = new ArrayList<>(Arrays.asList(Melijn.mySQL.getUserBans(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA())));
                                         EmbedBuilder ebBan = new EmbedBuilder();
                                         getLongMessageInParts(bans, parts -> {
@@ -53,7 +54,7 @@ public class HistoryCommand extends Command {
                                     break;
                                 case "mute":
                                 case "mutes":
-                                    Melijn.MAIN_THREAD.submit(() -> {
+                                    TaskScheduler.async(() -> {
                                         ArrayList<String> mutes = new ArrayList<>(Arrays.asList(Melijn.mySQL.getUserMutes(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA())));
                                         EmbedBuilder ebMute = new EmbedBuilder();
                                         getLongMessageInParts(mutes, parts -> {
@@ -72,7 +73,7 @@ public class HistoryCommand extends Command {
                                     break;
                                 case "warn":
                                 case "warns":
-                                    Melijn.MAIN_THREAD.submit(() -> {
+                                    TaskScheduler.async(() -> {
                                         ArrayList<String> warns = new ArrayList<>(Arrays.asList(Melijn.mySQL.getUserWarns(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA())));
                                         EmbedBuilder ebWarn = new EmbedBuilder();
                                         getLongMessageInParts(warns, parts -> {
@@ -91,7 +92,7 @@ public class HistoryCommand extends Command {
                                     break;
                                 case "kick":
                                 case "kicks":
-                                    Melijn.MAIN_THREAD.submit(() -> {
+                                    TaskScheduler.async(() -> {
                                         ArrayList<String> kicks = new ArrayList<>(Arrays.asList(Melijn.mySQL.getUserKicks(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA())));
                                         EmbedBuilder ebKick = new EmbedBuilder();
                                         getLongMessageInParts(kicks, parts -> {

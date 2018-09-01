@@ -6,6 +6,7 @@ import com.google.common.cache.LoadingCache;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.*;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import org.jetbrains.annotations.NotNull;
@@ -48,17 +49,16 @@ public class SetVerificationChannel extends Command {
                 } else if (id == 0L) {
                     long oldChannel = verificationChannelsCache.getUnchecked(guild.getIdLong());
                     event.reply("VerificationChannel has been changed from " + (oldChannel == -1L ? "nothing" : "<#" + oldChannel + ">") + " to nothing");
-                    Melijn.MAIN_THREAD.submit(() -> {
+                    TaskScheduler.async(() -> {
                         Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.VERIFICATION);
                         verificationChannelsCache.invalidate(guild.getIdLong());
                     });
                 } else {
                     if (event.getGuild().getSelfMember().hasPermission(guild.getTextChannelById(id), Permission.MESSAGE_ATTACH_FILES, Permission.MESSAGE_MANAGE)) {
-                        Melijn.MAIN_THREAD.submit(() -> {
+                        TaskScheduler.async(() -> {
                             Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.VERIFICATION);
                             verificationChannelsCache.put(guild.getIdLong(), id);
                         });
-
                         String oldChannel = verificationChannelId == -1 ? "nothing" : "<#" + verificationChannelId + ">";
                         String newChannel = "<#" + id + ">";
                         event.reply("VerificationChannel has been changed from " + oldChannel + " to " + newChannel);

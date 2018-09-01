@@ -7,6 +7,7 @@ import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.*;
 import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 import org.jetbrains.annotations.NotNull;
 
@@ -44,13 +45,13 @@ public class SetMusicChannelCommand extends Command {
                 if (channelId == -1) {
                     MessageHelper.sendUsage(this, event);
                 } else if (channelId == 0) {
-                    Melijn.MAIN_THREAD.submit(() -> {
+                    TaskScheduler.async(() -> {
                         Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.MUSIC);
                         musicChannelCache.invalidate(guild.getIdLong());
                     });
                     event.reply("The MusicChannel has been unset by **" + event.getFullAuthorName() + "**");
                 } else {
-                    Melijn.MAIN_THREAD.submit(() -> {
+                    TaskScheduler.async(() -> {
                         Melijn.mySQL.setChannel(guild.getIdLong(), channelId, ChannelType.MUSIC);
                         musicChannelCache.put(guild.getIdLong(), channelId);
                     });

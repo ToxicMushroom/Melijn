@@ -9,6 +9,7 @@ import me.melijn.jda.commands.management.SetVerificationCode;
 import me.melijn.jda.commands.management.SetVerificationThreshold;
 import me.melijn.jda.db.MySQL;
 import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.audit.ActionType;
@@ -54,10 +55,10 @@ public class Chat extends ListenerAdapter {
                 content += "\n" + a.getUrl();
             }
             String finalContent = content;
-            Melijn.MAIN_THREAD.submit(() -> mySQL.createMessage(event.getMessageIdLong(), finalContent, author.getIdLong(), guild.getIdLong(), event.getChannel().getIdLong()));
+            TaskScheduler.async(() -> mySQL.createMessage(event.getMessageIdLong(), finalContent, author.getIdLong(), guild.getIdLong(), event.getChannel().getIdLong()));
 
             if (guild.getSelfMember().hasPermission(Permission.MESSAGE_MANAGE) && !event.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
-                Melijn.MAIN_THREAD.submit(() -> {
+                TaskScheduler.async(() -> {
                     String message = event.getMessage().getContentRaw();
                     String detectedWord = null;
                     HashMap<Integer, Integer> deniedPositions = new HashMap<>();

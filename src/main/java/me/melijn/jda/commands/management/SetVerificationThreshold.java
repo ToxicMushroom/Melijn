@@ -7,6 +7,7 @@ import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 
 import java.util.HashMap;
@@ -36,13 +37,13 @@ public class SetVerificationThreshold extends Command {
                 int i = Integer.parseInt(args[0]);
                 if (i <= 20 && i >= 0) {
                     if (i == 0) {
-                        Melijn.MAIN_THREAD.submit(() -> {
+                        TaskScheduler.async(() -> {
                             Melijn.mySQL.removeVerificationThreshold(guild.getIdLong());
                             guildVerificationThresholds.remove(guild.getIdLong());
                         });
                         event.reply("The VerificationThreshold has been disabled by **" + event.getFullAuthorName() + "**");
                     } else {
-                        Melijn.MAIN_THREAD.submit(() -> {
+                        TaskScheduler.async(() -> {
                             Melijn.mySQL.setVerificationThreshold(guild.getIdLong(), i);
                             if (guildVerificationThresholds.replace(guild.getIdLong(), i) == null)
                                 guildVerificationThresholds.put(guild.getIdLong(), i);

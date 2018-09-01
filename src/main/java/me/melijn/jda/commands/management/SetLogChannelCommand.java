@@ -10,6 +10,7 @@ import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 import org.jetbrains.annotations.NotNull;
 
@@ -113,7 +114,7 @@ public class SetLogChannelCommand extends Command {
                             if (id == -1) {
                                 MessageHelper.sendUsage(this, event);
                             } else if (id == 0L) {
-                                Melijn.MAIN_THREAD.submit(() -> {
+                                TaskScheduler.async(() -> {
                                     Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.BAN_LOG);
                                     Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.MUTE_LOG);
                                     Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.MUSIC_LOG);
@@ -136,7 +137,7 @@ public class SetLogChannelCommand extends Command {
                                 });
                                 event.reply("All LogChannels have been changed to nothing by **" + event.getFullAuthorName() + "**");
                             } else {
-                                Melijn.MAIN_THREAD.submit(() -> {
+                                TaskScheduler.async(() -> {
                                     Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.BAN_LOG);
                                     Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.MUTE_LOG);
                                     Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.MUSIC_LOG);
@@ -332,13 +333,13 @@ public class SetLogChannelCommand extends Command {
             MessageHelper.sendUsage(this, event);
         } else if (channelId == 0L) {
             event.reply(chosenType.toString() + "_CHANNEL has been changed from " + (muteLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ? "<#" + muteLogChannelCache.getUnchecked(guild.getIdLong()) + ">" : "nothing") + " to nothing by **" + event.getFullAuthorName() + "**");
-            Melijn.MAIN_THREAD.submit(() -> {
+            TaskScheduler.async(() -> {
                 Melijn.mySQL.removeChannel(guild.getIdLong(), chosenType);
                 muteLogChannelCache.invalidate(guild.getIdLong());
             });
         } else {
             event.reply(chosenType.toString() + "_CHANNEL has been changed from " + (muteLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ? "<#" + muteLogChannelCache.getUnchecked(guild.getIdLong()) + ">" : "nothing") + " to <#" + channelId + "> by **" + event.getFullAuthorName() + "**");
-            Melijn.MAIN_THREAD.submit(() -> {
+            TaskScheduler.async(() -> {
                 Melijn.mySQL.setChannel(guild.getIdLong(), channelId, chosenType);
                 muteLogChannelCache.put(guild.getIdLong(), channelId);
             });

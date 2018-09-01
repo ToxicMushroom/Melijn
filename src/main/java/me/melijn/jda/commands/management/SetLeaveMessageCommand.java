@@ -9,6 +9,7 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.MessageType;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 import org.jetbrains.annotations.NotNull;
 
@@ -44,13 +45,13 @@ public class SetLeaveMessageCommand extends Command {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     if (args.length == 1 && newMessage.equalsIgnoreCase("null")) {
-                        Melijn.MAIN_THREAD.submit(() -> {
+                        TaskScheduler.async(() -> {
                             Melijn.mySQL.removeMessage(guild.getIdLong(), MessageType.JOIN);
                             leaveMessages.invalidate(guild.getIdLong());
                         });
                         event.reply("LeaveMessage has been changed from " + oldMessage + " to nothing by **" + event.getFullAuthorName() + "**");
                     } else {
-                        Melijn.MAIN_THREAD.submit(() -> {
+                        TaskScheduler.async(() -> {
                             Melijn.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.LEAVE);
                             leaveMessages.put(guild.getIdLong(), newMessage);
                         });

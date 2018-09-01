@@ -10,6 +10,7 @@ import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.VoiceChannel;
@@ -60,7 +61,7 @@ public class SetStreamerModeCommand extends Command {
                                     if (event.getMember().getVoiceState().inVoiceChannel()) {
                                         guild.getAudioManager().openAudioConnection(musicChannel);
                                     }
-                                    Melijn.MAIN_THREAD.submit(() -> {
+                                    TaskScheduler.async(() -> {
                                         Melijn.mySQL.setStreamerMode(guild.getIdLong(), true);
                                         streamerModeCache.put(guild.getIdLong(), true);
                                     });
@@ -72,7 +73,7 @@ public class SetStreamerModeCommand extends Command {
                             case "false":
                             case "off":
                             case "disabled":
-                                Melijn.MAIN_THREAD.submit(() -> {
+                                TaskScheduler.async(() -> {
                                     Melijn.mySQL.setStreamerMode(guild.getIdLong(), false);
                                     streamerModeCache.put(guild.getIdLong(), false);
                                 });

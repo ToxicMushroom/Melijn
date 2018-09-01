@@ -7,6 +7,7 @@ import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.commands.developer.EvalCommand;
 import me.melijn.jda.commands.management.*;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
@@ -49,7 +50,7 @@ public class JoinLeave extends ListenerAdapter {
                 if (SetUnverifiedRole.unverifiedRoles.containsKey(guild.getIdLong()) && guild.getRoleById(SetUnverifiedRole.unverifiedRoles.get(guild.getIdLong())) != null)
                     guild.getController().addSingleRoleToMember(event.getMember(), guild.getRoleById(SetUnverifiedRole.unverifiedRoles.get(guild.getIdLong()))).reason("unverified user").queue();
             } else {
-                Melijn.MAIN_THREAD.submit(() -> {
+                TaskScheduler.async(() -> {
                     Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.VERIFICATION);
                     SetVerificationChannel.verificationChannelsCache.invalidate(guild.getIdLong());
                 });
@@ -67,7 +68,7 @@ public class JoinLeave extends ListenerAdapter {
         Guild guild = event.getGuild();
         User leftUser = event.getUser();
         if (unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong()).contains(leftUser.getIdLong())) {
-            Melijn.MAIN_THREAD.submit(() -> {
+            TaskScheduler.async(() -> {
                 String message = SetLeaveMessageCommand.leaveMessages.getUnchecked(guild.getIdLong());
                 if (message != null && SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guild.getIdLong()) != -1) {
                     TextChannel welcomeChannel = guild.getTextChannelById(SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guild.getIdLong()));
@@ -98,7 +99,7 @@ public class JoinLeave extends ListenerAdapter {
                 if (joinRole != null && joinRole.getPosition() < guild.getSelfMember().getRoles().get(0).getPosition())
                     guild.getController().addSingleRoleToMember(guild.getMember(user), guild.getRoleById(SetJoinRoleCommand.joinRoles.get(guild.getIdLong()))).queue();
             }
-            Melijn.MAIN_THREAD.submit(() -> {
+            TaskScheduler.async(() -> {
                 if (Melijn.mySQL.isUserMuted(user.getIdLong(), guild.getIdLong()) && SetMuteRoleCommand.muteRoles.containsKey(guild.getIdLong())) {
                     Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoles.get(guild.getIdLong()));
                     if (muteRole != null && muteRole.getPosition() < guild.getSelfMember().getRoles().get(0).getPosition())
@@ -111,7 +112,7 @@ public class JoinLeave extends ListenerAdapter {
     private static void removeUnverified(Guild guild, User user) {
         ArrayList<Long> newList = unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong());
         newList.remove(user.getIdLong());
-        Melijn.MAIN_THREAD.submit(() -> {
+        TaskScheduler.async(() -> {
             Melijn.mySQL.removeUnverifiedUser(guild.getIdLong(), user.getIdLong());
             unVerifiedGuildMembersCache.put(guild.getIdLong(), newList);
         });

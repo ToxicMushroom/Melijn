@@ -6,6 +6,7 @@ import com.google.common.cache.LoadingCache;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.*;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 import org.jetbrains.annotations.NotNull;
 
@@ -42,14 +43,14 @@ public class SetJoinLeaveChannelCommand extends Command {
                     if (id == -1L) {
                         event.reply("Unknown TextChannel");
                     } else if (id == 0L) {
-                        Melijn.MAIN_THREAD.submit(() -> {
+                        TaskScheduler.async(() -> {
                             Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.WELCOME);
                             welcomeChannelCache.invalidate(guild.getIdLong());
                         });
                         long oldChannel = welcomeChannelCache.getUnchecked(guild.getIdLong());
                         event.reply("WelcomeChannel has been changed from " + (oldChannel == -1L ? "nothing" : "<#" + oldChannel + ">") + " to nothing");
                     } else {
-                        Melijn.MAIN_THREAD.submit(() -> {
+                        TaskScheduler.async(() -> {
                             Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.WELCOME);
                             welcomeChannelCache.put(guild.getIdLong(), id);
                             if (SetJoinMessageCommand.joinMessages.getUnchecked(guild.getIdLong()) == null) {

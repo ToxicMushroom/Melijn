@@ -8,6 +8,7 @@ import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 import me.melijn.jda.commands.HelpCommand;
 import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 
 import java.util.ArrayList;
@@ -49,7 +50,7 @@ public class EnableCommand extends Command {
                     event.reply("The given command or category was unknown");
                 } else {
                     event.reply("Successfully enabled **" + args[0] + "**");
-                    Melijn.MAIN_THREAD.submit(() -> {
+                    TaskScheduler.async(() -> {
                         Melijn.mySQL.removeDisabledCommands(guild.getIdLong(), buffer);
                         if (DisableCommand.disabledGuildCommands.replace(guild.getIdLong(), buffer) == null)
                             DisableCommand.disabledGuildCommands.put(guild.getIdLong(), buffer);

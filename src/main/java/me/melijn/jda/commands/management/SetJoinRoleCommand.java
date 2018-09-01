@@ -7,6 +7,7 @@ import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.RoleType;
 import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
 
@@ -37,7 +38,7 @@ public class SetJoinRoleCommand extends Command {
                 } else {
                     if (args[0].equalsIgnoreCase("null")) {
                         joinRoles.remove(guild.getIdLong());
-                        Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.removeRole(guild.getIdLong(), RoleType.JOIN));
+                        TaskScheduler.async(() -> Melijn.mySQL.removeRole(guild.getIdLong(), RoleType.JOIN));
                         event.reply("JoinRole has been unset by **" + event.getFullAuthorName() + "**");
                     } else {
                         Role joinRole = Helpers.getRoleByArgs(event, args[0]);
@@ -46,7 +47,7 @@ public class SetJoinRoleCommand extends Command {
                                 if (guild.getSelfMember().getRoles().size() != 0 && guild.getSelfMember().getRoles().get(0).canInteract(joinRole)) {
                                     if (joinRoles.replace(guild.getIdLong(), joinRole.getIdLong()) == null)
                                         joinRoles.put(guild.getIdLong(), joinRole.getIdLong());
-                                    Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setRole(guild.getIdLong(), joinRole.getIdLong(), RoleType.JOIN));
+                                    TaskScheduler.async(() -> Melijn.mySQL.setRole(guild.getIdLong(), joinRole.getIdLong(), RoleType.JOIN));
                                     event.reply("JoinRole changed to **@" + joinRole.getName() + "** by **" + event.getFullAuthorName() + "**");
                                 } else {
                                     event.reply("The JoinRole hasn't been changed due: **@" + joinRole.getName() + "** is higher or equal in the role-hierarchy then my highest role.\nThis means that I will not be able to give the role to anyone ex.(Mods can't give people Admin it breaks logic)");

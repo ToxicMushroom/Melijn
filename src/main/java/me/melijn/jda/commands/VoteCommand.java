@@ -6,6 +6,7 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.User;
@@ -30,7 +31,7 @@ public class VoteCommand extends Command {
         if (args.length == 0 || args[0].equalsIgnoreCase("")) {
             event.reply("Support us by voting and get access to locked commands\nhttps://discordbots.org/bot/melijn/vote");
         } else if (args[0].equalsIgnoreCase("info")) {
-            Melijn.MAIN_THREAD.submit(() -> {
+            TaskScheduler.async(() -> {
                 User target = Helpers.getUserByArgs(event, args.length > 1 ? args[1] : "");
                 String username = target.getName() + "#" + target.getDiscriminator();
                 JSONObject voteObject = Melijn.mySQL.getVotesObject(target.getIdLong());

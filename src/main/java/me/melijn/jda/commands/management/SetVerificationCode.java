@@ -6,7 +6,9 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
+
 import java.util.HashMap;
 
 public class SetVerificationCode extends Command {
@@ -29,13 +31,13 @@ public class SetVerificationCode extends Command {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     if (args[0].equalsIgnoreCase("null")) {
-                        Melijn.MAIN_THREAD.submit(() -> {
+                        TaskScheduler.async(() -> {
                             Melijn.mySQL.removeVerificationCode(guild.getIdLong());
                             guildCodes.remove(guild.getIdLong());
                         });
                         event.reply("The VerificationCode has been set to nothing by **" + event.getFullAuthorName() + "**");
                     } else {
-                        Melijn.MAIN_THREAD.submit(() -> {
+                        TaskScheduler.async(() -> {
                             Melijn.mySQL.setVerificationCode(guild.getIdLong(), args[0]);
                             if (guildCodes.replace(guild.getIdLong(), args[0]) == null)
                                 guildCodes.put(guild.getIdLong(), args[0]);

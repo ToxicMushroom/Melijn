@@ -9,6 +9,7 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.MessageType;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 
 import java.util.concurrent.TimeUnit;
@@ -47,13 +48,13 @@ public class SetJoinMessageCommand extends Command {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     if (args.length == 1 && args[0].equalsIgnoreCase("null")) {
-                        Melijn.MAIN_THREAD.submit(() -> {
+                        TaskScheduler.async(() -> {
                             Melijn.mySQL.removeMessage(guild.getIdLong(), MessageType.JOIN);
                             joinMessages.invalidate(guild.getIdLong());
                         });
                         event.reply("JoinMessage has been set to nothing by **" + event.getFullAuthorName() + "**");
                     } else {
-                        Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.JOIN));
+                        TaskScheduler.async(() -> Melijn.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.JOIN));
                         joinMessages.put(guild.getIdLong(), newMessage);
                         event.reply("JoinMessage has been changed from " + oldMessage + " to '" + newMessage + "' by **" + event.getFullAuthorName() + "**");
                     }

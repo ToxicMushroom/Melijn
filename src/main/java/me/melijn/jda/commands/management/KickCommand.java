@@ -7,6 +7,7 @@ import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.User;
 
@@ -32,7 +33,7 @@ public class KickCommand extends Command {
                 String reason = event.getArgs().replaceFirst(args[0] + "\\s+|" + args[0], "");
                 if (target != null) {
                     if (event.getGuild().getMember(target) != null) {
-                        Melijn.MAIN_THREAD.submit(() -> {
+                        TaskScheduler.async(() -> {
                             if (Helpers.canNotInteract(event, target)) return;
                             if (reason.length() <= 1000 && Melijn.mySQL.addKick(event.getAuthor(), target, event.getGuild(), reason)) {
                                 event.getMessage().addReaction("\u2705").queue();

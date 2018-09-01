@@ -8,6 +8,7 @@ import me.melijn.jda.commands.util.SetNotifications;
 import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.music.MusicPlayer;
 import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.TaskScheduler;
 import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
@@ -24,19 +25,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class Helpers {
 
-
-    private static ScheduledExecutorService executorPool = Executors.newScheduledThreadPool(10);
     public static long lastRunTimer1, lastRunTimer2, lastRunTimer3;
-
-    public static long starttime;
+    public static long startTime;
     public static String guildOnly = "This command is to be used in guilds only";
     public static String nsfwOnly = "This command is to be used in (not safe for work) better known as [NSFW] channels only and can contain 18+ content";
     public static String noPerms = "You don't have the permission: ";
@@ -144,7 +140,7 @@ public class Helpers {
     public static void startTimer(JDA jda, int i) {
         if (i == 0 || i == 1) {
             lastRunTimer1 = System.currentTimeMillis();
-            executorPool.scheduleAtFixedRate(() -> {
+            TaskScheduler.scheduleRepeating(() -> {
                 lastRunTimer1 = System.currentTimeMillis();
                 Melijn.mySQL.executeQuery("SELECT * FROM active_bans WHERE endTime < ?", bans -> {
                     try {
@@ -163,7 +159,6 @@ public class Helpers {
                         e.printStackTrace();
                     }
                 }, System.currentTimeMillis());
-
                 Melijn.mySQL.executeQuery("SELECT * FROM active_mutes WHERE endTime < ?", mutes -> {
                     try {
                         while (mutes.next()) {
@@ -183,11 +178,11 @@ public class Helpers {
                 }, System.currentTimeMillis());
 
 
-            }, 5, 2, TimeUnit.SECONDS);
+            }, 2000);
         }
         if (i == 0 || i == 2) {
             lastRunTimer2 = System.currentTimeMillis();
-            executorPool.scheduleAtFixedRate(() -> {
+            TaskScheduler.scheduleRepeating(() -> {
                 lastRunTimer2 = System.currentTimeMillis();
                 if (Melijn.dblAPI != null)
                     Melijn.dblAPI.setStats(guildCount == 0 ? jda.asBot().getShardManager().getGuilds().size() : guildCount);
@@ -201,16 +196,16 @@ public class Helpers {
                         }
                     }
                 }
-            }, 1, 60, TimeUnit.SECONDS);
+            }, 60_000);
         }
         if (i == 0 || i == 3) {
             lastRunTimer3 = System.currentTimeMillis();
-            executorPool.scheduleAtFixedRate(() -> {
+            TaskScheduler.scheduleRepeating(() -> {
                 lastRunTimer3 = System.currentTimeMillis();
-                if (System.currentTimeMillis() - starttime > 10_000)
+                if (System.currentTimeMillis() - startTime > 10_000)
                     WebUtils.getWebUtilsInstance().updateSpotifyCredentials();
                 Melijn.mySQL.updateVoteStreak();
-            }, 0, 30, TimeUnit.MINUTES);
+            }, 1_800_000, 1_800_000);
         }
     }
 
@@ -223,10 +218,10 @@ public class Helpers {
     }
 
     public static void waitForIt(User user) {
-        executorPool.schedule(() -> {
+        TaskScheduler.async(() -> {
             MusicManager.usersRequest.remove(user);
             MusicManager.usersFormToReply.remove(user);
-        }, 30, TimeUnit.SECONDS);
+        }, 30_000);
     }
 
     public static String getDurationBreakdown(long millis) {
@@ -275,7 +270,7 @@ public class Helpers {
     }
 
     public static String getOnlineTime() {
-        return getDurationBreakdown(System.currentTimeMillis() - starttime);
+        return getDurationBreakdown(System.currentTimeMillis() - startTime);
     }
 
     public static String getFooterStamp() {

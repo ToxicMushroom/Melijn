@@ -4,6 +4,7 @@ import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.blub.*;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
 
@@ -36,7 +37,7 @@ public class SetMuteRoleCommand extends Command {
             } else {
                 if (args[0].equalsIgnoreCase("null")) {
                     muteRoles.remove(guild.getIdLong());
-                    Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.removeRole(guild.getIdLong(), RoleType.JOIN));
+                    TaskScheduler.async(() -> Melijn.mySQL.removeRole(guild.getIdLong(), RoleType.JOIN));
                     event.reply("MuteRole has been unset by **" + event.getFullAuthorName() + "**");
                 } else {
                     Role muteRole = Helpers.getRoleByArgs(event, args[0]);
@@ -45,7 +46,7 @@ public class SetMuteRoleCommand extends Command {
                             if (guild.getSelfMember().getRoles().size() != 0 && guild.getSelfMember().getRoles().get(0).canInteract(muteRole)) {
                                 if (muteRoles.replace(guild.getIdLong(), muteRole.getIdLong()) == null)
                                     muteRoles.put(guild.getIdLong(), muteRole.getIdLong());
-                                Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setRole(guild.getIdLong(), muteRole.getIdLong(), RoleType.MUTE));
+                                TaskScheduler.async(() -> Melijn.mySQL.setRole(guild.getIdLong(), muteRole.getIdLong(), RoleType.MUTE));
                                 event.reply("MuteRole changed to **@" + muteRole.getName() + "** by **" + event.getFullAuthorName() + "**");
                             } else {
                                 event.reply("The MuteRole hasn't been changed due: **@" + muteRole.getName() + "** is higher or equal in the role-hierarchy then my highest role.\nThis means that I will not be able to give the role to anyone ex.(Mods can't give people Admin it breaks logic)");

@@ -8,6 +8,7 @@ import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 import org.jetbrains.annotations.NotNull;
 
@@ -43,7 +44,7 @@ public class SetPrefixCommand extends Command {
                     event.reply(prefixes.getUnchecked(event.getGuild().getIdLong()));
                 else if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                     if (Arrays.toString(args).length() <= 10) {
-                        Melijn.MAIN_THREAD.submit(() -> {
+                        TaskScheduler.async(() -> {
                             Melijn.mySQL.setPrefix(guild.getIdLong(), args[0]);
                             event.reply("The prefix has been set to `" + args[0] + "`");
                         });

@@ -4,6 +4,7 @@ import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.blub.*;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
@@ -77,7 +78,7 @@ public class TempMuteCommand extends Command {
                 .setMentionable(false)
                 .setName("muted")
                 .setPermissions(Permission.MESSAGE_READ, Permission.MESSAGE_HISTORY, Permission.VOICE_CONNECT).complete().getIdLong();
-        Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setRole(guild.getIdLong(), roleId, RoleType.MUTE));
+        TaskScheduler.async(() -> Melijn.mySQL.setRole(guild.getIdLong(), roleId, RoleType.MUTE));
         SetMuteRoleCommand.muteRoles.putIfAbsent(guild.getIdLong(), roleId);
     }
 }

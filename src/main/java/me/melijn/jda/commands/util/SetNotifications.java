@@ -1,12 +1,12 @@
 package me.melijn.jda.commands.util;
 
 import me.melijn.jda.Helpers;
-import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.NotificationType;
 import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.User;
 
 import java.util.ArrayList;
@@ -85,7 +85,7 @@ public class SetNotifications extends Command {
                                     ArrayList<Long> list = nextVotes.get(event.getAuthorId());
                                     list.remove(user.getIdLong());
                                     nextVotes.replace(event.getAuthorId(), list);
-                                    Melijn.MAIN_THREAD.submit(() -> {
+                                    TaskScheduler.async(() -> {
                                             mySQL.removeNotification(event.getAuthorId(), user.getIdLong(), NotificationType.NEXTVOTE);
                                         event.reply("NextVote notifications for **" + user.getName() + "#" + user.getDiscriminator() + "** have been **disabled**");
                                     });
@@ -95,7 +95,7 @@ public class SetNotifications extends Command {
                                     if (nextVotes.get(event.getAuthorId()) != null)
                                         nextVotes.replace(event.getAuthorId(), list);
                                     else nextVotes.put(event.getAuthorId(), list);
-                                    Melijn.MAIN_THREAD.submit(() -> {
+                                    TaskScheduler.async(() -> {
                                         mySQL.putNotification(event.getAuthorId(), user.getIdLong(), NotificationType.NEXTVOTE);
                                         event.reply("NextVote notifications for **" + user.getName() + "#" + user.getDiscriminator() + "** have been **enabled**");
                                     });

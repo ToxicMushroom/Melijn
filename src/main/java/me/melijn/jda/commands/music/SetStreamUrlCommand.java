@@ -7,6 +7,7 @@ import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 
 import java.util.HashMap;
@@ -51,14 +52,14 @@ public class SetStreamUrlCommand extends Command {
                 event.reply("StreamURL: " + url);
             } else if (args.length == 1) {
                 if (args[0].contains("http://") || args[0].contains("https://")) {
-                    Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setStreamUrl(guild.getIdLong(), args[0]));
+                    TaskScheduler.async(() -> Melijn.mySQL.setStreamUrl(guild.getIdLong(), args[0]));
                     event.reply("Changed the url from **" + url + "** to **" + args[0] + "**");
                 } else {
                     if (args[0].equalsIgnoreCase("list")) {
                         event.reply("**Radio**\n" + linkjes.keySet().toString().replaceAll("(,\\s+|,)", "\n+ ").replaceFirst("\\[", "+ ").replaceFirst("]", ""));
                     } else {
                         if (linkjes.keySet().contains(args[0])) {
-                            Melijn.MAIN_THREAD.submit(() -> Melijn.mySQL.setStreamUrl(guild.getIdLong(), linkjes.get(args[0])));
+                            TaskScheduler.async(() -> Melijn.mySQL.setStreamUrl(guild.getIdLong(), linkjes.get(args[0])));
                             event.reply("Changed the url from **" + url + "** to **" + linkjes.get(args[0]) + "**");
                         } else {
                             MessageHelper.sendUsage(this, event);

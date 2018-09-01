@@ -6,6 +6,7 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.Permission;
 
 public class UnmuteCommand extends Command {
@@ -30,7 +31,7 @@ public class UnmuteCommand extends Command {
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     Helpers.retrieveUserByArgsN(event, args[0], user -> {
                         if (user != null) {
-                            Melijn.MAIN_THREAD.submit(() -> {
+                            TaskScheduler.async(() -> {
                                 String reason = event.getArgs().length() > 1 ? event.getArgs().replaceFirst(args[0], "") : "N/A";
                                 if (reason.substring(0, 1).equalsIgnoreCase(" ")) reason = reason.replaceFirst("\\s+", "");
                                 if (Melijn.mySQL.unmute(event.getGuild(), user, event.getAuthor(), reason)) {
