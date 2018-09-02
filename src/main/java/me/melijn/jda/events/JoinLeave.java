@@ -127,6 +127,6 @@ public class JoinLeave extends ListenerAdapter {
                 .replaceAll("%USERNAME%", user.getName() + "#" + user.getDiscriminator())
                 .replaceAll("%GUILDNAME%", guild.getName())
                 .replaceAll("%SERVERNAME%", guild.getName())
-                .replaceAll("%JOINPOSITION%", String.valueOf(guild.getMembers().size()));
+                .replaceAll("%JOINPOSITION%", String.valueOf(guild.getMemberCache().size()));
     }
 }

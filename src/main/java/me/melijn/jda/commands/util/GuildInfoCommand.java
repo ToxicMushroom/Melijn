@@ -41,7 +41,7 @@ public class GuildInfoCommand extends Command {
                         .addField("Region", guild.getRegion().getName(), true)
                         .addField("Vip servers", String.valueOf(guild.getRegion().isVip()), true)
                         .addField("Owner", guild.getOwner().getUser().getName() + "#" + guild.getOwner().getUser().getDiscriminator(), true)
-                        .addField("Members", String.valueOf(guild.getMembers().size()), true)
+                        .addField("Members", String.valueOf(guild.getMemberCache().size()), true)
                         .addField("Roles", String.valueOf(guild.getRoles().size()), true)
                         .addBlankField(true)
                         .addField("TextChannels", String.valueOf(guild.getTextChannels().size()), true)

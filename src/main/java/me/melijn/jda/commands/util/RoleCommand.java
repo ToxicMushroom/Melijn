@@ -42,7 +42,7 @@ public class RoleCommand extends Command {
                                 .addField("ID", role.getId(), true)
                                 .addField("Creation time", role.getCreationTime().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG, FormatStyle.SHORT)), false)
                                 .addField("Position", (guild.getRoles().size() - role.getPosition() - 1) + "/" + guild.getRoles().size(), true)
-                                .addField("Members", String.valueOf(guild.getMembers().stream().filter(member -> member.getRoles().contains(role)).count()), true)
+                                .addField("Members", String.valueOf(guild.getMemberCache().stream().filter(member -> member.getRoles().contains(role)).count()), true)
                                 .addField("Color", roleColor == null ? "none" : "Hex: **" + String.format("#%02X%02X%02X", roleColor.getRed(), roleColor.getGreen(), roleColor.getBlue()) +
                                         "**\nRGB: (" + roleColor.getRed() + ", " + roleColor.getGreen() + ", " + roleColor.getBlue() + ")", true)
                                 .addField("Mentionable", MessageHelper.capFirstChar(String.valueOf(role.isMentionable())), true)
