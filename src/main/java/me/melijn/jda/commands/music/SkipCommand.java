@@ -64,15 +64,15 @@ public class SkipCommand extends Command {
                     c++;
                 }
             }
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.setTitle("Skipped");
-            eb.setColor(Helpers.EmbedColor);
             String songOrSongs = i == 1 ? "song" : "songs";
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.setColor(Helpers.EmbedColor);
+            eb.setTitle("Skipped " + i + " " + songOrSongs);
             if (nextSong != null)
-                eb.setDescription("Skipped " + i + " " + songOrSongs + "\nPrevious song: **[" + shippableTrack.getInfo().title + "](" + shippableTrack.getInfo().uri + ")**\n" + "Now playing: **[" + nextSong.getInfo().title + "](" + nextSong.getInfo().uri + ")** " + Helpers.getDurationBreakdown(nextSong.getInfo().length));
+                eb.setDescription("Previous song: **[" + shippableTrack.getInfo().title + "](" + shippableTrack.getInfo().uri + ")**\n" + "Now playing: **[" + nextSong.getInfo().title + "](" + nextSong.getInfo().uri + ")** " + Helpers.getDurationBreakdown(nextSong.getInfo().length));
             else {
                 player.skipTrack();
-                eb.setDescription("Skipped " + i + " " + songOrSongs + "\nPrevious song: `" + shippableTrack.getInfo().title + "`\n" + "No next song to play");
+                eb.setDescription("Previous song: **[" + shippableTrack.getInfo().title + "](" + shippableTrack.getInfo().uri + ")**\n" + "No next song to play");
             }
             eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
             event.reply(eb.build());
