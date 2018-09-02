@@ -33,12 +33,11 @@ public class PurgeCommand extends Command {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                 String[] args = event.getArgs().split("\\s+");
-                if (args.length == 1 && args[0].matches("0*([1-9]|[1-8][0-9]|9[0-9]|[1-4][0-9]{2}|500)")) {
+                if (args.length == 1 && args[0].matches("^([1-4][0-9]{0,2}|500)$")) {
                     try {
                         int toPurgeAmount = Integer.parseInt(args[0]);
-
                         MessageHistory messageHistory = event.getTextChannel().getHistory();
-                        Collector<Message> collector = new Collector<>("Purge-thread");
+                        Collector<Message> collector = new Collector<>();
                         while (toPurgeAmount > 0) {
                             if (toPurgeAmount > 99) {
                                 messageHistory.retrievePast(100).queue(collector::accept);
@@ -55,19 +54,8 @@ public class PurgeCommand extends Command {
                             if (old > 0) {
                                 event.reply("Max purge size of this chat is **" + (collection.size()-old) + "** because I can't bulk delete messages older then 2 weeks");
                             } else {
-                                int toDeleteSize = collection.size();
                                 collection.forEach(message -> MessageHelper.purgedMessages.putIfAbsent(message.getIdLong(), event.getAuthorId()));
-                                while (toDeleteSize > 0) {
-                                    if (toDeleteSize > 99) {
-                                        event.getTextChannel().deleteMessages(collection.subList(0, 100)).queue();
-                                        collection.removeAll(collection.subList(0, 100));
-                                        toDeleteSize -= 100;
-                                    } else if (toDeleteSize > 1) {
-                                        event.getTextChannel().deleteMessages(collection.subList(0, collection.size())).queue();
-                                        collection.clear();
-                                        toDeleteSize = 0;
-                                    }
-                                }
+                                event.getTextChannel().purgeMessages(collection);
                                 event.getTextChannel().sendMessage("**Done**").queue(m -> {
                                     m.delete().queueAfter(3, TimeUnit.SECONDS);
                                     MessageHelper.selfDeletedMessages.add(m.getIdLong());
