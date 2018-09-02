@@ -1316,7 +1316,7 @@ public class MySQL {
             getVerificationThreshold.setLong(1, guildId);
             ResultSet rs = getVerificationThreshold.executeQuery();
             if (rs.next())
-                threshold = rs.getInt("guildId");
+                threshold = rs.getInt("threshold");
             rs.close();
             getVerificationThreshold.close();
         } catch (SQLException e) {
@@ -1332,7 +1332,7 @@ public class MySQL {
             getVerificationThreshold.setLong(1, guildId);
             ResultSet rs = getVerificationThreshold.executeQuery();
             if (rs.next())
-                code = rs.getString("guildId");
+                code = rs.getString("code");
             rs.close();
             getVerificationThreshold.close();
         } catch (SQLException e) {
