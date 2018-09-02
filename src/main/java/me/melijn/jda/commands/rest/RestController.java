@@ -38,7 +38,7 @@ public class RestController {
         if (guild == null) return new JSONObject().put("isBotMember", "false").toMap();
         return new JSONObject()
                 .put("name", guild.getName())
-                .put("memberCount", guild.getMembers())
+                .put("memberCount", guild.getMembers().size())
                 .put("ownerId", guild.getOwnerId())
                 .put("isBotMember", "true").toMap();
     }
