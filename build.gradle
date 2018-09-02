@@ -1,7 +1,7 @@
 plugins {
-    id'java'
-    id'application'
-    id'com.github.johnrengelman.shadow' version '2.0.4'
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '2.0.4'
 }
 
 mainClassName = 'me.melijn.jda.Melijn'
@@ -16,10 +16,12 @@ repositories {
     }
 }
 
+
+
 dependencies {
     compile 'com.sedmelluq:jda-nas:1.0.6'
     compile "com.zaxxer:HikariCP:3.1.0"
-    compile ('net.dv8tion:JDA:3.7.1_410') {
+    compile('net.dv8tion:JDA:3.7.1_411') {
         exclude module: 'opus-java'
     }
 
@@ -29,10 +31,15 @@ dependencies {
     compile 'com.github.natanbc:lavadsp:0.4'
     compile 'com.github.DiscordBotList:DBL-Java-Library:d0ca7283e55def0f828ee33c0c2bf86266223854'
     compile 'se.michaelthelin.spotify:spotify-web-api-java:2.0.4'
-    compile "org.kohsuke:groovy-sandbox:1.6"
+    compile 'org.kohsuke:groovy-sandbox:1.6'
     compile group: 'com.google.guava', name: 'guava', version: '26.0-jre'
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.1'
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.1'
     compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.11.1'
+    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.0.4.RELEASE') {
+        exclude module: 'spring-boot-starter-logging'
+    }
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-log4j2', version: '2.0.4.RELEASE'
 }
+
 compileJava.options.encoding = 'UTF-8'
