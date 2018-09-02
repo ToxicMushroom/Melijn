@@ -2,8 +2,6 @@ package me.melijn.jda.utils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 public class Collector<T> implements Consumer<T> {
@@ -11,12 +9,7 @@ public class Collector<T> implements Consumer<T> {
     private List<T> list = new ArrayList<>();
     private int acceptAmount = 0;
     private int acceptedAmount = 0;
-    private ExecutorService executorService;
     private final Object blub = new Object();
-
-    public Collector(String threadName) {
-        executorService = Executors.newSingleThreadExecutor(t -> new Thread(t, threadName));
-    }
 
     @Override
     public synchronized void accept(T t) {
@@ -52,7 +45,7 @@ public class Collector<T> implements Consumer<T> {
     }
 
     public void collect(Consumer<List<T>> collection) {
-        executorService.submit(() -> {
+        TaskScheduler.async(() -> {
             synchronized (blub) {
                 try {
                     blub.wait();

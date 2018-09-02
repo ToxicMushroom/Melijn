@@ -42,5 +42,4 @@ public class RestController {
                 .put("ownerId", guild.getOwnerId())
                 .put("isBotMember", "true").toMap();
     }
-
 }

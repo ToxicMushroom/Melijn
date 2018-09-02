@@ -9,7 +9,6 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 import org.jetbrains.annotations.NotNull;
@@ -44,24 +43,20 @@ public class SetVerificationThreshold extends Command {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
-            if (args.length > 0 && args[0].matches("\\d+") && args[0].length() < 4) {
+            if (args.length > 0 && args[0].matches("^([0-1]?[0-9]|20)$")) {
                 int i = Integer.parseInt(args[0]);
-                if (i <= 20 && i >= 0) {
-                    if (i == 0) {
-                        TaskScheduler.async(() -> {
-                            Melijn.mySQL.removeVerificationThreshold(guild.getIdLong());
-                            verificationThresholdCache.invalidate(guild.getIdLong());
-                        });
-                        event.reply("The VerificationThreshold has been disabled by **" + event.getFullAuthorName() + "**");
-                    } else {
-                        TaskScheduler.async(() -> {
-                            Melijn.mySQL.setVerificationThreshold(guild.getIdLong(), i);
-                            verificationThresholdCache.put(guild.getIdLong(), i);
-                        });
-                        event.reply("The VerificationThreshold has been set to **" + i + "** by **" + event.getFullAuthorName() + "**");
-                    }
+                if (i == 0) {
+                    TaskScheduler.async(() -> {
+                        Melijn.mySQL.removeVerificationThreshold(guild.getIdLong());
+                        verificationThresholdCache.invalidate(guild.getIdLong());
+                    });
+                    event.reply("The VerificationThreshold has been disabled by **" + event.getFullAuthorName() + "**");
                 } else {
-                    MessageHelper.sendUsage(this, event);
+                    TaskScheduler.async(() -> {
+                        Melijn.mySQL.setVerificationThreshold(guild.getIdLong(), i);
+                        verificationThresholdCache.put(guild.getIdLong(), i);
+                    });
+                    event.reply("The VerificationThreshold has been set to **" + i + "** by **" + event.getFullAuthorName() + "**");
                 }
             } else {
                 event.reply("The VerificationThreshold is **" + (verificationThresholdCache.getUnchecked(guild.getIdLong()) == 0 ? "disabled" : verificationThresholdCache.getUnchecked(guild.getIdLong())) + "**");
