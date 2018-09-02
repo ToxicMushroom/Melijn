@@ -144,9 +144,7 @@ public class Chat extends ListenerAdapter {
                         event.getMessage().delete().reason("Verification Channel").queue(s -> MessageHelper.selfDeletedMessages.add(event.getMessageIdLong()));
                     }
                 }
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
+            } catch (ExecutionException ignored) {}
         }
     }
 
@@ -182,7 +180,9 @@ public class Chat extends ListenerAdapter {
                         black.add(user);
                         return;
                     }
-                    AuditLogEntry auditLogEntry = guild.getAuditLogs().type(ActionType.MESSAGE_DELETE).limit(1).complete().get(0);
+                    List<AuditLogEntry> auditLogEntryList = guild.getAuditLogs().type(ActionType.MESSAGE_DELETE).limit(1).complete();
+                    if (auditLogEntryList.size() == 0) return;
+                    AuditLogEntry auditLogEntry = auditLogEntryList.get(0);
                     String t = auditLogEntry.getOption(AuditLogOption.COUNT);
                     if (t != null) {
                         boolean sameAsLast = latestId.equals(auditLogEntry.getId()) && latestChanges != Integer.valueOf(t);
@@ -203,7 +203,7 @@ public class Chat extends ListenerAdapter {
                             User bot = event.getJDA().getSelfUser();
                             eb.setFooter("Deleted by: " + bot.getName() + "#" + bot.getDiscriminator(), bot.getEffectiveAvatarUrl());
                             MessageHelper.filterDeletedMessages.remove(event.getMessageIdLong());
-                            if (SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong()) != -1) {
+                            if (guild.getTextChannelById(SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong())) != null) {
                                 guild.getTextChannelById(SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong())).sendMessage(eb.build()).queue();
                             }
                         } else if (now.toInstant().toEpochMilli() - deletionTime.toInstant().toEpochMilli() < 1000) {
@@ -215,7 +215,7 @@ public class Chat extends ListenerAdapter {
                             if (purger != null)
                                 eb.setFooter("Purged by: " + purger.getName() + "#" + purger.getDiscriminator(), purger.getEffectiveAvatarUrl());
                             MessageHelper.purgedMessages.remove(event.getMessageIdLong());
-                            if (SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong()) != -1) {
+                            if (guild.getTextChannelById(SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong())) != null) {
                                 guild.getTextChannelById(SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong())).sendMessage(eb.build()).queue();
                             }
                         } else if (MessageHelper.selfDeletedMessages.remove(event.getMessageIdLong())) {
@@ -236,9 +236,9 @@ public class Chat extends ListenerAdapter {
     private void log(Guild guild, User user, EmbedBuilder eb, User deleter) {
         if (deleter != null) {
             eb.setFooter("Deleted by: " + deleter.getName() + "#" + deleter.getDiscriminator(), deleter.getEffectiveAvatarUrl());
-            if (user == deleter && SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guild.getIdLong()) != -1) {
+            if (user == deleter && guild.getTextChannelById(SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guild.getIdLong())) != null) {
                 guild.getTextChannelById(SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guild.getIdLong())).sendMessage(eb.build()).queue();
-            } else if (SetLogChannelCommand.odmLogChannelCache.getUnchecked(guild.getIdLong()) != -1) {
+            } else if (guild.getTextChannelById(SetLogChannelCommand.odmLogChannelCache.getUnchecked(guild.getIdLong())) != null) {
                 guild.getTextChannelById(SetLogChannelCommand.odmLogChannelCache.getUnchecked(guild.getIdLong())).sendMessage(eb.build()).queue();
             }
         }
