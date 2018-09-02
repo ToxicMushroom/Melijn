@@ -11,6 +11,7 @@ import me.melijn.jda.commands.developer.WeebshCommand;
 import me.melijn.jda.commands.fun.*;
 import me.melijn.jda.commands.management.*;
 import me.melijn.jda.commands.music.*;
+import me.melijn.jda.commands.rest.Application;
 import me.melijn.jda.commands.util.*;
 import me.melijn.jda.db.MySQL;
 import me.melijn.jda.events.AddReaction;
@@ -39,6 +40,7 @@ public class Melijn {
             config.getValue("username"),
             config.getValue("password"),
             config.getValue("database"));
+    private static ShardManager shardManager;
 
     public static void main(String[] args) throws LoginException {
         new WebUtils();
@@ -136,7 +138,7 @@ public class Melijn {
                 new SetEvalEngineCommand()
         );
 
-        ShardManager shardManager = new DefaultShardManagerBuilder()
+        shardManager = new DefaultShardManagerBuilder()
                 .setShardsTotal(1)
                 .setToken(config.getValue("token"))
                 .setGame(Game.playing(PREFIX + "help | melijn.com"))
@@ -163,5 +165,10 @@ public class Melijn {
             e.printStackTrace();
         }
         */
+        new Application().init(args);
+    }
+
+    public static ShardManager getShardManager() {
+        return shardManager;
     }
 }
