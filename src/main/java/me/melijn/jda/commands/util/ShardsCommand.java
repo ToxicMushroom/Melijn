@@ -31,7 +31,7 @@ public class ShardsCommand extends Command {
             int vcs = 0;
             for (JDA jda : shardManager.getShards()) {
                 avgping += jda.getPing();
-                long jvcs = jda.getGuilds().stream().filter(guild -> guild.getSelfMember().getVoiceState().getChannel() != null).count();
+                long jvcs = jda.getGuilds().stream().filter(guild -> guild.getSelfMember().getVoiceState().inVoiceChannel()).count();
                 vcs += jvcs;
                 tableBuilder.addRow(List.of(String.valueOf(shardCount++), String.valueOf(jda.getPing()), String.valueOf(jda.getUsers().size()), String.valueOf(jda.getGuilds().size()), String.valueOf(jvcs)));
             }

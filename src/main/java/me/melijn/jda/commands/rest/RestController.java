@@ -35,11 +35,11 @@ public class RestController {
     public Map<String, Object> getGuildInformation(@PathVariable String id) {
         if (id == null || !id.matches("\\d+")) return new JSONObject().put("error", "invalid id").toMap();
         Guild guild = Melijn.getShardManager().getGuildById(id);
-        if (guild == null) return new JSONObject().put("isBotMember", "false").toMap();
+        if (guild == null) return new JSONObject().put("isBotMember", false).toMap();
         return new JSONObject()
                 .put("name", guild.getName())
                 .put("memberCount", guild.getMemberCache().size())
                 .put("ownerId", guild.getOwnerId())
-                .put("isBotMember", "true").toMap();
+                .put("isBotMember", true).toMap();
     }
 }
