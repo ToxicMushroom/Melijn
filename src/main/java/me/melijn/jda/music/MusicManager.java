@@ -16,6 +16,7 @@ import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,11 +89,13 @@ public class MusicManager {
                             message.addReaction("\u2705").queue();
                             message.addReaction("\u274E").queue();
                             Helpers.waitForIt(requester.getIdLong());
-                            message.delete().queueAfter(30, TimeUnit.SECONDS, null, (failure) -> {});
+                            message.delete().queueAfter(30, TimeUnit.SECONDS, null, (failure) -> {
+                            });
                         });
                     } else {
                         channel.sendMessage("You still have a request to answer. (request automatically gets removed after 30 seconds)")
-                                .queue((message) -> message.delete().queueAfter(10, TimeUnit.SECONDS, null, (failure) -> {}));
+                                .queue((message) -> message.delete().queueAfter(10, TimeUnit.SECONDS, null, (failure) -> {
+                                }));
                     }
                 }
             }
@@ -103,7 +106,9 @@ public class MusicManager {
             }
 
             @Override
-            public void loadFailed(FriendlyException ignored) {}
+            public void loadFailed(FriendlyException ignored) {
+                channel.sendMessage("Something went wrong while searching for your track").queue();
+            }
         });
 
     }
@@ -133,7 +138,8 @@ public class MusicManager {
             }
 
             @Override
-            public void loadFailed(FriendlyException ignored) {}
+            public void loadFailed(FriendlyException ignored) {
+            }
         });
     }
 
@@ -181,15 +187,88 @@ public class MusicManager {
             }
 
             @Override
-            public void loadFailed(FriendlyException ignored) {}
+            public void loadFailed(FriendlyException ignored) {
+                channel.sendMessage("Something went wrong while searching for your track").queue();
+            }
         });
     }
 
-    public void loadSpotifyTrack(TextChannel textChannel, String name, ArtistSimplified[] artists, Integer durationMs) {
+    public void loadSpotifyTrack(TextChannel textChannel, User requester, String name, ArtistSimplified[] artists, int durationMs) {
+        MusicPlayer player = getPlayer(textChannel.getGuild());
+        textChannel.getGuild().getAudioManager().setSendingHandler(player.getAudioHandler());
+        String title = name.replaceFirst("scsearch:|ytsearch:", "");
+        ArrayList<String> artistNames = new ArrayList<>();
+        StringBuilder source = new StringBuilder(name);
+        if (artists != null) {
+            if (artists.length > 0) source.append(" ");
+            int i = 0;
+            for (ArtistSimplified artistSimplified : artists) {
+                artistNames.add(artistSimplified.getName());
+                if (i++ == 0) source.append(artistSimplified.getName());
+                else source.append(", ").append(artistSimplified.getName());
+            }
+        }
+        manager.loadItemOrdered(player, source.toString(), new AudioLoadResultHandler() {
 
+            @Override
+            public void trackLoaded(AudioTrack track) {
+                if ((durationMs + 2000 > track.getDuration() && track.getDuration() > durationMs - 2000) || track.getInfo().title.toLowerCase().contains(title.toLowerCase())) {
+                    loadTrack(textChannel, source.toString(), requester, false);
+                } else {
+                    if (name.startsWith("ytsearch:"))
+                        if (artists != null)
+                            loadSpotifyTrack(textChannel, requester, name, null, durationMs);
+                        else
+                            loadSpotifyTrack(textChannel, requester, name.replaceFirst("ytsearch:", "scsearch:"), artists, durationMs);
+                    else if (name.startsWith("scsearch:"))
+                        if (artists != null)
+                            loadSpotifyTrack(textChannel, requester, name, null, durationMs);
+                        else textChannel.sendMessage("No track with that name found :/").queue();
+                }
+            }
+
+            @Override
+            public void playlistLoaded(AudioPlaylist playlist) {
+                List<AudioTrack> tracks = playlist.getTracks();
+                for (AudioTrack track : tracks.subList(0, tracks.size() > 5 ? 5 : tracks.size())) {
+                    if ((durationMs + 2000 > track.getDuration() && track.getDuration() > durationMs - 2000) || track.getInfo().title.toLowerCase().contains(title.toLowerCase())) {
+                        loadTrack(textChannel, source.toString(), requester, false);
+                        return;
+                    }
+                }
+                if (name.startsWith("ytsearch:"))
+                    if (artists != null)
+                        loadSpotifyTrack(textChannel, requester, name, null, durationMs);
+                    else
+                        loadSpotifyTrack(textChannel, requester, name.replaceFirst("ytsearch:", "scsearch:"), artists, durationMs);
+                else if (name.startsWith("scsearch:"))
+                    if (artists != null)
+                        loadSpotifyTrack(textChannel, requester, name, null, durationMs);
+                    else textChannel.sendMessage("No track with that name found :(").queue();
+
+            }
+
+            @Override
+            public void noMatches() {
+                if (name.startsWith("ytsearch:"))
+                    if (artists != null)
+                        loadSpotifyTrack(textChannel, requester, name, null, durationMs);
+                    else
+                        loadSpotifyTrack(textChannel, requester, name.replaceFirst("ytsearch:", "scsearch:"), artists, durationMs);
+                else if (name.startsWith("scsearch:"))
+                    if (artists != null)
+                        loadSpotifyTrack(textChannel, requester, name, null, durationMs);
+                    else textChannel.sendMessage("No track with that name found :C").queue();
+            }
+
+            @Override
+            public void loadFailed(FriendlyException ignored) {
+                textChannel.sendMessage("Something went wrong while searching for your track").queue();
+            }
+        });
     }
 
     public void loadSpotifyPlaylist(TextChannel textChannel, PlaylistTrack[] tracks) {
-
+        textChannel.sendMessage("I don't support playlists and albums yet").queue();
     }
 }
