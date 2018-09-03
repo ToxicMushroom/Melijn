@@ -33,26 +33,21 @@ public class VolumeCommand extends Command {
             int volume;
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {
                 event.reply("Current volume: **" + player.getAudioPlayer().getVolume() + "**");
-            } else if (!Helpers.voteChecks || Melijn.mySQL.getVotesObject(event.getAuthorId()).getLong("streak") > 0) {
-                try {
+            } else if ((!Helpers.voteChecks || Melijn.mySQL.getVotesObject(event.getAuthorId()).getLong("streak") > 0)) {
+                if (args[0].matches("[0-9]{1,3}|1000")) {
                     volume = Integer.parseInt(args[0]);
-                } catch (NumberFormatException e) {
-                    MessageHelper.sendUsage(this, event);
-                    return;
-                }
-                if (event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {
-                    if (event.getMember().getVoiceState().getChannel() == event.getGuild().getSelfMember().getVoiceState().getChannel()) {
-                        if (volume >= 0 && volume <= 1000) {
+                    if (event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {
+                        if (event.getMember().getVoiceState().getChannel() == event.getGuild().getSelfMember().getVoiceState().getChannel()) {
                             player.getAudioPlayer().setVolume(volume);
                             event.reply("Volume has been set to **" + volume + "**");
                         } else {
-                            MessageHelper.sendUsage(this, event);
+                            event.reply("You have to be in the same voice channel as me to change my volume");
                         }
                     } else {
-                        event.reply("You have to be in the same voice channel as me to change my volume");
+                        event.reply("I'm not in a voiceChannel");
                     }
                 } else {
-                    event.reply("I'm not in a voiceChannel");
+                    MessageHelper.sendUsage(this, event);
                 }
             } else {
                 event.reply("Sorry this command takes a lot of CPU usage\nYou can still use this command if you support me by voting each day `>vote`\nor you can just right click my name and use the volume slider");

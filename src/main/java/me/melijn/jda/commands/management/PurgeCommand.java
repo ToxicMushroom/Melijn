@@ -34,37 +34,33 @@ public class PurgeCommand extends Command {
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length == 1 && args[0].matches("^([1-4][0-9]{0,2}|500)$")) {
-                    try {
-                        int toPurgeAmount = Integer.parseInt(args[0]);
-                        MessageHistory messageHistory = event.getTextChannel().getHistory();
-                        Collector<Message> collector = new Collector<>();
-                        while (toPurgeAmount > 0) {
-                            if (toPurgeAmount > 99) {
-                                messageHistory.retrievePast(100).queue(collector::accept);
-                                collector.increment();
-                                toPurgeAmount -= 100;
-                            } else {
-                                messageHistory.retrievePast(toPurgeAmount + 1).queue(collector::accept);
-                                collector.increment();
-                                toPurgeAmount = 0;
-                            }
+                    int toPurgeAmount = Integer.parseInt(args[0]);
+                    MessageHistory messageHistory = event.getTextChannel().getHistory();
+                    Collector<Message> collector = new Collector<>();
+                    while (toPurgeAmount > 0) {
+                        if (toPurgeAmount > 99) {
+                            messageHistory.retrievePast(100).queue(collector::accept);
+                            collector.increment();
+                            toPurgeAmount -= 100;
+                        } else {
+                            messageHistory.retrievePast(toPurgeAmount + 1).queue(collector::accept);
+                            collector.increment();
+                            toPurgeAmount = 0;
                         }
-                        collector.collect(collection -> {
-                            int old = areNotDeletable(collection);
-                            if (old > 0) {
-                                event.reply("Max purge size of this chat is **" + (collection.size()-old) + "** because I can't bulk delete messages older then 2 weeks");
-                            } else {
-                                collection.forEach(message -> MessageHelper.purgedMessageDeleter.putIfAbsent(message.getIdLong(), event.getAuthorId()));
-                                event.getTextChannel().purgeMessages(collection);
-                                event.getTextChannel().sendMessage("**Done**").queue(m -> {
-                                    m.delete().queueAfter(3, TimeUnit.SECONDS);
-                                    MessageHelper.botDeletedMessages.add(m.getIdLong());
-                                });
-                            }
-                        });
-                    } catch (NumberFormatException e) {
-                        MessageHelper.sendUsage(this, event);
                     }
+                    collector.collect(collection -> {
+                        int old = areNotDeletable(collection);
+                        if (old > 0) {
+                            event.reply("Max purge size of this chat is **" + (collection.size() - old) + "** because I can't bulk delete messages older then 2 weeks");
+                        } else {
+                            collection.forEach(message -> MessageHelper.purgedMessageDeleter.putIfAbsent(message.getIdLong(), event.getAuthorId()));
+                            event.getTextChannel().purgeMessages(collection);
+                            event.getTextChannel().sendMessage("**Done**").queue(m -> {
+                                m.delete().queueAfter(3, TimeUnit.SECONDS);
+                                MessageHelper.botDeletedMessages.add(m.getIdLong());
+                            });
+                        }
+                    });
                 } else {
                     MessageHelper.sendUsage(this, event);
                 }
@@ -78,7 +74,8 @@ public class PurgeCommand extends Command {
 
     private int areNotDeletable(List<Message> toDelete) {
         int foundOldMessage = 0;
-        if (toDelete.size() == 0 || OffsetDateTime.now().toEpochSecond() - toDelete.get(toDelete.size() - 1).getCreationTime().toEpochSecond() < 336 * 3600) return foundOldMessage;
+        if (toDelete.size() == 0 || OffsetDateTime.now().toEpochSecond() - toDelete.get(toDelete.size() - 1).getCreationTime().toEpochSecond() < 336 * 3600)
+            return foundOldMessage;
         for (Message msg : toDelete) {
             if (OffsetDateTime.now().toEpochSecond() - msg.getCreationTime().toEpochSecond() > 336 * 3600) {
                 foundOldMessage++;
