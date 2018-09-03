@@ -54,11 +54,11 @@ public class PurgeCommand extends Command {
                             if (old > 0) {
                                 event.reply("Max purge size of this chat is **" + (collection.size()-old) + "** because I can't bulk delete messages older then 2 weeks");
                             } else {
-                                collection.forEach(message -> MessageHelper.purgedMessages.putIfAbsent(message.getIdLong(), event.getAuthorId()));
+                                collection.forEach(message -> MessageHelper.purgedMessageDeleter.putIfAbsent(message.getIdLong(), event.getAuthorId()));
                                 event.getTextChannel().purgeMessages(collection);
                                 event.getTextChannel().sendMessage("**Done**").queue(m -> {
                                     m.delete().queueAfter(3, TimeUnit.SECONDS);
-                                    MessageHelper.selfDeletedMessages.add(m.getIdLong());
+                                    MessageHelper.botDeletedMessages.add(m.getIdLong());
                                 });
                             }
                         });

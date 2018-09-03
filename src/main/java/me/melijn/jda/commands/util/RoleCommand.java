@@ -24,8 +24,6 @@ public class RoleCommand extends Command {
         this.category = Category.UTILS;
     }
 
-
-
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {

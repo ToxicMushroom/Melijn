@@ -34,7 +34,6 @@ public class JoinLeave extends ListenerAdapter {
                 }
             });
 
-
     @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
         if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))

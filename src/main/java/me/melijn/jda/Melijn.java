@@ -18,9 +18,11 @@ import me.melijn.jda.events.AddReaction;
 import me.melijn.jda.events.Channels;
 import me.melijn.jda.events.Chat;
 import me.melijn.jda.events.JoinLeave;
+import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
+import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Game;
 import okhttp3.OkHttpClient;
 import org.discordbots.api.client.DiscordBotListAPI;
@@ -42,7 +44,7 @@ public class Melijn {
             config.getValue("database"));
     private static ShardManager shardManager;
 
-    public static void main(String[] args) throws LoginException {
+    public static void main(String[] args) throws LoginException, InterruptedException {
         new WebUtils();
         mySQL.executeUpdate("TRUNCATE TABLE commands");
 
@@ -149,7 +151,7 @@ public class Melijn {
 
         dblAPI = new DiscordBotListAPI.Builder()
                 .token(config.getValue("dbltoken"))
-                .botId("368362411591204865")
+                .botId(awaitReady().getShardById(0).getSelfUser().getId())
                 .build();
 
         Helpers.startTimer(shardManager.getShardById(0), 0);
@@ -166,9 +168,28 @@ public class Melijn {
         }
         */
         new Application().init(args);
+        Thread.setDefaultUncaughtExceptionHandler((thread, exception) -> MessageHelper.printException(thread, exception, null, null));
     }
 
     public static ShardManager getShardManager() {
         return shardManager;
+    }
+
+    private static boolean ready = false;
+
+    private static ShardManager awaitReady() throws InterruptedException {
+        if (ready)
+            return getShardManager();
+        long start = System.currentTimeMillis();
+        while (getShardManager().getShardsQueued() > 0) {
+            Thread.sleep(100);
+        }
+        for (final JDA shard : getShardManager().getShards()) {
+            shard.awaitReady();
+        }
+        long time = System.currentTimeMillis() - start;
+        ready = true;
+        System.out.println("ShardManager ready after " + time + "ms");
+        return getShardManager();
     }
 }
