@@ -13,6 +13,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class AudioListener extends AudioEventAdapter {
+
     public final BlockingQueue<AudioTrack> tracks = new LinkedBlockingQueue<>();
     private final MusicPlayer player;
 
@@ -36,7 +37,7 @@ public class AudioListener extends AudioEventAdapter {
         }
         AudioTrack track = tracks.poll();
         if (track.equals(lastTrack))
-        player.getAudioPlayer().startTrack(track.makeClone(), false);
+            player.getAudioPlayer().startTrack(track.makeClone(), false);
         else player.getAudioPlayer().startTrack(track, false);
         Helpers.postMusicLog(player, track);
     }

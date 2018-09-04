@@ -1,5 +1,6 @@
 package me.melijn.jda.commands.music;
 
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
@@ -7,15 +8,12 @@ import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.utils.MessageHelper;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -33,7 +31,6 @@ public class SPlayCommand extends Command {
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.VOICE_CONNECT};
     }
 
-    private List<String> providers = new ArrayList<>(Arrays.asList("yt", "sc", "link", "youtube", "soundcloud"));
     private MusicManager manager = MusicManager.getManagerInstance();
     public static HashMap<User, Message> usersFormToReply = new HashMap<>();
     public static HashMap<User, HashMap<Integer, AudioTrack>> userChoices = new HashMap<>();
@@ -49,7 +46,7 @@ public class SPlayCommand extends Command {
             return;
         }
         StringBuilder sb = new StringBuilder();
-        argsToSongName(args, sb, providers);
+        argsToSongName(args, sb, PlayCommand.providers);
         String songName = sb.toString();
         switch (args[0].toLowerCase()) {
             case "sc":

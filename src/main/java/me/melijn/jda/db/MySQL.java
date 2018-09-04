@@ -457,13 +457,15 @@ public class MySQL {
             banned.setThumbnail(target.getEffectiveAvatarUrl());
             banned.setAuthor("Banned by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
-            if (!target.isBot()) target.openPrivateChannel().queue((privateChannel) -> privateChannel.sendMessage(banned.build()).queue(
-                    (success) -> guild.getController().ban(target.getId(), 7, reason).queue(),
-                    (failed) -> guild.getController().ban(target.getId(), 7, reason).queue()
-            ), (failed) -> guild.getController().ban(target.getId(), 7, reason).queue());
+            if (!target.isBot())
+                target.openPrivateChannel().queue((privateChannel) -> privateChannel.sendMessage(banned.build()).queue(
+                        (success) -> guild.getController().ban(target.getId(), 7, reason).queue(),
+                        (failed) -> guild.getController().ban(target.getId(), 7, reason).queue()
+                ), (failed) -> guild.getController().ban(target.getId(), 7, reason).queue());
             long logChannelId = SetLogChannelCommand.banLogChannelCache.getUnchecked(guild.getIdLong());
             if (guild.getTextChannelById(logChannelId) != null) {
-                if (target.isBot()) guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget is a bot").queue();
+                if (target.isBot())
+                    guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget is a bot").queue();
                 else guild.getTextChannelById(logChannelId).sendMessage(banned.build()).queue();
             }
             executeUpdate("INSERT INTO active_bans (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE authorId= ?, reason= ?, startTime= ?, endTime= ?; " +
@@ -486,10 +488,11 @@ public class MySQL {
         banned.setThumbnail(target.getEffectiveAvatarUrl());
         banned.setAuthor("Banned by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
-        if (!target.isBot()) target.openPrivateChannel().queue((privateChannel) -> privateChannel.sendMessage(banned.build()).queue(
-                (success) -> guild.getController().ban(target.getId(), 7, reason).queue(),
-                (failed) -> guild.getController().ban(target.getId(), 7, reason).queue()
-        ), (failed) -> guild.getController().ban(target.getId(), 7, reason).queue());
+        if (!target.isBot())
+            target.openPrivateChannel().queue((privateChannel) -> privateChannel.sendMessage(banned.build()).queue(
+                    (success) -> guild.getController().ban(target.getId(), 7, reason).queue(),
+                    (failed) -> guild.getController().ban(target.getId(), 7, reason).queue()
+            ), (failed) -> guild.getController().ban(target.getId(), 7, reason).queue());
         long logChannelId = SetLogChannelCommand.banLogChannelCache.getUnchecked(guild.getIdLong());
         if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
             if (target.isBot())

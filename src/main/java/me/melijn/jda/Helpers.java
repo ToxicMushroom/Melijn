@@ -163,7 +163,8 @@ public class Helpers {
             lastRunTimer2 = System.currentTimeMillis();
             TaskScheduler.scheduleRepeating(() -> {
                 lastRunTimer2 = System.currentTimeMillis();
-                if (Melijn.dblAPI != null) Melijn.dblAPI.setStats(guildCount == 0 ? jda.asBot().getShardManager().getGuilds().size() : guildCount);
+                if (Melijn.dblAPI != null)
+                    Melijn.dblAPI.setStats(guildCount == 0 ? jda.asBot().getShardManager().getGuilds().size() : guildCount);
                 ArrayList<Long> votesList = Melijn.mySQL.getVoteList();
                 HashMap<Long, ArrayList<Long>> nextvoteMap = Melijn.mySQL.getNotificationsMap(NotificationType.NEXTVOTE);
                 for (long userId : nextvoteMap.keySet()) {

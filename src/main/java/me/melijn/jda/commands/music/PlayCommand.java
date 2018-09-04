@@ -12,7 +12,6 @@ import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,7 +30,7 @@ public class PlayCommand extends Command {
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.VOICE_CONNECT};
     }
 
-    private List<String> providers = new ArrayList<>(Arrays.asList("yt", "sc", "link", "youtube", "soundcloud"));
+    static List<String> providers = Arrays.asList("yt", "sc", "link", "youtube", "soundcloud");
     private MusicManager manager = MusicManager.getManagerInstance();
 
     @Override

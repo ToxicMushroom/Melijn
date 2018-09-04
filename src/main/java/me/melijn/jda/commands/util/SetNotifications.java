@@ -42,7 +42,7 @@ public class SetNotifications extends Command {
                         if (list.size() != 0) {
                             for (long s : list) {
                                 event.getJDA().retrieveUserById(s).queue(user -> {
-                                    progress.set(progress.get()+1);
+                                    progress.set(progress.get() + 1);
                                     if (user != null)
                                         contentBuilder.append(contentRowsCount.incrementAndGet() + 1).append(". ").append("[").append(user.getName()).append("#").append(user.getDiscriminator()).append("]\n");
                                     if (progress.get() == list.size()) {
