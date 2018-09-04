@@ -16,11 +16,11 @@ import static me.melijn.jda.Melijn.PREFIX;
 public class GuildInfoCommand extends Command {
 
     public GuildInfoCommand() {
-        this.commandName = "guildinfo";
+        this.commandName = "guildInfo";
         this.description = "Show you information about the guild";
-        this.usage = PREFIX + this.commandName + " <guildId>";
-        this.aliases = new String[]{"serverinfo"};
-        this.extra = "viewing another server's info only works if they have Melijn as member";
+        this.usage = PREFIX + this.commandName + " [guildId]";
+        this.aliases = new String[]{"serverInfo"};
+        this.extra = "viewing another servers their info only works if they have Melijn as member";
         this.category = Category.UTILS;
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
