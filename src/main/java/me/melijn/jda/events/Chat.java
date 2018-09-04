@@ -180,68 +180,75 @@ public class Chat extends ListenerAdapter {
             if (message.get("authorId") != null)
                 event.getJDA().retrieveUserById(message.getLong("authorId")).queue(author -> {
                     if (author != null && !black.contains(author)) {
-                        if (guild.getBanList().complete().stream().map(Ban::getUser).anyMatch(author::equals)) {
-                            black.add(author);
-                            return;
-                        }
-                        List<AuditLogEntry> auditLogEntryList = guild.getAuditLogs().type(ActionType.MESSAGE_DELETE).limit(1).complete();
-                        if (auditLogEntryList.size() == 0) return;
-                        AuditLogEntry auditLogEntry = auditLogEntryList.get(0);
-                        String t = auditLogEntry.getOption(AuditLogOption.COUNT);
-                        if (t != null) {
-                            boolean sameAsLast = latestId.equals(auditLogEntry.getId()) && latestChanges != Integer.valueOf(t);
-                            latestId = auditLogEntry.getId();
-                            latestChanges = Integer.valueOf(t);
-                            ZonedDateTime deletionTime = MiscUtil.getCreationTime(auditLogEntry.getIdLong()).toZonedDateTime();
-                            ZonedDateTime now = OffsetDateTime.now().atZoneSameInstant(deletionTime.getOffset());
-                            deletionTime = deletionTime.plusSeconds(1).plusNanos((event.getJDA().getPing() * 1_000_000));
-
-                            boolean split = false;
-                            EmbedBuilder eb = new EmbedBuilder();
-                            eb.setTitle("Message deleted in #" + event.getChannel().getName() + MessageHelper.spaces.substring(0, 45 + author.getName().length()) + "\u200B");
-                            eb.setThumbnail(author.getEffectiveAvatarUrl());
-                            eb.setColor(Color.decode("#000001"));
-                            if (message.getString("content").length() > 1850) {
-                                eb.setDescription("```LDIF" + "\nSender: " + author.getName() + "#" + author.getDiscriminator() + "\nMessage part 1: " + message.getString("content").substring(0, 1500) + "```");
-                                split = true;
-                            } else
-                                eb.setDescription("```LDIF" + "\nSender: " + author.getName() + "#" + author.getDiscriminator() + "\nMessage: " + message.getString("content").replaceAll("`", "´").replaceAll("\n", " ") + "\nSenderID: " + author.getId() + "\nSent Time: " + MessageHelper.millisToDate(message.getLong("sentTime")) + "```");
-                            if (MessageHelper.filteredMessageDeleteCause.keySet().contains(event.getMessageIdLong()) &&
-                                    guild.getTextChannelById(SetLogChannelCommand.fmLogChannelCache.getUnchecked(guild.getIdLong())) != null) {
-                                // Filtered Message log
-                                eb.setColor(Color.ORANGE);
-                                TextChannel fmLogChannel = guild.getTextChannelById(SetLogChannelCommand.fmLogChannelCache.getUnchecked(guild.getIdLong()));
-                                sendSplitIfNeeded(message, author, split, eb, fmLogChannel);
-                                eb.addField("Detected: ", "`" + MessageHelper.filteredMessageDeleteCause.get(event.getMessageIdLong()).replaceAll("`", "´") + "`", false);
-                                User bot = event.getJDA().getSelfUser();
-                                eb.setFooter("Deleted by: " + bot.getName() + "#" + bot.getDiscriminator(), bot.getEffectiveAvatarUrl());
-                                fmLogChannel.sendMessage(eb.build()).queue();
-                                MessageHelper.filteredMessageDeleteCause.remove(event.getMessageIdLong());
-                            } else if (MessageHelper.purgedMessageDeleter.get(event.getMessageIdLong()) != null &&
-                                    guild.getTextChannelById(SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong())) != null) {
-                                eb.setColor(Color.decode("#551A8B"));
-                                User purger = event.getJDA().asBot().getShardManager().getUserById(MessageHelper.purgedMessageDeleter.get(event.getMessageIdLong()));
-                                TextChannel pmLogChannel = guild.getTextChannelById(SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong()));
-                                sendSplitIfNeeded(message, author, split, eb, pmLogChannel);
-                                if (purger != null) eb.setFooter("Purged by: " + purger.getName() + "#" + purger.getDiscriminator(), purger.getEffectiveAvatarUrl());
-                                pmLogChannel.sendMessage(eb.build()).queue();
-                                MessageHelper.purgedMessageDeleter.remove(event.getMessageIdLong());
-                            } else if (MessageHelper.botDeletedMessages.remove(event.getMessageIdLong())) {
-                                User deleter = event.getJDA().getSelfUser();
-                                log(guild, author, eb, deleter, message, split);
-                            } else if (now.toInstant().toEpochMilli() - deletionTime.toInstant().toEpochMilli() < 1000) {
-                                User deleter = auditLogEntry.getUser();
-                                log(guild, author, eb, deleter, message, split);
-                            } else {
-                                User deleter = sameAsLast ? auditLogEntry.getUser() : event.getJDA().asBot().getShardManager().getUserById(Melijn.mySQL.getMessageAuthorId(event.getMessageIdLong()));
-                                log(guild, author, eb, deleter, message, split);
+                        guild.getBanList().queue(bans -> {
+                            if (bans.stream().map(Ban::getUser).anyMatch(author::equals)) {
+                                black.add(author);
+                                return;
                             }
-
-                        }
-                        mySQL.executeUpdate("DELETE FROM history_messages WHERE sentTime < " + (System.currentTimeMillis() - 604_800_000L));
+                            doMessageDeleteChecks(event, guild, message, author);
+                            mySQL.executeUpdate("DELETE FROM history_messages WHERE sentTime < " + (System.currentTimeMillis() - 604_800_000L));
+                        });
                     }
                 });
         }
+    }
+
+    private void doMessageDeleteChecks(GuildMessageDeleteEvent event, Guild guild, JSONObject message, User author) {
+        guild.getAuditLogs().type(ActionType.MESSAGE_DELETE).limit(1).queue(auditLogEntries -> {
+            if (auditLogEntries.size() == 0) return;
+            AuditLogEntry auditLogEntry = auditLogEntries.get(0);
+            String t = auditLogEntry.getOption(AuditLogOption.COUNT);
+            if (t != null) {
+                boolean sameAsLast = latestId.equals(auditLogEntry.getId()) && latestChanges != Integer.valueOf(t);
+                latestId = auditLogEntry.getId();
+                latestChanges = Integer.valueOf(t);
+                ZonedDateTime deletionTime = MiscUtil.getCreationTime(auditLogEntry.getIdLong()).toZonedDateTime();
+                ZonedDateTime now = OffsetDateTime.now().atZoneSameInstant(deletionTime.getOffset());
+                deletionTime = deletionTime.plusSeconds(1).plusNanos((event.getJDA().getPing() * 1_000_000));
+
+                boolean split = false;
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.setTitle("Message deleted in #" + event.getChannel().getName() + MessageHelper.spaces.substring(0, 45 + author.getName().length()) + "\u200B");
+                eb.setThumbnail(author.getEffectiveAvatarUrl());
+                eb.setColor(Color.decode("#000001"));
+                if (message.getString("content").length() > 1850) {
+                    eb.setDescription("```LDIF" + "\nSender: " + author.getName() + "#" + author.getDiscriminator() + "\nMessage part 1: " + message.getString("content").substring(0, 1500) + "```");
+                    split = true;
+                } else
+                    eb.setDescription("```LDIF" + "\nSender: " + author.getName() + "#" + author.getDiscriminator() + "\nMessage: " + message.getString("content").replaceAll("`", "´").replaceAll("\n", " ") + "\nSenderID: " + author.getId() + "\nSent Time: " + MessageHelper.millisToDate(message.getLong("sentTime")) + "```");
+                if (MessageHelper.filteredMessageDeleteCause.keySet().contains(event.getMessageIdLong()) &&
+                        guild.getTextChannelById(SetLogChannelCommand.fmLogChannelCache.getUnchecked(guild.getIdLong())) != null) {
+                    // Filtered Message log
+                    eb.setColor(Color.ORANGE);
+                    TextChannel fmLogChannel = guild.getTextChannelById(SetLogChannelCommand.fmLogChannelCache.getUnchecked(guild.getIdLong()));
+                    sendSplitIfNeeded(message, author, split, eb, fmLogChannel);
+                    eb.addField("Detected: ", "`" + MessageHelper.filteredMessageDeleteCause.get(event.getMessageIdLong()).replaceAll("`", "´") + "`", false);
+                    User bot = event.getJDA().getSelfUser();
+                    eb.setFooter("Deleted by: " + bot.getName() + "#" + bot.getDiscriminator(), bot.getEffectiveAvatarUrl());
+                    fmLogChannel.sendMessage(eb.build()).queue();
+                    MessageHelper.filteredMessageDeleteCause.remove(event.getMessageIdLong());
+                } else if (MessageHelper.purgedMessageDeleter.get(event.getMessageIdLong()) != null &&
+                        guild.getTextChannelById(SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong())) != null) {
+                    eb.setColor(Color.decode("#551A8B"));
+                    User purger = event.getJDA().asBot().getShardManager().getUserById(MessageHelper.purgedMessageDeleter.get(event.getMessageIdLong()));
+                    TextChannel pmLogChannel = guild.getTextChannelById(SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong()));
+                    sendSplitIfNeeded(message, author, split, eb, pmLogChannel);
+                    if (purger != null)
+                        eb.setFooter("Purged by: " + purger.getName() + "#" + purger.getDiscriminator(), purger.getEffectiveAvatarUrl());
+                    pmLogChannel.sendMessage(eb.build()).queue();
+                    MessageHelper.purgedMessageDeleter.remove(event.getMessageIdLong());
+                } else if (MessageHelper.botDeletedMessages.remove(event.getMessageIdLong())) {
+                    User deleter = event.getJDA().getSelfUser();
+                    log(guild, author, eb, deleter, message, split);
+                } else if (now.toInstant().toEpochMilli() - deletionTime.toInstant().toEpochMilli() < 1000) {
+                    User deleter = auditLogEntry.getUser();
+                    log(guild, author, eb, deleter, message, split);
+                } else {
+                    User deleter = sameAsLast ? auditLogEntry.getUser() : event.getJDA().asBot().getShardManager().getUserById(Melijn.mySQL.getMessageAuthorId(event.getMessageIdLong()));
+                    log(guild, author, eb, deleter, message, split);
+                }
+        }
+        });
     }
 
     private void sendSplitIfNeeded(JSONObject message, User author, boolean split, EmbedBuilder eb, TextChannel pmLogChannel) {

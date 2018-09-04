@@ -2,15 +2,15 @@ package me.melijn.jda.commands.management;
 
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
-import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.blub.*;
-import me.melijn.jda.utils.TaskScheduler;
+import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.User;
 
 import java.awt.*;
+import java.util.function.Consumer;
 
 public class TempMuteCommand extends Command {
 
@@ -42,8 +42,10 @@ public class TempMuteCommand extends Command {
                         Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoleCache.getUnchecked(guild.getIdLong()));
                         if (muteRole == null) {
                             event.reply("**No mute role set!**\nCreating Role..");
-                            muteRole = guild.getRoleById(createMuteRole(guild));
-                            event.reply("Role created. You can change the settings of the role to your desires in the role managment tab.\nThis role wil be added to the muted members so it shouldn't have talk permissions!");
+                            createMuteRole(guild, roleId -> {
+                                event.reply("Role created. You can change the settings of the role to your desires in the role managment tab.\nThis role wil be added to the muted members so it shouldn't have talk permissions!");
+
+                            });
                         }
                         if (muteRole != null) {
                             if (Helpers.canNotInteract(event, muteRole)) return;
@@ -72,16 +74,15 @@ public class TempMuteCommand extends Command {
         }
     }
 
-    static long createMuteRole(Guild guild) {
-        long roleId = guild.getController().createRole()
+    static void createMuteRole(Guild guild, Consumer<Long> roleId) {
+        guild.getController().createRole()
                 .setColor(Color.gray)
                 .setMentionable(false)
                 .setName("muted")
-                .setPermissions(Permission.MESSAGE_READ, Permission.MESSAGE_HISTORY, Permission.VOICE_CONNECT).complete().getIdLong();
-        TaskScheduler.async(() -> {
-            Melijn.mySQL.setRole(guild.getIdLong(), roleId, RoleType.MUTE);
-            SetMuteRoleCommand.muteRoleCache.put(guild.getIdLong(), roleId);
+                .setPermissions(Permission.MESSAGE_READ, Permission.MESSAGE_HISTORY, Permission.VOICE_CONNECT).queue(role -> {
+            roleId.accept(role.getIdLong());
+            Melijn.mySQL.setRole(guild.getIdLong(), role.getIdLong(), RoleType.MUTE);
+            SetMuteRoleCommand.muteRoleCache.put(guild.getIdLong(), role.getIdLong());
         });
-        return roleId;
     }
 }

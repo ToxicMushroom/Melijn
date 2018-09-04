@@ -33,7 +33,7 @@ public class MySQL {
     private String user;
     private String dbname;
     private HikariDataSource ds;
-    Logger logger = LogManager.getLogger(MySQL.class.getName());
+    private Logger logger = LogManager.getLogger(MySQL.class.getName());
 
     public MySQL(String ip, String user, String pass, String dbname) {
         this.ip = ip;
@@ -142,9 +142,9 @@ public class MySQL {
                     preparedStatement.setObject(current, object);
                     current++;
                 }
-                final ResultSet resultSet = preparedStatement.executeQuery();
-                consumer.accept(resultSet);
-                resultSet.close();
+                try (final ResultSet resultSet = preparedStatement.executeQuery()) {
+                    consumer.accept(resultSet);
+                }
             }
         } catch (final SQLException e) {
             System.out.println("Something went wrong while executing query method the query: " + sql);
@@ -457,25 +457,26 @@ public class MySQL {
             banned.setThumbnail(target.getEffectiveAvatarUrl());
             banned.setAuthor("Banned by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
-            if (!target.isBot()) target.openPrivateChannel().complete().sendMessage(banned.build()).queue();
+            if (!target.isBot()) target.openPrivateChannel().queue((privateChannel) -> privateChannel.sendMessage(banned.build()).queue(
+                    (success) -> guild.getController().ban(target.getId(), 7, reason).queue(),
+                    (failed) -> guild.getController().ban(target.getId(), 7, reason).queue()
+            ), (failed) -> guild.getController().ban(target.getId(), 7, reason).queue());
             long logChannelId = SetLogChannelCommand.banLogChannelCache.getUnchecked(guild.getIdLong());
-            if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                if (target.isBot())
-                    guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget is a bot").queue();
+            if (guild.getTextChannelById(logChannelId) != null) {
+                if (target.isBot()) guild.getTextChannelById(logChannelId).sendMessage(banned.build() + "\nTarget is a bot").queue();
                 else guild.getTextChannelById(logChannelId).sendMessage(banned.build()).queue();
             }
             executeUpdate("INSERT INTO active_bans (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE authorId= ?, reason= ?, startTime= ?, endTime= ?; " +
                             "INSERT INTO history_bans (guildId, victimId, authorId, reason, startTime, endTime, active) VALUES (?, ?, ?, ?, ?, ?, ?)",
                     guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, until, author.getIdLong(), reason, moment, until,
                     guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, until, true);
-            guild.getController().ban(target.getId(), 7, reason).queue();
             return true;
         }
         return false;
     }
 
-    public boolean setPermBan(User author, User target, Guild guild, String reasone) {
-        final String reason = reasone.matches("\\s+|") ? "N/A" : reasone;
+    public boolean setPermBan(User author, User target, Guild guild, String reasonRaw) {
+        final String reason = reasonRaw.matches("\\s+|") ? "N/A" : reasonRaw;
         long moment = System.currentTimeMillis();
         String nameTarget = target.getName() + "#" + target.getDiscriminator();
         String name = author.getName() + "#" + author.getDiscriminator();
@@ -485,7 +486,10 @@ public class MySQL {
         banned.setThumbnail(target.getEffectiveAvatarUrl());
         banned.setAuthor("Banned by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
-        if (!target.isBot()) target.openPrivateChannel().complete().sendMessage(banned.build()).queue();
+        if (!target.isBot()) target.openPrivateChannel().queue((privateChannel) -> privateChannel.sendMessage(banned.build()).queue(
+                (success) -> guild.getController().ban(target.getId(), 7, reason).queue(),
+                (failed) -> guild.getController().ban(target.getId(), 7, reason).queue()
+        ), (failed) -> guild.getController().ban(target.getId(), 7, reason).queue());
         long logChannelId = SetLogChannelCommand.banLogChannelCache.getUnchecked(guild.getIdLong());
         if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
             if (target.isBot())
@@ -496,7 +500,6 @@ public class MySQL {
                         "INSERT INTO history_bans (guildId, victimId, authorId, reason, startTime, endTime, active) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, null, author.getIdLong(), reason, moment, null,
                 guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, null, true);
-        guild.getController().ban(target.getId(), 7, reason).queue();
         return true;
     }
 
@@ -1339,6 +1342,23 @@ public class MySQL {
             e.printStackTrace();
         }
         return code;
+    }
+
+    public ArrayList<Long> getNotifications(long userId, NotificationType type) {
+        ArrayList<Long> lijstje = new ArrayList<>();
+        try (Connection con = ds.getConnection()) {
+            try (PreparedStatement statement = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_notifications WHERE userId= ?")) {
+                statement.setLong(1, userId);
+                try (ResultSet rs = statement.executeQuery()) {
+                    while (rs.next()) {
+                        lijstje.add(rs.getLong("targetId"));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return lijstje;
     }
 
 }

@@ -1,6 +1,7 @@
 package me.melijn.jda.commands.util;
 
 import me.melijn.jda.Helpers;
+import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
@@ -10,7 +11,7 @@ import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.User;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static me.melijn.jda.Melijn.PREFIX;
 import static me.melijn.jda.Melijn.mySQL;
@@ -27,8 +28,6 @@ public class SetNotifications extends Command {
         this.aliases = new String[]{"sn"};
     }
 
-    public static HashMap<Long, ArrayList<Long>> nextVotes = mySQL.getNotificationsMap(NotificationType.NEXTVOTE);
-
     @Override
     protected void execute(CommandEvent event) {
         String[] args = event.getArgs().split("\\s+");
@@ -36,43 +35,40 @@ public class SetNotifications extends Command {
             switch (args[0].toLowerCase()) {
                 case "nextvote": {
                     if (args.length == 1 || args[1].equalsIgnoreCase("info")) {
-                        ArrayList<Long> list = nextVotes.getOrDefault(event.getAuthorId(), new ArrayList<>());
-                        StringBuilder contentBuilder = new StringBuilder();
-                        contentBuilder.append("```INI\n");
-                        int i = 0;
+                        ArrayList<Long> list = Melijn.mySQL.getNotifications(event.getAuthorId(), NotificationType.NEXTVOTE);
+                        final StringBuilder contentBuilder = new StringBuilder("```INI\n");
+                        AtomicInteger progress = new AtomicInteger(0);
+                        AtomicInteger contentRowsCount = new AtomicInteger(0);
                         if (list.size() != 0) {
                             for (long s : list) {
-                                User user = event.getJDA().retrieveUserById(s).complete();
-                                if (user != null) {
-                                    contentBuilder.append(++i).append(". ").append("[").append(user.getName()).append("#").append(user.getDiscriminator()).append("]\n");
-                                }
+                                event.getJDA().retrieveUserById(s).queue(user -> {
+                                    progress.set(progress.get()+1);
+                                    if (user != null)
+                                        contentBuilder.append(contentRowsCount.incrementAndGet() + 1).append(". ").append("[").append(user.getName()).append("#").append(user.getDiscriminator()).append("]\n");
+                                    if (progress.get() == list.size()) {
+                                        if (contentRowsCount.get() == 0) contentBuilder.append(";none");
+                                        contentBuilder.append("```");
+                                        event.reply("**" + event.getFullAuthorName() + "'s** nextVote notifications\n" + contentBuilder.toString());
+                                    }
+                                });
                             }
-                            if (i == 0) contentBuilder.append(";none");
                         }
-                        contentBuilder.append("```");
-                        event.reply("**" + event.getFullAuthorName() + "'s** nextVote notifications\n" + contentBuilder.toString());
                         break;
                     } else {
-                        User user; //Yes this has to be 3 lines because of lambda's :(
-                        user = Helpers.getUserByArgs(event, args[1]);
+                        User user = Helpers.getUserByArgs(event, args[1]);
+                        ArrayList<Long> list = Melijn.mySQL.getNotifications(user.getIdLong(), NotificationType.NEXTVOTE);
                         boolean shouldRemove = false;
-                        for (long s : nextVotes.getOrDefault(event.getAuthorId(), new ArrayList<>())) {
+                        for (long s : list) {
                             if (!shouldRemove && user.getIdLong() == s) {
                                 shouldRemove = true;
                             }
                         }
                         if (shouldRemove) {
-                            ArrayList<Long> list = nextVotes.get(event.getAuthorId());
-                            list.remove(user.getIdLong());
-                            nextVotes.put(event.getAuthorId(), list);
                             TaskScheduler.async(() -> {
                                 mySQL.removeNotification(event.getAuthorId(), user.getIdLong(), NotificationType.NEXTVOTE);
                                 event.reply("NextVote notifications for **" + user.getName() + "#" + user.getDiscriminator() + "** have been **disabled**");
                             });
                         } else {
-                            ArrayList<Long> list = nextVotes.getOrDefault(event.getAuthorId(), new ArrayList<>());
-                            list.add(user.getIdLong());
-                            nextVotes.put(event.getAuthorId(), list);
                             TaskScheduler.async(() -> {
                                 mySQL.putNotification(event.getAuthorId(), user.getIdLong(), NotificationType.NEXTVOTE);
                                 event.reply("NextVote notifications for **" + user.getName() + "#" + user.getDiscriminator() + "** have been **enabled**");
