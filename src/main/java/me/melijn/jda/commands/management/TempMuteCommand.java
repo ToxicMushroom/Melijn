@@ -35,33 +35,20 @@ public class TempMuteCommand extends Command {
             Guild guild = event.getGuild();
             if (args.length > 1) {
                 User target = Helpers.getUserByArgsN(event, args[0]);
-                String time = args[1];
-
                 if (target != null && guild.getMember(target) != null) {
-                    if (MessageHelper.isRightFormat(time)) {
+                    if (MessageHelper.isRightFormat(args[1])) {
                         Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoleCache.getUnchecked(guild.getIdLong()));
                         if (muteRole == null) {
                             event.reply("**No mute role set!**\nCreating Role..");
-                            createMuteRole(guild, roleId -> {
+                            createMuteRole(guild, role -> {
                                 event.reply("Role created. You can change the settings of the role to your desires in the role managment tab.\nThis role wil be added to the muted members so it shouldn't have talk permissions!");
-
-                            });
-                        }
-                        if (muteRole != null) {
-                            if (Helpers.canNotInteract(event, muteRole)) return;
-                            guild.getController().addSingleRoleToMember(guild.getMember(target), muteRole).queue(s -> {
-                                String reason = event.getArgs().replaceFirst(args[0] + "\\s+" + args[1] + "\\s+|" + args[0] + "\\s+" + args[1], "");
-                                if (reason.length() <= 1000 && Melijn.mySQL.setTempMute(event.getAuthor(), target, guild, reason, MessageHelper.easyFormatToSeconds(time))) {
-                                    event.getMessage().addReaction("\u2705").queue();
-                                } else {
-                                    event.getMessage().addReaction("\u274C").queue();
-                                }
+                                doTempMute(event, role, target, args);
                             });
                         } else {
-                            event.reply("Error: contact support -> err: 'TempMuteCommand <-> muterole is null'");
+                            doTempMute(event, muteRole, target, args);
                         }
                     } else {
-                        event.reply("`" + time + "` is not the right format.\n**Format:** (number)(*timeunit*) *timeunit* = s, m, h, d, M or y\n**Example:** 1__m__ (1 __minute__)");
+                        event.reply("`" + args[1] + "` is not the right format.\n**Format:** (number)(*timeunit*) *timeunit* = s, m, h, d, M or y\n**Example:** 1__m__ (1 __minute__)");
                     }
                 } else {
                     event.reply("Unknown " + (target == null ? "user" : "member"));
@@ -74,15 +61,28 @@ public class TempMuteCommand extends Command {
         }
     }
 
-    static void createMuteRole(Guild guild, Consumer<Long> roleId) {
+    private void doTempMute(CommandEvent event, Role muteRole, User target, String[] args) {
+        if (Helpers.canNotInteract(event, muteRole)) return;
+        Guild guild = muteRole.getGuild();
+        guild.getController().addSingleRoleToMember(guild.getMember(target), muteRole).queue(s -> {
+            String reason = event.getArgs().replaceFirst(args[0] + "\\s+" + args[1] + "\\s+|" + args[0] + "\\s+" + args[1], "");
+            if (reason.length() <= 1000 && Melijn.mySQL.setTempMute(event.getAuthor(), target, guild, reason, MessageHelper.easyFormatToSeconds(args[1]))) {
+                event.getMessage().addReaction("\u2705").queue();
+            } else {
+                event.getMessage().addReaction("\u274C").queue();
+            }
+        });
+    }
+
+    static void createMuteRole(Guild guild, Consumer<Role> role) {
         guild.getController().createRole()
                 .setColor(Color.gray)
                 .setMentionable(false)
                 .setName("muted")
-                .setPermissions(Permission.MESSAGE_READ, Permission.MESSAGE_HISTORY, Permission.VOICE_CONNECT).queue(role -> {
-            roleId.accept(role.getIdLong());
-            Melijn.mySQL.setRole(guild.getIdLong(), role.getIdLong(), RoleType.MUTE);
-            SetMuteRoleCommand.muteRoleCache.put(guild.getIdLong(), role.getIdLong());
+                .setPermissions(Permission.MESSAGE_READ, Permission.MESSAGE_HISTORY, Permission.VOICE_CONNECT).queue(newRole -> {
+            role.accept(newRole);
+            Melijn.mySQL.setRole(guild.getIdLong(), newRole.getIdLong(), RoleType.MUTE);
+            SetMuteRoleCommand.muteRoleCache.put(guild.getIdLong(), newRole.getIdLong());
         });
     }
 }

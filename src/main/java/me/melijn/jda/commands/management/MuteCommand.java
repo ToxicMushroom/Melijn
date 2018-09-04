@@ -40,21 +40,12 @@ public class MuteCommand extends Command {
                     Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoleCache.getUnchecked(guild.getIdLong()));
                     if (muteRole == null) {
                         event.reply("**No mute role set!**\nCreating Role..");
-                        TempMuteCommand.createMuteRole(guild);
-                        event.reply("Role created. You can change the settings of the role to your desires in the role managment tab.\nThis role wil be added to the muted users so it should have no talk permissions!");
-                    }
-                    if (muteRole != null) {
-                        if (Helpers.canNotInteract(event, muteRole)) return;
-                        guild.getController().addSingleRoleToMember(guild.getMember(target), muteRole).queue(s -> {
-                            String reason = event.getArgs().replaceFirst(args[0] + "\\s+|" + args[0], "");
-                            if (reason.length() <= 1000 && Melijn.mySQL.setPermMute(event.getAuthor(), target, guild, reason)) {
-                                event.getMessage().addReaction("\u2705").queue();
-                            } else {
-                                event.getMessage().addReaction("\u274C").queue();
-                            }
+                        TempMuteCommand.createMuteRole(guild, newMuteRole -> {
+                            event.reply("Role created. You can change the settings of the role to your desires in the role managment tab.\nThis role wil be added to the muted users so it should have no talk permissions!");
+                            doMute(event, newMuteRole, target, args);
                         });
                     } else {
-                        event.reply("Mute role is unset (cannot mute)");
+                        doMute(event, muteRole, target, args);
                     }
                 } else {
                     event.reply("Unknown member");
@@ -65,5 +56,18 @@ public class MuteCommand extends Command {
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
+    }
+
+    private void doMute(CommandEvent event, Role muteRole, User target, String[] args) {
+        if (Helpers.canNotInteract(event, muteRole)) return;
+        Guild guild = muteRole.getGuild();
+        guild.getController().addSingleRoleToMember(guild.getMember(target), muteRole).queue(s -> {
+            String reason = event.getArgs().replaceFirst(args[0] + "\\s+|" + args[0], "");
+            if (reason.length() <= 1000 && Melijn.mySQL.setPermMute(event.getAuthor(), target, guild, reason)) {
+                event.getMessage().addReaction("\u2705").queue();
+            } else {
+                event.getMessage().addReaction("\u274C").queue();
+            }
+        });
     }
 }

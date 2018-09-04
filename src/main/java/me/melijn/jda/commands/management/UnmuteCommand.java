@@ -32,8 +32,9 @@ public class UnmuteCommand extends Command {
                     Helpers.retrieveUserByArgsN(event, args[0], user -> {
                         if (user != null) {
                             TaskScheduler.async(() -> {
-                                String reason = event.getArgs().length() > 1 ? event.getArgs().replaceFirst(args[0], "") : "N/A";
-                                if (reason.substring(0, 1).equalsIgnoreCase(" ")) reason = reason.replaceFirst("\\s+", "");
+                                String reason = event.getArgs().replaceFirst(args[0], "");
+                                if (reason.length() == 0 || reason.matches("\\s+")) reason = "N/A";
+                                if (reason.startsWith(" ")) reason = reason.replaceFirst("\\s+", "");
                                 if (Melijn.mySQL.unmute(event.getGuild(), user, event.getAuthor(), reason)) {
                                     event.getMessage().addReaction("\u2705").queue();
                                 } else {

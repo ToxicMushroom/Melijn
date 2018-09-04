@@ -2,10 +2,12 @@ package me.melijn.jda.db;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.*;
-import me.melijn.jda.commands.management.*;
+import me.melijn.jda.commands.management.DisableCommand;
+import me.melijn.jda.commands.management.SetLogChannelCommand;
+import me.melijn.jda.commands.management.SetPrefixCommand;
+import me.melijn.jda.commands.management.SetStreamerModeCommand;
 import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
@@ -634,7 +636,6 @@ public class MySQL {
                         eb.setAuthor("Unmuted by: " + author.getName() + "#" + author.getDiscriminator() + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
                         eb.setDescription("```LDIF" + "\nUnmuted: " + toUnmute.getName() + "#" + toUnmute.getDiscriminator() + "\nTargetID: " + toUnmute.getId() + "\nReason: " + reason + "\nGuild: " + guild.getName() + "\nMoment: " + MessageHelper.millisToDate(System.currentTimeMillis()) + "```");
                         eb.setThumbnail(toUnmute.getEffectiveAvatarUrl());
-                        eb.setColor(Helpers.EmbedColor);
                         eb.setColor(Color.green);
 
                         if (!toUnmute.isBot())
