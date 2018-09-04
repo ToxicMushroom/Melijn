@@ -21,7 +21,7 @@ public class PurgeCommand extends Command {
     public PurgeCommand() {
         this.commandName = "purge";
         this.description = "Deletes messages";
-        this.usage = PREFIX + commandName + " [1 - 500]";
+        this.usage = PREFIX + commandName + " [1 - 1000]";
         this.category = Category.MANAGEMENT;
         this.permissions = new Permission[]{
                 Permission.MESSAGE_MANAGE
@@ -33,7 +33,7 @@ public class PurgeCommand extends Command {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                 String[] args = event.getArgs().split("\\s+");
-                if (args.length == 1 && args[0].matches("^([1-4][0-9]{0,2}|500)$")) {
+                if (args.length == 1 && args[0].matches("^([1-9][0-9]{0,2}|1000)$")) {
                     int toPurgeAmount = Integer.parseInt(args[0]);
                     MessageHistory messageHistory = event.getTextChannel().getHistory();
                     Collector<Message> collector = new Collector<>();
