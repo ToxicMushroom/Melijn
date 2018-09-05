@@ -53,11 +53,11 @@ public class SetJoinLeaveChannelCommand extends Command {
                         TaskScheduler.async(() -> {
                             Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.WELCOME);
                             welcomeChannelCache.put(guild.getIdLong(), id);
-                            if (SetJoinMessageCommand.joinMessages.getUnchecked(guild.getIdLong()) == null) {
+                            if (SetJoinMessageCommand.joinMessages.getUnchecked(guild.getIdLong()).equals("")) {
                                 Melijn.mySQL.setMessage(guild.getIdLong(), "Welcome **%USER%** to our awesome discord server :D", MessageType.JOIN);
                                 SetJoinMessageCommand.joinMessages.put(guild.getIdLong(), "Welcome %USER% to the %GUILDNAME% discord server");
                             }
-                            if (SetLeaveMessageCommand.leaveMessages.getUnchecked(guild.getIdLong()) == null) {
+                            if (SetLeaveMessageCommand.leaveMessages.getUnchecked(guild.getIdLong()).equals("")) {
                                 Melijn.mySQL.setMessage(guild.getIdLong(), "**%USERNAME%** left us :C", MessageType.LEAVE);
                                 SetLeaveMessageCommand.leaveMessages.put(guild.getIdLong(), "**%USERNAME%** left us :C");
                             }

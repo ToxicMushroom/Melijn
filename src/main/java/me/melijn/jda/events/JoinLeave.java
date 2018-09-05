@@ -91,7 +91,7 @@ public class JoinLeave extends ListenerAdapter {
     }
 
     private static void joinCode(Guild guild, User user) throws ExecutionException {
-        if (SetJoinMessageCommand.joinMessages.get(guild.getIdLong()) != null) {
+        if (!SetJoinMessageCommand.joinMessages.getUnchecked(guild.getIdLong()).equals("")) {
             TextChannel welcomeChannel = guild.getTextChannelById(SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guild.getIdLong()));
             if (welcomeChannel != null && guild.getSelfMember().hasPermission(welcomeChannel, Permission.MESSAGE_WRITE))
                 welcomeChannel.sendMessage(variableFormat(SetJoinMessageCommand.joinMessages.getUnchecked(guild.getIdLong()), guild, user)).queue();
