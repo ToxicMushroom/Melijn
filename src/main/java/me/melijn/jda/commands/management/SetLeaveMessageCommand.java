@@ -27,7 +27,7 @@ public class SetLeaveMessageCommand extends Command {
     }
 
     public static final LoadingCache<Long, String> leaveMessages = CacheBuilder.newBuilder()
-            .maximumSize(50)
+            .maximumSize(10)
             .expireAfterAccess(1, TimeUnit.MINUTES)
             .build(new CacheLoader<>() {
                 public String load(@NotNull Long key) {
@@ -40,7 +40,7 @@ public class SetLeaveMessageCommand extends Command {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
                 Guild guild = event.getGuild();
-                String oldMessage = leaveMessages.getUnchecked(guild.getIdLong()) == null ? "nothing" : ("'" + leaveMessages.getUnchecked(guild.getIdLong()) + "'");
+                String oldMessage = leaveMessages.getUnchecked(guild.getIdLong()).equals("") ? "nothing" : ("'" + leaveMessages.getUnchecked(guild.getIdLong()) + "'");
                 String newMessage = event.getArgs();
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {

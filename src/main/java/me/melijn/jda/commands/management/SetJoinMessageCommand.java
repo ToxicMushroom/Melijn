@@ -29,12 +29,8 @@ public class SetJoinMessageCommand extends Command {
             .maximumSize(10)
             .expireAfterAccess(1, TimeUnit.MINUTES)
             .build(new CacheLoader<>() {
-                public String load(Long key) throws Exception {
-                    String message = Melijn.mySQL.getMessage(key, MessageType.JOIN);
-                    if (message == null) {
-                        throw new Exception("Message not found");
-                    } else
-                    return message;
+                public String load(Long key) {
+                    return Melijn.mySQL.getMessage(key, MessageType.JOIN);
                 }
             });
 
@@ -43,7 +39,7 @@ public class SetJoinMessageCommand extends Command {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
                 Guild guild = event.getGuild();
-                String oldMessage = joinMessages.getUnchecked(guild.getIdLong()) == null ? "nothing" : ("'" + joinMessages.getUnchecked(guild.getIdLong()) + "'");
+                String oldMessage = joinMessages.getUnchecked(guild.getIdLong()).equals("") ? "nothing" : ("'" + joinMessages.getUnchecked(guild.getIdLong()) + "'");
                 String newMessage = event.getArgs();
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
