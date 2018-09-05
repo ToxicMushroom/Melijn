@@ -1,5 +1,6 @@
 package me.melijn.jda.db;
 
+import com.google.common.collect.Sets;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import me.melijn.jda.Melijn;
@@ -24,6 +25,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static me.melijn.jda.utils.MessageHelper.spaces;
@@ -682,71 +684,137 @@ public class MySQL {
     }
 
     //Punishment getters
-    public String[] getUserBans(long guildId, long userId, JDA jda) {
+    public void getUserBans(long guildId, long userId, JDA jda, Consumer<String[]> bans) {
         try {
             PreparedStatement getBans = ds.getConnection().prepareStatement("SELECT * FROM history_bans WHERE victimId= ? AND guildId= ?");
             getBans.setLong(1, userId);
             getBans.setLong(2, guildId);
             ResultSet rs = getBans.executeQuery();
 
-            int progress = 0;
-            while (rs.next()) progress++;
-            String[] bans = new String[progress];
-            if (progress == 0) {
-                rs.close();
-                getBans.close();
-                return new String[]{"no bans"};
-            }
-            rs.beforeFirst();
-            progress = 0;
+            Set<JSONObject> set = Sets.newHashSet();
             while (rs.next()) {
-                String endTime = rs.getString("endTime") == null ? "Infinity" : MessageHelper.millisToDate(rs.getLong("endTime"));
-                User staff = jda.retrieveUserById(rs.getString("authorId")).complete();
-                if (rs.getInt("active") == 1)
-                    bans[progress++] = String.valueOf("```ini\n" + "[Banned by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs.getString("reason") + "\n[From]: " + MessageHelper.millisToDate(rs.getLong("startTime")) + "\n[Until]: " + endTime + "\n[active]: " + rs.getString("active") + "```");
-                else
-                    bans[progress++] = String.valueOf("```ini\n" + "[Banned by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs.getString("reason") + "\n[UnbanReason]: " + rs.getString("unbanReason") + "\n[From]: " + MessageHelper.millisToDate(rs.getLong("startTime")) + "\n[Until]: " + endTime + "\n[active]: " + rs.getString("active") + "```");
+                set.add(new JSONObject()
+                        .put("authorId", rs.getLong("authorId"))
+                        .put("reason", rs.getString("reason"))
+                        .put("unbanReason", rs.getString("unbanReason") == null ? "" : rs.getString("unbanReason"))
+                        .put("startTime", rs.getLong("startTime"))
+                        .put("endTime", rs.getString("endTime") == null ? "" : rs.getString("endTime"))
+                        .put("active", rs.getBoolean("active"))
+                );
             }
             rs.close();
             getBans.close();
-            return bans;
+            if (set.size() == 0) {
+                bans.accept(new String[]{"No bans"});
+            }
+            ArrayList<String> toRet = new ArrayList<>();
+            AtomicInteger progress = new AtomicInteger();
+            for (JSONObject rowObj : set) {
+                String endTime = rowObj.getString("endTime").equals("") ? "Infinity" : MessageHelper.millisToDate(Long.valueOf(rowObj.getString("endTime")));
+                jda.asBot().getShardManager().retrieveUserById(rowObj.getLong("authorId")).queue(staff -> {
+                    if (rowObj.getBoolean("active"))
+                        toRet.add("```ini" +
+                                "\n[Banned by]: " + staff.getName() + "#" + staff.getDiscriminator() +
+                                "\n[Reason]: " + rowObj.getString("reason") +
+                                "\n[From]: " + MessageHelper.millisToDate(rowObj.getLong("startTime")) +
+                                "\n[Until]: " + endTime +
+                                "\n[active]: " + rowObj.getBoolean("active") + "```");
+                    else {
+                        String toAdd = "";
+                        toAdd += "```ini" +
+                                "\n[Banned by]: " + staff.getName() + "#" + staff.getDiscriminator() +
+                                "\n[Reason]: " + rowObj.getString("reason");
+                        if (rowObj.get("unbanReason") != null && !rowObj.getBoolean("active"))
+                            toAdd += "\n[UnbanReason]: " + (rowObj.get("unbanReason") == null ? "N/A" : rowObj.getString("unbanReason"));
+                        toAdd += "\n[From]: " + MessageHelper.millisToDate(rowObj.getLong("startTime")) +
+                                "\n[Until]: " + endTime +
+                                "\n[active]: " + rowObj.getBoolean("active") + "```";
+                        toRet.add(toAdd);
+                    }
+                    if (progress.incrementAndGet() == set.size()) {
+                        bans.accept(toRet.toArray(new String[0]));
+                    }
+                }, (failed) -> {
+                    toRet.add("```ini" +
+                            "\n[Reason]: " + rowObj.getString("reason") +
+                            "\n[From]: " + MessageHelper.millisToDate(rowObj.getLong("startTime")) +
+                            "\n[Until]: " + endTime +
+                            "\n[active]: " + rowObj.getBoolean("active") + "```");
+                    if (progress.incrementAndGet() == set.size()) {
+                        bans.accept(toRet.toArray(new String[0]));
+                    }
+                });
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            return new String[]{"SQL Error :/ Contact support"};
+            bans.accept(new String[]{"SQL Error :/ Contact support"});
         }
     }
 
-    public String[] getUserMutes(long guildId, long userId, JDA jda) {
+    public void getUserMutes(long guildId, long userId, JDA jda, Consumer<String[]> mutes) {
         try {
             PreparedStatement getMutes = ds.getConnection().prepareStatement("SELECT * FROM history_mutes WHERE victimId= ? AND guildId= ?");
             getMutes.setLong(1, userId);
             getMutes.setLong(2, guildId);
             ResultSet rs = getMutes.executeQuery();
 
-            int progress = 0;
-            while (rs.next()) progress++;
-            String[] mutes = new String[progress];
-            if (progress == 0) {
-                rs.close();
-                getMutes.close();
-                return new String[]{"no mutes"};
-            }
-            rs.beforeFirst();
-            progress = 0;
+            Set<JSONObject> set = Sets.newHashSet();
             while (rs.next()) {
-                User staff = jda.retrieveUserById(rs.getString("authorId")).complete();
-                String endTime = rs.getString("endTime") == null ? "Infinity" : MessageHelper.millisToDate(rs.getLong("endTime"));
-                if (rs.getInt("active") == 1)
-                    mutes[progress++] = String.valueOf("```ini\n" + "[Muted by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs.getString("reason") + "\n[From]: " + MessageHelper.millisToDate(rs.getLong("startTime")) + "\n[Until]: " + endTime + "\n[active]: " + rs.getString("active") + "```");
-                else
-                    mutes[progress++] = String.valueOf("```ini\n" + "[Muted by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs.getString("reason") + "\n[UnmuteReason]: " + rs.getString("unmuteReason") + "\n[From]: " + MessageHelper.millisToDate(rs.getLong("startTime")) + "\n[Until]: " + endTime + "\n[active]: " + rs.getString("active") + "```");
+                set.add(new JSONObject()
+                        .put("authorId", rs.getLong("authorId"))
+                        .put("reason", rs.getString("reason"))
+                        .put("unmuteReason", rs.getString("unmuteReason") == null ? "" : rs.getString("unmuteReason"))
+                        .put("startTime", rs.getLong("startTime"))
+                        .put("endTime", rs.getString("endTime") == null ? "" : rs.getString("endTime"))
+                        .put("active", rs.getBoolean("active"))
+                );
             }
             rs.close();
             getMutes.close();
-            return mutes;
+            if (set.size() == 0) {
+                mutes.accept(new String[]{"No mutes"});
+            }
+            ArrayList<String> toRet = new ArrayList<>();
+            AtomicInteger progress = new AtomicInteger();
+            for (JSONObject rowObj : set) {
+                String endTime = rowObj.getString("endTime").equals("") ? "Infinity" : MessageHelper.millisToDate(Long.valueOf(rowObj.getString("endTime")));
+                jda.asBot().getShardManager().retrieveUserById(rowObj.getLong("authorId")).queue(staff -> {
+                    if (rowObj.getBoolean("active"))
+                        toRet.add("```ini" +
+                                "\n[Muted by]: " + staff.getName() + "#" + staff.getDiscriminator() +
+                                "\n[Reason]: " + rowObj.getString("reason") +
+                                "\n[From]: " + MessageHelper.millisToDate(rowObj.getLong("startTime")) +
+                                "\n[Until]: " + endTime +
+                                "\n[active]: " + rowObj.getBoolean("active") + "```");
+                    else {
+                        String toAdd = "";
+                        toAdd += "```ini" +
+                                "\n[Muted by]: " + staff.getName() + "#" + staff.getDiscriminator() +
+                                "\n[Reason]: " + rowObj.getString("reason");
+                        if (!rowObj.get("unmuteReason").equals("") && !rowObj.getBoolean("active"))
+                            toAdd += "\n[UnmuteReason]: " + (rowObj.get("unmuteReason") == null ? "N/A" : rowObj.getString("unmuteReason"));
+                        toAdd += "\n[From]: " + MessageHelper.millisToDate(rowObj.getLong("startTime")) +
+                                "\n[Until]: " + endTime +
+                                "\n[active]: " + rowObj.getBoolean("active") + "```";
+                        toRet.add(toAdd);
+                    }
+                    if (progress.incrementAndGet() == set.size()) {
+                        mutes.accept(toRet.toArray(new String[0]));
+                    }
+                }, (failed) -> {
+                    toRet.add("```ini" +
+                            "\n[Reason]: " + rowObj.getString("reason") +
+                            "\n[From]: " + MessageHelper.millisToDate(rowObj.getLong("startTime")) +
+                            "\n[Until]: " + endTime +
+                            "\n[active]: " + rowObj.getBoolean("active") + "```");
+                    if (progress.incrementAndGet() == set.size()) {
+                        mutes.accept(toRet.toArray(new String[0]));
+                    }
+                });
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            return new String[]{"SQL Error :/ Contact support"};
+            mutes.accept(new String[]{"SQL Error :/ Contact support"});
         }
     }
 
@@ -764,63 +832,96 @@ public class MySQL {
         return ref.ret;
     }
 
-    public String[] getUserWarns(long guildId, long userId, JDA jda) {
+    public void getUserWarns(long guildId, long userId, JDA jda, Consumer<String[]> warns) {
         try {
             PreparedStatement getWarns = ds.getConnection().prepareStatement("SELECT * FROM warns WHERE victimId= ? AND guildId= ?");
             getWarns.setLong(1, userId);
             getWarns.setLong(2, guildId);
             ResultSet rs = getWarns.executeQuery();
 
-            int progress = 0;
-            while (rs.next()) progress++;
-            String[] warns = new String[progress];
-            if (progress == 0) {
-                rs.close();
-                getWarns.close();
-                return new String[]{"no warns"};
-            }
-            rs.beforeFirst();
-            progress = 0;
+            Set<JSONObject> set = Sets.newHashSet();
             while (rs.next()) {
-                User staff = jda.retrieveUserById(rs.getString("authorId")).complete();
-                warns[progress++] = String.valueOf("```ini\n" + "[Warned by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs.getString("reason") + "\n[Moment]: " + MessageHelper.millisToDate(rs.getLong("moment")) + "```");
+                set.add(new JSONObject()
+                        .put("authorId", rs.getLong("authorId"))
+                        .put("reason", rs.getString("reason"))
+                        .put("moment", rs.getLong("moment"))
+                );
             }
             rs.close();
             getWarns.close();
-            return warns;
+            if (set.size() == 0) {
+                warns.accept(new String[]{"No warns"});
+            }
+            ArrayList<String> toRet = new ArrayList<>();
+            AtomicInteger progress = new AtomicInteger();
+            for (JSONObject rowObj : set) {
+                jda.asBot().getShardManager().retrieveUserById(rowObj.getLong("authorId")).queue(staff -> {
+                    toRet.add("```ini" +
+                            "\n[Warned by]: " + staff.getName() + "#" + staff.getDiscriminator() +
+                            "\n[Reason]: " + rowObj.getString("reason") +
+                            "\n[Moment]: " + MessageHelper.millisToDate(rowObj.getLong("moment")) + "```");
+                    if (progress.incrementAndGet() == set.size()) {
+                        warns.accept(toRet.toArray(new String[0]));
+                    }
+                }, (failed) -> {
+                    toRet.add("```ini" +
+                            "\n[Reason]: " + rowObj.getString("reason") +
+                            "\n[Moment]: " + MessageHelper.millisToDate(rowObj.getLong("moment")) + "```");
+                    if (progress.incrementAndGet() == set.size()) {
+                        warns.accept(toRet.toArray(new String[0]));
+                    }
+                });
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            return new String[]{"SQL Error :/ Contact support"};
+            warns.accept(new String[]{"SQL Error :/ Contact support"});
         }
     }
 
-    public String[] getUserKicks(long guildId, long userId, JDA jda) {
+
+    public void getUserKicks(long guildId, long userId, JDA jda, Consumer<String[]> kicks) {
         try (Connection con = ds.getConnection()) {
             PreparedStatement getKicks = con.prepareStatement("SELECT * FROM kicks WHERE victimId= ? AND guildId= ?");
             getKicks.setLong(1, userId);
             getKicks.setLong(2, guildId);
             ResultSet rs = getKicks.executeQuery();
 
-            int progress = 0;
-            while (rs.next()) progress++;
-            String[] kicks = new String[progress];
-            if (progress == 0) {
-                rs.close();
-                getKicks.close();
-                return new String[]{"no kicks"};
-            }
-            rs.beforeFirst();
-            progress = 0;
+            Set<JSONObject> set = Sets.newHashSet();
             while (rs.next()) {
-                User staff = jda.retrieveUserById(rs.getString("authorId")).complete();
-                kicks[progress++] = String.valueOf("```ini\n" + "[Kicked by]: " + staff.getName() + "#" + staff.getDiscriminator() + "\n[Reason]: " + rs.getString("reason") + "\n[Moment]: " + MessageHelper.millisToDate(rs.getLong("moment")) + "```");
+                set.add(new JSONObject()
+                        .put("authorId", rs.getLong("authorId"))
+                        .put("reason", rs.getString("reason"))
+                        .put("moment", rs.getLong("moment"))
+                );
             }
             rs.close();
             getKicks.close();
-            return kicks;
+            if (set.size() == 0) {
+                kicks.accept(new String[]{"No kicks"});
+            }
+            ArrayList<String> toRet = new ArrayList<>();
+            AtomicInteger progress = new AtomicInteger();
+            for (JSONObject rowObj : set) {
+                jda.asBot().getShardManager().retrieveUserById(rowObj.getLong("authorId")).queue(staff -> {
+                    toRet.add("```ini" +
+                            "\n[Kicked by]: " + staff.getName() + "#" + staff.getDiscriminator() +
+                            "\n[Reason]: " + rowObj.getString("reason") +
+                            "\n[Moment]: " + MessageHelper.millisToDate(rowObj.getLong("moment")) + "```");
+                    if (progress.incrementAndGet() == set.size()) {
+                        kicks.accept(toRet.toArray(new String[0]));
+                    }
+                }, (failed) -> {
+                    toRet.add("```ini" +
+                            "\n[Reason]: " + rowObj.getString("reason") +
+                            "\n[Moment]: " + MessageHelper.millisToDate(rowObj.getLong("moment")) + "```");
+                    if (progress.incrementAndGet() == set.size()) {
+                        kicks.accept(toRet.toArray(new String[0]));
+                    }
+                });
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            return new String[]{"SQL Error :/ Contact support"};
+            kicks.accept(new String[]{"SQL Error :/ Contact support"});
         }
     }
 
@@ -977,14 +1078,14 @@ public class MySQL {
             PreparedStatement getLogChannel = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_messages WHERE guildId= ?");
             getLogChannel.setLong(1, guildId);
             ResultSet rs = getLogChannel.executeQuery();
-            String s = null;
+            String s = "";
             while (rs.next()) s = rs.getString("content");
             rs.close();
             getLogChannel.close();
             return s;
         } catch (SQLException e) {
             e.printStackTrace();
-            return null;
+            return "";
         }
     }
 
@@ -1407,9 +1508,9 @@ public class MySQL {
                     rs.close();
                     for (JSONObject blubObj : blubjes) {
                         jda.asBot().getShardManager().retrieveUserById(blubObj.getLong("victimId")).queue(user -> {
-                                Guild guild = jda.asBot().getShardManager().getGuildById(blubObj.getLong("guildId"));
-                                if (guild != null)
-                                    Melijn.mySQL.unmute(guild, user, jda.getSelfUser(), "Mute expired");
+                            Guild guild = jda.asBot().getShardManager().getGuildById(blubObj.getLong("guildId"));
+                            if (guild != null)
+                                Melijn.mySQL.unmute(guild, user, jda.getSelfUser(), "Mute expired");
                         });
                     }
                 }

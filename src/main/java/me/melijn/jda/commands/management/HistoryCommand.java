@@ -36,79 +36,75 @@ public class HistoryCommand extends Command {
                             switch (args[0]) {
                                 case "ban":
                                 case "bans":
-                                    TaskScheduler.async(() -> {
-                                        ArrayList<String> bans = new ArrayList<>(Arrays.asList(Melijn.mySQL.getUserBans(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA())));
+                                    TaskScheduler.async(() -> Melijn.mySQL.getUserBans(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA(), bans -> {
                                         EmbedBuilder ebBan = new EmbedBuilder();
-                                        getLongMessageInParts(bans, parts -> {
+                                        getLongMessageInParts(new ArrayList<>(Arrays.asList(bans)), parts -> {
                                                     int partnumber = 0;
                                                     int size = Integer.parseInt(parts.get(parts.size() - 1));
                                                     parts.remove(parts.size() - 1);
                                                     for (String part : parts) {
-                                                        ebBan.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s bans " + ++partnumber + "/" + size + spaces.substring(0, 45-success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
+                                                        ebBan.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s bans " + ++partnumber + "/" + size + spaces.substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                                         ebBan.setDescription(part);
                                                         ebBan.setColor(Helpers.EmbedColor);
                                                         event.reply(ebBan.build());
                                                     }
                                                 }
                                         );
-                                    });
+                                    }));
                                     break;
                                 case "mute":
                                 case "mutes":
-                                    TaskScheduler.async(() -> {
-                                        ArrayList<String> mutes = new ArrayList<>(Arrays.asList(Melijn.mySQL.getUserMutes(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA())));
+                                    TaskScheduler.async(() -> Melijn.mySQL.getUserMutes(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA(), mutes -> {
                                         EmbedBuilder ebMute = new EmbedBuilder();
-                                        getLongMessageInParts(mutes, parts -> {
+                                        getLongMessageInParts(new ArrayList<>(Arrays.asList(mutes)), parts -> {
                                                     int partnumber = 0;
                                                     int size = Integer.parseInt(parts.get(parts.size() - 1));
                                                     parts.remove(parts.size() - 1);
                                                     for (String part : parts) {
-                                                        ebMute.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s mutes " + ++partnumber + "/" + size + spaces.substring(0, 45-success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
+                                                        ebMute.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s mutes " + ++partnumber + "/" + size + spaces.substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                                         ebMute.setDescription(part);
                                                         ebMute.setColor(Helpers.EmbedColor);
                                                         event.reply(ebMute.build());
                                                     }
                                                 }
                                         );
-                                    });
+                                    }));
                                     break;
                                 case "warn":
                                 case "warns":
-                                    TaskScheduler.async(() -> {
-                                        ArrayList<String> warns = new ArrayList<>(Arrays.asList(Melijn.mySQL.getUserWarns(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA())));
+                                    TaskScheduler.async(() -> Melijn.mySQL.getUserWarns(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA(), warns -> {
                                         EmbedBuilder ebWarn = new EmbedBuilder();
-                                        getLongMessageInParts(warns, parts -> {
+                                        getLongMessageInParts(new ArrayList<>(Arrays.asList(warns)), parts -> {
                                                     int partnumber = 0;
                                                     int size = Integer.parseInt(parts.get(parts.size() - 1));
                                                     parts.remove(parts.size() - 1);
                                                     for (String part : parts) {
-                                                        ebWarn.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s warns " + ++partnumber + "/" + size + spaces.substring(0, 45-success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
+                                                        ebWarn.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s warns " + ++partnumber + "/" + size + spaces.substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                                         ebWarn.setDescription(part);
                                                         ebWarn.setColor(Helpers.EmbedColor);
                                                         event.reply(ebWarn.build());
                                                     }
                                                 }
                                         );
-                                    });
+                                    }));
                                     break;
                                 case "kick":
                                 case "kicks":
-                                    TaskScheduler.async(() -> {
-                                        ArrayList<String> kicks = new ArrayList<>(Arrays.asList(Melijn.mySQL.getUserKicks(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA())));
+                                    TaskScheduler.async(() -> Melijn.mySQL.getUserKicks(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA(), kicks -> {
                                         EmbedBuilder ebKick = new EmbedBuilder();
-                                        getLongMessageInParts(kicks, parts -> {
+                                        getLongMessageInParts(new ArrayList<>(Arrays.asList(kicks)), parts -> {
                                                     int partnumber = 0;
                                                     int size = Integer.parseInt(parts.get(parts.size() - 1));
                                                     parts.remove(parts.size() - 1);
                                                     for (String part : parts) {
-                                                        ebKick.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s kicks " + ++partnumber + "/" + size + spaces.substring(0, 45-success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
+                                                        ebKick.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s kicks " + ++partnumber + "/" + size + spaces.substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                                         ebKick.setDescription(part);
                                                         ebKick.setColor(Helpers.EmbedColor);
                                                         event.reply(ebKick.build());
                                                     }
                                                 }
                                         );
-                                    });
+                                    }));
                                     break;
                             }
                         } else {
