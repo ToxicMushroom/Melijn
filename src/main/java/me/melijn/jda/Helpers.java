@@ -13,14 +13,15 @@ import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.Role;
+import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.managers.AudioManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.awt.*;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
@@ -141,22 +142,8 @@ public class Helpers {
             lastRunTimer1 = System.currentTimeMillis();
             TaskScheduler.scheduleRepeating(() -> {
                 lastRunTimer1 = System.currentTimeMillis();
-                Melijn.mySQL.executeQuery("SELECT * FROM active_bans WHERE endTime < ?", bans -> {
-                    try {
-                        doUnbans(jda, bans);
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                }, System.currentTimeMillis());
-                Melijn.mySQL.executeQuery("SELECT * FROM active_mutes WHERE endTime < ?", mutes -> {
-                    try {
-                        doUnmutes(jda, mutes);
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                }, System.currentTimeMillis());
-
-
+                Melijn.mySQL.doUnbans(jda);
+                Melijn.mySQL.doUnmutes(jda);
             }, 2000);
         }
         if (i == 0 || i == 2) {
@@ -191,35 +178,6 @@ public class Helpers {
                 Melijn.mySQL.updateVoteStreak();
             }, 1_800_000, 1_800_000);
         }
-    }
-
-    private static void doUnmutes(JDA jda, ResultSet mutes) throws SQLException {
-        while (mutes.next()) {
-            jda.asBot().getShardManager().retrieveUserById(mutes.getLong("victimId")).queue(user -> {
-                try {
-                    Guild guild = jda.asBot().getShardManager().getGuildById(mutes.getLong("guildId"));
-                    if (guild != null)
-                        Melijn.mySQL.unmute(guild, user, jda.getSelfUser(), "Mute expired");
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            });
-        }
-    }
-
-    private static void doUnbans(JDA jda, ResultSet bans) throws SQLException {
-        while (bans.next()) {
-            jda.asBot().getShardManager().retrieveUserById(bans.getLong("victimId")).queue(user -> {
-                try {
-                    Guild guild = jda.asBot().getShardManager().getGuildById(bans.getLong("guildId"));
-                    if (guild != null && user != null)
-                        Melijn.mySQL.unban(user, guild, jda.getSelfUser(), "Ban expired");
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            });
-        }
-        bans.close();
     }
 
     public static boolean hasPerm(Member member, String permission, int level) {

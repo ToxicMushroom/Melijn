@@ -144,9 +144,9 @@ public class MySQL {
                     preparedStatement.setObject(current, object);
                     current++;
                 }
-                try (final ResultSet resultSet = preparedStatement.executeQuery()) {
-                    consumer.accept(resultSet);
-                }
+                final ResultSet resultSet = preparedStatement.executeQuery();
+                consumer.accept(resultSet);
+                resultSet.close();
             }
         } catch (final SQLException e) {
             System.out.println("Something went wrong while executing query method the query: " + sql);
@@ -1365,4 +1365,57 @@ public class MySQL {
         return lijstje;
     }
 
+    public void doUnbans(JDA jda) {
+        try (Connection con = ds.getConnection()) {
+            try (PreparedStatement statement = con.prepareStatement("SELECT * FROM active_bans WHERE endTime < ?")) {
+                statement.setLong(1, System.currentTimeMillis());
+                try (ResultSet rs = statement.executeQuery()) {
+                    List<JSONObject> blubjes = new ArrayList<>();
+                    while (rs.next()) {
+                        blubjes.add(new JSONObject()
+                                .put("victimId", rs.getLong("victimId"))
+                                .put("guildId", rs.getLong("guildId"))
+                        );
+                    }
+                    rs.close();
+                    for (JSONObject blubObj : blubjes) {
+                        jda.asBot().getShardManager().retrieveUserById(blubObj.getLong("victimId")).queue(user -> {
+                            Guild guild = jda.asBot().getShardManager().getGuildById(blubObj.getLong("guildId"));
+                            if (guild != null && user != null)
+                                Melijn.mySQL.unban(user, guild, jda.getSelfUser(), "Ban expired");
+                        });
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void doUnmutes(JDA jda) {
+        try (Connection con = ds.getConnection()) {
+            try (PreparedStatement statement = con.prepareStatement("SELECT * FROM active_mutes WHERE endTime < ?")) {
+                statement.setLong(1, System.currentTimeMillis());
+                try (ResultSet rs = statement.executeQuery()) {
+                    List<JSONObject> blubjes = new ArrayList<>();
+                    while (rs.next()) {
+                        blubjes.add(new JSONObject()
+                                .put("victimId", rs.getLong("victimId"))
+                                .put("guildId", rs.getLong("guildId"))
+                        );
+                    }
+                    rs.close();
+                    for (JSONObject blubObj : blubjes) {
+                        jda.asBot().getShardManager().retrieveUserById(blubObj.getLong("victimId")).queue(user -> {
+                                Guild guild = jda.asBot().getShardManager().getGuildById(blubObj.getLong("guildId"));
+                                if (guild != null)
+                                    Melijn.mySQL.unmute(guild, user, jda.getSelfUser(), "Mute expired");
+                        });
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }
