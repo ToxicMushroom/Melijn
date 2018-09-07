@@ -46,7 +46,7 @@ public class SetLeaveMessageCommand extends Command {
                 if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                     if (args.length == 1 && newMessage.equalsIgnoreCase("null")) {
                         TaskScheduler.async(() -> {
-                            Melijn.mySQL.removeMessage(guild.getIdLong(), MessageType.JOIN);
+                            Melijn.mySQL.removeMessage(guild.getIdLong(), MessageType.LEAVE);
                             leaveMessages.invalidate(guild.getIdLong());
                         });
                         event.reply("LeaveMessage has been changed from " + oldMessage + " to nothing by **" + event.getFullAuthorName() + "**");
@@ -58,7 +58,7 @@ public class SetLeaveMessageCommand extends Command {
                         event.reply("LeaveMessage has been changed from " + oldMessage + " to '" + newMessage + "' by **" + event.getFullAuthorName() + "**");
                     }
                 } else {
-                    event.reply(leaveMessages.getUnchecked(guild.getIdLong()));
+                    event.reply("LeaveMessage is set to " + (leaveMessages.getUnchecked(guild.getIdLong()).equals("") ? "nothing" : "'" + leaveMessages.getUnchecked(guild.getIdLong()) + "'"));
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

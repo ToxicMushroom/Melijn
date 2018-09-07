@@ -50,12 +50,14 @@ public class SetJoinMessageCommand extends Command {
                         });
                         event.reply("JoinMessage has been set to nothing by **" + event.getFullAuthorName() + "**");
                     } else {
-                        TaskScheduler.async(() -> Melijn.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.JOIN));
-                        joinMessages.put(guild.getIdLong(), newMessage);
+                        TaskScheduler.async(() -> {
+                            Melijn.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.JOIN);
+                            joinMessages.put(guild.getIdLong(), newMessage);
+                        });
                         event.reply("JoinMessage has been changed from " + oldMessage + " to '" + newMessage + "' by **" + event.getFullAuthorName() + "**");
                     }
                 } else {
-                    event.reply(oldMessage);
+                    event.reply("JoinMessage is set to " + oldMessage);
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");
