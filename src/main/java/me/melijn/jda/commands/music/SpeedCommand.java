@@ -20,7 +20,6 @@ public class SpeedCommand extends Command {
         this.category = Category.MUSIC;
         this.extra = "1.0 is normal speed";
         this.needs = new Need[] {Need.GUILD};
-
     }
 
     @Override

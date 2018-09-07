@@ -70,6 +70,8 @@ public class JoinLeave extends ListenerAdapter {
         Guild guild = event.getGuild();
         User leftUser = event.getUser();
         if (unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong()).contains(leftUser.getIdLong())) {
+            removeUnverified(guild, leftUser);
+        } else {
             TaskScheduler.async(() -> {
                 String message = SetLeaveMessageCommand.leaveMessages.getUnchecked(guild.getIdLong());
                 if (!message.equals("")) {
@@ -79,7 +81,6 @@ public class JoinLeave extends ListenerAdapter {
                 }
             });
         }
-        removeUnverified(guild, leftUser);
     }
 
     public static void verify(Guild guild, User user) {
@@ -122,7 +123,7 @@ public class JoinLeave extends ListenerAdapter {
     }
 
     private static String variableFormat(String s, Guild guild, User user) {
-        return s.replaceAll("%USER%", guild.getMember(user).getAsMention())
+        return s.replaceAll("%USER%", "<@" + user.getIdLong() + ">")
                 .replaceAll("%USERNAME%", user.getName() + "#" + user.getDiscriminator())
                 .replaceAll("%GUILDNAME%", guild.getName())
                 .replaceAll("%SERVERNAME%", guild.getName())
