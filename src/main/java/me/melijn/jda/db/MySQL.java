@@ -1532,4 +1532,86 @@ public class MySQL {
         executeUpdate("INSERT INTO command_usage (commandId, time, usageCount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE usageCount= usageCount + 1 ",
                 commandId, currentTime, 1);
     }
+
+    public HashMap<Integer, Long> getTopUsage(long[] period, int limit) {
+        long smallest = period[0] < period[1] ? period[0] : period[1];
+        long biggest = period[0] < period[1] ? period[1] : period[0];
+        HashMap<Integer, Long> limitedCommandUsages = new HashMap<>();
+        HashMap<Integer, Long> commandUsages = new HashMap<>();
+        try (PreparedStatement getUsageWithinPeriod = ds.getConnection().prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?" )){
+            getUsageWithinPeriod.setLong(1, biggest);
+            getUsageWithinPeriod.setLong(2, smallest);
+            try (ResultSet rs = getUsageWithinPeriod.executeQuery()) {
+                while (rs.next()) {
+                    commandUsages.put(rs.getInt("commandId"), commandUsages.getOrDefault(rs.getInt("commandId"), 0L) + rs.getLong("usageCount"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        for (int i = 0; i < limit; i++) {
+            Map.Entry<Integer, Long> maxEntry = null;
+            for(Map.Entry<Integer, Long> entry : commandUsages.entrySet()) {
+                if (maxEntry == null || entry.getValue() > maxEntry.getValue()) {
+                    maxEntry = entry;
+                }
+            }
+            if (maxEntry != null) {
+                commandUsages.remove(maxEntry.getKey());
+                limitedCommandUsages.put(maxEntry.getKey(), maxEntry.getValue());
+            }
+        }
+        return limitedCommandUsages;
+    }
+
+    public long getUsage(long[] period, int commandId) {
+        long smallest = period[0] < period[1] ? period[0] : period[1];
+        long biggest = period[0] < period[1] ? period[1] : period[0];
+        long usage = 0;
+        try (PreparedStatement getUsageWithinPeriod = ds.getConnection().prepareStatement("SELECT * FROM command_usage WHERE commandId = ? AND time < ? AND time > ?" )){
+            getUsageWithinPeriod.setInt(1, commandId);
+            getUsageWithinPeriod.setLong(2, biggest);
+            getUsageWithinPeriod.setLong(3, smallest);
+            try (ResultSet rs = getUsageWithinPeriod.executeQuery()) {
+                while (rs.next()) {
+                    usage += rs.getLong("usageCount");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return usage;
+    }
+
+    public HashMap<Integer, Long> getUsages(long[] period, ArrayList<Integer> commandIds) {
+        long smallest = period[0] < period[1] ? period[0] : period[1];
+        long biggest = period[0] < period[1] ? period[1] : period[0];
+        HashMap<Integer, Long> sortedCommandUsages = new HashMap<>();
+        HashMap<Integer, Long> commandUsages = new HashMap<>();
+        try (PreparedStatement getUsageWithinPeriod = ds.getConnection().prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?" )){
+            getUsageWithinPeriod.setLong(1, biggest);
+            getUsageWithinPeriod.setLong(2, smallest);
+            try (ResultSet rs = getUsageWithinPeriod.executeQuery()) {
+                while (rs.next()) {
+                    if (commandIds.contains(rs.getInt("commandId")))
+                        commandUsages.put(rs.getInt("commandId"), commandUsages.getOrDefault(rs.getInt("commandId"), 0L) + rs.getLong("usageCount"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        for (int i = 0; i < commandUsages.size(); i++) {
+            Map.Entry<Integer, Long> maxEntry = null;
+            for(Map.Entry<Integer, Long> entry : commandUsages.entrySet()) {
+                if (maxEntry == null || entry.getValue() > maxEntry.getValue()) {
+                    maxEntry = entry;
+                }
+            }
+            if (maxEntry != null) {
+                commandUsages.remove(maxEntry.getKey());
+                sortedCommandUsages.put(maxEntry.getKey(), maxEntry.getValue());
+            }
+        }
+        return sortedCommandUsages;
+    }
 }
