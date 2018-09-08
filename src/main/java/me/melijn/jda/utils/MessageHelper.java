@@ -81,15 +81,16 @@ public class MessageHelper {
     }
 
     public static String progressBar(AudioTrack track, Emote emote) {
-        double procent = ((double) track.getPosition() / (double) track.getDuration()) * 100D;
-        int procentInt = (int) (procent / 1);
         String s = "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬";
+        if (track.getInfo().isStream) {
+            return (emote != null ? emote.getAsMention() : "") + s;
+        }
+        int procent = (int)(((double)track.getPosition() / (double)track.getDuration()) * 100D);
         StringBuilder sb = new StringBuilder();
-        while (procentInt > 0) {
-            procentInt -= 5;
+        while (procent > 0) {
+            procent -= 5;
             sb.append("▬");
         }
-
         return "[" + sb.toString() + "](https://melijn.com/)" + (emote != null ? emote.getAsMention() : "") + s.substring(0, (20 - sb.toString().length())) + " (" + Helpers.getDurationBreakdown(track.getPosition()) + "/" + Helpers.getDurationBreakdown(track.getDuration()) + ")";
     }
 
