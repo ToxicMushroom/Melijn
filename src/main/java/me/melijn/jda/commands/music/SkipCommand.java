@@ -23,6 +23,7 @@ public class SkipCommand extends Command {
         this.description = "Skip to a song in the queue";
         this.usage = PREFIX + this.commandName + " [1-50]";
         this.category = Category.MUSIC;
+        this.aliases = new String[]{"s"};
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
