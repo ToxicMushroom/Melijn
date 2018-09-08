@@ -376,7 +376,7 @@ public class MySQL {
             statement1.setLong(1, guildId);
             statement1.setString(2, permission);
             ResultSet rs1 = statement1.executeQuery();
-            temp = !rs.next();
+            temp = !rs1.next();
             statement1.close();
             rs1.close();
             if (temp) return true;
