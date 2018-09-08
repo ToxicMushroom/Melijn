@@ -47,6 +47,14 @@ public class EvalCommand extends Command {
             return;
         }
 
+        String imports = "import java.io.*;\n" +
+                "import java.lang.*;\n" +
+                "import java.util.*;\n" +
+                "import net.dv8tion.jda.core.*;\n" +
+                "import me.melijn.jda.commands.*;\n" +
+                "import me.melijn.jda.Melijn;\n" +
+                "import me.melijn.jda.Helpers;\n";
+
         se.put("event", event);
         se.put("jda", event.getJDA());
         se.put("guild", event.getGuild());
@@ -58,9 +66,9 @@ public class EvalCommand extends Command {
         se.put("voteReq", Helpers.voteChecks);
         try {
             if (event.getArgs().contains("event.reply("))
-                se.eval(event.getArgs());
+                se.eval(imports + event.getArgs());
             else
-                event.reply(se.eval(event.getArgs()).toString());
+                event.reply(se.eval(imports + event.getArgs()).toString());
         } catch (Exception e) {
             event.reply("An exception was thrown:\n```\n" + e + "```");
         }
