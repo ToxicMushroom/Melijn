@@ -22,6 +22,7 @@ import org.json.JSONObject;
 
 import java.awt.*;
 import java.sql.*;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -114,6 +115,7 @@ public class MySQL {
             executeUpdate("CREATE TABLE IF NOT EXISTS leave_messages(guildId bigint, content varchar(2000))");
             executeUpdate("CREATE TABLE IF NOT EXISTS votes(userId bigint, votes bigint, streak bigint, lastTime bigint);");
             executeUpdate("CREATE TABLE IF NOT EXISTS nextvote_notifications(userId bigint, targetId bigint);");
+            executeUpdate("CREATE TABLE IF NOT EXISTS command_usage(commandId int, usageCount bigint, time bigint, UNIQUE KEY(commandId, time))");
             logger.info("[MySQL] init loaded");
         } catch (SQLException e) {
             logger.log(Level.ERROR, "[MySQL] did not connect -> ");
@@ -1518,5 +1520,16 @@ public class MySQL {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    private long currentTime = 0;
+    private int currentHour = 25; //Because 25 isn't a valid hour it will be changed on the first updateUsage call
+    public void updateUsage(int commandId, long currentTimeMillis) {
+        if (currentHour != LocalTime.now().getHour()) {
+            currentHour = LocalTime.now().getHour();
+            currentTime = currentTimeMillis;
+        }
+        executeUpdate("INSERT INTO command_usage (commandId, time, usageCount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE usageCount= usageCount + 1 ",
+                commandId, currentTime, 1);
     }
 }

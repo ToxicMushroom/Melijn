@@ -132,6 +132,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
 
                             /*Cool code from jda-utils*/
                             isCommand[0] = true;
+                            Melijn.mySQL.updateUsage(commands.indexOf(command), System.currentTimeMillis());
                             CommandEvent cevent = new CommandEvent(event, args, this, name);
                             if (listener != null) listener.onCommand(cevent, command);
                             command.run(cevent);
@@ -149,6 +150,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
 
                             /*Cool code from jda-utils*/
                             isCommand[0] = true;
+                            Melijn.mySQL.updateUsage(i, System.currentTimeMillis());
                             CommandEvent cevent = new CommandEvent(event, args, this, name);
                             if (listener != null) listener.onCommand(cevent, command);
                             command.run(cevent);
