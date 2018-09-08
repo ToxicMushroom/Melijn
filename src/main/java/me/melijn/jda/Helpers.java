@@ -133,7 +133,8 @@ public class Helpers {
             "bird",
             "enable",
             "disabled",
-            "setEvalEngine"
+            "setEvalEngine",
+            "metrics"
     );
 
 
