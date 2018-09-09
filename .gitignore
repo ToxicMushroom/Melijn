@@ -1,0 +1,14 @@
+
+workspace/
+
+gradle/
+
+\.idea/
+
+\.gradle/
+
+gradlew\.bat
+
+gradlew
+
+src/main/java/me/melijn/jda/commands/util/WebUtils\.java
