@@ -1436,7 +1436,7 @@ public class MySQL {
     }
 
     public String getGuildVerificationCode(Long guildId) {
-        String code = null;
+        String code = "";
         try (Connection con = ds.getConnection()) {
             PreparedStatement getVerificationThreshold = con.prepareStatement("SELECT * FROM verification_codes WHERE guildId= ?");
             getVerificationThreshold.setLong(1, guildId);
