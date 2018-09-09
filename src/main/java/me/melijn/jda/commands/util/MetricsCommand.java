@@ -9,9 +9,11 @@ import me.melijn.jda.utils.MessageHelper;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.TimeZone;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
@@ -45,20 +47,20 @@ public class MetricsCommand extends Command {
                         case "limit":
                             HashMap<Integer, Long> topCommandUsage = Melijn.mySQL.getTopUsage(period, defaultInt);
                             for (int id : topCommandUsage.keySet()) {
-                                sb.append("[").append(event.getClient().getCommands().get(id).getCommandName()).append("] - ").append(topCommandUsage.get(id)).append("\n");
+                                sb.append(topCommandUsage.get(id)).append(" - [").append(event.getClient().getCommands().get(id).getCommandName()).append("]\n");
                             }
                             break;
                         case "all":
                             HashMap<Integer, Long> allCommandUsage = Melijn.mySQL.getTopUsage(period, event.getClient().getCommands().size());
                             for (int id : allCommandUsage.keySet()) {
-                                sb.append("[").append(event.getClient().getCommands().get(id).getCommandName()).append("] - ").append(allCommandUsage.get(id)).append("\n");
+                                sb.append(allCommandUsage.get(id)).append(" - [").append(event.getClient().getCommands().get(id).getCommandName()).append("]\n");
                             }
                             break;
                         default:
                             ArrayList<Integer> commandIds = new ArrayList<>();
                             for (Command command : event.getClient().getCommands()) {
                                 if (command.getCommandName().equalsIgnoreCase(args[0])) {
-                                    sb.append("[").append(command.getCommandName()).append("] - ").append(Melijn.mySQL.getUsage(period, event.getClient().getCommands().indexOf(command)));
+                                    sb.append(Melijn.mySQL.getUsage(period, event.getClient().getCommands().indexOf(command))).append(" - [").append(command.getCommandName()).append("]\n");
                                 } else if (command.getCategory().toString().equalsIgnoreCase(args[0])) {
                                     commandIds.add(event.getClient().getCommands().indexOf(command));
                                 }
@@ -66,16 +68,16 @@ public class MetricsCommand extends Command {
                             if (commandIds.size() > 0) {
                                 HashMap<Integer, Long> commandUsages = Melijn.mySQL.getUsages(period, commandIds);
                                 for (int index : commandUsages.keySet()) {
-                                    sb.append("[").append(event.getClient().getCommands().get(index).getCommandName()).append("] - ").append(commandUsages.get(index));
+                                    sb.append(commandUsages.get(index)).append(" - [").append(event.getClient().getCommands().get(index).getCommandName()).append("]\n");
                                 }
                             }
                             break;
                     }
+                    sb.append("```");
+                    event.reply(sb.toString());
                 } else {
                     event.reply("Invalid timespan");
                 }
-                sb.append("```");
-                event.reply(sb.toString());
             } else {
                 MessageHelper.sendUsage(this, event);
             }
@@ -84,14 +86,22 @@ public class MetricsCommand extends Command {
 
     private long[] parseTimes(String text) {
         if (text.split("\\s+").length > 1) {
-            String[] times = text.split("(\\s+)?-(\\s+)?");
+            String[] times = text.split("(\\s+)?--(\\s+)?");
             if (times.length == 2) {
                 long first = 0;
                 long second = 0;
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm-dd/MM/yyyy");
+                simpleDateFormat.setTimeZone(TimeZone.getTimeZone(ZoneId.of("Europe/Brussels")));
                 if (times[0].equalsIgnoreCase("now")) first = System.currentTimeMillis();
                 else if (times[0].matches("((([0-2])?([0-9]))|([0-3][0-1]))/(((0)?[0-9])|([0-1][0-2]))/(([0-1]?[0-9]{1,3})|(20[0-2][0-9]))")) {
                     try {
-                        first = new SimpleDateFormat("dd/mm/yyyy").parse(times[0]).getTime();
+                        first = simpleDateFormat.parse("00:00-" + times[0]).getTime();
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                } else if (times[0].matches("((([0-1]?[0-9])|(2[0-3])):([0-5]?[0-9]))-((([0-2])?([0-9]))|([0-3][0-1]))/(((0)?[0-9])|([0-1][0-2]))/(([0-1]?[0-9]{1,3})|(20[0-2][0-9]))")) {
+                    try {
+                        first = simpleDateFormat.parse(times[0]).getTime();
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
@@ -99,7 +109,13 @@ public class MetricsCommand extends Command {
                 if (times[1].equalsIgnoreCase("now")) second = System.currentTimeMillis();
                 else if (times[1].matches("((([0-2])?([0-9]))|([0-3][0-1]))/(((0)?[0-9])|([0-1][0-2]))/(([0-1]?[0-9]{1,3})|(20[0-2][0-9]))")) {
                     try {
-                        second = new SimpleDateFormat("dd/mm/yyyy").parse(times[1]).getTime();
+                        second = simpleDateFormat.parse("00:00-" + times[1]).getTime();
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                } else if (times[1].matches("((([0-1]?[0-9])|(2[0-3])):([0-5]?[0-9]))-((([0-2])?([0-9]))|([0-3][0-1]))/(((0)?[0-9])|([0-1][0-2]))/(([0-1]?[0-9]{1,3})|(20[0-2][0-9]))")) {
+                    try {
+                        second = simpleDateFormat.parse(times[1]).getTime();
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }

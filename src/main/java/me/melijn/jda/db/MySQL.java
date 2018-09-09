@@ -1536,7 +1536,6 @@ public class MySQL {
     public HashMap<Integer, Long> getTopUsage(long[] period, int limit) {
         long smallest = period[0] < period[1] ? period[0] : period[1];
         long biggest = period[0] < period[1] ? period[1] : period[0];
-        HashMap<Integer, Long> limitedCommandUsages = new HashMap<>();
         HashMap<Integer, Long> commandUsages = new HashMap<>();
         try (PreparedStatement getUsageWithinPeriod = ds.getConnection().prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?" )){
             getUsageWithinPeriod.setLong(1, biggest);
@@ -1549,19 +1548,7 @@ public class MySQL {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        for (int i = 0; i < limit; i++) {
-            Map.Entry<Integer, Long> maxEntry = null;
-            for(Map.Entry<Integer, Long> entry : commandUsages.entrySet()) {
-                if (maxEntry == null || entry.getValue() > maxEntry.getValue()) {
-                    maxEntry = entry;
-                }
-            }
-            if (maxEntry != null) {
-                commandUsages.remove(maxEntry.getKey());
-                limitedCommandUsages.put(maxEntry.getKey(), maxEntry.getValue());
-            }
-        }
-        return limitedCommandUsages;
+        return findGreatest(commandUsages, limit);
     }
 
     public long getUsage(long[] period, int commandId) {
@@ -1613,5 +1600,54 @@ public class MySQL {
             }
         }
         return sortedCommandUsages;
+    }
+
+    private static <K, V extends Comparable<? super V>> LinkedHashMap<K, V> findGreatest(Map<K, V> map, int n) {
+        Comparator<? super Map.Entry<K, V>> comparator = (Comparator<Map.Entry<K, V>>) (e0, e1) -> {
+                    V v0 = e0.getValue();
+                    V v1 = e1.getValue();
+                    return v0.compareTo(v1);
+                };
+        PriorityQueue<Map.Entry<K, V>> highest = new PriorityQueue<>(n, comparator);
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            highest.offer(entry);
+            while (highest.size() > n) {
+                highest.poll();
+            }
+        }
+
+        List<Map.Entry<K, V>> result = new ArrayList<>();
+        while (highest.size() > 0) {
+            result.add(highest.poll());
+        }
+
+        LinkedHashMap<K, V> coolMap = new LinkedHashMap<>();
+        for (Map.Entry<K, V> entry : result) {
+            coolMap.put(entry.getKey(), entry.getValue());
+        }
+
+        Comparator<? super Map.Entry<K, V>> comparator2 = (Comparator<Map.Entry<K, V>>) (e0, e1) -> {
+            V v0 = e0.getValue();
+            V v1 = e1.getValue();
+            return v1.compareTo(v0);
+        };
+        PriorityQueue<Map.Entry<K, V>> highest2 = new PriorityQueue<>(n, comparator2);
+        for (Map.Entry<K, V> entry : coolMap.entrySet()) {
+            highest2.offer(entry);
+            while (highest2.size() > n) {
+                highest2.poll();
+            }
+        }
+
+        List<Map.Entry<K, V>> result2 = new ArrayList<>();
+        while (highest2.size() > 0) {
+            result2.add(highest2.poll());
+        }
+
+        LinkedHashMap<K, V> coolMap2 = new LinkedHashMap<>();
+        for (Map.Entry<K, V> entry : result2) {
+            coolMap2.put(entry.getKey(), entry.getValue());
+        }
+        return coolMap2;
     }
 }
