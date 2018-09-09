@@ -9,6 +9,7 @@ import me.melijn.jda.blub.Need;
 import me.melijn.jda.commands.management.*;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
@@ -20,6 +21,7 @@ public class SettingsCommand extends Command {
         this.aliases = new String[]{"guildSettings", "serverSettings"};
         this.description = "Shows you all the settings of melijn and their set value";
         this.category = Category.UTILS;
+        this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
         this.needs = new Need[]{Need.GUILD};
     }
 
@@ -56,6 +58,8 @@ public class SettingsCommand extends Command {
                                     "\n**Prefix:** " + SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong()) + "**")
                             .build())
             );
+        } else {
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
     }
 
