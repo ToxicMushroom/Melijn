@@ -7,6 +7,7 @@ import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 import me.melijn.jda.commands.management.*;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.EmbedBuilder;
 
 import static me.melijn.jda.Melijn.PREFIX;
@@ -25,10 +26,11 @@ public class SettingsCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
-            event.reply(new EmbedBuilder()
-                    .setTitle("Server settings")
-                    .setColor(Helpers.EmbedColor)
-                    .setDescription("MusicChannel:** " + SetMusicChannelCommand.musicChannelCache.getUnchecked(event.getGuild().getIdLong()) +
+            TaskScheduler.async(() ->
+                    event.reply(new EmbedBuilder()
+                            .setTitle("Server settings")
+                            .setColor(Helpers.EmbedColor)
+                            .setDescription("MusicChannel:** " + SetMusicChannelCommand.musicChannelCache.getUnchecked(event.getGuild().getIdLong()) +
                                     "\n**StreamUrl:** " + Melijn.mySQL.getStreamUrl(event.getGuild().getIdLong()) +
                                     "\n**StreamerMode:** " + (SetStreamerModeCommand.streamerModeCache.getUnchecked(event.getGuild().getIdLong()) ? "on" : "off") +
                                     "\n" +
@@ -47,12 +49,13 @@ public class SettingsCommand extends Command {
                                     "\n**PMLogChannel:** " + idToChannelMention(SetLogChannelCommand.pmLogChannelCache.getUnchecked(event.getGuild().getIdLong())) +
                                     "\n**FMLogChannel:** " + idToChannelMention(SetLogChannelCommand.fmLogChannelCache.getUnchecked(event.getGuild().getIdLong())) +
                                     "\n" +
-                                    "\n**JoinMessage:** " + stringToString(SetJoinMessageCommand.joinMessages.getUnchecked(event.getGuild().getIdLong())) +
-                                    "\n**LeaveMessage:** " + stringToString(SetJoinMessageCommand.joinMessages.getUnchecked(event.getGuild().getIdLong())) +
-                                    "\n**VerificationCode:** " + stringToString(SetVerificationCode.verificationCodeCache.getUnchecked(event.getGuild().getIdLong())) +
+                                    "\n**JoinMessage: ```" + stringToString(SetJoinMessageCommand.joinMessages.getUnchecked(event.getGuild().getIdLong())).replaceAll("`", "´") +
+                                    "\n```\nLeaveMessage: ```" + stringToString(SetLeaveMessageCommand.leaveMessages.getUnchecked(event.getGuild().getIdLong())).replaceAll("`", "´") +
+                                    "\n```\nVerificationCode:** " + stringToString(SetVerificationCode.verificationCodeCache.getUnchecked(event.getGuild().getIdLong())) +
                                     "\n**VerificationThreshold:** " + SetVerificationThreshold.verificationThresholdCache.getUnchecked(event.getGuild().getIdLong()) +
-                                    "\n**Prefix: " + SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong()) + "**")
-                    .build());
+                                    "\n**Prefix:** " + SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong()) + "**")
+                            .build())
+            );
         }
     }
 
