@@ -138,7 +138,8 @@ public class Melijn {
                 new EnableCommand(),
                 new DisableCommand(),
                 new SetEvalEngineCommand(),
-                new MetricsCommand()
+                new MetricsCommand(),
+                new SettingsCommand()
         );
 
         shardManager = new DefaultShardManagerBuilder()
