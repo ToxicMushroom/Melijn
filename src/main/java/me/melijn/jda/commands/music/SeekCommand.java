@@ -16,7 +16,7 @@ public class SeekCommand extends Command {
     public SeekCommand() {
         this.commandName = "seek";
         this.description = "seek to the parts of the song that you like :)";
-        this.usage = PREFIX + this.commandName + " [xx:xx:xx]";
+        this.usage = PREFIX + this.commandName + " [hh:mm:ss]";
         this.aliases = new String[]{"skipx", "position"};
         this.needs = new Need[]{Need.GUILD, Need.VOICECHANNEL};
         this.category = Category.MUSIC;
@@ -35,7 +35,9 @@ public class SeekCommand extends Command {
                             long millis = Helpers.parseTimeFromArgs(args);
                             if (millis != -1) {
                                 track.setPosition(millis);
-                                event.reply("The position of the song has been changed to **" + Helpers.getDurationBreakdown(track.getPosition()) + "/" + Helpers.getDurationBreakdown(track.getDuration()) + "** by **" + event.getFullAuthorName() + "**");
+                                event.reply("The position of the song has been changed to **" +
+                                        (track.getPosition() > track.getDuration() ? Helpers.getDurationBreakdown(track.getDuration()) : Helpers.getDurationBreakdown(track.getPosition())) + "/" +
+                                        Helpers.getDurationBreakdown(track.getDuration()) + "** by **" + event.getFullAuthorName() + "**");
                             } else MessageHelper.sendUsage(this, event);
                         } else {
                             event.reply("You have to be in the same voice channel as me to seek");
