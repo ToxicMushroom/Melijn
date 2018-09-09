@@ -177,7 +177,7 @@ public class Chat extends ListenerAdapter {
                 SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
                 SetLogChannelCommand.fmLogChannelCache.getUnchecked(guild.getIdLong()) != -1)) {
             JSONObject message = mySQL.getMessageObject(event.getMessageIdLong());
-            if (message.get("authorId") != null)
+            if (message.keySet().contains("authorId"))
                 event.getJDA().retrieveUserById(message.getLong("authorId")).queue(author -> {
                     if (author != null && !black.contains(author)) {
                         guild.getBanList().queue(bans -> {
