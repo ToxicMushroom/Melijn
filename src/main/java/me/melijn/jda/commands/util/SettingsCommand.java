@@ -30,8 +30,8 @@ public class SettingsCommand extends Command {
                     event.reply(new EmbedBuilder()
                             .setTitle("Server settings")
                             .setColor(Helpers.EmbedColor)
-                            .setDescription("MusicChannel:** " + SetMusicChannelCommand.musicChannelCache.getUnchecked(event.getGuild().getIdLong()) +
-                                    "\n**StreamUrl:** " + Melijn.mySQL.getStreamUrl(event.getGuild().getIdLong()) +
+                            .setDescription("MusicChannel:** " + idToChannelMention(SetMusicChannelCommand.musicChannelCache.getUnchecked(event.getGuild().getIdLong())) +
+                                    "\n**StreamUrl:** " + stringToString(Melijn.mySQL.getStreamUrl(event.getGuild().getIdLong()), false) +
                                     "\n**StreamerMode:** " + (SetStreamerModeCommand.streamerModeCache.getUnchecked(event.getGuild().getIdLong()) ? "on" : "off") +
                                     "\n" +
                                     "\n**MuteRole:** " + idToRoleMention(SetMuteRoleCommand.muteRoleCache.getUnchecked(event.getGuild().getIdLong())) +
@@ -49,9 +49,9 @@ public class SettingsCommand extends Command {
                                     "\n**PMLogChannel:** " + idToChannelMention(SetLogChannelCommand.pmLogChannelCache.getUnchecked(event.getGuild().getIdLong())) +
                                     "\n**FMLogChannel:** " + idToChannelMention(SetLogChannelCommand.fmLogChannelCache.getUnchecked(event.getGuild().getIdLong())) +
                                     "\n" +
-                                    "\n**JoinMessage: ```" + stringToString(SetJoinMessageCommand.joinMessages.getUnchecked(event.getGuild().getIdLong())).replaceAll("`", "´") +
-                                    "\n```\nLeaveMessage: ```" + stringToString(SetLeaveMessageCommand.leaveMessages.getUnchecked(event.getGuild().getIdLong())).replaceAll("`", "´") +
-                                    "\n```\nVerificationCode:** " + stringToString(SetVerificationCode.verificationCodeCache.getUnchecked(event.getGuild().getIdLong())) +
+                                    "\n**JoinMessage: " + stringToString(SetJoinMessageCommand.joinMessages.getUnchecked(event.getGuild().getIdLong()).replaceAll("`", "´"), true) +
+                                    "\n\nLeaveMessage: " + stringToString(SetLeaveMessageCommand.leaveMessages.getUnchecked(event.getGuild().getIdLong()).replaceAll("`", "´"), true) +
+                                    "\n\nVerificationCode:** " + stringToString(SetVerificationCode.verificationCodeCache.getUnchecked(event.getGuild().getIdLong()), false) +
                                     "\n**VerificationThreshold:** " + SetVerificationThreshold.verificationThresholdCache.getUnchecked(event.getGuild().getIdLong()) +
                                     "\n**Prefix:** " + SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong()) + "**")
                             .build())
@@ -75,7 +75,7 @@ public class SettingsCommand extends Command {
         }
     }
 
-    private String stringToString(String text) {
-        return text.equals("") ? "unset" : text;
+    private String stringToString(String text, boolean encapsulate) {
+        return text.equals("") ? "unset" : (encapsulate ? "```" + text + "```" : text);
     }
 }

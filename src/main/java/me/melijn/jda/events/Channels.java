@@ -6,6 +6,7 @@ import me.melijn.jda.commands.developer.EvalCommand;
 import me.melijn.jda.commands.management.SetMusicChannelCommand;
 import me.melijn.jda.commands.management.SetStreamerModeCommand;
 import me.melijn.jda.music.MusicManager;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
@@ -22,7 +23,8 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceMove(GuildVoiceMoveEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong())) return;
+        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+            return;
         Guild guild = event.getGuild();
         long guildId = guild.getIdLong();
         AudioManager audioManager = guild.getAudioManager();
@@ -51,10 +53,14 @@ public class Channels extends ListenerAdapter {
                 !audioManager.isConnected() && event.getChannelJoined().getIdLong() == SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)) {
             audioManager.openAudioConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)));
             tryPlayStreamUrl(guild, guildId);
-            if (event.getGuild().getSelfMember().hasPermission(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)), Permission.VOICE_MUTE_OTHERS)) {
-                event.getGuild().getController().setMute(event.getGuild().getSelfMember(), true).queue(done ->
-                        event.getGuild().getController().setMute(event.getGuild().getSelfMember(), false).queue());
-            }
+            TaskScheduler.async(() -> {
+                if (event.getGuild().getAfkChannel() != null && event.getGuild().getSelfMember().hasPermission(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)), Permission.VOICE_MUTE_OTHERS)) {
+                    if (event.getGuild().getSelfMember().getVoiceState().getChannel() == null || event.getGuild().getAfkChannel().getIdLong() == event.getGuild().getSelfMember().getVoiceState().getChannel().getIdLong()) {
+                        event.getGuild().getController().setMute(event.getGuild().getSelfMember(), true).queue(done ->
+                                event.getGuild().getController().setMute(event.getGuild().getSelfMember(), false).queue());
+                    }
+                }
+            }, 2000);
         }
     }
 
@@ -68,11 +74,14 @@ public class Channels extends ListenerAdapter {
         if (SetStreamerModeCommand.streamerModeCache.getUnchecked(guildId) && !audioManager.isConnected() && event.getChannelJoined().getIdLong() == (SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId))) {
             audioManager.openAudioConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)));
             tryPlayStreamUrl(guild, guildId);
-            if (event.getGuild().getSelfMember().hasPermission(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)), Permission.VOICE_MUTE_OTHERS)) {
-                event.getGuild().getController().setMute(event.getGuild().getSelfMember(), true).queue(done ->
-                        event.getGuild().getController().setMute(event.getGuild().getSelfMember(), false).queue());
-            }
-
+            TaskScheduler.async(() -> {
+                if (event.getGuild().getAfkChannel() != null && event.getGuild().getSelfMember().hasPermission(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)), Permission.VOICE_MUTE_OTHERS)) {
+                    if (event.getGuild().getSelfMember().getVoiceState().getChannel() == null || event.getGuild().getAfkChannel().getIdLong() == event.getGuild().getSelfMember().getVoiceState().getChannel().getIdLong()) {
+                        event.getGuild().getController().setMute(event.getGuild().getSelfMember(), true).queue(done ->
+                                event.getGuild().getController().setMute(event.getGuild().getSelfMember(), false).queue());
+                    }
+                }
+            }, 2000);
         }
     }
 
