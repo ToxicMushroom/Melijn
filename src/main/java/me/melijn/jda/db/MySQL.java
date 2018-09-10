@@ -995,7 +995,7 @@ public class MySQL {
             PreparedStatement getStreamUrl = con.prepareStatement("SELECT * FROM stream_urls WHERE guildId= ?");
             getStreamUrl.setLong(1, guildId);
             ResultSet rs = getStreamUrl.executeQuery();
-            String s = null;
+            String s = "";
             while (rs.next()) s = rs.getString("url");
             rs.close();
             getStreamUrl.close();

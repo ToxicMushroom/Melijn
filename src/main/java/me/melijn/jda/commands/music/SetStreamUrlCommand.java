@@ -48,6 +48,7 @@ public class SetStreamUrlCommand extends Command {
             Guild guild = event.getGuild();
             String[] args = event.getArgs().split("\\s+");
             String url = Melijn.mySQL.getStreamUrl(guild.getIdLong());
+            if (url.equals("")) url = "nothing";
             if (args.length == 0 || args[0].equalsIgnoreCase("")) {
                 event.reply("StreamURL: " + url);
             } else if (args.length == 1) {
