@@ -88,11 +88,26 @@ public class CommandEvent {
             if (event.getGuild() == null) {
                 long time = System.currentTimeMillis();
                 ImageIO.write(image, "png", new File(time + ".png"));
-                event.getPrivateChannel().sendFile(new File(time + ".png")).queue(done -> new File(time + ".png").delete());
+                if (new File(time + ".png").length() > 8_000_000) {
+                    reply("The image is bigger then 8MB and cannot be send");
+                    new File(time + ".png").delete();
+                }
+                else event.getPrivateChannel().sendFile(new File(time + ".png")).queue(
+                        done -> new File(time + ".png").delete(),
+                        failed -> new File(time + ".png").delete()
+                );
             } else if (event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_ATTACH_FILES)) {
                 long time = System.currentTimeMillis();
                 ImageIO.write(image, "png", new File(time + ".png"));
-                event.getTextChannel().sendFile(new File(time + ".png")).queue(done -> new File(time + ".png").delete());
+                if (new File(time + ".png").length() > 8_000_000) {
+                    reply("The image is bigger then 8MB and cannot be send");
+                    new File(time + ".png").delete();
+                }
+                else event.getTextChannel().sendFile(new File(time + ".png")).queue(
+                        done -> new File(time + ".png").delete(),
+                        failed -> new File(time + ".png").delete()
+                );
+
             } else reply("I don't have permission to send images here.");
         } catch (IOException e) {
             e.printStackTrace();
