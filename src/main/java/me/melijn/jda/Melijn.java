@@ -11,7 +11,7 @@ import me.melijn.jda.commands.developer.WeebshCommand;
 import me.melijn.jda.commands.fun.*;
 import me.melijn.jda.commands.management.*;
 import me.melijn.jda.commands.music.*;
-import me.melijn.jda.commands.rest.Application;
+import me.melijn.jda.rest.Application;
 import me.melijn.jda.commands.util.*;
 import me.melijn.jda.db.MySQL;
 import me.melijn.jda.events.AddReaction;

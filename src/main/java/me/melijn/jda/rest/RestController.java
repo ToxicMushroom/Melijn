@@ -1,4 +1,4 @@
-package me.melijn.jda.commands.rest;
+package me.melijn.jda.rest;
 
 import me.melijn.jda.Melijn;
 import net.dv8tion.jda.core.JDA;
@@ -38,11 +38,15 @@ public class RestController {
         if (id == null || !id.matches("\\d+")) return new JSONObject().put("error", "invalid id").toMap();
         Guild guild = Melijn.getShardManager().getGuildById(id);
         if (guild == null) return new JSONObject().put("isBotMember", false).toMap();
+        JSONObject channels = new JSONObject().put("textChannels", new JSONObject()).put("voiceChannels", new JSONObject());
+        guild.getVoiceChannels().forEach(channel -> channels.put("voiceChannels", channels.getJSONObject("voiceChannels").put(channel.getId(), channel.getName())));
+        guild.getTextChannels().forEach(channel -> channels.put("textChannels", channels.getJSONObject("textChannels").put(channel.getId(), channel.getName())));
         return new JSONObject()
                 .put("name", guild.getName())
                 .put("memberCount", guild.getMemberCache().size())
                 .put("ownerId", guild.getOwnerId())
-                .put("isBotMember", true).toMap();
+                .put("isBotMember", true)
+                .put("channels", channels).toMap();
     }
 
     @GetMapping("/member/{guildId}/{userId}")
