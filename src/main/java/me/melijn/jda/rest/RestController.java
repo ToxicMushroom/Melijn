@@ -1,10 +1,13 @@
 package me.melijn.jda.rest;
 
 import me.melijn.jda.Melijn;
+import me.melijn.jda.commands.management.SetMusicChannelCommand;
+import me.melijn.jda.commands.management.SetStreamerModeCommand;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.User;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,15 +41,25 @@ public class RestController {
         if (id == null || !id.matches("\\d+")) return new JSONObject().put("error", "invalid id").toMap();
         Guild guild = Melijn.getShardManager().getGuildById(id);
         if (guild == null) return new JSONObject().put("isBotMember", false).toMap();
-        JSONObject channels = new JSONObject().put("textChannels", new JSONObject()).put("voiceChannels", new JSONObject());
-        guild.getVoiceChannels().forEach(channel -> channels.put("voiceChannels", channels.getJSONObject("voiceChannels").put(channel.getId(), channel.getName())));
-        guild.getTextChannels().forEach(channel -> channels.put("textChannels", channels.getJSONObject("textChannels").put(channel.getId(), channel.getName())));
+        JSONObject channels = new JSONObject().put("textChannels", new JSONArray()).put("voiceChannels", new JSONArray());
+
+        guild.getVoiceChannels().forEach(channel -> channels.put("voiceChannels", channels.getJSONArray("voiceChannels").put(channel.getPosition(), new JSONObject().put("id", channel.getId()).put("name", channel.getName()))));
+        guild.getTextChannels().forEach(channel -> channels.put("textChannels", channels.getJSONArray("textChannels").put(channel.getPosition(), new JSONObject().put("id", channel.getId()).put("name", channel.getName()))));
         return new JSONObject()
                 .put("name", guild.getName())
                 .put("memberCount", guild.getMemberCache().size())
                 .put("ownerId", guild.getOwnerId())
                 .put("isBotMember", true)
                 .put("channels", channels).toMap();
+    }
+
+    @GetMapping("/guild/{id}/refreshCache")
+    public Map<String, Object> refreshGuildCache(@PathVariable String id) {
+        SetMusicChannelCommand.musicChannelCache.invalidate(id);
+        SetStreamerModeCommand.streamerModeCache.invalidate(id);
+        return new JSONObject()
+                .put("state", "refreshed")
+                .toMap();
     }
 
     @GetMapping("/member/{guildId}/{userId}")
@@ -60,7 +73,7 @@ public class RestController {
                             .put("isMember", true)
                             .put("isAdmin", guild.getMember(kipje).getPermissions().contains(Permission.ADMINISTRATOR) ||
                                     guild.getMember(kipje).isOwner() ||
-                                    (0 < guild.getMember(kipje).getRoles().stream().filter(role -> role.getPermissions().contains(Permission.ADMINISTRATOR)).count()))
+                                    (guild.getMember(kipje).getRoles().stream().anyMatch(role -> role.getPermissions().contains(Permission.ADMINISTRATOR))))
                             .toMap();
                 } else {
                     return new JSONObject()
