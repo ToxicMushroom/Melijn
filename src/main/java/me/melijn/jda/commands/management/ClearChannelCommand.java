@@ -36,7 +36,7 @@ public class ClearChannelCommand extends Command {
                 TextChannel channel = event.getGuild().getTextChannelById(Helpers.getTextChannelByArgsN(event, args[0]));
                 if (channel != null) {
                     if (!possibleDeletes.containsKey(event.getGuild().getIdLong()) || !possibleDeletes.get(event.getGuild().getIdLong()).containsValue(channel.getIdLong())) {
-                        channel.sendMessage("Are you sure you want to remove all messages from " + channel.getAsMention() + "?").queue(s -> setupQuestion(channel, s, event.getAuthorId()));
+                        event.getTextChannel().sendMessage("Are you sure you want to remove all messages from " + channel.getAsMention() + "?").queue(s -> setupQuestion(channel, s, event.getAuthorId()));
                     } else {
                         event.reply("There is still another question in that channel which has to be answered\nThat question will be removed after 60 seconds of it's sent time");
                     }

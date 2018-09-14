@@ -130,41 +130,39 @@ public class AddReaction extends ListenerAdapter {
             }
         }
         if (ClearChannelCommand.possibleDeletes.containsKey(event.getGuild().getIdLong())) {
-            HashMap<Long, Long> messageChannel = new HashMap<>();
-            messageChannel.put(event.getMessageIdLong(), event.getChannel().getIdLong());
-            if (ClearChannelCommand.possibleDeletes.values().contains(messageChannel)
+            HashMap<Long, Long> messageChannel = ClearChannelCommand.possibleDeletes.get(guild.getIdLong());
+            if (ClearChannelCommand.messageUser.keySet().contains(event.getMessageIdLong())
                     && ClearChannelCommand.messageUser.get(event.getMessageIdLong()) == event.getUser().getIdLong()
                     && Helpers.hasPerm(event.getGuild().getMember(event.getUser()), "clearChannel", 1)) {
                 if (event.getReactionEmote().getEmote() != null)
                     switch (event.getReactionEmote().getEmote().getId()) {
                         case "463250265026330634"://yes
                             TextChannel toDelete = event.getGuild().getTextChannelById(ClearChannelCommand.possibleDeletes.get(event.getGuild().getIdLong()).get(event.getMessageIdLong()));
-                            toDelete.createCopy().queue(s -> {
-                                guild.getController().modifyTextChannelPositions().selectPosition((TextChannel) s).moveTo(toDelete.getPosition()).queue(done -> {
-                                    toDelete.delete().queue();
-                                    ((TextChannel) s).sendMessage("**#" + toDelete.getName() + "** has been cleared")
-                                            .queue(message ->
-                                                    message.delete().queueAfter(5, TimeUnit.SECONDS, null, (failure) -> {
-                                                    }));
-                                });
-                            });
-
-                            ClearChannelCommand.possibleDeletes.get(guild.getIdLong()).remove(messageChannel);
-                            HashMap<Long, Long> messageUser = new HashMap<>();
-                            messageUser.put(event.getMessageIdLong(), event.getUser().getIdLong());
-                            ClearChannelCommand.messageUser.remove(messageUser);
+                            toDelete.createCopy().queue(s -> guild.getController().modifyTextChannelPositions().selectPosition((TextChannel) s).moveTo(toDelete.getPosition()).queue(done -> {
+                                toDelete.delete().queue();
+                                ((TextChannel) s).sendMessage("**#" + toDelete.getName() + "** has been cleared")
+                                        .queue(message ->
+                                                message.delete().queueAfter(3, TimeUnit.SECONDS, null, (failure) -> {
+                                                }));
+                            }));
+                            removeMenu(event, guild, messageChannel);
                             break;
                         case "463250264653299713"://no
-                            event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.delete().queue());
-                            ClearChannelCommand.possibleDeletes.get(guild.getIdLong()).remove(messageChannel);
-                            HashMap<Long, Long> messageUser2 = new HashMap<>();
-                            messageUser2.put(event.getMessageIdLong(), event.getUser().getIdLong());
-                            ClearChannelCommand.messageUser.remove(messageUser2);
+                            removeMenu(event, guild, messageChannel);
                             break;
                         default:
                             break;
                     }
             }
         }
+    }
+
+    private void removeMenu(GuildMessageReactionAddEvent event, Guild guild, HashMap<Long, Long> messageChannel) {
+        event.getChannel().getMessageById(event.getMessageId()).queue(s -> {
+            s.delete().queue();
+            messageChannel.remove(event.getMessageIdLong());
+            ClearChannelCommand.possibleDeletes.put(guild.getIdLong(), messageChannel);
+            ClearChannelCommand.messageUser.remove(event.getMessageIdLong());
+        });
     }
 }
