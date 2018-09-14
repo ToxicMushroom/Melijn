@@ -295,7 +295,7 @@ public class Helpers {
             if (event.getMessage().getMentionedUsers().size() > event.getOffset())
                 user = event.getMessage().getMentionedUsers().get(event.getOffset());
             else if (arg.matches("\\d+") && event.getJDA().getUserById(arg) != null)
-                user = event.getJDA().getUserById(arg);
+                user = event.getJDA().asBot().getShardManager().getUserById(arg);
             else if (event.getGuild() != null && event.getGuild().getMembersByName(arg, true).size() > event.getOffset())
                 user = event.getGuild().getMembersByName(arg, true).get(event.getOffset()).getUser();
             else if (event.getGuild() != null && event.getGuild().getMembersByNickname(arg, true).size() > event.getOffset())
