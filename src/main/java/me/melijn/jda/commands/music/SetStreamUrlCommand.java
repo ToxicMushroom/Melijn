@@ -37,9 +37,9 @@ public class SetStreamUrlCommand extends Command {
         put("Radio1", "http://icecast.vrtcdn.be/radio1-high.mp3");
         put("Radio2", "http://icecast.vrtcdn.be/ra2wvl-high.mp3");
         put("Studio-Brussel", "http://icecast.vrtcdn.be/stubru-high.mp3");
-        put("BBC Radio 1", "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio1_mf_p");
-        put("BBC Radio 4FM", "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio4fm_mf_p");
-        put("BBC Radio 6 Music", "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_6music_mf_p");
+        put("BBC_Radio_1", "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio1_mf_p");
+        put("BBC_Radio_4FM", "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio4fm_mf_p");
+        put("BBC_Radio_6_Music", "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_6music_mf_p");
     }};
 
     @Override
@@ -59,12 +59,16 @@ public class SetStreamUrlCommand extends Command {
                     if (args[0].equalsIgnoreCase("list")) {
                         event.reply("**Radio**\n" + linkjes.keySet().toString().replaceAll("(,\\s+|,)", "\n+ ").replaceFirst("\\[", "+ ").replaceFirst("]", ""));
                     } else {
-                        if (linkjes.keySet().contains(args[0])) {
-                            TaskScheduler.async(() -> Melijn.mySQL.setStreamUrl(guild.getIdLong(), linkjes.get(args[0])));
-                            event.reply("Changed the url from **" + url + "** to **" + linkjes.get(args[0]) + "**");
-                        } else {
-                            MessageHelper.sendUsage(this, event);
+                        boolean match = false;
+                        for (String key : linkjes.keySet()) {
+                            if (key.equalsIgnoreCase(args[0])) {
+                                TaskScheduler.async(() -> Melijn.mySQL.setStreamUrl(guild.getIdLong(), linkjes.get(key)));
+                                event.reply("Changed the url from **" + url + "** to **" + linkjes.get(key) + "**");
+                                match = true;
+                            }
                         }
+                        if (!match)
+                            MessageHelper.sendUsage(this, event);
                     }
                 }
             } else {
