@@ -80,10 +80,10 @@ public class MessageHelper {
         return hours + ":" + minutes + ":" + seconds + "s";
     }
 
-    public static String progressBar(AudioTrack track, Emote emote) {
+    public static String progressBar(AudioTrack track) {
         String s = "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬";
         if (track.getInfo().isStream) {
-            return (emote != null ? emote.getAsMention() : "") + s;
+            return "<a:cool_" + "nyan:490978764264570894>" + s; //no string concatenation causes weird stuff
         }
         int procent = (int)(((double)track.getPosition() / (double)track.getDuration()) * 100D);
         StringBuilder sb = new StringBuilder();
@@ -91,7 +91,7 @@ public class MessageHelper {
             procent -= 5;
             sb.append("▬");
         }
-        return "[" + sb.toString() + "](https://melijn.com/)" + (emote != null ? emote.getAsMention() : "") + s.substring(0, (20 - sb.toString().length())) + " (" + Helpers.getDurationBreakdown(track.getPosition()) + "/" + Helpers.getDurationBreakdown(track.getDuration()) + ")";
+        return "[" + sb.toString() + "](https://melijn.com/)" + "<a:cool_" + "nyan:490978764264570894>" + s.substring(0, (20 - sb.toString().length())) + " (" + Helpers.getDurationBreakdown(track.getPosition()) + "/" + Helpers.getDurationBreakdown(track.getDuration()) + ")";
     }
 
     public static String getThumbnailURL(String url) {
