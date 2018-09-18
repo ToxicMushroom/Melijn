@@ -44,14 +44,14 @@ public class NowPlayingCommand extends Command {
                     String s = audioPlayer.getAudioPlayer().isPaused() ? "paused" : "playing";
                     if (track == null) event.reply("There are no songs playing at the moment");
                     else {
-                        String loopedQueue = LoopQueueCommand.looped.getOrDefault(guild.getIdLong(), false) ? " :repeat:" : "";
-                        String looped = LoopCommand.looped.getOrDefault(guild.getIdLong(), false) ? " :arrows_counterclockwise:" : "";
+                        String loopedQueue = LoopQueueCommand.looped.getOrDefault(guild.getIdLong(), false) ? " \uD83D\uDD01" : "";
+                        String looped = LoopCommand.looped.getOrDefault(guild.getIdLong(), false) ? " \uD83D\uDD04" : "";
                         event.reply(new EmbedBuilder()
                                 .setTitle("Now " + s)
                                 .setColor(Helpers.EmbedColor)
                                 .setThumbnail(MessageHelper.getThumbnailURL(track.getInfo().uri))
                                 .setDescription("[**" + track.getInfo().title + "**](" + track.getInfo().uri + ")")
-                                .addField("status:", (s.equalsIgnoreCase("playing") ? ":arrow_forward:" : ":pause_button:") + looped + loopedQueue, false)
+                                .addField("status:", (s.equalsIgnoreCase("playing") ? "\u25B6" : "\u23F8") + looped + loopedQueue, false)
                                 .addField("progress:", MessageHelper.progressBar(track), false)
                                 .setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon()).build());
                     }

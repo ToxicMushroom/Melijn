@@ -164,51 +164,51 @@ public class SetLogChannelCommand extends Command {
                         case "ban":
                         case "bans":
                             chosenType = ChannelType.BAN_LOG;
-                            setLogChannel(event, chosenType, id, banLogChannelCache);
+                            setLogChannel(event, chosenType, id);
                             break;
                         case "mutes":
                         case "mute":
                             chosenType = ChannelType.MUTE_LOG;
-                            setLogChannel(event, chosenType, id, muteLogChannelCache);
+                            setLogChannel(event, chosenType, id);
                             break;
                         case "kicks":
                         case "kick":
                             chosenType = ChannelType.KICK_LOG;
-                            setLogChannel(event, chosenType, id, kickLogChannelCache);
+                            setLogChannel(event, chosenType, id);
                             break;
                         case "warns":
                         case "warn":
                             chosenType = ChannelType.WARN_LOG;
-                            setLogChannel(event, chosenType, id, warnLogChannelCache);
+                            setLogChannel(event, chosenType, id);
                             break;
                         case "songs":
                         case "music":
                             chosenType = ChannelType.MUSIC_LOG;
-                            setLogChannel(event, chosenType, id, musicLogChannelCache);
+                            setLogChannel(event, chosenType, id);
                             break;
                         case "sdm":
                         case "s-d-m":
                         case "self-deleted-messages":
                             chosenType = ChannelType.SDM_LOG;
-                            setLogChannel(event, chosenType, id, sdmLogChannelCache);
+                            setLogChannel(event, chosenType, id);
                             break;
                         case "odm":
                         case "o-d-m":
                         case "other-deleted-messages":
                             chosenType = ChannelType.ODM_LOG;
-                            setLogChannel(event, chosenType, id, odmLogChannelCache);
+                            setLogChannel(event, chosenType, id);
                             break;
                         case "pm":
                         case "p-m":
                         case "purged-messages":
                             chosenType = ChannelType.PM_LOG;
-                            setLogChannel(event, chosenType, id, pmLogChannelCache);
+                            setLogChannel(event, chosenType, id);
                             break;
                         case "fm":
                         case "f-m":
                         case "filtered-messages":
                             chosenType = ChannelType.FM_LOG;
-                            setLogChannel(event, chosenType, id, fmLogChannelCache);
+                            setLogChannel(event, chosenType, id);
                             break;
                         default:
                             MessageHelper.sendUsage(this, event);
@@ -241,14 +241,14 @@ public class SetLogChannelCommand extends Command {
                             break;
                         case "ban":
                         case "bans":
-                            event.reply("**Ban Log :hammer:**\n- " +
+                            event.reply("**Ban Log \uD83D\uDD28**\n" +
                                     ((banLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(banLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
                                             "unset" :
                                             "<#" + banLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
                             break;
                         case "mute":
                         case "mutes":
-                            event.reply("**Mute Log :zipper_mouth:**\n- " +
+                            event.reply("**Mute Log \uD83E\uDD10**\n" +
                                     ((muteLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(muteLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
                                             "unset" :
                                             "<#" + muteLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
@@ -256,7 +256,7 @@ public class SetLogChannelCommand extends Command {
                             break;
                         case "kick":
                         case "kicks":
-                            event.reply("**Kick Log :right_facing_fist::anger:**\n- " +
+                            event.reply("**Kick Log \uD83E\uDD1C\uD83D\uDCA2**\n" +
                                     ((kickLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(kickLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
                                             "unset" :
                                             "<#" + kickLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
@@ -264,14 +264,14 @@ public class SetLogChannelCommand extends Command {
                             break;
                         case "warn":
                         case "warns":
-                            event.reply("**Warn Log :bangbang:**\n- " +
+                            event.reply("**Warn Log \u203C**\n" +
                                     ((warnLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(warnLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
                                             "unset" :
                                             "<#" + warnLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
 
                             break;
                         case "music":
-                            event.reply("**Music Log :musical_note:**\n- " +
+                            event.reply("**Music Log \uD83C\uDFB5**\n" +
                                     ((musicLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(musicLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
                                             "unset" :
                                             "<#" + musicLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
@@ -280,7 +280,7 @@ public class SetLogChannelCommand extends Command {
                         case "sdm":
                         case "s-d-m":
                         case "self-deleted-messages":
-                            event.reply("**Self Deleted Log :bust_in_silhouette:**\n- " +
+                            event.reply("**Self Deleted Log \uD83D\uDC64**\n" +
                                     ((sdmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(sdmLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
                                             "unset" :
                                             "<#" + sdmLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
@@ -289,7 +289,7 @@ public class SetLogChannelCommand extends Command {
                         case "odm":
                         case "o-d-m":
                         case "other-deleted-messages":
-                            event.reply("**Other Deleted Log :busts_in_silhouette:**\n- " +
+                            event.reply("**Other Deleted Log \uD83D\uDC65**\n" +
                                     ((odmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(odmLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
                                             "unset" :
                                             "<#" + odmLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
@@ -298,7 +298,7 @@ public class SetLogChannelCommand extends Command {
                         case "pm":
                         case "p-m":
                         case "purged-messages":
-                            event.reply("**Purge Log :recycle:**\n- " +
+                            event.reply("**Purge Log \u267B**\n" +
                                     ((pmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(pmLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
                                             "unset" :
                                             "<#" + pmLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
@@ -307,7 +307,7 @@ public class SetLogChannelCommand extends Command {
                         case "fm":
                         case "f-m":
                         case "filtered-messages":
-                            event.reply("**Filter Log :no_bicycles:**\n- " +
+                            event.reply("**Filter Log \uD83D\uDEB3**\n" +
                                     ((fmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(fmLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
                                             "unset" :
                                             "<#" + fmLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
@@ -327,7 +327,7 @@ public class SetLogChannelCommand extends Command {
         }
     }
 
-    private void setLogChannel(CommandEvent event, ChannelType chosenType, long channelId, LoadingCache<Long, Long> chosenChannelCache) {
+    private void setLogChannel(CommandEvent event, ChannelType chosenType, long channelId) {
         Guild guild = event.getGuild();
         if (channelId == -1) {
             MessageHelper.sendUsage(this, event);

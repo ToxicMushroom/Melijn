@@ -25,11 +25,11 @@ public class NyanCatCommand extends Command {
             if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EMBED_LINKS))
                 event.reply(new EmbedBuilder()
                         .setColor(Helpers.EmbedColor)
-                        .setDescription("Enjoy your <:normie_" + "nyan:490976816018751503> ~meow!~")
+                        .setDescription("Enjoy your <:normie_nyan:490976816018751503> ~meow!~")
                         .setImage("https://github.com/ToxicMushroom/nyan-cats/raw/master/cat%20(" + MessageHelper.randInt(2, 33) + ").gif")
                         .build());
             else
-                event.reply("Enjoy your <:normie_" + "nyan:490976816018751503> ~meow!~\n"
+                event.reply("Enjoy your <:normie_nyan:490976816018751503> ~meow!~\n"
                         + "https://github.com/ToxicMushroom/nyan-cats/raw/master/cat%20(" + MessageHelper.randInt(2, 33) + ").gif");
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

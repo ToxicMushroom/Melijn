@@ -54,9 +54,9 @@ public class QueueCommand extends Command {
                 totalqueuelength += track.getDuration();
                 lijst.add(String.valueOf("[#" + i + "](" + track.getInfo().uri + ") - " + track.getInfo().title + " `" + Helpers.getDurationBreakdown(track.getInfo().length) + "`"));
             }
-            String loopedQueue = LoopQueueCommand.looped.getOrDefault(guild.getIdLong(), false) ? " :repeat:" : "";
-            String looped = LoopCommand.looped.getOrDefault(guild.getIdLong(), false) ? " :arrows_counterclockwise:" : "";
-            lijst.add("Status: " + (player.getAudioPlayer().isPaused() ? ":pause_button:" : ":arrow_forward:") + looped + loopedQueue);
+            String loopedQueue = LoopQueueCommand.looped.getOrDefault(guild.getIdLong(), false) ? " \uD83D\uDD01" : "";
+            String looped = LoopCommand.looped.getOrDefault(guild.getIdLong(), false) ? " \uD83D\uDD04" : "";
+            lijst.add("Status: " + (player.getAudioPlayer().isPaused() ? "\u23F8" : "\u25B6") + looped + loopedQueue);
             lijst.add("Queue size: **" + (lijst.size() - 1) + "** tracks");
             lijst.add("Queue length: **" + Helpers.getDurationBreakdown(totalqueuelength) + "**");
             StringBuilder builder = new StringBuilder();
