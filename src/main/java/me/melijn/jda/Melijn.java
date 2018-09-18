@@ -24,10 +24,12 @@ import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.utils.cache.CacheFlag;
 import okhttp3.OkHttpClient;
 import org.discordbots.api.client.DiscordBotListAPI;
 
 import javax.security.auth.login.LoginException;
+import java.util.EnumSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -148,6 +150,7 @@ public class Melijn {
                 .setGame(Game.playing(PREFIX + "help | melijn.com"))
                 .setAutoReconnect(true)
                 .addEventListeners(client.build(), new JoinLeave(), new AddReaction(), new Channels(), new Chat())
+                .setDisabledCacheFlags(EnumSet.of(CacheFlag.EMOTE, CacheFlag.GAME))
                 .setAudioSendFactory(new NativeAudioSendFactory())
                 .build();
 
