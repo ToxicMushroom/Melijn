@@ -1,12 +1,13 @@
 package me.melijn.jda.commands.management;
 
 import me.melijn.jda.Helpers;
+import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.Melijn;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 
@@ -58,11 +59,12 @@ public class ClearChannelCommand extends Command {
         messageChannel.put(s.getIdLong(), channel.getIdLong());
         possibleDeletes.put(channel.getGuild().getIdLong(), messageChannel);
         messageUser.put(s.getIdLong(), authorId);
-        s.addReaction(channel.getJDA().getEmoteById(463250265026330634L)).queue();
-        s.addReaction(channel.getJDA().getEmoteById(463250264653299713L)).queue();
+        Guild guild = channel.getJDA().asBot().getShardManager().getGuildById(340081887265685504L);
+        guild.retrieveEmoteById(463250265026330634L).queue(listedEmote -> s.addReaction(listedEmote).queue());
+        guild.retrieveEmoteById(463250264653299713L).queue(listedEmote -> s.addReaction(listedEmote).queue());
         s.delete().queueAfter(60, TimeUnit.SECONDS, (success) -> {
             possibleDeletes.remove(channel.getGuild().getIdLong(), messageChannel);
             messageUser.remove(s.getIdLong(), authorId);
-                }, (failure) -> {});
+            }, (failure) -> {});
     }
 }
