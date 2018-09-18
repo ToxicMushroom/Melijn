@@ -45,18 +45,10 @@ public class NowPlayingCommand extends Command {
                     String s = audioPlayer.getAudioPlayer().isPaused() ? "paused" : "playing";
                     if (track == null) event.reply("There are no songs playing at the moment");
                     else {
-                        Emote emote = event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EXT_EMOJI) ?
-                                event.getJDA().getEmoteById("445154561313865728") : null;
-                        String loopedQueue = LoopQueueCommand.looped.getOrDefault(guild.getIdLong(), false) ? " :repeat:" : "";
-                        String looped = LoopCommand.looped.getOrDefault(guild.getIdLong(), false) ? " :arrows_counterclockwise:" : "";
-                        event.reply(new EmbedBuilder()
-                                .setTitle("Now " + s)
-                                .setColor(Helpers.EmbedColor)
-                                .setThumbnail(MessageHelper.getThumbnailURL(track.getInfo().uri))
-                                .setDescription("[**" + track.getInfo().title + "**](" + track.getInfo().uri + ")")
-                                .addField("status:", (s.equalsIgnoreCase("playing") ? ":arrow_forward:" : ":pause_button:") + looped + loopedQueue, false)
-                                .addField("progress:", MessageHelper.progressBar(track, emote), false)
-                                .setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon()).build());
+                        event.getJDA().asBot().getShardManager().getGuildById(340081887265685504L).retrieveEmoteById(490978764264570894L).queue(
+                                listedEmote -> sendSongInfo(event, guild, track, s, listedEmote),
+                                failed -> sendSongInfo(event, guild, track, s, null)
+                        );
                     }
                 } else {
                     event.reply("There are not songs playing");
@@ -67,5 +59,19 @@ public class NowPlayingCommand extends Command {
         } else {
             event.reply(Helpers.guildOnly);
         }
+    }
+
+    void sendSongInfo(CommandEvent event, Guild guild, AudioTrack track, String s, Emote listedEmote) {
+        Emote emote = event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EXT_EMOJI) ? listedEmote : null;
+        String loopedQueue = LoopQueueCommand.looped.getOrDefault(guild.getIdLong(), false) ? " :repeat:" : "";
+        String looped = LoopCommand.looped.getOrDefault(guild.getIdLong(), false) ? " :arrows_counterclockwise:" : "";
+        event.reply(new EmbedBuilder()
+                .setTitle("Now " + s)
+                .setColor(Helpers.EmbedColor)
+                .setThumbnail(MessageHelper.getThumbnailURL(track.getInfo().uri))
+                .setDescription("[**" + track.getInfo().title + "**](" + track.getInfo().uri + ")")
+                .addField("status:", (s.equalsIgnoreCase("playing") ? ":arrow_forward:" : ":pause_button:") + looped + loopedQueue, false)
+                .addField("progress:", MessageHelper.progressBar(track, emote), false)
+                .setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon()).build());
     }
 }
