@@ -2,6 +2,7 @@ package me.melijn.jda;
 
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 import me.melijn.jda.blub.CommandClientBuilder;
+import me.melijn.jda.commands.DonateCommand;
 import me.melijn.jda.commands.HelpCommand;
 import me.melijn.jda.commands.InviteCommand;
 import me.melijn.jda.commands.VoteCommand;
@@ -40,7 +41,7 @@ public class Melijn {
     public static String PREFIX = config.getValue("prefix");
     static DiscordBotListAPI dblAPI = null;
     public static MySQL mySQL = new MySQL(
-            config.getValue("ipadress"),
+            config.getValue("ipaddress"),
             config.getValue("username"),
             config.getValue("password"),
             config.getValue("database"));
@@ -141,7 +142,8 @@ public class Melijn {
                 new DisableCommand(),
                 new SetEvalEngineCommand(),
                 new MetricsCommand(),
-                new SettingsCommand()
+                new SettingsCommand(),
+                new DonateCommand()
         );
 
         shardManager = new DefaultShardManagerBuilder()

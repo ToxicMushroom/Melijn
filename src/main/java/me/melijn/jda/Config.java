@@ -27,7 +27,7 @@ public class Config {
         JSONObject obj = read(configFile);
         if (obj.has("token") &&
                 obj.has("prefix") &&
-                obj.has("ownerid") && obj.has("username") && obj.has("password") && obj.has("ipadress") && obj.has("database")) {
+                obj.has("ownerid") && obj.has("username") && obj.has("password") && obj.has("ipaddress") && obj.has("database")) {
             configObject = obj;
         } else {
             create();
@@ -47,7 +47,7 @@ public class Config {
                             .put("token", "")
                             .put("username", "")
                             .put("password", "")
-                            .put("ipadress", "")
+                            .put("ipaddress", "")
                             .put("database", "")
                             .toString(4)
                             .getBytes());
