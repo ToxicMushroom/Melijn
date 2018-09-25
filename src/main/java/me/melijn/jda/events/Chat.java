@@ -4,10 +4,7 @@ import com.google.common.cache.CacheLoader;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.commands.developer.EvalCommand;
-import me.melijn.jda.commands.management.SetLogChannelCommand;
-import me.melijn.jda.commands.management.SetVerificationChannel;
-import me.melijn.jda.commands.management.SetVerificationCode;
-import me.melijn.jda.commands.management.SetVerificationThreshold;
+import me.melijn.jda.commands.management.*;
 import me.melijn.jda.db.MySQL;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
@@ -37,6 +34,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static me.melijn.jda.Melijn.PREFIX;
+
 public class Chat extends ListenerAdapter {
 
     private List<User> black = new ArrayList<>();
@@ -48,7 +47,9 @@ public class Chat extends ListenerAdapter {
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
         if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
-            return;
+            if (event.getMessage().getContentRaw().equalsIgnoreCase(PREFIX) || event.getMessage().getContentRaw().equalsIgnoreCase(event.getJDA().getSelfUser().getAsMention()))
+                event.getChannel().sendMessage(String.format("Hello there my default prefix is %s and you can view all commands using **%shelp**", PREFIX, PREFIX)).queue();
+            else return;
         if (event.getMember() != null) {
             Guild guild = event.getGuild();
             User author = event.getAuthor();
@@ -59,7 +60,10 @@ public class Chat extends ListenerAdapter {
             }
             String finalContent = content;
             TaskScheduler.async(() -> mySQL.createMessage(event.getMessageIdLong(), finalContent, author.getIdLong(), guild.getIdLong(), event.getChannel().getIdLong()));
-
+            if (event.getMessage().getContentRaw().equalsIgnoreCase(guild.getSelfMember().getAsMention())) {
+                String prefix = SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong());
+                event.getChannel().sendMessage(String.format(("Hello there my default prefix is %s " + (prefix.equals(PREFIX) ? "" : String.format("\nThis server has configured %s as the prefix\n", prefix)) + "and you can view all commands using **%shelp**"), PREFIX, prefix)).queue();
+            }
             if (guild.getSelfMember().hasPermission(Permission.MESSAGE_MANAGE) && !event.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
                 TaskScheduler.async(() -> {
                     String message = event.getMessage().getContentRaw();
@@ -68,26 +72,8 @@ public class Chat extends ListenerAdapter {
                     HashMap<Integer, Integer> allowedPositions = new HashMap<>();
                     List<String> deniedList = mySQL.getFilters(guild.getIdLong(), "denied");
                     List<String> allowedList = mySQL.getFilters(guild.getIdLong(), "allowed");
-
-                    for (String toFind : deniedList) {
-                        Pattern word = Pattern.compile(Pattern.quote(toFind.toLowerCase()));
-                        Matcher match = word.matcher(message.toLowerCase());
-                        while (match.find()) {
-                            if (deniedPositions.keySet().contains(match.start()) && deniedPositions.get(match.start()) < match.end())
-                                deniedPositions.replace(match.start(), match.end());
-                            else deniedPositions.put(match.start(), match.end());
-                        }
-                    }
-
-                    for (String toFind : allowedList) {
-                        Pattern word = Pattern.compile(Pattern.quote(toFind.toLowerCase()));
-                        Matcher match = word.matcher(message.toLowerCase());
-                        while (match.find()) {
-                            if (allowedPositions.keySet().contains(match.start()) && allowedPositions.get(match.start()) < match.end())
-                                allowedPositions.replace(match.start(), match.end());
-                            else allowedPositions.put(match.start(), match.end());
-                        }
-                    }
+                    addPositions(message, deniedPositions, deniedList);
+                    addPositions(message, allowedPositions, allowedList);
 
                     if (allowedPositions.size() > 0 && deniedPositions.size() > 0) {
                         for (Integer beginDenied : deniedPositions.keySet()) {
@@ -147,6 +133,18 @@ public class Chat extends ListenerAdapter {
                     }
                 }
             } catch (ExecutionException | CacheLoader.InvalidCacheLoadException ignored) {
+            }
+        }
+    }
+
+    private void addPositions(String message, HashMap<Integer, Integer> deniedPositions, List<String> deniedList) {
+        for (String toFind : deniedList) {
+            Pattern word = Pattern.compile(Pattern.quote(toFind.toLowerCase()));
+            Matcher match = word.matcher(message.toLowerCase());
+            while (match.find()) {
+                if (deniedPositions.keySet().contains(match.start()) && deniedPositions.get(match.start()) < match.end())
+                    deniedPositions.replace(match.start(), match.end());
+                else deniedPositions.put(match.start(), match.end());
             }
         }
     }
