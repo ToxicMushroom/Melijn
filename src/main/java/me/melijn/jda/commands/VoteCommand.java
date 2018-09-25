@@ -19,7 +19,6 @@ public class VoteCommand extends Command {
     public VoteCommand() {
         this.commandName = "vote";
         this.description = "gives you the vote link to support our bot";
-        this.aliases = new String[]{"donate"};
         this.usage = PREFIX + commandName + " [info] [user]";
         this.category = Category.DEFAULT;
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
