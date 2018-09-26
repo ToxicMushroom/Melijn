@@ -25,7 +25,6 @@ import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -184,9 +183,7 @@ public class Helpers {
 
     public static boolean hasPerm(Member member, String permission, int level) {
         if (member.isOwner() || member.hasPermission(Permission.ADMINISTRATOR)) return true;
-        if (level == 0) {
-            if (Melijn.mySQL.noOneHasPermission(member.getGuild().getIdLong(), permission)) return true;
-        }
+        if (level == 0 && Melijn.mySQL.noOneHasPermission(member.getGuild().getIdLong(), permission)) return true;
         return Melijn.mySQL.hasPermission(member.getGuild(), member.getUser().getIdLong(), permission) || Melijn.mySQL.hasPermission(member.getGuild(), member.getUser().getIdLong(), "*");
     }
 
@@ -232,11 +229,9 @@ public class Helpers {
         return (sb.toString());
     }
 
-    private static ForkJoinPool executor = ForkJoinPool.commonPool();
-
-    public static void ScheduleClose(AudioManager manager) {
+    public static void scheduleClose(AudioManager manager) {
         if (!manager.isConnected() && !manager.isAttemptingToConnect()) return;
-        executor.execute(() -> {
+        TaskScheduler.async(() -> {
             manager.closeAudioConnection();
             LOG.debug("Terminated AudioConnection in " + manager.getGuild().getId());
         });

@@ -20,14 +20,6 @@ import java.util.concurrent.TimeUnit;
 
 public class SetStreamerModeCommand extends Command {
 
-    public SetStreamerModeCommand() {
-        this.commandName = "setStreamerMode";
-        this.description = "A special mode that lets the bot play a stream in the music channel";
-        this.usage = Melijn.PREFIX + commandName + " [true/on | false/off]";
-        this.aliases = new String[]{"ssm"};
-        this.category = Category.MANAGEMENT;
-    }
-
     public static final LoadingCache<Long, Boolean> streamerModeCache = CacheBuilder.newBuilder()
             .maximumSize(10)
             .expireAfterAccess(2, TimeUnit.MINUTES)
@@ -36,6 +28,14 @@ public class SetStreamerModeCommand extends Command {
                     return Melijn.mySQL.getStreamerMode(key);
                 }
             });
+
+    public SetStreamerModeCommand() {
+        this.commandName = "setStreamerMode";
+        this.description = "A special mode that lets the bot play a stream in the music channel";
+        this.usage = Melijn.PREFIX + commandName + " [true/on | false/off]";
+        this.aliases = new String[]{"ssm"};
+        this.category = Category.MANAGEMENT;
+    }
 
     @Override
     protected void execute(CommandEvent event) {
@@ -78,6 +78,9 @@ public class SetStreamerModeCommand extends Command {
                                     streamerModeCache.put(guild.getIdLong(), false);
                                 });
                                 event.reply("The streamer mode has been **disabled** by **" + event.getFullAuthorName() + "**");
+                                break;
+                            default:
+                                MessageHelper.sendUsage(this, event);
                                 break;
                         }
                     } else {

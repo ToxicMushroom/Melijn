@@ -12,6 +12,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class PunchCommand extends Command {
 
+    private WebUtils webUtils;
+
     public PunchCommand() {
         this.commandName = "punch";
         this.description = "You can punch someone or be punched by Melijn";
@@ -19,8 +21,6 @@ public class PunchCommand extends Command {
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
     }
-
-    private WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {

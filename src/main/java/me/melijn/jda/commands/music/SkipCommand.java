@@ -18,6 +18,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class SkipCommand extends Command {
 
+    private MusicManager manager = MusicManager.getManagerInstance();
+
     public SkipCommand() {
         this.commandName = "skip";
         this.description = "Skip to a song in the queue";
@@ -27,8 +29,6 @@ public class SkipCommand extends Command {
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
-
-    private MusicManager manager = MusicManager.getManagerInstance();
 
     @Override
     protected void execute(CommandEvent event) {
@@ -42,18 +42,16 @@ public class SkipCommand extends Command {
             String[] args = event.getArgs().split("\\s+");
             BlockingQueue<AudioTrack> audioTracks = player.getListener().getTracks();
             int i = 1;
-            if (args.length > 0) {
-                if (!args[0].equalsIgnoreCase("")) {
-                    if (args[0].matches("\\d+") && args[0].length() < 4) {
-                        i = Integer.parseInt(args[0]);
-                        if (i >= 50 || i < 1) {
-                            MessageHelper.sendUsage(this, event);
-                            return;
-                        }
-                    } else {
+            if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
+                if (args[0].matches("\\d+") && args[0].length() < 4) {
+                    i = Integer.parseInt(args[0]);
+                    if (i >= 50 || i < 1) {
                         MessageHelper.sendUsage(this, event);
                         return;
                     }
+                } else {
+                    MessageHelper.sendUsage(this, event);
+                    return;
                 }
             }
             AudioTrack nextSong = null;

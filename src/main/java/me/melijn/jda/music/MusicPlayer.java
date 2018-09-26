@@ -71,8 +71,9 @@ public class MusicPlayer {
     }
 
     public void setDepth(double value) {
-        if (value == 1) value = 0.999D;
-        filters.replace(1L, value);
+        double temp = value;
+        if (temp == 1) temp = 0.999D;
+        filters.replace(1L, temp);
     }
 
     public void setFrequency(double value) {
@@ -113,7 +114,7 @@ public class MusicPlayer {
 
     public synchronized void stopTrack() {
         audioPlayer.stopTrack();
-        Helpers.ScheduleClose(guild.getAudioManager());
+        Helpers.scheduleClose(guild.getAudioManager());
     }
 
     public synchronized void skipTrack() {

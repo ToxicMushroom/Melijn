@@ -19,16 +19,16 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class EvalCommand extends Command {
 
+    public static EvalCommand INSTANCE = new EvalCommand();
+    private List<Long> blackList = Arrays.asList(110373943822540800L, 264445053596991498L);
+    String engineName = "groovy";
+
     public EvalCommand() {
         this.commandName = "eval";
         this.description = "eval stuff";
         this.usage = PREFIX + commandName + " [insert crappy code]";
         this.category = Category.DEVELOPER;
     }
-
-    public static EvalCommand INSTANCE = new EvalCommand();
-    private List<Long> blackList = Arrays.asList(110373943822540800L, 264445053596991498L);
-    String engineName = "groovy";
 
     @Override
     protected void execute(CommandEvent event) {

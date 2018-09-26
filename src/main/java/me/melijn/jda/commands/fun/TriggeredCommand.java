@@ -12,6 +12,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class TriggeredCommand extends Command {
 
+    private WebUtils webUtils;
+
     public TriggeredCommand() {
         this.commandName = "triggered";
         this.description = "Will visualize your triggered state to other people";
@@ -20,8 +22,6 @@ public class TriggeredCommand extends Command {
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
     }
-
-    private WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {

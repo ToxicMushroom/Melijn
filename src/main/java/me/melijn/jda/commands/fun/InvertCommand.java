@@ -12,6 +12,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class InvertCommand extends Command {
 
+    private ImageUtils imageUtils = new ImageUtils();
+
     public InvertCommand() {
         this.commandName = "invert";
         this.usage = PREFIX + commandName + " [image]";
@@ -19,8 +21,6 @@ public class InvertCommand extends Command {
         this.aliases = new String[]{"negative"};
         this.category = Category.FUN;
     }
-
-    private ImageUtils imageUtils = new ImageUtils();
 
     @Override
     protected void execute(CommandEvent event) {

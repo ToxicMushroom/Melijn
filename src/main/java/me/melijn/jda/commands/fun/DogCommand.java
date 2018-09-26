@@ -11,6 +11,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class DogCommand extends Command {
 
+    private WebUtils webUtils;
+
     public DogCommand() {
         this.commandName = "dog";
         this.description = "Shows you a random dog";
@@ -19,8 +21,6 @@ public class DogCommand extends Command {
         this.aliases = new String[]{"hond"};
         webUtils = WebUtils.getWebUtilsInstance();
     }
-
-    private WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {

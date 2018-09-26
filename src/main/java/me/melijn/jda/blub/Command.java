@@ -2,8 +2,6 @@ package me.melijn.jda.blub;
 
 import net.dv8tion.jda.core.Permission;
 
-import java.util.Arrays;
-
 import static me.melijn.jda.blub.Category.DEFAULT;
 
 public abstract class Command {
@@ -45,22 +43,9 @@ public abstract class Command {
         return category;
     }
 
-    protected Command[] children = new Command[0];
-
     protected abstract void execute(CommandEvent event);
 
     public final void run(CommandEvent event) {
-        // child check
-        if (!event.getArgs().isEmpty()) {
-            String[] parts = Arrays.copyOf(event.getArgs().split("\\s+", 2), 2);
-            for (Command cmd : children) {
-                if (cmd.isCommandFor(parts[0])) {
-                    event.setArgs(parts[1] == null ? "" : parts[1]);
-                    cmd.run(event);
-                    return;
-                }
-            }
-        }
         execute(event);
         if (event.getClient().getListener() != null) event.getClient().getListener().onCompletedCommand(event, this);
     }

@@ -15,15 +15,6 @@ import java.util.concurrent.TimeUnit;
 
 public class SetMusicChannelCommand extends Command {
 
-    public SetMusicChannelCommand() {
-        this.commandName = "setMusicChannel";
-        this.description = "Set the music channel to a channel so the bot wil auto join ect";
-        this.usage = Melijn.PREFIX + commandName + " [VoiceChannel | null]";
-        this.aliases = new String[]{"smc"};
-        this.needs = new Need[]{Need.GUILD};
-        this.category = Category.MANAGEMENT;
-    }
-
     public static final LoadingCache<Long, Long> musicChannelCache = CacheBuilder.newBuilder()
             .maximumSize(15)
             .expireAfterAccess(2, TimeUnit.MINUTES)
@@ -32,6 +23,15 @@ public class SetMusicChannelCommand extends Command {
                     return Melijn.mySQL.getChannelId(key, ChannelType.MUSIC);
                 }
             });
+
+    public SetMusicChannelCommand() {
+        this.commandName = "setMusicChannel";
+        this.description = "Set the music channel to a channel so the bot wil auto join ect";
+        this.usage = Melijn.PREFIX + commandName + " [VoiceChannel | null]";
+        this.aliases = new String[]{"smc"};
+        this.needs = new Need[]{Need.GUILD};
+        this.category = Category.MANAGEMENT;
+    }
 
     @Override
     protected void execute(CommandEvent event) {

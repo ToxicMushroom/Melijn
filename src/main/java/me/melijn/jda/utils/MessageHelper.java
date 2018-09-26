@@ -63,7 +63,6 @@ public class MessageHelper {
         if (string.matches("\\d++[y]")) {
             return Long.parseLong(string.replaceAll("y", "")) * 217_728_000;
         }
-        System.exit(86400);
         return 0;
     }
 
@@ -72,11 +71,12 @@ public class MessageHelper {
     }
 
     public static String millisToVote(long untilNext) {
-        String hours = String.valueOf(untilNext / 3600000);
-        untilNext -= (untilNext / 3600000) * 3600000;
-        String minutes = String.valueOf(untilNext / 60000);
-        untilNext -= (untilNext / 60000) * 60000;
-        String seconds = String.valueOf(untilNext / 1000);
+        long temp = untilNext;
+        String hours = String.valueOf(temp / 3600000);
+        temp -= (temp / 3600000) * 3600000;
+        String minutes = String.valueOf(temp / 60000);
+        temp -= (temp / 60000) * 60000;
+        String seconds = String.valueOf(temp / 1000);
         return hours + ":" + minutes + ":" + seconds + "s";
     }
 
@@ -109,16 +109,17 @@ public class MessageHelper {
     }
 
     public static void sendFunText(String desc, String url, CommandEvent event) {
-        if (url == null) url = "https://melijn.com/files/u/07-05-2018--19.42-08s.png";
+        String tempUrl = url;
+        if (tempUrl == null) tempUrl = "https://melijn.com/files/u/07-05-2018--19.42-08s.png";
         if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EMBED_LINKS)) {
             event.reply(new EmbedBuilder()
                     .setDescription(desc)
                     .setColor(Helpers.EmbedColor)
-                    .setImage(url)
+                    .setImage(tempUrl)
                     .setFooter("Powered by weeb.sh & weeb.java", null)
                     .build());
         } else {
-            event.reply(desc + "\n" + url + "Powered by weeb.sh & weeb.java");
+            event.reply(desc + "\n" + tempUrl + "Powered by weeb.sh & weeb.java");
         }
     }
 

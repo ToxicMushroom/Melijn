@@ -39,11 +39,12 @@ public class TableBuilder {
     }
 
     private void findWidest(Collection<String> footerNames, int startColumn) {
+        int temp = startColumn;
         for (String s : footerNames) {
-            if (columnWidth.getOrDefault(startColumn, 0) < s.length()) {
-                columnWidth.put(startColumn, s.length());
+            if (columnWidth.getOrDefault(temp, 0) < s.length()) {
+                columnWidth.put(temp, s.length());
             }
-            startColumn++;
+            temp++;
         }
     }
 
@@ -90,12 +91,11 @@ public class TableBuilder {
         //main
         for (ArrayList<String> array : valueRows.values()) {
             int numm = 0;
-            if (split)
-                if (sb.toString().length() + maxRowWidth > 1997 - (footerRow.size() > 0 ? maxRowWidth * 3 : maxRowWidth)) {
-                    toReturn.add(sb.toString() + "```");
-                    sb = new StringBuilder();
-                    sb.append("```prolog\n");
-                }
+            if (split && sb.length() + maxRowWidth > 1997 - (footerRow.size() > 0 ? maxRowWidth * 3 : maxRowWidth)) {
+                toReturn.add(sb.toString() + "```");
+                sb = new StringBuilder();
+                sb.append("```prolog\n");
+            }
             sb.append("║");
             for (String value : array) {
                 sb.append(" ").append(value).append(spaces, 0, columnWidth.get(numm++) - value.length()).append(" ║");

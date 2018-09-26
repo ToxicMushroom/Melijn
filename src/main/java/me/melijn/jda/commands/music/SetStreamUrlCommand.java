@@ -16,16 +16,6 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class SetStreamUrlCommand extends Command {
 
-
-    public SetStreamUrlCommand() {
-        this.commandName = "setStreamUrl";
-        this.description = "set the stream url of the bot";
-        this.usage = PREFIX + commandName + " [list | url]";
-        this.aliases = new String[]{"ssu"};
-        this.needs = new Need[]{Need.GUILD};
-        this.category = Category.MUSIC;
-    }
-
     private HashMap<String, String> linkjes = new HashMap<>() {{
         put("slam-nonstop", "http://stream.radiocorp.nl/web10_mp3");
         put("radio538", "http://18973.live.streamtheworld.com/RADIO538.mp3");
@@ -41,6 +31,15 @@ public class SetStreamUrlCommand extends Command {
         put("BBC_Radio_4FM", "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio4fm_mf_p");
         put("BBC_Radio_6_Music", "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_6music_mf_p");
     }};
+
+    public SetStreamUrlCommand() {
+        this.commandName = "setStreamUrl";
+        this.description = "set the stream url of the bot";
+        this.usage = PREFIX + commandName + " [list | url]";
+        this.aliases = new String[]{"ssu"};
+        this.needs = new Need[]{Need.GUILD};
+        this.category = Category.MUSIC;
+    }
 
     @Override
     protected void execute(CommandEvent event) {

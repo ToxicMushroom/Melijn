@@ -16,15 +16,6 @@ import java.util.concurrent.TimeUnit;
 
 public class SetJoinMessageCommand extends Command {
 
-    public SetJoinMessageCommand() {
-        this.commandName = "setJoinMessage";
-        this.description = "Setup a message that a user get's when he/she/it joins";
-        this.usage = Melijn.PREFIX + commandName + " [message | null]";
-        this.extra = "Placeholders: `%USER%` = user mention // `%USERNAME%` = user name // `%GUILDNAME%` = your discord server's name // `%JOINPOSITION%` = member position";
-        this.aliases = new String[]{"sjm"};
-        this.category = Category.MANAGEMENT;
-    }
-
     public static final LoadingCache<Long, String> joinMessages = CacheBuilder.newBuilder()
             .maximumSize(10)
             .expireAfterAccess(1, TimeUnit.MINUTES)
@@ -33,6 +24,15 @@ public class SetJoinMessageCommand extends Command {
                     return Melijn.mySQL.getMessage(key, MessageType.JOIN);
                 }
             });
+
+    public SetJoinMessageCommand() {
+        this.commandName = "setJoinMessage";
+        this.description = "Setup a message that a user get's when he/she/it joins";
+        this.usage = Melijn.PREFIX + commandName + " [message | null]";
+        this.extra = "Placeholders: `%USER%` = user mention // `%USERNAME%` = user name // `%GUILDNAME%` = your discord server's name // `%JOINPOSITION%` = member position";
+        this.aliases = new String[]{"sjm"};
+        this.category = Category.MANAGEMENT;
+    }
 
     @Override
     protected void execute(CommandEvent event) {

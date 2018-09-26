@@ -17,6 +17,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class DisableCommand extends Command {
 
+    public static HashMap<Long, ArrayList<Integer>> disabledGuildCommands = Melijn.mySQL.getDisabledCommandsMap();
+
     public DisableCommand() {
         this.commandName = "disable";
         this.description = "Fully disables a command from being used";
@@ -26,8 +28,6 @@ public class DisableCommand extends Command {
         this.extra = "You can use >disabled to get a list";
         this.category = Category.MANAGEMENT;
     }
-
-    public static HashMap<Long, ArrayList<Integer>> disabledGuildCommands = Melijn.mySQL.getDisabledCommandsMap();
 
     @Override
     protected void execute(CommandEvent event) {

@@ -17,15 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 public class SetLeaveMessageCommand extends Command {
 
-    public SetLeaveMessageCommand() {
-        this.commandName = "setLeaveMessage";
-        this.description = "Setup a message that a user get's when he/she/it leaves";
-        this.usage = Melijn.PREFIX + commandName + " [message | null]";
-        this.extra = "Placeholders: `%USER%` = user mention // `%USERNAME%` = user name // `%GUILDNAME%` = your discord server's name // `%JOINPOSITION%` = member position";
-        this.aliases = new String[]{"slm"};
-        this.category = Category.MANAGEMENT;
-    }
-
     public static final LoadingCache<Long, String> leaveMessages = CacheBuilder.newBuilder()
             .maximumSize(10)
             .expireAfterAccess(1, TimeUnit.MINUTES)
@@ -34,6 +25,15 @@ public class SetLeaveMessageCommand extends Command {
                     return Melijn.mySQL.getMessage(key, MessageType.LEAVE);
                 }
             });
+
+    public SetLeaveMessageCommand() {
+        this.commandName = "setLeaveMessage";
+        this.description = "Setup a message that a user get's when he/she/it leaves";
+        this.usage = Melijn.PREFIX + commandName + " [message | null]";
+        this.extra = "Placeholders: `%USER%` = user mention // `%USERNAME%` = user name // `%GUILDNAME%` = your discord server's name // `%JOINPOSITION%` = member position";
+        this.aliases = new String[]{"slm"};
+        this.category = Category.MANAGEMENT;
+    }
 
     @Override
     protected void execute(CommandEvent event) {

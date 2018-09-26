@@ -19,6 +19,15 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class SetVerificationThreshold extends Command {
 
+    public static final LoadingCache<Long, Integer> verificationThresholdCache = CacheBuilder.newBuilder()
+            .maximumSize(10)
+            .expireAfterAccess(2, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                public Integer load(@NotNull Long key) {
+                    return Melijn.mySQL.getGuildVerificationThreshold(key);
+                }
+            });
+
     public SetVerificationThreshold() {
         this.commandName = "setVerificationThreshold";
         this.usage = PREFIX + commandName + " <0 - 20>";
@@ -28,15 +37,6 @@ public class SetVerificationThreshold extends Command {
         this.category = Category.MANAGEMENT;
         this.extra = "0 disables the threshold any higher number is the amount of times the user can answer incorrect before getting kicked";
     }
-
-    public static final LoadingCache<Long, Integer> verificationThresholdCache = CacheBuilder.newBuilder()
-            .maximumSize(10)
-            .expireAfterAccess(2, TimeUnit.MINUTES)
-            .build(new CacheLoader<>() {
-                public Integer load(@NotNull Long key) {
-                    return Melijn.mySQL.getGuildVerificationThreshold(key);
-                }
-            });
 
     @Override
     protected void execute(CommandEvent event) {

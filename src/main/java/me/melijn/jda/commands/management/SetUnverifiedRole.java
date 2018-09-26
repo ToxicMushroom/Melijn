@@ -18,15 +18,6 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class SetUnverifiedRole extends Command {
 
-    public SetUnverifiedRole() {
-        this.commandName = "setUnverifiedRole";
-        this.usage = PREFIX + commandName + " [role | null]";
-        this.description = "Set's an unverified role that unverified members will get on join";
-        this.needs = new Need[]{Need.GUILD};
-        this.category = Category.MANAGEMENT;
-        this.aliases = new String[]{"sur"};
-    }
-
     public static final LoadingCache<Long, Long> unverifiedRoleCache = CacheBuilder.newBuilder()
             .maximumSize(10)
             .expireAfterAccess(2, TimeUnit.MINUTES)
@@ -35,6 +26,15 @@ public class SetUnverifiedRole extends Command {
                     return Melijn.mySQL.getRoleId(key, RoleType.UNVERIFIED);
                 }
             });
+
+    public SetUnverifiedRole() {
+        this.commandName = "setUnverifiedRole";
+        this.usage = PREFIX + commandName + " [role | null]";
+        this.description = "Set's an unverified role that unverified members will get on join";
+        this.needs = new Need[]{Need.GUILD};
+        this.category = Category.MANAGEMENT;
+        this.aliases = new String[]{"sur"};
+    }
 
     @Override
     protected void execute(CommandEvent event) {

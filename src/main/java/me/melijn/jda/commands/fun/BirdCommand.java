@@ -12,6 +12,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class BirdCommand extends Command {
 
+    private WebUtils webUtils;
+
     public BirdCommand() {
         this.commandName = "bird";
         this.description = "Shows you a random bird";
@@ -20,8 +22,6 @@ public class BirdCommand extends Command {
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
     }
-
-    private WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {

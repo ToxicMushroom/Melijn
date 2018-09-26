@@ -11,6 +11,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class DiscordMemeCommand extends Command {
 
+    private WebUtils webUtils;
+
     public DiscordMemeCommand() {
         this.commandName = "DiscordMeme";
         this.description = "Shows you a discord meme";
@@ -19,8 +21,6 @@ public class DiscordMemeCommand extends Command {
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
     }
-
-    private WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {

@@ -13,6 +13,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class CatCommand extends Command {
 
+    private WebUtils webUtils;
+
     public CatCommand() {
         this.commandName = "cat";
         this.description = "Shows you a random cat";
@@ -21,8 +23,6 @@ public class CatCommand extends Command {
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
     }
-
-    private WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {

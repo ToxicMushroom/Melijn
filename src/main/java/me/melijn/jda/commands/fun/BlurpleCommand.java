@@ -12,14 +12,14 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class BlurpleCommand extends Command {
 
+    private ImageUtils imageUtils = new ImageUtils();
+
     public BlurpleCommand() {
         this.commandName = "blurple";
         this.usage = PREFIX + commandName + " [image]";
         this.description = "change an image to BLURPLE mix of blue and purple";
         this.category = Category.FUN;
     }
-
-    private ImageUtils imageUtils = new ImageUtils();
 
     @Override
     protected void execute(CommandEvent event) {

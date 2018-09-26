@@ -12,6 +12,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class WastedCommand extends Command {
 
+    private WebUtils webUtils;
+
     public WastedCommand() {
         this.commandName = "wasted";
         this.description = "Shows a wasted gif";
@@ -19,8 +21,6 @@ public class WastedCommand extends Command {
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
     }
-
-    private WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {

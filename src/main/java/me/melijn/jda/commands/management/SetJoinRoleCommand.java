@@ -19,14 +19,6 @@ import java.util.concurrent.TimeUnit;
 
 public class SetJoinRoleCommand extends Command {
 
-    public SetJoinRoleCommand() {
-        this.commandName = "setJoinRole";
-        this.description = "Setup a role that a user get's on join";
-        this.usage = Melijn.PREFIX + commandName + " [role | null]";
-        this.aliases = new String[]{"sjr"};
-        this.category = Category.MANAGEMENT;
-    }
-
     public static final LoadingCache<Long, Long> joinRoleCache = CacheBuilder.newBuilder()
             .maximumSize(10)
             .expireAfterAccess(2, TimeUnit.MINUTES)
@@ -35,6 +27,14 @@ public class SetJoinRoleCommand extends Command {
                     return Melijn.mySQL.getRoleId(key, RoleType.JOIN);
                 }
             });
+
+    public SetJoinRoleCommand() {
+        this.commandName = "setJoinRole";
+        this.description = "Setup a role that a user get's on join";
+        this.usage = Melijn.PREFIX + commandName + " [role | null]";
+        this.aliases = new String[]{"sjr"};
+        this.category = Category.MANAGEMENT;
+    }
 
     @Override
     protected void execute(CommandEvent event) {

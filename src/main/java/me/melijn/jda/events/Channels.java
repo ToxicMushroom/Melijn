@@ -33,9 +33,8 @@ public class Channels extends ListenerAdapter {
                 AudioPlayer audioPlayer = manager.getPlayer(guild).getAudioPlayer();
                 int doveDuiven = 0;
                 for (Member member : audioManager.getConnectedChannel().getMembers()) {
-                    if (member.getVoiceState().isDeafened() || member.getVoiceState().isGuildDeafened()) {
-                        if (member != guild.getSelfMember()) doveDuiven++;
-                    }
+                    if (member.getVoiceState().isDeafened() || member.getVoiceState().isGuildDeafened() && member != guild.getSelfMember())
+                        doveDuiven++;
                 }
                 if ((audioManager.getConnectedChannel().getMembers().size() - doveDuiven) == 1) {
                     if (!audioPlayer.isPaused())
@@ -54,11 +53,12 @@ public class Channels extends ListenerAdapter {
             audioManager.openAudioConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)));
             tryPlayStreamUrl(guild, guildId);
             TaskScheduler.async(() -> {
-                if (event.getGuild().getAfkChannel() != null && event.getGuild().getSelfMember().hasPermission(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)), Permission.VOICE_MUTE_OTHERS)) {
-                    if (event.getGuild().getSelfMember().getVoiceState().getChannel() == null || event.getGuild().getAfkChannel().getIdLong() == event.getGuild().getSelfMember().getVoiceState().getChannel().getIdLong()) {
-                        event.getGuild().getController().setMute(event.getGuild().getSelfMember(), true).queue(done ->
-                                event.getGuild().getController().setMute(event.getGuild().getSelfMember(), false).queue());
-                    }
+                if (guild.getAfkChannel() != null &&
+                        guild.getSelfMember().hasPermission(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)), Permission.VOICE_MUTE_OTHERS) &&
+                        guild.getSelfMember().getVoiceState().getChannel() == null ||
+                        guild.getAfkChannel().getIdLong() == guild.getSelfMember().getVoiceState().getChannel().getIdLong()) {
+                    guild.getController().setMute(guild.getSelfMember(), true).queue(done ->
+                            event.getGuild().getController().setMute(event.getGuild().getSelfMember(), false).queue());
                 }
             }, 2000);
         }

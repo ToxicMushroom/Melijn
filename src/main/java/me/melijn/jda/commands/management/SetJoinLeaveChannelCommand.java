@@ -14,14 +14,6 @@ import java.util.concurrent.TimeUnit;
 
 public class SetJoinLeaveChannelCommand extends Command {
 
-    public SetJoinLeaveChannelCommand() {
-        this.commandName = "setJoinLeaveChannel";
-        this.description = "Setup a TextChannel where users will be welcomed or leave";
-        this.usage = Melijn.PREFIX + commandName + " <TextChannel | null>";
-        this.aliases = new String[]{"sjlc", "SetWelcomeChannel", "swc"};
-        this.category = Category.MANAGEMENT;
-    }
-
     public static final LoadingCache<Long, Long> welcomeChannelCache = CacheBuilder.newBuilder()
             .maximumSize(10)
             .expireAfterAccess(1, TimeUnit.MINUTES)
@@ -30,6 +22,14 @@ public class SetJoinLeaveChannelCommand extends Command {
                     return Melijn.mySQL.getChannelId(key, ChannelType.WELCOME);
                 }
             });
+
+    public SetJoinLeaveChannelCommand() {
+        this.commandName = "setJoinLeaveChannel";
+        this.description = "Setup a TextChannel where users will be welcomed or leave";
+        this.usage = Melijn.PREFIX + commandName + " <TextChannel | null>";
+        this.aliases = new String[]{"sjlc", "SetWelcomeChannel", "swc"};
+        this.category = Category.MANAGEMENT;
+    }
 
     @Override
     protected void execute(CommandEvent event) {

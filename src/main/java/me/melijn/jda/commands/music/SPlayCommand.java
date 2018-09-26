@@ -21,6 +21,10 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class SPlayCommand extends Command {
 
+    private MusicManager manager = MusicManager.getManagerInstance();
+    public static HashMap<User, Message> usersFormToReply = new HashMap<>();
+    public static HashMap<User, HashMap<Integer, AudioTrack>> userChoices = new HashMap<>();
+
     public SPlayCommand() {
         this.commandName = "splay";
         this.description = "Gives you the search results to pick from instead of playing the first song of the results (that's what >play does)";
@@ -30,10 +34,6 @@ public class SPlayCommand extends Command {
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL_OR_DISCONNECTED};
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.VOICE_CONNECT};
     }
-
-    private MusicManager manager = MusicManager.getManagerInstance();
-    public static HashMap<User, Message> usersFormToReply = new HashMap<>();
-    public static HashMap<User, HashMap<Integer, AudioTrack>> userChoices = new HashMap<>();
 
     @Override
     protected void execute(CommandEvent event) {

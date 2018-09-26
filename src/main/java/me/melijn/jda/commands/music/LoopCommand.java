@@ -15,6 +15,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class LoopCommand extends Command {
 
+    public static HashMap<Long, Boolean> looped = new HashMap<>();
+
     public LoopCommand() {
         this.commandName = "loop";
         this.description = "Change the looping state or view the looping state of the playing song";
@@ -23,8 +25,6 @@ public class LoopCommand extends Command {
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};
         this.category = Category.MUSIC;
     }
-
-    public static HashMap<Long, Boolean> looped = new HashMap<>();
 
     @Override
     protected void execute(CommandEvent event) {

@@ -19,6 +19,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class RemoveCommand extends Command {
 
+    private MusicManager manager = MusicManager.getManagerInstance();
+
     public RemoveCommand() {
         this.commandName = "remove";
         this.description = "Remove songs of the queue";
@@ -28,8 +30,6 @@ public class RemoveCommand extends Command {
         this.needs = new Need[] {Need.GUILD, Need.SAME_VOICECHANNEL};
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
-
-    private MusicManager manager = MusicManager.getManagerInstance();
 
     @Override
     protected void execute(CommandEvent event) {

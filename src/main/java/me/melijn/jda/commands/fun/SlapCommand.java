@@ -12,6 +12,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class SlapCommand extends Command {
 
+    private WebUtils webUtils;
+
     public SlapCommand() {
         this.commandName = "slap";
         this.description = "You can slap someone or be slapped";
@@ -19,8 +21,6 @@ public class SlapCommand extends Command {
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
     }
-
-    private WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {

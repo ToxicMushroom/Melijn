@@ -19,6 +19,9 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class PlayCommand extends Command {
 
+    static List<String> providers = Arrays.asList("yt", "sc", "link", "youtube", "soundcloud");
+    private MusicManager manager = MusicManager.getManagerInstance();
+
     public PlayCommand() {
         this.commandName = "play";
         this.description = "plays a song or adds it to the queue";
@@ -29,9 +32,6 @@ public class PlayCommand extends Command {
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL_OR_DISCONNECTED};
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.VOICE_CONNECT};
     }
-
-    static List<String> providers = Arrays.asList("yt", "sc", "link", "youtube", "soundcloud");
-    private MusicManager manager = MusicManager.getManagerInstance();
 
     @Override
     protected void execute(CommandEvent event) {
@@ -54,6 +54,7 @@ public class PlayCommand extends Command {
                     if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".sc", 0) || access) {
                         if (SPlayCommand.isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
                         manager.loadTrack(event.getTextChannel(), "scsearch:" + songName, event.getAuthor(), false);
+
                     } else {
                         event.reply("You need the permission `" + commandName + ".sc` to execute this command.");
                     }

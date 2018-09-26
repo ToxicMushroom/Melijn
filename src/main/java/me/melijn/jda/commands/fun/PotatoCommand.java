@@ -12,6 +12,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class PotatoCommand extends Command {
 
+    private WebUtils webUtils;
+
     public PotatoCommand() {
         this.commandName = "potato";
         this.description = "Shows you a delicious treat";
@@ -19,8 +21,6 @@ public class PotatoCommand extends Command {
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
     }
-
-    private WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {

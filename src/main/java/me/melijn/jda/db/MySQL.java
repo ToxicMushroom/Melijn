@@ -273,7 +273,10 @@ public class MySQL {
             getting.setLong(2, userId);
             getting.setString(3, permission);
             ResultSet rs = getting.executeQuery();
-            boolean temp = rs.next();
+            boolean temp = false;
+            if (rs.next()) {
+                temp = true;
+            }
             getting.close();
             rs.close();
             if (temp) return true;
@@ -290,7 +293,10 @@ public class MySQL {
                 getting.setLong(2, role.getIdLong());
                 getting.setString(3, permission);
                 ResultSet rs = getting.executeQuery();
-                boolean temp = rs.next();
+                boolean temp = false;
+                if (rs.next()) {
+                    temp = true;
+                }
                 getting.close();
                 rs.close();
                 return temp;
@@ -367,7 +373,10 @@ public class MySQL {
             statement.setLong(1, guildId);
             statement.setString(2, permission);
             ResultSet rs = statement.executeQuery();
-            boolean temp = !rs.next();
+            boolean temp = false;
+            if (!rs.next()) {
+                temp = true;
+            }
             statement.close();
             rs.close();
             if (temp) return true;
@@ -376,7 +385,9 @@ public class MySQL {
             statement1.setLong(1, guildId);
             statement1.setString(2, permission);
             ResultSet rs1 = statement1.executeQuery();
-            temp = !rs1.next();
+            if (!rs.next()) {
+                temp = true;
+            }
             statement1.close();
             rs1.close();
             if (temp) return true;

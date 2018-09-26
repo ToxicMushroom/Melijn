@@ -12,6 +12,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class WeebshCommand extends Command {
 
+    private WebUtils webUtils;
+
     public WeebshCommand() {
         this.commandName = "weebsh";
         this.description = "Uses weebsh api to do stuff";
@@ -19,8 +21,6 @@ public class WeebshCommand extends Command {
         this.category = Category.DEVELOPER;
         webUtils = WebUtils.getWebUtilsInstance();
     }
-
-    private WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {

@@ -16,6 +16,15 @@ import java.util.concurrent.TimeUnit;
 
 public class SetMuteRoleCommand extends Command {
 
+    public static final LoadingCache<Long, Long> muteRoleCache = CacheBuilder.newBuilder()
+            .maximumSize(10)
+            .expireAfterAccess(1, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                public Long load(@NotNull Long key) {
+                    return Melijn.mySQL.getRoleId(key, RoleType.MUTE);
+                }
+            });
+
     public SetMuteRoleCommand() {
         this.commandName = "setMuteRole";
         this.description = "Set the role that will be added to a user when muted";
@@ -25,15 +34,6 @@ public class SetMuteRoleCommand extends Command {
         this.aliases = new String[]{"smr"};
         this.category = Category.MANAGEMENT;
     }
-
-    public static final LoadingCache<Long, Long> muteRoleCache = CacheBuilder.newBuilder()
-            .maximumSize(10)
-            .expireAfterAccess(1, TimeUnit.MINUTES)
-            .build(new CacheLoader<>() {
-                public Long load(@NotNull Long key) {
-                    return Melijn.mySQL.getRoleId(key, RoleType.MUTE);
-                }
-            });
 
     @Override
     protected void execute(CommandEvent event) {

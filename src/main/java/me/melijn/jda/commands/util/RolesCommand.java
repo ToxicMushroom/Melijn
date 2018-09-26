@@ -33,13 +33,13 @@ public class RolesCommand extends Command {
                 int count = 1;
                 for (Role role : roles) {
                     sb.append(count++).append(" - [").append(role.getName()).append("] - ").append(role.getId()).append("\n");
-                    if (sb.toString().length() > 1850) {
+                    if (sb.length() > 1850) {
                         event.reply("Roles of " + guild.getName() + " part **#" + i + "**\n```INI\n" + sb.toString() + "```");
                         sb = new StringBuilder();
                         i++;
                     }
                 }
-                if (sb.toString().length() != 0)
+                if (sb.length() != 0)
                     event.reply("Roles of " + guild.getName() + " part **#" + i + "**\n```INI\n" + sb.toString() + "```");
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

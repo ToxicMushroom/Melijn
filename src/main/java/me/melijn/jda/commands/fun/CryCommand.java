@@ -12,6 +12,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class CryCommand extends Command {
 
+    private WebUtils webUtils;
+
     public CryCommand() {
         this.commandName = "cry";
         this.description = "cry or let someone make you cry";
@@ -20,8 +22,6 @@ public class CryCommand extends Command {
         this.aliases = new String[] {"sad"};
         webUtils = WebUtils.getWebUtilsInstance();
     }
-
-    WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {

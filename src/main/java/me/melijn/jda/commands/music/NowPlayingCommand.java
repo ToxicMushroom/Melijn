@@ -19,6 +19,10 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class NowPlayingCommand extends Command {
 
+    private MusicManager musicManager = MusicManager.getManagerInstance();
+    public final static Pattern youtubePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtube\\.com))/watch(.*?)");
+    public final static Pattern youtuBePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtu\\.be/))(.*?)");
+
     public NowPlayingCommand() {
         this.commandName = "np";
         this.description = "Show you the song that the bot is playing";
@@ -28,10 +32,6 @@ public class NowPlayingCommand extends Command {
         this.needs = new Need[]{Need.GUILD, Need.VOICECHANNEL};
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
-
-    private MusicManager musicManager = MusicManager.getManagerInstance();
-    public final static Pattern youtubePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtube\\.com))/watch(.*?)");
-    public final static Pattern youtuBePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtu\\.be/))(.*?)");
 
     @Override
     protected void execute(CommandEvent event) {

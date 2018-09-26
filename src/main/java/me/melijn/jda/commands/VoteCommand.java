@@ -51,7 +51,6 @@ public class VoteCommand extends Command {
                 String untilLossFormat = (untilLoss > 0) ? MessageHelper.millisToVote(untilLoss) : "You don't have a streak atm :/";
                 eb.addField("Time until los of streak", untilLossFormat, false);
                 event.reply(eb.build());
-
             });
         } else {
             MessageHelper.sendUsage(this, event);

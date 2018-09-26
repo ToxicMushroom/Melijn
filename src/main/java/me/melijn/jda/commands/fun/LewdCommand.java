@@ -11,6 +11,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class LewdCommand extends Command {
 
+    private WebUtils webUtils;
+
     public LewdCommand() {
         this.commandName = "lewd";
         this.description = "Shows a lewd image";
@@ -18,8 +20,6 @@ public class LewdCommand extends Command {
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
     }
-
-    private WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {

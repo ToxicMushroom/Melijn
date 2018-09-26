@@ -17,14 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 public class SetPrefixCommand extends Command {
 
-    public SetPrefixCommand() {
-        this.commandName = "setPrefix";
-        this.description = "Change the prefix for the commands for your guild";
-        this.usage = Melijn.PREFIX + this.commandName + " [prefix]";
-        this.aliases = new String[]{"prefix"};
-        this.category = Category.MANAGEMENT;
-    }
-
     public static final LoadingCache<Long, String> prefixes = CacheBuilder.newBuilder()
             .maximumSize(20)
             .expireAfterAccess(5, TimeUnit.MINUTES)
@@ -33,6 +25,14 @@ public class SetPrefixCommand extends Command {
                     return Melijn.mySQL.getPrefix(key);
                 }
             });
+
+    public SetPrefixCommand() {
+        this.commandName = "setPrefix";
+        this.description = "Change the prefix for the commands for your guild";
+        this.usage = Melijn.PREFIX + this.commandName + " [prefix]";
+        this.aliases = new String[]{"prefix"};
+        this.category = Category.MANAGEMENT;
+    }
 
     @Override
     protected void execute(CommandEvent event) {

@@ -18,15 +18,6 @@ import java.util.concurrent.TimeUnit;
 
 public class SetLogChannelCommand extends Command {
 
-    public SetLogChannelCommand() {
-        this.commandName = "setLogChannel";
-        this.description = "configures log channels so you can keep track of what's happening in your server";
-        this.usage = Melijn.PREFIX + commandName + " <type> [TextChannel | null]";
-        this.extra = "Types: all, ban, mute, warn, kick, music, self-deleted-messages, other-deleted-messages, purged-messages, filtered-messages";
-        this.aliases = new String[]{"slc"};
-        this.category = Category.MANAGEMENT;
-    }
-
     public static final LoadingCache<Long, Long> banLogChannelCache = CacheBuilder.newBuilder()
             .maximumSize(10)
             .expireAfterAccess(2, TimeUnit.MINUTES)
@@ -99,6 +90,15 @@ public class SetLogChannelCommand extends Command {
                     return Melijn.mySQL.getChannelId(key, ChannelType.FM_LOG);
                 }
             });
+
+    public SetLogChannelCommand() {
+        this.commandName = "setLogChannel";
+        this.description = "configures log channels so you can keep track of what's happening in your server";
+        this.usage = Melijn.PREFIX + commandName + " <type> [TextChannel | null]";
+        this.extra = "Types: all, ban, mute, warn, kick, music, self-deleted-messages, other-deleted-messages, purged-messages, filtered-messages";
+        this.aliases = new String[]{"slc"};
+        this.category = Category.MANAGEMENT;
+    }
 
     @Override
     protected void execute(CommandEvent event) {
@@ -212,6 +212,7 @@ public class SetLogChannelCommand extends Command {
                             break;
                         default:
                             MessageHelper.sendUsage(this, event);
+                            break;
                     }
                 } else if (args.length == 1 && !args[0].equalsIgnoreCase("")) {
                     switch (args[0].toLowerCase()) {

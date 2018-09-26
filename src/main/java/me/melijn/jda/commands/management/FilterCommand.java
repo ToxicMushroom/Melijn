@@ -11,14 +11,14 @@ import net.dv8tion.jda.core.entities.Guild;
 
 public class FilterCommand extends Command {
 
+    private MySQL mySQL = Melijn.mySQL;
+
     public FilterCommand() {
         this.commandName = "filter";
         this.description = "The bot will remove messages which contain prohibited words";
         this.usage = Melijn.PREFIX + commandName + " <allowed | denied> <add | remove | list> [word]";
         this.category = Category.MANAGEMENT;
     }
-
-    MySQL mySQL = Melijn.mySQL;
 
     @Override
     protected void execute(CommandEvent event) {

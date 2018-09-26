@@ -11,6 +11,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class ShrugCommand extends Command {
 
+    private WebUtils webUtils;
+
     public ShrugCommand() {
         this.commandName = "shrug";
         this.description = "shrug";
@@ -19,8 +21,6 @@ public class ShrugCommand extends Command {
         this.aliases = new String[]{"idk"};
         webUtils = WebUtils.getWebUtilsInstance();
     }
-
-    WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {

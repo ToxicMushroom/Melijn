@@ -263,7 +263,7 @@ public class Chat extends ListenerAdapter {
         if (deleter != null) {
             if (split) {
                 eb.setTitle(eb.build().getTitle() + " part 1");
-                if (author == deleter && guild.getTextChannelById(SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guild.getIdLong())) != null) {
+                if (author.equals(deleter) && guild.getTextChannelById(SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guild.getIdLong())) != null) {
                     guild.getTextChannelById(SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guild.getIdLong())).sendMessage(eb.build()).queue();
                 } else if (guild.getTextChannelById(SetLogChannelCommand.odmLogChannelCache.getUnchecked(guild.getIdLong())) != null) {
                     guild.getTextChannelById(SetLogChannelCommand.odmLogChannelCache.getUnchecked(guild.getIdLong())).sendMessage(eb.build()).queue();

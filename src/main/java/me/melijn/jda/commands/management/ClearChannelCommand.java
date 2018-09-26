@@ -16,6 +16,9 @@ import java.util.concurrent.TimeUnit;
 
 public class ClearChannelCommand extends Command {
 
+    public static HashMap<Long, HashMap<Long, Long>> possibleDeletes = new HashMap<>();
+    public static HashMap<Long, Long> messageUser = new HashMap<>();
+
     public ClearChannelCommand() {
         this.commandName = "clearChannel";
         this.description = "makes a clone of the current channel (permissions ect included) and deletes the original one";
@@ -25,9 +28,6 @@ public class ClearChannelCommand extends Command {
         this.permissions = new Permission[]{Permission.MANAGE_CHANNEL, Permission.MANAGE_PERMISSIONS};
         this.needs = new Need[]{Need.GUILD, Need.ROLE};
     }
-
-    public static HashMap<Long, HashMap<Long, Long>> possibleDeletes = new HashMap<>();
-    public static HashMap<Long, Long> messageUser = new HashMap<>();
 
     @Override
     protected void execute(CommandEvent event) {

@@ -18,14 +18,6 @@ import java.util.concurrent.TimeUnit;
 
 public class SetVerificationCode extends Command {
 
-    public SetVerificationCode() {
-        this.commandName = "setVerificationCode";
-        this.usage = Melijn.PREFIX + commandName + " [code | null]";
-        this.description = "set's a verificationCode that users will have to send in the verificationChannel";
-        this.category = Category.MANAGEMENT;
-        this.needs = new Need[]{Need.GUILD};
-    }
-
     public static final LoadingCache<Long, String> verificationCodeCache = CacheBuilder.newBuilder()
             .maximumSize(10)
             .expireAfterAccess(2, TimeUnit.MINUTES)
@@ -34,6 +26,14 @@ public class SetVerificationCode extends Command {
                     return Melijn.mySQL.getGuildVerificationCode(key);
                 }
             });
+
+    public SetVerificationCode() {
+        this.commandName = "setVerificationCode";
+        this.usage = Melijn.PREFIX + commandName + " [code | null]";
+        this.description = "set's a verificationCode that users will have to send in the verificationChannel";
+        this.category = Category.MANAGEMENT;
+        this.needs = new Need[]{Need.GUILD};
+    }
 
     @Override
     protected void execute(CommandEvent event) {
@@ -58,7 +58,8 @@ public class SetVerificationCode extends Command {
                 } else {
                     try {
                         event.reply("The VerificationCode is " + (verificationCodeCache.get(guild.getIdLong()) == null ? "unset" : verificationCodeCache.getUnchecked(guild.getIdLong())));
-                    } catch (ExecutionException ignored) { }
+                    } catch (ExecutionException ignored) {
+                    }
                 }
             } else {
                 event.reply("You first have to setup a Verification TextChannel\nYou'll probably want to follow this guide: https://melijn.com/guides/guide-7");

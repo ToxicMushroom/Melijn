@@ -81,8 +81,8 @@ public class SettingsCommand extends Command {
 
     private String stringToString(String text, boolean encapsulate) {
         if (encapsulate)
-        return text.equals("") ? "unset" : "```" + text + "```";
+        return "".equals(text) ? "unset" : "```" + text + "```";
         else
-            return text.equals("") ? "unset" : text;
+            return "".equals(text) ? "unset" : text;
     }
 }

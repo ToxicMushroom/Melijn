@@ -14,6 +14,13 @@ public final class TaskScheduler implements Runnable {
     private static final Function<String, ThreadFactory> FACTORY = name -> new ThreadFactoryBuilder().setNameFormat("[" + name + "-Pool-%d] ").build();
     private static final ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool(FACTORY.apply("TaskScheduler"));
 
+    private final Runnable runnable;
+    private final boolean repeating;
+    private final long period;
+    private final Predicate<LocalDate> predicate;
+    private boolean stop = false;
+    private final long initialDelay;
+
     public static void scheduleRepeating(final Runnable runnable, final long period) {
         EXECUTOR_SERVICE.submit(new TaskScheduler(runnable, period));
     }
@@ -30,20 +37,13 @@ public final class TaskScheduler implements Runnable {
         EXECUTOR_SERVICE.submit(new TaskScheduler(runnable, after));
     }
 
-    public static void scheduleRepeatingWhen(final Runnable runnable, final long period, final Predicate<LocalDate> dateAccessor) {
+    /*public static void scheduleRepeatingWhen(final Runnable runnable, final long period, final Predicate<LocalDate> dateAccessor) {
         EXECUTOR_SERVICE.submit(new TaskScheduler(runnable, -1, period, dateAccessor));
     }
 
     public static void scheduleRepeatingWhen(final Runnable runnable, final long initialDelay, final long period, final Predicate<LocalDate> dateAccessor) {
         EXECUTOR_SERVICE.submit(new TaskScheduler(runnable, initialDelay, period, dateAccessor));
-    }
-
-    private final Runnable runnable;
-    private final boolean repeating;
-    private final long period;
-    private final Predicate<LocalDate> predicate;
-    private boolean stop = false;
-    private final long initialDelay;
+    }*/
 
     private TaskScheduler(final Runnable runnable, final long initialDelay, final long period, final Predicate<LocalDate> predicate) {
         this.runnable = runnable;
@@ -73,9 +73,9 @@ public final class TaskScheduler implements Runnable {
         this.predicate = null;
     }
 
-    public void stop() {
+    /*public void stop() {
         stop = true;
-    }
+    }*/
 
     @Override
     public void run() {
@@ -84,9 +84,8 @@ public final class TaskScheduler implements Runnable {
             runnable.run();
 
         while (repeating && !stop) {
-            if (predicate != null)
-                if (!predicate.test(LocalDate.now()))
-                    waitNow();
+            if (predicate != null && !predicate.test(LocalDate.now()))
+                waitNow();
             runnable.run();
             waitNow();
         }

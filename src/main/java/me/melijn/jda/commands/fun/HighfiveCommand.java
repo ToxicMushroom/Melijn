@@ -12,6 +12,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class HighfiveCommand extends Command {
 
+    private WebUtils webUtils;
+
     public HighfiveCommand() {
         this.commandName = "highfive";
         this.description = "highfive someone";
@@ -19,8 +21,6 @@ public class HighfiveCommand extends Command {
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
     }
-
-    WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {

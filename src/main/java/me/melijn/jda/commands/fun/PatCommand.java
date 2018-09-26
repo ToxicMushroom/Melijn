@@ -12,6 +12,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class PatCommand extends Command {
 
+    private WebUtils webUtils;
+
     public PatCommand() {
         this.commandName = "pat";
         this.description = "You can pat someone or be patted";
@@ -19,8 +21,6 @@ public class PatCommand extends Command {
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
     }
-
-    private WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {

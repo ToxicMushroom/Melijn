@@ -17,6 +17,15 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class SetVerificationChannel extends Command {
 
+    public static final LoadingCache<Long, Long> verificationChannelsCache = CacheBuilder.newBuilder()
+            .maximumSize(10)
+            .expireAfterAccess(2, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                public Long load(@NotNull Long key) {
+                    return Melijn.mySQL.getChannelId(key, ChannelType.VERIFICATION);
+                }
+            });
+
     public SetVerificationChannel() {
         this.commandName = "setVerificationChannel";
         this.usage = PREFIX + commandName + " [TextChannel | null]";
@@ -26,15 +35,6 @@ public class SetVerificationChannel extends Command {
         this.category = Category.MANAGEMENT;
         this.needs = new Need[]{Need.GUILD};
     }
-
-    public static final LoadingCache<Long, Long> verificationChannelsCache = CacheBuilder.newBuilder()
-            .maximumSize(10)
-            .expireAfterAccess(2, TimeUnit.MINUTES)
-            .build(new CacheLoader<>() {
-                public Long load(@NotNull Long key) {
-                    return Melijn.mySQL.getChannelId(key, ChannelType.VERIFICATION);
-                }
-            });
 
     @Override
     protected void execute(CommandEvent event) {

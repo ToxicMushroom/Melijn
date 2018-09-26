@@ -74,7 +74,7 @@ public class JoinLeave extends ListenerAdapter {
         } else {
             TaskScheduler.async(() -> {
                 String message = SetLeaveMessageCommand.leaveMessages.getUnchecked(guild.getIdLong());
-                if (!message.equals("")) {
+                if (!"".equals(message)) {
                     TextChannel welcomeChannel = guild.getTextChannelById(SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guild.getIdLong()));
                     if (welcomeChannel != null && guild.getSelfMember().hasPermission(welcomeChannel, Permission.MESSAGE_WRITE))
                         welcomeChannel.sendMessage(variableFormat(message, guild, leftUser)).queue();

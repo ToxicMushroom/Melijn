@@ -20,6 +20,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class QueueCommand extends Command {
 
+    private MusicManager manager = MusicManager.getManagerInstance();
+
     public QueueCommand() {
         this.commandName = "queue";
         this.description = "Shows you a list of all songs wich will play in the future.";
@@ -29,8 +31,6 @@ public class QueueCommand extends Command {
         this.needs = new Need[]{Need.GUILD, Need.VOICECHANNEL};
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
-
-    private MusicManager manager = MusicManager.getManagerInstance();
 
     @Override
     protected void execute(CommandEvent event) {
@@ -63,7 +63,7 @@ public class QueueCommand extends Command {
             for (String s : lijst) {
                 builder.append(s).append("\n");
             }
-            if (builder.toString().length() > 1800) {
+            if (builder.length() > 1800) {
                 int part = 1;
                 builder = new StringBuilder();
                 for (String s : lijst) {

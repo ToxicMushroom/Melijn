@@ -106,6 +106,9 @@ public class HistoryCommand extends Command {
                                         );
                                     }));
                                     break;
+                                default:
+                                    MessageHelper.sendUsage(this, event);
+                                    break;
                             }
                         } else {
                             event.reply("Unknown user");

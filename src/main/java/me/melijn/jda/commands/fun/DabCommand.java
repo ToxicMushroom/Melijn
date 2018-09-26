@@ -11,6 +11,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class DabCommand extends Command {
 
+    private WebUtils webUtils;
+
     public DabCommand() {
         this.commandName = "dab";
         this.description = "dab on them haters";
@@ -18,8 +20,6 @@ public class DabCommand extends Command {
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
     }
-
-    WebUtils webUtils;
 
     @Override
     protected void execute(CommandEvent event) {

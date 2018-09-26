@@ -37,15 +37,16 @@ import java.util.logging.Logger;
 public class Melijn {
 
     private static final Config config = new Config();
+    private static boolean ready = false;
     public static long OWNERID = Long.parseLong(config.getValue("ownerid"));
     public static String PREFIX = config.getValue("prefix");
+    private static ShardManager shardManager;
     static DiscordBotListAPI dblAPI = null;
     public static MySQL mySQL = new MySQL(
             config.getValue("ipaddress"),
             config.getValue("username"),
             config.getValue("password"),
             config.getValue("database"));
-    private static ShardManager shardManager;
 
     public static void main(String[] args) throws LoginException, InterruptedException {
         new WebUtils();
@@ -181,8 +182,6 @@ public class Melijn {
     public static ShardManager getShardManager() {
         return shardManager;
     }
-
-    private static boolean ready = false;
 
     private static ShardManager awaitReady() throws InterruptedException {
         if (ready)
