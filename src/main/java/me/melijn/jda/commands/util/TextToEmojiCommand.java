@@ -40,7 +40,7 @@ public class TextToEmojiCommand extends Command {
                     } else {
                         sb.append(s);
                     }
-                    if (sb.toString().length() > 1900)  {
+                    if (sb.length() > 1900)  {
                         event.reply(sb.toString());
                         sb = new StringBuilder();
                     }

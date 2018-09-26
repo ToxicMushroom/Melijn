@@ -77,11 +77,11 @@ public class RemoveCommand extends Command {
                     return;
                 }
             }
-            if (sb.toString().length() > 1900) {
+            if (sb.length() > 1900) {
                 sb = new StringBuilder();
                 int pi = 1;
                 for (String s : desc) {
-                    if (sb.toString().length() < 1850) {
+                    if (sb.length() < 1850) {
                         sb.append(s);
                     } else {
                         EmbedBuilder eb = new EmbedBuilder();
@@ -94,7 +94,7 @@ public class RemoveCommand extends Command {
                         pi++;
                     }
                 }
-                if (sb.toString().length() != 0) {
+                if (sb.length() != 0) {
                     EmbedBuilder eb = new EmbedBuilder();
                     eb.setTitle("Removed part **#" + pi + "**");
                     eb.setColor(Helpers.EmbedColor);

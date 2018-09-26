@@ -63,7 +63,7 @@ public class DisableCommand extends Command {
                 int part = 1;
                 sb.append("Part **#").append(part++).append("** of disabled commands```INI\n");
                 for (int i : disabledGuildCommands.getOrDefault(event.getGuild().getIdLong(), new ArrayList<>())) {
-                    if (sb.toString().length() + event.getClient().getCommands().get(i).getCommandName().length() < 1950) {
+                    if (sb.length() + event.getClient().getCommands().get(i).getCommandName().length() < 1950) {
                         sb.append(i).append(" - [").append(event.getClient().getCommands().get(i).getCommandName()).append("]\n");
                     } else {
                         sb.append("```");

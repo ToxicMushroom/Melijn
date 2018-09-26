@@ -141,7 +141,7 @@ public class HistoryCommand extends Command {
                 part.append(".");
             }
         }
-        if (part.toString().length() > 0) parts.add(part.toString());
+        if (part.length() > 0) parts.add(part.toString());
         parts.add(String.valueOf(count));
         callback.accept(parts);
     }

@@ -361,7 +361,7 @@ public class PermCommand extends Command {
                             StringBuilder sb = new StringBuilder();
                             for (String s : lijst) {
                                 sb.append(s).append("\n");
-                                if (sb.toString().length() > 1900) {
+                                if (sb.length() > 1900) {
                                     event.reply(new EmbedBuilder()
                                             .setTitle("Permissions off `" + targetName + "` part #" + partNumber++)
                                             .setColor(Helpers.EmbedColor)
@@ -391,13 +391,13 @@ public class PermCommand extends Command {
                     int count = 0;
                     for (String s : Helpers.perms) {
                         sb.append(++count).append(". [").append(s).append("]").append("\n");
-                        if (sb.toString().length() > 1900) {
+                        if (sb.length() > 1900) {
                             event.getChannel().sendMessage("Permissions list part **#" + i + "**\n```INI\n" + sb.toString() + "```").queue();
                             sb = new StringBuilder();
                             i++;
                         }
                     }
-                    if (sb.toString().length() != 0)
+                    if (sb.length() != 0)
                         event.reply("Permissions list part **#" + i + "**\n```INI\n" + sb.toString() + "```");
                     break;
                 case "copy":

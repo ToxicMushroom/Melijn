@@ -67,7 +67,7 @@ public class QueueCommand extends Command {
                 int part = 1;
                 builder = new StringBuilder();
                 for (String s : lijst) {
-                    if (builder.toString().length() + s.length() > 1800) {
+                    if (builder.length() + s.length() > 1800) {
                         EmbedBuilder eb = new EmbedBuilder();
                         eb.setTitle("Queue part " + part);
                         eb.setColor(Helpers.EmbedColor);

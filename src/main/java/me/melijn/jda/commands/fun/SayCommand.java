@@ -55,7 +55,7 @@ public class SayCommand extends Command {
                             } else if ((sb.toString().split("\n")[sb.toString().split("\n").length - 1].length() + part.length()) > 28) {
                                 sb.append("\n").append(part);
                             } else {
-                                if (sb.toString().length() > 0) sb.append(" ");
+                                if (sb.length() > 0) sb.append(" ");
                                 sb.append(part);
                             }
                         }

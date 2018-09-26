@@ -8,6 +8,7 @@ import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.db.MySQL;
 import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.entities.Guild;
+import org.jetbrains.annotations.NotNull;
 
 public class FilterCommand extends Command {
 
@@ -52,12 +53,7 @@ public class FilterCommand extends Command {
                                     StringBuilder partBuilder = new StringBuilder();
                                     partBuilder.append("**Allowed List**\n```Markdown\n");
                                     for (String s : mySQL.getFilters(guild.getIdLong(), "allowed")) {
-                                        if (partBuilder.toString().length() + s.length() > 1900) {
-                                            partBuilder.append("```");
-                                            event.reply(partBuilder.toString());
-                                            partBuilder = new StringBuilder();
-                                            partBuilder.append("```Markdown\n");
-                                        }
+                                        partBuilder = addListParts(event, partBuilder, s);
                                         partBuilder.append(++filterNumber).append(". ").append(s.replaceAll("`", "´")).append("\n");
                                     }
                                     partBuilder.append("```");
@@ -91,12 +87,7 @@ public class FilterCommand extends Command {
                                     StringBuilder partBuilder = new StringBuilder();
                                     partBuilder.append("**Denied List**\n```Markdown\n");
                                     for (String s : mySQL.getFilters(guild.getIdLong(), "denied")) {
-                                        if (partBuilder.toString().length() + s.length() > 1900) {
-                                            partBuilder.append("```");
-                                            event.reply(partBuilder.toString());
-                                            partBuilder = new StringBuilder();
-                                            partBuilder.append("```Markdown\n");
-                                        }
+                                        partBuilder = addListParts(event, partBuilder, s);
                                         partBuilder.append(++filterNumber).append(". ").append(s.replaceAll("`", "´")).append("\n");
                                     }
                                     partBuilder.append("```");
@@ -120,5 +111,16 @@ public class FilterCommand extends Command {
         } else {
             event.reply(Helpers.guildOnly);
         }
+    }
+
+    @NotNull
+    private StringBuilder addListParts(CommandEvent event, StringBuilder partBuilder, String s) {
+        if (partBuilder.length() + s.length() > 1900) {
+            partBuilder.append("```");
+            event.reply(partBuilder.toString());
+            partBuilder = new StringBuilder();
+            partBuilder.append("```Markdown\n");
+        }
+        return partBuilder;
     }
 }

@@ -71,7 +71,7 @@ public class InfoCommand extends Command {
                             desc.append("#").append(++blub).append(" - ").append(guild.getName()).append("\n");
                     }
                     desc.append("```");
-                    if (desc.toString().length() > 11)
+                    if (desc.length() > 11)
                         event.getAuthor().openPrivateChannel().queue((channel) -> channel.sendMessage(desc.toString()).queue());
                 }
             } catch (Exception e) {

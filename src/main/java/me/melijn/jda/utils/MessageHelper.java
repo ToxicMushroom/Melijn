@@ -91,7 +91,7 @@ public class MessageHelper {
             procent -= 5;
             sb.append("▬");
         }
-        return "[" + sb.toString() + "](https://melijn.com/)" + "<a:cool_nyan:490978764264570894>" + s.substring(0, (20 - sb.toString().length())) + " (" + Helpers.getDurationBreakdown(track.getPosition()) + "/" + Helpers.getDurationBreakdown(track.getDuration()) + ")";
+        return "[" + sb.toString() + "](https://melijn.com/)" + "<a:cool_nyan:490978764264570894>" + s.substring(0, (20 - sb.length())) + " (" + Helpers.getDurationBreakdown(track.getPosition()) + "/" + Helpers.getDurationBreakdown(track.getDuration()) + ")";
     }
 
     public static String getThumbnailURL(String url) {
