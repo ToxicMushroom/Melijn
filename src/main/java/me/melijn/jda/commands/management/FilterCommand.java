@@ -115,12 +115,13 @@ public class FilterCommand extends Command {
 
     @NotNull
     private StringBuilder addListParts(CommandEvent event, StringBuilder partBuilder, String s) {
-        if (partBuilder.length() + s.length() > 1900) {
-            partBuilder.append("```");
-            event.reply(partBuilder.toString());
-            partBuilder = new StringBuilder();
-            partBuilder.append("```Markdown\n");
+        StringBuilder stringBuilder = partBuilder;
+        if (stringBuilder.length() + s.length() > 1900) {
+            stringBuilder.append("```");
+            event.reply(stringBuilder.toString());
+            stringBuilder = new StringBuilder();
+            stringBuilder.append("```Markdown\n");
         }
-        return partBuilder;
+        return stringBuilder;
     }
 }
