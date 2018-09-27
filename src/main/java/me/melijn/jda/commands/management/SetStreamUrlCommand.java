@@ -1,4 +1,4 @@
-package me.melijn.jda.commands.music;
+package me.melijn.jda.commands.management;
 
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
@@ -38,7 +38,7 @@ public class SetStreamUrlCommand extends Command {
         this.usage = PREFIX + commandName + " [list | url]";
         this.aliases = new String[]{"ssu"};
         this.needs = new Need[]{Need.GUILD};
-        this.category = Category.MUSIC;
+        this.category = Category.MANAGEMENT;
     }
 
     @Override
@@ -47,8 +47,8 @@ public class SetStreamUrlCommand extends Command {
             Guild guild = event.getGuild();
             String[] args = event.getArgs().split("\\s+");
             String url = Melijn.mySQL.getStreamUrl(guild.getIdLong());
-            if (url.equals("")) url = "nothing";
-            if (args.length == 0 || args[0].equalsIgnoreCase("")) {
+            if ("".equals(url)) url = "nothing";
+            if (args.length == 0 || "".equals(args[0])) {
                 event.reply("StreamURL: " + url);
             } else if (args.length == 1) {
                 if (args[0].contains("http://") || args[0].contains("https://")) {

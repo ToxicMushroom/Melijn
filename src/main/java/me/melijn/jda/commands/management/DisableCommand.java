@@ -45,9 +45,10 @@ public class DisableCommand extends Command {
                             event.reply("**" + cmd.getCommandName() + "** was already disabled");
                             return;
                         }
-                    if (cmd.getCategory().toString().equalsIgnoreCase(args[0]))
-                        if (!buffer.contains(event.getClient().getCommands().indexOf(cmd)) && !cmd.getCommandName().equalsIgnoreCase("enable"))
-                            buffer.add(event.getClient().getCommands().indexOf(cmd));
+                    if (cmd.getCategory().toString().equalsIgnoreCase(args[0]) &&
+                            !buffer.contains(event.getClient().getCommands().indexOf(cmd)) &&
+                            !cmd.getCommandName().equalsIgnoreCase("enable"))
+                        buffer.add(event.getClient().getCommands().indexOf(cmd));
                 }
                 if (buffer.size() == disabledGuildCommands.getOrDefault(guild.getIdLong(), new ArrayList<>()).size()) {
                     event.reply("The given command or category was unknown");

@@ -41,9 +41,8 @@ public class EnableCommand extends Command {
                             return;
                         }
                     }
-                    if (cmd.getCategory().toString().equalsIgnoreCase(args[0]))
-                        if (buffer.contains(event.getClient().getCommands().indexOf(cmd)))
-                            buffer.remove(buffer.indexOf(event.getClient().getCommands().indexOf(cmd)));
+                    if (cmd.getCategory().toString().equalsIgnoreCase(args[0]) && buffer.contains(event.getClient().getCommands().indexOf(cmd)))
+                        buffer.remove(buffer.indexOf(event.getClient().getCommands().indexOf(cmd)));
                 }
                 if (buffer.size() == DisableCommand.disabledGuildCommands.getOrDefault(guild.getIdLong(), new ArrayList<>()).size()) {
                     event.reply("The given command or category was unknown");

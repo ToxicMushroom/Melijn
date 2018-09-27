@@ -29,7 +29,8 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
     private CommandListener listener = null;
 
     public CommandClientImpl(long ownerId, ArrayList<Command> commands, int linkedCacheSize) {
-        if (ownerId == -1) throw new IllegalArgumentException("Owner ID was set null or not set! Please provide an User ID to register as the owner!");
+        if (ownerId == -1)
+            throw new IllegalArgumentException("Owner ID was set null or not set! Please provide an User ID to register as the owner!");
         this.ownerId = ownerId;
         this.commandIndex = new HashMap<>();
         this.commands = new ArrayList<>();
@@ -115,8 +116,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
             else if (rawContent.toLowerCase().startsWith((String.valueOf(nickname ? "<@!" : "<@") + event.getJDA().getSelfUser().getId() + ">")))
                 parts = Arrays.copyOf(rawContent.substring((String.valueOf(nickname ? "<@!" : "<@") + event.getJDA().getSelfUser().getId() + ">").length()).trim().split("\\s+", 2), 2);
 
-            if (parts != null) {
-                if (event.isFromType(ChannelType.PRIVATE) || event.getTextChannel().canTalk()) {
+            if (parts != null && (event.isFromType(ChannelType.PRIVATE) || event.getTextChannel().canTalk())) {
                     String name = parts[0];
                     String args = parts[1] == null ? "" : parts[1];
                     if (commands.size() < INDEX_LIMIT + 1) {
@@ -156,7 +156,6 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                             command.run(cevent);
                         }
                     }
-                }
             }
             if (!isCommand[0] && listener != null) listener.onNonCommandMessage(event);
         } catch (Exception e) {
@@ -250,6 +249,8 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                         }
                         return true;
                     }
+                    break;
+                default:
                     break;
             }
         }

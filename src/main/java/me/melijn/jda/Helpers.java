@@ -194,7 +194,8 @@ public class Helpers {
         }, 30_000);
     }
 
-    public static String getDurationBreakdown(long millis) {
+    public static String getDurationBreakdown(long milliseconds) {
+        long millis = milliseconds;
         if (millis < 0L) {
             return "error";
         }
@@ -212,21 +213,21 @@ public class Helpers {
             sb.append(days);
             sb.append("d ");
         }
-        if (hours != 0) {
-            if (hours < 10) sb.append(0);
-            sb.append(hours);
-            sb.append(":");
-        }
-        if (minutes != 0) {
-            if (minutes < 10) sb.append(0);
-            sb.append(minutes);
-            sb.append(":");
-        }
+        appendTimePart(hours, sb);
+        appendTimePart(minutes, sb);
         if (seconds < 10) sb.append(0);
         sb.append(seconds);
         sb.append("s");
 
         return (sb.toString());
+    }
+
+    private static void appendTimePart(long hours, StringBuilder sb) {
+        if (hours != 0) {
+            if (hours < 10) sb.append(0);
+            sb.append(hours);
+            sb.append(":");
+        }
     }
 
     public static void scheduleClose(AudioManager manager) {

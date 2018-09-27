@@ -40,6 +40,10 @@ public class MySQL {
     private HikariDataSource ds;
     private Logger logger = LogManager.getLogger(MySQL.class.getName());
 
+
+    private long currentTime = 0;
+    private int currentHour = 25; //Because 25 isn't a valid hour it will be changed on the first updateUsage call
+
     public MySQL(String ip, String user, String pass, String dbname) {
         this.ip = ip;
         this.user = user;
@@ -544,7 +548,7 @@ public class MySQL {
             eb.setThumbnail(toUnban.getEffectiveAvatarUrl());
             eb.setColor(Color.green);
 
-            if (!toUnban.isBot())
+            if (!toUnban.isBot() && !toUnban.isFake())
                 toUnban.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
             long logChannelId = SetLogChannelCommand.banLogChannelCache.getUnchecked(guild.getIdLong());
             if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
@@ -653,7 +657,7 @@ public class MySQL {
                         eb.setThumbnail(toUnmute.getEffectiveAvatarUrl());
                         eb.setColor(Color.green);
 
-                        if (!toUnmute.isBot())
+                        if (!toUnmute.isBot() && !toUnmute.isFake())
                             toUnmute.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
                         long logChannelId = SetLogChannelCommand.muteLogChannelCache.getUnchecked(guild.getIdLong());
                         if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
@@ -1533,8 +1537,6 @@ public class MySQL {
         }
     }
 
-    private long currentTime = 0;
-    private int currentHour = 25; //Because 25 isn't a valid hour it will be changed on the first updateUsage call
     public void updateUsage(int commandId, long currentTimeMillis) {
         if (currentHour != LocalTime.now().getHour()) {
             currentHour = LocalTime.now().getHour();

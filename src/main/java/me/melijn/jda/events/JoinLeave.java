@@ -103,10 +103,10 @@ public class JoinLeave extends ListenerAdapter {
                 guild.getController().addSingleRoleToMember(guild.getMember(user), joinRole).queue();
             TaskScheduler.async(() -> {
                 Role muteRole = guild.getRoleById(Melijn.mySQL.getRoleId(guild.getIdLong(), RoleType.MUTE));
-                if (muteRole != null && Melijn.mySQL.isUserMuted(user.getIdLong(), guild.getIdLong())) {
-                    if (guild.getSelfMember().getRoles().get(0).canInteract(muteRole))
-                        guild.getController().addSingleRoleToMember(guild.getMember(user), muteRole).queue();
-                }
+                if (muteRole != null &&
+                        Melijn.mySQL.isUserMuted(user.getIdLong(), guild.getIdLong()) &&
+                        guild.getSelfMember().getRoles().get(0).canInteract(muteRole))
+                    guild.getController().addSingleRoleToMember(guild.getMember(user), muteRole).queue();
             });
         }
     }

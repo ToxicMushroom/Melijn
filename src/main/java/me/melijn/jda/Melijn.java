@@ -148,7 +148,7 @@ public class Melijn {
         );
 
         shardManager = new DefaultShardManagerBuilder()
-                .setShardsTotal(1)
+                .setShardsTotal(2)
                 .setToken(config.getValue("token"))
                 .setGame(Game.playing(PREFIX + "help | melijn.com"))
                 .setAutoReconnect(true)

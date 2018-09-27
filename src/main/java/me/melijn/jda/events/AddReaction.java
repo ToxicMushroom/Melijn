@@ -133,27 +133,26 @@ public class AddReaction extends ListenerAdapter {
             HashMap<Long, Long> messageChannel = ClearChannelCommand.possibleDeletes.get(guild.getIdLong());
             if (ClearChannelCommand.messageUser.keySet().contains(event.getMessageIdLong())
                     && ClearChannelCommand.messageUser.get(event.getMessageIdLong()) == event.getUser().getIdLong()
-                    && Helpers.hasPerm(event.getGuild().getMember(event.getUser()), "clearChannel", 1)) {
-                if (event.getReactionEmote().getEmote() != null)
-                    switch (event.getReactionEmote().getEmote().getId()) {
-                        case "463250265026330634"://yes
-                            TextChannel toDelete = event.getGuild().getTextChannelById(ClearChannelCommand.possibleDeletes.get(event.getGuild().getIdLong()).get(event.getMessageIdLong()));
-                            toDelete.createCopy().queue(s -> guild.getController().modifyTextChannelPositions().selectPosition((TextChannel) s).moveTo(toDelete.getPosition()).queue(done -> {
-                                toDelete.delete().queue();
-                                ((TextChannel) s).sendMessage("**#" + toDelete.getName() + "** has been cleared")
-                                        .queue(message ->
-                                                message.delete().queueAfter(3, TimeUnit.SECONDS, null, (failure) -> {
-                                                }));
-                            }));
-                            removeMenu(event, guild, messageChannel);
-                            break;
-                        case "463250264653299713"://no
-                            removeMenu(event, guild, messageChannel);
-                            break;
-                        default:
-                            break;
-                    }
-            }
+                    && Helpers.hasPerm(event.getGuild().getMember(event.getUser()), "clearChannel", 1)
+                    && event.getReactionEmote().getEmote() != null)
+                switch (event.getReactionEmote().getEmote().getId()) {
+                    case "463250265026330634"://yes
+                        TextChannel toDelete = event.getGuild().getTextChannelById(ClearChannelCommand.possibleDeletes.get(event.getGuild().getIdLong()).get(event.getMessageIdLong()));
+                        toDelete.createCopy().queue(s -> guild.getController().modifyTextChannelPositions().selectPosition((TextChannel) s).moveTo(toDelete.getPosition()).queue(done -> {
+                            toDelete.delete().queue();
+                            ((TextChannel) s).sendMessage("**#" + toDelete.getName() + "** has been cleared")
+                                    .queue(message ->
+                                            message.delete().queueAfter(3, TimeUnit.SECONDS, null, (failure) -> {
+                                            }));
+                        }));
+                        removeMenu(event, guild, messageChannel);
+                        break;
+                    case "463250264653299713"://no
+                        removeMenu(event, guild, messageChannel);
+                        break;
+                    default:
+                        break;
+                }
         }
     }
 
