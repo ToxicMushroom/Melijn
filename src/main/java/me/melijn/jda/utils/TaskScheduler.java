@@ -22,7 +22,7 @@ public final class TaskScheduler implements Runnable {
     private final long initialDelay;
 
     public static void scheduleRepeating(final Runnable runnable, final long period) {
-        EXECUTOR_SERVICE.submit(new TaskScheduler(runnable, period));
+        EXECUTOR_SERVICE.submit(new TaskScheduler(runnable, 0, period));
     }
 
     public static void scheduleRepeating(final Runnable runnable, final long initialDelay, final long period) {
@@ -30,7 +30,8 @@ public final class TaskScheduler implements Runnable {
     }
 
     public static void async(final Runnable runnable) {
-        EXECUTOR_SERVICE.submit(new TaskScheduler(runnable));
+        TaskScheduler taskScheduler = new TaskScheduler(runnable);
+        EXECUTOR_SERVICE.submit(taskScheduler);
     }
 
     public static void async(final Runnable runnable, final long after) {
@@ -73,9 +74,9 @@ public final class TaskScheduler implements Runnable {
         this.predicate = null;
     }
 
-    /*public void stop() {
+    public void stop() {
         stop = true;
-    }*/
+    }
 
     @Override
     public void run() {

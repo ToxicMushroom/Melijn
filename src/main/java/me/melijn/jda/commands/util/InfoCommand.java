@@ -36,17 +36,17 @@ public class InfoCommand extends Command {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             try {
                 int i = 0;
-                for (Guild guild : event.getJDA().getGuilds()) {
+                for (Guild guild : event.getJDA().asBot().getShardManager().getGuilds()) {
                     if (guild.getAudioManager().isConnected() || guild.getAudioManager().isAttemptingToConnect()) i++;
                 }
                 event.reply(new EmbedBuilder()
                         .setColor(Helpers.EmbedColor)
                         .setThumbnail(event.getJDA().getSelfUser().getAvatarUrl())
-                        .addField("About", "Melijn is a powerful discord bot coded in java and developed by **ToxicMushroom#2610**\nMore commands/features are being added each month and almost all commands will be configurable in the future" +
+                        .addField("About", "I'm a powerful discord bot coded in java and developed by **ToxicMushroom#2610**\nMore commands/features are still being added, you can even request them" +
                                 "\n\n**[Support Server](https://discord.gg/cCDnvNg)** • **[Invite](https://melijn.com/invite?perms=true)** • **[Website](https://melijn.com/)**" + "\n\u200B", false)
                         .addField("Stats and info",
-                                "**Guilds** " + event.getJDA().asBot().getShardManager().getGuilds().size()
-                                        + "\n**Unique users** " + event.getJDA().asBot().getShardManager().getUsers().size()
+                                "**Guilds** " + event.getJDA().asBot().getShardManager().getGuildCache().size()
+                                        + "\n**Unique users** " + event.getJDA().asBot().getShardManager().getUserCache().size()
                                         + "\n**Shards** " + event.getJDA().asBot().getShardManager().getShardsRunning()
                                         + "\n**Playing Music Count** " + i
                                         + "\n**Operating System** " + System.getProperty("os.name") + " " + System.getProperty("os.arch") + " " + System.getProperty("os.version")
@@ -55,7 +55,7 @@ public class InfoCommand extends Command {
                                         + "\n**Threads** " + Thread.activeCount()
                                         + "\n**Uptime** " + Helpers.getOnlineTime()
                                         + "\n\u200B", false)
-                        .addField("Stuff",
+                        .addField("Libraries",
                                 "**Java Version** " + System.getProperty("java.version") +
                                         "\n**JDA Version** " + JDAInfo.VERSION +
                                         "\n**Lavaplayer Version** " + PlayerLibrary.VERSION +
@@ -66,7 +66,7 @@ public class InfoCommand extends Command {
                     StringBuilder desc = new StringBuilder();
                     desc.append("```Less\n");
                     int blub = 0;
-                    for (Guild guild : event.getJDA().getGuilds()) {
+                    for (Guild guild : event.getJDA().asBot().getShardManager().getGuildCache()) {
                         if (guild.getAudioManager().isConnected() || guild.getAudioManager().isAttemptingToConnect())
                             desc.append("#").append(++blub).append(" - ").append(guild.getName()).append("\n");
                     }

@@ -20,7 +20,7 @@ public class GuildInfoCommand extends Command {
         this.description = "Show you information about the guild";
         this.usage = PREFIX + this.commandName + " [guildId]";
         this.aliases = new String[]{"serverInfo"};
-        this.extra = "viewing another servers their info only works if they have Melijn as member";
+        this.extra = "Viewing another guild their info only works if they have Melijn as member";
         this.category = Category.UTILS;
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
@@ -31,7 +31,7 @@ public class GuildInfoCommand extends Command {
             if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
                 String[] args = event.getArgs().split("\\s+");
                 Guild guild = event.getGuild();
-                if (args.length == 1 && args[0].matches("\\d+") && event.getJDA().getGuildById(args[0]) != null) guild = event.getJDA().getGuildById(args[0]);
+                if (args.length == 1 && args[0].matches("\\d+") && event.getJDA().asBot().getShardManager().getGuildById(args[0]) != null) guild = event.getJDA().asBot().getShardManager().getGuildById(args[0]);
                 event.reply(new EmbedBuilder()
                         .setAuthor(guild.getName(), null, guild.getIconUrl() + "?size=2048")
                         .setColor(Helpers.EmbedColor)

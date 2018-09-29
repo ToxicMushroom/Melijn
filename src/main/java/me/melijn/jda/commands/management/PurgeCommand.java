@@ -19,7 +19,7 @@ public class PurgeCommand extends Command {
         this.usage = PREFIX + commandName + " [1 - 1000]";
         this.category = Category.MANAGEMENT;
         this.permissions = new Permission[]{
-                Permission.MESSAGE_MANAGE
+                Permission.MESSAGE_MANAGE, Permission.MESSAGE_HISTORY
         };
     }
 
