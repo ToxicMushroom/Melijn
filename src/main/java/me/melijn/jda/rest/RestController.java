@@ -42,7 +42,9 @@ public class RestController {
         Guild guild = Melijn.getShardManager().getGuildById(id);
         if (guild == null) return new JSONObject().put("isBotMember", false).toMap();
         JSONObject channels = new JSONObject().put("textChannels", new JSONArray()).put("voiceChannels", new JSONArray());
+        JSONArray roles = new JSONArray();
 
+        guild.getRoles().forEach(role -> roles.put(new JSONObject().put("id", role.getId()).put("name", role.getName())));
         guild.getVoiceChannels().forEach(channel -> channels.put("voiceChannels", channels.getJSONArray("voiceChannels").put(channel.getPosition(), new JSONObject().put("id", channel.getId()).put("name", channel.getName()))));
         guild.getTextChannels().forEach(channel -> channels.put("textChannels", channels.getJSONArray("textChannels").put(channel.getPosition(), new JSONObject().put("id", channel.getId()).put("name", channel.getName()))));
         return new JSONObject()
@@ -50,7 +52,8 @@ public class RestController {
                 .put("memberCount", guild.getMemberCache().size())
                 .put("ownerId", guild.getOwnerId())
                 .put("isBotMember", true)
-                .put("channels", channels).toMap();
+                .put("channels", channels)
+                .put("roles", roles).toMap();
     }
 
     @GetMapping("/guild/{id}/refreshCache")
