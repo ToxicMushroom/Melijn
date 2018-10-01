@@ -36,7 +36,7 @@ public class AudioListener extends AudioEventAdapter {
             return;
         }
         AudioTrack track = tracks.poll();
-        if (track.getIdentifier().equals(lastTrack.getIdentifier()))
+        if (track.equals(lastTrack))
             player.getAudioPlayer().startTrack(track.makeClone(), false);
         else player.getAudioPlayer().startTrack(track, false);
         Helpers.postMusicLog(player, track);
