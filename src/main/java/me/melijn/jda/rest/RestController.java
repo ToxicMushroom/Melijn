@@ -1,8 +1,7 @@
 package me.melijn.jda.rest;
 
 import me.melijn.jda.Melijn;
-import me.melijn.jda.commands.management.SetMusicChannelCommand;
-import me.melijn.jda.commands.management.SetStreamerModeCommand;
+import me.melijn.jda.commands.management.*;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
@@ -58,6 +57,34 @@ public class RestController {
 
     @GetMapping("/guild/{id}/refreshCache")
     public Map<String, Object> refreshGuildCache(@PathVariable String id) {
+        //block 1
+        SetPrefixCommand.prefixes.invalidate(id);
+        SetJoinMessageCommand.joinMessages.invalidate(id);
+        SetLeaveMessageCommand.leaveMessages.invalidate(id);
+
+        //block 2
+        SetJoinRoleCommand.joinRoleCache.invalidate(id);
+        SetMuteRoleCommand.muteRoleCache.invalidate(id);
+        SetUnverifiedRole.unverifiedRoleCache.invalidate(id);
+
+        //block 3
+        SetJoinLeaveChannelCommand.welcomeChannelCache.invalidate(id);
+        SetVerificationChannel.verificationChannelsCache.invalidate(id);
+        SetLogChannelCommand.musicLogChannelCache.invalidate(id);
+        SetLogChannelCommand.banLogChannelCache.invalidate(id);
+        SetLogChannelCommand.muteLogChannelCache.invalidate(id);
+        SetLogChannelCommand.kickLogChannelCache.invalidate(id);
+        SetLogChannelCommand.warnLogChannelCache.invalidate(id);
+        SetLogChannelCommand.sdmLogChannelCache.invalidate(id);
+        SetLogChannelCommand.odmLogChannelCache.invalidate(id);
+        SetLogChannelCommand.pmLogChannelCache.invalidate(id);
+        SetLogChannelCommand.fmLogChannelCache.invalidate(id);
+
+        //block 4
+        SetVerificationCode.verificationCodeCache.invalidate(id);
+        SetVerificationThreshold.verificationThresholdCache.invalidate(id);
+
+        //block 5
         SetMusicChannelCommand.musicChannelCache.invalidate(id);
         SetStreamerModeCommand.streamerModeCache.invalidate(id);
         return new JSONObject()
