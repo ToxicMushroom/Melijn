@@ -28,7 +28,7 @@ public class HistoryCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() != null) {
-            if (Helpers.hasPerm(event.getMember(), commandName, 0)) {
+            if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length == 2) {
                     Helpers.retrieveUserByArgsN(event, args[1], (success) -> {
