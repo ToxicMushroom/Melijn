@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 
 public class Melijn {
 
-    private static final Config config = new Config();
+    private static final Config config = Config.getConfigInstance();
     private static boolean ready = false;
     public static long OWNERID = Long.parseLong(config.getValue("ownerid"));
     public static String PREFIX = config.getValue("prefix");
