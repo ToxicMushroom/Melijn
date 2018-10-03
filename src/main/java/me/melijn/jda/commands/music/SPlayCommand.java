@@ -72,7 +72,7 @@ public class SPlayCommand extends Command {
 
     static boolean isConnectedOrConnecting(CommandEvent event, Guild guild, VoiceChannel senderVoiceChannel) {
         if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) {
-            if (senderVoiceChannel.getUserLimit() == 0 || (senderVoiceChannel.getUserLimit() > senderVoiceChannel.getMembers().size() || guild.getSelfMember().hasPermission(senderVoiceChannel, Permission.VOICE_MOVE_OTHERS))) {
+            if (senderVoiceChannel.getUserLimit() == 0 || ((senderVoiceChannel.getUserLimit() > senderVoiceChannel.getMembers().size()) || guild.getSelfMember().hasPermission(senderVoiceChannel, Permission.VOICE_MOVE_OTHERS))) {
                 guild.getAudioManager().openAudioConnection(senderVoiceChannel);
             } else {
                 event.reply("Your channel is full. I need the **Move Members** permission to join full channels");
