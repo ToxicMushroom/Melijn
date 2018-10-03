@@ -18,7 +18,7 @@ public class Config {
         return config;
     }
 
-    Config() {
+    private Config() {
         if (!configFile.exists()) {
             create();
             System.out.println("The config file is created. Fill in all the values. If you don't know how to get a value then check out my wiki");
