@@ -18,7 +18,7 @@ public class ResumeCommand extends Command {
         this.description = "Resume the paused song when paused";
         this.usage = PREFIX + this.commandName;
         this.aliases = new String[]{"unpause"};
-        this.needs = new Need[] {Need.GUILD, Need.SAME_VOICECHANNEL_OR_DISCONNECTED};
+        this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL_OR_DISCONNECTED};
         this.category = Category.MUSIC;
     }
 
@@ -29,13 +29,14 @@ public class ResumeCommand extends Command {
             VoiceChannel voiceChannel = event.getGuild().getMember(event.getAuthor()).getVoiceState().getChannel();
             if (voiceChannel == null) voiceChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
             if (voiceChannel != null) {
-                event.getGuild().getAudioManager().openAudioConnection(voiceChannel);
+                if (SPlayCommand.isConnectedOrConnecting(event, event.getGuild(), voiceChannel)) return;
+
                 player.resumeTrack();
                 if (player.getAudioPlayer().getPlayingTrack() == null && player.getListener().getTrackSize() > 0)
                     player.skipTrack();
                 event.reply("Resumed by **" + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + "**");
             } else {
-                event.reply("You or me have to be in a voice channel to resume");
+                event.reply("You or I have to be in a voice channel to resume");
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
