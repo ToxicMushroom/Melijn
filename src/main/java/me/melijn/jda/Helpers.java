@@ -134,7 +134,8 @@ public class Helpers {
             "disabled",
             "setEvalEngine",
             "metrics",
-            "settings"
+            "settings",
+            "slowmode"
     );
 
 

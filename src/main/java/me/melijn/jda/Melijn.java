@@ -144,11 +144,12 @@ public class Melijn {
                 new SetEvalEngineCommand(),
                 new MetricsCommand(),
                 new SettingsCommand(),
-                new DonateCommand()
+                new DonateCommand(),
+                new SlowModeCommand()
         );
 
         shardManager = new DefaultShardManagerBuilder()
-                .setShardsTotal(2)
+                .setShardsTotal(Integer.parseInt(config.getValue("shardCount")))
                 .setToken(config.getValue("token"))
                 .setGame(Game.playing(PREFIX + "help | melijn.com"))
                 .setAutoReconnect(true)
