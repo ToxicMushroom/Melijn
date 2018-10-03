@@ -40,7 +40,7 @@ public class PurgeCommand extends Command {
                             });
                         });
                     } else {
-                        event.reply("I need the permission MESSAGE_HISTORY and MESSAGE_MANAGE in the TextChannel you want me to clear");
+                        event.reply("I need the permission **MESSAGE_HISTORY** and **MESSAGE_MANAGE** in the TextChannel you want me to clear");
                     }
                 } else {
                     MessageHelper.sendUsage(this, event);
