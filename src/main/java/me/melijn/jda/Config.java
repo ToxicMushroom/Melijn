@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 
 public class Config {
 
-    private static Config config;
+    private static Config config = new Config();
     private JSONObject configObject;
     private final File configFile = new File("config.json");
 
@@ -35,23 +35,23 @@ public class Config {
             System.err.println("You didn't fill in all the values correct.");
             System.exit(1);
         }
-        config = this;
     }
 
     private void create() {
         try {
             Files.write(Paths.get(configFile.getPath()),
-                    new JSONObject()
-                            .put("dbltoken", "")
-                            .put("ownerid", "231459866630291459")
-                            .put("prefix", ">")
-                            .put("token", "")
-                            .put("username", "")
-                            .put("password", "")
-                            .put("ipaddress", "")
-                            .put("database", "")
-                            .toString(4)
-                            .getBytes());
+                new JSONObject()
+                    .put("dbltoken", "")
+                    .put("ownerid", "231459866630291459")
+                    .put("prefix", ">")
+                    .put("token", "")
+                    .put("username", "")
+                    .put("password", "")
+                    .put("ipaddress", "")
+                    .put("database", "")
+                    .toString(4)
+                    .getBytes()
+            );
         } catch (IOException e) {
             e.printStackTrace();
         }
