@@ -442,7 +442,7 @@ public class Helpers {
 
     public static boolean canNotInteract(CommandEvent event, Role target) {
         if (event.getGuild().getSelfMember().getRoles().isEmpty()) {
-            return false;
+            return true;
         }
 
         if (!event.getGuild().getSelfMember().getRoles().get(0).canInteract(target)) {
