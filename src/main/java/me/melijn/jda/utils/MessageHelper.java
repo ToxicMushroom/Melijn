@@ -81,17 +81,15 @@ public class MessageHelper {
     }
 
     public static String progressBar(AudioTrack track) {
-        String s = "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬";
-        if (track.getInfo().isStream) {
-            return "<a:cool_nyan:490978764264570894>" + s;
+        if (track.getInfo().isStream || track.getPosition() > track.getDuration()) {
+            return "**" + Helpers.getDurationBreakdown(track.getPosition()) + " | \uD83D\uDD34 Live**";
         }
-        int procent = (int)(((double)track.getPosition() / (double)track.getDuration()) * 100D);
-        StringBuilder sb = new StringBuilder();
-        while (procent > 0) {
-            procent -= 5;
-            sb.append("▬");
-        }
-        return "[" + sb.toString() + "](https://melijn.com/)" + "<a:cool_nyan:490978764264570894>" + s.substring(0, (20 - sb.length())) + " (" + Helpers.getDurationBreakdown(track.getPosition()) + "/" + Helpers.getDurationBreakdown(track.getDuration()) + ")";
+        int percent = (int)(((double)track.getPosition() / (double)track.getDuration()) * 18D);
+        StringBuilder sb = new StringBuilder("▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
+        sb.insert(percent, "](https://melijn.com/)<a:cool_nyan:490978764264570894>");
+        sb.append(" **").append(Helpers.getDurationBreakdown(track.getPosition())).append("/").append(Helpers.getDurationBreakdown(track.getDuration())).append("**");
+        sb.insert(0, "[");
+        return sb.toString();
     }
 
     public static String getThumbnailURL(String url) {
