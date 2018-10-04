@@ -1,5 +1,6 @@
 package me.melijn.jda.commands.util;
 
+import gnu.trove.list.TLongList;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
@@ -10,7 +11,6 @@ import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.User;
 
-import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static me.melijn.jda.Melijn.PREFIX;
@@ -35,12 +35,12 @@ public class SetNotifications extends Command {
             switch (args[0].toLowerCase()) {
                 case "nextvote": {
                     if (args.length == 1 || args[1].equalsIgnoreCase("info")) {
-                        ArrayList<Long> list = Melijn.mySQL.getNotifications(event.getAuthorId(), NotificationType.NEXTVOTE);
+                        TLongList list = Melijn.mySQL.getNotifications(event.getAuthorId(), NotificationType.NEXTVOTE);
                         final StringBuilder contentBuilder = new StringBuilder("```INI\n");
                         AtomicInteger progress = new AtomicInteger(0);
                         AtomicInteger contentRowsCount = new AtomicInteger(0);
                         if (list.size() != 0) {
-                            for (long s : list) {
+                            for (long s : list.toArray()) {
                                 event.getJDA().retrieveUserById(s).queue(user -> {
                                     progress.set(progress.get() + 1);
                                     if (user != null)
@@ -56,9 +56,9 @@ public class SetNotifications extends Command {
                         break;
                     } else {
                         User user = Helpers.getUserByArgs(event, args[1]);
-                        ArrayList<Long> list = Melijn.mySQL.getNotifications(user.getIdLong(), NotificationType.NEXTVOTE);
+                        TLongList list = Melijn.mySQL.getNotifications(user.getIdLong(), NotificationType.NEXTVOTE);
                         boolean shouldRemove = false;
-                        for (long s : list) {
+                        for (long s : list.toArray()) {
                             if (!shouldRemove && user.getIdLong() == s) {
                                 shouldRemove = true;
                             }

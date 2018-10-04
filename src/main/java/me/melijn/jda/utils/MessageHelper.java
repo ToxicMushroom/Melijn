@@ -4,7 +4,9 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import gnu.trove.list.TLongList;
 import gnu.trove.list.array.TLongArrayList;
 import gnu.trove.map.TLongLongMap;
+import gnu.trove.map.TLongObjectMap;
 import gnu.trove.map.hash.TLongLongHashMap;
+import gnu.trove.map.hash.TLongObjectHashMap;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Command;
@@ -27,7 +29,7 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class MessageHelper {
 
-    public static HashMap<Long, String> filteredMessageDeleteCause = new HashMap<>();
+    public static TLongObjectMap<String> filteredMessageDeleteCause = new TLongObjectHashMap<>();
     public static TLongLongMap purgedMessageDeleter = new TLongLongHashMap();
     public static TLongList botDeletedMessages = new TLongArrayList();
     public static String spaces = "                                                                                                    ";

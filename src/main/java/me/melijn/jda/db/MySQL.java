@@ -3,6 +3,18 @@ package me.melijn.jda.db;
 import com.google.common.collect.Sets;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import gnu.trove.list.TIntList;
+import gnu.trove.list.TLongList;
+import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.list.array.TLongArrayList;
+import gnu.trove.map.TIntLongMap;
+import gnu.trove.map.TLongObjectMap;
+import gnu.trove.map.TMap;
+import gnu.trove.map.hash.THashMap;
+import gnu.trove.map.hash.TIntLongHashMap;
+import gnu.trove.map.hash.TLongObjectHashMap;
+import gnu.trove.set.hash.TLinkedHashSet;
+import groovy.util.MapEntry;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.*;
 import me.melijn.jda.commands.management.DisableCommand;
@@ -1116,87 +1128,6 @@ public class MySQL {
         executeUpdate("DELETE FROM " + type.toString().toLowerCase() + "_messages WHERE guildId= ?", guildId);
     }
 
-    public HashMap<Long, Long> getChannelMap(ChannelType type) {
-        HashMap<Long, Long> mapje = new HashMap<>();
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement getChannelMap = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_channels");
-            ResultSet rs = getChannelMap.executeQuery();
-            while (rs.next()) {
-                mapje.put(rs.getLong("guildId"), rs.getLong("channelId"));
-            }
-            rs.close();
-            getChannelMap.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return mapje;
-    }
-
-    public HashMap<Long, String> getMessageMap(MessageType leave) {
-        HashMap<Long, String> mapje = new HashMap<>();
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM " + leave.toString().toLowerCase() + "_messages");
-            ResultSet rs = statement.executeQuery();
-            while (rs.next()) {
-                mapje.put(rs.getLong("guildId"), rs.getString("content"));
-            }
-            rs.close();
-            statement.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return mapje;
-    }
-
-    public HashMap<Long, String> getStreamUrlMap() {
-        HashMap<Long, String> mapje = new HashMap<>();
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM stream_urls");
-            ResultSet rs = statement.executeQuery();
-            while (rs.next()) {
-                mapje.put(rs.getLong("guildId"), rs.getString("url"));
-            }
-            rs.close();
-            statement.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return mapje;
-    }
-
-    public HashMap<Long, Long> getRoleMap(RoleType type) {
-        HashMap<Long, Long> mapje = new HashMap<>();
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_roles");
-            ResultSet rs = statement.executeQuery();
-            while (rs.next()) {
-                mapje.put(rs.getLong("guildId"), rs.getLong("roleId"));
-            }
-            rs.close();
-            statement.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return mapje;
-    }
-
-    public List<Long> getStreamerModeList() {
-        List<Long> lijstje = new ArrayList<>();
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM streamer_modes");
-            ResultSet rs = statement.executeQuery();
-            while (rs.next()) {
-                if (!lijstje.contains(rs.getLong("guildId")))
-                    lijstje.add(rs.getLong("guildId"));
-            }
-            rs.close();
-            statement.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return lijstje;
-    }
-
     public JSONObject getVotesObject(long userId) {
         JSONObject toReturn = new JSONObject().put("streak", 0);
         try (Connection con = ds.getConnection()) {
@@ -1218,20 +1149,20 @@ public class MySQL {
         return toReturn;
     }
 
-    public HashMap<Long, ArrayList<Long>> getNotificationsMap(NotificationType nextvote) {
+    public TLongObjectMap<TLongList> getNotificationsMap(NotificationType nextvote) {
         //userId -> mensen waarvan notificatie moet krijgen -> aan of uit
-        HashMap<Long, ArrayList<Long>> mapje = new HashMap<>();
+        TLongObjectMap<TLongList> mapje = new TLongObjectHashMap<TLongList>();
         try (Connection con = ds.getConnection()) {
             PreparedStatement statement = con.prepareStatement("SELECT * FROM " + nextvote.toString().toLowerCase() + "_notifications");
             ResultSet rs = statement.executeQuery();
-            List<Long> row = new ArrayList<>();
+            TLongList row = new TLongArrayList();
             while (rs.next()) {
                 if (!row.contains(rs.getLong("userId")))
                     row.add(rs.getLong("userId"));
             }
-            for (long s : row) {
+            for (long s : row.toArray()) {
                 rs.beforeFirst();
-                ArrayList<Long> lijst = new ArrayList<>();
+                TLongList lijst = new TLongArrayList();
                 while (rs.next()) {
                     if (rs.getLong("userId") == s) {
                         lijst.add(rs.getLong("targetId"));
@@ -1257,8 +1188,8 @@ public class MySQL {
                 userId, targetId);
     }
 
-    public ArrayList<Long> getVoteList() {
-        ArrayList<Long> list = new ArrayList<>();
+    public TLongList getVoteList() {
+        TLongList list = new TLongArrayList();
         try (Connection con = ds.getConnection()) {
             long yesterdayandminute = System.currentTimeMillis() - 43_260_000L;
             long yesterday = System.currentTimeMillis() - 43_200_000L;
@@ -1289,28 +1220,6 @@ public class MySQL {
         executeUpdate("DELETE FROM unverified_users WHERE guildId= ? AND userId= ?", guildId, userId);
     }
 
-    public HashMap<Long, ArrayList<Long>> getUnverifiedUserMap() {
-        HashMap<Long, ArrayList<Long>> toreturn = new HashMap<>();
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM unverified_users");
-            ResultSet rs = statement.executeQuery();
-            while (rs.next()) {
-                if (toreturn.containsKey(rs.getLong("guildId"))) {
-                    ArrayList<Long> buffertje = toreturn.get(rs.getLong("guildId"));
-                    buffertje.add(rs.getLong("userId"));
-                    toreturn.replace(rs.getLong("guildId"), buffertje);
-                } else {
-                    toreturn.put(rs.getLong("guildId"), new ArrayList<>(Collections.singleton(rs.getLong("userId"))));
-                }
-            }
-            rs.close();
-            statement.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return toreturn;
-    }
-
     public void setVerificationCode(long guildId, String code) {
         executeUpdate("INSERT INTO verification_codes (guildId, code) VALUES (?, ?) ON DUPLICATE KEY UPDATE code= ?",
                 guildId, code, code);
@@ -1318,22 +1227,6 @@ public class MySQL {
 
     public void removeVerificationCode(long guildId) {
         executeUpdate("DELETE FROM verification_codes WHERE guildId= ?", guildId);
-    }
-
-    public HashMap<Long, String> getVerificationCodeMap() {
-        HashMap<Long, String> toReturn = new HashMap<>();
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM verification_codes");
-            ResultSet rs = statement.executeQuery();
-            while (rs.next()) {
-                toReturn.putIfAbsent(rs.getLong("guildId"), rs.getString("code"));
-            }
-            rs.close();
-            statement.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return toReturn;
     }
 
     public void setVerificationThreshold(long guildId, int threshold) {
@@ -1346,35 +1239,20 @@ public class MySQL {
         executeUpdate("DELETE FROM verification_thresholds WHERE guildId= ?", guildId);
     }
 
-    public HashMap<Long, Integer> getGuildVerificationThresholdMap() {
-        HashMap<Long, Integer> toReturn = new HashMap<>();
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM verification_thresholds");
-            ResultSet rs = statement.executeQuery();
-            while (rs.next()) {
-                toReturn.putIfAbsent(rs.getLong("guildId"), rs.getInt("threshold"));
-            }
-            rs.close();
-            statement.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return toReturn;
-    }
-
-
-    public HashMap<Long, ArrayList<Integer>> getDisabledCommandsMap() {
-        HashMap<Long, ArrayList<Integer>> toReturn = new HashMap<>();
+    public TLongObjectMap<TIntList> getDisabledCommandsMap() {
+        TLongObjectMap<TIntList> toReturn = new TLongObjectHashMap<>();
         try (Connection con = ds.getConnection()) {
             PreparedStatement statement = con.prepareStatement("SELECT * FROM disabled_commands");
             ResultSet rs = statement.executeQuery();
             while (rs.next()) {
                 if (toReturn.containsKey(rs.getLong("guildId"))) {
-                    ArrayList<Integer> buffertje = toReturn.get(rs.getLong("guildId"));
+                    TIntList buffertje = toReturn.get(rs.getLong("guildId"));
                     buffertje.add(rs.getInt("command"));
-                    toReturn.replace(rs.getLong("guildId"), buffertje);
+                    toReturn.put(rs.getLong("guildId"), buffertje);
                 } else {
-                    toReturn.put(rs.getLong("guildId"), new ArrayList<>(Collections.singleton(rs.getInt("command"))));
+                    TIntList temp =  new TIntArrayList();
+                    temp.add(rs.getInt("command"));
+                    toReturn.put(rs.getLong("guildId"), temp);
                 }
             }
             rs.close();
@@ -1385,13 +1263,15 @@ public class MySQL {
         return toReturn;
     }
 
-    public void removeDisabledCommands(long guildId, ArrayList<Integer> buffer) {
-        ArrayList<Integer> toRemove = new ArrayList<>(DisableCommand.disabledGuildCommands.getOrDefault(guildId, new ArrayList<>()));
+    public void removeDisabledCommands(long guildId, TIntList buffer) {
+        TIntList toRemove = new TIntArrayList();
+        if (DisableCommand.disabledGuildCommands.containsKey(guildId))
+            toRemove.addAll(DisableCommand.disabledGuildCommands.get(guildId));
         toRemove.removeAll(buffer);
         try (Connection con = ds.getConnection()) {
             PreparedStatement statement = con.prepareStatement("DELETE FROM disabled_commands WHERE guildId= ? AND command= ?");
             statement.setLong(1, guildId);
-            for (int i : toRemove) {
+            for (int i : toRemove.toArray()) {
                 statement.setInt(2, i);
                 statement.executeUpdate();
             }
@@ -1401,13 +1281,15 @@ public class MySQL {
         }
     }
 
-    public void addDisabledCommands(long guildId, ArrayList<Integer> buffer) {
-        ArrayList<Integer> toAdd = new ArrayList<>(buffer);
-        toAdd.removeAll(DisableCommand.disabledGuildCommands.getOrDefault(guildId, new ArrayList<>()));
+    public void addDisabledCommands(long guildId, TIntList buffer) {
+        TIntList toAdd = new TIntArrayList();
+        toAdd.addAll(buffer);
+        if (DisableCommand.disabledGuildCommands.containsKey(guildId))
+            toAdd.removeAll(DisableCommand.disabledGuildCommands.get(guildId));
         try (Connection con = ds.getConnection()) {
             PreparedStatement statement = con.prepareStatement("INSERT INTO disabled_commands (guildId, command) VALUES (?, ?)");
             statement.setLong(1, guildId);
-            for (int i : toAdd) {
+            for (int i : toAdd.toArray()) {
                 statement.setInt(2, i);
                 statement.executeUpdate();
             }
@@ -1417,8 +1299,8 @@ public class MySQL {
         }
     }
 
-    public ArrayList<Long> getUnverifiedMembers(long guildId) {
-        ArrayList<Long> members = new ArrayList<>();
+    public TLongList getUnverifiedMembers(long guildId) {
+        TLongList members = new TLongArrayList();
         try (Connection con = ds.getConnection()) {
             PreparedStatement getUnverifiedMembers = con.prepareStatement("SELECT * FROM unverified_users WHERE guildId= ?");
             getUnverifiedMembers.setLong(1, guildId);
@@ -1434,7 +1316,7 @@ public class MySQL {
         return members;
     }
 
-    public int getGuildVerificationThreshold(Long guildId) {
+    public int getGuildVerificationThreshold(long guildId) {
         int threshold = 0;
         try (Connection con = ds.getConnection()) {
             PreparedStatement getVerificationThreshold = con.prepareStatement("SELECT * FROM verification_thresholds WHERE guildId= ?");
@@ -1450,7 +1332,7 @@ public class MySQL {
         return threshold;
     }
 
-    public String getGuildVerificationCode(Long guildId) {
+    public String getGuildVerificationCode(long guildId) {
         String code = "";
         try (Connection con = ds.getConnection()) {
             PreparedStatement getVerificationThreshold = con.prepareStatement("SELECT * FROM verification_codes WHERE guildId= ?");
@@ -1466,8 +1348,8 @@ public class MySQL {
         return code;
     }
 
-    public ArrayList<Long> getNotifications(long userId, NotificationType type) {
-        ArrayList<Long> lijstje = new ArrayList<>();
+    public TLongList getNotifications(long userId, NotificationType type) {
+        TLongList lijstje = new TLongArrayList();
         try (Connection con = ds.getConnection()) {
             try (PreparedStatement statement = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_notifications WHERE userId= ?")) {
                 statement.setLong(1, userId);
@@ -1546,16 +1428,16 @@ public class MySQL {
                 commandId, currentTime, 1);
     }
 
-    public HashMap<Integer, Long> getTopUsage(long[] period, int limit) {
+    public LinkedHashMap<Integer, Long> getTopUsage(long[] period, int limit) {
         long smallest = period[0] < period[1] ? period[0] : period[1];
         long biggest = period[0] < period[1] ? period[1] : period[0];
-        HashMap<Integer, Long> commandUsages = new HashMap<>();
+        TMap<Integer, Long> commandUsages = new THashMap<>();
         try (PreparedStatement getUsageWithinPeriod = ds.getConnection().prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?" )){
             getUsageWithinPeriod.setLong(1, biggest);
             getUsageWithinPeriod.setLong(2, smallest);
             try (ResultSet rs = getUsageWithinPeriod.executeQuery()) {
                 while (rs.next()) {
-                    commandUsages.put(rs.getInt("commandId"), commandUsages.getOrDefault(rs.getInt("commandId"), 0L) + rs.getLong("usageCount"));
+                    commandUsages.put(rs.getInt("commandId"), (commandUsages.containsKey(rs.getInt("commandId")) ? commandUsages.get(rs.getInt("commandId")) : 0) + rs.getLong("usageCount"));
                 }
             }
         } catch (SQLException e) {
@@ -1583,39 +1465,46 @@ public class MySQL {
         return usage;
     }
 
-    public HashMap<Integer, Long> getUsages(long[] period, ArrayList<Integer> commandIds) {
+    public TIntLongMap getUsages(long[] period, TIntList commandIds) {
         long smallest = period[0] < period[1] ? period[0] : period[1];
         long biggest = period[0] < period[1] ? period[1] : period[0];
-        HashMap<Integer, Long> sortedCommandUsages = new HashMap<>();
-        HashMap<Integer, Long> commandUsages = new HashMap<>();
+        TIntLongMap sortedCommandUsages = new TIntLongHashMap();
+        TIntLongMap commandUsages = new TIntLongHashMap();
         try (PreparedStatement getUsageWithinPeriod = ds.getConnection().prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?" )){
             getUsageWithinPeriod.setLong(1, biggest);
             getUsageWithinPeriod.setLong(2, smallest);
             try (ResultSet rs = getUsageWithinPeriod.executeQuery()) {
                 while (rs.next()) {
                     if (commandIds.contains(rs.getInt("commandId")))
-                        commandUsages.put(rs.getInt("commandId"), commandUsages.getOrDefault(rs.getInt("commandId"), 0L) + rs.getLong("usageCount"));
+                        commandUsages.put(rs.getInt("commandId"),
+                                (commandUsages.containsKey(rs.getInt("commandId")) ?
+                                        commandUsages.get(rs.getInt("commandId")) :
+                                        0
+                                ) + rs.getLong("usageCount"));
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         for (int i = 0; i < commandUsages.size(); i++) {
-            Map.Entry<Integer, Long> maxEntry = null;
-            for(Map.Entry<Integer, Long> entry : commandUsages.entrySet()) {
-                if (maxEntry == null || entry.getValue() > maxEntry.getValue()) {
-                    maxEntry = entry;
+            var ref = new Object() {
+                Map.Entry<Integer, Long> maxEntry = null;
+            };
+            commandUsages.forEachEntry((key, value) -> {
+                if (ref.maxEntry == null || value > ref.maxEntry.getValue()) {
+                    ref.maxEntry = new MapEntry(key, value);
                 }
-            }
-            if (maxEntry != null) {
-                commandUsages.remove(maxEntry.getKey());
-                sortedCommandUsages.put(maxEntry.getKey(), maxEntry.getValue());
+                return false;
+            });
+            if (ref.maxEntry != null) {
+                commandUsages.remove(ref.maxEntry.getKey());
+                sortedCommandUsages.put(ref.maxEntry.getKey(), ref.maxEntry.getValue());
             }
         }
         return sortedCommandUsages;
     }
 
-    private static <K, V extends Comparable<? super V>> LinkedHashMap<K, V> findGreatest(Map<K, V> map, int n) {
+    private static <K, V extends Comparable<? super V>> LinkedHashMap<K, V> findGreatest(TMap<K, V> map, int n) {
         Comparator<? super Map.Entry<K, V>> comparator = (Comparator<Map.Entry<K, V>>) (e0, e1) -> {
                     V v0 = e0.getValue();
                     V v1 = e1.getValue();

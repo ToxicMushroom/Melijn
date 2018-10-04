@@ -1,5 +1,6 @@
 package me.melijn.jda.commands.management;
 
+import gnu.trove.list.TLongList;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
@@ -9,8 +10,6 @@ import me.melijn.jda.events.JoinLeave;
 import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.User;
-
-import java.util.ArrayList;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
@@ -32,7 +31,7 @@ public class VerifyCommand extends Command {
             if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
                 User user = Helpers.getUserByArgsN(event, args[0]);
                 if (user != null && event.getGuild().getMember(user) != null) {
-                    ArrayList<Long> unVerifiedUsers = JoinLeave.unVerifiedGuildMembersCache.getUnchecked(event.getGuild().getIdLong());
+                    TLongList unVerifiedUsers = JoinLeave.unVerifiedGuildMembersCache.getUnchecked(event.getGuild().getIdLong());
                     if (unVerifiedUsers.contains(user.getIdLong())) {
                         JoinLeave.verify(event.getGuild(), user);
                         event.reply("Successfully verified **" + user.getName() + "#" + user.getDiscriminator() + "**");

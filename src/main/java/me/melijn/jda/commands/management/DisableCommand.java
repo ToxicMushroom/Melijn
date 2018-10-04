@@ -1,5 +1,8 @@
 package me.melijn.jda.commands.management;
 
+import gnu.trove.list.TIntList;
+import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.map.TLongObjectMap;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
@@ -10,14 +13,11 @@ import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class DisableCommand extends Command {
 
-    public static HashMap<Long, ArrayList<Integer>> disabledGuildCommands = Melijn.mySQL.getDisabledCommandsMap();
+    public static TLongObjectMap<TIntList> disabledGuildCommands = Melijn.mySQL.getDisabledCommandsMap();
 
     public DisableCommand() {
         this.commandName = "disable";
@@ -36,7 +36,9 @@ public class DisableCommand extends Command {
             Guild guild = event.getGuild();
 
             if (event.getExecutor().equalsIgnoreCase("disable") && args.length > 0 && !args[0].equalsIgnoreCase("")) {
-                ArrayList<Integer> buffer = new ArrayList<>(disabledGuildCommands.getOrDefault(guild.getIdLong(), new ArrayList<>()));
+                TIntList buffer = new TIntArrayList();
+                if (disabledGuildCommands.containsKey(guild.getIdLong()))
+                    buffer.addAll(disabledGuildCommands.get(guild.getIdLong()));
                 for (Command cmd : event.getClient().getCommands()) {
                     if (cmd.getCommandName().equalsIgnoreCase(args[0]))
                         if (!buffer.contains(event.getClient().getCommands().indexOf(cmd)) && !cmd.getCommandName().equalsIgnoreCase("enable"))
@@ -50,7 +52,7 @@ public class DisableCommand extends Command {
                             !cmd.getCommandName().equalsIgnoreCase("enable"))
                         buffer.add(event.getClient().getCommands().indexOf(cmd));
                 }
-                if (buffer.size() == disabledGuildCommands.getOrDefault(guild.getIdLong(), new ArrayList<>()).size()) {
+                if (buffer.size() == (disabledGuildCommands.containsKey(guild.getIdLong()) ? disabledGuildCommands.get(guild.getIdLong()).size() : 0)) {
                     event.reply("The given command or category was unknown");
                 } else {
                     event.reply("Successfully disabled **" + args[0] + "**");
@@ -63,7 +65,7 @@ public class DisableCommand extends Command {
                 StringBuilder sb = new StringBuilder();
                 int part = 1;
                 sb.append("Part **#").append(part++).append("** of disabled commands```INI\n");
-                for (int i : disabledGuildCommands.getOrDefault(event.getGuild().getIdLong(), new ArrayList<>())) {
+                for (int i : (disabledGuildCommands.containsKey(event.getGuild().getIdLong()) ? disabledGuildCommands.get(guild.getIdLong()) : new TIntArrayList()).toArray()) {
                     if (sb.length() + event.getClient().getCommands().get(i).getCommandName().length() < 1950) {
                         sb.append(i).append(" - [").append(event.getClient().getCommands().get(i).getCommandName()).append("]\n");
                     } else {

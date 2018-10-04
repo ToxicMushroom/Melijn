@@ -3,6 +3,7 @@ package me.melijn.jda.events;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import gnu.trove.list.TLongList;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.RoleType;
@@ -19,17 +20,16 @@ import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class JoinLeave extends ListenerAdapter {
 
-    public static final LoadingCache<Long, ArrayList<Long>> unVerifiedGuildMembersCache = CacheBuilder.newBuilder()
+    public static final LoadingCache<Long, TLongList> unVerifiedGuildMembersCache = CacheBuilder.newBuilder()
             .maximumSize(10)
             .expireAfterAccess(1, TimeUnit.MINUTES)
             .build(new CacheLoader<>() {
-                public ArrayList<Long> load(@NotNull Long key) {
+                public TLongList load(@NotNull Long key) {
                     return Melijn.mySQL.getUnverifiedMembers(key);
                 }
             });
@@ -43,7 +43,7 @@ public class JoinLeave extends ListenerAdapter {
         if (SetVerificationChannel.verificationChannelsCache.getUnchecked(guild.getIdLong()) != -1) {
             TextChannel verificationChannel = guild.getTextChannelById(SetVerificationChannel.verificationChannelsCache.getUnchecked(guild.getIdLong()));
             if (verificationChannel != null) {
-                ArrayList<Long> newList = unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong());
+                TLongList newList = unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong());
                 newList.add(joinedUser.getIdLong());
                 Melijn.mySQL.addUnverifiedUser(guild.getIdLong(), joinedUser.getIdLong());
                 unVerifiedGuildMembersCache.put(guild.getIdLong(), newList);
@@ -112,7 +112,7 @@ public class JoinLeave extends ListenerAdapter {
     }
 
     private static void removeUnverified(Guild guild, User user) {
-        ArrayList<Long> newList = unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong());
+        TLongList newList = unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong());
         newList.remove(user.getIdLong());
         TaskScheduler.async(() -> {
             Melijn.mySQL.removeUnverifiedUser(guild.getIdLong(), user.getIdLong());

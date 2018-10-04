@@ -1,6 +1,8 @@
 package me.melijn.jda;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import gnu.trove.list.TLongList;
+import gnu.trove.map.TLongObjectMap;
 import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.NotificationType;
@@ -23,7 +25,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.awt.*;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -154,10 +157,10 @@ public class Helpers {
                 lastRunTimer2 = System.currentTimeMillis();
                 if (Melijn.dblAPI != null)
                     Melijn.dblAPI.setStats(guildCount == 0 ? jda.asBot().getShardManager().getGuilds().size() : guildCount);
-                ArrayList<Long> votesList = Melijn.mySQL.getVoteList();
-                HashMap<Long, ArrayList<Long>> nextvoteMap = Melijn.mySQL.getNotificationsMap(NotificationType.NEXTVOTE);
-                for (long userId : nextvoteMap.keySet()) {
-                    for (long targetId : nextvoteMap.get(userId)) {
+                TLongList votesList = Melijn.mySQL.getVoteList();
+                TLongObjectMap<TLongList> nextvoteMap = Melijn.mySQL.getNotificationsMap(NotificationType.NEXTVOTE);
+                for (long userId : nextvoteMap.keys()) {
+                    for (long targetId : nextvoteMap.get(userId).toArray()) {
                         if (votesList.contains(targetId)) {
                             jda.asBot().getShardManager().retrieveUserById(userId).queue((u) -> {
                                 if (userId != targetId)

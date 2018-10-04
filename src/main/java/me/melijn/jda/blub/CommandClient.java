@@ -9,7 +9,5 @@ public interface CommandClient {
     List<Command> getCommands();
     void setListener(CommandListener listener);
     CommandListener getListener();
-    boolean usesLinkedDeletion();
     String getPrefix();
-    long getOwnerId();
 }

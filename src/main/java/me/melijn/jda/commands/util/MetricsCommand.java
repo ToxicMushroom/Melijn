@@ -1,5 +1,8 @@
 package me.melijn.jda.commands.util;
 
+import gnu.trove.list.TIntList;
+import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.map.TIntLongMap;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
@@ -10,9 +13,8 @@ import me.melijn.jda.utils.MessageHelper;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.TimeZone;
 
 import static me.melijn.jda.Melijn.PREFIX;
@@ -45,19 +47,19 @@ public class MetricsCommand extends Command {
                     switch (args[0]) {
                         case "top":
                         case "limit":
-                            HashMap<Integer, Long> topCommandUsage = Melijn.mySQL.getTopUsage(period, defaultInt);
+                            LinkedHashMap<Integer, Long> topCommandUsage = Melijn.mySQL.getTopUsage(period, defaultInt);
                             for (int id : topCommandUsage.keySet()) {
                                 sb.append(topCommandUsage.get(id)).append(" - [").append(event.getClient().getCommands().get(id).getCommandName()).append("]\n");
                             }
                             break;
                         case "all":
-                            HashMap<Integer, Long> allCommandUsage = Melijn.mySQL.getTopUsage(period, event.getClient().getCommands().size());
+                            LinkedHashMap<Integer, Long> allCommandUsage = Melijn.mySQL.getTopUsage(period, event.getClient().getCommands().size());
                             for (int id : allCommandUsage.keySet()) {
                                 sb.append(allCommandUsage.get(id)).append(" - [").append(event.getClient().getCommands().get(id).getCommandName()).append("]\n");
                             }
                             break;
                         default:
-                            ArrayList<Integer> commandIds = new ArrayList<>();
+                            TIntList commandIds = new TIntArrayList();
                             for (Command command : event.getClient().getCommands()) {
                                 if (command.getCommandName().equalsIgnoreCase(args[0])) {
                                     sb.append(Melijn.mySQL.getUsage(period, event.getClient().getCommands().indexOf(command))).append(" - [").append(command.getCommandName()).append("]\n");
@@ -66,8 +68,8 @@ public class MetricsCommand extends Command {
                                 }
                             }
                             if (commandIds.size() > 0) {
-                                HashMap<Integer, Long> commandUsages = Melijn.mySQL.getUsages(period, commandIds);
-                                for (int index : commandUsages.keySet()) {
+                                TIntLongMap commandUsages = Melijn.mySQL.getUsages(period, commandIds);
+                                for (int index : commandUsages.keySet().toArray()) {
                                     sb.append(commandUsages.get(index)).append(" - [").append(event.getClient().getCommands().get(index).getCommandName()).append("]\n");
                                 }
                             }

@@ -1,5 +1,7 @@
 package me.melijn.jda.blub;
 
+import gnu.trove.map.TObjectIntMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.commands.developer.EvalCommand;
@@ -15,7 +17,6 @@ import org.apache.commons.lang3.text.WordUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,8 +24,8 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
 
     private static final int INDEX_LIMIT = 200;
     private final long ownerId;
-    private final HashMap<String, Integer> commandIndex;
-    public final ArrayList<Command> commands;
+    private final TObjectIntMap<String> commandIndex;
+    public final List<Command> commands;
     private final int linkedCacheSize;
     private CommandListener listener = null;
 
@@ -32,7 +33,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
         if (ownerId == -1)
             throw new IllegalArgumentException("Owner ID was set null or not set! Please provide an User ID to register as the owner!");
         this.ownerId = ownerId;
-        this.commandIndex = new HashMap<>();
+        this.commandIndex = new TObjectIntHashMap<>();
         this.commands = new ArrayList<>();
         this.linkedCacheSize = linkedCacheSize;
         for (Command command : commands) {
@@ -78,17 +79,6 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                 commandIndex.keySet().stream().filter(key -> commandIndex.get(key) > index).collect(Collectors.toList()).forEach(key -> commandIndex.put(key, commandIndex.get(key) + 1));
         }
         commands.add(index, command);
-    }
-
-
-    @Override
-    public long getOwnerId() {
-        return ownerId;
-    }
-
-    @Override
-    public boolean usesLinkedDeletion() {
-        return linkedCacheSize > 0;
     }
 
     @Override
@@ -138,7 +128,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                             command.run(cevent);
                         });
                     } else {
-                        int i = commandIndex.getOrDefault(name.toLowerCase(), -1);
+                        int i = commandIndex.containsKey(name.toLowerCase()) ? commandIndex.get(name.toLowerCase()) : -1;
                         if (i != -1) {
                             Command command = commands.get(i);
 
