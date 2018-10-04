@@ -20,8 +20,7 @@ public class SlowModeCommand extends Command {
         this.needs = new Need[]{Need.GUILD};
         this.category = Category.MANAGEMENT;
     }
-
-
+    
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {

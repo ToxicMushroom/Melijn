@@ -1,5 +1,7 @@
 package me.melijn.jda.commands.management;
 
+import gnu.trove.map.TLongLongMap;
+import gnu.trove.map.hash.TLongLongHashMap;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
@@ -17,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class ClearChannelCommand extends Command {
 
     public static HashMap<Long, HashMap<Long, Long>> possibleDeletes = new HashMap<>();
-    public static HashMap<Long, Long> messageUser = new HashMap<>();
+    public static TLongLongMap messageUser = new TLongLongHashMap();
 
     public ClearChannelCommand() {
         this.commandName = "clearChannel";
@@ -64,7 +66,7 @@ public class ClearChannelCommand extends Command {
         guild.retrieveEmoteById(463250264653299713L).queue(listedEmote -> s.addReaction(listedEmote).queue());
         s.delete().queueAfter(60, TimeUnit.SECONDS, (success) -> {
             possibleDeletes.remove(channel.getGuild().getIdLong(), messageChannel);
-            messageUser.remove(s.getIdLong(), authorId);
+            messageUser.remove(s.getIdLong());
             }, (failure) -> {});
     }
 }

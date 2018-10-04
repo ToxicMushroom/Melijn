@@ -225,7 +225,7 @@ public class Chat extends ListenerAdapter {
                     eb.setFooter("Deleted by: " + bot.getName() + "#" + bot.getDiscriminator(), bot.getEffectiveAvatarUrl());
                     fmLogChannel.sendMessage(eb.build()).queue();
                     MessageHelper.filteredMessageDeleteCause.remove(event.getMessageIdLong());
-                } else if (MessageHelper.purgedMessageDeleter.get(event.getMessageIdLong()) != null &&
+                } else if (MessageHelper.purgedMessageDeleter.containsKey(event.getMessageIdLong()) &&
                         guild.getTextChannelById(SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong())) != null) {
                     eb.setColor(Color.decode("#551A8B"));
                     User purger = event.getJDA().asBot().getShardManager().getUserById(MessageHelper.purgedMessageDeleter.get(event.getMessageIdLong()));

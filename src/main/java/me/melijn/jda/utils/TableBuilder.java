@@ -1,5 +1,8 @@
 package me.melijn.jda.utils;
 
+import gnu.trove.map.TIntIntMap;
+import gnu.trove.map.hash.TIntIntHashMap;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -12,7 +15,7 @@ public class TableBuilder {
 
     private ArrayList<String> headerRow = new ArrayList<>();
     private HashMap<Integer, ArrayList<String>> valueRows = new HashMap<>();
-    private HashMap<Integer, Integer> columnWidth = new HashMap<>();
+    private TIntIntMap columnWidth = new TIntIntHashMap();
     private ArrayList<String> footerRow = new ArrayList<>();
     private boolean split;
 
@@ -41,7 +44,7 @@ public class TableBuilder {
     private void findWidest(Collection<String> footerNames, int startColumn) {
         int temp = startColumn;
         for (String s : footerNames) {
-            if (columnWidth.getOrDefault(temp, 0) < s.length()) {
+            if ((columnWidth.containsKey(temp) ? columnWidth.get(temp) : 0) < s.length()) {
                 columnWidth.put(temp, s.length());
             }
             temp++;

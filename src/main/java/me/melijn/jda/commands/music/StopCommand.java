@@ -24,8 +24,8 @@ public class StopCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
-            LoopCommand.looped.replace(event.getGuild().getIdLong(), false);
-            LoopQueueCommand.looped.replace(event.getGuild().getIdLong(), false);
+            LoopCommand.looped.remove(event.getGuild().getIdLong());
+            LoopQueueCommand.looped.remove(event.getGuild().getIdLong());
             MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
             player.stopTrack();
             if (!player.getListener().getTracks().isEmpty()) player.getListener().getTracks().clear();

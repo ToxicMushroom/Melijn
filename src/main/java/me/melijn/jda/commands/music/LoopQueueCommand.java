@@ -1,17 +1,17 @@
 package me.melijn.jda.commands.music;
 
+import gnu.trove.list.TLongList;
+import gnu.trove.list.array.TLongArrayList;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 
-import java.util.HashMap;
-
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class LoopQueueCommand extends Command {
 
-    public static HashMap<Long, Boolean> looped = new HashMap<>();
+    public static TLongList looped = new TLongArrayList();
 
     public LoopQueueCommand() {
         this.commandName = "loopQueue";
