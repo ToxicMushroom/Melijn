@@ -413,45 +413,28 @@ public class Helpers {
     }
 
     public static boolean canNotInteract(CommandEvent event, User target) {
-
-        Member targetMember = event.getGuild().getMember(target);
-
-        if(targetMember == null) {
-            event.reply("This member could not be found.");
-            return false;
-        }
-
-        List<Role> selfRoles = event.getGuild().getSelfMember().getRoles();
-        List<Role> targetRoles = targetMember.getRoles();
-
-        if (targetRoles.isEmpty()) {
-            return false;
-        }
-
-        if (selfRoles.isEmpty()) {
+        if (event.getGuild().getMember(target).getRoles().size() > 0 && event.getGuild().getSelfMember().getRoles().size() > 0) {
+            if (!event.getGuild().getSelfMember().getRoles().get(0).canInteract(event.getGuild().getMember(target).getRoles().get(0))) {
+                event.reply("Can't modify a member with higher or equal highest role than myself");
+                return true;
+            }
+        } else if (event.getGuild().getSelfMember().getRoles().size() == 0) {
             event.reply("Can't modify a member with higher or equal highest role than myself");
             return true;
         }
-
-        if (!selfRoles.get(0).canInteract(targetRoles.get(0))) {
-            event.reply("Can't modify a member with higher or equal highest role than myself");
-            return true;
-        }
-
         return false;
     }
 
     public static boolean canNotInteract(CommandEvent event, Role target) {
-        if (event.getGuild().getSelfMember().getRoles().isEmpty()) {
-            return true;
-        }
-
-        if (!event.getGuild().getSelfMember().getRoles().get(0).canInteract(target)) {
+        if (event.getGuild().getSelfMember().getRoles().size() > 0) {
+            if (!event.getGuild().getSelfMember().getRoles().get(0).canInteract(target)) {
+                event.reply("Can't modify a member with higher or equal highest role than myself");
+                return true;
+            }
+        } else {
             event.reply("Can't modify a member with higher or equal highest role than myself");
             return true;
         }
-
-        event.reply("Can't modify a member with higher or equal highest role than myself");
-        return true;
+        return false;
     }
 }
