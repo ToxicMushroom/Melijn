@@ -13,7 +13,6 @@ import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 import gnu.trove.map.hash.TIntLongHashMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
-import gnu.trove.set.hash.TLinkedHashSet;
 import groovy.util.MapEntry;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.*;
@@ -736,7 +735,7 @@ public class MySQL {
             if (set.size() == 0) {
                 bans.accept(new String[]{"No bans"});
             }
-            ArrayList<String> toRet = new ArrayList<>();
+            List<String> toRet = new ArrayList<>();
             AtomicInteger progress = new AtomicInteger();
             for (JSONObject rowObj : set) {
                 String endTime = rowObj.getString("endTime").equals("") ? "Infinity" : MessageHelper.millisToDate(Long.valueOf(rowObj.getString("endTime")));
@@ -803,7 +802,7 @@ public class MySQL {
             if (set.size() == 0) {
                 mutes.accept(new String[]{"No mutes"});
             }
-            ArrayList<String> toRet = new ArrayList<>();
+            List<String> toRet = new ArrayList<>();
             AtomicInteger progress = new AtomicInteger();
             for (JSONObject rowObj : set) {
                 String endTime = rowObj.getString("endTime").equals("") ? "Infinity" : MessageHelper.millisToDate(Long.valueOf(rowObj.getString("endTime")));
@@ -881,7 +880,7 @@ public class MySQL {
             if (set.size() == 0) {
                 warns.accept(new String[]{"No warns"});
             }
-            ArrayList<String> toRet = new ArrayList<>();
+            List<String> toRet = new ArrayList<>();
             AtomicInteger progress = new AtomicInteger();
             for (JSONObject rowObj : set) {
                 jda.asBot().getShardManager().retrieveUserById(rowObj.getLong("authorId")).queue(staff -> {
@@ -928,7 +927,7 @@ public class MySQL {
             if (set.size() == 0) {
                 kicks.accept(new String[]{"No kicks"});
             }
-            ArrayList<String> toRet = new ArrayList<>();
+            List<String> toRet = new ArrayList<>();
             AtomicInteger progress = new AtomicInteger();
             for (JSONObject rowObj : set) {
                 jda.asBot().getShardManager().retrieveUserById(rowObj.getLong("authorId")).queue(staff -> {
@@ -1250,7 +1249,7 @@ public class MySQL {
                     buffertje.add(rs.getInt("command"));
                     toReturn.put(rs.getLong("guildId"), buffertje);
                 } else {
-                    TIntList temp =  new TIntArrayList();
+                    TIntList temp = new TIntArrayList();
                     temp.add(rs.getInt("command"));
                     toReturn.put(rs.getLong("guildId"), temp);
                 }
@@ -1432,14 +1431,14 @@ public class MySQL {
         long smallest = period[0] < period[1] ? period[0] : period[1];
         long biggest = period[0] < period[1] ? period[1] : period[0];
         TMap<Integer, Long> commandUsages = new THashMap<>();
-        try (PreparedStatement getUsageWithinPeriod = ds.getConnection().prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?" )){
+        try (PreparedStatement getUsageWithinPeriod = ds.getConnection().prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?")) {
             getUsageWithinPeriod.setLong(1, biggest);
             getUsageWithinPeriod.setLong(2, smallest);
-            try (ResultSet rs = getUsageWithinPeriod.executeQuery()) {
-                while (rs.next()) {
-                    commandUsages.put(rs.getInt("commandId"), (commandUsages.containsKey(rs.getInt("commandId")) ? commandUsages.get(rs.getInt("commandId")) : 0) + rs.getLong("usageCount"));
-                }
+            ResultSet rs = getUsageWithinPeriod.executeQuery();
+            while (rs.next()) {
+                commandUsages.put(rs.getInt("commandId"), (commandUsages.containsKey(rs.getInt("commandId")) ? commandUsages.get(rs.getInt("commandId")) : 0) + rs.getLong("usageCount"));
             }
+            rs.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1450,7 +1449,7 @@ public class MySQL {
         long smallest = period[0] < period[1] ? period[0] : period[1];
         long biggest = period[0] < period[1] ? period[1] : period[0];
         long usage = 0;
-        try (PreparedStatement getUsageWithinPeriod = ds.getConnection().prepareStatement("SELECT * FROM command_usage WHERE commandId = ? AND time < ? AND time > ?" )){
+        try (PreparedStatement getUsageWithinPeriod = ds.getConnection().prepareStatement("SELECT * FROM command_usage WHERE commandId = ? AND time < ? AND time > ?")) {
             getUsageWithinPeriod.setInt(1, commandId);
             getUsageWithinPeriod.setLong(2, biggest);
             getUsageWithinPeriod.setLong(3, smallest);
@@ -1470,7 +1469,7 @@ public class MySQL {
         long biggest = period[0] < period[1] ? period[1] : period[0];
         TIntLongMap sortedCommandUsages = new TIntLongHashMap();
         TIntLongMap commandUsages = new TIntLongHashMap();
-        try (PreparedStatement getUsageWithinPeriod = ds.getConnection().prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?" )){
+        try (PreparedStatement getUsageWithinPeriod = ds.getConnection().prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?")) {
             getUsageWithinPeriod.setLong(1, biggest);
             getUsageWithinPeriod.setLong(2, smallest);
             try (ResultSet rs = getUsageWithinPeriod.executeQuery()) {
@@ -1506,10 +1505,10 @@ public class MySQL {
 
     private static <K, V extends Comparable<? super V>> LinkedHashMap<K, V> findGreatest(TMap<K, V> map, int n) {
         Comparator<? super Map.Entry<K, V>> comparator = (Comparator<Map.Entry<K, V>>) (e0, e1) -> {
-                    V v0 = e0.getValue();
-                    V v1 = e1.getValue();
-                    return v0.compareTo(v1);
-                };
+            V v0 = e0.getValue();
+            V v1 = e1.getValue();
+            return v0.compareTo(v1);
+        };
         PriorityQueue<Map.Entry<K, V>> highest = new PriorityQueue<>(n, comparator);
         for (Map.Entry<K, V> entry : map.entrySet()) {
             highest.offer(entry);
