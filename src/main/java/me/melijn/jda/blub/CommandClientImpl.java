@@ -23,28 +23,24 @@ import java.util.stream.Collectors;
 public class CommandClientImpl extends ListenerAdapter implements CommandClient {
 
     private static final int INDEX_LIMIT = 200;
-    private final long ownerId;
     private final TObjectIntMap<String> commandIndex;
     public final List<Command> commands;
-    private final int linkedCacheSize;
     private CommandListener listener = null;
 
-    public CommandClientImpl(long ownerId, ArrayList<Command> commands, int linkedCacheSize) {
+    public CommandClientImpl(long ownerId, List<Command> commands) {
         if (ownerId == -1)
             throw new IllegalArgumentException("Owner ID was set null or not set! Please provide an User ID to register as the owner!");
-        this.ownerId = ownerId;
         this.commandIndex = new TObjectIntHashMap<>();
         this.commands = new ArrayList<>();
-        this.linkedCacheSize = linkedCacheSize;
         for (Command command : commands) {
             addCommand(command);
         }
     }
 
-    @Override
+    /*@Override
     public void setListener(CommandListener listener) {
         this.listener = listener;
-    }
+    }*/
 
     @Override
     public CommandListener getListener() {

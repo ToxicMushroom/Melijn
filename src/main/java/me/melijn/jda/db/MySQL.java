@@ -568,6 +568,7 @@ public class MySQL {
                 else guild.getTextChannelById(logChannelId).sendMessage(eb.build()).queue();
             }
 
+
             guild.getController().unban(toUnban.getId()).queue();
             return true;
         }
@@ -676,8 +677,8 @@ public class MySQL {
                                 guild.getTextChannelById(logChannelId).sendMessage(eb.build() + "\nTarget is a bot").queue();
                             else guild.getTextChannelById(logChannelId).sendMessage(eb.build()).queue();
                         }
-
-                        guild.getController().removeSingleRoleFromMember(guild.getMember(toUnmute), guild.getRoleById(getRoleId(guild.getIdLong(), RoleType.MUTE))).queue();
+                        if (guild.getMember(toUnmute) != null)
+                            guild.getController().removeSingleRoleFromMember(guild.getMember(toUnmute), guild.getRoleById(getRoleId(guild.getIdLong(), RoleType.MUTE))).queue();
                     }
                 } catch (SQLException e) {
                     e.printStackTrace();

@@ -1,5 +1,6 @@
 package me.melijn.jda.commands.music;
 
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
@@ -7,12 +8,12 @@ import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.utils.MessageHelper;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 import static me.melijn.jda.Melijn.PREFIX;
@@ -47,13 +48,13 @@ public class RemoveCommand extends Command {
                 songs.put(i, track);
             }
             StringBuilder sb = new StringBuilder();
-            ArrayList<String> desc = new ArrayList<>();
+            List<String> desc = new ArrayList<>();
             for (String s : args) {
                 if (s.contains("-")) {
                     if (s.matches("\\d+-\\d+")) {
                         String[] list = s.split("-");
                         if (list.length == 2) {
-                            ArrayList<String> numbersBetween = getNumbersBetween(Integer.valueOf(list[0]), Integer.valueOf(list[1]));
+                            List<String> numbersBetween = getNumbersBetween(Integer.valueOf(list[0]), Integer.valueOf(list[1]));
                             for (String sl : numbersBetween) {
                                 if (songs.get(Integer.valueOf(sl)) != null) {
                                     manager.getPlayer(event.getGuild()).getListener().tracks.remove(songs.get(Integer.valueOf(sl)));
@@ -115,8 +116,8 @@ public class RemoveCommand extends Command {
         }
     }
 
-    private ArrayList<String> getNumbersBetween(int a, int b) {
-        ArrayList<String> toReturn = new ArrayList<>();
+    private List<String> getNumbersBetween(int a, int b) {
+        List<String> toReturn = new ArrayList<>();
         if (a > 0 && b > 0) {
             if (a < b) {
                 int c = a;

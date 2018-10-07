@@ -125,9 +125,9 @@ public class HistoryCommand extends Command {
         }
     }
 
-    private void getLongMessageInParts(ArrayList<String> stuff, Consumer<List<String>> callback) {
+    private void getLongMessageInParts(List<String> stuff, Consumer<List<String>> callback) {
         StringBuilder part = new StringBuilder();
-        ArrayList<String> parts = new ArrayList<>();
+        List<String> parts = new ArrayList<>();
         int count = 1;
         for (String stuffdeel : stuff) {
             if (part.length() + stuffdeel.length() < 1900) {

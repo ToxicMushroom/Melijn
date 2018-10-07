@@ -9,6 +9,12 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.wrapper.spotify.model_objects.specification.ArtistSimplified;
 import com.wrapper.spotify.model_objects.specification.PlaylistTrack;
+import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.TLongLongMap;
+import gnu.trove.map.TLongObjectMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.map.hash.TLongLongHashMap;
+import gnu.trove.map.hash.TLongObjectHashMap;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.commands.music.SPlayCommand;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -17,18 +23,16 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class MusicManager {
 
     private final AudioPlayerManager manager = new DefaultAudioPlayerManager();
-    private final Map<Long, MusicPlayer> players = new HashMap<>();
+    private final TLongObjectMap<MusicPlayer> players = new TLongObjectHashMap<>();
     private static MusicManager managerInstance = new MusicManager();
-    public static HashMap<Long, List<AudioTrack>> userRequestedSongs = new HashMap<>();
-    public static HashMap<Long, Long> userMessageToAnswer = new HashMap<>();
+    public static TLongObjectMap<List<AudioTrack>> userRequestedSongs = new TLongObjectHashMap<>();
+    public static TLongLongMap userMessageToAnswer = new TLongLongHashMap();
 
     public MusicManager() {
         manager.getConfiguration().setFilterHotSwapEnabled(true);
@@ -75,7 +79,7 @@ public class MusicManager {
                 } else {
                     if (tracks.size() > 200)
                         tracks = tracks.subList(0, 200);
-                    if (userRequestedSongs.get(requester.getIdLong()) == null && userMessageToAnswer.get(requester.getIdLong()) == null) {
+                    if (!userRequestedSongs.containsKey(requester.getIdLong()) && !userMessageToAnswer.containsKey(requester.getIdLong())) {
                         userRequestedSongs.put(requester.getIdLong(), tracks);
                         StringBuilder songs = new StringBuilder();
                         for (AudioTrack track : tracks) {
@@ -95,6 +99,7 @@ public class MusicManager {
                     } else {
                         channel.sendMessage("You still have a request to answer. (request automatically gets removed after 30 seconds)")
                                 .queue((message) -> message.delete().queueAfter(10, TimeUnit.SECONDS, null, (failure) -> {
+
                                 }));
                     }
                 }
@@ -161,7 +166,7 @@ public class MusicManager {
                 eb.setColor(Helpers.EmbedColor);
                 eb.setFooter(Helpers.getFooterStamp(), null);
                 StringBuilder sb = new StringBuilder();
-                HashMap<Integer, AudioTrack> map = new HashMap<>();
+                TIntObjectMap<AudioTrack> map = new TIntObjectHashMap<>();
                 int i = 0;
                 for (AudioTrack track : tracks) {
                     map.put(i, track);
@@ -169,9 +174,9 @@ public class MusicManager {
                     sb.append("[").append(++i).append("](").append(track.getInfo().uri).append(") - ").append(track.getInfo().title).append(" `[").append(Helpers.getDurationBreakdown(track.getInfo().length)).append("]`\n");
                 }
                 eb.setDescription(sb.toString());
-                SPlayCommand.userChoices.put(author, map);
+                SPlayCommand.userChoices.put(author.getIdLong(), map);
                 channel.sendMessage(eb.build()).queue((s) -> {
-                    SPlayCommand.usersFormToReply.put(author, s);
+                    SPlayCommand.usersFormToReply.put(author.getIdLong(), s);
                     s.addReaction("\u0031\u20E3").queue();
                     s.addReaction("\u0032\u20E3").queue();
                     s.addReaction("\u0033\u20E3").queue();
@@ -197,7 +202,7 @@ public class MusicManager {
         MusicPlayer player = getPlayer(textChannel.getGuild());
         textChannel.getGuild().getAudioManager().setSendingHandler(player.getAudioHandler());
         String title = name.replaceFirst("scsearch:|ytsearch:", "");
-        ArrayList<String> artistNames = new ArrayList<>();
+        List<String> artistNames = new ArrayList<>();
         StringBuilder source = new StringBuilder(name);
         if (artists != null) {
             if (artists.length > 0) source.append(" ");

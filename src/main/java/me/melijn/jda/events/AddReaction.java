@@ -1,12 +1,13 @@
 package me.melijn.jda.events;
 
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import gnu.trove.map.TLongLongMap;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.commands.developer.EvalCommand;
 import me.melijn.jda.commands.management.ClearChannelCommand;
 import me.melijn.jda.commands.music.SPlayCommand;
 import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.music.MusicPlayer;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
@@ -14,7 +15,6 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -25,7 +25,7 @@ public class AddReaction extends ListenerAdapter {
         if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
             return;
         Guild guild = event.getGuild();
-        if (MusicManager.userMessageToAnswer.get(event.getUser().getIdLong()) != null && MusicManager.userMessageToAnswer.get(event.getUser().getIdLong()) == event.getMessageIdLong()) {
+        if (MusicManager.userMessageToAnswer.containsKey(event.getUser().getIdLong()) && MusicManager.userMessageToAnswer.get(event.getUser().getIdLong()) == event.getMessageIdLong()) {
             MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
             if (event.getReactionEmote().getName().equalsIgnoreCase("✅")) {
                 List<AudioTrack> tracks = MusicManager.userRequestedSongs.get(event.getUser().getIdLong());
@@ -72,7 +72,7 @@ public class AddReaction extends ListenerAdapter {
                 MusicManager.userRequestedSongs.remove(event.getUser().getIdLong());
             }
         }
-        if (SPlayCommand.usersFormToReply.get(event.getUser()) != null && SPlayCommand.usersFormToReply.get(event.getUser()).getId().equalsIgnoreCase(event.getMessageId())) {
+        if (SPlayCommand.usersFormToReply.containsKey(event.getUser().getIdLong()) && SPlayCommand.usersFormToReply.get(event.getUser().getIdLong()).getIdLong() == event.getMessageIdLong()) {
             MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
             AudioTrack track;
             EmbedBuilder eb = new EmbedBuilder();
@@ -82,38 +82,38 @@ public class AddReaction extends ListenerAdapter {
             boolean wrongemote = false;
             switch (event.getReactionEmote().getName()) {
                 case "\u0031\u20E3":
-                    track = SPlayCommand.userChoices.get(event.getUser()).get(0);
+                    track = SPlayCommand.userChoices.get(event.getUser().getIdLong()).get(0);
                     player.playTrack(track);
                     eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
                     event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
                     break;
                 case "\u0032\u20E3":
-                    track = SPlayCommand.userChoices.get(event.getUser()).get(1);
+                    track = SPlayCommand.userChoices.get(event.getUser().getIdLong()).get(1);
                     player.playTrack(track);
                     eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
                     event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
                     break;
                 case "\u0033\u20E3":
-                    track = SPlayCommand.userChoices.get(event.getUser()).get(2);
+                    track = SPlayCommand.userChoices.get(event.getUser().getIdLong()).get(2);
                     player.playTrack(track);
                     eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
                     event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
                     break;
                 case "\u0034\u20E3":
-                    track = SPlayCommand.userChoices.get(event.getUser()).get(3);
+                    track = SPlayCommand.userChoices.get(event.getUser().getIdLong()).get(3);
                     player.playTrack(track);
                     eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
                     event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
                     break;
                 case "\u0035\u20E3":
-                    track = SPlayCommand.userChoices.get(event.getUser()).get(4);
+                    track = SPlayCommand.userChoices.get(event.getUser().getIdLong()).get(4);
                     player.playTrack(track);
                     eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
                     event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
                     break;
                 case "\u274E":
-                    SPlayCommand.usersFormToReply.remove(event.getUser());
-                    SPlayCommand.userChoices.remove(event.getUser());
+                    SPlayCommand.usersFormToReply.remove(event.getUser().getIdLong());
+                    SPlayCommand.userChoices.remove(event.getUser().getIdLong());
                     event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.delete().queue());
                     wrongemote = true;
                     break;
@@ -130,7 +130,7 @@ public class AddReaction extends ListenerAdapter {
             }
         }
         if (ClearChannelCommand.possibleDeletes.containsKey(event.getGuild().getIdLong())) {
-            HashMap<Long, Long> messageChannel = ClearChannelCommand.possibleDeletes.get(guild.getIdLong());
+            TLongLongMap messageChannel = ClearChannelCommand.possibleDeletes.get(guild.getIdLong());
             if (ClearChannelCommand.messageUser.keySet().contains(event.getMessageIdLong())
                     && ClearChannelCommand.messageUser.get(event.getMessageIdLong()) == event.getUser().getIdLong()
                     && Helpers.hasPerm(event.getGuild().getMember(event.getUser()), "clearChannel", 1)
@@ -156,7 +156,7 @@ public class AddReaction extends ListenerAdapter {
         }
     }
 
-    private void removeMenu(GuildMessageReactionAddEvent event, Guild guild, HashMap<Long, Long> messageChannel) {
+    private void removeMenu(GuildMessageReactionAddEvent event, Guild guild, TLongLongMap messageChannel) {
         event.getChannel().getMessageById(event.getMessageId()).queue(s -> {
             s.delete().queue();
             messageChannel.remove(event.getMessageIdLong());

@@ -1,11 +1,12 @@
 package me.melijn.jda.utils;
 
 import gnu.trove.map.TIntIntMap;
+import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntIntHashMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 
 import static me.melijn.jda.utils.MessageHelper.spaces;
@@ -13,10 +14,10 @@ import static me.melijn.jda.utils.MessageHelper.spaces;
 public class TableBuilder {
 
 
-    private ArrayList<String> headerRow = new ArrayList<>();
-    private HashMap<Integer, ArrayList<String>> valueRows = new HashMap<>();
+    private List<String> headerRow = new ArrayList<>();
+    private TIntObjectMap<List<String>> valueRows = new TIntObjectHashMap<>();
     private TIntIntMap columnWidth = new TIntIntHashMap();
-    private ArrayList<String> footerRow = new ArrayList<>();
+    private List<String> footerRow = new ArrayList<>();
     private boolean split;
 
     public TableBuilder(boolean shouldSplit) {
@@ -52,7 +53,7 @@ public class TableBuilder {
     }
 
     public List<String> build() {
-        if (valueRows.values().stream().anyMatch(array -> array.size() > headerRow.size())) {
+        if (valueRows.valueCollection().stream().anyMatch(array -> array.size() > headerRow.size())) {
             throw new IllegalArgumentException("A value row cannot have more values then the header (you can make empty header slots)");
         }
 
@@ -92,7 +93,7 @@ public class TableBuilder {
         sb.append("═╣\n");
 
         //main
-        for (ArrayList<String> array : valueRows.values()) {
+        for (List<String> array : valueRows.valueCollection()) {
             int numm = 0;
             if (split && sb.length() + maxRowWidth > 1997 - (footerRow.size() > 0 ? maxRowWidth * 3 : maxRowWidth)) {
                 toReturn.add(sb.toString() + "```");
@@ -135,7 +136,6 @@ public class TableBuilder {
         valueRows = null;
         columnWidth = null;
         footerRow = null;
-        sb = null;
         return toReturn;
     }
 

@@ -1,6 +1,7 @@
 package me.melijn.jda.commands.music;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import gnu.trove.map.TIntObjectMap;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
@@ -11,7 +12,6 @@ import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 
 import java.util.HashMap;
@@ -22,8 +22,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 public class SPlayCommand extends Command {
 
     private MusicManager manager = MusicManager.getManagerInstance();
-    public static HashMap<User, Message> usersFormToReply = new HashMap<>();
-    public static HashMap<User, HashMap<Integer, AudioTrack>> userChoices = new HashMap<>();
+    public static HashMap<Long, Message> usersFormToReply = new HashMap<>();
+    public static HashMap<Long, TIntObjectMap<AudioTrack>> userChoices = new HashMap<>();
 
     public SPlayCommand() {
         this.commandName = "splay";
