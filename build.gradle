@@ -19,7 +19,7 @@ repositories {
 dependencies {
     compile 'com.sedmelluq:jda-nas:1.0.6'
     compile "com.zaxxer:HikariCP:3.2.0"
-    compile('net.dv8tion:JDA:3.8.0_435') {
+    compile('net.dv8tion:JDA:3.8.0_436') {
         exclude module: 'opus-java'
     }
 
