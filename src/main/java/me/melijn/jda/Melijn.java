@@ -12,19 +12,21 @@ import me.melijn.jda.commands.developer.WeebshCommand;
 import me.melijn.jda.commands.fun.*;
 import me.melijn.jda.commands.management.*;
 import me.melijn.jda.commands.music.*;
-import me.melijn.jda.rest.Application;
 import me.melijn.jda.commands.util.*;
 import me.melijn.jda.db.MySQL;
 import me.melijn.jda.events.AddReaction;
 import me.melijn.jda.events.Channels;
 import me.melijn.jda.events.Chat;
 import me.melijn.jda.events.JoinLeave;
+import me.melijn.jda.rest.Application;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.utils.cache.CacheFlag;
 import okhttp3.OkHttpClient;
 import org.discordbots.api.client.DiscordBotListAPI;
@@ -163,6 +165,9 @@ public class Melijn {
                 .botId(awaitReady().getShardById(0).getSelfUser().getId())
                 .build();
 
+        EvalCommand.serverBlackList.add(new long[]{110373943822540800L, 264445053596991498L});
+        EvalCommand.userBlackList.add(new long[]{260424455270957058L});
+
         Helpers.startTimer(shardManager.getShardById(0), 0);
         Helpers.startTime = System.currentTimeMillis();
         Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
@@ -198,5 +203,17 @@ public class Melijn {
         ready = true;
         System.out.println("ShardManager ready after " + time + "ms");
         return getShardManager();
+    }
+
+    public static void channelLog(String s) {
+        try {
+            Guild guild = awaitReady().getGuildById(340081887265685504L);
+            if (guild != null) {
+                TextChannel channel = guild.getTextChannelById(343679998776836096L);
+                channel.sendMessage(s).queue();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

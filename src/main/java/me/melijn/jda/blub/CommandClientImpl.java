@@ -25,7 +25,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
     private static final int INDEX_LIMIT = 200;
     private final TObjectIntMap<String> commandIndex;
     public final List<Command> commands;
-    private CommandListener listener = null;
+    //private CommandListener listener = null;
 
     public CommandClientImpl(long ownerId, List<Command> commands) {
         if (ownerId == -1)
@@ -40,12 +40,12 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
     /*@Override
     public void setListener(CommandListener listener) {
         this.listener = listener;
-    }*/
+    }
 
     @Override
     public CommandListener getListener() {
         return listener;
-    }
+    }*/
 
     @Override
     public List<Command> getCommands() {
@@ -78,11 +78,6 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
     }
 
     @Override
-    public String getPrefix() {
-        return Melijn.PREFIX;
-    }
-
-    @Override
     public void onShutdown(ShutdownEvent event) {
     }
 
@@ -91,9 +86,13 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
         try {
             if (event.getAuthor().isBot()) return;
             boolean nickname = event.getGuild() != null && event.getGuild().getSelfMember().getNickname() != null;
-            if (event.getGuild() != null && EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()) && event.getAuthor().getIdLong() != Melijn.OWNERID)
+
+            if  ((event.getGuild() != null && EvalCommand.serverBlackList.contains(event.getGuild().getIdLong()) && event.getAuthor().getIdLong() != Melijn.OWNERID) ||
+                    EvalCommand.userBlackList.contains(event.getAuthor().getIdLong()) ||
+                    (event.getGuild() != null && EvalCommand.userBlackList.contains(event.getGuild().getOwnerIdLong())))
                 return;
-            boolean[] isCommand = new boolean[]{false};
+
+            //boolean[] isCommand = new boolean[]{false};
             String[] parts = null;
             String rawContent = event.getMessage().getContentRaw();
             String prefix = event.getGuild() != null ? SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong()) : Melijn.PREFIX;
@@ -108,7 +107,6 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                     if (commands.size() < INDEX_LIMIT + 1) {
                         commands.stream().filter(cmd -> cmd.isCommandFor(name)).findAny().ifPresent(command -> {
 
-                            /*Custom merlijn crapcode*/
                             if (command.getCategory() == Category.DEVELOPER && event.getAuthor().getIdLong() != Melijn.OWNERID)
                                 return;
                             if (noPermission(event, command)) return;
@@ -116,11 +114,10 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                             if (event.getGuild() != null && DisableCommand.disabledGuildCommands.containsKey(event.getGuild().getIdLong()) && DisableCommand.disabledGuildCommands.get(event.getGuild().getIdLong()).contains(commands.indexOf(command)))
                                 return;
 
-                            /*Cool code from jda-utils*/
-                            isCommand[0] = true;
+                            //isCommand[0] = true;
                             Melijn.mySQL.updateUsage(commands.indexOf(command), System.currentTimeMillis());
                             CommandEvent cevent = new CommandEvent(event, args, this, name);
-                            if (listener != null) listener.onCommand(cevent, command);
+                            //if (listener != null) listener.onCommand(cevent, command);
                             command.run(cevent);
                         });
                     } else {
@@ -128,22 +125,20 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                         if (i != -1) {
                             Command command = commands.get(i);
 
-                            /*Custom merlijn crapcode*/
                             if (command.getCategory() == Category.DEVELOPER && event.getAuthor().getIdLong() != Melijn.OWNERID)
                                 return;
                             if (noPermission(event, command)) return;
                             if (unFulfilledNeeds(event, command)) return;
 
-                            /*Cool code from jda-utils*/
-                            isCommand[0] = true;
+                            //isCommand[0] = true;
                             Melijn.mySQL.updateUsage(i, System.currentTimeMillis());
                             CommandEvent cevent = new CommandEvent(event, args, this, name);
-                            if (listener != null) listener.onCommand(cevent, command);
+                            //if (listener != null) listener.onCommand(cevent, command);
                             command.run(cevent);
                         }
                     }
             }
-            if (!isCommand[0] && listener != null) listener.onNonCommandMessage(event);
+            //if (!isCommand[0] && listener != null) listener.onNonCommandMessage(event);
         } catch (Exception e) {
             MessageHelper.printException(Thread.currentThread(), e, event.getGuild(), event.getChannel());
         }

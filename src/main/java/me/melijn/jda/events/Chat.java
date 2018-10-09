@@ -1,6 +1,12 @@
 package me.melijn.jda.events;
 
 import com.google.common.cache.CacheLoader;
+import gnu.trove.map.TIntIntMap;
+import gnu.trove.map.TLongIntMap;
+import gnu.trove.map.TLongObjectMap;
+import gnu.trove.map.hash.TIntIntHashMap;
+import gnu.trove.map.hash.TLongIntHashMap;
+import gnu.trove.map.hash.TLongObjectHashMap;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.commands.developer.EvalCommand;
@@ -28,7 +34,6 @@ import java.awt.*;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
@@ -40,26 +45,35 @@ public class Chat extends ListenerAdapter {
 
     private List<User> black = new ArrayList<>();
     private MySQL mySQL = Melijn.mySQL;
-    private String latestId = "";
+    private long latestId = 0;
     private int latestChanges = 0;
-    private HashMap<Long, HashMap<Long, Integer>> guildUserVerifyTries = new HashMap<>();
+    private TLongObjectMap<TLongIntMap> guildUserVerifyTries = new TLongObjectHashMap<>();
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || EvalCommand.serverBlackList.contains(event.getGuild().getIdLong()))
             if (event.getMessage().getContentRaw().equalsIgnoreCase(PREFIX) || event.getMessage().getContentRaw().equalsIgnoreCase(event.getJDA().getSelfUser().getAsMention()))
                 event.getChannel().sendMessage(String.format("Hello there my default prefix is %s and you can view all commands using **%shelp**", PREFIX, PREFIX)).queue();
             else return;
         if (event.getMember() != null) {
             Guild guild = event.getGuild();
             User author = event.getAuthor();
+            if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
             Helpers.guildCount = event.getJDA().asBot().getShardManager().getGuilds().size();
-            String content = event.getMessage().getContentRaw();
+
+            StringBuilder content = new StringBuilder(event.getMessage().getContentRaw());
             for (Message.Attachment a : event.getMessage().getAttachments()) {
-                content += "\n" + a.getUrl();
+                content.append("\n").append(a.getUrl());
             }
-            String finalContent = content;
-            TaskScheduler.async(() -> mySQL.createMessage(event.getMessageIdLong(), finalContent, author.getIdLong(), guild.getIdLong(), event.getChannel().getIdLong()));
+            String finalContent = content.toString();
+
+            TaskScheduler.async(() -> {
+                if (SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
+                        SetLogChannelCommand.odmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
+                        SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
+                        SetLogChannelCommand.fmLogChannelCache.getUnchecked(guild.getIdLong()) != -1)
+                    mySQL.createMessage(event.getMessageIdLong(), finalContent, author.getIdLong(), guild.getIdLong(), event.getChannel().getIdLong());
+            });
             if (event.getMessage().getContentRaw().equalsIgnoreCase(guild.getSelfMember().getAsMention())) {
                 String prefix = SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong());
                 event.getChannel().sendMessage(String.format(("Hello there my default prefix is %s " + (prefix.equals(PREFIX) ? "" : String.format("\nThis server has configured %s as the prefix\n", prefix)) + "and you can view all commands using **%shelp**"), PREFIX, prefix)).queue();
@@ -67,29 +81,29 @@ public class Chat extends ListenerAdapter {
             if (guild.getSelfMember().hasPermission(Permission.MESSAGE_MANAGE) && !event.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
                 TaskScheduler.async(() -> {
                     String message = event.getMessage().getContentRaw();
-                    String detectedWord = null;
-                    HashMap<Integer, Integer> deniedPositions = new HashMap<>();
-                    HashMap<Integer, Integer> allowedPositions = new HashMap<>();
+                    StringBuilder detectedWord = null;
+                    TIntIntMap deniedPositions = new TIntIntHashMap();
+                    TIntIntMap allowedPositions = new TIntIntHashMap();
                     List<String> deniedList = mySQL.getFilters(guild.getIdLong(), "denied");
                     List<String> allowedList = mySQL.getFilters(guild.getIdLong(), "allowed");
                     addPositions(message, deniedPositions, deniedList);
                     addPositions(message, allowedPositions, allowedList);
 
                     if (allowedPositions.size() > 0 && deniedPositions.size() > 0) {
-                        for (Integer beginDenied : deniedPositions.keySet()) {
-                            Integer endDenied = deniedPositions.get(beginDenied);
-                            for (Integer beginAllowed : allowedPositions.keySet()) {
-                                Integer endAllowed = allowedPositions.get(beginAllowed);
+                        for (int beginDenied : deniedPositions.keys()) {
+                            int endDenied = deniedPositions.get(beginDenied);
+                            for (int beginAllowed : allowedPositions.keys()) {
+                                int endAllowed = allowedPositions.get(beginAllowed);
                                 if (beginDenied < beginAllowed || endDenied > endAllowed) {
-                                    detectedWord = message.substring(beginDenied, endDenied);
+                                    detectedWord = new StringBuilder(message.substring(beginDenied, endDenied));
                                 }
                             }
                         }
                     } else if (deniedPositions.size() > 0) {
-                        detectedWord = "";
-                        for (Integer beginDenied : deniedPositions.keySet()) {
-                            Integer endDenied = deniedPositions.get(beginDenied);
-                            detectedWord += message.substring(beginDenied, endDenied) + ", ";
+                        detectedWord = new StringBuilder();
+                        for (int beginDenied : deniedPositions.keys()) {
+                            int endDenied = deniedPositions.get(beginDenied);
+                            detectedWord.append(message, beginDenied, endDenied).append(", ");
                         }
                     }
                     if (detectedWord != null) {
@@ -111,16 +125,16 @@ public class Chat extends ListenerAdapter {
                         event.getMessage().delete().reason("Verification Channel").queue(s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()));
                         if (guildUserVerifyTries.containsKey(event.getGuild().getIdLong())) {
                             if (guildUserVerifyTries.get(event.getGuild().getIdLong()).containsKey(event.getAuthor().getIdLong())) {
-                                HashMap<Long, Integer> userTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
-                                userTriesBuffer.replace(event.getAuthor().getIdLong(), userTriesBuffer.get(event.getAuthor().getIdLong()) + 1);
-                                guildUserVerifyTries.replace(event.getGuild().getIdLong(), userTriesBuffer);
+                                TLongIntMap userTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
+                                userTriesBuffer.put(event.getAuthor().getIdLong(), userTriesBuffer.get(event.getAuthor().getIdLong()) + 1);
+                                guildUserVerifyTries.put(event.getGuild().getIdLong(), userTriesBuffer);
                             } else {
-                                HashMap<Long, Integer> userTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
+                                TLongIntMap userTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
                                 userTriesBuffer.put(event.getAuthor().getIdLong(), 1);
-                                guildUserVerifyTries.replace(event.getGuild().getIdLong(), userTriesBuffer);
+                                guildUserVerifyTries.put(event.getGuild().getIdLong(), userTriesBuffer);
                             }
                         } else {
-                            HashMap<Long, Integer> userTriesBuffer = new HashMap<>();
+                            TLongIntMap userTriesBuffer = new TLongIntHashMap();
                             userTriesBuffer.put(event.getAuthor().getIdLong(), 1);
                             guildUserVerifyTries.put(event.getGuild().getIdLong(), userTriesBuffer);
                         }
@@ -137,21 +151,19 @@ public class Chat extends ListenerAdapter {
         }
     }
 
-    private void addPositions(String message, HashMap<Integer, Integer> deniedPositions, List<String> deniedList) {
+    private void addPositions(String message, TIntIntMap deniedPositions, List<String> deniedList) {
         for (String toFind : deniedList) {
             Pattern word = Pattern.compile(Pattern.quote(toFind.toLowerCase()));
             Matcher match = word.matcher(message.toLowerCase());
             while (match.find()) {
-                if (deniedPositions.keySet().contains(match.start()) && deniedPositions.get(match.start()) < match.end())
-                    deniedPositions.replace(match.start(), match.end());
-                else deniedPositions.put(match.start(), match.end());
+                deniedPositions.put(match.start(), match.end());
             }
         }
     }
 
     private void removeMemberFromTriesCache(GuildMessageReceivedEvent event) {
         if (guildUserVerifyTries.containsKey(event.getGuild().getIdLong())) {
-            HashMap<Long, Integer> memberTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
+            TLongIntMap memberTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
             memberTriesBuffer.remove(event.getAuthor().getIdLong());
             if (memberTriesBuffer.size() > 0) guildUserVerifyTries.put(event.getGuild().getIdLong(), memberTriesBuffer);
             else guildUserVerifyTries.remove(event.getGuild().getIdLong());
@@ -161,8 +173,9 @@ public class Chat extends ListenerAdapter {
 
     @Override
     public void onGuildMessageDelete(GuildMessageDeleteEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || EvalCommand.serverBlackList.contains(event.getGuild().getIdLong()))
             return;
+        if (EvalCommand.userBlackList.contains(event.getGuild().getOwnerIdLong())) return;
         if (Helpers.lastRunTimer1 < (System.currentTimeMillis() - 4_000))
             Helpers.startTimer(event.getJDA(), 1);
         if (Helpers.lastRunTimer2 < (System.currentTimeMillis() - 61_000))
@@ -197,8 +210,8 @@ public class Chat extends ListenerAdapter {
             AuditLogEntry auditLogEntry = auditLogEntries.get(0);
             String t = auditLogEntry.getOption(AuditLogOption.COUNT);
             if (t != null) {
-                boolean sameAsLast = latestId.equals(auditLogEntry.getId()) && latestChanges != Integer.valueOf(t);
-                latestId = auditLogEntry.getId();
+                boolean sameAsLast = latestId == auditLogEntry.getIdLong() && latestChanges != Integer.valueOf(t);
+                latestId = auditLogEntry.getIdLong();
                 latestChanges = Integer.valueOf(t);
                 ZonedDateTime deletionTime = MiscUtil.getCreationTime(auditLogEntry.getIdLong()).toZonedDateTime();
                 ZonedDateTime now = OffsetDateTime.now().atZoneSameInstant(deletionTime.getOffset());
@@ -245,7 +258,7 @@ public class Chat extends ListenerAdapter {
                     User deleter = sameAsLast ? auditLogEntry.getUser() : event.getJDA().asBot().getShardManager().getUserById(Melijn.mySQL.getMessageAuthorId(event.getMessageIdLong()));
                     log(guild, author, eb, deleter, message, split);
                 }
-        }
+            }
         });
     }
 

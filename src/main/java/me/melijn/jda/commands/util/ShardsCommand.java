@@ -26,16 +26,17 @@ public class ShardsCommand extends Command {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             ShardManager shardManager = event.getJDA().asBot().getShardManager();
             TableBuilder tableBuilder = new TableBuilder(true).setColumns(List.of("Shard ID", "Ping", "Users", "Guilds", "VCs"));
-            int shardCount = 1;
+
             int avgping = 0;
             int vcs = 0;
-            for (JDA jda : shardManager.getShards()) {
+            for (int id = 0; id < shardManager.getShardsTotal(); id++) {
+                JDA jda = event.getJDA().asBot().getShardManager().getShardById(id);
                 avgping += jda.getPing();
                 long jvcs = jda.getGuilds().stream().filter(guild -> guild.getSelfMember().getVoiceState().inVoiceChannel()).count();
                 vcs += jvcs;
-                tableBuilder.addRow(List.of(String.valueOf(shardCount++), String.valueOf(jda.getPing()), String.valueOf(jda.getUsers().size()), String.valueOf(jda.getGuilds().size()), String.valueOf(jvcs)));
+                tableBuilder.addRow(List.of(String.valueOf(id), String.valueOf(jda.getPing()), String.valueOf(jda.getUsers().size()), String.valueOf(jda.getGuilds().size()), String.valueOf(jvcs)));
             }
-            avgping = avgping/(shardCount-1);
+            avgping = avgping/shardManager.getShardsTotal();
             tableBuilder.setFooterRow(List.of("Sum/Avg", String.valueOf(avgping), String.valueOf(shardManager.getUsers().size()), String.valueOf(shardManager.getGuilds().size()), String.valueOf(vcs)));
 
             for (String part : tableBuilder.build()) {

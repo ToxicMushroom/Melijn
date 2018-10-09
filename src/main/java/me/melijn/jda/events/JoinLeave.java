@@ -36,10 +36,14 @@ public class JoinLeave extends ListenerAdapter {
 
     @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || EvalCommand.serverBlackList.contains(event.getGuild().getIdLong())) {
             return;
+        }
         Guild guild = event.getGuild();
         User joinedUser = event.getUser();
+        if (joinedUser.isBot() && joinedUser.equals(guild.getSelfMember().getUser()) && EvalCommand.serverBlackList.contains(guild.getOwnerIdLong()))
+            guild.leave().queue();
+        if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
         if (SetVerificationChannel.verificationChannelsCache.getUnchecked(guild.getIdLong()) != -1) {
             TextChannel verificationChannel = guild.getTextChannelById(SetVerificationChannel.verificationChannelsCache.getUnchecked(guild.getIdLong()));
             if (verificationChannel != null) {
@@ -65,10 +69,11 @@ public class JoinLeave extends ListenerAdapter {
 
     @Override
     public void onGuildMemberLeave(GuildMemberLeaveEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || EvalCommand.serverBlackList.contains(event.getGuild().getIdLong()))
             return;
         Guild guild = event.getGuild();
         User leftUser = event.getUser();
+        if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
         if (unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong()).contains(leftUser.getIdLong())) {
             removeUnverified(guild, leftUser);
         } else {
@@ -87,8 +92,7 @@ public class JoinLeave extends ListenerAdapter {
         removeUnverified(guild, user);
         try {
             joinCode(guild, user);
-        } catch (ExecutionException ignore) {
-        }
+        } catch (ExecutionException ignore) {}
     }
 
     private static void joinCode(Guild guild, User user) throws ExecutionException {

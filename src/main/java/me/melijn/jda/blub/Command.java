@@ -47,7 +47,7 @@ public abstract class Command {
 
     public final void run(CommandEvent event) {
         execute(event);
-        if (event.getClient().getListener() != null) event.getClient().getListener().onCompletedCommand(event, this);
+        //if (event.getClient().getListener() != null) event.getClient().getListener().onCompletedCommand(event, this);
     }
 
 

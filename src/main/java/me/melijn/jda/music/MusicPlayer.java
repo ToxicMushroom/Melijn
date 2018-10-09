@@ -3,19 +3,19 @@ package me.melijn.jda.music;
 import com.github.natanbc.lavadsp.chain.ChainedFilterBuilder;
 import com.github.natanbc.lavadsp.timescale.TimescalePcmAudioFilter;
 import com.github.natanbc.lavadsp.tremolo.TremoloPcmAudioFilter;
-import me.melijn.jda.Helpers;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import gnu.trove.map.TIntDoubleMap;
+import gnu.trove.map.hash.TIntDoubleHashMap;
+import me.melijn.jda.Helpers;
 import net.dv8tion.jda.core.entities.Guild;
-
-import java.util.HashMap;
 
 public class MusicPlayer {
 
     private final AudioPlayer audioPlayer;
     private final AudioListener listener;
     private final Guild guild;
-    private HashMap<Long, Double> filters = new HashMap<>();
+    private TIntDoubleMap filters = new TIntDoubleHashMap();
 
     public void updateFilters() {
         ChainedFilterBuilder builder = new ChainedFilterBuilder();
@@ -48,44 +48,44 @@ public class MusicPlayer {
         listener = new AudioListener(this);
         this.audioPlayer.addListener(listener);
         this.audioPlayer.setVolume(100);
-        filters.put(1L, 0D); //Depth (cannot be disabled without removing the whole effect class from the builder)
-        filters.put(2L, 0D); //Frequency (cannot be disabled without removing the whole effect class from the builder)
-        filters.put(3L, 1D); //speed default 1
-        filters.put(4L, 1D); //pitch default 1
+        filters.put(1, 0D); //Depth (cannot be disabled without removing the whole effect class from the builder)
+        filters.put(2, 0D); //Frequency (cannot be disabled without removing the whole effect class from the builder)
+        filters.put(3, 1D); //speed default 1
+        filters.put(4, 1D); //pitch default 1
     }
 
     public double getDepth() {
-        return filters.get(1L);
+        return filters.get(1);
     }
 
     public double getFrequency() {
-        return filters.get(2L);
+        return filters.get(2);
     }
 
     public double getSpeed() {
-        return filters.get(3L);
+        return filters.get(3);
     }
 
     public double getPitch() {
-        return filters.get(4L);
+        return filters.get(4);
     }
 
     public void setDepth(double value) {
         double temp = value;
         if (temp == 1) temp = 0.999D;
-        filters.replace(1L, temp);
+        filters.put(1, temp);
     }
 
     public void setFrequency(double value) {
-        filters.replace(2L, value);
+        filters.put(2, value);
     }
 
     public void setSpeed(double value) {
-        filters.replace(3L, value);
+        filters.put(3, value);
     }
 
     public void setPitch(double value) {
-        filters.replace(4L, value);
+        filters.put(4, value);
     }
 
     public AudioPlayer getAudioPlayer() {

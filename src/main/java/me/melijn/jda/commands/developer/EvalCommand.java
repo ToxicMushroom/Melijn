@@ -1,5 +1,7 @@
 package me.melijn.jda.commands.developer;
 
+import gnu.trove.list.TLongList;
+import gnu.trove.list.array.TLongArrayList;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
@@ -12,15 +14,14 @@ import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import java.util.Arrays;
-import java.util.List;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class EvalCommand extends Command {
 
     public static EvalCommand INSTANCE = new EvalCommand();
-    private List<Long> blackList = Arrays.asList(110373943822540800L, 264445053596991498L);
+    public static TLongList serverBlackList = new TLongArrayList();
+    public static TLongList userBlackList = new TLongArrayList();
     String engineName = "groovy";
 
     public EvalCommand() {
@@ -62,7 +63,9 @@ public class EvalCommand extends Command {
         se.put("mysql", Melijn.mySQL);
         se.put("eb", new EmbedBuilder());
         se.put("webUtils", WebUtils.getWebUtilsInstance());
-        se.put("blacklist", blackList);
+
+        se.put("serverBlackList", serverBlackList);
+        se.put("userBlackList", userBlackList);
         se.put("voteReq", Helpers.voteChecks);
         try {
             if (event.getArgs().contains("event.reply("))
@@ -72,9 +75,5 @@ public class EvalCommand extends Command {
         } catch (Exception e) {
             event.reply("An exception was thrown:\n```\n" + e + "```");
         }
-    }
-
-    public List<Long> getBlackList() {
-        return blackList;
     }
 }

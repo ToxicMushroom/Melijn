@@ -158,9 +158,9 @@ public class Helpers {
                 if (Melijn.dblAPI != null)
                     Melijn.dblAPI.setStats(guildCount == 0 ? jda.asBot().getShardManager().getGuilds().size() : guildCount);
                 TLongList votesList = Melijn.mySQL.getVoteList();
-                TLongObjectMap<TLongList> nextvoteMap = Melijn.mySQL.getNotificationsMap(NotificationType.NEXTVOTE);
-                for (long userId : nextvoteMap.keys()) {
-                    for (long targetId : nextvoteMap.get(userId).toArray()) {
+                TLongObjectMap<TLongList> nextVoteMap = Melijn.mySQL.getNotificationsMap(NotificationType.NEXTVOTE);
+                for (long userId : nextVoteMap.keys()) {
+                    for (long targetId : nextVoteMap.get(userId).toArray()) {
                         if (votesList.contains(targetId)) {
                             jda.asBot().getShardManager().retrieveUserById(userId).queue((u) -> {
                                 if (userId != targetId)

@@ -26,9 +26,10 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceMove(GuildVoiceMoveEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || EvalCommand.serverBlackList.contains(event.getGuild().getIdLong()))
             return;
         Guild guild = event.getGuild();
+        if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
         long guildId = guild.getIdLong();
         AudioManager audioManager = guild.getAudioManager();
         if (audioManager.isConnected()) {
@@ -69,9 +70,10 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceJoin(GuildVoiceJoinEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || EvalCommand.serverBlackList.contains(event.getGuild().getIdLong()))
             return;
         Guild guild = event.getGuild();
+        if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
         long guildId = guild.getIdLong();
         AudioManager audioManager = guild.getAudioManager();
         if (SetStreamerModeCommand.streamerModeCache.getUnchecked(guildId) &&
@@ -91,7 +93,7 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || EvalCommand.serverBlackList.contains(event.getGuild().getIdLong()))
             return;
         if (!event.getMember().equals(event.getGuild().getSelfMember()))
             whenListeningDoActions(event.getGuild());
@@ -99,7 +101,7 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceDeafen(GuildVoiceDeafenEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || EvalCommand.userBlackList.contains(event.getGuild().getIdLong()))
             return;
         if (!event.getMember().equals(event.getGuild().getSelfMember()))
             whenListeningDoActions(event.getGuild());

@@ -22,9 +22,10 @@ public class AddReaction extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event) {
-        if (event.getGuild() == null || EvalCommand.INSTANCE.getBlackList().contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || EvalCommand.serverBlackList.contains(event.getGuild().getIdLong()))
             return;
         Guild guild = event.getGuild();
+        if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
         if (MusicManager.userMessageToAnswer.containsKey(event.getUser().getIdLong()) && MusicManager.userMessageToAnswer.get(event.getUser().getIdLong()) == event.getMessageIdLong()) {
             MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
             if (event.getReactionEmote().getName().equalsIgnoreCase("✅")) {
