@@ -400,7 +400,7 @@ public class MySQL {
             statement1.setLong(1, guildId);
             statement1.setString(2, permission);
             ResultSet rs1 = statement1.executeQuery();
-            if (!rs.next()) {
+            if (!rs1.next()) {
                 temp = true;
             }
             statement1.close();
