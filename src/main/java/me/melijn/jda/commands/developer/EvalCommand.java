@@ -8,6 +8,7 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.TaskScheduler;
 import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.core.EmbedBuilder;
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
@@ -52,28 +53,34 @@ public class EvalCommand extends Command {
                 "import java.lang.*;\n" +
                 "import java.util.*;\n" +
                 "import net.dv8tion.jda.core.*;\n" +
-                "import me.melijn.jda.commands.*;\n" +
+                "import me.melijn.jda.commands.developer.*;\n" +
+                "import me.melijn.jda.commands.management.*;\n" +
+                "import me.melijn.jda.commands.music.*;\n" +
+                "import me.melijn.jda.commands.util.*;\n" +
                 "import me.melijn.jda.Melijn;\n" +
                 "import me.melijn.jda.Helpers;\n";
 
-        se.put("event", event);
-        se.put("jda", event.getJDA());
-        se.put("guild", event.getGuild());
-        se.put("channel", event.getChannel());
-        se.put("mysql", Melijn.mySQL);
-        se.put("eb", new EmbedBuilder());
-        se.put("webUtils", WebUtils.getWebUtilsInstance());
 
-        se.put("serverBlackList", serverBlackList);
-        se.put("userBlackList", userBlackList);
-        se.put("voteReq", Helpers.voteChecks);
-        try {
-            if (event.getArgs().contains("event.reply("))
-                se.eval(imports + event.getArgs());
-            else
-                event.reply(se.eval(imports + event.getArgs()).toString());
-        } catch (Exception e) {
-            event.reply("An exception was thrown:\n```\n" + e + "```");
-        }
+        TaskScheduler.async(() -> {
+            se.put("event", event);
+            se.put("jda", event.getJDA());
+            se.put("guild", event.getGuild());
+            se.put("channel", event.getChannel());
+            se.put("mysql", Melijn.mySQL);
+            se.put("eb", new EmbedBuilder());
+            se.put("webUtils", WebUtils.getWebUtilsInstance());
+            se.put("serverBlackList", serverBlackList);
+            se.put("userBlackList", userBlackList);
+            se.put("voteReq", Helpers.voteChecks);
+
+            try {
+                if (event.getArgs().contains("event.reply("))
+                    se.eval(imports + event.getArgs());
+                else
+                    event.reply(se.eval(imports + event.getArgs()).toString());
+            } catch (Exception e) {
+                event.reply("An exception was thrown:\n```\n" + e + "```");
+            }
+        });
     }
 }
