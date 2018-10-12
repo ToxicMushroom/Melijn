@@ -93,7 +93,7 @@ public class TableBuilder {
         sb.append("═╣\n");
 
         //main
-        for (List<String> array : valueRows.valueCollection()) {
+        for (int i = 0; i < valueRows.size(); i++) {
             int numm = 0;
             if (split && sb.length() + maxRowWidth > 1997 - (footerRow.size() > 0 ? maxRowWidth * 3 : maxRowWidth)) {
                 toReturn.add(sb.toString() + "```");
@@ -101,7 +101,7 @@ public class TableBuilder {
                 sb.append("```prolog\n");
             }
             sb.append("║");
-            for (String value : array) {
+            for (String value : valueRows.get(i)) {
                 sb.append(" ").append(value).append(spaces, 0, columnWidth.get(numm++) - value.length()).append(" ║");
             }
             sb.append("\n");
