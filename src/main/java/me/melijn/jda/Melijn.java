@@ -147,7 +147,12 @@ public class Melijn {
                 new MetricsCommand(),
                 new SettingsCommand(),
                 new DonateCommand(),
-                new SlowModeCommand()
+                new SlowModeCommand(),
+                new UnicodeCommand(),
+                new AlpacaCommand(),
+                new StatsCommand(),
+                new KissCommand(),
+                new HugCommand()
         );
 
         shardManager = new DefaultShardManagerBuilder()
@@ -166,7 +171,7 @@ public class Melijn {
                 .build();
 
         EvalCommand.serverBlackList.add(new long[]{110373943822540800L, 264445053596991498L});
-        EvalCommand.userBlackList.add(new long[]{260424455270957058L});
+        EvalCommand.userBlackList.add(new long[]{/*fabian: 260424455270957058L*/});
 
         Helpers.startTimer(shardManager.getShardById(0), 0);
         Helpers.startTime = System.currentTimeMillis();
