@@ -23,9 +23,9 @@ public class TextToEmojiCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
+            String[] args = event.getArgs().split("\\s+");
             if (event.getArgs().length() > 0) {
                 StringBuilder sb = new StringBuilder();
-                String[] args = event.getArgs().split("\\s+");
                 for (String s : event.getArgs().replaceFirst("%spaces%", "").split("")) {
                     if (Character.isLetter(s.toLowerCase().charAt(0))) {
                         sb.append(":regional_indicator_").append(s.toLowerCase()).append(":");

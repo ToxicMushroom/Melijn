@@ -15,15 +15,14 @@ import me.melijn.jda.commands.management.SetPrefixCommand;
 import me.melijn.jda.commands.music.NowPlayingCommand;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.ChannelType;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.MessageChannel;
-import net.dv8tion.jda.core.entities.PrivateChannel;
+import net.dv8tion.jda.core.entities.*;
 import okhttp3.HttpUrl;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
@@ -44,6 +43,29 @@ public class MessageHelper {
         int mMinutes = start.get(Calendar.MINUTE);
         int mSeconds = start.get(Calendar.SECOND);
         return String.valueOf(mHour) + ":" + mMinutes + ":" + mSeconds + "s " + mDay + "/" + mMonth + "/" + mYear;
+    }
+
+    public static long dateToMillis(String date) {
+        Matcher matcher = Pattern.compile("(\\d+):(\\d+):(\\d+)s (\\d+)/(\\d+)/(\\d+)").matcher(date);
+        if (!matcher.find()) return -1;
+        int hour = matcher.group(1).length() < 3 ? Integer.parseInt(matcher.group(1)) : -1;
+        int minutes = matcher.group(2).length() < 3 ? Integer.parseInt(matcher.group(2)) : -1;
+        int seconds = matcher.group(3).length() < 3 ? Integer.parseInt(matcher.group(3)) : -1;
+
+        int day = matcher.group(4).length() < 3 ? Integer.parseInt(matcher.group(4)) : -1;
+        int month = matcher.group(5).length() < 3 ? Integer.parseInt(matcher.group(5)) : -1;
+        int year = matcher.group(6).length() < 5 ? Integer.parseInt(matcher.group(6)) : -1;
+        if (hour > 23 || hour == -1 ||
+                minutes > 59 || minutes == -1 ||
+                seconds > 59 || seconds == -1 ||
+                day > 31 || day == -1 ||
+                month > 12 || month < 0 ||
+                year < 2016)
+            return -1;
+
+        Calendar start = Calendar.getInstance();
+        start.set(year, month, day, hour, minutes, seconds);
+        return start.getTimeInMillis();
     }
 
     public static boolean isRightFormat(String string) {
@@ -93,7 +115,7 @@ public class MessageHelper {
         if (track.getInfo().isStream || track.getPosition() > track.getDuration()) {
             return "**" + Helpers.getDurationBreakdown(track.getPosition()) + " | \uD83D\uDD34 Live**";
         }
-        int percent = (int)(((double)track.getPosition() / (double)track.getDuration()) * 18D);
+        int percent = (int) (((double) track.getPosition() / (double) track.getDuration()) * 18D);
         StringBuilder sb = new StringBuilder("▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
         sb.insert(percent, "](https://melijn.com/)<a:cool_nyan:490978764264570894>");
         sb.append(" **").append(Helpers.getDurationBreakdown(track.getPosition())).append("/").append(Helpers.getDurationBreakdown(track.getDuration())).append("**");
@@ -153,16 +175,36 @@ public class MessageHelper {
         if (thread != null) printWriter.write("**Thread**: " + thread.getName() + "\r\n");
 
         ex.printStackTrace(printWriter);
-        final List<String> messages = new ArrayList<>();
         String message = writer.toString().replaceAll("me\\.melijn\\.jda", "**me.melijn.jda**");
-        while (message.length() > 2000) {
-            final String findLastNewline = message.substring(0, 2000);
-            int index = findLastNewline.lastIndexOf("\n");
-            if (index == 0) index = 2000;
-            messages.add(message.substring(0, index));
-            message = message.substring(index);
-        }
-        messages.add(message);
+        final List<String> messages = getSplitMessage(message);
         messages.forEach(msg -> Melijn.getShardManager().getGuildById(340081887265685504L).getTextChannelById(486042641692360704L).sendMessage(msg).queue());
+    }
+
+    public static List<String> getSplitMessage(String message) {
+        String toSplit = message;
+        final List<String> messages = new ArrayList<>();
+        while (toSplit.length() > 2000) {
+            final String findLastNewline = toSplit.substring(0, 2000);
+            int index = findLastNewline.lastIndexOf("\n");
+            if (index < 1600) {
+                index = findLastNewline.lastIndexOf(".");
+            }
+            if (index < 1600) {
+                index = findLastNewline.lastIndexOf(" ");
+            }
+            if (index < 1600) {
+                index = 2000;
+            }
+            messages.add(toSplit.substring(0, index));
+            toSplit = toSplit.substring(index);
+        }
+        return messages;
+    }
+
+    public static void sendSplitMessage(TextChannel channel, String text) {
+        String toSplit = text;
+        final List<String> messages = getSplitMessage(text);
+        messages.add(toSplit);
+        messages.forEach(message -> channel.sendMessage(message).queue());
     }
 }

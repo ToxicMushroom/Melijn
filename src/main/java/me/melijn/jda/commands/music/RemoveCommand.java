@@ -1,6 +1,8 @@
 package me.melijn.jda.commands.music;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
@@ -12,7 +14,6 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
@@ -41,7 +42,7 @@ public class RemoveCommand extends Command {
                 return;
             }
             BlockingQueue<AudioTrack> tracks = manager.getPlayer(event.getGuild()).getListener().getTracks();
-            HashMap<Integer, AudioTrack> songs = new HashMap<>();
+            TIntObjectMap<AudioTrack> songs = new TIntObjectHashMap<>();
             int i = 0;
             for (AudioTrack track : tracks) {
                 i++;
