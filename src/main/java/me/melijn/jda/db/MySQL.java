@@ -24,6 +24,7 @@ import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.User;
 import org.apache.logging.log4j.Level;
@@ -485,7 +486,13 @@ public class MySQL {
             String name = author.getName() + "#" + author.getDiscriminator();
             EmbedBuilder banned = new EmbedBuilder();
             banned.setColor(Color.RED);
-            banned.setDescription("```LDIF\nBanned: " + namet + "\nTargetID: " + target.getId() + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nFrom: " + MessageHelper.millisToDate(moment) + "\nUntil: " + MessageHelper.millisToDate(until) + "```");
+            banned.setDescription("```LDIF" +
+                    "\nBanned: " + namet +
+                    "\nTargetID: " + target.getId() +
+                    "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") +
+                    "\nGuild: " + guild.getName() +
+                    "\nFrom: " + MessageHelper.millisToDate(moment) +
+                    "\nUntil: " + MessageHelper.millisToDate(until) + "```");
             banned.setThumbnail(target.getEffectiveAvatarUrl());
             banned.setAuthor("Banned by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
@@ -516,7 +523,12 @@ public class MySQL {
         String name = author.getName() + "#" + author.getDiscriminator();
         EmbedBuilder banned = new EmbedBuilder();
         banned.setColor(Color.RED);
-        banned.setDescription("```LDIF\nBanned: " + nameTarget + "\nTargetID: " + target.getId() + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nMoment: " + MessageHelper.millisToDate(moment) + "```");
+        banned.setDescription("```LDIF" +
+                "\nBanned: " + nameTarget +
+                "\nTargetID: " + target.getId() +
+                "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") +
+                "\nGuild: " + guild.getName() +
+                "\nMoment: " + MessageHelper.millisToDate(moment) + "```");
         banned.setThumbnail(target.getEffectiveAvatarUrl());
         banned.setAuthor("Banned by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
@@ -555,7 +567,12 @@ public class MySQL {
             }, guild.getIdLong(), toUnban.getIdLong());
             EmbedBuilder eb = new EmbedBuilder();
             eb.setAuthor("Unbanned by: " + author.getName() + "#" + author.getDiscriminator() + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
-            eb.setDescription("```LDIF\nUnbanned: " + toUnban.getName() + "#" + toUnban.getDiscriminator() + "\nTargetID: " + toUnban.getId() + "\nReason: " + reason + "\nGuild: " + guild.getName() + "\nMoment: " + MessageHelper.millisToDate(System.currentTimeMillis()) + "```");
+            eb.setDescription("```LDIF" +
+                    "\nUnbanned: " + toUnban.getName() + "#" + toUnban.getDiscriminator() +
+                    "\nTargetID: " + toUnban.getId() +
+                    "\nReason: " + reason +
+                    "\nGuild: " + guild.getName() +
+                    "\nMoment: " + MessageHelper.millisToDate(System.currentTimeMillis()) + "```");
             eb.setThumbnail(toUnban.getEffectiveAvatarUrl());
             eb.setColor(Color.green);
 
@@ -577,11 +594,17 @@ public class MySQL {
 
     public boolean addWarn(User author, User target, Guild guild, String reasonRaw) {
         final String reason = reasonRaw.matches("\\s+|") ? "N/A" : reasonRaw;
+        long moment = System.currentTimeMillis();
         executeUpdate("INSERT INTO warns(guildId, victimId, authorId, reason, moment) VALUES (?, ?, ?, ?, ?);",
-                guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, System.currentTimeMillis());
+                guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment);
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setAuthor("Warned by: " + author.getName() + "#" + author.getDiscriminator() + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
-        embedBuilder.setDescription("```LDIF\nWarned: " + target.getName() + "#" + target.getDiscriminator() + "\nTargetID: " + target.getId() + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nMoment: " + MessageHelper.millisToDate(System.currentTimeMillis()) + "\n```");
+        embedBuilder.setDescription("```LDIF" +
+                "\nWarned: " + target.getName() + "#" + target.getDiscriminator() +
+                "\nTargetID: " + target.getId() +
+                "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") +
+                "\nGuild: " + guild.getName() +
+                "\nMoment: " + MessageHelper.millisToDate(moment) + "```");
         embedBuilder.setThumbnail(target.getEffectiveAvatarUrl());
         embedBuilder.setColor(Color.yellow);
 
@@ -691,11 +714,19 @@ public class MySQL {
 
     public boolean addKick(User author, User target, Guild guild, String reasonRaw) {
         final String reason = reasonRaw.matches("\\s+|") ? "N/A" : reasonRaw;
+        long moment = System.currentTimeMillis();
         executeUpdate("INSERT INTO kicks(guildId, victimId, authorId, reason, moment) VALUES (?, ?, ?, ?, ?);",
-                guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, System.currentTimeMillis());
+                guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment);
         EmbedBuilder embedBuilder = new EmbedBuilder();
-        embedBuilder.setAuthor("Kicked by: " + author.getName() + "#" + author.getDiscriminator() + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
-        embedBuilder.setDescription("```LDIF\nKicked: " + target.getName() + "#" + target.getDiscriminator() + "\nTargetID: " + target.getId() + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nMoment: " + MessageHelper.millisToDate(System.currentTimeMillis()) + "```");
+        embedBuilder.setAuthor("Kicked by: " + author.getName() + "#" + author.getDiscriminator() + spaces.substring(0, 45 - author.getName().length()) + "\u200B",
+                null,
+                author.getEffectiveAvatarUrl());
+        embedBuilder.setDescription("```LDIF" +
+                "\nKicked: " + target.getName() + "#" + target.getDiscriminator() +
+                "\nTargetID: " + target.getId() +
+                "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") +
+                "\nGuild: " + guild.getName() +
+                "\nMoment: " + MessageHelper.millisToDate(moment) + "```");
         embedBuilder.setThumbnail(target.getEffectiveAvatarUrl());
         embedBuilder.setColor(Color.ORANGE);
 
@@ -1551,5 +1582,41 @@ public class MySQL {
             coolMap2.put(entry.getKey(), entry.getValue());
         }
         return coolMap2;
+    }
+
+    public String getMySQLVersion() {
+        try {
+            return ds.getConnection().getMetaData().getDatabaseProductVersion().replaceAll("(\\d+\\.\\d+\\.\\d+)-.*", "$1");
+        } catch (SQLException e) {
+            return null;
+        }
+    }
+
+    public String getConnectorVersion() {
+        try {
+            return ds.getConnection().getMetaData().getDriverVersion().replaceAll("mysql-connector-java-(\\d+\\.\\d+\\.\\d+).*", "$1");
+        } catch (SQLException e) {
+            return null;
+        }
+    }
+
+    public void removeBan(Member member, long time) {
+        executeUpdate("DELETE FROM history_bans WHERE guildId=? AND victimId=? AND startTime < ? AND startTime > ?",
+                member.getGuild().getIdLong(), member.getUser().getIdLong(), time + 1000, time - 1000);
+    }
+
+    public void removeMute(Member member, long time) {
+        executeUpdate("DELETE FROM history_mutes WHERE guildId=? AND victimId=? AND startTime < ? AND startTime > ?",
+                member.getGuild().getIdLong(), member.getUser().getIdLong(), time + 1000, time - 1000);
+    }
+
+    public void removeWarn(Member member, long time) {
+        executeUpdate("DELETE FROM warns WHERE guildId=? AND victimId=? AND moment < ? AND moment > ?",
+                member.getGuild().getIdLong(), member.getUser().getIdLong(), time + 1000, time - 1000);
+    }
+
+    public void removeKick(Member member, long time) {
+        executeUpdate("DELETE FROM kicks WHERE guildId=? AND victimId=? AND moment < ? AND moment > ?",
+                member.getGuild().getIdLong(), member.getUser().getIdLong(), time + 1000, time - 1000);
     }
 }
