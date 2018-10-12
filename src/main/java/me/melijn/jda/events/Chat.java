@@ -183,23 +183,27 @@ public class Chat extends ListenerAdapter {
         if (Helpers.lastRunTimer3 < (System.currentTimeMillis() - 1_810_000))
             Helpers.startTimer(event.getJDA(), 3);
         Guild guild = event.getGuild();
-        if (event.getGuild().getSelfMember().hasPermission(Permission.VIEW_AUDIT_LOGS) && (SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
-                SetLogChannelCommand.odmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
-                SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
-                SetLogChannelCommand.fmLogChannelCache.getUnchecked(guild.getIdLong()) != -1)) {
+        if (event.getGuild().getSelfMember().hasPermission(Permission.VIEW_AUDIT_LOGS) &&
+                (SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
+                        SetLogChannelCommand.odmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
+                        SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
+                        SetLogChannelCommand.fmLogChannelCache.getUnchecked(guild.getIdLong()) != -1)) {
             JSONObject message = mySQL.getMessageObject(event.getMessageIdLong());
             if (message.keySet().contains("authorId"))
                 event.getJDA().retrieveUserById(message.getLong("authorId")).queue(author -> {
                     if (author != null && !black.contains(author)) {
-                        guild.getBanList().queue(bans -> {
-                            if (bans.stream().map(Ban::getUser).anyMatch(author::equals)) {
-                                black.add(author);
-                                return;
-                            }
-                            doMessageDeleteChecks(event, guild, message, author);
-                            mySQL.executeUpdate("DELETE FROM history_messages WHERE sentTime < " + (System.currentTimeMillis() - 604_800_000L));
-                        });
+                        if (event.getGuild().getSelfMember().hasPermission(Permission.BAN_MEMBERS))
+                            guild.getBanList().queue(bans -> {
+                                if (bans.stream().map(Ban::getUser).anyMatch(author::equals)) {
+                                    black.add(author);
+                                    return;
+                                }
+                                doMessageDeleteChecks(event, guild, message, author);
+                            });
+
+                        mySQL.executeUpdate("DELETE FROM history_messages WHERE sentTime < " + (System.currentTimeMillis() - 604_800_000L));
                     }
+
                 });
         }
     }
