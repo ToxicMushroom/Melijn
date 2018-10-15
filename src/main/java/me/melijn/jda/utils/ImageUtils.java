@@ -6,7 +6,6 @@ import net.dv8tion.jda.core.entities.User;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.net.URL;
 
 public class ImageUtils {
@@ -31,29 +30,35 @@ public class ImageUtils {
             if (user != null) {
                 try {
                     img = ImageIO.read(new URL(user.getEffectiveAvatarUrl() + "?size=2048"));
-                } catch (IOException e) {
+                } catch (Exception e) {
                     event.reply("Something went wrong");
                 }
             } else {
                 try {
                     img = ImageIO.read(new URL(args[0]));
-                } catch (IOException e) {
+                } catch (Exception e) {
                     event.reply("That url isn't an image or is invalid");
                 }
             }
         } else if (event.getMessage().getAttachments().size() > 0) {
             try {
-                img = ImageIO.read(new URL(event.getMessage().getAttachments().get(0).getUrl()));
-            } catch (IOException e) {
+                img = ImageIO.read(new URL(event.getMessage().getAttachments().get(0).getUrl() + "?size=2048"));
+            } catch (Exception e) {
                 event.reply("That attachment isn't an image");
             }
         } else {
             try {
                 img = ImageIO.read(new URL(event.getAvatarUrl() + "?size=2048"));
-            } catch (IOException e) {
+            } catch (Exception e) {
                 event.reply("Something went wrong");
             }
         }
         return img;
+    }
+
+    public int[] getSpookyForPixel(int r, int g, int b, int threshold) {
+        int brightness = getBrightness(r, g, b);
+        if (brightness >= threshold) return new int[]{255, 128, 0}; //ORANGE #FF8000
+        else return new int[]{50, 50, 50}; //DARK #323232
     }
 }
