@@ -21,6 +21,8 @@ public class ShardsCommand extends Command {
         this.category = Category.UTILS;
     }
 
+    /* CREDITS TO DUNCTE123 FOR DESIGN */
+
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
@@ -31,10 +33,11 @@ public class ShardsCommand extends Command {
             int vcs = 0;
             for (int id = 0; id < shardManager.getShardsTotal(); id++) {
                 JDA jda = event.getJDA().asBot().getShardManager().getShardById(id);
+                String shardInfo = event.getJDA().getShardInfo().getShardId() == id ? " (current)" : "";
                 avgping += jda.getPing();
                 long jvcs = jda.getGuilds().stream().filter(guild -> guild.getSelfMember().getVoiceState().inVoiceChannel()).count();
                 vcs += jvcs;
-                tableBuilder.addRow(List.of(String.valueOf(id), String.valueOf(jda.getPing()), String.valueOf(jda.getUsers().size()), String.valueOf(jda.getGuilds().size()), String.valueOf(jvcs)));
+                tableBuilder.addRow(List.of(id + shardInfo, String.valueOf(jda.getPing()), String.valueOf(jda.getUsers().size()), String.valueOf(jda.getGuilds().size()), String.valueOf(jvcs)));
             }
             avgping = avgping/shardManager.getShardsTotal();
             tableBuilder.setFooterRow(List.of("Sum/Avg", String.valueOf(avgping), String.valueOf(shardManager.getUsers().size()), String.valueOf(shardManager.getGuilds().size()), String.valueOf(vcs)));

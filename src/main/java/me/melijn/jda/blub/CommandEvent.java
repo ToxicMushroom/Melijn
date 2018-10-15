@@ -83,6 +83,36 @@ public class CommandEvent {
         else reply("I don't have permission to send embeds here.");
     }
 
+    public void reply(String text, BufferedImage image) {
+        try {
+            if (event.getGuild() == null) {
+                long time = System.currentTimeMillis();
+                ImageIO.write(image, "png", new File(time + ".png"));
+                if (new File(time + ".png").length() > 8_000_000) {
+                    reply("The image is bigger then 8MB and cannot be send");
+                    new File(time + ".png").delete();
+                } else
+                    event.getPrivateChannel().sendMessage(text).addFile(new File(time + ".png"), "finished.png").queue(
+                            done -> new File(time + ".png").delete(),
+                            failed -> new File(time + ".png").delete()
+                    );
+            } else if (event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_ATTACH_FILES)) {
+                long time = System.currentTimeMillis();
+                ImageIO.write(image, "png", new File(time + ".png"));
+                if (new File(time + ".png").length() > 8_000_000) {
+                    reply("The image is bigger then 8MB and cannot be send");
+                    new File(time + ".png").delete();
+                } else event.getTextChannel().sendMessage(text).addFile(new File(time + ".png"), "finished.png").queue(
+                        done -> new File(time + ".png").delete(),
+                        failed -> new File(time + ".png").delete()
+                );
+
+            } else reply("I don't have permission to send images here.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void reply(BufferedImage image) {
         try {
             if (event.getGuild() == null) {
@@ -91,8 +121,7 @@ public class CommandEvent {
                 if (new File(time + ".png").length() > 8_000_000) {
                     reply("The image is bigger then 8MB and cannot be send");
                     new File(time + ".png").delete();
-                }
-                else event.getPrivateChannel().sendFile(new File(time + ".png")).queue(
+                } else event.getPrivateChannel().sendFile(new File(time + ".png"), "finished.png").queue(
                         done -> new File(time + ".png").delete(),
                         failed -> new File(time + ".png").delete()
                 );
@@ -102,8 +131,7 @@ public class CommandEvent {
                 if (new File(time + ".png").length() > 8_000_000) {
                     reply("The image is bigger then 8MB and cannot be send");
                     new File(time + ".png").delete();
-                }
-                else event.getTextChannel().sendFile(new File(time + ".png")).queue(
+                } else event.getTextChannel().sendFile(new File(time + ".png"), "finished.png").queue(
                         done -> new File(time + ".png").delete(),
                         failed -> new File(time + ".png").delete()
                 );

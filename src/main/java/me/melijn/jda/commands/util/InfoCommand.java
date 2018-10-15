@@ -26,6 +26,8 @@ public class InfoCommand extends Command {
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
     }
 
+    /* CREDITS TO DUNCTE123 FOR DESIGN */
+
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {

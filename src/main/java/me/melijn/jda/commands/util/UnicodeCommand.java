@@ -28,10 +28,10 @@ public class UnicodeCommand extends Command {
             if (arg.matches("<:.*:\\d+>")) {
                 String id = arg.replaceAll("<:.*:(\\d+)>", "$1");
                 String name = arg.replaceAll("<:(.*):\\d+>", "$1");
-                event.reply(
+                event.reply("" +
                         "Name: **" + name + "**\n" +
-                                "ID: **" + id + "**\n" +
-                                "URL: **https://discordcdn.com/emojis/" + id + ".png?size=2048**");
+                        "ID: **" + id + "**\n" +
+                        "URL: **https://cdn.discord.com/emojis/" + id + ".png?size=2048**");
                 return;
             }
             StringBuilder builder = new StringBuilder();
