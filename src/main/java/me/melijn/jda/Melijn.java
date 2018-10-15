@@ -152,7 +152,8 @@ public class Melijn {
                 new AlpacaCommand(),
                 new StatsCommand(),
                 new KissCommand(),
-                new HugCommand()
+                new HugCommand(),
+                new SpookifyCommand()
         );
 
         shardManager = new DefaultShardManagerBuilder()

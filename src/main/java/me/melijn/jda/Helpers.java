@@ -143,7 +143,8 @@ public class Helpers {
             "alpaca",
             "stats",
             "kiss",
-            "hug"
+            "hug",
+            "spookify"
     );
 
 
