@@ -27,7 +27,7 @@ public class SpookifyCommand extends Command {
             String[] args = event.getArgs().split("\\s+");
             if (img == null) return;
             int threshold = 128;
-            if (args[args.length - 1].matches("[0-9]{0,3}") && Integer.parseInt(args[args.length - 1]) < 255)
+            if (args[args.length - 1].matches("[0-9]{1,3}") && Integer.parseInt(args[args.length - 1]) < 255)
                 threshold = Integer.parseInt(args[args.length - 1]);
             for (int y = 0; y < img.getHeight(); y++) {
                 for (int x = 0; x < img.getWidth(); x++) {
