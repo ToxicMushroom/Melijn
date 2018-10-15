@@ -5,8 +5,8 @@ plugins {
 }
 
 mainClassName = 'me.melijn.jda.Melijn'
-version = '1.1'
-sourceCompatibility = 10.0
+version = '1.2'
+sourceCompatibility = 11.1
 
 repositories {
     jcenter()
@@ -31,9 +31,10 @@ dependencies {
     compile 'se.michaelthelin.spotify:spotify-web-api-java:2.0.5'
     compile 'org.kohsuke:groovy-sandbox:1.6'
     compile group: 'com.google.guava', name: 'guava', version: '26.0-jre'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.1'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.1'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.11.1'
+
+    implementation group: 'org.codehaus.groovy', name: 'groovy-jsr223', version: '2.5.2'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    
     compile(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.0.5.RELEASE') {
         exclude module: 'spring-boot-starter-logging'
     }
