@@ -29,7 +29,7 @@ public class EnableCommand extends Command {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
-            if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
+            if (args.length > 0 && !args[0].isBlank()) {
                 TIntList buffer = new TIntArrayList();
                 if (DisableCommand.disabledGuildCommands.containsKey(guild.getIdLong()))
                         buffer.addAll(DisableCommand.disabledGuildCommands.get(guild.getIdLong()));

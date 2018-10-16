@@ -31,7 +31,7 @@ public class VerifyCommand extends Command {
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
-            if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
+            if (args.length > 0 && !args[0].isBlank()) {
                 if (args[0].equals("all")) {
                     TLongList unVerifiedUsers = JoinLeave.unVerifiedGuildMembersCache.getUnchecked(event.getGuild().getIdLong());
                     verifyMembers(event.getGuild(), unVerifiedUsers);

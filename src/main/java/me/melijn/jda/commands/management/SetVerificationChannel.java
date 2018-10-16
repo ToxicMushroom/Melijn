@@ -42,7 +42,7 @@ public class SetVerificationChannel extends Command {
             Guild guild = event.getGuild();
             long verificationChannelId = verificationChannelsCache.getUnchecked(guild.getIdLong());
             String[] args = event.getArgs().split("\\s+");
-            if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
+            if (args.length > 0 && !args[0].isBlank()) {
                 long id = Helpers.getTextChannelByArgsN(event, args[0]);
                 if (id == -1L) {
                     event.reply("Unknown TextChannel");

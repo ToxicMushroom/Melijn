@@ -31,7 +31,7 @@ public class UnbanCommand extends Command {
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
-            if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
+            if (args.length > 0 && !args[0].isBlank()) {
                 Helpers.retrieveUserByArgsN(event, args[0], user -> {
                     if (user != null) {
                         TaskScheduler.async(() -> {

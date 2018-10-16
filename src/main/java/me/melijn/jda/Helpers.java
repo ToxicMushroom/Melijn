@@ -297,7 +297,7 @@ public class Helpers {
 
     public static User getUserByArgsN(CommandEvent event, String arg) {//With null
         User user = null;
-        if (!arg.matches("\\s+") && !arg.equalsIgnoreCase("")) {
+        if (!arg.matches("\\s+") && !arg.isEmpty()) {
             if (event.getMessage().getMentionedUsers().size() > event.getOffset())
                 user = event.getMessage().getMentionedUsers().get(event.getOffset());
             else if (arg.matches("\\d+") && event.getJDA().getUserById(arg) != null)
@@ -360,7 +360,7 @@ public class Helpers {
     }
 
     public static Role getRoleByArgs(CommandEvent event, String arg) {
-        if (!arg.matches("\\s+") && !arg.equalsIgnoreCase("")) {
+        if (!arg.matches("\\s+") && !arg.isEmpty()) {
             if (event.getMessage().getMentionedRoles().size() > 0) return event.getMessage().getMentionedRoles().get(0);
             else if (arg.matches("\\d+") && event.getGuild().getRoleById(arg) != null)
                 return event.getGuild().getRoleById(arg);

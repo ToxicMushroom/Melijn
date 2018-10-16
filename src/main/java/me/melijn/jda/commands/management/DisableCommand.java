@@ -35,7 +35,7 @@ public class DisableCommand extends Command {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
 
-            if (event.getExecutor().equalsIgnoreCase("disable") && args.length > 0 && !args[0].equalsIgnoreCase("")) {
+            if (event.getExecutor().equalsIgnoreCase("disable") && args.length > 0 && !args[0].isBlank()) {
                 TIntList buffer = new TIntArrayList();
                 if (disabledGuildCommands.containsKey(guild.getIdLong()))
                     buffer.addAll(disabledGuildCommands.get(guild.getIdLong()));

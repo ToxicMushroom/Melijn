@@ -26,10 +26,10 @@ public class SeekCommand extends Command {
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
             String[] args = event.getArgs().replaceAll(":", " ").split("\\s+");
-            if (args.length == 1 && args[0].equalsIgnoreCase("")) args = new String[0];
+            if (args.length == 1 && args[0].isBlank()) args = new String[0];
             AudioTrack track = MusicManager.getManagerInstance().getPlayer(event.getGuild()).getAudioPlayer().getPlayingTrack();
             if (track != null) {
-                if (args.length != 0 && !args[0].equalsIgnoreCase("")) {
+                if (args.length != 0 && !args[0].isBlank()) {
                     if (event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {
                         if (event.getMember().getVoiceState().getChannel() == event.getGuild().getSelfMember().getVoiceState().getChannel()) {
                             long millis = Helpers.parseTimeFromArgs(args);

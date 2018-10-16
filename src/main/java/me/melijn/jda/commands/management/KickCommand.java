@@ -28,7 +28,7 @@ public class KickCommand extends Command {
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
-            if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
+            if (args.length > 0 && !args[0].isBlank()) {
                 User target = Helpers.getUserByArgsN(event, args[0]);
                 String reason = event.getArgs().replaceFirst(args[0] + "\\s+|" + args[0], "");
                 if (target != null) {

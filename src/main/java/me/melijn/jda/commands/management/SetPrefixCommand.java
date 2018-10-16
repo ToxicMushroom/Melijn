@@ -40,7 +40,7 @@ public class SetPrefixCommand extends Command {
             if (Helpers.hasPerm(event.getMember(), commandName, 0)) {
                 Guild guild = event.getGuild();
                 String[] args = event.getArgs().split("\\s+");
-                if (args.length == 0 || args[0].equalsIgnoreCase(""))
+                if (args.length == 0 || args[0].isBlank())
                     event.reply(prefixes.getUnchecked(event.getGuild().getIdLong()));
                 else if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
                     if (Arrays.toString(args).length() <= 10) {

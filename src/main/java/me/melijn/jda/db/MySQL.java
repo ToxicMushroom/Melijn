@@ -770,7 +770,7 @@ public class MySQL {
             List<String> toRet = new ArrayList<>();
             AtomicInteger progress = new AtomicInteger();
             for (JSONObject rowObj : set) {
-                String endTime = rowObj.getString("endTime").equals("") ? "Infinity" : MessageHelper.millisToDate(Long.valueOf(rowObj.getString("endTime")));
+                String endTime = rowObj.getString("endTime").isBlank() ? "Infinity" : MessageHelper.millisToDate(Long.valueOf(rowObj.getString("endTime")));
                 jda.asBot().getShardManager().retrieveUserById(rowObj.getLong("authorId")).queue(staff -> {
                     if (rowObj.getBoolean("active"))
                         toRet.add("```ini" +
@@ -837,7 +837,7 @@ public class MySQL {
             List<String> toRet = new ArrayList<>();
             AtomicInteger progress = new AtomicInteger();
             for (JSONObject rowObj : set) {
-                String endTime = rowObj.getString("endTime").equals("") ? "Infinity" : MessageHelper.millisToDate(Long.valueOf(rowObj.getString("endTime")));
+                String endTime = rowObj.getString("endTime").isBlank() ? "Infinity" : MessageHelper.millisToDate(Long.valueOf(rowObj.getString("endTime")));
                 jda.asBot().getShardManager().retrieveUserById(rowObj.getLong("authorId")).queue(staff -> {
                     if (rowObj.getBoolean("active"))
                         toRet.add("```ini" +

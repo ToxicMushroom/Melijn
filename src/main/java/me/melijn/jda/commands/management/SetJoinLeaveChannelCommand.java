@@ -38,7 +38,7 @@ public class SetJoinLeaveChannelCommand extends Command {
                 Guild guild = event.getGuild();
                 long welcomeChannelId = welcomeChannelCache.getUnchecked(guild.getIdLong());
                 String[] args = event.getArgs().split("\\s+");
-                if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
+                if (args.length > 0 && !args[0].isBlank()) {
                     long id = Helpers.getTextChannelByArgsN(event, args[0]);
                     if (id == -1L) {
                         event.reply("Unknown TextChannel");
@@ -53,11 +53,11 @@ public class SetJoinLeaveChannelCommand extends Command {
                         TaskScheduler.async(() -> {
                             Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.WELCOME);
                             welcomeChannelCache.put(guild.getIdLong(), id);
-                            if (SetJoinMessageCommand.joinMessages.getUnchecked(guild.getIdLong()).equals("")) {
+                            if (SetJoinMessageCommand.joinMessages.getUnchecked(guild.getIdLong()).isBlank()) {
                                 Melijn.mySQL.setMessage(guild.getIdLong(), "Welcome **%USER%** to our awesome discord server :D", MessageType.JOIN);
                                 SetJoinMessageCommand.joinMessages.put(guild.getIdLong(), "Welcome %USER% to the %GUILDNAME% discord server");
                             }
-                            if (SetLeaveMessageCommand.leaveMessages.getUnchecked(guild.getIdLong()).equals("")) {
+                            if (SetLeaveMessageCommand.leaveMessages.getUnchecked(guild.getIdLong()).isBlank()) {
                                 Melijn.mySQL.setMessage(guild.getIdLong(), "**%USERNAME%** left us :C", MessageType.LEAVE);
                                 SetLeaveMessageCommand.leaveMessages.put(guild.getIdLong(), "**%USERNAME%** left us :C");
                             }

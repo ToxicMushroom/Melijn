@@ -30,7 +30,7 @@ public class HelpCommand extends Command {
                     event.reply("**Help off " + command.getCommandName() +
                             "**\n**Usage:**  `" + command.getUsage() +
                             "`\n**Description:**  " + command.getDescription() +
-                            (command.getExtra().equalsIgnoreCase("") ? "" : "\n**Extra:**  " + command.getExtra()));
+                            (command.getExtra().isBlank() ? "" : "\n**Extra:**  " + command.getExtra()));
                     return;
                 }
             }

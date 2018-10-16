@@ -36,7 +36,7 @@ public class LoopCommand extends Command {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
             if (MusicManager.getManagerInstance().getPlayer(guild).getListener().getTrackSize() > 0 || MusicManager.getManagerInstance().getPlayer(guild).getAudioPlayer().getPlayingTrack() != null) {
-                if (args.length == 0 || args[0].equalsIgnoreCase("")) {
+                if (args.length == 0 || args[0].isBlank()) {
                     if (looped.contains(guild.getIdLong())) {
                         looped.remove(guild.getIdLong());
                         event.reply("Looping has been **disabled**");

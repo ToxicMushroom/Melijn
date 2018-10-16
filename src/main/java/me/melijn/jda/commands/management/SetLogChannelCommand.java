@@ -214,7 +214,7 @@ public class SetLogChannelCommand extends Command {
                             MessageHelper.sendUsage(this, event);
                             break;
                     }
-                } else if (args.length == 1 && !args[0].equalsIgnoreCase("")) {
+                } else if (args.length == 1 && !args[0].isBlank()) {
                     switch (args[0].toLowerCase()) {
                         case "all":
                             StringBuilder builder = new StringBuilder();

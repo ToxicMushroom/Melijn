@@ -25,7 +25,7 @@ public class ImageUtils {
     public BufferedImage getBufferedImage(CommandEvent event) {
         String[] args = event.getArgs().split("\\s+");
         BufferedImage img = null;
-        if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
+        if (args.length > 0 && !args[0].isEmpty()) {
             User user = Helpers.getUserByArgsN(event, args[0]);
             if (user != null) {
                 try {

@@ -27,7 +27,7 @@ public class PauseCommand extends Command {
             MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
             String[] args = event.getArgs().split("\\s+");
             if (player.getAudioPlayer().getPlayingTrack() != null || player.getListener().getTrackSize() > 0) {
-                if (args.length == 0 || args[0].equalsIgnoreCase("")) {
+                if (args.length == 0 || args[0].isBlank()) {
                     if (player.getAudioPlayer().isPaused()) {
                         player.getAudioPlayer().setPaused(false);
                         event.reply("Resumed by **" + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + "**");

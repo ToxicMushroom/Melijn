@@ -27,7 +27,7 @@ public class VoteCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         String[] args = event.getArgs().split("\\s+");
-        if (args.length == 0 || args[0].equalsIgnoreCase("")) {
+        if (args.length == 0 || args[0].isBlank()) {
             event.reply("Support us by voting and get access to locked commands\nhttps://discordbots.org/bot/melijn/vote");
         } else if (args[0].equalsIgnoreCase("info")) {
             TaskScheduler.async(() -> {

@@ -34,7 +34,7 @@ public class MuteCommand extends Command {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
-            if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
+            if (args.length > 0 && !args[0].isBlank()) {
                 User target = Helpers.getUserByArgsN(event, args[0]);
                 if (target != null && event.getGuild().getMember(target) != null) {
                     Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoleCache.getUnchecked(guild.getIdLong()));

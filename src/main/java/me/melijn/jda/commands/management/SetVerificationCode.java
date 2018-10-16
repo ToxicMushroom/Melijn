@@ -41,7 +41,7 @@ public class SetVerificationCode extends Command {
             Guild guild = event.getGuild();
             if (guild.getTextChannelById(SetVerificationChannel.verificationChannelsCache.getUnchecked(guild.getIdLong())) != null) {
                 String[] args = event.getArgs().split("\\s+");
-                if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
+                if (args.length > 0 && !args[0].isBlank()) {
                     if (args[0].equalsIgnoreCase("null")) {
                         TaskScheduler.async(() -> {
                             Melijn.mySQL.removeVerificationCode(guild.getIdLong());

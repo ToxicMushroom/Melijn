@@ -31,7 +31,7 @@ public class VolumeCommand extends Command {
             String args[] = event.getArgs().split("\\s+");
             MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
             int volume;
-            if (args.length == 0 || args[0].equalsIgnoreCase("")) {
+            if (args.length == 0 || args[0].isEmpty()) {
                 event.reply("Current volume: **" + player.getAudioPlayer().getVolume() + "**");
             } else if ((!Helpers.voteChecks || Melijn.mySQL.getVotesObject(event.getAuthorId()).getLong("streak") > 0)) {
                 if (args[0].matches("[0-9]{1,3}|1000")) {

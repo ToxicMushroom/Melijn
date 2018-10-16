@@ -27,7 +27,7 @@ public class SpeedCommand extends Command {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
             MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
-            if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
+            if (args.length > 0 && !args[0].isBlank()) {
                 if (event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {
                     if (event.getMember().getVoiceState().getChannel() == event.getGuild().getSelfMember().getVoiceState().getChannel()) {
                         if (args[0].matches("[0-9]{1,2}|100|[0-9]{1,2}\\.[0-9]{1,5}")) {

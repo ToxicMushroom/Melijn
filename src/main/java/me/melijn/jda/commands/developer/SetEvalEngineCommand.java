@@ -19,7 +19,7 @@ public class SetEvalEngineCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         String[] args = event.getArgs().split("\\s+");
-        if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
+        if (args.length > 0 && !args[0].isBlank()) {
             EvalCommand.INSTANCE.engineName = event.getArgs();
             event.reply("Changed eval engine to: **" + EvalCommand.INSTANCE.engineName + "**");
         } else {

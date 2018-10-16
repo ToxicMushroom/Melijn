@@ -40,10 +40,10 @@ public class SetLeaveMessageCommand extends Command {
         if (event.getGuild() != null) {
             if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
                 Guild guild = event.getGuild();
-                String oldMessage = leaveMessages.getUnchecked(guild.getIdLong()).equals("") ? "nothing" : ("'" + leaveMessages.getUnchecked(guild.getIdLong()) + "'");
+                String oldMessage = leaveMessages.getUnchecked(guild.getIdLong()).isBlank() ? "nothing" : ("'" + leaveMessages.getUnchecked(guild.getIdLong()) + "'");
                 String newMessage = event.getArgs();
                 String[] args = event.getArgs().split("\\s+");
-                if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
+                if (args.length > 0 && !args[0].isBlank()) {
                     if (args.length == 1 && newMessage.equalsIgnoreCase("null")) {
                         TaskScheduler.async(() -> {
                             Melijn.mySQL.removeMessage(guild.getIdLong(), MessageType.LEAVE);
@@ -58,7 +58,7 @@ public class SetLeaveMessageCommand extends Command {
                         event.reply("LeaveMessage has been changed from " + oldMessage + " to '" + newMessage + "' by **" + event.getFullAuthorName() + "**");
                     }
                 } else {
-                    event.reply("LeaveMessage is set to " + (leaveMessages.getUnchecked(guild.getIdLong()).equals("") ? "nothing" : "'" + leaveMessages.getUnchecked(guild.getIdLong()) + "'"));
+                    event.reply("LeaveMessage is set to " + (leaveMessages.getUnchecked(guild.getIdLong()).isBlank() ? "nothing" : "'" + leaveMessages.getUnchecked(guild.getIdLong()) + "'"));
                 }
             } else {
                 event.reply("You need the permission `" + commandName + "` to execute this command.");

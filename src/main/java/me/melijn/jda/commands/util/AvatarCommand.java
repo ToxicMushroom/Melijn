@@ -26,7 +26,7 @@ public class AvatarCommand extends Command {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
             User user;
-            if (args.length == 0 || args[0].equalsIgnoreCase("")) {
+            if (args.length == 0 || args[0].isBlank()) {
                 user = event.getAuthor();
             } else {
                 user = Helpers.getUserByArgsN(event, args[0]);

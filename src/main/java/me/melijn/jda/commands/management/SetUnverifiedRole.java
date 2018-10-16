@@ -42,7 +42,7 @@ public class SetUnverifiedRole extends Command {
             Guild guild = event.getGuild();
             String[] args = event.getArgs().split("\\s+");
             long role = unverifiedRoleCache.getUnchecked(guild.getIdLong());
-            if (args.length == 0 || args[0].equalsIgnoreCase("")) {
+            if (args.length == 0 || args[0].isBlank()) {
                 if (role != -1 && guild.getRoleById(role) != null)
                     event.reply("Current UnverifiedRole: **@" + guild.getRoleById(role).getName() + "**");
                 else event.reply("Current UnverifiedRole is unset");

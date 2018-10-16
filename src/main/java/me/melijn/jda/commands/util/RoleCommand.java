@@ -30,7 +30,7 @@ public class RoleCommand extends Command {
             if (Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
                 String[] args = event.getArgs().split("\\s+");
                 Guild guild = event.getGuild();
-                if (args.length == 1 && !args[0].equalsIgnoreCase("")) {
+                if (args.length == 1 && !args[0].isBlank()) {
                     Role role = Helpers.getRoleByArgs(event, args[0]);
                     if (role != null) {
                         Color roleColor = role.getColor();

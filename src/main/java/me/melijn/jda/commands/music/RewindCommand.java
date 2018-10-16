@@ -25,7 +25,7 @@ public class RewindCommand extends Command {
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
             String[] args = event.getArgs().replaceAll(":", " ").split("\\s+");
-            if (args.length == 1 && args[0].equalsIgnoreCase("")) args = new String[0];
+            if (args.length == 1 && args[0].isBlank()) args = new String[0];
             AudioTrack player = MusicManager.getManagerInstance().getPlayer(event.getGuild()).getAudioPlayer().getPlayingTrack();
             if (player != null) {
                 long millis = Helpers.parseTimeFromArgs(args);

@@ -37,7 +37,7 @@ public class Channels extends ListenerAdapter {
                 AudioPlayer audioPlayer = manager.getPlayer(guild).getAudioPlayer();
                 if (someoneIsListening(guild)) {
                     String url = Melijn.mySQL.getStreamUrl(guildId);
-                    if (!"".equals(url)) {
+                    if (!url.isBlank()) {
                         manager.getPlayer(guild).getListener().tracks.clear();
                         manager.loadSimpelTrack(guild, url);
                     }
@@ -156,7 +156,7 @@ public class Channels extends ListenerAdapter {
     private void tryPlayStreamUrl(Guild guild) {
         if (manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null) {
             String url = Melijn.mySQL.getStreamUrl(guild.getIdLong());
-            if (!"".equals(url)) {
+            if (!url.isBlank()) {
                 manager.getPlayer(guild).getListener().tracks.clear();
                 manager.loadSimpelTrack(guild, url);
             }

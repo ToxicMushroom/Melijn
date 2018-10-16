@@ -49,7 +49,7 @@ public class SetStreamerModeCommand extends Command {
                 VoiceChannel musicChannel = guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guild.getIdLong()));
                 if (musicChannel != null) {
                     String[] args = event.getArgs().split("\\s+");
-                    if (args.length == 0 || args[0].equalsIgnoreCase("")) {
+                    if (args.length == 0 || args[0].isBlank()) {
                         String state = streamerModeCache.getUnchecked(guild.getIdLong()) ? "enabled" : "disabled";
                         event.reply("StreamerMode: **" + state + "**");
                     } else if (args.length == 1) {

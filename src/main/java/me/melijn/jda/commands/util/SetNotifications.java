@@ -31,7 +31,7 @@ public class SetNotifications extends Command {
     @Override
     protected void execute(CommandEvent event) {
         String[] args = event.getArgs().split("\\s+");
-        if (args.length > 0 && !args[0].equalsIgnoreCase("")) {
+        if (args.length > 0 && !args[0].isBlank()) {
             switch (args[0].toLowerCase()) {
                 case "nextvote": {
                     if (args.length == 1 || args[1].equalsIgnoreCase("info")) {

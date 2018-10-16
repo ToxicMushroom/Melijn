@@ -67,7 +67,7 @@ public class CommandEvent {
     }
 
     public void reply(String text) {
-        if (text == null || text.equalsIgnoreCase("")) return;
+        if (text == null || text.isEmpty()) return;
         if (event.getPrivateChannel() != null) {
             event.getPrivateChannel().sendMessage(text).queue();
         } else {
