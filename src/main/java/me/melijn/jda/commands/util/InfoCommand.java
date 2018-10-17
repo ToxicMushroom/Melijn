@@ -43,6 +43,7 @@ public class InfoCommand extends Command {
                         .addField("Info", "" +
                                 "\n**Operating System** " + System.getProperty("os.name") + " " + System.getProperty("os.arch") + " " + System.getProperty("os.version") +
                                 "\n**Coded in** Java" +
+                                "\n**Commands** " + event.getClient().getCommands().size() +
                                 "\n\u200B", false)
                         .addField("Libraries", "" +
                                 "**Java Version** " + System.getProperty("java.version") +

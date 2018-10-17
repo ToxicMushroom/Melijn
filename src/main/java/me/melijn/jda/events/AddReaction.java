@@ -2,17 +2,23 @@ package me.melijn.jda.events;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import gnu.trove.map.TLongLongMap;
+import gnu.trove.map.TLongObjectMap;
 import me.melijn.jda.Helpers;
+import me.melijn.jda.Melijn;
 import me.melijn.jda.commands.developer.EvalCommand;
 import me.melijn.jda.commands.management.ClearChannelCommand;
+import me.melijn.jda.commands.management.SetSelfRoleChannelCommand;
 import me.melijn.jda.commands.music.SPlayCommand;
 import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.music.MusicPlayer;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent;
+import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionRemoveEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import java.util.List;
@@ -155,6 +161,39 @@ public class AddReaction extends ListenerAdapter {
                         break;
                 }
         }
+        if (guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES) &&
+                SetSelfRoleChannelCommand.selfRolesChannel.getUnchecked(guild.getIdLong()) == event.getChannel().getIdLong())
+            TaskScheduler.async(() -> {
+                TLongObjectMap<String> roles = Melijn.mySQL.getSelfRoles(guild.getIdLong());
+                roles.forEachEntry((key, value) -> {
+                    if (!value.equals(event.getReactionEmote().getId()) && !value.equals(event.getReactionEmote().getName()))
+                        return true;
+                    Role role = guild.getRoleCache().getElementById(key);
+                    if (role == null) return true;
+
+                    guild.getController().addSingleRoleToMember(event.getMember(), role).reason("SelfRole added").queue();
+                    return false;
+                });
+            });
+    }
+
+    @Override
+    public void onGuildMessageReactionRemove(GuildMessageReactionRemoveEvent event) {
+        Guild guild = event.getGuild();
+        if (guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES) &&
+                SetSelfRoleChannelCommand.selfRolesChannel.getUnchecked(guild.getIdLong()) == event.getChannel().getIdLong())
+            TaskScheduler.async(() -> {
+                TLongObjectMap<String> roles = Melijn.mySQL.getSelfRoles(guild.getIdLong());
+                roles.forEachEntry((key, value) -> {
+                    if (!value.equals(event.getReactionEmote().getId()) && !value.equals(event.getReactionEmote().getName()))
+                        return true;
+                    Role role = guild.getRoleCache().getElementById(key);
+                    if (role == null) return true;
+
+                    guild.getController().removeSingleRoleFromMember(event.getMember(), role).reason("SelfRole added").queue();
+                    return false;
+                });
+            });
     }
 
     private void removeMenu(GuildMessageReactionAddEvent event, Guild guild, TLongLongMap messageChannel) {

@@ -25,13 +25,14 @@ public class UnicodeCommand extends Command {
                 MessageHelper.sendUsage(this, event);
                 return;
             }
-            if (arg.matches("<:.*:\\d+>")) {
-                String id = arg.replaceAll("<:.*:(\\d+)>", "$1");
-                String name = arg.replaceAll("<:(.*):\\d+>", "$1");
+
+            if (arg.matches("<.?:.*:\\d+>")) {
+                String id = arg.replaceAll("<.?:.*:(\\d+)>", "$1");
+                String name = arg.replaceAll("<.?:(.*):\\d+>", "$1");
                 event.reply("" +
                         "Name: **" + name + "**\n" +
                         "ID: **" + id + "**\n" +
-                        "URL: **https://cdn.discord.com/emojis/" + id + ".png?size=2048**");
+                        "URL: **https://cdn.discordapp.com/emojis/" + id + ".png?size=2048**");
                 return;
             }
             StringBuilder builder = new StringBuilder();

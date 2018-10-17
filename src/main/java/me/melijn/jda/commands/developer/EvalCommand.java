@@ -53,6 +53,7 @@ public class EvalCommand extends Command {
                 "import java.lang.*;\n" +
                 "import java.util.*;\n" +
                 "import net.dv8tion.jda.core.*;\n" +
+                "import me.melijn.jda.blub.*;\n" +
                 "import me.melijn.jda.commands.developer.*;\n" +
                 "import me.melijn.jda.commands.management.*;\n" +
                 "import me.melijn.jda.commands.music.*;\n" +
@@ -66,6 +67,7 @@ public class EvalCommand extends Command {
             se.put("jda", event.getJDA());
             se.put("guild", event.getGuild());
             se.put("channel", event.getChannel());
+            se.put("message", event.getMessage());
             se.put("mysql", Melijn.mySQL);
             se.put("eb", new EmbedBuilder());
             se.put("webUtils", WebUtils.getWebUtilsInstance());

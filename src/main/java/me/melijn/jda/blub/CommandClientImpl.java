@@ -35,6 +35,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
         for (Command command : commands) {
             addCommand(command);
         }
+
     }
 
     /*@Override

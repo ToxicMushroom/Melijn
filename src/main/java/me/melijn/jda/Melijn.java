@@ -153,7 +153,9 @@ public class Melijn {
                 new StatsCommand(),
                 new KissCommand(),
                 new HugCommand(),
-                new SpookifyCommand()
+                new SpookifyCommand(),
+                new SelfRoleCommand(),
+                new SetSelfRoleChannelCommand()
         );
 
         shardManager = new DefaultShardManagerBuilder()
@@ -177,7 +179,8 @@ public class Melijn {
         Helpers.startTimer(shardManager.getShardById(0), 0);
         Helpers.startTime = System.currentTimeMillis();
         Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
-        /*setting avatar & username
+        /*
+        setting avatar & username
         try {
             File f = new File(System.getProperty("java.io.tmpdir") + "tmp" + ".png");
             f.deleteOnExit();

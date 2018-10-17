@@ -95,6 +95,7 @@ public class MySQL {
             executeUpdate("CREATE TABLE IF NOT EXISTS disabled_commands(guildId bigint, command int)");
             executeUpdate("CREATE TABLE IF NOT EXISTS stream_urls(guildId bigint, url varchar(2000))");
             executeUpdate("CREATE TABLE IF NOT EXISTS prefixes(guildId bigint, prefix bigint);");
+            executeUpdate("CREATE TABLE IF NOT EXISTS self_roles(guildId bigint, roleId bigint, emote varchar(128));");
             executeUpdate("CREATE TABLE IF NOT EXISTS mute_roles(guildId bigint, roleId bigint);");
             executeUpdate("CREATE TABLE IF NOT EXISTS join_roles(guildId bigint, roleId bigint);");
             executeUpdate("CREATE TABLE IF NOT EXISTS unverified_roles(guildId bigint, roleId bigint);");
@@ -114,6 +115,7 @@ public class MySQL {
             executeUpdate("CREATE TABLE IF NOT EXISTS welcome_channels(guildId bigint, channelId bigint)");
             executeUpdate("CREATE TABLE IF NOT EXISTS music_log_channels(guildId bigint, channelId bigint)");
             executeUpdate("CREATE TABLE IF NOT EXISTS verification_channels(guildId bigint, channelId bigint)");
+            executeUpdate("CREATE TABLE IF NOT EXISTS self_role_channels(guildId bigint, channelId bigint)");
 
             executeUpdate("CREATE TABLE IF NOT EXISTS verification_thresholds(guildId bigint, threshold tinyint);");
             executeUpdate("CREATE TABLE IF NOT EXISTS unverified_users(guildId bigint, userId bigint);");
@@ -1618,5 +1620,30 @@ public class MySQL {
     public void removeKick(Member member, long time) {
         executeUpdate("DELETE FROM kicks WHERE guildId=? AND victimId=? AND moment < ? AND moment > ?",
                 member.getGuild().getIdLong(), member.getUser().getIdLong(), time + 1000, time - 1000);
+    }
+
+    public TLongObjectMap<String> getSelfRoles(long guildId) {
+        TLongObjectMap<String> collector = new TLongObjectHashMap<>();
+        try (Connection con = ds.getConnection()) {
+            try (PreparedStatement statement = con.prepareStatement("SELECT * FROM self_roles WHERE guildId= ?")) {
+                statement.setLong(1, guildId);
+                try (ResultSet rs = statement.executeQuery()) {
+                    while (rs.next()) {
+                        collector.put(rs.getLong("roleId"), rs.getString("emote"));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return collector;
+    }
+
+    public void addSelfRole(long guildId, long roleId, String emote) {
+        executeUpdate("INSERT IGNORE INTO self_roles (guildId, roleId, emote) VALUES (?, ?, ?)", guildId, roleId, emote);
+    }
+
+    public void removeSelfRole(long guildId, long roleId) {
+        executeUpdate("DELETE FROM self_roles WHERE guildId= ? AND roleId= ?", guildId, roleId);
     }
 }

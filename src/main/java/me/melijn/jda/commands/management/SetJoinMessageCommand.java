@@ -29,7 +29,11 @@ public class SetJoinMessageCommand extends Command {
         this.commandName = "setJoinMessage";
         this.description = "Setup a message that a user get's when he/she/it joins";
         this.usage = Melijn.PREFIX + commandName + " [message | null]";
-        this.extra = "Placeholders: `%USER%` = user mention // `%USERNAME%` = user name // `%GUILDNAME%` = your discord server's name // `%JOINPOSITION%` = member position";
+        this.extra = "Placeholders:" +
+                " `%USER%` = joined user mention //" +
+                " `%USERNAME%` = user name //" +
+                " `%GUILDNAME%` = your discord server's name //" +
+                " `%JOINPOSITION%` = member position";
         this.aliases = new String[]{"sjm"};
         this.category = Category.MANAGEMENT;
     }

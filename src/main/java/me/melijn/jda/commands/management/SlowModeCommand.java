@@ -13,7 +13,7 @@ import static me.melijn.jda.Melijn.PREFIX;
 public class SlowModeCommand extends Command {
 
     public SlowModeCommand() {
-        this.commandName = "SlowMode";
+        this.commandName = "slowMode";
         this.usage = PREFIX + commandName + " <seconds (0-120)>";
         this.description = "Allows for more precise configuration of discord's SlowMode";
         this.permissions = new Permission[]{Permission.MANAGE_CHANNEL};
