@@ -49,30 +49,46 @@ public class SelfRoleCommand extends Command {
                 MessageHelper.sendUsage(this, event);
                 return;
             }
+            TLongObjectMap<String> cache = selfRoles.getUnchecked(guild.getIdLong());
             switch (args[0].toLowerCase()) {
                 case "add":
-                    if (args.length < 2 && event.getMessage().getEmotes().size() > 0 || args[2].matches("\\\\u....")) {
+
+                    if (args.length < 3 && event.getMessage().getEmotes().size() > 0 || args[2].matches("\\\\u.*")) {
                         event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " add <role> <emote | emoji>");
                         return;
                     }
-
-                    String emote = event.getMessage().getEmotes().size() > 0 ? event.getMessage().getEmotes().get(0).getId() : args[2];
                     Role roleAdded = Helpers.getRoleByArgs(event, args[1]);
-                    if (roleAdded != null && roleAdded.getIdLong() != guild.getIdLong()) {
-                        Melijn.mySQL.addSelfRole(guild.getIdLong(), roleAdded.getIdLong(), emote);
-                        event.reply("SelfRole added: **@" + roleAdded.getName() + "** by **" + event.getFullAuthorName() + "**");
-                    } else {
+                    if (roleAdded == null || roleAdded.getIdLong() != guild.getIdLong()) {
                         event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " add <role> <emote | emoji>");
+                        return;
                     }
+                    String emote = event.getMessage().getEmotes().size() > 0 ? event.getMessage().getEmotes().get(0).getId() : args[2];
+                    if (cache.keySet().contains(roleAdded.getIdLong()) && cache.get(roleAdded.getIdLong()).equalsIgnoreCase(emote)) {
+                        event.reply("This SelfRole already exist: choose another role or emote/emoji.");
+                        return;
+                    }
+                    Melijn.mySQL.addSelfRole(guild.getIdLong(), roleAdded.getIdLong(), emote);
+                    event.reply("SelfRole added: **@" + roleAdded.getName() + "** by **" + event.getFullAuthorName() + "**");
                     break;
                 case "remove":
                     Role roleRemoved = Helpers.getRoleByArgs(event, args[1]);
-                    if (roleRemoved != null && roleRemoved.getIdLong() != guild.getIdLong()) {
-                        Melijn.mySQL.removeSelfRole(guild.getIdLong(), roleRemoved.getIdLong());
-                        event.reply("SelfRole removed: **@" + roleRemoved.getName() + "** by **" + event.getFullAuthorName() + "**");
-                    } else {
-                        event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " add <role>");
+                    if (roleRemoved == null || roleRemoved.getIdLong() != guild.getIdLong()) {
+                        event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " add <role> <emote | emoji>");
+                        return;
                     }
+                    String emote2 = event.getMessage().getEmotes().size() > 0 ? event.getMessage().getEmotes().get(0).getId() : (args.length < 3 ? "" : args[2]);
+                    if (!cache.containsKey(roleRemoved.getIdLong()) || (!emote2.isBlank() && !cache.containsValue(emote2))) {
+                        event.reply("This entry does not exist");
+                        return;
+                    }
+                    if (emote2.isBlank()) {
+                        Melijn.mySQL.removeSelfRole(guild.getIdLong(), roleRemoved.getIdLong());
+                        event.reply("SelfRole entries removed for role: **@" + roleRemoved.getName() + "** by **" + event.getFullAuthorName() + "**");
+                    } else {
+                        Melijn.mySQL.removeSelfRole(guild.getIdLong(), roleRemoved.getIdLong(), emote2);
+                        event.reply("SelfRole entry removed for role: **@" + roleRemoved.getName() + "** by **" + event.getFullAuthorName() + "**");
+                    }
+
                     break;
                 case "list":
                     StringBuilder sb = new StringBuilder("**SelfRoles**\n```INI");
@@ -81,7 +97,7 @@ public class SelfRoleCommand extends Command {
                         SnowflakeCacheView<Role> roles = guild.getRoleCache();
                         Role role = roles.getElementById(rolesIds.keys()[i]);
                         if (role != null)
-                            sb.append("\n").append(i+1).append(" - [").append(role.getName()).append("] - ").append(rolesIds.get(rolesIds.keys()[i]));
+                            sb.append("\n").append(i + 1).append(" - [").append(role.getName()).append("] - ").append(rolesIds.get(rolesIds.keys()[i]));
                     }
                     sb.append("```");
                     if (rolesIds.keys().length == 0) sb.append("There are no SelfRoles");

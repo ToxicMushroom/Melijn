@@ -1646,4 +1646,8 @@ public class MySQL {
     public void removeSelfRole(long guildId, long roleId) {
         executeUpdate("DELETE FROM self_roles WHERE guildId= ? AND roleId= ?", guildId, roleId);
     }
+
+    public void removeSelfRole(long guildId, long roleId, String emote) {
+        executeUpdate("DELETE FROM self_roles WHERE guildId= ? AND roleId= ? AND emote= ?", guildId, roleId, emote);
+    }
 }
