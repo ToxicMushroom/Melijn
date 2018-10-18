@@ -35,6 +35,7 @@ public class SelfRoleCommand extends Command {
         this.commandName = "selfRole";
         this.description = "Ma in command to add and remove SelfRoles";
         this.usage = PREFIX + commandName + " <add | remove | list> [role] [emote | emoji]";
+        this.aliases = new String[]{"ssrlc"};
         this.category = Category.MANAGEMENT;
         this.needs = new Need[]{Need.GUILD};
     }
@@ -44,7 +45,7 @@ public class SelfRoleCommand extends Command {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
-            if (args.length == 0) {
+            if (args.length == 0 || args[0].isBlank()) {
                 MessageHelper.sendUsage(this, event);
                 return;
             }

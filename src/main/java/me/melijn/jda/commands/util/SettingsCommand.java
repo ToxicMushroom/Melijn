@@ -28,35 +28,38 @@ public class SettingsCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
-            TaskScheduler.async(() ->
-                    event.reply(new EmbedBuilder()
-                            .setTitle("Server settings")
-                            .setColor(Helpers.EmbedColor)
-                            .setDescription("MusicChannel:** " + idToChannelMention(SetMusicChannelCommand.musicChannelCache.getUnchecked(event.getGuild().getIdLong())) +
-                                    "\n**StreamUrl:** " + stringToString(Melijn.mySQL.getStreamUrl(event.getGuild().getIdLong()), false) +
-                                    "\n**StreamerMode:** " + (SetStreamerModeCommand.streamerModeCache.getUnchecked(event.getGuild().getIdLong()) ? "on" : "off") +
-                                    "\n" +
-                                    "\n**MuteRole:** " + idToRoleMention(SetMuteRoleCommand.muteRoleCache.getUnchecked(event.getGuild().getIdLong())) +
-                                    "\n**JoinRole:** " + idToRoleMention(SetJoinRoleCommand.joinRoleCache.getUnchecked(event.getGuild().getIdLong())) +
-                                    "\n**UnverifiedRole:** " + idToRoleMention(SetUnverifiedRole.unverifiedRoleCache.getUnchecked(event.getGuild().getIdLong())) +
-                                    "\n" +
-                                    "\n**VerificationChannel:** " + idToChannelMention(SetVerificationChannel.verificationChannelsCache.getUnchecked(event.getGuild().getIdLong())) +
-                                    "\n**WelcomeChannel:** " + idToChannelMention(SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(event.getGuild().getIdLong())) +
-                                    "\n**BanLogChannel:** " + idToChannelMention(SetLogChannelCommand.banLogChannelCache.getUnchecked(event.getGuild().getIdLong())) +
-                                    "\n**MuteLogChannel:** " + idToChannelMention(SetLogChannelCommand.muteLogChannelCache.getUnchecked(event.getGuild().getIdLong())) +
-                                    "\n**KickLogChannel:** " + idToChannelMention(SetLogChannelCommand.kickLogChannelCache.getUnchecked(event.getGuild().getIdLong())) +
-                                    "\n**WarnLogChannel:** " + idToChannelMention(SetLogChannelCommand.warnLogChannelCache.getUnchecked(event.getGuild().getIdLong())) +
-                                    "\n**ODMLogChannel:** " + idToChannelMention(SetLogChannelCommand.odmLogChannelCache.getUnchecked(event.getGuild().getIdLong())) +
-                                    "\n**SDMLogChannel:** " + idToChannelMention(SetLogChannelCommand.sdmLogChannelCache.getUnchecked(event.getGuild().getIdLong())) +
-                                    "\n**PMLogChannel:** " + idToChannelMention(SetLogChannelCommand.pmLogChannelCache.getUnchecked(event.getGuild().getIdLong())) +
-                                    "\n**FMLogChannel:** " + idToChannelMention(SetLogChannelCommand.fmLogChannelCache.getUnchecked(event.getGuild().getIdLong())) +
-                                    "\n" +
-                                    "\n**JoinMessage: " + stringToString(SetJoinMessageCommand.joinMessages.getUnchecked(event.getGuild().getIdLong()).replaceAll("`", "´"), true) +
-                                    "\n\nLeaveMessage: " + stringToString(SetLeaveMessageCommand.leaveMessages.getUnchecked(event.getGuild().getIdLong()).replaceAll("`", "´"), true) +
-                                    "\n\nVerificationCode:** " + stringToString(SetVerificationCode.verificationCodeCache.getUnchecked(event.getGuild().getIdLong()), false) +
-                                    "\n**VerificationThreshold:** " + SetVerificationThreshold.verificationThresholdCache.getUnchecked(event.getGuild().getIdLong()) +
-                                    "\n**Prefix:** " + SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong()) + "**")
-                            .build())
+            TaskScheduler.async(() -> {
+                long guildId = event.getGuild().getIdLong();
+                event.reply(new EmbedBuilder()
+                        .setTitle("Server settings")
+                        .setColor(Helpers.EmbedColor)
+                        .setDescription("MusicChannel:** " + idToChannelMention(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)) +
+                                "\n**StreamUrl:** " + stringToString(Melijn.mySQL.getStreamUrl(guildId), false) +
+                                "\n**StreamerMode:** " + (SetStreamerModeCommand.streamerModeCache.getUnchecked(guildId) ? "on" : "off") +
+                                "\n" +
+                                "\n**MuteRole:** " + idToRoleMention(SetMuteRoleCommand.muteRoleCache.getUnchecked(guildId)) +
+                                "\n**JoinRole:** " + idToRoleMention(SetJoinRoleCommand.joinRoleCache.getUnchecked(guildId)) +
+                                "\n**UnverifiedRole:** " + idToRoleMention(SetUnverifiedRole.unverifiedRoleCache.getUnchecked(guildId)) +
+                                "\n" +
+                                "\n**VerificationChannel:** " + idToChannelMention(SetVerificationChannel.verificationChannelsCache.getUnchecked(guildId)) +
+                                "\n**WelcomeChannel:** " + idToChannelMention(SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guildId)) +
+                                "\n**SelfRoleChannel:** " + idToChannelMention(SetSelfRoleChannelCommand.selfRolesChannel.getUnchecked(guildId)) +
+                                "\n**BanLogChannel:** " + idToChannelMention(SetLogChannelCommand.banLogChannelCache.getUnchecked(guildId)) +
+                                "\n**MuteLogChannel:** " + idToChannelMention(SetLogChannelCommand.muteLogChannelCache.getUnchecked(guildId)) +
+                                "\n**KickLogChannel:** " + idToChannelMention(SetLogChannelCommand.kickLogChannelCache.getUnchecked(guildId)) +
+                                "\n**WarnLogChannel:** " + idToChannelMention(SetLogChannelCommand.warnLogChannelCache.getUnchecked(guildId)) +
+                                "\n**ODMLogChannel:** " + idToChannelMention(SetLogChannelCommand.odmLogChannelCache.getUnchecked(guildId)) +
+                                "\n**SDMLogChannel:** " + idToChannelMention(SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guildId)) +
+                                "\n**PMLogChannel:** " + idToChannelMention(SetLogChannelCommand.pmLogChannelCache.getUnchecked(guildId)) +
+                                "\n**FMLogChannel:** " + idToChannelMention(SetLogChannelCommand.fmLogChannelCache.getUnchecked(guildId)) +
+                                "\n" +
+                                "\n**JoinMessage: " + stringToString(SetJoinMessageCommand.joinMessages.getUnchecked(guildId).replaceAll("`", "´"), true) +
+                                "\n\nLeaveMessage: " + stringToString(SetLeaveMessageCommand.leaveMessages.getUnchecked(guildId).replaceAll("`", "´"), true) +
+                                "\n\nVerificationCode:** " + stringToString(SetVerificationCode.verificationCodeCache.getUnchecked(guildId), false) +
+                                "\n**VerificationThreshold:** " + SetVerificationThreshold.verificationThresholdCache.getUnchecked(guildId) +
+                                "\n**Prefix:** " + SetPrefixCommand.prefixes.getUnchecked(guildId) + "**")
+                        .build());
+                    }
             );
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
