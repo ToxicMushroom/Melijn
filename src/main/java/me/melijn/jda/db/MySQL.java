@@ -91,48 +91,48 @@ public class MySQL {
             statement.executeQuery("SET NAMES 'utf8mb4'");
             statement.close();
             logger.info("[MySQL] has connected & Loading init");
-            executeUpdate("CREATE TABLE IF NOT EXISTS commands(commandName varchar(1000), gebruik varchar(1000), description varchar(2000), extra varchar(2000), category varchar(100), aliases varchar(200));");
-            executeUpdate("CREATE TABLE IF NOT EXISTS disabled_commands(guildId bigint, command int)");
-            executeUpdate("CREATE TABLE IF NOT EXISTS stream_urls(guildId bigint, url varchar(2000))");
-            executeUpdate("CREATE TABLE IF NOT EXISTS prefixes(guildId bigint, prefix bigint);");
-            executeUpdate("CREATE TABLE IF NOT EXISTS self_roles(guildId bigint, roleId bigint, emote varchar(128));");
-            executeUpdate("CREATE TABLE IF NOT EXISTS mute_roles(guildId bigint, roleId bigint);");
-            executeUpdate("CREATE TABLE IF NOT EXISTS join_roles(guildId bigint, roleId bigint);");
-            executeUpdate("CREATE TABLE IF NOT EXISTS unverified_roles(guildId bigint, roleId bigint);");
-            executeUpdate("CREATE TABLE IF NOT EXISTS perms_roles(guildId bigint, roleId bigint, permission varchar(256));");
-            executeUpdate("CREATE TABLE IF NOT EXISTS perms_users(guildId bigint, userId bigint, permission varchar(256));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS commands(commandName varchar(128), gebruik varchar(1024), description varchar(2048), extra varchar(2048), category varchar(128), aliases varchar(256), PRIMARY KEY (commandName));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS disabled_commands(guildId bigint, command int, UNIQUE KEY (guildId, command))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS stream_urls(guildId bigint, url varchar(2048), PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS prefixes(guildId bigint, prefix bigint, PRIMARY KEY (guildId));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS self_roles(guildId bigint, roleId bigint, emote varchar(128), UNIQUE KEY (guildId, roleId, emote));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS mute_roles(guildId bigint, roleId bigint, PRIMARY KEY (guildId));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS join_roles(guildId bigint, roleId bigint, PRIMARY KEY (guildId));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS unverified_roles(guildId bigint, roleId bigint, PRIMARY KEY (guildId));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS perms_roles(guildId bigint, roleId bigint, permission varchar(256), UNIQUE KEY (guildId, roleId, permission));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS perms_users(guildId bigint, userId bigint, permission varchar(256), UNIQUE KEY (guildId, userId, permission));");
 
             //channels
-            executeUpdate("CREATE TABLE IF NOT EXISTS ban_log_channels(guildId bigint, channelId bigint)");
-            executeUpdate("CREATE TABLE IF NOT EXISTS mute_log_channels(guildId bigint, channelId bigint)");
-            executeUpdate("CREATE TABLE IF NOT EXISTS kick_log_channels(guildId bigint, channelId bigint)");
-            executeUpdate("CREATE TABLE IF NOT EXISTS warn_log_channels(guildId bigint, channelId bigint)");
-            executeUpdate("CREATE TABLE IF NOT EXISTS sdm_log_channels(guildId bigint, channelId bigint)");
-            executeUpdate("CREATE TABLE IF NOT EXISTS odm_log_channels(guildId bigint, channelId bigint)");
-            executeUpdate("CREATE TABLE IF NOT EXISTS pm_log_channels(guildId bigint, channelId bigint)");
-            executeUpdate("CREATE TABLE IF NOT EXISTS fm_log_channels(guildId bigint, channelId bigint)");
-            executeUpdate("CREATE TABLE IF NOT EXISTS music_channels(guildId bigint, channelId bigint)");
-            executeUpdate("CREATE TABLE IF NOT EXISTS welcome_channels(guildId bigint, channelId bigint)");
-            executeUpdate("CREATE TABLE IF NOT EXISTS music_log_channels(guildId bigint, channelId bigint)");
-            executeUpdate("CREATE TABLE IF NOT EXISTS verification_channels(guildId bigint, channelId bigint)");
-            executeUpdate("CREATE TABLE IF NOT EXISTS self_role_channels(guildId bigint, channelId bigint)");
+            executeUpdate("CREATE TABLE IF NOT EXISTS ban_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS mute_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS kick_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS warn_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS sdm_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS odm_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS pm_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS fm_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS music_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS welcome_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS music_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS verification_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS self_role_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
 
-            executeUpdate("CREATE TABLE IF NOT EXISTS verification_thresholds(guildId bigint, threshold tinyint);");
-            executeUpdate("CREATE TABLE IF NOT EXISTS unverified_users(guildId bigint, userId bigint);");
-            executeUpdate("CREATE TABLE IF NOT EXISTS verification_codes(guildId bigint, code varchar(2000));");
-            executeUpdate("CREATE TABLE IF NOT EXISTS streamer_modes(guildId bigint, state boolean)");
-            executeUpdate("CREATE TABLE IF NOT EXISTS filters(guildId bigint, mode varchar(16), content varchar(2000))");
-            executeUpdate("CREATE TABLE IF NOT EXISTS warns(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), moment bigint);");
-            executeUpdate("CREATE TABLE IF NOT EXISTS kicks(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), moment bigint);");
-            executeUpdate("CREATE TABLE IF NOT EXISTS active_bans(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), startTime bigint, endTime bigint);");
-            executeUpdate("CREATE TABLE IF NOT EXISTS history_bans(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), unbanReason varchar(2000), startTime bigint, endTime bigint, active boolean);");
-            executeUpdate("CREATE TABLE IF NOT EXISTS active_mutes(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), startTime bigint, endTime bigint);");
-            executeUpdate("CREATE TABLE IF NOT EXISTS history_mutes(guildId bigint, victimId bigint, authorId bigint, reason varchar(2000), unmuteReason varchar(2000), startTime bigint, endTime bigint, active boolean);");
-            executeUpdate("CREATE TABLE IF NOT EXISTS history_messages(guildId bigint, authorId bigint, messageId bigint, content varchar(2000), textChannelId bigint, sentTime bigint);");
-            executeUpdate("CREATE TABLE IF NOT EXISTS join_messages(guildId bigint, content varchar(2000))");
-            executeUpdate("CREATE TABLE IF NOT EXISTS leave_messages(guildId bigint, content varchar(2000))");
-            executeUpdate("CREATE TABLE IF NOT EXISTS votes(userId bigint, votes bigint, streak bigint, lastTime bigint);");
-            executeUpdate("CREATE TABLE IF NOT EXISTS nextvote_notifications(userId bigint, targetId bigint);");
+            executeUpdate("CREATE TABLE IF NOT EXISTS verification_thresholds(guildId bigint, threshold tinyint, PRIMARY KEY (guildId));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS unverified_users(guildId bigint, userId bigint, UNIQUE KEY (guildId, userId));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS verification_codes(guildId bigint, code varchar(2048), PRIMARY KEY (guildId));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS streamer_modes(guildId bigint, PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS filters(guildId bigint, mode varchar(16), content varchar(2048))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS warns(guildId bigint, victimId bigint, authorId bigint, reason varchar(2048), moment bigint);");
+            executeUpdate("CREATE TABLE IF NOT EXISTS kicks(guildId bigint, victimId bigint, authorId bigint, reason varchar(2048), moment bigint);");
+            executeUpdate("CREATE TABLE IF NOT EXISTS active_bans(guildId bigint, victimId bigint, authorId bigint, reason varchar(2048), startTime bigint, endTime bigint, UNIQUE KEY (guildId, victimId));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS history_bans(guildId bigint, victimId bigint, authorId bigint, reason varchar(2048), unbanReason varchar(2048), startTime bigint, endTime bigint, active boolean);");
+            executeUpdate("CREATE TABLE IF NOT EXISTS active_mutes(guildId bigint, victimId bigint, authorId bigint, reason varchar(2048), startTime bigint, endTime bigint, UNIQUE KEY (guildId, victimId));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS history_mutes(guildId bigint, victimId bigint, authorId bigint, reason varchar(2048), unmuteReason varchar(2048), startTime bigint, endTime bigint, active boolean);");
+            executeUpdate("CREATE TABLE IF NOT EXISTS history_messages(guildId bigint, authorId bigint, messageId bigint, content varchar(2048), textChannelId bigint, sentTime bigint, PRIMARY KEY (messageId));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS join_messages(guildId bigint, content varchar(2048), PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS leave_messages(guildId bigint, content varchar(2048), PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS votes(userId bigint, votes bigint, streak bigint, lastTime bigint, PRIMARY KEY (userId));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS nextvote_notifications(userId bigint, targetId bigint, UNIQUE KEY(userId, targetId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS command_usage(commandId int, usageCount bigint, time bigint, UNIQUE KEY(commandId, time))");
             logger.info("[MySQL] init loaded");
         } catch (SQLException e) {
@@ -1109,7 +1109,7 @@ public class MySQL {
 
     //Filter stuff-----------------------------------------
     public void addFilter(long guildId, String mode, String content) {
-        executeUpdate("INSERT INTO filters (guildId, mode, content) VALUES (?, ?, ?)", guildId, mode, content);
+        executeUpdate("INSERT IGNORE INTO filters (guildId, mode, content) VALUES (?, ?, ?)", guildId, mode, content);
     }
 
     public void removeFilter(long guildId, String mode, String content) {
