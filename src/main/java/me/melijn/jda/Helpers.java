@@ -135,7 +135,6 @@ public class Helpers {
             "bird",
             "enable",
             "disabled",
-            "setEvalEngine",
             "metrics",
             "settings",
             "slowmode",
