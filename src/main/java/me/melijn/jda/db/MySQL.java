@@ -87,12 +87,13 @@ public class MySQL {
 
             ds = new HikariDataSource(config);
 
+            logger.info("[MySQL] has connected & Loading init");
             Statement statement = ds.getConnection().createStatement();
             statement.executeQuery("SET NAMES 'utf8mb4'");
             statement.close();
-            logger.info("[MySQL] has connected & Loading init");
             executeUpdate("CREATE TABLE IF NOT EXISTS commands(commandName varchar(128), gebruik varchar(1024), description varchar(2048), extra varchar(2048), category varchar(128), aliases varchar(256), PRIMARY KEY (commandName));");
             executeUpdate("CREATE TABLE IF NOT EXISTS disabled_commands(guildId bigint, command int, UNIQUE KEY (guildId, command))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS custom_commands(guildId bigint, name varchar(128), description varchar(2048), aliases varchar(256), prefix boolean, attachments varchar(2048), message varchar(2048), UNIQUE KEY (guildId, name))");
             executeUpdate("CREATE TABLE IF NOT EXISTS stream_urls(guildId bigint, url varchar(2048), PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS prefixes(guildId bigint, prefix bigint, PRIMARY KEY (guildId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS self_roles(guildId bigint, roleId bigint, emote varchar(128), UNIQUE KEY (guildId, roleId, emote));");

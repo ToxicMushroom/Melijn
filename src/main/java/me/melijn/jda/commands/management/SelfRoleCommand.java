@@ -35,7 +35,7 @@ public class SelfRoleCommand extends Command {
         this.commandName = "selfRole";
         this.description = "Ma in command to add and remove SelfRoles";
         this.usage = PREFIX + commandName + " <add | remove | list> [role] [emote | emoji]";
-        this.aliases = new String[]{"ssrlc"};
+        this.aliases = new String[]{"srl"};
         this.category = Category.MANAGEMENT;
         this.needs = new Need[]{Need.GUILD};
     }
@@ -104,6 +104,8 @@ public class SelfRoleCommand extends Command {
                     MessageHelper.sendSplitMessage(event.getTextChannel(), sb.toString());
                     break;
             }
+        } else {
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
     }
 }

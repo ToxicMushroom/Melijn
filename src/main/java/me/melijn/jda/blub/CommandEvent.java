@@ -66,6 +66,18 @@ public class CommandEvent {
         return event.getMessage();
     }
 
+    public void reply(int i) {
+        reply(String.valueOf(i));
+    }
+
+    public void reply(double d) {
+        reply(String.valueOf(d));
+    }
+
+    public void reply(long l) {
+        reply(String.valueOf(l));
+    }
+
     public void reply(String text) {
         if (text == null || text.isEmpty()) return;
         if (event.getPrivateChannel() != null) {
