@@ -4,6 +4,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import gnu.trove.list.TLongList;
+import me.melijn.jda.Config;
+import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.RoleType;
@@ -15,9 +17,11 @@ import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import org.discordbots.api.client.DiscordBotListAPI;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.ExecutionException;
@@ -33,6 +37,18 @@ public class JoinLeave extends ListenerAdapter {
                     return Melijn.mySQL.getUnverifiedMembers(key);
                 }
             });
+    public static DiscordBotListAPI dblAPI = null;
+
+    @Override
+    public void onReady(ReadyEvent event) {
+        if (event.getJDA().asBot().getShardManager().getShardsQueued() > 0) return;
+        dblAPI = new DiscordBotListAPI.Builder()
+                .token(Config.getConfigInstance().getValue("dbltoken"))
+                .botId(event.getJDA().getSelfUser().getId())
+                .build();
+        Helpers.startTimer(event.getJDA(), 0);
+        Helpers.startTime = System.currentTimeMillis();
+    }
 
     @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {

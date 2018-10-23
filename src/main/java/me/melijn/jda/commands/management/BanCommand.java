@@ -9,13 +9,15 @@ import me.melijn.jda.blub.Need;
 import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 
+import static me.melijn.jda.Melijn.PREFIX;
+
 
 public class BanCommand extends Command {
 
     public BanCommand() {
         this.commandName = "ban";
         this.description = "Bans specified users from your server and gives them a nice message in dm";
-        this.usage = Melijn.PREFIX + commandName + " <user> [reason]";
+        this.usage = PREFIX + commandName + " <user> [reason]";
         this.category = Category.MANAGEMENT;
         this.aliases = new String[]{"permban"};
         this.needs = new Need[]{Need.ROLE, Need.GUILD};

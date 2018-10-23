@@ -19,18 +19,18 @@ public class RestController {
     @GetMapping("/guildCount")
     public Map<String, Object> guildCount() {
         JSONObject response = new JSONObject();
-        response.put("guildCount", String.valueOf(Melijn.getShardManager().getGuilds().size()));
+        response.put("guildCount", String.valueOf(Melijn.getShardManager().getGuildCache().size()));
         return response.toMap();
     }
 
     @GetMapping("/shards")
     public Map<String, Object> getShards() {
         JSONObject response = new JSONObject();
-        for (JDA shard : Melijn.getShardManager().getShards())
+        for (JDA shard : Melijn.getShardManager().getShardCache())
             response.put(String.valueOf(shard.getShardInfo().getShardId()), new JSONObject()
-                    .put("guildCount", shard.getGuilds().size())
-                    .put("userCount", shard.getUsers().size())
-                    .put("connectedVoiceChannels", shard.getGuilds().stream().filter(guild -> guild.getSelfMember().getVoiceState().inVoiceChannel()).count())
+                    .put("guildCount", shard.getGuildCache().size())
+                    .put("userCount", shard.getUserCache().size())
+                    .put("connectedVoiceChannels", shard.getGuildCache().stream().filter(guild -> guild.getSelfMember().getVoiceState().inVoiceChannel()).count())
             );
         return response.toMap();
     }
@@ -43,9 +43,9 @@ public class RestController {
         JSONObject channels = new JSONObject().put("textChannels", new JSONArray()).put("voiceChannels", new JSONArray());
         JSONArray roles = new JSONArray();
 
-        guild.getRoles().forEach(role -> roles.put(new JSONObject().put("id", role.getId()).put("name", role.getName())));
-        guild.getVoiceChannels().forEach(channel -> channels.put("voiceChannels", channels.getJSONArray("voiceChannels").put(channel.getPosition(), new JSONObject().put("id", channel.getId()).put("name", channel.getName()))));
-        guild.getTextChannels().forEach(channel -> channels.put("textChannels", channels.getJSONArray("textChannels").put(channel.getPosition(), new JSONObject().put("id", channel.getId()).put("name", channel.getName()))));
+        guild.getRoleCache().forEach(role -> roles.put(new JSONObject().put("id", role.getId()).put("name", role.getName())));
+        guild.getVoiceChannelCache().forEach(channel -> channels.put("voiceChannels", channels.getJSONArray("voiceChannels").put(channel.getPosition(), new JSONObject().put("id", channel.getId()).put("name", channel.getName()))));
+        guild.getTextChannelCache().forEach(channel -> channels.put("textChannels", channels.getJSONArray("textChannels").put(channel.getPosition(), new JSONObject().put("id", channel.getId()).put("name", channel.getName()))));
         return new JSONObject()
                 .put("name", guild.getName())
                 .put("memberCount", guild.getMemberCache().size())

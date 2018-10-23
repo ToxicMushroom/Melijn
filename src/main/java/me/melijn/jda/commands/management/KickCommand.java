@@ -11,12 +11,14 @@ import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.User;
 
+import static me.melijn.jda.Melijn.PREFIX;
+
 public class KickCommand extends Command {
 
     public KickCommand() {
         this.commandName = "kick";
         this.description = "kick a member";
-        this.usage = Melijn.PREFIX + commandName + " <member> [reason]";
+        this.usage = PREFIX + commandName + " <member> [reason]";
         this.category = Category.MANAGEMENT;
         this.extra = "the bot will dm the reason to the target if one is provided";
         this.needs = new Need[]{Need.GUILD, Need.ROLE};

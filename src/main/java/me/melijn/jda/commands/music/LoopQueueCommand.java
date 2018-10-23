@@ -16,7 +16,7 @@ public class LoopQueueCommand extends Command {
     public LoopQueueCommand() {
         this.commandName = "loopQueue";
         this.description = "Change the looping state or view the looping state of the queue";
-        this.usage = PREFIX + this.commandName + " [false/off/yes | true/on/off]";
+        this.usage = PREFIX + commandName + " [false/off/yes | true/on/off]";
         this.aliases = new String[]{"repeatq", "loopq"};
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};
         this.category = Category.MUSIC;

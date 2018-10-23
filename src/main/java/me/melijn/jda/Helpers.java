@@ -7,6 +7,7 @@ import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.NotificationType;
 import me.melijn.jda.commands.management.SetLogChannelCommand;
+import me.melijn.jda.events.JoinLeave;
 import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.music.MusicPlayer;
 import me.melijn.jda.utils.MessageHelper;
@@ -41,7 +42,7 @@ public class Helpers {
     public static final Logger LOG = LogManager.getLogger(Melijn.class.getName());
     public static Color EmbedColor = Color.decode("#00ffd8");
     public static boolean voteChecks = true;
-    public static int guildCount = 0;
+    public static long guildCount = 0;
     public static List<String> perms = Arrays.asList(
             "pause",
             "splay.yt",
@@ -162,8 +163,8 @@ public class Helpers {
             lastRunTimer2 = System.currentTimeMillis();
             TaskScheduler.scheduleRepeating(() -> {
                 lastRunTimer2 = System.currentTimeMillis();
-                if (Melijn.dblAPI != null)
-                    Melijn.dblAPI.setStats(guildCount == 0 ? jda.asBot().getShardManager().getGuilds().size() : guildCount);
+                if (JoinLeave.dblAPI != null)
+                    JoinLeave.dblAPI.setStats(Math.toIntExact(guildCount == 0 ? jda.asBot().getShardManager().getGuildCache().size() : guildCount));
                 TLongList votesList = Melijn.mySQL.getVoteList();
                 TLongObjectMap<TLongList> nextVoteMap = Melijn.mySQL.getNotificationsMap(NotificationType.NEXTVOTE);
                 for (long userId : nextVoteMap.keys()) {

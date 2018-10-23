@@ -15,7 +15,7 @@ public class ClearCommand extends Command {
     public ClearCommand() {
         this.commandName = "clear";
         this.description = "Clears the queue";
-        this.usage = PREFIX + this.commandName;
+        this.usage = PREFIX + commandName;
         this.aliases = new String[]{"cls"};
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};
         this.category = Category.MUSIC;

@@ -5,14 +5,13 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
-import me.melijn.jda.blub.Category;
-import me.melijn.jda.blub.Command;
-import me.melijn.jda.blub.CommandEvent;
-import me.melijn.jda.blub.MessageType;
+import me.melijn.jda.blub.*;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 
 import java.util.concurrent.TimeUnit;
+
+import static me.melijn.jda.Melijn.PREFIX;
 
 public class SetJoinMessageCommand extends Command {
 
@@ -28,7 +27,7 @@ public class SetJoinMessageCommand extends Command {
     public SetJoinMessageCommand() {
         this.commandName = "setJoinMessage";
         this.description = "Setup a message that a user get's when he/she/it joins";
-        this.usage = Melijn.PREFIX + commandName + " [message | null]";
+        this.usage = PREFIX + commandName + " [message | null]";
         this.extra = "Placeholders:" +
                 " `%USER%` = joined user mention //" +
                 " `%USERNAME%` = user name //" +
@@ -36,38 +35,35 @@ public class SetJoinMessageCommand extends Command {
                 " `%JOINPOSITION%` = member position";
         this.aliases = new String[]{"sjm"};
         this.category = Category.MANAGEMENT;
+        this.needs = new Need[]{Need.GUILD};
     }
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() != null) {
-            if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
-                Guild guild = event.getGuild();
-                String oldMessage = joinMessages.getUnchecked(guild.getIdLong()).isBlank() ? "nothing" : ("'" + joinMessages.getUnchecked(guild.getIdLong()) + "'");
-                String newMessage = event.getArgs();
-                String[] args = event.getArgs().split("\\s+");
-                if (args.length > 0 && !args[0].isBlank()) {
-                    if (args.length == 1 && args[0].equalsIgnoreCase("null")) {
-                        TaskScheduler.async(() -> {
-                            Melijn.mySQL.removeMessage(guild.getIdLong(), MessageType.JOIN);
-                            joinMessages.invalidate(guild.getIdLong());
-                        });
-                        event.reply("JoinMessage has been set to nothing by **" + event.getFullAuthorName() + "**");
-                    } else {
-                        TaskScheduler.async(() -> {
-                            Melijn.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.JOIN);
-                            joinMessages.put(guild.getIdLong(), newMessage);
-                        });
-                        event.reply("JoinMessage has been changed from " + oldMessage + " to '" + newMessage + "' by **" + event.getFullAuthorName() + "**");
-                    }
+        if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
+            Guild guild = event.getGuild();
+            String oldMessage = joinMessages.getUnchecked(guild.getIdLong()).isBlank() ? "nothing" : ("'" + joinMessages.getUnchecked(guild.getIdLong()) + "'");
+            String newMessage = event.getArgs();
+            String[] args = event.getArgs().split("\\s+");
+            if (args.length > 0 && !args[0].isBlank()) {
+                if (args.length == 1 && args[0].equalsIgnoreCase("null")) {
+                    TaskScheduler.async(() -> {
+                        Melijn.mySQL.removeMessage(guild.getIdLong(), MessageType.JOIN);
+                        joinMessages.invalidate(guild.getIdLong());
+                    });
+                    event.reply("JoinMessage has been set to nothing by **" + event.getFullAuthorName() + "**");
                 } else {
-                    event.reply("JoinMessage is set to " + oldMessage);
+                    TaskScheduler.async(() -> {
+                        Melijn.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.JOIN);
+                        joinMessages.put(guild.getIdLong(), newMessage);
+                    });
+                    event.reply("JoinMessage has been changed from " + oldMessage + " to '" + newMessage + "' by **" + event.getFullAuthorName() + "**");
                 }
             } else {
-                event.reply("You need the permission `" + commandName + "` to execute this command.");
+                event.reply("JoinMessage is set to " + oldMessage);
             }
         } else {
-            event.reply(Helpers.guildOnly);
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
     }
 }

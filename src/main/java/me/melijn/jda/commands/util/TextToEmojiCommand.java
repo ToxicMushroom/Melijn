@@ -14,7 +14,7 @@ public class TextToEmojiCommand extends Command {
     public TextToEmojiCommand() {
         this.commandName = "t2e";
         this.description = "Converts input text and numbers to emotes";
-        this.usage = PREFIX + this.commandName + " [%spaces%] <text>";
+        this.usage = PREFIX + commandName + " [%spaces%] <text>";
         this.aliases = new String[]{"TextToEmojis"};
         this.extra = "%spaces% will put a space after each emoji so they don't change into flags when copied and pasted";
         this.category = Category.UTILS;

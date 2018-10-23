@@ -12,12 +12,14 @@ import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.User;
 
+import static me.melijn.jda.Melijn.PREFIX;
+
 public class MuteCommand extends Command {
 
     public MuteCommand() {
         this.commandName = "mute";
         this.description = "Mutes the member by giving the member a role";
-        this.usage = Melijn.PREFIX + commandName + " <member> [reason]";
+        this.usage = PREFIX + commandName + " <member> [reason]";
         this.extra = "The mute role should be higher then the default role and shouldn't have talking permission";
         this.aliases = new String[]{"permmute"};
         this.category = Category.MANAGEMENT;

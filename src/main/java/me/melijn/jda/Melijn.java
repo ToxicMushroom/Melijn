@@ -22,13 +22,9 @@ import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
-import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Game;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.utils.cache.CacheFlag;
 import okhttp3.OkHttpClient;
-import org.discordbots.api.client.DiscordBotListAPI;
 
 import javax.security.auth.login.LoginException;
 import java.util.EnumSet;
@@ -38,21 +34,19 @@ import java.util.logging.Logger;
 public class Melijn {
 
     private static final Config config = Config.getConfigInstance();
-    private static boolean ready = false;
     public static long OWNERID = Long.parseLong(config.getValue("ownerid"));
     public static String PREFIX = config.getValue("prefix");
     private static ShardManager shardManager;
-    static DiscordBotListAPI dblAPI = null;
+
     public static MySQL mySQL = new MySQL(
             config.getValue("ipaddress"),
             config.getValue("username"),
             config.getValue("password"),
             config.getValue("database"));
 
-    public static void main(String[] args) throws LoginException, InterruptedException {
+    public static void main(String[] args) throws LoginException {
         new WebUtils();
         mySQL.executeUpdate("TRUNCATE TABLE commands");
-
         CommandClientBuilder client = new CommandClientBuilder();
         client.setOwnerId(OWNERID);
         client.addCommands(new BirdCommand(),//Only add commands at the end of the list for because of commandIndexes
@@ -166,17 +160,13 @@ public class Melijn {
                 .setAudioSendFactory(new NativeAudioSendFactory())
                 .build();
 
-        dblAPI = new DiscordBotListAPI.Builder()
-                .token(config.getValue("dbltoken"))
-                .botId(awaitReady().getShardById(0).getSelfUser().getId())
-                .build();
 
         EvalCommand.serverBlackList.add(new long[]{110373943822540800L, 264445053596991498L});
         EvalCommand.userBlackList.add(new long[]{/*fabian: 260424455270957058L*/});
-
-        Helpers.startTimer(shardManager.getShardById(0), 0);
-        Helpers.startTime = System.currentTimeMillis();
         Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
+
+        new Application().init(args);
+        Thread.setDefaultUncaughtExceptionHandler((thread, exception) -> MessageHelper.printException(thread, exception, null, null));
         /*
         setting avatar & username
         try {
@@ -188,39 +178,8 @@ public class Melijn {
             e.printStackTrace();
         }
         */
-        new Application().init(args);
-        Thread.setDefaultUncaughtExceptionHandler((thread, exception) -> MessageHelper.printException(thread, exception, null, null));
     }
-
     public static ShardManager getShardManager() {
         return shardManager;
-    }
-
-    private static ShardManager awaitReady() throws InterruptedException {
-        if (ready)
-            return getShardManager();
-        long start = System.currentTimeMillis();
-        while (getShardManager().getShardsQueued() > 0) {
-            Thread.sleep(100);
-        }
-        for (final JDA shard : getShardManager().getShards()) {
-            shard.awaitReady();
-        }
-        long time = System.currentTimeMillis() - start;
-        ready = true;
-        System.out.println("ShardManager ready after " + time + "ms");
-        return getShardManager();
-    }
-
-    public static void channelLog(String s) {
-        try {
-            Guild guild = awaitReady().getGuildById(340081887265685504L);
-            if (guild != null) {
-                TextChannel channel = guild.getTextChannelById(343679998776836096L);
-                channel.sendMessage(s).queue();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 }

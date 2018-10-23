@@ -59,7 +59,7 @@ public class Chat extends ListenerAdapter {
             Guild guild = event.getGuild();
             User author = event.getAuthor();
             if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
-            Helpers.guildCount = event.getJDA().asBot().getShardManager().getGuilds().size();
+            Helpers.guildCount = event.getJDA().asBot().getShardManager().getGuildCache().size();
 
             StringBuilder content = new StringBuilder(event.getMessage().getContentRaw());
             for (Message.Attachment a : event.getMessage().getAttachments()) {

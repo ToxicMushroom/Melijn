@@ -16,7 +16,7 @@ public class PitchCommand extends Command {
     public PitchCommand() {
         this.commandName = "pitch";
         this.description = "Change the playback pitch of bot";
-        this.usage = PREFIX + this.commandName + " <default | 0.0-10.0>";
+        this.usage = PREFIX + commandName + " <default | 0.0-10.0>";
         this.category = Category.MUSIC;
         this.needs = new Need[]{Need.GUILD};
         this.extra = "1.0 is normal pitch";

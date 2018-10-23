@@ -14,6 +14,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.TimeUnit;
 
+import static me.melijn.jda.Melijn.PREFIX;
+
 public class SetMuteRoleCommand extends Command {
 
     public static final LoadingCache<Long, Long> muteRoleCache = CacheBuilder.newBuilder()
@@ -29,7 +31,7 @@ public class SetMuteRoleCommand extends Command {
         this.commandName = "setMuteRole";
         this.description = "Set the role that will be added to a user when muted";
         this.extra = "The mute role should be higher then the default role and shouldn't have talking permission";
-        this.usage = Melijn.PREFIX + commandName + " [role]";
+        this.usage = PREFIX + commandName + " [role]";
         this.needs = new Need[]{Need.GUILD};
         this.aliases = new String[]{"smr"};
         this.category = Category.MANAGEMENT;

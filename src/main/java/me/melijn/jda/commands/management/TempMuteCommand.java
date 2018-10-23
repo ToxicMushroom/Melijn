@@ -12,12 +12,14 @@ import net.dv8tion.jda.core.entities.User;
 import java.awt.*;
 import java.util.function.Consumer;
 
+import static me.melijn.jda.Melijn.PREFIX;
+
 public class TempMuteCommand extends Command {
 
     public TempMuteCommand() {
         this.commandName = "tempmute";
         this.description = "Mute people and let the bot unmute them after the specified amount of time";
-        this.usage = Melijn.PREFIX + commandName + " <member> <time> [reason]";
+        this.usage = PREFIX + commandName + " <member> <time> [reason]";
         this.extra = "Time examples: [1s = 1second, 1m = 1minute, 1h = 1hour, 1w = 1week, 1M = 1month, 1y = 1year]";
         this.category = Category.MANAGEMENT;
         this.needs = new Need[]{Need.GUILD, Need.ROLE};

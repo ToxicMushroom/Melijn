@@ -13,6 +13,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.TimeUnit;
 
+import static me.melijn.jda.Melijn.PREFIX;
+
 public class SetMusicChannelCommand extends Command {
 
     public static final LoadingCache<Long, Long> musicChannelCache = CacheBuilder.newBuilder()
@@ -27,7 +29,7 @@ public class SetMusicChannelCommand extends Command {
     public SetMusicChannelCommand() {
         this.commandName = "setMusicChannel";
         this.description = "Set the music channel to a channel so the bot wil auto join ect";
-        this.usage = Melijn.PREFIX + commandName + " [VoiceChannel | null]";
+        this.usage = PREFIX + commandName + " [VoiceChannel | null]";
         this.aliases = new String[]{"smc"};
         this.needs = new Need[]{Need.GUILD};
         this.category = Category.MANAGEMENT;

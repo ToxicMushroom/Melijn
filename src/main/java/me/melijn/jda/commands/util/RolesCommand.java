@@ -4,10 +4,10 @@ import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
+import me.melijn.jda.blub.Need;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
-
-import java.util.List;
+import net.dv8tion.jda.core.utils.cache.SnowflakeCacheView;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
@@ -19,33 +19,30 @@ public class RolesCommand extends Command {
         this.usage = PREFIX + commandName;
         this.aliases = new String[]{"rolelist"};
         this.category = Category.UTILS;
+        this.needs = new Need[]{Need.GUILD};
     }
 
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() != null) {
-            if (Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
-                Guild guild = event.getGuild();
-                List<Role> roles = guild.getRoles();
-                StringBuilder sb = new StringBuilder();
-                int i = 1;
-                int count = 1;
-                for (Role role : roles) {
-                    sb.append(count++).append(" - [").append(role.getName()).append("] - ").append(role.getId()).append("\n");
-                    if (sb.length() > 1850) {
-                        event.reply("Roles of " + guild.getName() + " part **#" + i + "**\n```INI\n" + sb.toString() + "```");
-                        sb = new StringBuilder();
-                        i++;
-                    }
-                }
-                if (sb.length() != 0)
+        if (Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
+            Guild guild = event.getGuild();
+            SnowflakeCacheView<Role> roles = guild.getRoleCache();
+            StringBuilder sb = new StringBuilder();
+            int i = 1;
+            int count = 1;
+            for (Role role : roles) {
+                sb.append(count++).append(" - [").append(role.getName()).append("] - ").append(role.getId()).append("\n");
+                if (sb.length() > 1850) {
                     event.reply("Roles of " + guild.getName() + " part **#" + i + "**\n```INI\n" + sb.toString() + "```");
-            } else {
-                event.reply("You need the permission `" + commandName + "` to execute this command.");
+                    sb = new StringBuilder();
+                    i++;
+                }
             }
+            if (sb.length() != 0)
+                event.reply("Roles of " + guild.getName() + " part **#" + i + "**\n```INI\n" + sb.toString() + "```");
         } else {
-            event.reply(Helpers.guildOnly);
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
     }
 }

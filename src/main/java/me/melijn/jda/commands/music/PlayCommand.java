@@ -25,7 +25,7 @@ public class PlayCommand extends Command {
     public PlayCommand() {
         this.commandName = "play";
         this.description = "plays a song or adds it to the queue";
-        this.usage = PREFIX + this.commandName + " [sc] <songname | link>";
+        this.usage = PREFIX + commandName + " [sc] <songname | link>";
         this.extra = "You only have to use sc if you want to search on soundcloud";
         this.aliases = new String[]{"p"};
         this.category = Category.MUSIC;
@@ -35,61 +35,60 @@ public class PlayCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() != null) {
-            Guild guild = event.getGuild();
-            boolean access = Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".*", 1);
-            VoiceChannel senderVoiceChannel = guild.getMember(event.getAuthor()).getVoiceState().getChannel();
-            String args[] = event.getArgs().split("\\s+");
-            if (args.length == 0 || args[0].isBlank()) {
-                MessageHelper.sendUsage(this, event);
-                return;
-            }
-            String songName;
-            StringBuilder sb = new StringBuilder();
-            SPlayCommand.argsToSongName(args, sb, providers);
-            songName = sb.toString();
-            switch (args[0].toLowerCase()) {
-                case "sc":
-                case "soundcloud":
-                    if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".sc", 0) || access) {
-                        if (SPlayCommand.isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
-                        manager.loadTrack(event.getTextChannel(), "scsearch:" + songName, event.getAuthor(), false);
+        Guild guild = event.getGuild();
+        boolean access = Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".*", 1);
+        VoiceChannel senderVoiceChannel = guild.getMember(event.getAuthor()).getVoiceState().getChannel();
+        String args[] = event.getArgs().split("\\s+");
+        if (args.length == 0 || args[0].isBlank()) {
+            MessageHelper.sendUsage(this, event);
+            return;
+        }
+        String songName;
+        StringBuilder sb = new StringBuilder();
+        SPlayCommand.argsToSongName(args, sb, providers);
+        songName = sb.toString();
+        switch (args[0].toLowerCase()) {
+            case "sc":
+            case "soundcloud":
+                if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".sc", 0) || access) {
+                    if (SPlayCommand.isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
+                    manager.loadTrack(event.getTextChannel(), "scsearch:" + songName, event.getAuthor(), false);
 
-                    } else {
-                        event.reply("You need the permission `" + commandName + ".sc` to execute this command.");
-                    }
-                    break;
-                case "link":
+                } else {
+                    event.reply("You need the permission `" + commandName + ".sc` to execute this command.");
+                }
+                break;
+            case "link":
+                if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) || access) {
+                    if (SPlayCommand.isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
+                    manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
+                } else {
+                    event.reply("You need the permission `" + commandName + ".link` to execute this command.");
+                }
+                break;
+            default:
+                if (songName.contains("https://") || songName.contains("http://")) {
+                    songName = songName.replaceAll("\\s+", "");
                     if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) || access) {
                         if (SPlayCommand.isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
-                        manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
+                        if (songName.contains("open.spotify.com")) spotiSearch(event, songName);
+                        else
+                            manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
                     } else {
                         event.reply("You need the permission `" + commandName + ".link` to execute this command.");
                     }
-                    break;
-                default:
-                    if (songName.contains("https://") || songName.contains("http://")) {
-                        songName = songName.replaceAll("\\s+", "");
-                        if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) || access) {
-                            if (SPlayCommand.isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
-                            if (songName.contains("open.spotify.com")) spotiSearch(event, songName);
-                            else manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
-                        } else {
-                            event.reply("You need the permission `" + commandName + ".link` to execute this command.");
-                        }
+                } else {
+                    if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".yt", 0) || access) {
+                        if (SPlayCommand.isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
+                        if (songName.replaceFirst("\\s+", "").matches("spotify:track:\\S+"))
+                            spotiSearch(event, songName.replaceFirst("\\s+", ""));
+                        else
+                            manager.loadTrack(event.getTextChannel(), "ytsearch:" + songName, event.getAuthor(), false);
                     } else {
-                        if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".yt", 0) || access) {
-                            if (SPlayCommand.isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
-                            if (songName.replaceFirst("\\s+", "").matches("spotify:track:\\S+")) spotiSearch(event, songName.replaceFirst("\\s+", ""));
-                            else manager.loadTrack(event.getTextChannel(), "ytsearch:" + songName, event.getAuthor(), false);
-                        } else {
-                            event.reply("You need the permission `" + commandName + ".yt` to execute this command.");
-                        }
+                        event.reply("You need the permission `" + commandName + ".yt` to execute this command.");
                     }
-                    break;
-            }
-        } else {
-            event.reply(Helpers.guildOnly);
+                }
+                break;
         }
     }
 

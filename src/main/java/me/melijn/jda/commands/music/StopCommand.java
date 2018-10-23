@@ -15,7 +15,7 @@ public class StopCommand extends Command {
     public StopCommand() {
         this.commandName = "stop";
         this.description = "Stops the current playing song and pauses the queue and disconnects from the connected voice channel";
-        this.usage = PREFIX + this.commandName;
+        this.usage = PREFIX + commandName;
         this.aliases = new String[]{"leave"};
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};
         this.category = Category.MUSIC;

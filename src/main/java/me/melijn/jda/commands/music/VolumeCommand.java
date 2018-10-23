@@ -17,7 +17,7 @@ public class VolumeCommand extends Command {
 
     public VolumeCommand() {
         this.commandName = "volume";
-        this.usage = PREFIX + this.commandName + " <0-1000>";
+        this.usage = PREFIX + commandName + " <0-1000>";
         this.description = "Change or view the volume of the music for everyone";
         this.aliases = new String[]{"vol"};
         this.extra = "default: 100 (over 100 will cause distortion)";

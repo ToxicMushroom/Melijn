@@ -14,7 +14,7 @@ public class AvatarCommand extends Command {
 
     public AvatarCommand() {
         this.commandName = "avatar";
-        this.usage = PREFIX + this.commandName + " [user]";
+        this.usage = PREFIX + commandName + " [user]";
         this.description = "Shows you your avatar and link.";
         this.aliases = new String[]{"profilepicture"};
         this.category = Category.UTILS;

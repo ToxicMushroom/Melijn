@@ -13,12 +13,14 @@ import net.dv8tion.jda.core.entities.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static me.melijn.jda.Melijn.PREFIX;
+
 public class PermCommand extends Command {
 
     public PermCommand() {
         this.commandName = "perm";
         this.description = "You can edit the user's access to your demands ;D";
-        this.usage = Melijn.PREFIX + this.commandName + " <add | remove | view | clear | copy | list>";
+        this.usage = PREFIX + commandName + " <add | remove | view | clear | copy | list>";
         this.extra = "A permission is just the name of the command and you'll get more info for each sub section of the command if you just use it wrong or without more arguments";
         this.aliases = new String[]{"permission"};
         this.category = Category.MANAGEMENT;
