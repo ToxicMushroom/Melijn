@@ -146,7 +146,8 @@ public class Helpers {
             "hug",
             "spookify",
             "SetSelfRoleChannel",
-            "SelfRole"
+            "SelfRole",
+            "CustomCommand"
     );
 
 

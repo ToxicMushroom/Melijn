@@ -147,7 +147,8 @@ public class Melijn {
                 new HugCommand(),
                 new SpookifyCommand(),
                 new SelfRoleCommand(),
-                new SetSelfRoleChannelCommand()
+                new SetSelfRoleChannelCommand(),
+                new CustomCommandCommand()
         );
 
         shardManager = new DefaultShardManagerBuilder()
