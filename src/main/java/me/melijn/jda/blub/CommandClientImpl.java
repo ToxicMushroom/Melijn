@@ -1,5 +1,8 @@
 package me.melijn.jda.blub;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import me.melijn.jda.Helpers;
@@ -9,15 +12,24 @@ import me.melijn.jda.commands.management.DisableCommand;
 import me.melijn.jda.commands.management.SetPrefixCommand;
 import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.ShutdownEvent;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import net.dv8tion.jda.core.requests.restaction.MessageAction;
 import org.apache.commons.lang3.text.WordUtils;
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class CommandClientImpl extends ListenerAdapter implements CommandClient {
@@ -27,6 +39,15 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
     public final List<Command> commands;
     //private CommandListener listener = null;
 
+    public static final LoadingCache<Long, Boolean> serverHasCC = CacheBuilder.newBuilder()
+            .maximumSize(100)
+            .expireAfterAccess(5, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                public Boolean load(@NotNull Long key) {
+                    return Melijn.mySQL.getCustomCommands(key).length() > 0;
+                }
+            });
+
     public CommandClientImpl(long ownerId, List<Command> commands) {
         if (ownerId == -1)
             throw new IllegalArgumentException("Owner ID was set null or not set! Please provide an User ID to register as the owner!");
@@ -35,8 +56,9 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
         for (Command command : commands) {
             addCommand(command);
         }
-
     }
+
+
 
     /*@Override
     public void setListener(CommandListener listener) {
@@ -88,7 +110,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
             if (event.getAuthor().isBot()) return;
             boolean nickname = event.getGuild() != null && event.getGuild().getSelfMember().getNickname() != null;
 
-            if  ((event.getGuild() != null && EvalCommand.serverBlackList.contains(event.getGuild().getIdLong()) && event.getAuthor().getIdLong() != Melijn.OWNERID) ||
+            if ((event.getGuild() != null && EvalCommand.serverBlackList.contains(event.getGuild().getIdLong()) && event.getAuthor().getIdLong() != Melijn.OWNERID) ||
                     EvalCommand.userBlackList.contains(event.getAuthor().getIdLong()) ||
                     (event.getGuild() != null && EvalCommand.userBlackList.contains(event.getGuild().getOwnerIdLong())))
                 return;
@@ -103,46 +125,92 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                 parts = Arrays.copyOf(rawContent.substring((String.valueOf(nickname ? "<@!" : "<@") + event.getJDA().getSelfUser().getId() + ">").length()).trim().split("\\s+", 2), 2);
 
             if (parts != null && (event.isFromType(ChannelType.PRIVATE) || event.getTextChannel().canTalk())) {
-                    String name = parts[0];
-                    String args = parts[1] == null ? "" : parts[1];
-                    if (commands.size() < INDEX_LIMIT + 1) {
-                        commands.stream().filter(cmd -> cmd.isCommandFor(name)).findAny().ifPresent(command -> {
+                String name = parts[0];
+                String args = parts[1] == null ? "" : parts[1];
+                if (commands.size() < INDEX_LIMIT + 1) {
+                    commands.stream().filter(cmd -> cmd.isCommandFor(name)).findAny().ifPresent(command -> {
 
-                            if (command.getCategory() == Category.DEVELOPER && event.getAuthor().getIdLong() != Melijn.OWNERID)
-                                return;
-                            if (noPermission(event, command)) return;
-                            if (unFulfilledNeeds(event, command)) return;
-                            if (event.getGuild() != null && DisableCommand.disabledGuildCommands.containsKey(event.getGuild().getIdLong()) && DisableCommand.disabledGuildCommands.get(event.getGuild().getIdLong()).contains(commands.indexOf(command)))
-                                return;
+                        if (command.getCategory() == Category.DEVELOPER && event.getAuthor().getIdLong() != Melijn.OWNERID)
+                            return;
+                        if (noPermission(event, command)) return;
+                        if (unFulfilledNeeds(event, command)) return;
+                        if (event.getGuild() != null && DisableCommand.disabledGuildCommands.containsKey(event.getGuild().getIdLong()) && DisableCommand.disabledGuildCommands.get(event.getGuild().getIdLong()).contains(commands.indexOf(command)))
+                            return;
 
-                            //isCommand[0] = true;
-                            Melijn.mySQL.updateUsage(commands.indexOf(command), System.currentTimeMillis());
-                            CommandEvent cevent = new CommandEvent(event, args, this, name);
-                            //if (listener != null) listener.onCommand(cevent, command);
-                            command.run(cevent);
-                        });
-                    } else {
-                        int i = commandIndex.containsKey(name.toLowerCase()) ? commandIndex.get(name.toLowerCase()) : -1;
-                        if (i != -1) {
-                            Command command = commands.get(i);
+                        Melijn.mySQL.updateUsage(commands.indexOf(command), System.currentTimeMillis());
+                        CommandEvent cevent = new CommandEvent(event, args, this, name);
+                        command.run(cevent);
+                    });
+                } else {
+                    int i = commandIndex.containsKey(name.toLowerCase()) ? commandIndex.get(name.toLowerCase()) : -1;
+                    if (i != -1) {
+                        Command command = commands.get(i);
 
-                            if (command.getCategory() == Category.DEVELOPER && event.getAuthor().getIdLong() != Melijn.OWNERID)
-                                return;
-                            if (noPermission(event, command)) return;
-                            if (unFulfilledNeeds(event, command)) return;
+                        if (command.getCategory() == Category.DEVELOPER && event.getAuthor().getIdLong() != Melijn.OWNERID)
+                            return;
+                        if (noPermission(event, command)) return;
+                        if (unFulfilledNeeds(event, command)) return;
 
-                            //isCommand[0] = true;
-                            Melijn.mySQL.updateUsage(i, System.currentTimeMillis());
-                            CommandEvent cevent = new CommandEvent(event, args, this, name);
-                            //if (listener != null) listener.onCommand(cevent, command);
-                            command.run(cevent);
-                        }
+                        Melijn.mySQL.updateUsage(i, System.currentTimeMillis());
+                        CommandEvent cevent = new CommandEvent(event, args, this, name);
+                        command.run(cevent);
                     }
+                }
             }
-            //if (!isCommand[0] && listener != null) listener.onNonCommandMessage(event);
+            if (event.getGuild() != null && serverHasCC.getUnchecked(event.getGuild().getIdLong())) {
+                JSONArray ccs = Melijn.mySQL.getCustomCommands(event.getGuild().getIdLong());
+                for (int i = 0; i < ccs.length(); i++) {
+                    JSONObject command = ccs.getJSONObject(i);
+                    if (command.getBoolean("prefix")) {
+                        String message = event.getMessage().getContentRaw();
+                        if (message.matches("<@" + event.getJDA().getSelfUser().getId() + ">(\\s+)?" + command.getString("name"))) {
+                            customCommandSender(command, event.getGuild(), event.getTextChannel());
+                        } else if (message.matches(SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong()) + "(\\s+)?" + command.getString("name"))) {
+                            customCommandSender(command, event.getGuild(), event.getTextChannel());
+                        }
+                    } else if (command.getString("name").equalsIgnoreCase(event.getMessage().getContentStripped())) {
+                        customCommandSender(command, event.getGuild(), event.getTextChannel());
+                    }
+                }
+            }
         } catch (Exception e) {
             MessageHelper.printException(Thread.currentThread(), e, event.getGuild(), event.getChannel());
         }
+    }
+
+    private void customCommandSender(JSONObject command, Guild guild, TextChannel channel) {
+        try {
+            String attachment = command.getString("attachment");
+
+
+            if (isJSONObjectValid(command.getString("message"))) {
+                JSONObject content = new JSONObject(command.getString("message"));
+                MessageAction action = channel.sendMessage(content.getString("content"));
+                if (content.has("embed"))
+                    action = action.embed(new EntityBuilder(guild.getJDA()).createMessageEmbed(content.getJSONObject("embed")));
+                if (attachment.matches("https?://.*")) {
+                    action = action.addFile(new URL(attachment).openStream(), "attachment" + attachment.substring(attachment.lastIndexOf(".")));
+                }
+                action.queue();
+            } else {
+                MessageAction action = channel.sendMessage(command.getString("message"));
+                if (attachment.matches("https?://.*")) {
+                    action = action.addFile(new URL(attachment).openStream(), "attachment" + attachment.substring(attachment.lastIndexOf(".")));
+                }
+                action.queue();
+            }
+        } catch (IOException ignored) {
+            return;
+        }
+    }
+
+    private boolean isJSONObjectValid(String test) {
+        try {
+            new JSONObject(test);
+        } catch (JSONException ignored) {
+            return false;
+        }
+        return true;
     }
 
     private boolean noPermission(MessageReceivedEvent event, Command command) {
@@ -165,6 +233,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                         event.getTextChannel().sendMessage(Helpers.nsfwOnly).queue();
                         return true;
                     }
+                    break;
                 case GUILD:
                     if (event.getGuild() == null) {
                         event.getPrivateChannel().sendMessage(Helpers.guildOnly).queue();
