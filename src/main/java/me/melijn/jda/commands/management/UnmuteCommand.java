@@ -29,30 +29,30 @@ public class UnmuteCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-            if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
-                String[] args = event.getArgs().split("\\s+");
-                if (args.length > 0 && !args[0].isBlank()) {
-                    Helpers.retrieveUserByArgsN(event, args[0], user -> {
-                        if (user != null) {
-                            TaskScheduler.async(() -> {
-                                String reason = event.getArgs().replaceFirst(args[0], "");
-                                if (reason.length() == 0 || reason.matches("\\s+")) reason = "N/A";
-                                if (reason.startsWith(" ")) reason = reason.replaceFirst("\\s+", "");
-                                if (Melijn.mySQL.unmute(event.getGuild(), user, event.getAuthor(), reason)) {
-                                    event.getMessage().addReaction("\u2705").queue();
-                                } else {
-                                    event.getMessage().addReaction("\u274C").queue();
-                                }
-                            });
+        if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
+            String[] args = event.getArgs().split("\\s+");
+            if (args.length > 0 && !args[0].isBlank()) {
+                Helpers.retrieveUserByArgsN(event, args[0], user -> {
+                    if (user == null) {
+                        event.reply("Unknown user");
+                        return;
+                    }
+                    TaskScheduler.async(() -> {
+                        String reason = event.getArgs().replaceFirst(args[0], "");
+                        if (reason.length() == 0 || reason.matches("\\s+")) reason = "N/A";
+                        if (reason.startsWith(" ")) reason = reason.replaceFirst("\\s+", "");
+                        if (Melijn.mySQL.unmute(event.getGuild(), user, event.getAuthor(), reason)) {
+                            event.getMessage().addReaction("\u2705").queue();
                         } else {
-                            event.reply("Unknown user");
+                            event.getMessage().addReaction("\u274C").queue();
                         }
                     });
-                } else {
-                    MessageHelper.sendUsage(this, event);
-                }
+                });
             } else {
-                event.reply("You need the permission `" + commandName + "` to execute this command.");
+                MessageHelper.sendUsage(this, event);
             }
+        } else {
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
+        }
     }
 }

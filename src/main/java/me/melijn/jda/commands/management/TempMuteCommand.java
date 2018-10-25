@@ -37,23 +37,23 @@ public class TempMuteCommand extends Command {
             Guild guild = event.getGuild();
             if (args.length > 1) {
                 User target = Helpers.getUserByArgsN(event, args[0]);
-                if (target != null && guild.getMember(target) != null) {
-                    if (MessageHelper.isRightFormat(args[1])) {
-                        Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoleCache.getUnchecked(guild.getIdLong()));
-                        if (muteRole == null) {
-                            event.reply("**No mute role set!**\nCreating Role..");
-                            createMuteRole(guild, role -> {
-                                event.reply("Role created. You can change the settings of the role to your desires in the role managment tab.\nThis role wil be added to the muted members so it shouldn't have talk permissions!");
-                                doTempMute(event, role, target, args);
-                            });
-                        } else {
-                            doTempMute(event, muteRole, target, args);
-                        }
+                if (target == null || guild.getMember(target) == null) {
+                    event.reply("Unknown " + (target == null ? "user" : "member"));
+                    return;
+                }
+                if (MessageHelper.isRightFormat(args[1])) {
+                    Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoleCache.getUnchecked(guild.getIdLong()));
+                    if (muteRole == null) {
+                        event.reply("**No mute role set!**\nCreating Role..");
+                        createMuteRole(guild, role -> {
+                            event.reply("Role created. You can change the settings of the role to your desires in the role managment tab.\nThis role wil be added to the muted members so it shouldn't have talk permissions!");
+                            doTempMute(event, role, target, args);
+                        });
                     } else {
-                        event.reply("`" + args[1] + "` is not the right format.\n**Format:** (number)(*timeunit*) *timeunit* = s, m, h, d, M or y\n**Example:** 1__m__ (1 __minute__)");
+                        doTempMute(event, muteRole, target, args);
                     }
                 } else {
-                    event.reply("Unknown " + (target == null ? "user" : "member"));
+                    event.reply("`" + args[1] + "` is not the right format.\n**Format:** (number)(*timeunit*) *timeunit* = s, m, h, d, M or y\n**Example:** 1__m__ (1 __minute__)");
                 }
             } else {
                 MessageHelper.sendUsage(this, event);

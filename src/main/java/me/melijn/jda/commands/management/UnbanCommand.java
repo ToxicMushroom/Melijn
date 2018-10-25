@@ -33,19 +33,19 @@ public class UnbanCommand extends Command {
             String[] args = event.getArgs().split("\\s+");
             if (args.length > 0 && !args[0].isBlank()) {
                 Helpers.retrieveUserByArgsN(event, args[0], user -> {
-                    if (user != null) {
-                        TaskScheduler.async(() -> {
-                            String reason = args.length > 1 ? event.getArgs().replaceFirst(args[0], "") : "N/A";
-                            if (reason.substring(0, 1).equalsIgnoreCase(" ")) reason = reason.replaceFirst("\\s+", "");
-                            if (Melijn.mySQL.unban(user, event.getGuild(), event.getAuthor(), reason)) {
-                                event.getMessage().addReaction("\u2705").queue();
-                            } else {
-                                event.getMessage().addReaction("\u274C").queue();
-                            }
-                        });
-                    } else {
+                    if (user == null) {
                         event.reply("Unknown user");
+                        return;
                     }
+                    TaskScheduler.async(() -> {
+                        String reason = args.length > 1 ? event.getArgs().replaceFirst(args[0], "") : "N/A";
+                        if (reason.substring(0, 1).equalsIgnoreCase(" ")) reason = reason.replaceFirst("\\s+", "");
+                        if (Melijn.mySQL.unban(user, event.getGuild(), event.getAuthor(), reason)) {
+                            event.getMessage().addReaction("\u2705").queue();
+                        } else {
+                            event.getMessage().addReaction("\u274C").queue();
+                        }
+                    });
                 });
             } else {
                 MessageHelper.sendUsage(this, event);

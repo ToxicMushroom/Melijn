@@ -32,18 +32,18 @@ public class BanCommand extends Command {
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
-            if (args.length > 0  && !args[0].isBlank()) {
+            if (args.length > 0 && !args[0].isBlank()) {
                 Helpers.retrieveUserByArgsN(event, args[0], target -> {
-                    if (target != null) {
-                        if (Helpers.canNotInteract(event, target)) return;
-                        String reason = event.getArgs().replaceFirst(args[0] + "\\s+|" + args[0], "");
-                        if (reason.length() <= 1000 && Melijn.mySQL.setPermBan(event.getAuthor(), target, event.getGuild(), reason)) {
-                            event.getMessage().addReaction("\u2705").queue();
-                        } else {
-                            event.getMessage().addReaction("\u274C").queue();
-                        }
-                    } else {
+                    if (target == null) {
                         event.reply("Unknown user");
+                        return;
+                    }
+                    if (Helpers.canNotInteract(event, target)) return;
+                    String reason = event.getArgs().replaceFirst(args[0] + "\\s+|" + args[0], "");
+                    if (reason.length() <= 1000 && Melijn.mySQL.setPermBan(event.getAuthor(), target, event.getGuild(), reason)) {
+                        event.getMessage().addReaction("\u2705").queue();
+                    } else {
+                        event.getMessage().addReaction("\u274C").queue();
                     }
                 });
             } else {

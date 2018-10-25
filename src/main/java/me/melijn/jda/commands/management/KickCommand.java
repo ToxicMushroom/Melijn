@@ -33,19 +33,20 @@ public class KickCommand extends Command {
             if (args.length > 0 && !args[0].isBlank()) {
                 User target = Helpers.getUserByArgsN(event, args[0]);
                 String reason = event.getArgs().replaceFirst(args[0] + "\\s+|" + args[0], "");
-                if (target != null) {
-                    if (event.getGuild().getMember(target) != null) {
-                        TaskScheduler.async(() -> {
-                            if (Helpers.canNotInteract(event, target)) return;
-                            if (reason.length() <= 1000 && Melijn.mySQL.addKick(event.getAuthor(), target, event.getGuild(), reason)) {
-                                event.getMessage().addReaction("\u2705").queue();
-                            } else {
-                                event.getMessage().addReaction("\u274C").queue();
-                            }
-                        });
-                    } else {
-                        event.reply("This user isn't a member of this guild");
-                    }
+                if (target == null) {
+                    event.reply("This user isn't a member of this guild");
+                    return;
+                }
+                if (event.getGuild().getMember(target) != null) {
+                    TaskScheduler.async(() -> {
+                        if (Helpers.canNotInteract(event, target)) return;
+                        if (reason.length() <= 1000 && Melijn.mySQL.addKick(event.getAuthor(), target, event.getGuild(), reason)) {
+                            event.getMessage().addReaction("\u2705").queue();
+                        } else {
+                            event.getMessage().addReaction("\u274C").queue();
+                        }
+                    });
+
                 } else {
                     event.reply("Unknown user");
                 }

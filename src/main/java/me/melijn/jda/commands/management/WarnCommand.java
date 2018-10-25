@@ -30,7 +30,7 @@ public class WarnCommand extends Command {
             String[] args = event.getArgs().split("\\s+");
             if (args.length > 1) {
                 User target = Helpers.getUserByArgsN(event, args[0]);
-                if (target == null || event.getGuild().getMember(target) != null) {
+                if (target == null || event.getGuild().getMember(target) == null) {
                     event.reply("Unknown member");
                     return;
                 }
