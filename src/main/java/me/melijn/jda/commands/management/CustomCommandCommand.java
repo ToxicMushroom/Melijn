@@ -21,8 +21,8 @@ import static me.melijn.jda.blub.CommandClientImpl.serverHasCC;
 
 public class CustomCommandCommand extends Command {
 
-    public static int limitCC = 10;
-    public static int limitAliases = 5;
+    public static final int limitCC = 10;
+    private static final int limitAliases = 5;
 
     public CustomCommandCommand() {
         this.commandName = "customCommand";
@@ -31,7 +31,7 @@ public class CustomCommandCommand extends Command {
         this.category = Category.MANAGEMENT;
         this.aliases = new String[]{"cc", "cCommand", "customC"};
         this.needs = new Need[]{Need.GUILD};
-        this.extra = "The message is the text the command returns and you can use just the first argument of a section to get more info.";
+        this.extra = "https://leovoel.github.io/embed-visualizer/ <- handy link if you want embeds ;)";
     }
 
     @Override
