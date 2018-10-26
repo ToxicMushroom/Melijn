@@ -66,13 +66,7 @@ public class StatsCommand extends Command {
                 .build());
     }
 
-    public static String getMemoryUsage() {
-        long totalJVMMem = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax() >> 20;
-        long usedJVMMem = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed() >> 20;
-        return usedJVMMem + "MB/" + totalJVMMem + "MB";
-    }
-
-    public static long getSystemUptime() {
+    private static long getSystemUptime() {
         try {
             long uptime = -1;
             String os = System.getProperty("os.name").toLowerCase();
@@ -98,16 +92,16 @@ public class StatsCommand extends Command {
                 BufferedReader in = new BufferedReader(new InputStreamReader(uptimeProc.getInputStream()));
                 String line = in.readLine();
                 if (line != null) {
-                    Pattern parse = Pattern.compile("up(?: (\\d+) days,)? *(?:(\\d+):(\\d+)|(\\d+) min)");
+                    Pattern parse = Pattern.compile("(?:\\s+)?\\d+:\\d+:\\d+ up(?: (\\d+) days,)? (?:(\\d+):(\\d+)|(\\d+) min).*");
                     Matcher matcher = parse.matcher(line);
                     if (matcher.find()) {
-                        String _days = matcher.group(2);
-                        String _hours = matcher.group(4);
-                        String _minutes = matcher.group(5) == null ? matcher.group(6) : matcher.group(5);
+                        String _days = matcher.group(1);
+                        String _hours = matcher.group(2);
+                        String _minutes = matcher.group(3) == null ? matcher.group(4) : matcher.group(3);
                         int days = _days != null ? Integer.parseInt(_days) : 0;
                         int hours = _hours != null ? Integer.parseInt(_hours) : 0;
                         int minutes = _minutes != null ? Integer.parseInt(_minutes) : 0;
-                        uptime = (minutes * 60000) + (hours * 60000 * 60) + (days * 6000 * 60 * 24);
+                        uptime = (minutes * 60000) + (hours * 60000 * 60) + (days * 60000 * 60 * 24);
                     }
                 }
             }
