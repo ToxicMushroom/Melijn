@@ -397,22 +397,21 @@ public class MySQL {
             }
             statement.close();
             rs.close();
-            if (temp) return true;
 
             PreparedStatement statement1 = con.prepareStatement("SELECT * FROM perms_users WHERE guildId= ? AND permission= ?");
             statement1.setLong(1, guildId);
             statement1.setString(2, permission);
             ResultSet rs1 = statement1.executeQuery();
-            if (!rs1.next()) {
-                temp = true;
+            if (rs1.next()) {
+                temp = false;
             }
             statement1.close();
             rs1.close();
-            if (temp) return true;
+            return temp;
         } catch (SQLException e) {
             e.printStackTrace();
+            return true;
         }
-        return true;
     }
 
     public void copyRolePermissions(long guildId, long roleId1, long roleId2) {
