@@ -176,11 +176,11 @@ public class Chat extends ListenerAdapter {
         if (event.getGuild() == null || EvalCommand.serverBlackList.contains(event.getGuild().getIdLong()))
             return;
         if (EvalCommand.userBlackList.contains(event.getGuild().getOwnerIdLong())) return;
-        if (Helpers.lastRunTimer1 < (System.currentTimeMillis() - 4_000))
+        if (Helpers.lastRunTimer1 < (System.currentTimeMillis() - 10_000) && Helpers.lastRunTimer1 != -1)
             Helpers.startTimer(event.getJDA(), 1);
-        if (Helpers.lastRunTimer2 < (System.currentTimeMillis() - 61_000))
+        if (Helpers.lastRunTimer2 < (System.currentTimeMillis() - 121_000) && Helpers.lastRunTimer2 != -1)
             Helpers.startTimer(event.getJDA(), 2);
-        if (Helpers.lastRunTimer3 < (System.currentTimeMillis() - 1_810_000))
+        if (Helpers.lastRunTimer3 < (System.currentTimeMillis() - 2_610_000) && Helpers.lastRunTimer3 != -1)
             Helpers.startTimer(event.getJDA(), 3);
         Guild guild = event.getGuild();
         if (event.getGuild().getSelfMember().hasPermission(Permission.VIEW_AUDIT_LOGS) &&
@@ -189,22 +189,22 @@ public class Chat extends ListenerAdapter {
                         SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
                         SetLogChannelCommand.fmLogChannelCache.getUnchecked(guild.getIdLong()) != -1)) {
             JSONObject message = mySQL.getMessageObject(event.getMessageIdLong());
-            if (message.keySet().contains("authorId"))
-                event.getJDA().retrieveUserById(message.getLong("authorId")).queue(author -> {
-                    if (author != null && !black.contains(author)) {
-                        if (event.getGuild().getSelfMember().hasPermission(Permission.BAN_MEMBERS))
-                            guild.getBanList().queue(bans -> {
-                                if (bans.stream().map(Ban::getUser).anyMatch(author::equals)) {
-                                    black.add(author);
-                                    return;
-                                }
-                                doMessageDeleteChecks(event, guild, message, author);
-                            });
-
-                        mySQL.executeUpdate("DELETE FROM history_messages WHERE sentTime < " + (System.currentTimeMillis() - 604_800_000L));
+            if (!message.keySet().contains("authorId"))
+                return;
+            event.getJDA().retrieveUserById(message.getLong("authorId")).queue(author -> {
+                if (author == null || black.contains(author))
+                    return;
+                if (!event.getGuild().getSelfMember().hasPermission(Permission.BAN_MEMBERS))
+                    return;
+                guild.getBanList().queue(bans -> {
+                    if (bans.stream().map(Ban::getUser).anyMatch(author::equals)) {
+                        black.add(author);
+                        return;
                     }
-
+                    doMessageDeleteChecks(event, guild, message, author);
                 });
+                mySQL.executeUpdate("DELETE FROM history_messages WHERE sentTime < " + (System.currentTimeMillis() - 604_800_000L));
+            });
         }
     }
 
