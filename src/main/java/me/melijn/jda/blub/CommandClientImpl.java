@@ -282,21 +282,28 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                         event.getPrivateChannel().sendMessage(Helpers.guildOnly).queue();
                         return true;
                     }
+                    if (!event.getGuild().getMember(event.getAuthor()).getVoiceState().inVoiceChannel()) {
+                        event.getTextChannel().sendMessage("You have to be in a voice channel to use this command").queue();
+                        return true;
+                    }
                     if (event.getGuild().getSelfMember().getVoiceState().inVoiceChannel()) {
-                        if ((event.getGuild().getSelfMember().getVoiceState().getChannel() != event.getGuild().getMember(event.getAuthor()).getVoiceState().getChannel()) &&
-                                !Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), "bypass.sameVoiceChannel", 1)) {
-                            event.getTextChannel().sendMessage("You have to be in the same voice channel as me to do this").queue();
-                            return true;
+                        if ((event.getGuild().getSelfMember().getVoiceState().getChannel() != event.getGuild().getMember(event.getAuthor()).getVoiceState().getChannel())) {
+                            if (!Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), "bypass.sameVoiceChannel", 1)) {
+                                event.getTextChannel().sendMessage("You have to be in the same voice channel as me to do this").queue();
+                                return true;
+                            } else {
+                                if (event.getGuild().getSelfMember().hasPermission(event.getGuild().getMember(event.getAuthor()).getVoiceState().getChannel(), Permission.VOICE_CONNECT)) {
+                                    return false;
+                                } else {
+                                    event.getTextChannel().sendMessage("I have no permission to join your voice channel :C").queue();
+                                }
+                            }
                         }
                     } else {
-                        if (event.getGuild().getMember(event.getAuthor()).getVoiceState().inVoiceChannel()) {
-                            if (event.getGuild().getSelfMember().hasPermission(event.getGuild().getMember(event.getAuthor()).getVoiceState().getChannel(), Permission.VOICE_CONNECT)) {
-                                break;
-                            } else {
-                                event.getTextChannel().sendMessage("I have no permission to join your voice channel :C").queue();
-                            }
+                        if (event.getGuild().getSelfMember().hasPermission(event.getGuild().getMember(event.getAuthor()).getVoiceState().getChannel(), Permission.VOICE_CONNECT)) {
+                            return false;
                         } else {
-                            event.getTextChannel().sendMessage("You're not in a voice channel").queue();
+                            event.getTextChannel().sendMessage("I have no permission to join your voice channel :C").queue();
                         }
                         return true;
                     }
