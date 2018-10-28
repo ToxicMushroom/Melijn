@@ -31,7 +31,7 @@ dependencies {
     compile 'mysql:mysql-connector-java:8.0.12'
     compile 'com.github.natanbc:lavadsp:0.4'
     compile 'com.github.DiscordBotList:DBL-Java-Library:d0ca7283e55def0f828ee33c0c2bf86266223854'
-    compile 'se.michaelthelin.spotify:spotify-web-api-java:2.0.5'
+    compile 'se.michaelthelin.spotify:spotify-web-api-java:2.1.1'
     compile 'org.kohsuke:groovy-sandbox:1.6'
     compile group: 'com.google.guava', name: 'guava', version: '26.0-jre'
 
