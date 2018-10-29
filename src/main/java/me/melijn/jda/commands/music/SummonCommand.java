@@ -22,7 +22,7 @@ public class SummonCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), commandName, 0)) {
-            if (SPlayCommand.isConnectedOrConnecting(event, event.getGuild(), event.getMember().getVoiceState().getChannel()))
+            if (SPlayCommand.isNotConnectedOrConnecting(event, event.getGuild(), event.getMember().getVoiceState().getChannel()))
                 return;
             event.getGuild().getAudioManager().openAudioConnection(event.getMember().getVoiceState().getChannel());
             event.reply("I have been summoned to your channel");

@@ -92,7 +92,7 @@ public class StatsCommand extends Command {
                 BufferedReader in = new BufferedReader(new InputStreamReader(uptimeProc.getInputStream()));
                 String line = in.readLine();
                 if (line != null) {
-                    Pattern parse = Pattern.compile("(?:\\s+)?\\d+:\\d+:\\d+ up(?: (\\d+) days,)? (?:(\\d+):(\\d+)|(\\d+) min).*");
+                    Pattern parse = Pattern.compile("(?:\\s+)?\\d+:\\d+:\\d+ up(?: (\\d+) days,)?(?: (\\d+):(\\d+)|(\\d+) min).*");
                     Matcher matcher = parse.matcher(line);
                     if (matcher.find()) {
                         String _days = matcher.group(1);

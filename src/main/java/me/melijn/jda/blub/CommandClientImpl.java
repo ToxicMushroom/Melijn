@@ -12,8 +12,10 @@ import me.melijn.jda.commands.management.DisableCommand;
 import me.melijn.jda.commands.management.SetPrefixCommand;
 import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.entities.ChannelType;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.impl.JDAImpl;
 import net.dv8tion.jda.core.events.ShutdownEvent;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -181,17 +183,30 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
     private void customCommandSender(JSONObject command, Guild guild, TextChannel channel) {
         try {
             String attachment = command.getString("attachment");
-
-
             if (isJSONObjectValid(command.getString("message"))) {
                 JSONObject content = new JSONObject(command.getString("message"));
-                MessageAction action = channel.sendMessage(content.getString("content"));
-                if (content.has("embed"))
-                    action = action.embed(new EntityBuilder(guild.getJDA()).createMessageEmbed(content.getJSONObject("embed")));
-                if (attachment.matches("https?://.*")) {
-                    action = action.addFile(new URL(attachment).openStream(), "attachment" + attachment.substring(attachment.lastIndexOf(".")));
+                MessageAction action = null;
+                if (content.has("content") && !content.getString("content").isBlank()) { //Als er een gewone message bij zit
+                    action = channel.sendMessage(content.getString("content"));
+                    if (content.has("embed"))
+                        action = action.embed(
+                                ((JDAImpl) guild.getJDA()).getEntityBuilder().createMessageEmbed(content.getJSONObject("embed").put("type", "link"))
+                        );
+                    if (attachment.matches("https?://.*")) {
+                        action = action.addFile(new URL(attachment).openStream(), "attachment" + attachment.substring(attachment.lastIndexOf(".")));
+                    }
+                } else { //Als er een geen gewone message bij zit
+                    if (content.has("embed") && attachment.matches("https?://.*")) {
+                        action = channel.sendMessage(((JDAImpl) guild.getJDA()).getEntityBuilder().createMessageEmbed(content.getJSONObject("embed").put("type", "link")));
+                        action = action.addFile(new URL(attachment).openStream(), "attachment" + attachment.substring(attachment.lastIndexOf(".")));
+                    } else if (content.has("embed")) {
+                        action = channel.sendMessage(((JDAImpl) guild.getJDA()).getEntityBuilder().createMessageEmbed(content.getJSONObject("embed").put("type", "link")));
+                    } else if (attachment.matches("https?://.*")) {
+                        action = channel.sendFile(new URL(attachment).openStream(), "attachment" + attachment.substring(attachment.lastIndexOf(".")));
+                    }
                 }
-                action.queue();
+                if (action != null)
+                    action.queue();
             } else {
                 MessageAction action = channel.sendMessage(command.getString("message"));
                 if (attachment.matches("https?://.*")) {
@@ -200,7 +215,6 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                 action.queue();
             }
         } catch (IOException ignored) {
-            return;
         }
     }
 

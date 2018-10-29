@@ -41,6 +41,10 @@ public class MusicManager {
         AudioSourceManagers.registerLocalSource(manager);
     }
 
+    public TLongObjectMap<MusicPlayer> getPlayers() {
+        return players;
+    }
+
     public static MusicManager getManagerInstance() {
         return managerInstance;
     }
@@ -51,9 +55,20 @@ public class MusicManager {
         return players.get(guild.getIdLong());
     }
 
+
+    /*
+      source/identifier:
+        Prefix with ytsearch: to search youtube.
+        Prefix with scsearch: to search soundcloud
+
+        Pass a URL to load playlists/tracks
+        Pass the path of a file to load local track (i.e. /home/user/myfile.mp3 or C:\path\to\myfile.mp3)
+     */
     public void loadTrack(final TextChannel channel, final String source, User requester, boolean isPlaylist) {
         MusicPlayer player = getPlayer(channel.getGuild());
         channel.getGuild().getAudioManager().setSendingHandler(player.getAudioHandler());
+
+
         manager.loadItemOrdered(player, source, new AudioLoadResultHandler() {
 
             @Override
@@ -99,7 +114,6 @@ public class MusicManager {
                     } else {
                         channel.sendMessage("You still have a request to answer. (request automatically gets removed after 30 seconds)")
                                 .queue((message) -> message.delete().queueAfter(10, TimeUnit.SECONDS, null, (failure) -> {
-
                                 }));
                     }
                 }
@@ -118,7 +132,7 @@ public class MusicManager {
 
     }
 
-    public void loadSimpelTrack(Guild guild, final String source) {
+    public void loadSimpleTrack(Guild guild, final String source) {
         MusicPlayer player = getPlayer(guild);
         guild.getAudioManager().setSendingHandler(player.getAudioHandler());
         manager.loadItemOrdered(player, source, new AudioLoadResultHandler() {

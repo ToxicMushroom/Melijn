@@ -29,7 +29,7 @@ public class ResumeCommand extends Command {
             VoiceChannel voiceChannel = event.getGuild().getMember(event.getAuthor()).getVoiceState().getChannel();
             if (voiceChannel == null) voiceChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
             if (voiceChannel != null) {
-                if (SPlayCommand.isConnectedOrConnecting(event, event.getGuild(), voiceChannel)) return;
+                if (SPlayCommand.isNotConnectedOrConnecting(event, event.getGuild(), voiceChannel)) return;
 
                 player.resumeTrack();
                 if (player.getAudioPlayer().getPlayingTrack() == null && player.getListener().getTrackSize() > 0)
