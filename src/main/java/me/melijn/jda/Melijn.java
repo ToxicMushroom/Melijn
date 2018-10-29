@@ -7,6 +7,7 @@ import me.melijn.jda.commands.HelpCommand;
 import me.melijn.jda.commands.InviteCommand;
 import me.melijn.jda.commands.VoteCommand;
 import me.melijn.jda.commands.developer.EvalCommand;
+import me.melijn.jda.commands.developer.ShutdownCommand;
 import me.melijn.jda.commands.developer.WeebshCommand;
 import me.melijn.jda.commands.fun.*;
 import me.melijn.jda.commands.management.*;
@@ -148,7 +149,9 @@ public class Melijn {
                 new SpookifyCommand(),
                 new SelfRoleCommand(),
                 new SetSelfRoleChannelCommand(),
-                new CustomCommandCommand()
+                new CustomCommandCommand(),
+                new ShutdownCommand(),
+                new PollCommand()
         );
 
         shardManager = new DefaultShardManagerBuilder()
@@ -163,7 +166,13 @@ public class Melijn {
 
 
         EvalCommand.serverBlackList.add(new long[]{110373943822540800L, 264445053596991498L});
-        EvalCommand.userBlackList.add(new long[]{/*fabian: 260424455270957058L*/});
+        EvalCommand.userBlackList.add(new long[]{/*fabian: 260424455270957058L*/
+                //people who own bot farms
+                244397405846372354L, 324570870800449548L, 444348640450969600L
+
+                //people who spam the bot
+
+        });
         Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
 
         new Application().init(args);
