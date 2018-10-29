@@ -2,7 +2,9 @@ package me.melijn.jda;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import gnu.trove.list.TLongList;
+import gnu.trove.map.TIntLongMap;
 import gnu.trove.map.TLongObjectMap;
+import gnu.trove.map.hash.TIntLongHashMap;
 import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.NotificationType;
@@ -34,8 +36,8 @@ import java.util.function.Consumer;
 
 public class Helpers {
 
-    public static long lastRunTimer1, lastRunTimer2, lastRunTimer3;
-    public static long startTime;
+    public static long lastRunTimer1 = -1, lastRunTimer2 = -1, lastRunTimer3 = -1;
+    public static long startTime = 0;
     public static String guildOnly = "This command is to be used in guilds only";
     public static String nsfwOnly = "This command is to be used in (not safe for work) better known as [NSFW] channels only and can contain 18+ content";
     public static String noPerms = "You don't have the permission: ";
@@ -147,22 +149,29 @@ public class Helpers {
             "spookify",
             "SetSelfRoleChannel",
             "SelfRole",
-            "CustomCommand"
+            "CustomCommand",
+            "poll"
     );
 
+    public static final TIntLongMap timers = new TIntLongHashMap();
+    public static int loops = 0;
 
     public static void startTimer(JDA jda, int i) {
         if (i == 0 || i == 1) {
             lastRunTimer1 = System.currentTimeMillis();
+            int loopId = loops++;
             TaskScheduler.scheduleRepeating(() -> {
+                timers.put(loopId, System.currentTimeMillis());
                 lastRunTimer1 = System.currentTimeMillis();
                 Melijn.mySQL.doUnbans(jda);
                 Melijn.mySQL.doUnmutes(jda);
-            }, 2000);
+            }, 2_000);
         }
         if (i == 0 || i == 2) {
             lastRunTimer2 = System.currentTimeMillis();
+            int loopId = loops++;
             TaskScheduler.scheduleRepeating(() -> {
+                timers.put(loopId, System.currentTimeMillis());
                 lastRunTimer2 = System.currentTimeMillis();
                 if (JoinLeave.dblAPI != null)
                     JoinLeave.dblAPI.setStats(Math.toIntExact(guildCount == 0 ? jda.asBot().getShardManager().getGuildCache().size() : guildCount));
@@ -175,8 +184,12 @@ public class Helpers {
                                 if (userId != targetId)
                                     jda.asBot().getShardManager().retrieveUserById(targetId).queue((t) ->
                                             u.openPrivateChannel().queue((c) -> c.sendMessage(String.format("It's time to vote for **%#s**", t)).queue()));
-                                else
+                                else {
                                     u.openPrivateChannel().queue((c) -> c.sendMessage(String.format("It's time to vote for **%#s**", u)).queue());
+                                    LOG.info("Amount of loops: " + loops);
+                                    LOG.info("This loop: " + loopId);
+                                    LOG.info("Loop information: " + timers.toString());
+                                }
                             });
                         }
                     }
@@ -185,10 +198,11 @@ public class Helpers {
         }
         if (i == 0 || i == 3) {
             lastRunTimer3 = System.currentTimeMillis();
+            int loopId = loops++;
             TaskScheduler.scheduleRepeating(() -> {
+                timers.put(loopId, System.currentTimeMillis());
                 lastRunTimer3 = System.currentTimeMillis();
-                if (System.currentTimeMillis() - startTime > 10_000)
-                    WebUtils.getWebUtilsInstance().updateSpotifyCredentials();
+                WebUtils.getWebUtilsInstance().updateSpotifyCredentials();
                 Melijn.mySQL.updateVoteStreak();
             }, 1_800_000, 1_800_000);
         }
