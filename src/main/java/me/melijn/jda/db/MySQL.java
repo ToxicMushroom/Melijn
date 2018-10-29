@@ -1,6 +1,7 @@
 package me.melijn.jda.db;
 
 import com.google.common.collect.Sets;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import gnu.trove.list.TIntList;
@@ -35,6 +36,7 @@ import java.sql.*;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -89,11 +91,14 @@ public class MySQL {
             Statement statement = ds.getConnection().createStatement();
             statement.executeQuery("SET NAMES 'utf8mb4'");
             statement.close();
+
+            //Commands
             executeUpdate("CREATE TABLE IF NOT EXISTS commands(commandName varchar(128), gebruik varchar(1024), description varchar(2048), extra varchar(2048), category varchar(128), aliases varchar(256), PRIMARY KEY (commandName));");
             executeUpdate("CREATE TABLE IF NOT EXISTS disabled_commands(guildId bigint, command int, UNIQUE KEY (guildId, command))");
             executeUpdate("CREATE TABLE IF NOT EXISTS custom_commands(guildId bigint, name varchar(128), description varchar(2048), aliases varchar(256), prefix boolean, attachment varchar(1024), message varchar(2048), UNIQUE KEY (guildId, name))");
-            executeUpdate("CREATE TABLE IF NOT EXISTS stream_urls(guildId bigint, url varchar(2048), PRIMARY KEY (guildId))");
-            executeUpdate("CREATE TABLE IF NOT EXISTS prefixes(guildId bigint, prefix bigint, PRIMARY KEY (guildId));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS command_usage(commandId int, usageCount bigint, time bigint, UNIQUE KEY(commandId, time))");
+
+            //roles
             executeUpdate("CREATE TABLE IF NOT EXISTS self_roles(guildId bigint, roleId bigint, emote varchar(128), UNIQUE KEY (guildId, roleId, emote));");
             executeUpdate("CREATE TABLE IF NOT EXISTS mute_roles(guildId bigint, roleId bigint, PRIMARY KEY (guildId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS join_roles(guildId bigint, roleId bigint, PRIMARY KEY (guildId));");
@@ -116,11 +121,19 @@ public class MySQL {
             executeUpdate("CREATE TABLE IF NOT EXISTS verification_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS self_role_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
 
+            //Other settings
+            executeUpdate("CREATE TABLE IF NOT EXISTS stream_urls(guildId bigint, url varchar(2048), PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS prefixes(guildId bigint, prefix bigint, PRIMARY KEY (guildId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS verification_thresholds(guildId bigint, threshold tinyint, PRIMARY KEY (guildId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS unverified_users(guildId bigint, userId bigint, UNIQUE KEY (guildId, userId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS verification_codes(guildId bigint, code varchar(2048), PRIMARY KEY (guildId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS streamer_modes(guildId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS filters(guildId bigint, mode varchar(16), content varchar(2048))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS join_messages(guildId bigint, content varchar(2048), PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS leave_messages(guildId bigint, content varchar(2048), PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS nextvote_notifications(userId bigint, targetId bigint, UNIQUE KEY(userId, targetId));");
+
+            //Backend saves
             executeUpdate("CREATE TABLE IF NOT EXISTS warns(guildId bigint, victimId bigint, authorId bigint, reason varchar(2048), moment bigint);");
             executeUpdate("CREATE TABLE IF NOT EXISTS kicks(guildId bigint, victimId bigint, authorId bigint, reason varchar(2048), moment bigint);");
             executeUpdate("CREATE TABLE IF NOT EXISTS active_bans(guildId bigint, victimId bigint, authorId bigint, reason varchar(2048), startTime bigint, endTime bigint, UNIQUE KEY (guildId, victimId));");
@@ -128,11 +141,9 @@ public class MySQL {
             executeUpdate("CREATE TABLE IF NOT EXISTS active_mutes(guildId bigint, victimId bigint, authorId bigint, reason varchar(2048), startTime bigint, endTime bigint, UNIQUE KEY (guildId, victimId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS history_mutes(guildId bigint, victimId bigint, authorId bigint, reason varchar(2048), unmuteReason varchar(2048), startTime bigint, endTime bigint, active boolean);");
             executeUpdate("CREATE TABLE IF NOT EXISTS history_messages(guildId bigint, authorId bigint, messageId bigint, content varchar(2048), textChannelId bigint, sentTime bigint, PRIMARY KEY (messageId));");
-            executeUpdate("CREATE TABLE IF NOT EXISTS join_messages(guildId bigint, content varchar(2048), PRIMARY KEY (guildId))");
-            executeUpdate("CREATE TABLE IF NOT EXISTS leave_messages(guildId bigint, content varchar(2048), PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS saved_queues(guildId bigint, position int, url varchar(1024), UNIQUE KEY (guildId, position))");
             executeUpdate("CREATE TABLE IF NOT EXISTS votes(userId bigint, votes bigint, streak bigint, lastTime bigint, PRIMARY KEY (userId));");
-            executeUpdate("CREATE TABLE IF NOT EXISTS nextvote_notifications(userId bigint, targetId bigint, UNIQUE KEY(userId, targetId));");
-            executeUpdate("CREATE TABLE IF NOT EXISTS command_usage(commandId int, usageCount bigint, time bigint, UNIQUE KEY(commandId, time))");
+
             logger.info("[MySQL] init loaded");
         } catch (SQLException e) {
             logger.log(Level.ERROR, "[MySQL] did not connect -> ");
@@ -158,7 +169,7 @@ public class MySQL {
         return 0;
     }
 
-    public void executeQuery(final String sql, final Consumer<ResultSet> consumer, final Object... objects) {
+    private void executeQuery(final String sql, final Consumer<ResultSet> consumer, final Object... objects) {
         try (final Connection connection = ds.getConnection()) {
             try (final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 int current = 1;
@@ -610,8 +621,7 @@ public class MySQL {
 
         TextChannel logChannel = guild.getTextChannelById(SetLogChannelCommand.warnLogChannelCache.getUnchecked(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
-            if (target.isBot())
-                logChannel.sendMessage(embedBuilder.build() + "\nTarget is a bot.").queue();
+            if (target.isBot()) logChannel.sendMessage(embedBuilder.build() + "\nTarget is a bot.").queue();
             else logChannel.sendMessage(embedBuilder.build()).queue();
         }
         if (!target.isBot()) target.openPrivateChannel().queue((m) -> m.sendMessage(embedBuilder.build()).queue());
@@ -660,11 +670,10 @@ public class MySQL {
         muted.setAuthor("Muted by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
         if (!target.isBot()) target.openPrivateChannel().queue(pc -> pc.sendMessage(muted.build()).queue());
-        long logChannelId = SetLogChannelCommand.muteLogChannelCache.getUnchecked(guild.getIdLong());
-        if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-            if (target.isBot())
-                guild.getTextChannelById(logChannelId).sendMessage(muted.build() + "\nTarget is a bot").queue();
-            else guild.getTextChannelById(logChannelId).sendMessage(muted.build()).queue();
+        TextChannel logChannel = guild.getTextChannelById(SetLogChannelCommand.muteLogChannelCache.getUnchecked(guild.getIdLong()));
+        if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
+            if (target.isBot()) logChannel.sendMessage(muted.build() + "\nTarget is a bot").queue();
+            else logChannel.sendMessage(muted.build()).queue();
         }
         executeUpdate("INSERT INTO active_mutes (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?) " +
                         "ON DUPLICATE KEY UPDATE authorId= ?, reason= ?, startTime= ?, endTime= ?; " +
@@ -693,11 +702,10 @@ public class MySQL {
 
                         if (!toUnmute.isBot() && !toUnmute.isFake())
                             toUnmute.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
-                        long logChannelId = SetLogChannelCommand.muteLogChannelCache.getUnchecked(guild.getIdLong());
-                        if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-                            if (toUnmute.isBot())
-                                guild.getTextChannelById(logChannelId).sendMessage(eb.build() + "\nTarget is a bot").queue();
-                            else guild.getTextChannelById(logChannelId).sendMessage(eb.build()).queue();
+                        TextChannel logChannel = guild.getTextChannelById(SetLogChannelCommand.muteLogChannelCache.getUnchecked(guild.getIdLong()));
+                        if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
+                            if (toUnmute.isBot()) logChannel.sendMessage(eb.build() + "\nTarget is a bot").queue();
+                            else logChannel.sendMessage(eb.build()).queue();
                         }
                     }
                 } catch (SQLException e) {
@@ -729,11 +737,10 @@ public class MySQL {
         embedBuilder.setThumbnail(target.getEffectiveAvatarUrl());
         embedBuilder.setColor(Color.ORANGE);
 
-        long logChannelId = SetLogChannelCommand.kickLogChannelCache.getUnchecked(guild.getIdLong());
-        if (logChannelId != -1 && guild.getTextChannelById(logChannelId) != null) {
-            if (target.isBot())
-                guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build() + "\nTarget is a bot.").queue();
-            else guild.getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
+        TextChannel logChannel = guild.getTextChannelById(SetLogChannelCommand.kickLogChannelCache.getUnchecked(guild.getIdLong()));
+        if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
+            if (target.isBot()) logChannel.sendMessage(embedBuilder.build() + "\nTarget is a bot").queue();
+            else logChannel.sendMessage(embedBuilder.build()).queue();
         }
         if (!target.isBot()) target.openPrivateChannel().queue((channel) -> {
             channel.sendMessage(embedBuilder.build()).queue();
@@ -1723,5 +1730,57 @@ public class MySQL {
 
     public void updateCustomCommandAliases(long guildId, String name, List<String> aliases) {
         executeUpdate("UPDATE custom_commands SET aliases= ? WHERE guildId= ? AND name= ?", String.join(", ", aliases), guildId, name);
+    }
+
+    public void addQueue(long guildId, long channelId, boolean paused, BlockingQueue<AudioTrack> queue) {
+        int i = 1;
+        executeUpdate("INSERT INTO saved_queues (guildId, position, url) VALUES (?, ?, ?)", guildId, 0, channelId + "-" + paused);
+        for (AudioTrack track : queue) {
+            executeUpdate("INSERT INTO saved_queues (guildId, position, url) VALUES (?, ?, ?)", guildId, i++, track.getInfo().uri);
+        }
+    }
+
+    public List<JSONObject> getQueues() {
+        List<JSONObject> queues = new ArrayList<>();
+
+        //parses and adds basic info
+        executeQuery("SELECT * FROM saved_queues", rs -> {
+            try {
+                while (rs.next()) {
+                    if (rs.getInt("position") == 0) {
+                        queues.add(new JSONObject()
+                                .put("guildId", rs.getLong("guildId"))
+                                .put("channelId", rs.getString("url").split("-")[0])
+                                .put("paused", Boolean.parseBoolean(rs.getString("url").split("-")[1]))
+                                .put("urls", ""));
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+
+        //Adds all urls
+        for (JSONObject obj : queues) {
+            executeQuery("SELECT * FROM saved_queues WHERE guildId= ?", rs -> {
+                try {
+                    while (rs.next()) {
+                        if (rs.getInt("position") != 0)
+                            obj.put("urls", obj.getString("urls") + "#" + rs.getInt("position") + " " + rs.getString("url") + "\n");
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }, obj.getLong("guildId"));
+        }
+        return queues;
+    }
+
+    public void clearQueues() {
+        executeUpdate("TRUNCATE saved_queues");
+    }
+
+    public void deleteMessage(long guildId, long channelId, long messageId, long secondsFromNow) {
+        long deleteTime = System.currentTimeMillis() + secondsFromNow*1000;
     }
 }
