@@ -11,18 +11,21 @@ import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.RoleType;
 import me.melijn.jda.commands.developer.EvalCommand;
 import me.melijn.jda.commands.management.*;
+import me.melijn.jda.commands.music.SPlayCommand;
+import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.utils.TaskScheduler;
+import net.dv8tion.jda.bot.sharding.ShardManager;
+import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Role;
-import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.ReadyEvent;
+import net.dv8tion.jda.core.events.ShutdownEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.discordbots.api.client.DiscordBotListAPI;
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONObject;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -38,16 +41,42 @@ public class JoinLeave extends ListenerAdapter {
                 }
             });
     public static DiscordBotListAPI dblAPI = null;
+    private boolean started = false;
 
     @Override
     public void onReady(ReadyEvent event) {
-        if (event.getJDA().asBot().getShardManager().getShardsQueued() > 0) return;
+        Helpers.startTime = System.currentTimeMillis();
+        ShardManager shardManager = event.getJDA().asBot().getShardManager();
+        if (started || shardManager.getShardCache().stream().filter(shard -> shard.getStatus().equals(JDA.Status.CONNECTED)).count() == shardManager.getShardsTotal()) return;
         dblAPI = new DiscordBotListAPI.Builder()
                 .token(Config.getConfigInstance().getValue("dbltoken"))
                 .botId(event.getJDA().getSelfUser().getId())
                 .build();
         Helpers.startTimer(event.getJDA(), 0);
-        Helpers.startTime = System.currentTimeMillis();
+        MusicManager musicManager = MusicManager.getManagerInstance();
+        for (JSONObject queue : Melijn.mySQL.getQueues()) {
+            Guild guild = shardManager.getGuildById(queue.getLong("guildId"));
+            if (guild != null) {
+                VoiceChannel vc = guild.getVoiceChannelById(queue.getLong("channelId"));
+                if (vc != null) {
+                    SPlayCommand.isNotConnectedOrConnecting(vc);
+                    boolean pause = queue.getBoolean("paused");
+                    String[] urls = queue.getString("urls").split("\n");
+                    musicManager.getPlayer(guild).getAudioPlayer().setPaused(pause);
+                    for (String url : urls) {
+                        if (!url.startsWith("#0 "))
+                            musicManager.loadSimpleTrack(guild, url.replaceFirst("#\\d+ ", ""));
+                    }
+                }
+            }
+        }
+        Melijn.mySQL.clearQueues();
+        started = true;
+    }
+
+    @Override
+    public void onShutdown(ShutdownEvent event) {
+
     }
 
     @Override
@@ -108,7 +137,8 @@ public class JoinLeave extends ListenerAdapter {
         removeUnverified(guild, user);
         try {
             joinCode(guild, user);
-        } catch (ExecutionException ignore) {}
+        } catch (ExecutionException ignore) {
+        }
     }
 
     private static void joinCode(Guild guild, User user) throws ExecutionException {
