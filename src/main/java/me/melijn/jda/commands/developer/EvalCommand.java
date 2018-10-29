@@ -54,6 +54,8 @@ public class EvalCommand extends Command {
                 "import me.melijn.jda.commands.music.*;\n" +
                 "import me.melijn.jda.commands.fun.*;\n" +
                 "import me.melijn.jda.commands.developer.*;\n" +
+                "import me.melijn.jda.Helpers;\n" +
+                "import me.melijn.jda.*;\n" +
                 "import java.io.*;\n" +
                 "import java.lang.*;\n" +
                 "import java.util.*;\n" +
@@ -64,6 +66,8 @@ public class EvalCommand extends Command {
                 "import net.dv8tion.jda.core.managers.*;\n" +
                 "import net.dv8tion.jda.core.managers.impl.*;\n" +
                 "import net.dv8tion.jda.core.utils.*;\n" +
+                "import java.util.regex.Matcher;\n" +
+                "import java.util.regex.Pattern;\n" +
                 "class " + CLASS_NAME + " {\n" +
                 "   public static void eval(final CommandEvent event) {\n" +
                 "       " + source + "\n" +
