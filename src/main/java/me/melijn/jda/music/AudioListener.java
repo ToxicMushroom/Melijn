@@ -46,10 +46,10 @@ public class AudioListener extends AudioEventAdapter {
     public void onTrackEnd(AudioPlayer player2, AudioTrack track, AudioTrackEndReason endReason) {
         Guild guild = player.getGuild();
         if (LoopCommand.looped.contains(guild.getIdLong())) {
-            MusicManager.getManagerInstance().loadSimpelTrack(player.getGuild(), track.getInfo().uri);
+            MusicManager.getManagerInstance().loadSimpleTrack(player.getGuild(), track.getInfo().uri);
         } else if (LoopQueueCommand.looped.contains(guild.getIdLong())) {
             if (endReason.mayStartNext) nextTrack(track);
-            MusicManager.getManagerInstance().loadSimpelTrack(player.getGuild(), track.getInfo().uri);
+            MusicManager.getManagerInstance().loadSimpleTrack(player.getGuild(), track.getInfo().uri);
         } else {
             if (endReason.mayStartNext) nextTrack(track);
         }
