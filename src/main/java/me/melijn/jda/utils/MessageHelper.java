@@ -97,8 +97,9 @@ public class MessageHelper {
         return 0;
     }
 
+    private static final Pattern prefixPattern = Pattern.compile(PREFIX);
     public static void sendUsage(Command cmd, CommandEvent event) {
-        event.reply(cmd.getUsage().replaceFirst(PREFIX, SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong())));
+        event.reply(prefixPattern.matcher(cmd.getUsage()).replaceFirst(SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong())));
     }
 
     public static String millisToVote(long untilNext) {

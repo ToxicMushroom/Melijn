@@ -125,7 +125,7 @@ public class CustomCommandCommand extends Command {
                         .setTitle("CustomCommand: " + command.getString("name"))
                         .setColor(Helpers.EmbedColor)
                         .addField("description", command.getString("description"), false)
-                        .addField("message", command.getString("message"), false)
+                        .addField("message", "```JSON\n" + command.getString("message") + "```", false)
                         .addField("aliases", aliases, true)
                         .addField("prefix", command.getBoolean("prefix") ? "enabled" : "disabled", true)
                         .addField("attachment", attachment, true)
