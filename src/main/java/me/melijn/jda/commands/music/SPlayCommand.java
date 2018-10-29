@@ -53,7 +53,7 @@ public class SPlayCommand extends Command {
             case "sc":
             case "soundcloud":
                 if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".sc", 0) || access) {
-                    if (isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
+                    if (isNotConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
                     manager.searchTracks(event.getTextChannel(), "scsearch:" + songName, event.getAuthor());
                 } else {
                     event.reply("You need the permission `" + commandName + ".sc` to execute this command.");
@@ -61,7 +61,7 @@ public class SPlayCommand extends Command {
                 break;
             default:
                 if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".yt", 0) || access) {
-                    if (isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
+                    if (isNotConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
                     manager.searchTracks(event.getTextChannel(), "ytsearch:" + songName, event.getAuthor());
                 } else {
                     event.reply("You need the permission `" + commandName + ".yt` to execute this command.");
@@ -71,7 +71,7 @@ public class SPlayCommand extends Command {
         }
     }
 
-    static boolean isConnectedOrConnecting(CommandEvent event, Guild guild, VoiceChannel senderVoiceChannel) {
+    public static boolean isNotConnectedOrConnecting(CommandEvent event, Guild guild, VoiceChannel senderVoiceChannel) {
         if (!guild.getAudioManager().isConnected() && !guild.getAudioManager().isAttemptingToConnect()) {
             if (senderVoiceChannel.getUserLimit() == 0 || ((senderVoiceChannel.getUserLimit() > senderVoiceChannel.getMembers().size()) || guild.getSelfMember().hasPermission(senderVoiceChannel, Permission.VOICE_MOVE_OTHERS))) {
                 guild.getAudioManager().openAudioConnection(senderVoiceChannel);
@@ -82,6 +82,18 @@ public class SPlayCommand extends Command {
         }
         return false;
     }
+
+    public static boolean isNotConnectedOrConnecting(VoiceChannel vc) {
+        if (!vc.getGuild().getAudioManager().isConnected() && !vc.getGuild().getAudioManager().isAttemptingToConnect()) {
+            if (vc.getUserLimit() == 0 || ((vc.getUserLimit() > vc.getMembers().size()) || vc.getGuild().getSelfMember().hasPermission(vc, Permission.VOICE_MOVE_OTHERS))) {
+                vc.getGuild().getAudioManager().openAudioConnection(vc);
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     static void argsToSongName(String[] args, StringBuilder sb, List<String> providers) {
         if (providers.contains(args[0].toLowerCase())) {

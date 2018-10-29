@@ -51,7 +51,7 @@ public class PlayCommand extends Command {
             case "sc":
             case "soundcloud":
                 if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".sc", 0) || access) {
-                    if (SPlayCommand.isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
+                    if (SPlayCommand.isNotConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
                     manager.loadTrack(event.getTextChannel(), "scsearch:" + songName, event.getAuthor(), false);
 
                 } else {
@@ -60,7 +60,7 @@ public class PlayCommand extends Command {
                 break;
             case "link":
                 if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) || access) {
-                    if (SPlayCommand.isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
+                    if (SPlayCommand.isNotConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
                     manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
                 } else {
                     event.reply("You need the permission `" + commandName + ".link` to execute this command.");
@@ -70,7 +70,7 @@ public class PlayCommand extends Command {
                 if (songName.contains("https://") || songName.contains("http://")) {
                     songName = songName.replaceAll("\\s+", "");
                     if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) || access) {
-                        if (SPlayCommand.isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
+                        if (SPlayCommand.isNotConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
                         if (songName.contains("open.spotify.com")) spotiSearch(event, songName);
                         else
                             manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
@@ -79,7 +79,7 @@ public class PlayCommand extends Command {
                     }
                 } else {
                     if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".yt", 0) || access) {
-                        if (SPlayCommand.isConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
+                        if (SPlayCommand.isNotConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
                         if (songName.replaceFirst("\\s+", "").matches("spotify:track:\\S+"))
                             spotiSearch(event, songName.replaceFirst("\\s+", ""));
                         else
