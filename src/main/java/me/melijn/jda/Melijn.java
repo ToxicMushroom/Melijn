@@ -174,20 +174,9 @@ public class Melijn {
 
         });
         Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
-
+        System.setProperty("server.port", config.getValue("springPort"));
         new Application().init(args);
         Thread.setDefaultUncaughtExceptionHandler((thread, exception) -> MessageHelper.printException(thread, exception, null, null));
-        /*
-        setting avatar & username
-        try {
-            File f = new File(System.getProperty("java.io.tmpdir") + "tmp" + ".png");
-            f.deleteOnExit();
-            FileUtils.copyURLToFile(new URL(""), f);
-            jda.getSelfUser().getManager().setAvatar(Icon.from(f)).queue();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        */
     }
     public static ShardManager getShardManager() {
         return shardManager;
