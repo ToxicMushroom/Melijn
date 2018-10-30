@@ -29,7 +29,7 @@ public class StatsCommand extends Command {
         this.category = Category.UTILS;
     }
 
-    /* CREDITS TO DUNCTE123 FOR MOST OF THESE STATS AND DESIGN */
+    /* CREDITS TO DUNCTE123 FOR SOME OF THESE STATS AND DESIGN */
 
     @Override
     protected void execute(CommandEvent event) {
@@ -77,13 +77,13 @@ public class StatsCommand extends Command {
                 while ((line = in.readLine()) != null) {
                     if (line.startsWith("Statistieken vanaf")) {
                         SimpleDateFormat format = new SimpleDateFormat("'Statistieken vanaf' dd/MM/yyyy hh:mm:ss");
-                        Date boottime = format.parse(line);
-                        uptime = System.currentTimeMillis() - boottime.getTime();
+                        Date bootTime = format.parse(line);
+                        uptime = System.currentTimeMillis() - bootTime.getTime();
                         break;
                     } else if (line.startsWith("Statistics since")) {
                         SimpleDateFormat format = new SimpleDateFormat("'Statistics since' MM/dd/yyyy hh:mm:ss a");
-                        Date boottime = format.parse(line);
-                        uptime = System.currentTimeMillis() - boottime.getTime();
+                        Date bootTime = format.parse(line);
+                        uptime = System.currentTimeMillis() - bootTime.getTime();
                         break;
                     }
                 }
