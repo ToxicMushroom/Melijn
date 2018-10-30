@@ -60,9 +60,9 @@ public class PollCommand extends Command {
                     MessageHelper.sendUsage(this, event);
                     return;
                 }
-                String question = event.getArgs().replaceFirst(Pattern.quote(args[0] + "\""), "")
-                        .substring(0, event.getArgs().replaceFirst(Pattern.quote(args[0] + "\""), "").indexOf("\""));
-                String answersString = event.getArgs().replaceFirst(Pattern.quote(args[0]) + "\\s+" + Pattern.quote("\"" + question + "\"") + "(?:\\s+)?", "");
+                String question = event.getArgs().replaceFirst(Pattern.quote(args[0]) + "(?:\\s+)?\"", "")
+                        .substring(0, event.getArgs().replaceFirst(Pattern.quote(args[0]) + "(?:\\s+)?\"", "").indexOf("\""));
+                String answersString = event.getArgs().replaceFirst(Pattern.quote(args[0]) + "(?:\\s+)?" + Pattern.quote("\"" + question + "\"") + "(?:\\s+)?", "");
                 String[] answers = answersString.split("\"(?:\\s+)?\"");
                 answers[0] = answers[0].replaceFirst("\"", "");
                 answers[answers.length-1] = answers[answers.length-1].substring(0, answers[answers.length-1].length()-1);
