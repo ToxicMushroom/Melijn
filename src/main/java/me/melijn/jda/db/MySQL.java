@@ -14,7 +14,6 @@ import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 import gnu.trove.map.hash.TIntLongHashMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
-import groovy.util.MapEntry;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.*;
@@ -25,11 +24,10 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.sql.*;
@@ -50,7 +48,7 @@ public class MySQL {
     private String user;
     private String dbname;
     private HikariDataSource ds;
-    private Logger logger = LogManager.getLogger(MySQL.class.getName());
+    private Logger logger = LoggerFactory.getLogger(MySQL.class.getName());
 
 
     private long currentTime = 0;
@@ -146,7 +144,7 @@ public class MySQL {
 
             logger.info("[MySQL] init loaded");
         } catch (SQLException e) {
-            logger.log(Level.ERROR, "[MySQL] did not connect -> ");
+            logger.error("[MySQL] did not connect -> ");
             e.printStackTrace();
             System.exit(500);
         }
@@ -1525,17 +1523,19 @@ public class MySQL {
         }
         for (int i = 0; i < commandUsages.size(); i++) {
             var ref = new Object() {
-                Map.Entry<Integer, Long> maxEntry = null;
+                int key = -1;
+                long value = -1;
             };
             commandUsages.forEachEntry((key, value) -> {
-                if (ref.maxEntry == null || value > ref.maxEntry.getValue()) {
-                    ref.maxEntry = new MapEntry(key, value);
+                if (value > ref.value) {
+                    ref.key = key;
+                    ref.value = value;
                 }
                 return false;
             });
-            if (ref.maxEntry != null) {
-                commandUsages.remove(ref.maxEntry.getKey());
-                sortedCommandUsages.put(ref.maxEntry.getKey(), ref.maxEntry.getValue());
+            if (ref.key != -1) {
+                commandUsages.remove(ref.key);
+                sortedCommandUsages.put(ref.key, ref.value);
             }
         }
         return sortedCommandUsages;
