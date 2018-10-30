@@ -2,9 +2,7 @@ package me.melijn.jda;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import gnu.trove.list.TLongList;
-import gnu.trove.map.TIntLongMap;
 import gnu.trove.map.TLongObjectMap;
-import gnu.trove.map.hash.TIntLongHashMap;
 import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.NotificationType;
@@ -23,8 +21,8 @@ import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.managers.AudioManager;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.text.SimpleDateFormat;
@@ -41,7 +39,7 @@ public class Helpers {
     public static String guildOnly = "This command is to be used in guilds only";
     public static String nsfwOnly = "This command is to be used in (not safe for work) better known as [NSFW] channels only and can contain 18+ content";
     public static String noPerms = "You don't have the permission: ";
-    public static final Logger LOG = LogManager.getLogger(Melijn.class.getName());
+    private static Logger logger = LoggerFactory.getLogger(Helpers.class.getName());
     public static Color EmbedColor = Color.decode("#00ffd8");
     public static boolean voteChecks = true;
     public static long guildCount = 0;
@@ -153,15 +151,10 @@ public class Helpers {
             "poll"
     );
 
-    public static final TIntLongMap timers = new TIntLongHashMap();
-    public static int loops = 0;
-
     public static void startTimer(JDA jda, int i) {
         if (i == 0 || i == 1) {
             lastRunTimer1 = System.currentTimeMillis();
-            int loopId = loops++;
             TaskScheduler.scheduleRepeating(() -> {
-                timers.put(loopId, System.currentTimeMillis());
                 lastRunTimer1 = System.currentTimeMillis();
                 Melijn.mySQL.doUnbans(jda);
                 Melijn.mySQL.doUnmutes(jda);
@@ -169,9 +162,7 @@ public class Helpers {
         }
         if (i == 0 || i == 2) {
             lastRunTimer2 = System.currentTimeMillis();
-            int loopId = loops++;
             TaskScheduler.scheduleRepeating(() -> {
-                timers.put(loopId, System.currentTimeMillis());
                 lastRunTimer2 = System.currentTimeMillis();
                 if (JoinLeave.dblAPI != null)
                     JoinLeave.dblAPI.setStats(Math.toIntExact(guildCount == 0 ? jda.asBot().getShardManager().getGuildCache().size() : guildCount));
@@ -186,9 +177,6 @@ public class Helpers {
                                             u.openPrivateChannel().queue((c) -> c.sendMessage(String.format("It's time to vote for **%#s**", t)).queue()));
                                 else {
                                     u.openPrivateChannel().queue((c) -> c.sendMessage(String.format("It's time to vote for **%#s**", u)).queue());
-                                    LOG.info("Amount of loops: " + loops);
-                                    LOG.info("This loop: " + loopId);
-                                    LOG.info("Loop information: " + timers.toString());
                                 }
                             });
                         }
@@ -198,9 +186,7 @@ public class Helpers {
         }
         if (i == 0 || i == 3) {
             lastRunTimer3 = System.currentTimeMillis();
-            int loopId = loops++;
             TaskScheduler.scheduleRepeating(() -> {
-                timers.put(loopId, System.currentTimeMillis());
                 lastRunTimer3 = System.currentTimeMillis();
                 WebUtils.getWebUtilsInstance().updateSpotifyCredentials();
                 Melijn.mySQL.updateVoteStreak();
@@ -261,12 +247,8 @@ public class Helpers {
         if (!manager.isConnected() && !manager.isAttemptingToConnect()) return;
         TaskScheduler.async(() -> {
             manager.closeAudioConnection();
-            LOG.debug("Terminated AudioConnection in " + manager.getGuild().getId());
+            logger.debug("Terminated AudioConnection in " + manager.getGuild().getId());
         });
-    }
-
-    public static String getOnlineTime() {
-        return getDurationBreakdown(System.currentTimeMillis() - startTime);
     }
 
     public static String getFooterStamp() {
