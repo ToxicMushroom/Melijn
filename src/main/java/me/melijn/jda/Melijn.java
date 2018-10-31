@@ -25,7 +25,6 @@ import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.utils.cache.CacheFlag;
-import okhttp3.OkHttpClient;
 
 import javax.security.auth.login.LoginException;
 import java.util.EnumSet;
@@ -173,11 +172,11 @@ public class Melijn {
                 //people who spam the bot
 
         });
-        Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
-        System.setProperty("server.port", config.getValue("springPort"));
-        new Application().init(args);
+        Logger.getLogger(Application.class.getName()).setLevel(Level.OFF);
+        new Application().start(args);
         Thread.setDefaultUncaughtExceptionHandler((thread, exception) -> MessageHelper.printException(thread, exception, null, null));
     }
+
     public static ShardManager getShardManager() {
         return shardManager;
     }

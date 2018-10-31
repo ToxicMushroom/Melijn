@@ -33,14 +33,10 @@ dependencies {
     compile 'com.github.DiscordBotList:DBL-Java-Library:df56ff88fabd1dc78c03cc71e48973a1f549f028'
     compile 'se.michaelthelin.spotify:spotify-web-api-java:2.1.1'
 
-    compile group: 'com.google.guava', name: 'guava', version: '27.0-jre'
-    compile group: 'ch.qos.logback', name: 'logback-access', version: '1.2.3'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.0.6.RELEASE'
-    constraints {
-        compile (group: 'org.springframework', name: 'spring-core', version: '5.1.2.RELEASE') {
-            because 'does not give anoying warning'
-        }
-    }
+    compile 'com.google.guava:guava:27.0-jre'
+    compile 'ch.qos.logback:logback-core:1.2.3'
+    compile 'org.jooby:jooby-netty:1.5.1'
+    compile 'org.jooby:jooby-jackson:1.5.1'
 }
 
 compileJava.options.encoding = 'UTF-8'
