@@ -8,6 +8,7 @@ import me.melijn.jda.commands.InviteCommand;
 import me.melijn.jda.commands.VoteCommand;
 import me.melijn.jda.commands.developer.EvalCommand;
 import me.melijn.jda.commands.developer.ShutdownCommand;
+import me.melijn.jda.commands.developer.TestCommand;
 import me.melijn.jda.commands.developer.WeebshCommand;
 import me.melijn.jda.commands.fun.*;
 import me.melijn.jda.commands.management.*;
@@ -150,7 +151,9 @@ public class Melijn {
                 new SetSelfRoleChannelCommand(),
                 new CustomCommandCommand(),
                 new ShutdownCommand(),
-                new PollCommand()
+                new PollCommand(),
+                new DiceCommand(),
+                new TestCommand()
         );
 
         shardManager = new DefaultShardManagerBuilder()
