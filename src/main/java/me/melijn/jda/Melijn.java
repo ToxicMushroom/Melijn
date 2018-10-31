@@ -20,16 +20,16 @@ import me.melijn.jda.events.Chat;
 import me.melijn.jda.events.JoinLeave;
 import me.melijn.jda.rest.Application;
 import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.TaskScheduler;
 import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.utils.cache.CacheFlag;
+import org.jooby.Jooby;
 
 import javax.security.auth.login.LoginException;
 import java.util.EnumSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Melijn {
 
@@ -172,8 +172,7 @@ public class Melijn {
                 //people who spam the bot
 
         });
-        Logger.getLogger(Application.class.getName()).setLevel(Level.OFF);
-        new Application().start(args);
+        TaskScheduler.async(() -> Jooby.run(Application::new, args));
         Thread.setDefaultUncaughtExceptionHandler((thread, exception) -> MessageHelper.printException(thread, exception, null, null));
     }
 

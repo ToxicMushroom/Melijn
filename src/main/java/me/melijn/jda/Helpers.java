@@ -21,8 +21,6 @@ import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.managers.AudioManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.text.SimpleDateFormat;
@@ -39,7 +37,6 @@ public class Helpers {
     public static String guildOnly = "This command is to be used in guilds only";
     public static String nsfwOnly = "This command is to be used in (not safe for work) better known as [NSFW] channels only and can contain 18+ content";
     public static String noPerms = "You don't have the permission: ";
-    private static Logger logger = LoggerFactory.getLogger(Helpers.class.getName());
     public static Color EmbedColor = Color.decode("#00ffd8");
     public static boolean voteChecks = true;
     public static long guildCount = 0;
@@ -245,10 +242,7 @@ public class Helpers {
 
     public static void scheduleClose(AudioManager manager) {
         if (!manager.isConnected() && !manager.isAttemptingToConnect()) return;
-        TaskScheduler.async(() -> {
-            manager.closeAudioConnection();
-            logger.debug("Terminated AudioConnection in " + manager.getGuild().getId());
-        });
+        TaskScheduler.async(manager::closeAudioConnection);
     }
 
     public static String getFooterStamp() {
