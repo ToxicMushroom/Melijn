@@ -53,7 +53,8 @@ public class Chat extends ListenerAdapter {
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
         if (event.getGuild() == null || EvalCommand.serverBlackList.contains(event.getGuild().getIdLong()))
-            if (event.getMessage().getContentRaw().equalsIgnoreCase(PREFIX) || event.getMessage().getContentRaw().equalsIgnoreCase(event.getJDA().getSelfUser().getAsMention()))
+            if (event.getGuild() == null && (event.getMessage().getContentRaw().equalsIgnoreCase(PREFIX) || event.getMessage().getContentRaw().equalsIgnoreCase(event.getJDA().getSelfUser().getAsMention())) &&
+                    !event.getAuthor().isBot())
                 event.getChannel().sendMessage(String.format("Hello there my default prefix is %s and you can view all commands using **%shelp**", PREFIX, PREFIX)).queue();
             else return;
         if (event.getMember() != null) {
@@ -117,13 +118,13 @@ public class Chat extends ListenerAdapter {
 
         if (SetVerificationChannel.verificationChannelsCache.getUnchecked(event.getGuild().getIdLong()) == event.getChannel().getIdLong()) {
             try {
+                if (!event.getMember().hasPermission(event.getChannel(), Permission.MANAGE_CHANNEL))
+                    event.getMessage().delete().reason("Verification Channel").queue(s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()));
                 if (SetVerificationCode.verificationCodeCache.get(event.getGuild().getIdLong()) != null) {
                     if (event.getMessage().getContentRaw().equalsIgnoreCase(SetVerificationCode.verificationCodeCache.get(event.getGuild().getIdLong()))) {
-                        event.getMessage().delete().reason("Verification Channel").queue(s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()));
                         JoinLeave.verify(event.getGuild(), event.getAuthor());
                         removeMemberFromTriesCache(event);
                     } else if (SetVerificationThreshold.verificationThresholdCache.get(event.getGuild().getIdLong()) != 0) {
-                        event.getMessage().delete().reason("Verification Channel").queue(s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()));
                         if (guildUserVerifyTries.containsKey(event.getGuild().getIdLong())) {
                             if (guildUserVerifyTries.get(event.getGuild().getIdLong()).containsKey(event.getAuthor().getIdLong())) {
                                 TLongIntMap userTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
@@ -140,7 +141,8 @@ public class Chat extends ListenerAdapter {
                             guildUserVerifyTries.put(event.getGuild().getIdLong(), userTriesBuffer);
                         }
                         if (guildUserVerifyTries.get(event.getGuild().getIdLong()).get(event.getAuthor().getIdLong()) == SetVerificationThreshold.verificationThresholdCache.get(event.getGuild().getIdLong())) {
-                            event.getGuild().getController().kick(event.getMember()).reason("Failed verification").queue();
+                            if (event.getGuild().getSelfMember().canInteract(event.getMember()))
+                                event.getGuild().getController().kick(event.getMember()).reason("Failed verification").queue();
                             removeMemberFromTriesCache(event);
                         }
                     } else {
