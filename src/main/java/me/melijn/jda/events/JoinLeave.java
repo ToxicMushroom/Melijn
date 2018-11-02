@@ -13,6 +13,7 @@ import me.melijn.jda.commands.developer.EvalCommand;
 import me.melijn.jda.commands.management.*;
 import me.melijn.jda.commands.music.SPlayCommand;
 import me.melijn.jda.music.MusicManager;
+import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.JDA;
@@ -47,7 +48,9 @@ public class JoinLeave extends ListenerAdapter {
     public void onReady(ReadyEvent event) {
         Helpers.startTime = System.currentTimeMillis();
         ShardManager shardManager = event.getJDA().asBot().getShardManager();
-        if (started || shardManager.getShardCache().stream().filter(shard -> shard.getStatus().equals(JDA.Status.CONNECTED)).count() == shardManager.getShardsTotal()) return;
+        if (started || shardManager.getShardCache().stream().filter(shard -> shard.getStatus().equals(JDA.Status.CONNECTED)).count() == shardManager.getShardsTotal())
+            return;
+        Thread.setDefaultUncaughtExceptionHandler((thread, exception) -> MessageHelper.printException(thread, exception, null, null));
         dblAPI = new DiscordBotListAPI.Builder()
                 .token(Config.getConfigInstance().getValue("dbltoken"))
                 .botId(event.getJDA().getSelfUser().getId())
@@ -71,6 +74,7 @@ public class JoinLeave extends ListenerAdapter {
             }
         }
         Melijn.mySQL.clearQueues();
+
         started = true;
     }
 
@@ -168,8 +172,18 @@ public class JoinLeave extends ListenerAdapter {
             Melijn.mySQL.removeUnverifiedUser(guild.getIdLong(), user.getIdLong());
             unVerifiedGuildMembersCache.put(guild.getIdLong(), newList);
         });
-        if (guild.getMember(user) != null && guild.getRoleById(SetUnverifiedRole.unverifiedRoleCache.getUnchecked(guild.getIdLong())) != null)
-            guild.getController().removeSingleRoleFromMember(guild.getMember(user), guild.getRoleById(SetUnverifiedRole.unverifiedRoleCache.getUnchecked(guild.getIdLong()))).reason("verified user").queue();
+        if (guild.getMember(user) != null && guild.getRoleById(SetUnverifiedRole.unverifiedRoleCache.getUnchecked(guild.getIdLong())) != null) {
+            if (guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES)) {
+                guild.getController().removeSingleRoleFromMember(guild.getMember(user), guild.getRoleById(SetUnverifiedRole.unverifiedRoleCache.getUnchecked(guild.getIdLong()))).reason("verified user").queue();
+            } else {
+                user.openPrivateChannel().queue(channel ->
+                        channel.sendMessage("" +
+                                "You have been verified in " + guild.getName() + " discord server.\n" +
+                                "**BUT** I do not have the permission to remove your unverified role.\n" +
+                                "Please message a staff member about this issue."
+                        ).queue());
+            }
+        }
     }
 
     private static String variableFormat(String s, Guild guild, User user) {
