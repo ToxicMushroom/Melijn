@@ -24,7 +24,7 @@ public class AlpacaCommand extends Command {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EMBED_LINKS))
                 event.reply(new EmbedBuilder()
-                        .setColor(Helpers.EmbedColor)
+                        .setColor(Helpers.embedColor)
                         .setDescription("Enjoy your alpaca!")
                         .setImage("http://randomalpaca.com/wp-content/uploads/2015/04/alpaca" + MessageHelper.randInt(1, 144) + ".jpg")
                         .build());

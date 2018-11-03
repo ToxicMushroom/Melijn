@@ -60,7 +60,7 @@ public class HistoryCommand extends Command {
                                         for (String part : parts) {
                                             ebBan.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s bans " + ++partnumber + "/" + size + spaces.substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                             ebBan.setDescription(part);
-                                            ebBan.setColor(Helpers.EmbedColor);
+                                            ebBan.setColor(Helpers.embedColor);
                                             event.reply(ebBan.build());
                                         }
                                     }
@@ -78,7 +78,7 @@ public class HistoryCommand extends Command {
                                         for (String part : parts) {
                                             ebMute.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s mutes " + ++partnumber + "/" + size + spaces.substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                             ebMute.setDescription(part);
-                                            ebMute.setColor(Helpers.EmbedColor);
+                                            ebMute.setColor(Helpers.embedColor);
                                             event.reply(ebMute.build());
                                         }
                                     }
@@ -96,7 +96,7 @@ public class HistoryCommand extends Command {
                                         for (String part : parts) {
                                             ebWarn.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s warns " + ++partnumber + "/" + size + spaces.substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                             ebWarn.setDescription(part);
-                                            ebWarn.setColor(Helpers.EmbedColor);
+                                            ebWarn.setColor(Helpers.embedColor);
                                             event.reply(ebWarn.build());
                                         }
                                     }
@@ -114,7 +114,7 @@ public class HistoryCommand extends Command {
                                         for (String part : parts) {
                                             ebKick.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s kicks " + ++partnumber + "/" + size + spaces.substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                             ebKick.setDescription(part);
-                                            ebKick.setColor(Helpers.EmbedColor);
+                                            ebKick.setColor(Helpers.embedColor);
                                             event.reply(ebKick.build());
                                         }
                                     }

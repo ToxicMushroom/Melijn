@@ -36,7 +36,7 @@ public class GuildInfoCommand extends Command {
                 guild = event.getJDA().asBot().getShardManager().getGuildById(args[0]);
             event.reply(new EmbedBuilder()
                     .setAuthor(guild.getName(), null, guild.getIconUrl() + "?size=2048")
-                    .setColor(Helpers.EmbedColor)
+                    .setColor(Helpers.embedColor)
                     .addField("ID", guild.getId(), true)
                     .addField("Icon", "[Download](" + guild.getIconUrl() + "?size=2048)", true)
                     .addField("Creation date", guild.getCreationTime().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG, FormatStyle.SHORT)), false)

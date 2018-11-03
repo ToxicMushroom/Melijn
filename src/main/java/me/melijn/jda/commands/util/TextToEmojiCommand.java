@@ -45,7 +45,7 @@ public class TextToEmojiCommand extends Command {
                         sb = new StringBuilder();
                     }
                 }
-                event.reply(new EmbedBuilder().setDescription(sb.toString()).setColor(Helpers.EmbedColor).build());
+                event.reply(new EmbedBuilder().setDescription(sb.toString()).setColor(Helpers.embedColor).build());
             } else {
                 MessageHelper.sendUsage(this, event);
             }

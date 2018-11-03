@@ -123,7 +123,7 @@ public class CustomCommandCommand extends Command {
                 String attachment = command.getString("attachment").isBlank() ? "N/A" : "**[link](" + command.getString("attachment") + ")**";
                 event.reply(new EmbedBuilder()
                         .setTitle("CustomCommand: " + command.getString("name"))
-                        .setColor(Helpers.EmbedColor)
+                        .setColor(Helpers.embedColor)
                         .addField("description", command.getString("description"), false)
                         .addField("message", "```JSON\n" + command.getString("message") + "```", false)
                         .addField("aliases", aliases, true)

@@ -47,7 +47,7 @@ public class AddReaction extends ListenerAdapter {
                         t++;
                         EmbedBuilder eb = new EmbedBuilder();
                         eb.setTitle("Added part **#" + t + "**");
-                        eb.setColor(Helpers.EmbedColor);
+                        eb.setColor(Helpers.embedColor);
                         eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                         eb.setDescription(songs);
                         event.getChannel().sendMessage(eb.build()).queue();
@@ -57,7 +57,7 @@ public class AddReaction extends ListenerAdapter {
                 if (t == 0) {
                     EmbedBuilder eb = new EmbedBuilder();
                     eb.setTitle("Added");
-                    eb.setColor(Helpers.EmbedColor);
+                    eb.setColor(Helpers.embedColor);
                     eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                     eb.setDescription(songs);
                     event.getChannel().sendMessage(eb.build()).queue();
@@ -65,7 +65,7 @@ public class AddReaction extends ListenerAdapter {
                     t++;
                     EmbedBuilder eb = new EmbedBuilder();
                     eb.setTitle("Added part **#" + t + "**");
-                    eb.setColor(Helpers.EmbedColor);
+                    eb.setColor(Helpers.embedColor);
                     eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                     eb.setDescription(songs);
                     event.getChannel().sendMessage(eb.build()).queue();
@@ -85,7 +85,7 @@ public class AddReaction extends ListenerAdapter {
             EmbedBuilder eb = new EmbedBuilder();
             eb.setTitle("Added");
             eb.setFooter(Helpers.getFooterStamp(), null);
-            eb.setColor(Helpers.EmbedColor);
+            eb.setColor(Helpers.embedColor);
             boolean wrongemote = false;
             switch (event.getReactionEmote().getName()) {
                 case "\u0031\u20E3":

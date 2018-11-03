@@ -45,7 +45,7 @@ public class StatsCommand extends Command {
         }
         ShardManager shardManager = event.getJDA().asBot().getShardManager();
         event.reply(new EmbedBuilder()
-                .setColor(Helpers.EmbedColor)
+                .setColor(Helpers.embedColor)
                 .setThumbnail(event.getJDA().getSelfUser().getAvatarUrl())
                 .addField("Bot stats", "" +
                         "\n**Shards** " + shardManager.getShardsTotal() +
@@ -55,12 +55,12 @@ public class StatsCommand extends Command {
                         "\n**Uptime** " + Helpers.getDurationBreakdown(ManagementFactory.getRuntimeMXBean().getUptime()) +
                         "\n\u200B", false)
                 .addField("Server Stats", "" +
-                        "\n**CPU Usage** " + new DecimalFormat("###.###%").format(bean.getProcessCpuLoad()) +
                         "\n**Cores** " + bean.getAvailableProcessors() +
                         "\n**RAM Usage** " + usedMem + "MB/" + totalMem + "MB" +
                         "\n**System Uptime** " + Helpers.getDurationBreakdown(getSystemUptime()) +
                         "\n\u200B", false)
                 .addField("JVM Stats", "" +
+                        "\n**CPU Usage** " + new DecimalFormat("###.###%").format(bean.getProcessCpuLoad()) +
                         "\n**RAM Usage** " + usedJVMMem + "MB/" + totalJVMMem + "MB" +
                         "\n**Threads** " + Thread.activeCount() + "/" + Thread.getAllStackTraces().size(), false)
                 .build());

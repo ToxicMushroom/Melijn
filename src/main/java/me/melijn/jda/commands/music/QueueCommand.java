@@ -70,7 +70,7 @@ public class QueueCommand extends Command {
                     if (builder.length() + s.length() > 1800) {
                         EmbedBuilder eb = new EmbedBuilder();
                         eb.setTitle("Queue part " + part);
-                        eb.setColor(Helpers.EmbedColor);
+                        eb.setColor(Helpers.embedColor);
                         eb.setDescription(builder.toString());
                         eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                         event.reply(eb.build());
@@ -81,14 +81,14 @@ public class QueueCommand extends Command {
                 }
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setTitle("Queue part " + part);
-                eb.setColor(Helpers.EmbedColor);
+                eb.setColor(Helpers.embedColor);
                 eb.setDescription(builder.toString());
                 eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                 event.reply(eb.build());
             } else {
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setTitle("Queue");
-                eb.setColor(Helpers.EmbedColor);
+                eb.setColor(Helpers.embedColor);
                 eb.setDescription(builder.toString());
                 eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                 event.reply(eb.build());

@@ -41,7 +41,7 @@ public class VoteCommand extends Command {
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setTitle("Votes of " + username);
                 eb.setThumbnail(target.getAvatarUrl());
-                eb.setColor(Helpers.EmbedColor);
+                eb.setColor(Helpers.embedColor);
                 eb.addField("Votes", String.valueOf(voteObject.getLong("votes")), false);
                 eb.addField("Streak", String.valueOf(voteObject.getLong("streak")), false);
                 long untilNext = 43_200_000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));

@@ -24,7 +24,7 @@ public class PotatoCommand extends Command {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EMBED_LINKS))
                 event.reply(new EmbedBuilder()
-                        .setColor(Helpers.EmbedColor)
+                        .setColor(Helpers.embedColor)
                         .setDescription("Enjoy your delicious \uD83E\uDD54")
                         .setImage(Private.getWeebV1Url("potato"))
                         .setFooter("Powered by weeb.sh", null)

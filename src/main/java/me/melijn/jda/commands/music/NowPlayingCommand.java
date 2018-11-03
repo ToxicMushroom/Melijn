@@ -47,7 +47,7 @@ public class NowPlayingCommand extends Command {
                     String looped = LoopCommand.looped.contains(guild.getIdLong()) ? " \uD83D\uDD04" : "";
                     event.reply(new EmbedBuilder()
                             .setTitle("Now " + s)
-                            .setColor(Helpers.EmbedColor)
+                            .setColor(Helpers.embedColor)
                             .setThumbnail(MessageHelper.getThumbnailURL(track.getInfo().uri))
                             .setDescription("[**" + track.getInfo().title + "**](" + track.getInfo().uri + ")")
                             .addField("status:", (s.equalsIgnoreCase("playing") ? "\u25B6" : "\u23F8") + looped + loopedQueue, false)

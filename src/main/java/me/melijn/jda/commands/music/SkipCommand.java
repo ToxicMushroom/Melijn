@@ -65,7 +65,7 @@ public class SkipCommand extends Command {
             }
             String songOrSongs = i == 1 ? "song" : "songs";
             EmbedBuilder eb = new EmbedBuilder();
-            eb.setColor(Helpers.EmbedColor);
+            eb.setColor(Helpers.embedColor);
             eb.setTitle("Skipped " + i + " " + songOrSongs);
             if (nextSong != null)
                 eb.setDescription("Previous song: **[" + shippableTrack.getInfo().title + "](" + shippableTrack.getInfo().uri + ")**\n" + "Now playing: **[" + nextSong.getInfo().title + "](" + nextSong.getInfo().uri + ")** " + Helpers.getDurationBreakdown(nextSong.getInfo().length));

@@ -33,7 +33,7 @@ public class InfoCommand extends Command {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             try {
                 event.reply(new EmbedBuilder()
-                        .setColor(Helpers.EmbedColor)
+                        .setColor(Helpers.embedColor)
                         .setThumbnail(event.getJDA().getSelfUser().getAvatarUrl())
                         .addField("About", "" +
                                 "\nI'm a powerful discord bot developed by **ToxicMushroom#2610**" +

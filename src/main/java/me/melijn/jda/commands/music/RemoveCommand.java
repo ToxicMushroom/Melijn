@@ -88,7 +88,7 @@ public class RemoveCommand extends Command {
                     } else {
                         EmbedBuilder eb = new EmbedBuilder();
                         eb.setTitle("Removed part **#" + pi + "**");
-                        eb.setColor(Helpers.EmbedColor);
+                        eb.setColor(Helpers.embedColor);
                         eb.setDescription(sb.toString());
                         eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                         event.reply(eb.build());
@@ -99,7 +99,7 @@ public class RemoveCommand extends Command {
                 if (sb.length() != 0) {
                     EmbedBuilder eb = new EmbedBuilder();
                     eb.setTitle("Removed part **#" + pi + "**");
-                    eb.setColor(Helpers.EmbedColor);
+                    eb.setColor(Helpers.embedColor);
                     eb.setDescription(sb.toString());
                     eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                     event.reply(eb.build());
@@ -107,7 +107,7 @@ public class RemoveCommand extends Command {
             } else {
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setTitle("Removed");
-                eb.setColor(Helpers.EmbedColor);
+                eb.setColor(Helpers.embedColor);
                 eb.setDescription(sb.toString());
                 eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                 event.reply(eb.build());

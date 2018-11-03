@@ -32,7 +32,7 @@ public class SettingsCommand extends Command {
                 long guildId = event.getGuild().getIdLong();
                 event.reply(new EmbedBuilder()
                         .setTitle("Server settings")
-                        .setColor(Helpers.EmbedColor)
+                        .setColor(Helpers.embedColor)
                         .setDescription("MusicChannel:** " + idToChannelMention(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)) +
                                 "\n**StreamUrl:** " + stringToString(Melijn.mySQL.getStreamUrl(guildId), false) +
                                 "\n**StreamerMode:** " + (SetStreamerModeCommand.streamerModeCache.getUnchecked(guildId) ? "on" : "off") +

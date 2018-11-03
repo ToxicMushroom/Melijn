@@ -31,7 +31,7 @@ public class CatCommand extends Command {
             if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS))
                 if (url != null)
                     event.reply(new EmbedBuilder()
-                            .setColor(Helpers.EmbedColor)
+                            .setColor(Helpers.embedColor)
                             .setDescription("Enjoy your \uD83D\uDC31 ~meow~")
                             .setImage(url)
                             .build());

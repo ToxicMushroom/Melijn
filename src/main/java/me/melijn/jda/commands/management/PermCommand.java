@@ -366,7 +366,7 @@ public class PermCommand extends Command {
                                 if (sb.length() > 1900) {
                                     event.reply(new EmbedBuilder()
                                             .setTitle("Permissions off `" + targetName + "` part #" + partNumber++)
-                                            .setColor(Helpers.EmbedColor)
+                                            .setColor(Helpers.embedColor)
                                             .setDescription(sb.toString())
                                             .build());
                                     sb = new StringBuilder();
@@ -375,7 +375,7 @@ public class PermCommand extends Command {
                             String title = partNumber == 0 ? "Permissions off `" + targetName + "`" : "Permissions off `" + targetName + "` part #" + partNumber;
                             event.reply(new EmbedBuilder()
                                     .setTitle(title)
-                                    .setColor(Helpers.EmbedColor)
+                                    .setColor(Helpers.embedColor)
                                     .setDescription(sb.toString())
                                     .build());
                         } else {

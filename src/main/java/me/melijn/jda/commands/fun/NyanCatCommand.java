@@ -24,7 +24,7 @@ public class NyanCatCommand extends Command {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EMBED_LINKS))
                 event.reply(new EmbedBuilder()
-                        .setColor(Helpers.EmbedColor)
+                        .setColor(Helpers.embedColor)
                         .setDescription("Enjoy your <:normie_nyan:490976816018751503> ~meow!~")
                         .setImage("https://github.com/ToxicMushroom/nyan-cats/raw/master/cat%20(" + MessageHelper.randInt(2, 33) + ").gif")
                         .build());

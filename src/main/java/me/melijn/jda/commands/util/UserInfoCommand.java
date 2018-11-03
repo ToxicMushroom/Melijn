@@ -31,7 +31,7 @@ public class UserInfoCommand extends Command {
             String[] args = event.getArgs().split("\\s+");
             Helpers.retrieveUserByArgs(event, args[0], user -> {
                 EmbedBuilder eb = new EmbedBuilder();
-                eb.setColor(Helpers.EmbedColor);
+                eb.setColor(Helpers.embedColor);
                 eb.setTitle(user.getName() + "#" + user.getDiscriminator() + "'s profile");
                 eb.setThumbnail(user.getEffectiveAvatarUrl() + "?size=2048");
                 if (event.getGuild() == null || event.getGuild().getMember(user) == null) {

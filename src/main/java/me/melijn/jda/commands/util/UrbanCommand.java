@@ -36,7 +36,7 @@ public class UrbanCommand extends Command {
 
                         event.reply(new EmbedBuilder()
                                 .setTitle(firstMeaning.getString("word"))
-                                .setColor(Helpers.EmbedColor)
+                                .setColor(Helpers.embedColor)
                                 .setDescription("**Meaning**\n " + removeBrackets(firstMeaning.getString("definition")) + "\n\n**Example**\n " + removeBrackets(firstMeaning.getString("example")))
                                 .setFooter(Helpers.getFooterStamp(), null)
                                 .build());

@@ -22,7 +22,6 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.managers.AudioManager;
 
-import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -34,13 +33,13 @@ public class Helpers {
 
     public static long lastRunTimer1 = -1, lastRunTimer2 = -1, lastRunTimer3 = -1;
     public static long startTime = 0;
-    public static String guildOnly = "This command is to be used in guilds only";
-    public static String nsfwOnly = "This command is to be used in (not safe for work) better known as [NSFW] channels only and can contain 18+ content";
-    public static String noPerms = "You don't have the permission: ";
-    public static Color EmbedColor = Color.decode("#00ffd8");
+    public static final String guildOnly = "This command is to be used in guilds only";
+    public static final String nsfwOnly = "This command is to be used in (not safe for work) better known as [NSFW] channels only and can contain 18+ content";
+    public static final String noPerms = "You don't have the permission: ";
+    public static final int embedColor = -16711720;
     public static boolean voteChecks = true;
     public static long guildCount = 0;
-    public static List<String> perms = Arrays.asList(
+    public static final List<String> perms = Arrays.asList(
             "pause",
             "splay.yt",
             "splay.sc",
@@ -145,7 +144,8 @@ public class Helpers {
             "SetSelfRoleChannel",
             "SelfRole",
             "CustomCommand",
-            "poll"
+            "poll",
+            "dice"
     );
 
     public static void startTimer(JDA jda, int i) {
@@ -346,7 +346,7 @@ public class Helpers {
                     .setTitle("Now playing")
                     .setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** `" + Helpers.getDurationBreakdown(track.getDuration()) + "`\n")
                     .setThumbnail(MessageHelper.getThumbnailURL(track.getInfo().uri))
-                    .setColor(Helpers.EmbedColor)
+                    .setColor(Helpers.embedColor)
                     .setFooter(Helpers.getFooterStamp(), null)
                     .build()).queue();
         }
