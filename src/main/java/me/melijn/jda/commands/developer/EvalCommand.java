@@ -66,8 +66,8 @@ public class EvalCommand extends Command {
                 "import net.dv8tion.jda.core.managers.*;\n" +
                 "import net.dv8tion.jda.core.managers.impl.*;\n" +
                 "import net.dv8tion.jda.core.utils.*;\n" +
-                "import java.util.regex.Matcher;\n" +
-                "import java.util.regex.Pattern;\n" +
+                "import java.util.regex.*;\n" +
+                "import java.awt.*;\n" +
                 "class " + CLASS_NAME + " {\n" +
                 "   public static void eval(final CommandEvent event) {\n" +
                 "       " + source + "\n" +
