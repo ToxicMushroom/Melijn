@@ -6,6 +6,7 @@ import com.google.common.cache.LoadingCache;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.*;
+import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 import org.jetbrains.annotations.NotNull;
@@ -48,16 +49,17 @@ public class SetLeaveMessageCommand extends Command {
                         Melijn.mySQL.removeMessage(guild.getIdLong(), MessageType.LEAVE);
                         leaveMessages.invalidate(guild.getIdLong());
                     });
-                    event.reply("LeaveMessage has been changed from " + oldMessage + " to nothing by **" + event.getFullAuthorName() + "**");
+                    MessageHelper.sendSplitMessage(event.getTextChannel(), "LeaveMessage has been changed from \n" + oldMessage + "\n to nothing by **" + event.getFullAuthorName() + "**");
                 } else {
                     TaskScheduler.async(() -> {
                         Melijn.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.LEAVE);
                         leaveMessages.put(guild.getIdLong(), newMessage);
                     });
-                    event.reply("LeaveMessage has been changed from " + oldMessage + " to '" + newMessage + "' by **" + event.getFullAuthorName() + "**");
+                    MessageHelper.sendSplitMessage(event.getTextChannel(),
+                            "LeaveMessage has been changed from \n" + oldMessage + "\n to \n" + newMessage + "\nby **" + event.getFullAuthorName() + "**");
                 }
             } else {
-                event.reply("LeaveMessage is set to " + (leaveMessages.getUnchecked(guild.getIdLong()).isBlank() ? "nothing" : "'" + leaveMessages.getUnchecked(guild.getIdLong()) + "'"));
+                MessageHelper.sendSplitMessage(event.getTextChannel(), "LeaveMessage is set to:\n" + oldMessage);
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

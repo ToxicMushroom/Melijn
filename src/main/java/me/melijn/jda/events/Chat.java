@@ -20,11 +20,8 @@ import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.audit.ActionType;
 import net.dv8tion.jda.core.audit.AuditLogEntry;
 import net.dv8tion.jda.core.audit.AuditLogOption;
-import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.entities.Guild.Ban;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -284,7 +281,12 @@ public class Chat extends ListenerAdapter {
                 log(guild, author, eb, deleter, message, split);
             } else {
                 // SDM
-                User deleter = sameAsLast ? auditLogEntry.getUser() : guild.getMemberById(Melijn.mySQL.getMessageAuthorId(event.getMessageIdLong())).getUser();
+                User deleter = sameAsLast ? auditLogEntry.getUser() : null;
+                if (deleter == null) {
+                    Member member = guild.getMemberById(Melijn.mySQL.getMessageAuthorId(event.getMessageIdLong()));
+                    if (member == null) return;
+                    deleter = member.getUser();
+                }
                 log(guild, author, eb, deleter, message, split);
             }
 

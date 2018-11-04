@@ -6,6 +6,7 @@ import com.google.common.cache.LoadingCache;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.*;
+import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 
@@ -51,16 +52,17 @@ public class SetJoinMessageCommand extends Command {
                         Melijn.mySQL.removeMessage(guild.getIdLong(), MessageType.JOIN);
                         joinMessages.invalidate(guild.getIdLong());
                     });
-                    event.reply("JoinMessage has been set to nothing by **" + event.getFullAuthorName() + "**");
+                    MessageHelper.sendSplitMessage(event.getTextChannel(), "JoinMessage has been changed from \n" +  oldMessage + "\n to nothing by **" + event.getFullAuthorName() + "**");
                 } else {
                     TaskScheduler.async(() -> {
                         Melijn.mySQL.setMessage(guild.getIdLong(), newMessage, MessageType.JOIN);
                         joinMessages.put(guild.getIdLong(), newMessage);
                     });
-                    event.reply("JoinMessage has been changed from " + oldMessage + " to '" + newMessage + "' by **" + event.getFullAuthorName() + "**");
+                    MessageHelper.sendSplitMessage(event.getTextChannel(),
+                            "JoinMessage has been changed from \n" + oldMessage + "\n to \n" + newMessage + "\nby **" + event.getFullAuthorName() + "**");
                 }
             } else {
-                event.reply("JoinMessage is set to " + oldMessage);
+                MessageHelper.sendSplitMessage(event.getTextChannel(), "JoinMessage is set to:\n" + oldMessage);
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

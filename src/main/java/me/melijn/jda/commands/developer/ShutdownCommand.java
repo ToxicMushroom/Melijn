@@ -10,13 +10,11 @@ import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.music.MusicPlayer;
 import me.melijn.jda.utils.TaskScheduler;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -33,14 +31,16 @@ public class ShutdownCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        URL resource = getClass().getClassLoader().getResource("Melijn.mp3");
-        if (resource == null) {
+        InputStream in = getClass().getClassLoader().getResourceAsStream("Melijn.mp3");
+        if (in == null) {
             event.reply("mp3 not found :/");
             return;
         }
         try {
-            File tempFile = File.createTempFile(FilenameUtils.getBaseName(resource.getFile()), FilenameUtils.getExtension(resource.getFile()));
-            IOUtils.copy(resource.openStream(), FileUtils.openOutputStream(tempFile));
+            File tempFile = File.createTempFile("Melijn" + System.currentTimeMillis(), ".mp3");
+            try (FileOutputStream out = new FileOutputStream(tempFile)) {
+                IOUtils.copy(in, out);
+            }
 
             //save players before shutdown
             TLongObjectMap<MusicPlayer> players = MusicManager.getManagerInstance().getPlayers();
@@ -58,10 +58,13 @@ public class ShutdownCommand extends Command {
                 return true;
             });
             event.reply("Shutting down in 9 seconds");
-            TaskScheduler.async(() -> event.getJDA().shutdown(), 9000);
-        } catch (IOException e) {
+            TaskScheduler.async(() -> {
+                tempFile.delete();
+                event.getJDA().shutdown();
+            }, 9000);
+        } catch (Exception e) {
             e.printStackTrace();
-            event.reply("mp3 not found :/");
+            event.reply("something went wrong :/");
         }
     }
 }

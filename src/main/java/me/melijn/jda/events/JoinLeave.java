@@ -93,7 +93,7 @@ public class JoinLeave extends ListenerAdapter {
         if (joinedUser.isBot() && joinedUser.equals(guild.getSelfMember().getUser()) && EvalCommand.serverBlackList.contains(guild.getOwnerIdLong()))
             guild.leave().queue();
         if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
-        if (SetVerificationChannel.verificationChannelsCache.getUnchecked(guild.getIdLong()) != -1) {
+        if (guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES) && SetVerificationChannel.verificationChannelsCache.getUnchecked(guild.getIdLong()) != -1) {
             TextChannel verificationChannel = guild.getTextChannelById(SetVerificationChannel.verificationChannelsCache.getUnchecked(guild.getIdLong()));
             if (verificationChannel != null) {
                 TLongList newList = unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong());
