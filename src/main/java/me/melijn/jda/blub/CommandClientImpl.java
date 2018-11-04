@@ -310,6 +310,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                                     return false;
                                 } else {
                                     event.getTextChannel().sendMessage("I have no permission to join your voice channel :C").queue();
+                                    return true;
                                 }
                             }
                         }
@@ -318,8 +319,8 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                             return false;
                         } else {
                             event.getTextChannel().sendMessage("I have no permission to join your voice channel :C").queue();
+                            return true;
                         }
-                        return true;
                     }
                     break;
                 default:
