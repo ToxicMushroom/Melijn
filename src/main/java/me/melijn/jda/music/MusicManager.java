@@ -9,6 +9,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.wrapper.spotify.model_objects.specification.ArtistSimplified;
 import com.wrapper.spotify.model_objects.specification.PlaylistTrack;
+import com.wrapper.spotify.model_objects.specification.TrackSimplified;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.TLongLongMap;
 import gnu.trove.map.TLongObjectMap;
@@ -17,6 +18,7 @@ import gnu.trove.map.hash.TLongLongHashMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.commands.music.SPlayCommand;
+import me.melijn.jda.utils.YTSearch;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -33,6 +35,8 @@ public class MusicManager {
     private static MusicManager managerInstance = new MusicManager();
     public static TLongObjectMap<List<AudioTrack>> userRequestedSongs = new TLongObjectHashMap<>();
     public static TLongLongMap userMessageToAnswer = new TLongLongHashMap();
+    private static final YTSearch ytSearch = new YTSearch();
+    private final static String youtubeVideoBase = "https://youtu.be/";
 
     public MusicManager() {
         manager.getConfiguration().setFilterHotSwapEnabled(true);
@@ -67,26 +71,19 @@ public class MusicManager {
     public void loadTrack(final TextChannel channel, final String source, User requester, boolean isPlaylist) {
         MusicPlayer player = getPlayer(channel.getGuild());
         channel.getGuild().getAudioManager().setSendingHandler(player.getAudioHandler());
-
-
-        manager.loadItemOrdered(player, source, new AudioLoadResultHandler() {
+        AudioLoadResultHandler resultHandler = new AudioLoadResultHandler() {
 
             @Override
             public void trackLoaded(AudioTrack track) {
-                player.playTrack(track);
-                EmbedBuilder eb = new EmbedBuilder();
-                eb.setTitle("Added");
-                eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
-                eb.setFooter(Helpers.getFooterStamp(), null);
-                eb.setColor(Helpers.EmbedColor);
-                channel.sendMessage(eb.build()).queue();
+                iHateDuplicates(track, player, channel);
             }
 
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
                 List<AudioTrack> tracks = playlist.getTracks();
                 if (tracks.size() == 0) {
-                    channel.sendMessage("No songs found with this request '" + source.replaceFirst("ytsearch:|scsearch:", "") + "'").queue();
+                    boolean prefixed = source.startsWith("ytsearch:") || source.startsWith("scsearch:");
+                    channel.sendMessage("No songs found with this request '" + (prefixed ? source.replaceFirst("ytsearch:|scsearch:", "") : source) + "'").queue();
                     return;
                 }
                 if (!isPlaylist) {
@@ -121,15 +118,24 @@ public class MusicManager {
 
             @Override
             public void noMatches() {
-                channel.sendMessage("I couldn't find a song called " + source + ". Check on spelling mistakes.").queue();
+                channel.sendMessage("I couldn't find a song called " + source + ". Check for spelling mistakes.").queue();
             }
 
             @Override
             public void loadFailed(FriendlyException ignored) {
                 channel.sendMessage("Something went wrong while searching for your track").queue();
             }
-        });
-
+        };
+        String url = source;
+        if (url.startsWith("ytsearch:")) {
+            String result = ytSearch.search(url.replaceFirst("ytsearch:", ""));
+            if (result == null) {
+                channel.sendMessage("I couldn't find a song called " + source.replaceFirst("ytsearch:", "") + ". Check for spelling mistakes.").queue();
+                return;
+            }
+            url = youtubeVideoBase + result;
+        }
+        manager.loadItemOrdered(player, url, resultHandler);
     }
 
     public void loadSimpleTrack(Guild guild, final String source) {
@@ -177,7 +183,7 @@ public class MusicManager {
                 List<AudioTrack> tracks = playlist.getTracks();
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setTitle("Select Menu");
-                eb.setColor(Helpers.EmbedColor);
+                eb.setColor(Helpers.embedColor);
                 eb.setFooter(Helpers.getFooterStamp(), null);
                 StringBuilder sb = new StringBuilder();
                 TIntObjectMap<AudioTrack> map = new TIntObjectHashMap<>();
@@ -202,7 +208,7 @@ public class MusicManager {
 
             @Override
             public void noMatches() {
-                channel.sendMessage("I couldn't find a song named " + source + ". Check on spelling mistakes.").queue();
+                channel.sendMessage("I couldn't find songs named " + source + ". Check for spelling mistakes.").queue();
             }
 
             @Override
@@ -212,36 +218,28 @@ public class MusicManager {
         });
     }
 
-    public void loadSpotifyTrack(TextChannel textChannel, User requester, String name, ArtistSimplified[] artists, int durationMs) {
+    public void loadSpotifyTrack(TextChannel textChannel, String name, ArtistSimplified[] artists, int durationMs) {
         MusicPlayer player = getPlayer(textChannel.getGuild());
         textChannel.getGuild().getAudioManager().setSendingHandler(player.getAudioHandler());
         String title = name.replaceFirst("scsearch:|ytsearch:", "");
-        List<String> artistNames = new ArrayList<>();
         StringBuilder source = new StringBuilder(name);
-        if (artists != null) {
-            if (artists.length > 0) source.append(" ");
-            int i = 0;
-            for (ArtistSimplified artistSimplified : artists) {
-                artistNames.add(artistSimplified.getName());
-                if (i++ == 0) source.append(artistSimplified.getName());
-                else source.append(", ").append(artistSimplified.getName());
-            }
-        }
+        List<String> artistNames = new ArrayList<>();
+        appendArtists(artists, source, artistNames);
         manager.loadItemOrdered(player, source.toString(), new AudioLoadResultHandler() {
 
             @Override
             public void trackLoaded(AudioTrack track) {
                 if ((durationMs + 2000 > track.getDuration() && track.getDuration() > durationMs - 2000) || track.getInfo().title.toLowerCase().contains(title.toLowerCase())) {
-                    loadTrack(textChannel, source.toString(), requester, false);
+                    iHateDuplicates(track, player, textChannel);
                 } else {
                     if (name.startsWith("ytsearch:"))
                         if (artists != null)
-                            loadSpotifyTrack(textChannel, requester, name, null, durationMs);
+                            loadSpotifyTrack(textChannel, name, null, durationMs);
                         else
-                            loadSpotifyTrack(textChannel, requester, name.replaceFirst("ytsearch:", "scsearch:"), artists, durationMs);
+                            loadSpotifyTrack(textChannel, name.replaceFirst("ytsearch:", "scsearch:"), artists, durationMs);
                     else if (name.startsWith("scsearch:"))
                         if (artists != null)
-                            loadSpotifyTrack(textChannel, requester, name, null, durationMs);
+                            loadSpotifyTrack(textChannel, name, null, durationMs);
                         else textChannel.sendMessage("No track with that name found :/").queue();
                 }
             }
@@ -251,18 +249,24 @@ public class MusicManager {
                 List<AudioTrack> tracks = playlist.getTracks();
                 for (AudioTrack track : tracks.subList(0, tracks.size() > 5 ? 5 : tracks.size())) {
                     if ((durationMs + 2000 > track.getDuration() && track.getDuration() > durationMs - 2000) || track.getInfo().title.toLowerCase().contains(title.toLowerCase())) {
-                        loadTrack(textChannel, source.toString(), requester, false);
+                        player.playTrack(track);
+                        EmbedBuilder eb = new EmbedBuilder();
+                        eb.setTitle("Added");
+                        eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
+                        eb.setFooter(Helpers.getFooterStamp(), null);
+                        eb.setColor(Helpers.embedColor);
+                        textChannel.sendMessage(eb.build()).queue();
                         return;
                     }
                 }
                 if (name.startsWith("ytsearch:"))
                     if (artists != null)
-                        loadSpotifyTrack(textChannel, requester, name, null, durationMs);
+                        loadSpotifyTrack(textChannel, name, null, durationMs);
                     else
-                        loadSpotifyTrack(textChannel, requester, name.replaceFirst("ytsearch:", "scsearch:"), artists, durationMs);
+                        loadSpotifyTrack(textChannel, name.replaceFirst("ytsearch:", "scsearch:"), artists, durationMs);
                 else if (name.startsWith("scsearch:"))
                     if (artists != null)
-                        loadSpotifyTrack(textChannel, requester, name, null, durationMs);
+                        loadSpotifyTrack(textChannel, name, null, durationMs);
                     else textChannel.sendMessage("No track with that name found :(").queue();
 
             }
@@ -271,12 +275,12 @@ public class MusicManager {
             public void noMatches() {
                 if (name.startsWith("ytsearch:"))
                     if (artists != null)
-                        loadSpotifyTrack(textChannel, requester, name, null, durationMs);
+                        loadSpotifyTrack(textChannel, name, null, durationMs);
                     else
-                        loadSpotifyTrack(textChannel, requester, name.replaceFirst("ytsearch:", "scsearch:"), artists, durationMs);
+                        loadSpotifyTrack(textChannel, name.replaceFirst("ytsearch:", "scsearch:"), artists, durationMs);
                 else if (name.startsWith("scsearch:"))
                     if (artists != null)
-                        loadSpotifyTrack(textChannel, requester, name, null, durationMs);
+                        loadSpotifyTrack(textChannel, name, null, durationMs);
                     else textChannel.sendMessage("No track with that name found :C").queue();
             }
 
@@ -287,7 +291,102 @@ public class MusicManager {
         });
     }
 
+    private void iHateDuplicates(AudioTrack track, MusicPlayer player, TextChannel textChannel) {
+        player.playTrack(track);
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("Added");
+        eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
+        eb.setFooter(Helpers.getFooterStamp(), null);
+        eb.setColor(Helpers.embedColor);
+        textChannel.sendMessage(eb.build()).queue();
+    }
+
+    private void loadSpotifyTracks(Guild guild, String name, ArtistSimplified[] artists, ArtistSimplified[] unused, int durationMs) {
+        MusicPlayer player = getPlayer(guild);
+        guild.getAudioManager().setSendingHandler(player.getAudioHandler());
+        String title = name.replaceFirst("scsearch:|ytsearch:", "");
+        StringBuilder source = new StringBuilder(name);
+        List<String> artistNames = new ArrayList<>();
+        appendArtists(artists, source, artistNames);
+        manager.loadItemOrdered(player, source.toString(), new AudioLoadResultHandler() {
+
+            @Override
+            public void trackLoaded(AudioTrack track) {
+                if ((durationMs + 2000 > track.getDuration() && track.getDuration() > durationMs - 2000) ||
+                        (track.getInfo().title.toLowerCase().contains(title.toLowerCase()) && (durationMs + 60000 > track.getDuration() && track.getDuration() > durationMs - 60000))) {
+                    player.playTrack(track);
+                } else {
+                    tryAgain(name, artists, unused, guild, durationMs);
+                }
+            }
+
+            @Override
+            public void playlistLoaded(AudioPlaylist playlist) {
+                List<AudioTrack> tracks = playlist.getTracks();
+                for (AudioTrack track : tracks.subList(0, tracks.size() > 5 ? 5 : tracks.size())) {
+                    if ((durationMs + 2000 > track.getDuration() && track.getDuration() > durationMs - 2000) ||
+                            (track.getInfo().title.toLowerCase().contains(title.toLowerCase()) && (durationMs + 60000 > track.getDuration() && track.getDuration() > durationMs - 60000))) {
+                        player.playTrack(track);
+                        return;
+                    }
+                }
+                tryAgain(name, artists, unused, guild, durationMs);
+
+            }
+
+            @Override
+            public void noMatches() {
+                tryAgain(name, artists, unused, guild, durationMs);
+            }
+
+            @Override
+            public void loadFailed(FriendlyException ignored) {
+            }
+        });
+    }
+
+    private void appendArtists(ArtistSimplified[] artists, StringBuilder source, List<String> artistNames) {
+        if (artists != null) {
+            if (artists.length > 0) source.append(" ");
+            int i = 0;
+            for (ArtistSimplified artistSimplified : artists) {
+                artistNames.add(artistSimplified.getName());
+                if (i++ == 0) source.append(artistSimplified.getName());
+                else source.append(", ").append(artistSimplified.getName());
+            }
+        }
+    }
+
+    private void tryAgain(String name, ArtistSimplified[] artists, ArtistSimplified[] unused, Guild guild, int durationMs) {
+        if (name.startsWith("ytsearch:"))
+            if (artists == null)
+                loadSpotifyTracks(guild, name.replaceFirst("ytsearch:", "scsearch:"), unused, unused, durationMs);
+            else
+                loadSpotifyTracks(guild, name, null, unused, durationMs);
+        else if (name.startsWith("scsearch:") && artists != null)
+            loadSpotifyTracks(guild, name, null, unused, durationMs);
+    }
+
     public void loadSpotifyPlaylist(TextChannel textChannel, PlaylistTrack[] tracks) {
-        textChannel.sendMessage("I don't support playlists and albums yet").queue();
+        if (tracks.length > 40) {
+            textChannel.sendMessage("Sorry but I only support playlists up to 40 songs").queue();
+            return;
+        }
+
+        for (PlaylistTrack track : tracks) {
+            loadSpotifyTracks(textChannel.getGuild(), "ytsearch:" + track.getTrack().getName(), track.getTrack().getArtists(), track.getTrack().getArtists(), track.getTrack().getDurationMs());
+        }
+        textChannel.sendMessage("Adding " + tracks.length + " song" + (tracks.length > 1 ? "s" : "") + " to the queue").queue();
+    }
+
+    public void loadSpotifyAlbum(TextChannel textChannel, TrackSimplified[] tracksa) {
+        if (tracksa.length > 40) {
+            textChannel.sendMessage("Sorry but I only support albums up to 40 songs").queue();
+            return;
+        }
+        for (TrackSimplified track : tracksa) {
+            loadSpotifyTracks(textChannel.getGuild(), "ytsearch:" + track.getName(), track.getArtists(), track.getArtists(), track.getDurationMs());
+        }
+        textChannel.sendMessage("Adding " + tracksa.length + " song" + (tracksa.length > 1 ? "s" : "") + " to the queue").queue();
     }
 }

@@ -80,7 +80,7 @@ public class PlayCommand extends Command {
                 } else {
                     if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".yt", 0) || access) {
                         if (SPlayCommand.isNotConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
-                        if (songName.replaceFirst("\\s+", "").matches("spotify:track:\\S+"))
+                        if (songName.replaceFirst("\\s+", "").matches("spotify:(.*)"))
                             spotiSearch(event, songName.replaceFirst("\\s+", ""));
                         else
                             manager.loadTrack(event.getTextChannel(), "ytsearch:" + songName, event.getAuthor(), false);
@@ -94,8 +94,9 @@ public class PlayCommand extends Command {
 
     private void spotiSearch(CommandEvent event, String url) {
         WebUtils.getWebUtilsInstance().getTracksFromSpotifyUrl(url,
-                (track) -> manager.loadSpotifyTrack(event.getTextChannel(), event.getAuthor(), "ytsearch:" + track.getName(), track.getArtists(), track.getDurationMs()),
+                (track) -> manager.loadSpotifyTrack(event.getTextChannel(), "ytsearch:" + track.getName(), track.getArtists(), track.getDurationMs()),
                 (tracks) -> manager.loadSpotifyPlaylist(event.getTextChannel(), tracks),
+                (tracksa) -> manager.loadSpotifyAlbum(event.getTextChannel(), tracksa),
                 (rip) -> event.reply("Could not retrieve data from spotify"));
     }
 }
