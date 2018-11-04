@@ -32,6 +32,7 @@ public class MessageHelper {
     public static TLongLongMap purgedMessageDeleter = new TLongLongHashMap();
     public static TLongList botDeletedMessages = new TLongArrayList();
     public static String spaces = "                                                                                                    ";
+    private static final Pattern prefixPattern = Pattern.compile(PREFIX);
 
     public static String millisToDate(long millis) {
         Calendar start = Calendar.getInstance();
@@ -97,7 +98,6 @@ public class MessageHelper {
         return 0;
     }
 
-    private static final Pattern prefixPattern = Pattern.compile(PREFIX);
     public static void sendUsage(Command cmd, CommandEvent event) {
         event.reply(prefixPattern.matcher(cmd.getUsage()).replaceFirst(SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong())));
     }
@@ -144,7 +144,7 @@ public class MessageHelper {
         if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EMBED_LINKS)) {
             event.reply(new EmbedBuilder()
                     .setDescription(desc)
-                    .setColor(Helpers.EmbedColor)
+                    .setColor(Helpers.embedColor)
                     .setImage(tempUrl)
                     .setFooter("Powered by weeb.sh & weeb.java", null)
                     .build());
