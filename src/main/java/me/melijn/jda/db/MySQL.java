@@ -1783,4 +1783,18 @@ public class MySQL {
     public void deleteMessage(long guildId, long channelId, long messageId, long secondsFromNow) {
         long deleteTime = System.currentTimeMillis() + secondsFromNow*1000;
     }
+
+    public Integer getEmbedColor(Long guildId) {
+        try (Connection con = ds.getConnection()) {
+            try (PreparedStatement statement = con.prepareStatement("SELECT * FROM embed_colors WHERE guildId= ?")) {
+                statement.setLong(1, guildId);
+                try (ResultSet rs = statement.executeQuery()) {
+                    if (rs.next()) return rs.getInt("color");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -16711720;
+    }
 }
