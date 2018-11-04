@@ -9,6 +9,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Consumer;
 
 public class CommandEvent {
 
@@ -84,6 +85,15 @@ public class CommandEvent {
             event.getPrivateChannel().sendMessage(text).queue();
         } else {
             event.getTextChannel().sendMessage(text).queue();
+        }
+    }
+
+    public void reply(String text, Consumer<Message> message) {
+        if (text == null || text.isEmpty()) return;
+        if (event.getPrivateChannel() != null) {
+            event.getPrivateChannel().sendMessage(text).queue(message);
+        } else {
+            event.getTextChannel().sendMessage(text).queue(message);
         }
     }
 
