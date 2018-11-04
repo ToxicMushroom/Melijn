@@ -5,6 +5,7 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
+import net.dv8tion.jda.core.Permission;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
@@ -24,8 +25,10 @@ public class SummonCommand extends Command {
         if (Helpers.hasPerm(event.getMember(), commandName, 0)) {
             if (SPlayCommand.isNotConnectedOrConnecting(event, event.getGuild(), event.getMember().getVoiceState().getChannel()))
                 return;
-            event.getGuild().getAudioManager().openAudioConnection(event.getMember().getVoiceState().getChannel());
-            event.reply("I have been summoned to your channel");
+            if (event.getGuild().getSelfMember().hasPermission(event.getMember().getVoiceState().getChannel(), Permission.VOICE_CONNECT)) {
+                event.getGuild().getAudioManager().openAudioConnection(event.getMember().getVoiceState().getChannel());
+                event.reply("I have been summoned to your channel");
+            }
         }
     }
 }
