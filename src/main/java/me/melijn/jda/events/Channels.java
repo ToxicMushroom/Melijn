@@ -1,12 +1,13 @@
 package me.melijn.jda.events;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.commands.developer.EvalCommand;
 import me.melijn.jda.commands.management.SetMusicChannelCommand;
 import me.melijn.jda.commands.management.SetStreamerModeCommand;
+import me.melijn.jda.commands.music.LoopCommand;
 import me.melijn.jda.music.MusicManager;
+import me.melijn.jda.music.MusicPlayer;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
@@ -126,21 +127,17 @@ public class Channels extends ListenerAdapter {
         TaskScheduler.async(() -> {
             while (true) {
                 Guild guild2 = guild.getJDA().asBot().getShardManager().getGuildById(guild.getIdLong());
+                MusicPlayer player = manager.getPlayer(guild2);
                 if (guild2 == null || !guild2.getAudioManager().isConnected())
                     break;
                 if (someoneIsListening(guild2)) {
-                    manager.getPlayer(guild2).getAudioPlayer().setPaused(false);
+                    player.getAudioPlayer().setPaused(false);
                     break;
-                } else if (guild2.getAudioManager().getConnectedChannel().getMembers().size() == 1 && defeaned) {
-                    manager.getPlayer(guild2).getAudioPlayer().setPaused(false);
-                    manager.getPlayer(guild2).getAudioPlayer().stopTrack();
-                    Helpers.scheduleClose(guild2.getAudioManager());
-                    break;
-                }
-                if (amount.getAndIncrement() == seconds) {
-                    manager.getPlayer(guild2).getAudioPlayer().setPaused(false);
-                    manager.getPlayer(guild2).stopTrack();
-                    Helpers.scheduleClose(guild2.getAudioManager());
+                } else if ((guild2.getAudioManager().getConnectedChannel().getMembers().size() == 1 && defeaned) || (amount.getAndIncrement() == seconds)) {
+                    LoopCommand.looped.remove(guild2.getIdLong());
+                    player.getAudioPlayer().setPaused(false);
+                    player.stopTrack();
+                    if (!player.getListener().getTracks().isEmpty()) player.getListener().getTracks().clear();
                     break;
                 }
                 try {
