@@ -5,11 +5,20 @@ import me.melijn.jda.blub.CommandEvent;
 import net.dv8tion.jda.core.entities.User;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 
 public class ImageUtils {
 
+
+    public static BufferedImage createPlane(int side, int color) {
+        BufferedImage bufferedImage = new BufferedImage(side, side, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics2D = bufferedImage.createGraphics();
+        graphics2D.setColor(new Color(color));
+        graphics2D.fillRect(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight());
+        return bufferedImage;
+    }
 
     private int getBrightness(int r, int g, int b) {
         return (int) Math.sqrt(r * r * .241 + g * g * .691 + b * b * .068);
