@@ -7,6 +7,8 @@ import net.dv8tion.jda.core.entities.Guild;
 public class Embedder extends EmbedBuilder {
 
     public Embedder(Guild guild) {
-        setColor(SetEmbedColorCommand.embedColorCache.getUnchecked(guild.getIdLong()));
+        if (guild != null) {
+            setColor(SetEmbedColorCommand.embedColorCache.getUnchecked(guild.getIdLong()));
+        }
     }
 }
