@@ -10,11 +10,8 @@ import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.music.MusicPlayer;
 import me.melijn.jda.utils.TaskScheduler;
-import org.apache.commons.io.IOUtils;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -31,19 +28,11 @@ public class ShutdownCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        InputStream in = getClass().getClassLoader().getResourceAsStream("Melijn.mp3");
-        if (in == null) {
-            event.reply("mp3 not found :/");
-            return;
-        }
         try {
-            File tempFile = File.createTempFile("Melijn" + System.currentTimeMillis(), ".mp3");
-            try (FileOutputStream out = new FileOutputStream(tempFile)) {
-                IOUtils.copy(in, out);
-            }
-
+            File tempFile = new File("melijn.mp3");
             //save players before shutdown
             TLongObjectMap<MusicPlayer> players = MusicManager.getManagerInstance().getPlayers();
+            if (players != null)
             players.forEachValue((player) -> {
                 TaskScheduler.async(() -> Helpers.scheduleClose(player.getGuild().getAudioManager()), 9000);
                 boolean paused = player.getPaused();
