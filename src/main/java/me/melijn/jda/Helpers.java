@@ -10,10 +10,10 @@ import me.melijn.jda.commands.management.SetLogChannelCommand;
 import me.melijn.jda.events.JoinLeave;
 import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.music.MusicPlayer;
+import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
 import me.melijn.jda.utils.WebUtils;
-import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
@@ -145,7 +145,8 @@ public class Helpers {
             "SelfRole",
             "CustomCommand",
             "poll",
-            "dice"
+            "dice",
+            "SetEmbedColor"
     );
 
     public static void startTimer(JDA jda, int i) {
@@ -342,11 +343,10 @@ public class Helpers {
             if (!tc.canTalk())
                 return;
 
-            tc.sendMessage(new EmbedBuilder()
+            tc.sendMessage(new Embedder(player.getGuild())
                     .setTitle("Now playing")
                     .setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** `" + Helpers.getDurationBreakdown(track.getDuration()) + "`\n")
                     .setThumbnail(MessageHelper.getThumbnailURL(track.getInfo().uri))
-                    .setColor(Helpers.embedColor)
                     .setFooter(Helpers.getFooterStamp(), null)
                     .build()).queue();
         }

@@ -153,7 +153,8 @@ public class Melijn {
                 new ShutdownCommand(),
                 new PollCommand(),
                 new DiceCommand(),
-                new TestCommand()
+                new TestCommand(),
+                new SetEmbedColorCommand()
         );
 
         shardManager = new DefaultShardManagerBuilder()

@@ -14,6 +14,7 @@ import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 import gnu.trove.map.hash.TIntLongHashMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
+import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.*;
@@ -120,6 +121,7 @@ public class MySQL {
             executeUpdate("CREATE TABLE IF NOT EXISTS self_role_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
 
             //Other settings
+            executeUpdate("CREATE TABLE IF NOT EXISTS embed_colors(guildId bigint, color bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS stream_urls(guildId bigint, url varchar(2048), PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS prefixes(guildId bigint, prefix bigint, PRIMARY KEY (guildId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS verification_thresholds(guildId bigint, threshold tinyint, PRIMARY KEY (guildId));");
@@ -1795,6 +1797,14 @@ public class MySQL {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return -16711720;
+        return Helpers.embedColor;
+    }
+
+    public void setEmbedColor(long guildId, int color) {
+        executeUpdate("INSERT INTO embed_colors (guildId, color) VALUES (?, ?) ON DUPLICATE KEY UPDATE color= ?", guildId, color, color);
+    }
+
+    public void removeEmbedColor(long guildId) {
+        executeUpdate("DELETE FROM embed_colors WHERE guildId= ?", guildId);
     }
 }
