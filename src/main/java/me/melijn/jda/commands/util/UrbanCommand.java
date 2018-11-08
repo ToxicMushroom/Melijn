@@ -4,9 +4,9 @@ import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
+import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.WebUtils;
-import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import org.json.JSONObject;
 
@@ -34,9 +34,8 @@ public class UrbanCommand extends Command {
                     if (jresult.getJSONArray("list").toList().size() > 0) {
                         JSONObject firstMeaning = jresult.getJSONArray("list").getJSONObject(0);
 
-                        event.reply(new EmbedBuilder()
+                        event.reply(new Embedder(event.getGuild())
                                 .setTitle(firstMeaning.getString("word"))
-                                .setColor(Helpers.embedColor)
                                 .setDescription("**Meaning**\n " + removeBrackets(firstMeaning.getString("definition")) + "\n\n**Example**\n " + removeBrackets(firstMeaning.getString("example")))
                                 .setFooter(Helpers.getFooterStamp(), null)
                                 .build());

@@ -4,6 +4,7 @@ import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
+import me.melijn.jda.utils.Embedder;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
@@ -30,8 +31,7 @@ public class UserInfoCommand extends Command {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm ss");
             String[] args = event.getArgs().split("\\s+");
             Helpers.retrieveUserByArgs(event, args[0], user -> {
-                EmbedBuilder eb = new EmbedBuilder();
-                eb.setColor(Helpers.embedColor);
+                EmbedBuilder eb = new Embedder(event.getGuild());
                 eb.setTitle(user.getName() + "#" + user.getDiscriminator() + "'s profile");
                 eb.setThumbnail(user.getEffectiveAvatarUrl() + "?size=2048");
                 if (event.getGuild() == null || event.getGuild().getMember(user) == null) {

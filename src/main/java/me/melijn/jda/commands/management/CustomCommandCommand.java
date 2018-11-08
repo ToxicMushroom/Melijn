@@ -6,8 +6,8 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
+import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.MessageHelper;
-import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -121,9 +121,8 @@ public class CustomCommandCommand extends Command {
 
                 String aliases = command.getString("aliases").isBlank() ? "N/A" : command.getString("aliases");
                 String attachment = command.getString("attachment").isBlank() ? "N/A" : "**[link](" + command.getString("attachment") + ")**";
-                event.reply(new EmbedBuilder()
+                event.reply(new Embedder(event.getGuild())
                         .setTitle("CustomCommand: " + command.getString("name"))
-                        .setColor(Helpers.embedColor)
                         .addField("description", command.getString("description"), false)
                         .addField("message", "```JSON\n" + command.getString("message") + "```", false)
                         .addField("aliases", aliases, true)
@@ -151,7 +150,7 @@ public class CustomCommandCommand extends Command {
                     event.reply("The prefix of this command is turned **" + (command.getBoolean("prefix") ? "on**" : "off**"));
                 } else if (args[2].equalsIgnoreCase("on") || args[2].equalsIgnoreCase("off")) {
                     Melijn.mySQL.updateCustomCommandPrefix(guild.getIdLong(), name, args[2].equalsIgnoreCase("on"));
-                    event.reply("The prefix for this command has been **" + (command.getBoolean("prefix") ? "enabled" : "disabled")
+                    event.reply("The prefix for this command has been **" + (args[2].equalsIgnoreCase("on") ? "enabled" : "disabled")
                             + "** by **" + event.getFullAuthorName() + "**");
                 }
 

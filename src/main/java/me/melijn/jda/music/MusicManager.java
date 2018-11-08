@@ -18,6 +18,7 @@ import gnu.trove.map.hash.TLongLongHashMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.commands.music.SPlayCommand;
+import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.YTSearch;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
@@ -181,9 +182,8 @@ public class MusicManager {
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
                 List<AudioTrack> tracks = playlist.getTracks();
-                EmbedBuilder eb = new EmbedBuilder();
+                EmbedBuilder eb = new Embedder(channel.getGuild());
                 eb.setTitle("Select Menu");
-                eb.setColor(Helpers.embedColor);
                 eb.setFooter(Helpers.getFooterStamp(), null);
                 StringBuilder sb = new StringBuilder();
                 TIntObjectMap<AudioTrack> map = new TIntObjectHashMap<>();
@@ -250,11 +250,10 @@ public class MusicManager {
                 for (AudioTrack track : tracks.subList(0, tracks.size() > 5 ? 5 : tracks.size())) {
                     if ((durationMs + 2000 > track.getDuration() && track.getDuration() > durationMs - 2000) || track.getInfo().title.toLowerCase().contains(title.toLowerCase())) {
                         player.playTrack(track);
-                        EmbedBuilder eb = new EmbedBuilder();
+                        EmbedBuilder eb = new Embedder(textChannel.getGuild());
                         eb.setTitle("Added");
                         eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
                         eb.setFooter(Helpers.getFooterStamp(), null);
-                        eb.setColor(Helpers.embedColor);
                         textChannel.sendMessage(eb.build()).queue();
                         return;
                     }
@@ -293,11 +292,10 @@ public class MusicManager {
 
     private void iHateDuplicates(AudioTrack track, MusicPlayer player, TextChannel textChannel) {
         player.playTrack(track);
-        EmbedBuilder eb = new EmbedBuilder();
+        EmbedBuilder eb = new Embedder(player.getGuild());
         eb.setTitle("Added");
         eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
         eb.setFooter(Helpers.getFooterStamp(), null);
-        eb.setColor(Helpers.embedColor);
         textChannel.sendMessage(eb.build()).queue();
     }
 

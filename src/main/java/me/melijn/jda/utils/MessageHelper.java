@@ -13,14 +13,16 @@ import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.commands.management.SetPrefixCommand;
 import me.melijn.jda.commands.music.NowPlayingCommand;
-import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
 import okhttp3.HttpUrl;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -142,9 +144,8 @@ public class MessageHelper {
         String tempUrl = url;
         if (tempUrl == null) tempUrl = "https://melijn.com/files/u/07-05-2018--19.42-08s.png";
         if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EMBED_LINKS)) {
-            event.reply(new EmbedBuilder()
+            event.reply(new Embedder(event.getGuild())
                     .setDescription(desc)
-                    .setColor(Helpers.embedColor)
                     .setImage(tempUrl)
                     .setFooter("Powered by weeb.sh & weeb.java", null)
                     .build());

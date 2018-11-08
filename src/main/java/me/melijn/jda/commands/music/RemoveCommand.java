@@ -9,6 +9,7 @@ import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 import me.melijn.jda.music.MusicManager;
+import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
@@ -86,9 +87,8 @@ public class RemoveCommand extends Command {
                     if (sb.length() < 1850) {
                         sb.append(s);
                     } else {
-                        EmbedBuilder eb = new EmbedBuilder();
+                        EmbedBuilder eb = new Embedder(event.getGuild());
                         eb.setTitle("Removed part **#" + pi + "**");
-                        eb.setColor(Helpers.embedColor);
                         eb.setDescription(sb.toString());
                         eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                         event.reply(eb.build());
@@ -97,17 +97,15 @@ public class RemoveCommand extends Command {
                     }
                 }
                 if (sb.length() != 0) {
-                    EmbedBuilder eb = new EmbedBuilder();
+                    EmbedBuilder eb = new Embedder(event.getGuild());
                     eb.setTitle("Removed part **#" + pi + "**");
-                    eb.setColor(Helpers.embedColor);
                     eb.setDescription(sb.toString());
                     eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                     event.reply(eb.build());
                 }
             } else {
-                EmbedBuilder eb = new EmbedBuilder();
+                EmbedBuilder eb = new Embedder(event.getGuild());
                 eb.setTitle("Removed");
-                eb.setColor(Helpers.embedColor);
                 eb.setDescription(sb.toString());
                 eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                 event.reply(eb.build());

@@ -8,8 +8,8 @@ import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.music.MusicPlayer;
+import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.MessageHelper;
-import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 
@@ -45,9 +45,8 @@ public class NowPlayingCommand extends Command {
                 else {
                     String loopedQueue = LoopQueueCommand.looped.contains(guild.getIdLong()) ? " \uD83D\uDD01" : "";
                     String looped = LoopCommand.looped.contains(guild.getIdLong()) ? " \uD83D\uDD04" : "";
-                    event.reply(new EmbedBuilder()
+                    event.reply(new Embedder(event.getGuild())
                             .setTitle("Now " + s)
-                            .setColor(Helpers.embedColor)
                             .setThumbnail(MessageHelper.getThumbnailURL(track.getInfo().uri))
                             .setDescription("[**" + track.getInfo().title + "**](" + track.getInfo().uri + ")")
                             .addField("status:", (s.equalsIgnoreCase("playing") ? "\u25B6" : "\u23F8") + looped + loopedQueue, false)

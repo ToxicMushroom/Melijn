@@ -5,7 +5,7 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import net.dv8tion.jda.core.EmbedBuilder;
+import me.melijn.jda.utils.Embedder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 
@@ -34,9 +34,8 @@ public class GuildInfoCommand extends Command {
             Guild guild = event.getGuild();
             if (args.length == 1 && args[0].matches("\\d+") && event.getJDA().asBot().getShardManager().getGuildById(args[0]) != null)
                 guild = event.getJDA().asBot().getShardManager().getGuildById(args[0]);
-            event.reply(new EmbedBuilder()
+            event.reply(new Embedder(event.getGuild())
                     .setAuthor(guild.getName(), null, guild.getIconUrl() + "?size=2048")
-                    .setColor(Helpers.embedColor)
                     .addField("ID", guild.getId(), true)
                     .addField("Icon", "[Download](" + guild.getIconUrl() + "?size=2048)", true)
                     .addField("Creation date", guild.getCreationTime().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG, FormatStyle.SHORT)), false)

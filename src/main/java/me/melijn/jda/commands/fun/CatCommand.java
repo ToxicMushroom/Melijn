@@ -4,9 +4,9 @@ import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
+import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.WebUtils;
-import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 
 import static me.melijn.jda.Melijn.PREFIX;
@@ -30,8 +30,7 @@ public class CatCommand extends Command {
             String url = webUtils.getCatUrl();
             if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS))
                 if (url != null)
-                    event.reply(new EmbedBuilder()
-                            .setColor(Helpers.embedColor)
+                    event.reply(new Embedder(event.getGuild())
                             .setDescription("Enjoy your \uD83D\uDC31 ~meow~")
                             .setImage(url)
                             .build());

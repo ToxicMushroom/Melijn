@@ -6,6 +6,7 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
+import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -52,7 +53,7 @@ public class HistoryCommand extends Command {
                     case "ban":
                     case "bans":
                         TaskScheduler.async(() -> Melijn.mySQL.getUserBans(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA(), bans -> {
-                            EmbedBuilder ebBan = new EmbedBuilder();
+                            EmbedBuilder ebBan = new Embedder(event.getGuild());
                             getLongMessageInParts(new ArrayList<>(Arrays.asList(bans)), parts -> {
                                         int partnumber = 0;
                                         int size = Integer.parseInt(parts.get(parts.size() - 1));
@@ -60,7 +61,6 @@ public class HistoryCommand extends Command {
                                         for (String part : parts) {
                                             ebBan.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s bans " + ++partnumber + "/" + size + spaces.substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                             ebBan.setDescription(part);
-                                            ebBan.setColor(Helpers.embedColor);
                                             event.reply(ebBan.build());
                                         }
                                     }
@@ -70,7 +70,7 @@ public class HistoryCommand extends Command {
                     case "mute":
                     case "mutes":
                         TaskScheduler.async(() -> Melijn.mySQL.getUserMutes(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA(), mutes -> {
-                            EmbedBuilder ebMute = new EmbedBuilder();
+                            EmbedBuilder ebMute = new Embedder(event.getGuild());
                             getLongMessageInParts(new ArrayList<>(Arrays.asList(mutes)), parts -> {
                                         int partnumber = 0;
                                         int size = Integer.parseInt(parts.get(parts.size() - 1));
@@ -78,7 +78,6 @@ public class HistoryCommand extends Command {
                                         for (String part : parts) {
                                             ebMute.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s mutes " + ++partnumber + "/" + size + spaces.substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                             ebMute.setDescription(part);
-                                            ebMute.setColor(Helpers.embedColor);
                                             event.reply(ebMute.build());
                                         }
                                     }
@@ -88,7 +87,7 @@ public class HistoryCommand extends Command {
                     case "warn":
                     case "warns":
                         TaskScheduler.async(() -> Melijn.mySQL.getUserWarns(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA(), warns -> {
-                            EmbedBuilder ebWarn = new EmbedBuilder();
+                            EmbedBuilder ebWarn = new Embedder(event.getGuild());
                             getLongMessageInParts(new ArrayList<>(Arrays.asList(warns)), parts -> {
                                         int partnumber = 0;
                                         int size = Integer.parseInt(parts.get(parts.size() - 1));
@@ -96,7 +95,6 @@ public class HistoryCommand extends Command {
                                         for (String part : parts) {
                                             ebWarn.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s warns " + ++partnumber + "/" + size + spaces.substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                             ebWarn.setDescription(part);
-                                            ebWarn.setColor(Helpers.embedColor);
                                             event.reply(ebWarn.build());
                                         }
                                     }
@@ -106,7 +104,7 @@ public class HistoryCommand extends Command {
                     case "kick":
                     case "kicks":
                         TaskScheduler.async(() -> Melijn.mySQL.getUserKicks(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA(), kicks -> {
-                            EmbedBuilder ebKick = new EmbedBuilder();
+                            EmbedBuilder ebKick = new Embedder(event.getGuild());
                             getLongMessageInParts(new ArrayList<>(Arrays.asList(kicks)), parts -> {
                                         int partnumber = 0;
                                         int size = Integer.parseInt(parts.get(parts.size() - 1));
@@ -114,7 +112,6 @@ public class HistoryCommand extends Command {
                                         for (String part : parts) {
                                             ebKick.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s kicks " + ++partnumber + "/" + size + spaces.substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                             ebKick.setDescription(part);
-                                            ebKick.setColor(Helpers.embedColor);
                                             event.reply(ebKick.build());
                                         }
                                     }

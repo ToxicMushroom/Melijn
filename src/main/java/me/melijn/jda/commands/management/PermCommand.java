@@ -1,12 +1,12 @@
 package me.melijn.jda.commands.management;
 
 import me.melijn.jda.Helpers;
+import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
+import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.MessageHelper;
-import me.melijn.jda.Melijn;
-import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.*;
 
@@ -364,18 +364,16 @@ public class PermCommand extends Command {
                             for (String s : lijst) {
                                 sb.append(s).append("\n");
                                 if (sb.length() > 1900) {
-                                    event.reply(new EmbedBuilder()
+                                    event.reply(new Embedder(event.getGuild())
                                             .setTitle("Permissions off `" + targetName + "` part #" + partNumber++)
-                                            .setColor(Helpers.embedColor)
                                             .setDescription(sb.toString())
                                             .build());
                                     sb = new StringBuilder();
                                 }
                             }
                             String title = partNumber == 0 ? "Permissions off `" + targetName + "`" : "Permissions off `" + targetName + "` part #" + partNumber;
-                            event.reply(new EmbedBuilder()
+                            event.reply(new Embedder(event.getGuild())
                                     .setTitle(title)
-                                    .setColor(Helpers.embedColor)
                                     .setDescription(sb.toString())
                                     .build());
                         } else {

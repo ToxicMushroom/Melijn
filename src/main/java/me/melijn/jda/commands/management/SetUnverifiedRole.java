@@ -30,7 +30,7 @@ public class SetUnverifiedRole extends Command {
     public SetUnverifiedRole() {
         this.commandName = "setUnverifiedRole";
         this.usage = PREFIX + commandName + " [role | null]";
-        this.description = "Set's an unverified role that unverified members will get on join";
+        this.description = "Sets an unverified role that unverified members will get on join";
         this.needs = new Need[]{Need.GUILD};
         this.category = Category.MANAGEMENT;
         this.aliases = new String[]{"sur"};

@@ -5,6 +5,7 @@ import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
+import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -38,10 +39,9 @@ public class VoteCommand extends Command {
                     event.reply(target.getName() + " has never voted.");
                     return;
                 }
-                EmbedBuilder eb = new EmbedBuilder();
+                EmbedBuilder eb = new Embedder(event.getGuild());
                 eb.setTitle("Votes of " + username);
                 eb.setThumbnail(target.getAvatarUrl());
-                eb.setColor(Helpers.embedColor);
                 eb.addField("Votes", String.valueOf(voteObject.getLong("votes")), false);
                 eb.addField("Streak", String.valueOf(voteObject.getLong("streak")), false);
                 long untilNext = 43_200_000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));

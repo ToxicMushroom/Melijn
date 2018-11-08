@@ -7,6 +7,7 @@ import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.music.MusicPlayer;
+import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.MessageHelper;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -64,8 +65,7 @@ public class SkipCommand extends Command {
                 }
             }
             String songOrSongs = i == 1 ? "song" : "songs";
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.setColor(Helpers.embedColor);
+            EmbedBuilder eb = new Embedder(event.getGuild());
             eb.setTitle("Skipped " + i + " " + songOrSongs);
             if (nextSong != null)
                 eb.setDescription("Previous song: **[" + shippableTrack.getInfo().title + "](" + shippableTrack.getInfo().uri + ")**\n" + "Now playing: **[" + nextSong.getInfo().title + "](" + nextSong.getInfo().uri + ")** " + Helpers.getDurationBreakdown(nextSong.getInfo().length));

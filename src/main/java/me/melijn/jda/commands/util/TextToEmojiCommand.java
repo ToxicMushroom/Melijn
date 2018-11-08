@@ -4,8 +4,8 @@ import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
+import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.MessageHelper;
-import net.dv8tion.jda.core.EmbedBuilder;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
@@ -45,7 +45,7 @@ public class TextToEmojiCommand extends Command {
                         sb = new StringBuilder();
                     }
                 }
-                event.reply(new EmbedBuilder().setDescription(sb.toString()).setColor(Helpers.embedColor).build());
+                event.reply(new Embedder(event.getGuild()).setDescription(sb.toString()).build());
             } else {
                 MessageHelper.sendUsage(this, event);
             }

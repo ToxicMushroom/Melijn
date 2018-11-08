@@ -7,7 +7,7 @@ import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
-import net.dv8tion.jda.core.EmbedBuilder;
+import me.melijn.jda.utils.Embedder;
 import net.dv8tion.jda.core.JDAInfo;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
@@ -32,8 +32,7 @@ public class InfoCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             try {
-                event.reply(new EmbedBuilder()
-                        .setColor(Helpers.embedColor)
+                event.reply(new Embedder(event.getGuild())
                         .setThumbnail(event.getJDA().getSelfUser().getAvatarUrl())
                         .addField("About", "" +
                                 "\nI'm a powerful discord bot developed by **ToxicMushroom#2610**" +

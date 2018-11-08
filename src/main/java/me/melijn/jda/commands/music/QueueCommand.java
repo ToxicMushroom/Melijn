@@ -8,6 +8,7 @@ import me.melijn.jda.blub.Need;
 import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.music.MusicPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import me.melijn.jda.utils.Embedder;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
@@ -68,9 +69,8 @@ public class QueueCommand extends Command {
                 builder = new StringBuilder();
                 for (String s : lijst) {
                     if (builder.length() + s.length() > 1800) {
-                        EmbedBuilder eb = new EmbedBuilder();
+                        EmbedBuilder eb = new Embedder(event.getGuild());
                         eb.setTitle("Queue part " + part);
-                        eb.setColor(Helpers.embedColor);
                         eb.setDescription(builder.toString());
                         eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                         event.reply(eb.build());
@@ -79,16 +79,14 @@ public class QueueCommand extends Command {
                     }
                     builder.append(s).append("\n");
                 }
-                EmbedBuilder eb = new EmbedBuilder();
+                EmbedBuilder eb = new Embedder(event.getGuild());
                 eb.setTitle("Queue part " + part);
-                eb.setColor(Helpers.embedColor);
                 eb.setDescription(builder.toString());
                 eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                 event.reply(eb.build());
             } else {
-                EmbedBuilder eb = new EmbedBuilder();
+                EmbedBuilder eb = new Embedder(event.getGuild());
                 eb.setTitle("Queue");
-                eb.setColor(Helpers.embedColor);
                 eb.setDescription(builder.toString());
                 eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                 event.reply(eb.build());

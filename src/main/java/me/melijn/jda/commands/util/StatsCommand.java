@@ -5,8 +5,8 @@ import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
+import me.melijn.jda.utils.Embedder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
-import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 
 import java.io.BufferedReader;
@@ -44,8 +44,7 @@ public class StatsCommand extends Command {
                 voiceChannels++;
         }
         ShardManager shardManager = event.getJDA().asBot().getShardManager();
-        event.reply(new EmbedBuilder()
-                .setColor(Helpers.embedColor)
+        event.reply(new Embedder(event.getGuild())
                 .setThumbnail(event.getJDA().getSelfUser().getAvatarUrl())
                 .addField("Bot stats", "" +
                         "\n**Shards** " + shardManager.getShardsTotal() +

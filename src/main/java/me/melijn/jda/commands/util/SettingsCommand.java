@@ -7,8 +7,8 @@ import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 import me.melijn.jda.commands.management.*;
+import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.TaskScheduler;
-import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 
 import static me.melijn.jda.Melijn.PREFIX;
@@ -30,9 +30,8 @@ public class SettingsCommand extends Command {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
             TaskScheduler.async(() -> {
                 long guildId = event.getGuild().getIdLong();
-                event.reply(new EmbedBuilder()
+                event.reply(new Embedder(event.getGuild())
                         .setTitle("Server settings")
-                        .setColor(Helpers.embedColor)
                         .setDescription("MusicChannel:** " + idToChannelMention(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)) +
                                 "\n**StreamUrl:** " + stringToString(Melijn.mySQL.getStreamUrl(guildId), false) +
                                 "\n**StreamerMode:** " + (SetStreamerModeCommand.streamerModeCache.getUnchecked(guildId) ? "on" : "off") +

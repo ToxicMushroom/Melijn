@@ -11,6 +11,7 @@ import me.melijn.jda.commands.management.SetSelfRoleChannelCommand;
 import me.melijn.jda.commands.music.SPlayCommand;
 import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.music.MusicPlayer;
+import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
@@ -45,9 +46,8 @@ public class AddReaction extends ListenerAdapter {
                     songs.append("[#").append(i).append("](").append(track.getInfo().uri).append(") - ").append(track.getInfo().title).append("\n");
                     if (songs.length() > 1700) {
                         t++;
-                        EmbedBuilder eb = new EmbedBuilder();
+                        EmbedBuilder eb = new Embedder(event.getGuild());
                         eb.setTitle("Added part **#" + t + "**");
-                        eb.setColor(Helpers.embedColor);
                         eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                         eb.setDescription(songs);
                         event.getChannel().sendMessage(eb.build()).queue();
@@ -55,17 +55,15 @@ public class AddReaction extends ListenerAdapter {
                     }
                 }
                 if (t == 0) {
-                    EmbedBuilder eb = new EmbedBuilder();
+                    EmbedBuilder eb = new Embedder(event.getGuild());
                     eb.setTitle("Added");
-                    eb.setColor(Helpers.embedColor);
                     eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                     eb.setDescription(songs);
                     event.getChannel().sendMessage(eb.build()).queue();
                 } else {
                     t++;
-                    EmbedBuilder eb = new EmbedBuilder();
+                    EmbedBuilder eb = new Embedder(event.getGuild());
                     eb.setTitle("Added part **#" + t + "**");
-                    eb.setColor(Helpers.embedColor);
                     eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
                     eb.setDescription(songs);
                     event.getChannel().sendMessage(eb.build()).queue();
@@ -82,10 +80,9 @@ public class AddReaction extends ListenerAdapter {
         if (SPlayCommand.usersFormToReply.containsKey(event.getUser().getIdLong()) && SPlayCommand.usersFormToReply.get(event.getUser().getIdLong()).getIdLong() == event.getMessageIdLong()) {
             MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
             AudioTrack track;
-            EmbedBuilder eb = new EmbedBuilder();
+            EmbedBuilder eb = new Embedder(event.getGuild());
             eb.setTitle("Added");
             eb.setFooter(Helpers.getFooterStamp(), null);
-            eb.setColor(Helpers.embedColor);
             boolean wrongemote = false;
             switch (event.getReactionEmote().getName()) {
                 case "\u0031\u20E3":

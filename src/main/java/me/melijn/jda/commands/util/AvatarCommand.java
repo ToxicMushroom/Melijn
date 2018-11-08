@@ -4,6 +4,7 @@ import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
+import me.melijn.jda.utils.Embedder;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.User;
@@ -32,8 +33,7 @@ public class AvatarCommand extends Command {
                 user = Helpers.getUserByArgsN(event, args[0]);
             }
             if (user != null) {
-                EmbedBuilder eb = new EmbedBuilder();
-                eb.setColor(Helpers.embedColor);
+                EmbedBuilder eb = new Embedder(event.getGuild());
                 eb.setTitle(user.getName() + "#" + user.getDiscriminator() + "'s avatar");
                 eb.setImage(user.getEffectiveAvatarUrl() + "?size=2048");
                 eb.setDescription("[open](" + user.getEffectiveAvatarUrl() + "?size=2048)");
