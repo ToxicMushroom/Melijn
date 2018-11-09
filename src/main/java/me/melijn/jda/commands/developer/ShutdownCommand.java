@@ -29,7 +29,7 @@ public class ShutdownCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         try {
-            File file = new File("melijn.mp3");
+            File file = new File("Melijn.mp3");
             //save players before shutdown
             TLongObjectMap<MusicPlayer> players = MusicManager.getManagerInstance().getPlayers();
             if (players != null)
