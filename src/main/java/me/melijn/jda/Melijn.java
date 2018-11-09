@@ -176,7 +176,7 @@ public class Melijn {
                 //people who spam the bot
 
         });
-        TaskScheduler.async(() -> Jooby.run(Application::new, args));
+        TaskScheduler.async(() -> Jooby.run(Application::new, "application.port=" + config.getValue("restPort")));
         Thread.setDefaultUncaughtExceptionHandler((thread, exception) -> MessageHelper.printException(thread, exception, null, null));
     }
 

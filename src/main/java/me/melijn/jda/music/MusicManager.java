@@ -161,10 +161,12 @@ public class MusicManager {
 
             @Override
             public void noMatches() {
+                System.out.println("zero matchus");
             }
 
             @Override
-            public void loadFailed(FriendlyException ignored) {
+            public void loadFailed(FriendlyException e) {
+                e.printStackTrace();
             }
         });
     }
