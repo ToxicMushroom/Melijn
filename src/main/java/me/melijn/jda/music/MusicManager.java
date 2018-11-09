@@ -151,23 +151,15 @@ public class MusicManager {
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
                 List<AudioTrack> tracks = playlist.getTracks();
-                if (tracks.size() > 5)
-                    tracks = tracks.subList(0, 1); // First 5 tracks from playlist (0 index)
-
-                for (AudioTrack track : tracks) {
-                    player.playTrack(track);
-                }
+                if (tracks.size() < 1) return;
+                player.playTrack(tracks.get(0));
             }
 
             @Override
-            public void noMatches() {
-                System.out.println("zero matchus");
-            }
+            public void noMatches() {}
 
             @Override
-            public void loadFailed(FriendlyException e) {
-                e.printStackTrace();
-            }
+            public void loadFailed(FriendlyException ignored) {}
         });
     }
 
