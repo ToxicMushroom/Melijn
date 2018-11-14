@@ -73,7 +73,7 @@ public class Chat extends ListenerAdapter {
                         SetLogChannelCommand.fmLogChannelCache.getUnchecked(guild.getIdLong()) != -1)
                     mySQL.createMessage(event.getMessageIdLong(), finalContent, author.getIdLong(), guild.getIdLong(), event.getChannel().getIdLong());
             });
-            if (event.getMessage().getContentRaw().equalsIgnoreCase(guild.getSelfMember().getAsMention())) {
+            if (event.getMessage().getContentRaw().equalsIgnoreCase(guild.getSelfMember().getAsMention()) && guild.getSelfMember().hasPermission(event.getChannel(), Permission.MESSAGE_WRITE)) {
                 String prefix = SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong());
                 event.getChannel().sendMessage(String.format(("Hello there my default prefix is %s " + (prefix.equals(PREFIX) ? "" : String.format("\nThis server has configured %s as the prefix\n", prefix)) + "and you can view all commands using **%shelp**"), PREFIX, prefix)).queue();
             }

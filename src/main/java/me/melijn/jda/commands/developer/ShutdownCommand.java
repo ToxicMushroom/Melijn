@@ -10,6 +10,7 @@ import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.music.MusicPlayer;
 import me.melijn.jda.utils.TaskScheduler;
+import net.dv8tion.jda.core.entities.Guild;
 
 import java.io.File;
 import java.util.concurrent.BlockingQueue;
@@ -34,17 +35,18 @@ public class ShutdownCommand extends Command {
             TLongObjectMap<MusicPlayer> players = MusicManager.getManagerInstance().getPlayers();
             if (players != null)
                 players.forEachValue((player) -> {
-                    if (!player.getGuild().getSelfMember().getVoiceState().inVoiceChannel()) return true;
+                    Guild guild = event.getJDA().asBot().getShardManager().getGuildById(player.getGuild().getIdLong());
+                    if (guild == null || !player.getGuild().getSelfMember().getVoiceState().inVoiceChannel()) return true;
                     TaskScheduler.async(() -> Helpers.scheduleClose(player.getGuild().getAudioManager()), 9000);
                     boolean paused = player.getPaused();
                     BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<>();
                     if (player.getAudioPlayer().getPlayingTrack() != null)
                         queue.offer(player.getAudioPlayer().getPlayingTrack());
                     player.getListener().getTracks().forEach(queue::offer);
-                    Melijn.mySQL.addQueue(player.getGuild().getIdLong(), player.getGuild().getSelfMember().getVoiceState().getChannel().getIdLong(), paused, queue);
+                    Melijn.mySQL.addQueue(player.getGuild().getIdLong(), guild.getSelfMember().getVoiceState().getChannel().getIdLong(), paused, queue);
                     player.getAudioPlayer().stopTrack();
                     player.getListener().getTracks().clear();
-                    MusicManager.getManagerInstance().loadSimpleTrack(player.getGuild(), file.getAbsolutePath());
+                    MusicManager.getManagerInstance().loadSimpleTrack(guild, file.getAbsolutePath());
                     return true;
                 });
             event.reply("Shutting down in 9 seconds");

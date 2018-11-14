@@ -16,6 +16,7 @@ import me.melijn.jda.commands.music.NowPlayingCommand;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
 import okhttp3.HttpUrl;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -101,7 +102,7 @@ public class MessageHelper {
     }
 
     public static void sendUsage(Command cmd, CommandEvent event) {
-        event.reply(prefixPattern.matcher(cmd.getUsage()).replaceFirst(SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong())));
+        event.reply(prefixPattern.matcher(cmd.getUsage()).replaceFirst(StringEscapeUtils.escapeJava(SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong()))));
     }
 
     public static String millisToVote(long untilNext) {
