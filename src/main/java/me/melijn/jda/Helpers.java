@@ -8,7 +8,6 @@ import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.NotificationType;
 import me.melijn.jda.commands.management.SetLogChannelCommand;
 import me.melijn.jda.events.JoinLeave;
-import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.music.MusicPlayer;
 import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.MessageHelper;
@@ -198,13 +197,6 @@ public class Helpers {
         return Melijn.mySQL.hasPermission(member.getGuild(), member.getUser().getIdLong(), permission) || Melijn.mySQL.hasPermission(member.getGuild(), member.getUser().getIdLong(), "*");
     }
 
-    public static void waitForIt(long userId) {
-        TaskScheduler.async(() -> {
-            MusicManager.userRequestedSongs.remove(userId);
-            MusicManager.userMessageToAnswer.remove(userId);
-        }, 30_000);
-    }
-
     public static String getDurationBreakdown(long milliseconds) {
         long millis = milliseconds;
         if (millis < 0L) {
@@ -254,33 +246,6 @@ public class Helpers {
 
     public static String getFooterIcon() {
         return null;
-    }
-
-    public static String numberToString(int i) {
-        switch (i) {
-            case 0:
-                return "zero";
-            case 1:
-                return "one";
-            case 2:
-                return "two";
-            case 3:
-                return "three";
-            case 4:
-                return "four";
-            case 5:
-                return "five";
-            case 6:
-                return "six";
-            case 7:
-                return "seven";
-            case 8:
-                return "eight";
-            case 9:
-                return "nine";
-            default:
-                return "zero";
-        }
     }
 
     public static User getUserByArgs(CommandEvent event, String arg) {//Without null

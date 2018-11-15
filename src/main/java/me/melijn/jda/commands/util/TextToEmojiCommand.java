@@ -7,9 +7,14 @@ import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.MessageHelper;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class TextToEmojiCommand extends Command {
+
+    private static final List<String> numbers = Arrays.asList("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine");
 
     public TextToEmojiCommand() {
         this.commandName = "t2e";
@@ -26,19 +31,19 @@ public class TextToEmojiCommand extends Command {
             String[] args = event.getArgs().split("\\s+");
             if (event.getArgs().length() > 0) {
                 StringBuilder sb = new StringBuilder();
-                for (String s : event.getArgs().replaceFirst("%spaces%", "").split("")) {
-                    if (Character.isLetter(s.toLowerCase().charAt(0))) {
-                        sb.append(":regional_indicator_").append(s.toLowerCase()).append(":");
+                for (char c : event.getArgs().replaceFirst("%spaces%", "").toCharArray()) {
+                    if (Character.isLetter(c)) {
+                        sb.append(":regional_indicator_").append(c).append(":");
                         if (args[0].equalsIgnoreCase("%spaces%")) {
                             sb.append(" ");
                         }
-                    } else if (Character.isDigit(s.charAt(0))) {
-                        sb.append(":").append(Helpers.numberToString(Integer.valueOf(s))).append(":");
+                    } else if (Character.isDigit(c)) {
+                        sb.append(":").append(numbers.get(Character.getNumericValue(c))).append(":");
                         if (args[0].equalsIgnoreCase("%spaces%")) {
                             sb.append(" ");
                         }
                     } else {
-                        sb.append(s);
+                        sb.append(c);
                     }
                     if (sb.length() > 1900)  {
                         event.reply(sb.toString());

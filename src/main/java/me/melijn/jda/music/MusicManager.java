@@ -19,6 +19,7 @@ import gnu.trove.map.hash.TLongObjectHashMap;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.commands.music.SPlayCommand;
 import me.melijn.jda.utils.Embedder;
+import me.melijn.jda.utils.TaskScheduler;
 import me.melijn.jda.utils.YTSearch;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
@@ -105,7 +106,10 @@ public class MusicManager {
                             userMessageToAnswer.put(requester.getIdLong(), message.getIdLong());
                             message.addReaction("\u2705").queue();
                             message.addReaction("\u274E").queue();
-                            Helpers.waitForIt(requester.getIdLong());
+                            TaskScheduler.async(() -> {
+                                MusicManager.userRequestedSongs.remove(requester.getIdLong());
+                                MusicManager.userMessageToAnswer.remove(requester.getIdLong());
+                            }, 30_000);
                             message.delete().queueAfter(30, TimeUnit.SECONDS, null, (failure) -> {
                             });
                         });
