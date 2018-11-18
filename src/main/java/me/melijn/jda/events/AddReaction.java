@@ -90,36 +90,36 @@ public class AddReaction extends ListenerAdapter {
                     track = SPlayCommand.userChoices.get(event.getUser().getIdLong()).get(0);
                     player.playTrack(track);
                     eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
-                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).info("93"));
+                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).error("93"));
                     break;
                 case "\u0032\u20E3":
                     track = SPlayCommand.userChoices.get(event.getUser().getIdLong()).get(1);
                     player.playTrack(track);
                     eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
-                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).info("99"));
+                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).error("99"));
                     break;
                 case "\u0033\u20E3":
                     track = SPlayCommand.userChoices.get(event.getUser().getIdLong()).get(2);
                     player.playTrack(track);
                     eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
-                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).info("105"));
+                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).error("105"));
                     break;
                 case "\u0034\u20E3":
                     track = SPlayCommand.userChoices.get(event.getUser().getIdLong()).get(3);
                     player.playTrack(track);
                     eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
-                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).info("111"));
+                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).error("111"));
                     break;
                 case "\u0035\u20E3":
                     track = SPlayCommand.userChoices.get(event.getUser().getIdLong()).get(4);
                     player.playTrack(track);
                     eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
-                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).info("117"));
+                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).error("117"));
                     break;
                 case "\u274E":
                     SPlayCommand.usersFormToReply.remove(event.getUser().getIdLong());
                     SPlayCommand.userChoices.remove(event.getUser().getIdLong());
-                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.delete().queue(), f -> LoggerFactory.getLogger(this.getClass()).info("122"));
+                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.delete().queue(), f -> LoggerFactory.getLogger(this.getClass()).error("122"));
                     wrongemote = true;
                     break;
                 default:
@@ -129,9 +129,9 @@ public class AddReaction extends ListenerAdapter {
             }
             if (!wrongemote) {
                 event.getChannel().getMessageById(event.getMessageId()).queue((s) -> {
-                    if (s.getGuild() != null && s.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_MANAGE))
+                    if (s.getGuild() != null && s.getGuild().getSelfMember().hasPermission(event.getChannel(), Permission.MESSAGE_MANAGE))
                         s.clearReactions().queue();
-                }, f -> LoggerFactory.getLogger(this.getClass()).info("133"));
+                }, f -> LoggerFactory.getLogger(this.getClass()).error("133"));
             }
         }
         if (ClearChannelCommand.possibleDeletes.containsKey(event.getGuild().getIdLong())) {
@@ -200,6 +200,6 @@ public class AddReaction extends ListenerAdapter {
             messageChannel.remove(event.getMessageIdLong());
             ClearChannelCommand.possibleDeletes.put(guild.getIdLong(), messageChannel);
             ClearChannelCommand.messageUser.remove(event.getMessageIdLong());
-        }, f -> LoggerFactory.getLogger(this.getClass()).info("203"));
+        }, f -> LoggerFactory.getLogger(this.getClass()).error("203"));
     }
 }
