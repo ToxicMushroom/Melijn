@@ -43,7 +43,7 @@ public class ShutdownCommand extends Command {
                     if (player.getAudioPlayer().getPlayingTrack() != null)
                         queue.offer(player.getAudioPlayer().getPlayingTrack());
                     player.getListener().getTracks().forEach(queue::offer);
-                    Melijn.mySQL.addQueue(player.getGuild().getIdLong(), guild.getSelfMember().getVoiceState().getChannel().getIdLong(), paused, queue);
+                    Melijn.mySQL.addQueue(guild.getIdLong(), guild.getSelfMember().getVoiceState().getChannel().getIdLong(), paused, queue);
                     player.getAudioPlayer().stopTrack();
                     player.getListener().getTracks().clear();
                     MusicManager.getManagerInstance().loadSimpleTrack(guild, file.getAbsolutePath());
