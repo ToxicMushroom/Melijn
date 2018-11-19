@@ -26,6 +26,7 @@ import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.requests.RestAction;
 import net.dv8tion.jda.core.utils.cache.CacheFlag;
 import org.jooby.Jooby;
 
@@ -176,6 +177,9 @@ public class Melijn {
                 //people who spam the bot
 
         });
+
+        RestAction.setPassContext(true); // to find bugs
+
         TaskScheduler.async(() -> Jooby.run(Application::new, "application.port=" + config.getValue("restPort")));
         Thread.setDefaultUncaughtExceptionHandler((thread, exception) -> MessageHelper.printException(thread, exception, null, null));
     }

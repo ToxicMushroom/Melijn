@@ -37,7 +37,7 @@ public class InfoCommand extends Command {
                         .addField("About", "" +
                                 "\nI'm a powerful discord bot developed by **ToxicMushroom#2610**" +
                                 "\nMore commands/features are still being added, you can even request them in the support server below" +
-                                "\n\n**[Support Server](https://discord.gg/cCDnvNg)** • **[Invite](https://melijn.com/invite?perms=true)** • **[Website](https://melijn.com/)**" +
+                                "\n\n**[Support Server](https://discord.gg/E2RfZA9)** • **[Invite](https://melijn.com/invite?perms=true)** • **[Website](https://melijn.com/)**" +
                                 "\n\u200B", false)
                         .addField("Info", "" +
                                 "\n**Operating System** " + System.getProperty("os.name") + " " + System.getProperty("os.arch") + " " + System.getProperty("os.version") +
