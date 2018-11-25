@@ -36,7 +36,7 @@ public class ShutdownCommand extends Command {
             if (players != null)
                 players.forEachValue((player) -> {
                     Guild guild = event.getJDA().asBot().getShardManager().getGuildById(player.getGuild().getIdLong());
-                    if (guild == null || !player.getGuild().getSelfMember().getVoiceState().inVoiceChannel()) return true;
+                    if (guild == null || !guild.getSelfMember().getVoiceState().inVoiceChannel()) return true;
                     TaskScheduler.async(() -> Helpers.scheduleClose(player.getGuild().getAudioManager()), 9000);
                     boolean paused = player.getPaused();
                     BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<>();

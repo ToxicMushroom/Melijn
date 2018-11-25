@@ -107,7 +107,7 @@ public class Chat extends ListenerAdapter {
                     }
                     if (detectedWord != null) {
                         MessageHelper.filteredMessageDeleteCause.put(event.getMessageIdLong(), detectedWord.substring(0, detectedWord.length() - 2));
-                        event.getMessage().delete().reason("Use of prohibited words").queue();
+                        event.getMessage().delete().reason("Use of prohibited words").queue(success -> {}, failure -> {});
                     }
                 });
             }
@@ -143,7 +143,9 @@ public class Chat extends ListenerAdapter {
                             removeMemberFromTriesCache(event);
                         }
                     } else {
-                        event.getMessage().delete().reason("Verification Channel").queue(s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()));
+                        event.getMessage().delete().reason("Verification Channel").queue(
+                                s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()),
+                                failed -> {});
                     }
                 }
             } catch (ExecutionException | CacheLoader.InvalidCacheLoadException ignored) {
