@@ -15,7 +15,7 @@ public class PauseCommand extends Command {
 
     public PauseCommand() {
         this.commandName = "pause";
-        this.description = "pause the queue without stopping or deleting songs";
+        this.description = "Pauses the queue";
         this.usage = PREFIX + commandName + " [on/enable/true | off/disable/false]";
         this.category = Category.MUSIC;
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};

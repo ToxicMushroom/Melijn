@@ -10,7 +10,7 @@ public class DonateCommand extends Command {
 
     public DonateCommand() {
         this.commandName = "donate";
-        this.description = "gives you information about how you can support the developers of Melijn";
+        this.description = "Gives you information on how you can support the developer of Melijn ;)";
         this.usage = PREFIX + commandName;
         this.category = Category.DEFAULT;
     }

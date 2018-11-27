@@ -15,7 +15,7 @@ public class TempBanCommand extends Command {
 
     public TempBanCommand() {
         this.commandName = "tempban";
-        this.description = "Ban people and let the bot unban them after the specified amount of time";
+        this.description = "Temporally bans a user from your server and sends a message with information about the ban to that user";
         this.usage = PREFIX + commandName + " <user> <time> [reason]";
         this.extra = "Time examples: [1s = 1second, 1m = 1minute, 1h = 1hour, 1w = 1week, 1M = 1month, 1y = 1year]";
         this.category = Category.MANAGEMENT;

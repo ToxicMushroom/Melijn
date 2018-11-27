@@ -21,7 +21,7 @@ public class ShuffleCommand extends Command {
 
     public ShuffleCommand() {
         this.commandName = "shuffle";
-        this.description = "shuffles the order of the tracks in the queue";
+        this.description = "Shuffles the order of the tracks in the queue";
         this.usage = PREFIX + commandName;
         this.category = Category.MUSIC;
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};

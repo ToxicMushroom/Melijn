@@ -17,13 +17,12 @@ public class KickCommand extends Command {
 
     public KickCommand() {
         this.commandName = "kick";
-        this.description = "kick a member";
+        this.description = "Kicks a member from your server and sends a message with information about the kick to that member";
         this.usage = PREFIX + commandName + " <member> [reason]";
         this.category = Category.MANAGEMENT;
         this.extra = "the bot will dm the reason to the target if one is provided";
         this.needs = new Need[]{Need.GUILD, Need.ROLE};
-        this.permissions = new Permission[]{Permission.KICK_MEMBERS,
-                Permission.MESSAGE_HISTORY};
+        this.permissions = new Permission[]{Permission.KICK_MEMBERS, Permission.MESSAGE_HISTORY};
     }
 
     @Override

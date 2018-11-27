@@ -25,7 +25,7 @@ public class QueueCommand extends Command {
 
     public QueueCommand() {
         this.commandName = "queue";
-        this.description = "Shows you a list of all songs wich will play in the future.";
+        this.description = "Shows you a list of all tracks in queue.";
         this.usage = PREFIX + commandName;
         this.aliases = new String[]{"q", "list"};
         this.category = Category.MUSIC;

@@ -19,7 +19,7 @@ public class LoopCommand extends Command {
 
     public LoopCommand() {
         this.commandName = "loop";
-        this.description = "Change the looping state or view the looping state of the playing song";
+        this.description = "Changes the looping state of the playing track";
         this.usage = PREFIX + commandName + " [false/off/yes | true/on/off]";
         this.aliases = new String[]{"repeat", "loopsong"};
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};

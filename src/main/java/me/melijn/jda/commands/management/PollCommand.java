@@ -5,6 +5,7 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.MessageHelper;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import org.apache.commons.lang3.StringUtils;
@@ -33,11 +34,7 @@ public class PollCommand extends Command {
             }
             String[] args = event.getArgs().substring(0, event.getArgs().replaceFirst("\".*", "").length()).split("\\s+");
             if (args.length == 0 || args[0].isBlank()) {
-                int amount = StringUtils.countMatches(event.getArgs(), "\"");
-                if (amount < 6 || amount > 20 || (amount & 1) == 1) {
-                    MessageHelper.sendUsage(this, event);
-                    return;
-                }
+                if (noEnoughArguments(event)) return;
                 String question = event.getArgs().replaceFirst("\"", "").substring(0, event.getArgs().replaceFirst("\"", "").indexOf("\""));
                 String answersString = event.getArgs().replaceFirst(Pattern.quote("\"" + question + "\"") + "(?:\\s+)?", "");
                 String[] answers = answersString.split("\"(?:\\s+)?\"");
@@ -55,11 +52,11 @@ public class PollCommand extends Command {
                     MessageHelper.sendUsage(this, event);
                     return;
                 }
-                int amount = StringUtils.countMatches(event.getArgs(), "\"");
-                if (amount < 6 || amount > 20 || (amount & 1) == 1) {
-                    MessageHelper.sendUsage(this, event);
+                if (!event.getGuild().getSelfMember().hasPermission(textChannel, Permission.MESSAGE_WRITE)) {
+                    event.reply("I need the permission **Message Write** to post a poll in that channel.");
                     return;
                 }
+                if (noEnoughArguments(event)) return;
                 String question = event.getArgs().replaceFirst(Pattern.quote(args[0]) + "(?:\\s+)?\"", "")
                         .substring(0, event.getArgs().replaceFirst(Pattern.quote(args[0]) + "(?:\\s+)?\"", "").indexOf("\""));
                 String answersString = event.getArgs().replaceFirst(Pattern.quote(args[0]) + "(?:\\s+)?" + Pattern.quote("\"" + question + "\"") + "(?:\\s+)?", "");
@@ -78,6 +75,15 @@ public class PollCommand extends Command {
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
+    }
+
+    private boolean noEnoughArguments(CommandEvent event) {
+        int amount = StringUtils.countMatches(event.getArgs(), "\"");
+        if (amount < 6 || amount > 20 || (amount & 1) == 1) {
+            MessageHelper.sendUsage(this, event);
+            return true;
+        }
+        return false;
     }
 
     private void addReactions(Message message, String[] answers) {

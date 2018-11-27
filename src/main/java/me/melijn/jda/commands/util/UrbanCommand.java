@@ -1,6 +1,7 @@
 package me.melijn.jda.commands.util;
 
 import me.melijn.jda.Helpers;
+import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
@@ -17,8 +18,9 @@ public class UrbanCommand extends Command {
     public UrbanCommand() {
         this.commandName = "urban";
         this.usage = PREFIX + commandName + " <word>";
-        this.description = "Search a word in the dictionary";
+        this.description = "Searches a word on urbandictionary.com";
         this.aliases = new String[]{"dictionary", "meaning"};
+        this.category = Category.UTILS;
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
         this.needs = new Need[]{Need.NSFW};
     }

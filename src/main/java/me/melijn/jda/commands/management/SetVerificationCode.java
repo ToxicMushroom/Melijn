@@ -32,7 +32,7 @@ public class SetVerificationCode extends Command {
     public SetVerificationCode() {
         this.commandName = "setVerificationCode";
         this.usage = PREFIX + commandName + " [code | null]";
-        this.description = "Sets a verificationCode that users will have to send in the verificationChannel";
+        this.description = "Sets the VerificationCode that members will have to send in the VerificationChannel in order to get verified";
         this.category = Category.MANAGEMENT;
         this.needs = new Need[]{Need.GUILD};
     }

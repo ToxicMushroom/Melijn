@@ -50,7 +50,7 @@ public class ShutdownCommand extends Command {
                     return true;
                 });
             event.reply("Shutting down in 9 seconds");
-            TaskScheduler.async(() -> event.getJDA().shutdown(), 9000);
+            TaskScheduler.async(() -> event.getJDA().shutdown(), 10_000);
         } catch (Exception e) {
             e.printStackTrace();
             event.reply("something went wrong :/");

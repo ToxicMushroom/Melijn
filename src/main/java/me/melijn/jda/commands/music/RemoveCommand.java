@@ -26,7 +26,7 @@ public class RemoveCommand extends Command {
 
     public RemoveCommand() {
         this.commandName = "remove";
-        this.description = "Remove songs of the queue";
+        this.description = "Removes songs from the queue";
         this.usage = PREFIX + commandName + " [x-x,x]";
         this.aliases = new String[]{"delete"};
         this.category = Category.MUSIC;

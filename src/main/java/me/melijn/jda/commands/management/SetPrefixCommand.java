@@ -31,7 +31,7 @@ public class SetPrefixCommand extends Command {
 
     public SetPrefixCommand() {
         this.commandName = "setPrefix";
-        this.description = "Change the prefix for the commands for your guild";
+        this.description = "Sets the prefix for the commands of Melijn";
         this.usage = PREFIX + commandName + " [prefix]";
         this.aliases = new String[]{"prefix"};
         this.category = Category.MANAGEMENT;

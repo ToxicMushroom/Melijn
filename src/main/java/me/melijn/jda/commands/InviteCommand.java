@@ -12,7 +12,7 @@ public class InviteCommand extends Command {
 
     public InviteCommand() {
         this.commandName = "invite";
-        this.description = "The bot will give you an awesome link which you have to click";
+        this.description = "The bot will give an awesome link which you have to click";
         this.usage = PREFIX + commandName;
         this.category = Category.DEFAULT;
     }

@@ -26,7 +26,7 @@ public class CustomCommandCommand extends Command {
 
     public CustomCommandCommand() {
         this.commandName = "customCommand";
-        this.description = "Manage custom commands";
+        this.description = "Manages custom commands";
         this.usage = PREFIX + commandName + " <add | remove | list | update | info | attachment | prefix | aliases | description> [customCommandName] [message | settings]";
         this.category = Category.MANAGEMENT;
         this.aliases = new String[]{"cc", "cCommand", "customC"};

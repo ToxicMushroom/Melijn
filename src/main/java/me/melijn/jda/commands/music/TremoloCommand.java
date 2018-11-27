@@ -15,7 +15,7 @@ public class TremoloCommand extends Command {
 
     public TremoloCommand() {
         this.commandName = "tremolo";
-        this.description = "Apply or remove a tremolo effect on audio";
+        this.description = "Applies or removes a tremolo effect on the playing tracks";
         this.usage = PREFIX + commandName + " [depth | frequency | off] [depthValue | frequencyValue]";
         this.category = Category.MUSIC;
         this.needs = new Need[]{Need.GUILD};

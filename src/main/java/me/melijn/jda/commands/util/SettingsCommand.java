@@ -19,7 +19,7 @@ public class SettingsCommand extends Command {
         this.commandName = "settings";
         this.usage = PREFIX + commandName;
         this.aliases = new String[]{"guildSettings", "serverSettings"};
-        this.description = "Shows you all the settings of melijn and their set value";
+        this.description = "Shows all the settings of melijn and their configured value";
         this.category = Category.UTILS;
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
         this.needs = new Need[]{Need.GUILD};

@@ -23,7 +23,7 @@ public class SkipCommand extends Command {
 
     public SkipCommand() {
         this.commandName = "skip";
-        this.description = "Skip to a song in the queue";
+        this.description = "Skips to a song in the queue";
         this.usage = PREFIX + commandName + " [1-50]";
         this.category = Category.MUSIC;
         this.aliases = new String[]{"s"};

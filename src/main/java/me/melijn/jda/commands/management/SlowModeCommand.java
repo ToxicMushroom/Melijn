@@ -15,7 +15,7 @@ public class SlowModeCommand extends Command {
     public SlowModeCommand() {
         this.commandName = "slowMode";
         this.usage = PREFIX + commandName + " <seconds (0-120)>";
-        this.description = "Allows for more precise configuration of discord's SlowMode";
+        this.description = "Sets the SlowMode in the TextChannel";
         this.permissions = new Permission[]{Permission.MANAGE_CHANNEL};
         this.needs = new Need[]{Need.GUILD};
         this.category = Category.MANAGEMENT;

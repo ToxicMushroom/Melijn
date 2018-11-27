@@ -17,7 +17,7 @@ public class ShardsCommand extends Command {
     public ShardsCommand() {
         this.commandName = "shards";
         this.usage = PREFIX + commandName;
-        this.description = "Shows you nerdy information \uD83E\uDDD0";
+        this.description = "Shows you all the shards with some information about them";
         this.category = Category.UTILS;
     }
 

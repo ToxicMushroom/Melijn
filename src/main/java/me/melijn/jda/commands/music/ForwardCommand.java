@@ -15,8 +15,9 @@ public class ForwardCommand extends Command {
 
     public ForwardCommand() {
         this.commandName = "forward";
-        this.description = "forward inside the song (20s/2m50s + 5s -> 25s/2m50s)";
-        this.usage = PREFIX + commandName + " [xx:xx:xx]";
+        this.description = "Forwards inside the track";
+        this.usage = PREFIX + commandName + " [hh:mm:ss]";
+        this.extra = "e.g. >forward 11 -> +11s | >forward 1:01 -> +61s | >forward 1:02:01 -> +3721s";
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};
         this.category = Category.MUSIC;
     }

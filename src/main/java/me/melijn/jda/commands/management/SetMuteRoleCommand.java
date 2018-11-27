@@ -29,7 +29,7 @@ public class SetMuteRoleCommand extends Command {
 
     public SetMuteRoleCommand() {
         this.commandName = "setMuteRole";
-        this.description = "Set the role that will be added to a user when muted";
+        this.description = "Sets the role that will be added to users when they get muted";
         this.extra = "The mute role should be higher then the default role and shouldn't have talking permission";
         this.usage = PREFIX + commandName + " [role]";
         this.needs = new Need[]{Need.GUILD};

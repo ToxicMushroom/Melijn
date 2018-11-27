@@ -25,7 +25,7 @@ public class HistoryCommand extends Command {
 
     public HistoryCommand() {
         this.commandName = "history";
-        this.description = "View bans/warns/mutes/kicks of a user.";
+        this.description = "Shows bans/warns/mutes/kicks of a user";
         this.usage = PREFIX + commandName + " <bans | mutes | warns | kicks> <user>";
         this.category = Category.MANAGEMENT;
         this.needs = new Need[]{Need.GUILD};

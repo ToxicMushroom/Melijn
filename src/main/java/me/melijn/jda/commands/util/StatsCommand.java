@@ -24,7 +24,7 @@ public class StatsCommand extends Command {
 
     public StatsCommand() {
         this.commandName = "stats";
-        this.description = "Shows server stats";
+        this.description = "Shows the bot's server statistics";
         this.usage = PREFIX + commandName;
         this.category = Category.UTILS;
     }

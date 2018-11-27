@@ -27,7 +27,7 @@ public class SetJoinMessageCommand extends Command {
 
     public SetJoinMessageCommand() {
         this.commandName = "setJoinMessage";
-        this.description = "Setup a message that a user get's when he/she/it joins";
+        this.description = "Sets the message that will be sent in the WelcomeChannel when a user joins";
         this.usage = PREFIX + commandName + " [message | null]";
         this.extra = "Placeholders:" +
                 " `%USER%` = joined user mention //" +

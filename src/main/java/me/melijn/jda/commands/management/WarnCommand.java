@@ -17,8 +17,8 @@ public class WarnCommand extends Command {
 
     public WarnCommand() {
         this.commandName = "warn";
-        this.description = "warn someone";
-        this.usage = PREFIX + commandName + " <user> <reason>";
+        this.description = "Warns a member";
+        this.usage = PREFIX + commandName + " <member> <reason>";
         this.category = Category.MANAGEMENT;
         this.permissions = new Permission[]{Permission.MESSAGE_HISTORY};
         this.needs = new Need[]{Need.GUILD};

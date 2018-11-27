@@ -34,10 +34,11 @@ public class SetStreamUrlCommand extends Command {
 
     public SetStreamUrlCommand() {
         this.commandName = "setStreamUrl";
-        this.description = "set the stream url of the bot";
+        this.description = "Sets the StreamUrl";
         this.usage = PREFIX + commandName + " [list | url]";
         this.aliases = new String[]{"ssu"};
         this.needs = new Need[]{Need.GUILD};
+        this.extra = "https://melijn.com/guides/guide-5/";
         this.category = Category.MANAGEMENT;
     }
 

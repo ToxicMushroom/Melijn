@@ -18,7 +18,7 @@ public class TempMuteCommand extends Command {
 
     public TempMuteCommand() {
         this.commandName = "tempmute";
-        this.description = "Mute people and let the bot unmute them after the specified amount of time";
+        this.description = "Temporally mutes a member from your server and sends a message with information about the mute to that member";
         this.usage = PREFIX + commandName + " <member> <time> [reason]";
         this.extra = "Time examples: [1s = 1second, 1m = 1minute, 1h = 1hour, 1w = 1week, 1M = 1month, 1y = 1year]";
         this.category = Category.MANAGEMENT;

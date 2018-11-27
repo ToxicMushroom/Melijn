@@ -15,7 +15,7 @@ public class ResumeCommand extends Command {
 
     public ResumeCommand() {
         this.commandName = "resume";
-        this.description = "Resume the paused song when paused";
+        this.description = "Resumes the paused track when paused";
         this.usage = PREFIX + commandName;
         this.aliases = new String[]{"unpause"};
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL_OR_DISCONNECTED};

@@ -25,7 +25,7 @@ public class NowPlayingCommand extends Command {
 
     public NowPlayingCommand() {
         this.commandName = "np";
-        this.description = "Show you the song that the bot is playing";
+        this.description = "Shows you the current track";
         this.usage = PREFIX + commandName;
         this.aliases = new String[]{"nowplaying", "playing", "nplaying", "nowp"};
         this.category = Category.MUSIC;
@@ -41,7 +41,7 @@ public class NowPlayingCommand extends Command {
             if (audioPlayer != null) {
                 AudioTrack track = audioPlayer.getAudioPlayer().getPlayingTrack();
                 String s = audioPlayer.getAudioPlayer().isPaused() ? "paused" : "playing";
-                if (track == null) event.reply("There are no songs playing at the moment");
+                if (track == null) event.reply("There are no tracks being played");
                 else {
                     String loopedQueue = LoopQueueCommand.looped.contains(guild.getIdLong()) ? " \uD83D\uDD01" : "";
                     String looped = LoopCommand.looped.contains(guild.getIdLong()) ? " \uD83D\uDD04" : "";
@@ -54,7 +54,7 @@ public class NowPlayingCommand extends Command {
                             .setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon()).build());
                 }
             } else {
-                event.reply("There are not songs playing");
+                event.reply("There are no tracks being played");
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

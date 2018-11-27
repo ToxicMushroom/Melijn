@@ -18,7 +18,7 @@ public class UserInfoCommand extends Command {
 
     public UserInfoCommand() {
         this.commandName = "userinfo";
-        this.description = "Shows you useful information about a user/member";
+        this.description = "Shows information about a user/member";
         this.usage = PREFIX + commandName + " <user>";
         this.aliases = new String[]{"profile", "memberinfo"};
         this.category = Category.UTILS;

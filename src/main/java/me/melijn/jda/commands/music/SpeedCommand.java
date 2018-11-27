@@ -15,7 +15,7 @@ public class SpeedCommand extends Command {
 
     public SpeedCommand() {
         this.commandName = "speed";
-        this.description = "Change the playback speed of bot";
+        this.description = "Changes the playing speed of tracks";
         this.usage = PREFIX + commandName + " [value]";
         this.category = Category.MUSIC;
         this.extra = "1.0 is normal speed";

@@ -30,10 +30,11 @@ public class SetStreamerModeCommand extends Command {
 
     public SetStreamerModeCommand() {
         this.commandName = "setStreamerMode";
-        this.description = "A special mode that lets the bot play a stream in the music channel";
+        this.description = "Sets the StreamerMode";
         this.usage = PREFIX + commandName + " [true/on | false/off]";
         this.aliases = new String[]{"ssm"};
         this.category = Category.MANAGEMENT;
+        this.extra = "https://melijn.com/guides/guide-5/";
         this.needs = new Need[]{Need.GUILD};
     }
 

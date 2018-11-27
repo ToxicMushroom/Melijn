@@ -25,9 +25,9 @@ public class ClearChannelCommand extends Command {
 
     public ClearChannelCommand() {
         this.commandName = "clearChannel";
-        this.description = "makes a clone of the current channel (permissions ect included) and deletes the original one";
+        this.description = "Makes a clone of the channel and deletes the original one";
         this.usage = PREFIX + commandName + " [textChannel]";
-        this.extra = "The bot can't copy permissions of role which are higher or equal to the bot's highest role";
+        this.extra = "The bot can't copy permissions of roles which are higher or equal to the bot's highest role";
         this.category = Category.MANAGEMENT;
         this.permissions = new Permission[]{Permission.MANAGE_CHANNEL, Permission.MANAGE_PERMISSIONS};
         this.needs = new Need[]{Need.GUILD, Need.ROLE};

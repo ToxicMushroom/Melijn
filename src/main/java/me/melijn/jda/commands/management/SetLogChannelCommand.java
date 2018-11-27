@@ -92,7 +92,7 @@ public class SetLogChannelCommand extends Command {
 
     public SetLogChannelCommand() {
         this.commandName = "setLogChannel";
-        this.description = "configures log channels so you can keep track of what's happening in your server";
+        this.description = "Main management command to configure where logs need to go";
         this.usage = PREFIX + commandName + " <type> [TextChannel | null]";
         this.extra = "Types: all, ban, mute, warn, kick, music, self-deleted-messages, other-deleted-messages, purged-messages, filtered-messages";
         this.aliases = new String[]{"slc"};

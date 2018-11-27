@@ -16,7 +16,7 @@ public class UnmuteCommand extends Command {
 
     public UnmuteCommand() {
         this.commandName = "unmute";
-        this.description = "unmute a muted user";
+        this.description = "Unmutes a muted user";
         this.usage = PREFIX + commandName + " <user> [reason]";
         this.category = Category.MANAGEMENT;
         this.permissions = new Permission[]{

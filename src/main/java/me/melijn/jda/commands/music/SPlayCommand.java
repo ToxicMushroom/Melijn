@@ -28,7 +28,7 @@ public class SPlayCommand extends Command {
 
     public SPlayCommand() {
         this.commandName = "splay";
-        this.description = "Gives you the search results to pick from instead of playing the first song of the results (that's what >play does)";
+        this.description = "Gives you search results to pick from";
         this.usage = PREFIX + commandName + " [sc] [songname]";
         this.aliases = new String[]{"search", "searchplay", "sp"};
         this.category = Category.MUSIC;
@@ -41,7 +41,7 @@ public class SPlayCommand extends Command {
         Guild guild = event.getGuild();
         boolean access = Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".*", 1);
         VoiceChannel senderVoiceChannel = guild.getMember(event.getAuthor()).getVoiceState().getChannel();
-        String args[] = event.getArgs().split("\\s+");
+        String[] args = event.getArgs().split("\\s+");
         if (args.length == 0 || args[0].isEmpty()) {
             MessageHelper.sendUsage(this, event);
             return;

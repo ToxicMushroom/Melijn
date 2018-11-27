@@ -5,6 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
+import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
@@ -31,9 +32,10 @@ public class SetEmbedColorCommand extends Command {
 
     public SetEmbedColorCommand() {
         this.commandName = "setEmbedColor";
-        this.description = "sets an embed color for the bot";
+        this.description = "Sets an embed color for the embeds";
         this.usage = PREFIX + commandName + " [color]";
         this.aliases = new String[]{"sec"};
+        this.category = Category.MANAGEMENT;
         this.extra = "The color is formatted as r g b or a hex code";
         this.needs = new Need[]{Need.GUILD};
     }

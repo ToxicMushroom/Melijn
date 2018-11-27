@@ -21,7 +21,7 @@ public class DisableCommand extends Command {
 
     public DisableCommand() {
         this.commandName = "disable";
-        this.description = "Fully disables a command from being used";
+        this.description = "Fully disables commands from being used";
         this.usage = PREFIX + commandName + " <commandName | category>";
         this.needs = new Need[]{Need.GUILD};
         this.aliases = new String[]{"disabled"};

@@ -16,7 +16,7 @@ public class BanCommand extends Command {
 
     public BanCommand() {
         this.commandName = "ban";
-        this.description = "Bans specified users from your server and gives them a nice message in dm";
+        this.description = "Bans a user from your server and sends a message with information about the ban to that user";
         this.usage = PREFIX + commandName + " <user> [reason]";
         this.category = Category.MANAGEMENT;
         this.aliases = new String[]{"permban"};

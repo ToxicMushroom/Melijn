@@ -20,8 +20,8 @@ import static me.melijn.jda.Melijn.mySQL;
 public class SetNotifications extends Command {
 
     public SetNotifications() {
-        this.commandName = "SetNotifications";
-        this.description = "Get notified for certain events";
+        this.commandName = "setNotifications";
+        this.description = "configures vote notification events";
         this.usage = PREFIX + commandName + " [nextVote] [user/info]";
         this.extra = "arg1 -> notification type\narg2 -> either view all notifications of the type or toggle a user on and off";
         this.category = Category.UTILS;

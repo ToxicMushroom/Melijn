@@ -17,9 +17,10 @@ public class FilterCommand extends Command {
 
     public FilterCommand() {
         this.commandName = "filter";
-        this.description = "The bot will remove messages which contain prohibited words";
+        this.description = "Manages the chat filter of the bot";
         this.usage = PREFIX + commandName + " <allowed | denied> <add | remove | list> [word]";
         this.category = Category.MANAGEMENT;
+        this.extra = "e.g. if blub is in the denied list and blubber is in the allowed list then they can say blubber but can't say other word containing blub";
         this.needs = new Need[]{Need.GUILD};
     }
 

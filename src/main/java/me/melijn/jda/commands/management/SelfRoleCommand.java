@@ -33,7 +33,7 @@ public class SelfRoleCommand extends Command {
 
     public SelfRoleCommand() {
         this.commandName = "selfRole";
-        this.description = "Ma in command to add and remove SelfRoles";
+        this.description = "Main command to manage SelfRoles";
         this.usage = PREFIX + commandName + " <add | remove | list> [role] [emote | emoji]";
         this.aliases = new String[]{"srl"};
         this.category = Category.MANAGEMENT;

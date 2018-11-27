@@ -13,7 +13,7 @@ public class SummonCommand extends Command {
 
     public SummonCommand() {
         this.commandName = "summon";
-        this.description = "Summon's the bot to your channel";
+        this.description = "Summons the bot to your channel";
         this.aliases = new String[]{"join", "here"};
         this.usage = PREFIX + commandName;
         this.category = Category.MUSIC;

@@ -27,7 +27,7 @@ public class SetJoinLeaveChannelCommand extends Command {
 
     public SetJoinLeaveChannelCommand() {
         this.commandName = "setJoinLeaveChannel";
-        this.description = "Setup a TextChannel where users will be welcomed or leave";
+        this.description = "Sets a TextChannel where users will be welcomed or bid farewell";
         this.usage = PREFIX + commandName + " <TextChannel | null>";
         this.aliases = new String[]{"sjlc", "SetWelcomeChannel", "swc"};
         this.category = Category.MANAGEMENT;

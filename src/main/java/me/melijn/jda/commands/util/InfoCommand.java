@@ -20,7 +20,7 @@ public class InfoCommand extends Command {
     public InfoCommand() {
         this.commandName = "info";
         this.usage = PREFIX + commandName;
-        this.description = "Shows you useful info about the bot itself";
+        this.description = "Shows information about the bot";
         this.aliases = new String[]{"about", "botinfo", "author"};
         this.category = Category.UTILS;
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};

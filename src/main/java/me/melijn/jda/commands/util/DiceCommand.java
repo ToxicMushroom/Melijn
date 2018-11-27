@@ -14,7 +14,7 @@ public class DiceCommand extends Command {
 
     public DiceCommand() {
         this.commandName = "dice";
-        this.description = "rolls a dice";
+        this.description = "Rolls a dice";
         this.usage = PREFIX + commandName + " [diceSize (default 6, max 999999)] [dice rolls (default 1, max 20)]";
         this.category = Category.UTILS;
     }

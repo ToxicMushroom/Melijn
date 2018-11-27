@@ -15,7 +15,7 @@ public class NightCoreCommand extends Command {
 
     public NightCoreCommand() {
         this.commandName = "nightcore";
-        this.description = "Toggle the nightcore mode";
+        this.description = "Toggles the nightcore mode";
         this.usage = PREFIX + commandName + " <on/enable/true | off/disable/false>";
         this.category = Category.MUSIC;
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};

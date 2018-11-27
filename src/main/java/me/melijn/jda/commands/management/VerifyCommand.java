@@ -20,7 +20,7 @@ public class VerifyCommand extends Command {
 
     public VerifyCommand() {
         this.commandName = "verify";
-        this.description = "Manually verify a member";
+        this.description = "Verifies a member";
         this.usage = PREFIX + commandName + " <user | all>";
         this.needs = new Need[]{Need.GUILD};
         this.permissions = new Permission[]{Permission.MANAGE_ROLES};

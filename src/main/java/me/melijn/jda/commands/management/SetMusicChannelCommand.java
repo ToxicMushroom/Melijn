@@ -28,10 +28,11 @@ public class SetMusicChannelCommand extends Command {
 
     public SetMusicChannelCommand() {
         this.commandName = "setMusicChannel";
-        this.description = "Set the music channel to a channel so the bot wil auto join ect";
+        this.description = "Sets the MusicChannel";
         this.usage = PREFIX + commandName + " [VoiceChannel | null]";
         this.aliases = new String[]{"smc"};
         this.needs = new Need[]{Need.GUILD};
+        this.extra = "https://melijn.com/guides/guide-5/";
         this.category = Category.MANAGEMENT;
     }
 

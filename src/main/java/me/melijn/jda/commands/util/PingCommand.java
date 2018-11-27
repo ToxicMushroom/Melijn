@@ -13,7 +13,7 @@ public class PingCommand extends Command {
 
     public PingCommand() {
         this.commandName = "ping";
-        this.description = "Shows you the bot's ping";
+        this.description = "Shows the bot's ping";
         this.usage = PREFIX + commandName;
         this.category = Category.UTILS;
     }

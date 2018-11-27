@@ -24,7 +24,7 @@ public class PlayCommand extends Command {
 
     public PlayCommand() {
         this.commandName = "play";
-        this.description = "plays a song or adds it to the queue";
+        this.description = "plays a track or adds it to the queue";
         this.usage = PREFIX + commandName + " [sc] <songname | link>";
         this.extra = "You only have to use sc if you want to search on soundcloud";
         this.aliases = new String[]{"p"};
@@ -38,7 +38,7 @@ public class PlayCommand extends Command {
         Guild guild = event.getGuild();
         boolean access = Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".*", 1);
         VoiceChannel senderVoiceChannel = guild.getMember(event.getAuthor()).getVoiceState().getChannel();
-        String args[] = event.getArgs().split("\\s+");
+        String[] args = event.getArgs().split("\\s+");
         if (args.length == 0 || args[0].isBlank()) {
             MessageHelper.sendUsage(this, event);
             return;

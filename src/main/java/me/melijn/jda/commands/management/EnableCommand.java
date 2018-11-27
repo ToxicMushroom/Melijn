@@ -18,7 +18,7 @@ public class EnableCommand extends Command {
 
     public EnableCommand() {
         this.commandName = "enable";
-        this.description = "Fully disables a command from being used";
+        this.description = "Enables disabled commands";
         this.usage = PREFIX + commandName + " <commandName | category>";
         this.needs = new Need[]{Need.GUILD};
         this.category = Category.MANAGEMENT;

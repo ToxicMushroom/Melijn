@@ -20,7 +20,7 @@ public class RoleCommand extends Command {
 
     public RoleCommand() {
         this.commandName = "role";
-        this.description = "Shows you info about the chosen role";
+        this.description = "Shows information about the chosen role";
         this.usage = PREFIX + commandName + " <role>";
         this.aliases = new String[]{"roleinfo"};
         this.category = Category.UTILS;

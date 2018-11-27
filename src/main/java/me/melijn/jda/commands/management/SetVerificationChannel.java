@@ -29,7 +29,7 @@ public class SetVerificationChannel extends Command {
     public SetVerificationChannel() {
         this.commandName = "setVerificationChannel";
         this.usage = PREFIX + commandName + " [TextChannel | null]";
-        this.description = "set a channel in which the user will have to prove that he or she is not a bot by answering a captcha or question";
+        this.description = "Sets the channel in which the members will have to prove that they are not a bot by entering the VerificationCode";
         this.aliases = new String[]{"svc"};
         this.extra = "You can manually approve users by using the verify command";
         this.category = Category.MANAGEMENT;

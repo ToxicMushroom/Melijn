@@ -28,7 +28,7 @@ public class SetLeaveMessageCommand extends Command {
 
     public SetLeaveMessageCommand() {
         this.commandName = "setLeaveMessage";
-        this.description = "Setup a message that a user get's when he/she/it leaves";
+        this.description = "Sets the message that will be sent in the WelcomeChannel when a user leaves";
         this.usage = PREFIX + commandName + " [message | null]";
         this.extra = "Placeholders: `%USER%` = user mention // `%USERNAME%` = user name // `%GUILDNAME%` = your discord server's name // `%JOINPOSITION%` = member position";
         this.aliases = new String[]{"slm"};

@@ -15,7 +15,7 @@ public class RolesCommand extends Command {
 
     public RolesCommand() {
         this.commandName = "roles";
-        this.description = "Shows you a list of all the guild's roles and their id's";
+        this.description = "Shows a list of all the roles with their id's";
         this.usage = PREFIX + commandName;
         this.aliases = new String[]{"rolelist"};
         this.category = Category.UTILS;

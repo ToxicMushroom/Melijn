@@ -31,7 +31,7 @@ public class SetVerificationThreshold extends Command {
     public SetVerificationThreshold() {
         this.commandName = "setVerificationThreshold";
         this.usage = PREFIX + commandName + " <0 - 20>";
-        this.description = "Set the verification threshold before kicking";
+        this.description = "Sets the VerificationThreshold aka the amount of times the unverified member can try the code before being kicked";
         this.aliases = new String[]{"svt"};
         this.needs = new Need[]{Need.GUILD};
         this.category = Category.MANAGEMENT;

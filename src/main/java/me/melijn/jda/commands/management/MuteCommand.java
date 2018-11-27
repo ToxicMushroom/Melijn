@@ -18,7 +18,7 @@ public class MuteCommand extends Command {
 
     public MuteCommand() {
         this.commandName = "mute";
-        this.description = "Mutes the member by giving the member a role";
+        this.description = "Mutes a member on your server and sends a message with information about the mute to that member";
         this.usage = PREFIX + commandName + " <member> [reason]";
         this.extra = "The mute role should be higher then the default role and shouldn't have talking permission";
         this.aliases = new String[]{"permmute"};

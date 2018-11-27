@@ -18,7 +18,7 @@ public class VolumeCommand extends Command {
     public VolumeCommand() {
         this.commandName = "volume";
         this.usage = PREFIX + commandName + " <0-1000>";
-        this.description = "Change or view the volume of the music for everyone";
+        this.description = "Changes the volume of tracks";
         this.aliases = new String[]{"vol"};
         this.extra = "default: 100 (over 100 will cause distortion)";
         this.needs = new Need[]{GUILD};
@@ -28,7 +28,7 @@ public class VolumeCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
-            String args[] = event.getArgs().split("\\s+");
+            String[] args = event.getArgs().split("\\s+");
             MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
             int volume;
             if (args.length == 0 || args[0].isEmpty()) {

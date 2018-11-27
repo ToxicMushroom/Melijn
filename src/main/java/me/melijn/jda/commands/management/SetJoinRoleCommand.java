@@ -29,7 +29,7 @@ public class SetJoinRoleCommand extends Command {
 
     public SetJoinRoleCommand() {
         this.commandName = "setJoinRole";
-        this.description = "Setup a role that a user get's on join";
+        this.description = "Sets the role that will be added to users when they join";
         this.usage = PREFIX + commandName + " [role | null]";
         this.aliases = new String[]{"sjr"};
         this.category = Category.MANAGEMENT;

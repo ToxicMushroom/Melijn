@@ -15,8 +15,9 @@ public class RewindCommand extends Command {
 
     public RewindCommand() {
         this.commandName = "rewind";
-        this.description = "rewind inside the song (20s/2m50s - 5s -> 15s/2m50s)";
-        this.usage = PREFIX + commandName + " [xx:xx:xx]";
+        this.description = "Rewinds inside the track";
+        this.usage = PREFIX + commandName + " [hh:mm:ss]";
+        this.extra = "e.g. >rewind 11 -> -11s | >rewind 1:01 -> -61s | >rewind 1:02:01 -> -3721s";
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};
         this.category = Category.MUSIC;
     }
