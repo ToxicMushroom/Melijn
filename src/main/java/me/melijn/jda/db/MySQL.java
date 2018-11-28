@@ -567,9 +567,9 @@ public class MySQL {
             executeQuery("SELECT * FROM active_bans WHERE guildId= ? AND victimId= ?", rs -> {
                 try {
                     if (rs.next()) {
-                        executeUpdate("UPDATE history_bans SET active= ? AND unbanReason= ? WHERE victimId= ? AND guildId= ?; " +
-                                        "DELETE FROM active_bans WHERE guildId= ? AND victimId= ?",
-                                false, reason, toUnban.getIdLong(), guild.getIdLong(),
+                        executeUpdate("UPDATE history_bans SET active= ? AND unbanReason= ? WHERE victimId= ? AND guildId= ?",
+                                false, reason, toUnban.getIdLong(), guild.getIdLong());
+                        executeUpdate("DELETE FROM active_bans WHERE guildId= ? AND victimId= ?",
                                 guild.getIdLong(), toUnban.getIdLong());
                     }
                     rs.close();
@@ -597,7 +597,7 @@ public class MySQL {
                 else logChannel.sendMessage(eb.build()).queue();
             }
 
-            guild.getController().unban(toUnban.getId()).queue();
+            guild.getController().unban(toUnban.getId()).queue(success->{}, failed->{});
             return true;
         }
         return false;
