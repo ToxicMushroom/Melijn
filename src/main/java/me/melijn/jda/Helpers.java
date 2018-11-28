@@ -12,7 +12,7 @@ import me.melijn.jda.music.MusicPlayer;
 import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
-import me.melijn.jda.utils.WebUtils;
+import me.melijn.jda.utils.CrapUtils;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
@@ -185,7 +185,7 @@ public class Helpers {
             lastRunTimer3 = System.currentTimeMillis();
             TaskScheduler.scheduleRepeating(() -> {
                 lastRunTimer3 = System.currentTimeMillis();
-                WebUtils.getWebUtilsInstance().updateSpotifyCredentials();
+                CrapUtils.getWebUtilsInstance().updateSpotifyCredentials();
                 Melijn.mySQL.updateVoteStreak();
             }, 1_800_000, 1_800_000);
         }

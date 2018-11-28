@@ -5,21 +5,21 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.MessageHelper;
-import me.melijn.jda.utils.WebUtils;
+import me.melijn.jda.utils.CrapUtils;
 import net.dv8tion.jda.core.entities.User;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class KissCommand extends Command {
 
-    private WebUtils webUtils;
+    private CrapUtils crapUtils;
 
     public KissCommand() {
         this.commandName = "kiss";
         this.description = "sends kisses";
         this.usage = PREFIX + commandName + " [user]";
         this.category = Category.FUN;
-        webUtils = WebUtils.getWebUtilsInstance();
+        crapUtils = CrapUtils.getWebUtilsInstance();
     }
 
     @Override
@@ -27,7 +27,7 @@ public class KissCommand extends Command {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
             if (args.length == 0 || args[0].isBlank()) {
-                webUtils.getImage("kiss",
+                crapUtils.getImage("kiss",
                         image -> MessageHelper.sendFunText("**" + event.getAuthor().getName() + "** wants to kiss someone", image.getUrl(), event)
                 );
             } else if (args.length == 1) {
@@ -35,7 +35,7 @@ public class KissCommand extends Command {
                 if (target == null) {
                     event.reply("Unknown user");
                 } else {
-                    webUtils.getImage("kiss", image ->
+                    crapUtils.getImage("kiss", image ->
                             MessageHelper.sendFunText("**" + target.getName() + "** got kissed by **" + event.getAuthor().getName() + "**", image.getUrl(), event)
                     );
                 }

@@ -22,7 +22,7 @@ import me.melijn.jda.events.JoinLeave;
 import me.melijn.jda.rest.Application;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
-import me.melijn.jda.utils.WebUtils;
+import me.melijn.jda.utils.CrapUtils;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.entities.Game;
@@ -47,7 +47,7 @@ public class Melijn {
             config.getValue("database"));
 
     public static void main(String[] args) throws LoginException {
-        new WebUtils();
+        new CrapUtils();
         mySQL.executeUpdate("TRUNCATE TABLE commands");
         CommandClientBuilder client = new CommandClientBuilder();
         client.setOwnerId(OWNERID);

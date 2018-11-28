@@ -6,14 +6,14 @@ import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.MessageHelper;
-import me.melijn.jda.utils.WebUtils;
+import me.melijn.jda.utils.CrapUtils;
 import net.dv8tion.jda.core.Permission;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class CatCommand extends Command {
 
-    private WebUtils webUtils;
+    private CrapUtils crapUtils;
 
     public CatCommand() {
         this.commandName = "cat";
@@ -21,13 +21,13 @@ public class CatCommand extends Command {
         this.usage = PREFIX + commandName;
         this.aliases = new String[]{"kitten", "kat", "poes"};
         this.category = Category.FUN;
-        webUtils = WebUtils.getWebUtilsInstance();
+        crapUtils = CrapUtils.getWebUtilsInstance();
     }
 
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
-            String url = webUtils.getCatUrl();
+            String url = crapUtils.getCatUrl();
             if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS))
                 if (url != null)
                     event.reply(new Embedder(event.getGuild())
@@ -35,7 +35,7 @@ public class CatCommand extends Command {
                             .setImage(url)
                             .build());
                 else {
-                    webUtils.getImage("animal_cat", image -> MessageHelper.sendFunText("Enjoy your \uD83D\uDC31 ~meow~", image.getUrl(), event));
+                    crapUtils.getImage("animal_cat", image -> MessageHelper.sendFunText("Enjoy your \uD83D\uDC31 ~meow~", image.getUrl(), event));
                 }
             else
                 event.reply("Enjoy your \uD83D\uDC31 ~meow~\n" + url);
