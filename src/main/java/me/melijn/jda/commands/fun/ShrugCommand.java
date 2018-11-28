@@ -15,7 +15,7 @@ public class ShrugCommand extends Command {
 
     public ShrugCommand() {
         this.commandName = "shrug";
-        this.description = "shrug";
+        this.description = "Shows a shrugging person [anime]";
         this.usage = PREFIX + commandName;
         this.category = Category.FUN;
         this.aliases = new String[]{"idk"};

@@ -15,7 +15,7 @@ public class LewdCommand extends Command {
 
     public LewdCommand() {
         this.commandName = "lewd";
-        this.description = "Shows a lewd image";
+        this.description = "Shows a lewd person [anime]";
         this.usage = PREFIX + commandName;
         this.category = Category.FUN;
         crapUtils = CrapUtils.getWebUtilsInstance();

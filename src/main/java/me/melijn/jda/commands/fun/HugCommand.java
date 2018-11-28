@@ -16,7 +16,7 @@ public class HugCommand extends Command {
 
     public HugCommand() {
         this.commandName = "hug";
-        this.description = "Give people hugs";
+        this.description = "Shows a hugging person [anime]";
         this.usage = PREFIX + commandName + " [user]";
         this.category = Category.FUN;
         crapUtils = CrapUtils.getWebUtilsInstance();

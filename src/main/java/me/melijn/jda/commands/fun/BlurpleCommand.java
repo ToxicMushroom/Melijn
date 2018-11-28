@@ -17,7 +17,7 @@ public class BlurpleCommand extends Command {
     public BlurpleCommand() {
         this.commandName = "blurple";
         this.usage = PREFIX + commandName + " [image]";
-        this.description = "change an image to BLURPLE mix of blue and purple";
+        this.description = "Blurpifies an image";
         this.category = Category.FUN;
     }
 

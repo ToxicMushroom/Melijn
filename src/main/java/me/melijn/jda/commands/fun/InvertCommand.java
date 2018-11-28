@@ -17,7 +17,7 @@ public class InvertCommand extends Command {
     public InvertCommand() {
         this.commandName = "invert";
         this.usage = PREFIX + commandName + " [image]";
-        this.description = "inverts the color of each pixel of the provided image";
+        this.description = "Inverts an image";
         this.aliases = new String[]{"negative"};
         this.category = Category.FUN;
     }

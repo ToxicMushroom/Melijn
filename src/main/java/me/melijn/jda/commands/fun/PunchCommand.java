@@ -16,7 +16,7 @@ public class PunchCommand extends Command {
 
     public PunchCommand() {
         this.commandName = "punch";
-        this.description = "You can punch someone or be punched by Melijn";
+        this.description = "Shows a person punching [anime]";
         this.usage = PREFIX + commandName + " [user]";
         this.category = Category.FUN;
         crapUtils = CrapUtils.getWebUtilsInstance();

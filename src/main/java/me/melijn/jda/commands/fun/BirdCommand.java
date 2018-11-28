@@ -16,7 +16,7 @@ public class BirdCommand extends Command {
 
     public BirdCommand() {
         this.commandName = "bird";
-        this.description = "Shows you a random bird";
+        this.description = "Shows a bird";
         this.usage = PREFIX + commandName;
         this.aliases = new String[]{"vogel"};
         this.category = Category.FUN;

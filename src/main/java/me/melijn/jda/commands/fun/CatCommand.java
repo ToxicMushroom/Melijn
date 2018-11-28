@@ -17,7 +17,7 @@ public class CatCommand extends Command {
 
     public CatCommand() {
         this.commandName = "cat";
-        this.description = "Shows you a random cat";
+        this.description = "Shows you a cat";
         this.usage = PREFIX + commandName;
         this.aliases = new String[]{"kitten", "kat", "poes"};
         this.category = Category.FUN;

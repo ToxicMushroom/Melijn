@@ -16,7 +16,7 @@ public class HighfiveCommand extends Command {
 
     public HighfiveCommand() {
         this.commandName = "highfive";
-        this.description = "highfive someone";
+        this.description = "Shows a highfiving person [anime]";
         this.usage = PREFIX + commandName + " [user]";
         this.category = Category.FUN;
         crapUtils = CrapUtils.getWebUtilsInstance();

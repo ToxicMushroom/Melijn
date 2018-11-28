@@ -16,7 +16,7 @@ public class PatCommand extends Command {
 
     public PatCommand() {
         this.commandName = "pat";
-        this.description = "You can pat someone or be patted";
+        this.description = "Shows a person being patted [anime]";
         this.usage = PREFIX + commandName + " [user]";
         this.category = Category.FUN;
         crapUtils = CrapUtils.getWebUtilsInstance();
