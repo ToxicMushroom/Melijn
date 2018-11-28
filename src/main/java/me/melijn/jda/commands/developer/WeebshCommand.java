@@ -4,7 +4,7 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.MessageHelper;
-import me.melijn.jda.utils.CrapUtils;
+import me.melijn.jda.utils.WebUtils;
 
 import java.util.Arrays;
 
@@ -12,14 +12,14 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class WeebshCommand extends Command {
 
-    private CrapUtils crapUtils;
+    private WebUtils webUtils;
 
     public WeebshCommand() {
         this.commandName = "weebsh";
         this.description = "Uses weebsh api to do stuff";
         this.usage = PREFIX + commandName + " <tags | types | type | tag> [arg]";
         this.category = Category.DEVELOPER;
-        crapUtils = CrapUtils.getWebUtilsInstance();
+        webUtils = WebUtils.getWebUtilsInstance();
     }
 
     @Override
@@ -28,21 +28,21 @@ public class WeebshCommand extends Command {
         if (args.length > 0) {
             switch (args[0].toLowerCase()) {
                 case "tags":
-                    crapUtils.getTags(tags -> event.reply(Arrays.toString(tags.toArray())));
+                    webUtils.getTags(tags -> event.reply(Arrays.toString(tags.toArray())));
                     break;
                 case "types":
-                    crapUtils.getTypes(types -> event.reply(Arrays.toString(types.getTypes().toArray())));
+                    webUtils.getTypes(types -> event.reply(Arrays.toString(types.getTypes().toArray())));
                     break;
                 case "type":
                     if (args.length > 1) {
-                       crapUtils.getImage(event.getArgs().replaceFirst(args[0] + "\\s+", ""), (image) -> event.reply(image.getUrl()));
+                       webUtils.getImage(event.getArgs().replaceFirst(args[0] + "\\s+", ""), (image) -> event.reply(image.getUrl()));
                     } else {
                         MessageHelper.sendUsage(this, event);
                     }
                     break;
                 case "tag":
                     if (args.length > 1) {
-                        crapUtils.getImageByTag(event.getArgs().replaceFirst(args[0] + "\\s+", ""), (image) -> event.reply(image.getUrl()));
+                        webUtils.getImageByTag(event.getArgs().replaceFirst(args[0] + "\\s+", ""), (image) -> event.reply(image.getUrl()));
                     } else {
                         MessageHelper.sendUsage(this, event);
                     }

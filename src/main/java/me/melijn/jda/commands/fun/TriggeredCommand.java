@@ -5,14 +5,14 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.MessageHelper;
-import me.melijn.jda.utils.CrapUtils;
+import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.core.entities.User;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class TriggeredCommand extends Command {
 
-    private CrapUtils crapUtils;
+    private WebUtils webUtils;
 
     public TriggeredCommand() {
         this.commandName = "triggered";
@@ -20,7 +20,7 @@ public class TriggeredCommand extends Command {
         this.usage = PREFIX + commandName;
         this.aliases = new String[]{"rage"};
         this.category = Category.FUN;
-        crapUtils = CrapUtils.getWebUtilsInstance();
+        webUtils = WebUtils.getWebUtilsInstance();
     }
 
     @Override
@@ -28,7 +28,7 @@ public class TriggeredCommand extends Command {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
             if (args.length == 0 || args[0].isBlank()) {
-                crapUtils.getImage("triggered",
+                webUtils.getImage("triggered",
                         image -> MessageHelper.sendFunText("**" + event.getAuthor().getName() + "** is triggered", image.getUrl(), event)
                 );
             } else if (args.length == 1) {
@@ -36,7 +36,7 @@ public class TriggeredCommand extends Command {
                 if (target == null) {
                     event.reply("The wind is trigge.. NO, stop it");
                 } else {
-                    crapUtils.getImage("triggered",
+                    webUtils.getImage("triggered",
                             image -> MessageHelper.sendFunText("**" + event.getAuthor().getName() + "** got triggered by **" + target.getName() + "**", image.getUrl(), event)
                     );
                 }

@@ -5,21 +5,21 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.MessageHelper;
-import me.melijn.jda.utils.CrapUtils;
+import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.core.entities.User;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class HighfiveCommand extends Command {
 
-    private CrapUtils crapUtils;
+    private WebUtils webUtils;
 
     public HighfiveCommand() {
         this.commandName = "highfive";
         this.description = "Shows a highfiving person [anime]";
         this.usage = PREFIX + commandName + " [user]";
         this.category = Category.FUN;
-        crapUtils = CrapUtils.getWebUtilsInstance();
+        webUtils = WebUtils.getWebUtilsInstance();
     }
 
     @Override
@@ -27,13 +27,13 @@ public class HighfiveCommand extends Command {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
             if (args.length == 0 || args[0].isBlank()) {
-                crapUtils.getImage("highfive", image -> MessageHelper.sendFunText("**" + event.getBotName() + "** highfived you", image.getUrl(), event));
+                webUtils.getImage("highfive", image -> MessageHelper.sendFunText("**" + event.getBotName() + "** highfived you", image.getUrl(), event));
             } else if (args.length == 1) {
                 User target = Helpers.getUserByArgsN(event, args[0]);
                 if (target == null) {
                     event.reply(event.getAuthor().getAsMention() + " is highfiving air");
                 } else {
-                    crapUtils.getImage("highfive", image ->
+                    webUtils.getImage("highfive", image ->
                             MessageHelper.sendFunText("**" + event.getAuthor().getName() + "** highfived **" + target.getName() + "**", image.getUrl(), event)
                     );
                 }

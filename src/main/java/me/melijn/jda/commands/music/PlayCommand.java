@@ -7,7 +7,7 @@ import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.utils.MessageHelper;
-import me.melijn.jda.utils.CrapUtils;
+import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.VoiceChannel;
@@ -93,7 +93,7 @@ public class PlayCommand extends Command {
     }
 
     private void spotiSearch(CommandEvent event, String url) {
-        CrapUtils.getWebUtilsInstance().getTracksFromSpotifyUrl(url,
+        WebUtils.getWebUtilsInstance().getTracksFromSpotifyUrl(url,
                 (track) -> manager.loadSpotifyTrack(event.getTextChannel(), "ytsearch:" + track.getName(), track.getArtists(), track.getDurationMs()),
                 (tracks) -> manager.loadSpotifyPlaylist(event.getTextChannel(), tracks),
                 (tracksa) -> manager.loadSpotifyAlbum(event.getTextChannel(), tracksa),

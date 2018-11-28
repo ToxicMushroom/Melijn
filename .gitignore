@@ -10,5 +10,3 @@ gradle/
 gradlew\.bat
 
 gradlew
-
-src/main/java/me/melijn/jda/utils/WebUtils\.java

@@ -5,14 +5,14 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.Embedder;
-import me.melijn.jda.utils.CrapUtils;
+import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.core.Permission;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class BirdCommand extends Command {
 
-    private CrapUtils crapUtils;
+    private WebUtils webUtils;
 
     public BirdCommand() {
         this.commandName = "bird";
@@ -20,13 +20,13 @@ public class BirdCommand extends Command {
         this.usage = PREFIX + commandName;
         this.aliases = new String[]{"vogel"};
         this.category = Category.FUN;
-        crapUtils = CrapUtils.getWebUtilsInstance();
+        webUtils = WebUtils.getWebUtilsInstance();
     }
 
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
-            String url = crapUtils.getBirdUrl();
+            String url = webUtils.getBirdUrl();
             if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS))
                 if (url != null)
                     event.reply(new Embedder(event.getGuild())

@@ -7,7 +7,7 @@ import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.MessageHelper;
-import me.melijn.jda.utils.CrapUtils;
+import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.core.Permission;
 import org.json.JSONObject;
 
@@ -30,7 +30,7 @@ public class UrbanCommand extends Command {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
             if (args.length > 0 && !args[0].isBlank()) {
-                String result = CrapUtils.getWebUtilsInstance().run("https://api.urbandictionary.com/v0/define?term=" + event.getArgs());
+                String result = WebUtils.getWebUtilsInstance().run("https://api.urbandictionary.com/v0/define?term=" + event.getArgs());
                 if (result != null) {
                     JSONObject jresult = new JSONObject(result);
                     if (jresult.getJSONArray("list").toList().size() > 0) {
