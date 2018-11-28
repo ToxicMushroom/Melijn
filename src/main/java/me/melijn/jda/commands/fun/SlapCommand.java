@@ -16,7 +16,7 @@ public class SlapCommand extends Command {
 
     public SlapCommand() {
         this.commandName = "slap";
-        this.description = "You can slap someone or be slapped";
+        this.description = "Shows a person being slapped [anime]";
         this.usage = PREFIX + commandName + " [user]";
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();

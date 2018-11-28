@@ -15,7 +15,7 @@ public class DabCommand extends Command {
 
     public DabCommand() {
         this.commandName = "dab";
-        this.description = "dab on them haters";
+        this.description = "Shows a dabbing person [anime]";
         this.usage = PREFIX + commandName;
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();

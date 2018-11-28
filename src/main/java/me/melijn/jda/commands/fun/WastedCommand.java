@@ -16,7 +16,7 @@ public class WastedCommand extends Command {
 
     public WastedCommand() {
         this.commandName = "wasted";
-        this.description = "Shows a wasted gif";
+        this.description = "Shows a wasted gif [anime]";
         this.usage = PREFIX + commandName + " [user]";
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();

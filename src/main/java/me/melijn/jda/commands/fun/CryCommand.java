@@ -16,7 +16,7 @@ public class CryCommand extends Command {
 
     public CryCommand() {
         this.commandName = "cry";
-        this.description = "cry or let someone make you cry";
+        this.description = "Shows a crying person [anime]";
         this.usage = PREFIX + commandName + " [user]";
         this.category = Category.FUN;
         this.aliases = new String[] {"sad"};

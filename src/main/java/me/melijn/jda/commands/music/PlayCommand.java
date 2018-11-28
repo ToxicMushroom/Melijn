@@ -24,7 +24,7 @@ public class PlayCommand extends Command {
 
     public PlayCommand() {
         this.commandName = "play";
-        this.description = "plays a track or adds it to the queue";
+        this.description = "Plays a track or adds it to the queue";
         this.usage = PREFIX + commandName + " [sc] <songname | link>";
         this.extra = "You only have to use sc if you want to search on soundcloud";
         this.aliases = new String[]{"p"};

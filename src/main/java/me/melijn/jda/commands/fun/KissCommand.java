@@ -16,7 +16,7 @@ public class KissCommand extends Command {
 
     public KissCommand() {
         this.commandName = "kiss";
-        this.description = "sends kisses";
+        this.description = "Shows a kissing person [anime]";
         this.usage = PREFIX + commandName + " [user]";
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();

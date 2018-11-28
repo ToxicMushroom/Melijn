@@ -16,7 +16,7 @@ public class SpookifyCommand extends Command {
 
     public SpookifyCommand() {
         this.commandName = "spookify";
-        this.description = "Makes images spooky";
+        this.description = "Spookifies an image";
         this.category = Category.FUN;
         this.usage = PREFIX + commandName + " [image] [brightness threshold 1-254 (default 128)]";
     }

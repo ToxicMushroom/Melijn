@@ -16,7 +16,7 @@ public class TriggeredCommand extends Command {
 
     public TriggeredCommand() {
         this.commandName = "triggered";
-        this.description = "Will visualize your triggered state to other people";
+        this.description = "Shows a triggered person";
         this.usage = PREFIX + commandName;
         this.aliases = new String[]{"rage"};
         this.category = Category.FUN;

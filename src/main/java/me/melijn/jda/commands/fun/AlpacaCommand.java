@@ -14,7 +14,7 @@ public class AlpacaCommand extends Command {
 
     public AlpacaCommand() {
         this.commandName = "alpaca";
-        this.description = "shows a sexy alpaca";
+        this.description = "Shows an alpaca";
         this.usage = PREFIX + commandName;
         this.category = Category.FUN;
     }
