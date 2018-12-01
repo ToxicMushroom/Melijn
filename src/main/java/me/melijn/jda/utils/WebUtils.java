@@ -29,6 +29,7 @@ public class WebUtils {
 
     private WeebApi weebApi;
     private static WebUtils webUtils = new WebUtils();
+    private OkHttpClient client = new OkHttpClient();
     private SpotifyApi spotifyApi;
 
     private final Pattern spotifyTrackUrl = Pattern.compile("https://open.spotify.com/track/(\\S+)");
@@ -74,7 +75,7 @@ public class WebUtils {
         return webUtils;
     }
 
-    private OkHttpClient client = new OkHttpClient();
+
 
 
     public void getTags(Consumer<List<String>> callback) {
@@ -101,10 +102,8 @@ public class WebUtils {
 
     public String getCatUrl() {
         String catPage = run("http://aws.random.cat/meow");
-        if (catPage.startsWith("{")) {
-            if (new JSONObject(catPage).get("file").toString().toLowerCase().startsWith("https://") || new JSONObject(catPage).get("file").toString().toLowerCase().startsWith("http://"))
-                return new JSONObject(catPage).get("file").toString();
-        }
+        if (catPage.startsWith("{") && (new JSONObject(catPage).get("file").toString().toLowerCase().startsWith("https://") || new JSONObject(catPage).get("file").toString().toLowerCase().startsWith("http://")))
+                return new JSONObject(catPage).get("file").toString().toLowerCase();
         return null;
     }
 
