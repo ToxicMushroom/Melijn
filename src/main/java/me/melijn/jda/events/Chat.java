@@ -116,7 +116,7 @@ public class Chat extends ListenerAdapter {
         if (SetVerificationChannel.verificationChannelsCache.getUnchecked(event.getGuild().getIdLong()) == event.getChannel().getIdLong()) {
             try {
                 if (!event.getMember().hasPermission(event.getChannel(), Permission.MANAGE_CHANNEL))
-                    event.getMessage().delete().reason("Verification Channel").queue(s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()));
+                    event.getMessage().delete().reason("Verification Channel").queue(s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()), failed -> {});
                 if (SetVerificationCode.verificationCodeCache.get(event.getGuild().getIdLong()) != null) {
                     if (event.getMessage().getContentRaw().equalsIgnoreCase(SetVerificationCode.verificationCodeCache.get(event.getGuild().getIdLong()))) {
                         JoinLeave.verify(event.getGuild(), event.getAuthor());

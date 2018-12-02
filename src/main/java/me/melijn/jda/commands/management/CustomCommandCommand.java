@@ -195,7 +195,7 @@ public class CustomCommandCommand extends Command {
                     event.reply("I couldn't find a command named: **" + name  + "**\nList: " + getCommandList(guild));
                     return;
                 }
-                List<String> aliases = command.getString("aliases").isBlank() ? new ArrayList<>() : Arrays.asList(command.getString("aliases").split("\\+,\\+"));
+                List<String> aliases = command.getString("aliases").isBlank() ? new ArrayList<>() : new ArrayList<>(Arrays.asList(command.getString("aliases").split("\\+,\\+")));
                 if (args[2].equalsIgnoreCase("list")) {
                     event.reply("Aliases for this command: " + command.getString("aliases"));
                 } else if (args[2].equalsIgnoreCase("add") && args.length > 3) {

@@ -1731,7 +1731,7 @@ public class MySQL {
     }
 
     public void updateCustomCommandAliases(long guildId, String name, List<String> aliases) {
-        executeUpdate("UPDATE custom_commands SET aliases= ? WHERE guildId= ? AND name= ?", String.join(", ", aliases), guildId, name);
+        executeUpdate("UPDATE custom_commands SET aliases= ? WHERE guildId= ? AND name= ?", String.join("%split%", aliases), guildId, name);
     }
 
     public void addQueue(long guildId, long channelId, boolean paused, BlockingQueue<AudioTrack> queue) {

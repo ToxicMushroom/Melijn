@@ -132,10 +132,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                 if (commands.size() < INDEX_LIMIT + 1) {
                     commands.stream().filter(cmd -> cmd.isCommandFor(name)).findAny().ifPresent(command -> {
 
-                        if (command.getCategory() == Category.DEVELOPER && event.getAuthor().getIdLong() != Melijn.OWNERID)
-                            return;
-                        if (noPermission(event, command)) return;
-                        if (unFulfilledNeeds(event, command)) return;
+                        if (shouldnotrun(event, command)) return;
                         if (event.getGuild() != null && DisableCommand.disabledGuildCommands.containsKey(event.getGuild().getIdLong()) && DisableCommand.disabledGuildCommands.get(event.getGuild().getIdLong()).contains(commands.indexOf(command)))
                             return;
 
@@ -148,10 +145,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                     if (i != -1) {
                         Command command = commands.get(i);
 
-                        if (command.getCategory() == Category.DEVELOPER && event.getAuthor().getIdLong() != Melijn.OWNERID)
-                            return;
-                        if (noPermission(event, command)) return;
-                        if (unFulfilledNeeds(event, command)) return;
+                        if (shouldnotrun(event, command)) return;
 
                         Melijn.mySQL.updateUsage(i, System.currentTimeMillis());
                         CommandEvent cevent = new CommandEvent(event, args, this, name);
@@ -165,19 +159,45 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                     JSONObject command = ccs.getJSONObject(i);
                     if (command.getBoolean("prefix")) {
                         String message = event.getMessage().getContentRaw();
-                        if (message.matches("<@" + event.getJDA().getSelfUser().getId() + ">(\\s+)?" + command.getString("name"))) {
+                        String justName = message.replaceFirst(
+                                "<@" + event.getJDA().getSelfUser().getId() + ">(?:\\s+)?|" +
+                                        SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong()) + "(?:\\s+)?", "");
+                        if (justName.equalsIgnoreCase(command.getString("name"))) {
                             customCommandSender(command, event.getGuild(), event.getTextChannel());
-                        } else if (message.matches(SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong()) + "(\\s+)?" + command.getString("name"))) {
-                            customCommandSender(command, event.getGuild(), event.getTextChannel());
+                            return;
                         }
-                    } else if (command.getString("name").equalsIgnoreCase(event.getMessage().getContentStripped())) {
-                        customCommandSender(command, event.getGuild(), event.getTextChannel());
+                        for (String alias : command.getString("aliases").split("%split%")) {
+                            if (justName.equalsIgnoreCase(alias)) {
+                                customCommandSender(command, event.getGuild(), event.getTextChannel());
+                                return;
+                            }
+                        }
+
+                    } else {
+                        if (command.getString("name").equalsIgnoreCase(event.getMessage().getContentRaw())) {
+                            customCommandSender(command, event.getGuild(), event.getTextChannel());
+                            return;
+                        }
+                        for (String alias : command.getString("aliases").split("%split%")) {
+                            if (event.getMessage().getContentRaw().equalsIgnoreCase(alias)) {
+                                customCommandSender(command, event.getGuild(), event.getTextChannel());
+                                return;
+                            }
+                        }
                     }
                 }
             }
         } catch (Exception e) {
             MessageHelper.printException(Thread.currentThread(), e, event.getGuild(), event.getChannel());
         }
+    }
+
+    private boolean shouldnotrun(MessageReceivedEvent event, Command command) {
+        if (command.getCategory() == Category.DEVELOPER && event.getAuthor().getIdLong() != Melijn.OWNERID)
+            return true;
+        if (noPermission(event, command)) return true;
+        if (unFulfilledNeeds(event, command)) return true;
+        return false;
     }
 
     private void customCommandSender(JSONObject command, Guild guild, TextChannel channel) {
