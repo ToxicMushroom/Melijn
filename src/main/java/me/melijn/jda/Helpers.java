@@ -145,7 +145,8 @@ public class Helpers {
             "CustomCommand",
             "poll",
             "dice",
-            "SetEmbedColor"
+            "SetEmbedColor",
+            "emotes"
     );
 
     public static void startTimer(JDA jda, int i) {

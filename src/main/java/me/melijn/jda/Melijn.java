@@ -155,7 +155,8 @@ public class Melijn {
                 new PollCommand(),
                 new DiceCommand(),
                 new TestCommand(),
-                new SetEmbedColorCommand()
+                new SetEmbedColorCommand(),
+                new EmotesCommand()
         );
 
         shardManager = new DefaultShardManagerBuilder()
@@ -164,7 +165,7 @@ public class Melijn {
                 .setGame(Game.playing(PREFIX + "help | melijn.com"))
                 .setAutoReconnect(true)
                 .addEventListeners(client.build(), new JoinLeave(), new AddReaction(), new Channels(), new Chat())
-                .setDisabledCacheFlags(EnumSet.of(CacheFlag.EMOTE, CacheFlag.GAME))
+                .setDisabledCacheFlags(EnumSet.of(CacheFlag.GAME))
                 .setAudioSendFactory(new NativeAudioSendFactory())
                 .build();
 
