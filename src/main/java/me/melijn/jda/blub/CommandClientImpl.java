@@ -123,8 +123,8 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
             String prefix = event.getGuild() != null ? SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong()) : Melijn.PREFIX;
             if (rawContent.toLowerCase().startsWith(prefix.toLowerCase()))
                 parts = Arrays.copyOf(rawContent.substring(prefix.length()).trim().split("\\s+", 2), 2);
-            else if (rawContent.toLowerCase().startsWith((String.valueOf(nickname ? "<@!" : "<@") + event.getJDA().getSelfUser().getId() + ">")))
-                parts = Arrays.copyOf(rawContent.substring((String.valueOf(nickname ? "<@!" : "<@") + event.getJDA().getSelfUser().getId() + ">").length()).trim().split("\\s+", 2), 2);
+            else if (rawContent.toLowerCase().startsWith(((nickname ? "<@!" : "<@") + event.getJDA().getSelfUser().getId() + ">")))
+                parts = Arrays.copyOf(rawContent.substring(((nickname ? "<@!" : "<@") + event.getJDA().getSelfUser().getId() + ">").length()).trim().split("\\s+", 2), 2);
 
             if (parts != null && (event.isFromType(ChannelType.PRIVATE) || event.getTextChannel().canTalk())) {
                 String name = parts[0];
@@ -132,7 +132,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                 if (commands.size() < INDEX_LIMIT + 1) {
                     commands.stream().filter(cmd -> cmd.isCommandFor(name)).findAny().ifPresent(command -> {
 
-                        if (shouldnotrun(event, command)) return;
+                        if (shouldNotRun(event, command)) return;
                         if (event.getGuild() != null && DisableCommand.disabledGuildCommands.containsKey(event.getGuild().getIdLong()) && DisableCommand.disabledGuildCommands.get(event.getGuild().getIdLong()).contains(commands.indexOf(command)))
                             return;
 
@@ -145,7 +145,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                     if (i != -1) {
                         Command command = commands.get(i);
 
-                        if (shouldnotrun(event, command)) return;
+                        if (shouldNotRun(event, command)) return;
 
                         Melijn.mySQL.updateUsage(i, System.currentTimeMillis());
                         CommandEvent cevent = new CommandEvent(event, args, this, name);
@@ -153,15 +153,16 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                     }
                 }
             }
-            if (event.getGuild() != null && serverHasCC.getUnchecked(event.getGuild().getIdLong())) {
+            if (event.getGuild() != null && event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE) && serverHasCC.getUnchecked(event.getGuild().getIdLong())) {
                 JSONArray ccs = Melijn.mySQL.getCustomCommands(event.getGuild().getIdLong());
+                String message = event.getMessage().getContentRaw();
+                String justName = message.replaceFirst(
+                        "<@" + event.getJDA().getSelfUser().getId() + ">(?:\\s+)?|" +
+                                SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong()) + "(?:\\s+)?", "");
                 for (int i = 0; i < ccs.length(); i++) {
                     JSONObject command = ccs.getJSONObject(i);
                     if (command.getBoolean("prefix")) {
-                        String message = event.getMessage().getContentRaw();
-                        String justName = message.replaceFirst(
-                                "<@" + event.getJDA().getSelfUser().getId() + ">(?:\\s+)?|" +
-                                        SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong()) + "(?:\\s+)?", "");
+                        if (message.equals(justName)) continue;
                         if (justName.equalsIgnoreCase(command.getString("name"))) {
                             customCommandSender(command, event.getGuild(), event.getTextChannel());
                             return;
@@ -172,14 +173,14 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                                 return;
                             }
                         }
-
                     } else {
-                        if (command.getString("name").equalsIgnoreCase(event.getMessage().getContentRaw())) {
+                        System.out.println(command.getString("name") + " - " + message);
+                        if (command.getString("name").equalsIgnoreCase(message)) {
                             customCommandSender(command, event.getGuild(), event.getTextChannel());
                             return;
                         }
                         for (String alias : command.getString("aliases").split("%split%")) {
-                            if (event.getMessage().getContentRaw().equalsIgnoreCase(alias)) {
+                            if (message.equalsIgnoreCase(alias)) {
                                 customCommandSender(command, event.getGuild(), event.getTextChannel());
                                 return;
                             }
@@ -192,7 +193,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
         }
     }
 
-    private boolean shouldnotrun(MessageReceivedEvent event, Command command) {
+    private boolean shouldNotRun(MessageReceivedEvent event, Command command) {
         if (command.getCategory() == Category.DEVELOPER && event.getAuthor().getIdLong() != Melijn.OWNERID)
             return true;
         if (noPermission(event, command)) return true;
@@ -202,6 +203,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
 
     private void customCommandSender(JSONObject command, Guild guild, TextChannel channel) {
         try {
+            System.out.println("debug point 7");
             String attachment = command.getString("attachment");
             if (isJSONObjectValid(command.getString("message"))) {
                 JSONObject content = new JSONObject(command.getString("message"));
