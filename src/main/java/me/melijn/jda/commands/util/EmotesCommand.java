@@ -1,6 +1,7 @@
 package me.melijn.jda.commands.util;
 
 import me.melijn.jda.Helpers;
+import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
@@ -15,6 +16,7 @@ public class EmotesCommand extends Command {
         this.commandName = "emotes";
         this.description = "Shows you all the emotes in a server";
         this.usage = PREFIX + commandName;
+        this.category = Category.UTILS;
         this.needs = new Need[]{Need.GUILD};
     }
 
