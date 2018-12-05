@@ -174,7 +174,6 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                             }
                         }
                     } else {
-                        System.out.println(command.getString("name") + " - " + message);
                         if (command.getString("name").equalsIgnoreCase(message)) {
                             customCommandSender(command, event.getGuild(), event.getTextChannel());
                             return;
@@ -203,7 +202,6 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
 
     private void customCommandSender(JSONObject command, Guild guild, TextChannel channel) {
         try {
-            System.out.println("debug point 7");
             String attachment = command.getString("attachment");
             if (isJSONObjectValid(command.getString("message"))) {
                 JSONObject content = new JSONObject(command.getString("message"));
