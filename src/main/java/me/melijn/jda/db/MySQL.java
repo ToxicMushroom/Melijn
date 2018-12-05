@@ -246,11 +246,7 @@ public class MySQL {
     public void addRolePermission(long guildId, long roleId, String permission) {
         try (Connection con = ds.getConnection()) {
             PreparedStatement adding = con.prepareStatement("INSERT INTO perms_roles(guildId, roleId, permission) VALUES (?, ?, ?)");
-            adding.setLong(1, guildId);
-            adding.setLong(2, roleId);
-            adding.setString(3, permission);
-            adding.executeUpdate();
-            adding.close();
+            setPermissionParams(guildId, roleId, permission, adding);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -259,11 +255,7 @@ public class MySQL {
     public void addUserPermission(long guildId, long userId, String permission) {
         try (Connection con = ds.getConnection()) {
             PreparedStatement adding = con.prepareStatement("INSERT INTO perms_users(guildId, userId, permission) VALUES (?, ?, ?)");
-            adding.setLong(1, guildId);
-            adding.setLong(2, userId);
-            adding.setString(3, permission);
-            adding.executeUpdate();
-            adding.close();
+            setPermissionParams(guildId, userId, permission, adding);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -272,24 +264,24 @@ public class MySQL {
     public void removeRolePermission(long guildId, long roleId, String permission) {
         try (Connection con = ds.getConnection()) {
             PreparedStatement removing = con.prepareStatement("DELETE FROM perms_roles WHERE guildId= ? AND roleId= ? AND permission= ?");
-            removing.setLong(1, guildId);
-            removing.setLong(2, roleId);
-            removing.setString(3, permission);
-            removing.executeUpdate();
-            removing.close();
+            setPermissionParams(guildId, roleId, permission, removing);
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
+    private void setPermissionParams(long guildId, long roleId, String permission, PreparedStatement statement) throws SQLException {
+        statement.setLong(1, guildId);
+        statement.setLong(2, roleId);
+        statement.setString(3, permission);
+        statement.executeUpdate();
+        statement.close();
+    }
+
     public void removeUserPermission(long guildId, long userId, String permission) {
         try (Connection con = ds.getConnection()) {
             PreparedStatement removing = con.prepareStatement("DELETE FROM perms_users WHERE guildId= ? AND userId= ? AND permission= ?");
-            removing.setLong(1, guildId);
-            removing.setLong(2, userId);
-            removing.setString(3, permission);
-            removing.executeUpdate();
-            removing.close();
+            setPermissionParams(guildId, userId, permission, removing);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -297,10 +289,11 @@ public class MySQL {
 
     public boolean hasPermission(Guild guild, long userId, String permission) {
         try (Connection con = ds.getConnection()) {
-            PreparedStatement getting = con.prepareStatement("SELECT * FROM perms_users WHERE guildId= ? AND userId= ? AND permission= ?");
+            PreparedStatement getting = con.prepareStatement("SELECT * FROM perms_users WHERE guildId= ? AND userId= ? AND (permission= ? OR permission= ?)");
             getting.setLong(1, guild.getIdLong());
             getting.setLong(2, userId);
             getting.setString(3, permission);
+            getting.setString(4, "*");
             ResultSet rs = getting.executeQuery();
             boolean temp = false;
             if (rs.next()) {
@@ -317,10 +310,11 @@ public class MySQL {
         roles.add(guild.getPublicRole());
         for (Role role : roles) {
             try (Connection con = ds.getConnection()) {
-                PreparedStatement getting = con.prepareStatement("SELECT * FROM perms_roles WHERE guildId= ? AND roleId= ? AND permission= ?");
+                PreparedStatement getting = con.prepareStatement("SELECT * FROM perms_roles WHERE guildId= ? AND roleId= ? AND (permission= ? OR permission= ?)");
                 getting.setLong(1, guild.getIdLong());
                 getting.setLong(2, role.getIdLong());
                 getting.setString(3, permission);
+                getting.setString(4, "*");
                 ResultSet rs = getting.executeQuery();
                 boolean temp = false;
                 if (rs.next()) {
@@ -328,7 +322,7 @@ public class MySQL {
                 }
                 getting.close();
                 rs.close();
-                return temp;
+                if (temp) return temp;
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -364,14 +358,7 @@ public class MySQL {
         List<String> toReturn = new ArrayList<>();
         try (Connection con = ds.getConnection()) {
             PreparedStatement getPerms = con.prepareStatement("SELECT * FROM perms_roles WHERE guildId= ? AND roleId= ?");
-            getPerms.setLong(1, guildId);
-            getPerms.setLong(2, roleId);
-            ResultSet rs = getPerms.executeQuery();
-            while (rs.next()) {
-                toReturn.add(rs.getString("permission"));
-            }
-            getPerms.close();
-            rs.close();
+            addResultsToList(guildId, roleId, toReturn, getPerms);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -382,18 +369,22 @@ public class MySQL {
         List<String> toReturn = new ArrayList<>();
         try (Connection con = ds.getConnection()) {
             PreparedStatement getPerms = con.prepareStatement("SELECT * FROM perms_users WHERE guildId= ? AND userId= ?");
-            getPerms.setLong(1, guildId);
-            getPerms.setLong(2, userId);
-            ResultSet rs = getPerms.executeQuery();
-            while (rs.next()) {
-                toReturn.add(rs.getString("permission"));
-            }
-            getPerms.close();
-            rs.close();
+            addResultsToList(guildId, userId, toReturn, getPerms);
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return toReturn;
+    }
+
+    private void addResultsToList(long guildId, long userId, List<String> list, PreparedStatement statement) throws SQLException {
+        statement.setLong(1, guildId);
+        statement.setLong(2, userId);
+        ResultSet rs = statement.executeQuery();
+        while (rs.next()) {
+            list.add(rs.getString("permission"));
+        }
+        statement.close();
+        rs.close();
     }
 
     public boolean noOneHasPermission(long guildId, String permission) {
@@ -1782,9 +1773,9 @@ public class MySQL {
         executeUpdate("TRUNCATE saved_queues");
     }
 
-    public void deleteMessage(long guildId, long channelId, long messageId, long secondsFromNow) {
+    /*public void deleteMessage(long guildId, long channelId, long messageId, long secondsFromNow) {
         long deleteTime = System.currentTimeMillis() + secondsFromNow*1000;
-    }
+    }*/
 
     public Integer getEmbedColor(Long guildId) {
         try (Connection con = ds.getConnection()) {

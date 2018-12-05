@@ -90,12 +90,12 @@ public class SelfRoleCommand extends Command {
                     break;
                 case "remove":
                     Role roleRemoved = Helpers.getRoleByArgs(event, args[1]);
-                    if (roleRemoved == null || roleRemoved.getIdLong() != guild.getIdLong()) {
+                    if (roleRemoved == null || roleRemoved.getIdLong() == guild.getIdLong()) {
                         event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " add <role> <emote | emoji>");
                         return;
                     }
                     String emote2 = event.getMessage().getEmotes().size() > 0 ? event.getMessage().getEmotes().get(0).getId() : (args.length < 3 ? "" : args[2]);
-                    if (!cache.containsKey(roleRemoved.getIdLong()) || (!emote2.isBlank() && !cache.containsValue(emote2))) {
+                    if (!cache.containsKey(roleRemoved.getIdLong()) || (emote2.isBlank() && !cache.containsValue(emote2))) {
                         event.reply("This entry does not exist");
                         return;
                     }

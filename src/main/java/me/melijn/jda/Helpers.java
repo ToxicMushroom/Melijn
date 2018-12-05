@@ -195,7 +195,7 @@ public class Helpers {
     public static boolean hasPerm(Member member, String permission, int level) {
         if (member.isOwner() || member.hasPermission(Permission.ADMINISTRATOR)) return true;
         if (level == 0 && Melijn.mySQL.noOneHasPermission(member.getGuild().getIdLong(), permission)) return true;
-        return Melijn.mySQL.hasPermission(member.getGuild(), member.getUser().getIdLong(), permission) || Melijn.mySQL.hasPermission(member.getGuild(), member.getUser().getIdLong(), "*");
+        return Melijn.mySQL.hasPermission(member.getGuild(), member.getUser().getIdLong(), permission);
     }
 
     public static String getDurationBreakdown(long milliseconds) {
