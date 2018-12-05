@@ -32,7 +32,7 @@ public class SetSelfRoleChannelCommand extends Command {
         this.commandName = "setSelfRoleChannel";
         this.usage = PREFIX + commandName + " [TextChannel]";
         this.description = "Sets the selfRoleChannel where members can select roles they want";
-        this.aliases = new String[]{"ssrlc"};
+        this.aliases = new String[]{"ssrc"};
         this.needs = new Need[]{Need.GUILD};
         this.category = Category.MANAGEMENT;
     }

@@ -35,7 +35,7 @@ public class SelfRoleCommand extends Command {
         this.commandName = "selfRole";
         this.description = "Main command to manage SelfRoles";
         this.usage = PREFIX + commandName + " <add | remove | list> [role] [emote | emoji]";
-        this.aliases = new String[]{"srl"};
+        this.aliases = new String[]{"sr"};
         this.category = Category.MANAGEMENT;
         this.needs = new Need[]{Need.GUILD};
     }
@@ -52,13 +52,30 @@ public class SelfRoleCommand extends Command {
             TLongObjectMap<String> cache = selfRoles.getUnchecked(guild.getIdLong());
             switch (args[0].toLowerCase()) {
                 case "add":
-
-                    if (args.length < 3 && event.getMessage().getEmotes().size() > 0 || args[2].matches("\\\\u.*")) {
+                    StringBuilder builder = new StringBuilder();
+                    event.getArgs().codePoints().forEachOrdered(code -> {
+                        char[] chars = Character.toChars(code);
+                        if (chars.length > 1) {
+                            StringBuilder hex0 = new StringBuilder(Integer.toHexString(chars[0]).toUpperCase());
+                            StringBuilder hex1 = new StringBuilder(Integer.toHexString(chars[1]).toUpperCase());
+                            while (hex0.length() < 4)
+                                hex0.insert(0, "0");
+                            while (hex1.length() < 4)
+                                hex1.insert(0, "0");
+                            builder.append("\\u").append(hex0).append("\\u").append(hex1);
+                        } else {
+                            StringBuilder hex = new StringBuilder(Integer.toHexString(code).toUpperCase());
+                            while (hex.length() < 4)
+                                hex.insert(0, "0");
+                            builder.append("\\u").append(hex);
+                        }
+                    });
+                    if (args.length < 3 || (event.getMessage().getEmotes().size() < 1 && !builder.toString().matches("\\\\u.*"))) {
                         event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " add <role> <emote | emoji>");
                         return;
                     }
                     Role roleAdded = Helpers.getRoleByArgs(event, args[1]);
-                    if (roleAdded == null || roleAdded.getIdLong() != guild.getIdLong()) {
+                    if (roleAdded == null || roleAdded.getIdLong() == guild.getIdLong()) {
                         event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " add <role> <emote | emoji>");
                         return;
                     }
@@ -68,6 +85,7 @@ public class SelfRoleCommand extends Command {
                         return;
                     }
                     Melijn.mySQL.addSelfRole(guild.getIdLong(), roleAdded.getIdLong(), emote);
+                    selfRoles.invalidate(guild.getIdLong());
                     event.reply("SelfRole added: **@" + roleAdded.getName() + "** by **" + event.getFullAuthorName() + "**");
                     break;
                 case "remove":
@@ -83,9 +101,11 @@ public class SelfRoleCommand extends Command {
                     }
                     if (emote2.isBlank()) {
                         Melijn.mySQL.removeSelfRole(guild.getIdLong(), roleRemoved.getIdLong());
+                        selfRoles.invalidate(guild.getIdLong());
                         event.reply("SelfRole entries removed for role: **@" + roleRemoved.getName() + "** by **" + event.getFullAuthorName() + "**");
                     } else {
                         Melijn.mySQL.removeSelfRole(guild.getIdLong(), roleRemoved.getIdLong(), emote2);
+                        selfRoles.invalidate(guild.getIdLong());
                         event.reply("SelfRole entry removed for role: **@" + roleRemoved.getName() + "** by **" + event.getFullAuthorName() + "**");
                     }
 
