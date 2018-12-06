@@ -203,6 +203,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
     private void customCommandSender(JSONObject command, Guild guild, TextChannel channel) {
         try {
             String attachment = command.getString("attachment");
+            String fileName = "attachment" + attachment.substring(attachment.lastIndexOf("."));
             if (isJSONObjectValid(command.getString("message"))) {
                 JSONObject content = new JSONObject(command.getString("message"));
                 MessageAction action = null;
@@ -213,16 +214,16 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                                 ((JDAImpl) guild.getJDA()).getEntityBuilder().createMessageEmbed(content.getJSONObject("embed").put("type", "link"))
                         );
                     if (attachment.matches("https?://.*")) {
-                        action = action.addFile(new URL(attachment).openStream(), "attachment" + attachment.substring(attachment.lastIndexOf(".")));
+                        action = action.addFile(new URL(attachment).openStream(), fileName);
                     }
                 } else { //Als er een geen gewone message bij zit
                     if (content.has("embed") && attachment.matches("https?://.*")) {
                         action = channel.sendMessage(((JDAImpl) guild.getJDA()).getEntityBuilder().createMessageEmbed(content.getJSONObject("embed").put("type", "link")));
-                        action = action.addFile(new URL(attachment).openStream(), "attachment" + attachment.substring(attachment.lastIndexOf(".")));
+                        action = action.addFile(new URL(attachment).openStream(), fileName);
                     } else if (content.has("embed")) {
                         action = channel.sendMessage(((JDAImpl) guild.getJDA()).getEntityBuilder().createMessageEmbed(content.getJSONObject("embed").put("type", "link")));
                     } else if (attachment.matches("https?://.*")) {
-                        action = channel.sendFile(new URL(attachment).openStream(), "attachment" + attachment.substring(attachment.lastIndexOf(".")));
+                        action = channel.sendFile(new URL(attachment).openStream(), fileName);
                     }
                 }
                 if (action != null)
@@ -230,7 +231,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
             } else {
                 MessageAction action = channel.sendMessage(command.getString("message"));
                 if (attachment.matches("https?://.*")) {
-                    action = action.addFile(new URL(attachment).openStream(), "attachment" + attachment.substring(attachment.lastIndexOf(".")));
+                    action = action.addFile(new URL(attachment).openStream(), fileName);
                 }
                 action.queue();
             }
