@@ -100,8 +100,9 @@ public class JoinLeave extends ListenerAdapter {
                 newList.add(joinedUser.getIdLong());
                 Melijn.mySQL.addUnverifiedUser(guild.getIdLong(), joinedUser.getIdLong());
                 unVerifiedGuildMembersCache.put(guild.getIdLong(), newList);
-                if (guild.getRoleById(SetUnverifiedRole.unverifiedRoleCache.getUnchecked(guild.getIdLong())) != null)
-                    guild.getController().addSingleRoleToMember(event.getMember(), guild.getRoleById(SetUnverifiedRole.unverifiedRoleCache.getUnchecked(guild.getIdLong()))).reason("unverified user").queue();
+                Role role = guild.getRoleById(SetUnverifiedRole.unverifiedRoleCache.getUnchecked(guild.getIdLong()));
+                if (role != null && guild.getSelfMember().canInteract(role))
+                    guild.getController().addSingleRoleToMember(event.getMember(), role).reason("unverified user").queue();
             } else {
                 TaskScheduler.async(() -> {
                     Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.VERIFICATION);
