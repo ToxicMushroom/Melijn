@@ -35,9 +35,9 @@ public class GuildInfoCommand extends Command {
             if (args.length == 1 && args[0].matches("\\d+") && event.getJDA().asBot().getShardManager().getGuildById(args[0]) != null)
                 guild = event.getJDA().asBot().getShardManager().getGuildById(args[0]);
             event.reply(new Embedder(event.getGuild())
-                    .setAuthor(guild.getName(), null, guild.getIconUrl() + "?size=2048")
+                    .setAuthor(guild.getName(), null, guild.getIconUrl() == null ? null : guild.getIconUrl() + "?size=2048")
                     .addField("ID", guild.getId(), true)
-                    .addField("Icon", "[Download](" + guild.getIconUrl() + "?size=2048)", true)
+                    .addField("Icon", guild.getIconUrl() == null ? "none" : "[Download](" + guild.getIconUrl() + "?size=2048)", true)
                     .addField("Creation date", guild.getCreationTime().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG, FormatStyle.SHORT)), false)
                     .addField("Region", guild.getRegion().getName(), true)
                     .addField("Vip servers", String.valueOf(guild.getRegion().isVip()), true)

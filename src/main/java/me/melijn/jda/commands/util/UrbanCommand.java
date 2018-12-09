@@ -35,10 +35,12 @@ public class UrbanCommand extends Command {
                     JSONObject jresult = new JSONObject(result);
                     if (jresult.getJSONArray("list").toList().size() > 0) {
                         JSONObject firstMeaning = jresult.getJSONArray("list").getJSONObject(0);
+                        String definition = removeBrackets(firstMeaning.getString("definition"));
+                        String example = removeBrackets(firstMeaning.getString("example"));
 
                         event.reply(new Embedder(event.getGuild())
                                 .setTitle(firstMeaning.getString("word"))
-                                .setDescription("**Meaning**\n " + removeBrackets(firstMeaning.getString("definition")) + "\n\n**Example**\n " + removeBrackets(firstMeaning.getString("example")))
+                                .setDescription("**Meaning**\n " + definition.substring(0, definition.length() > 1000 ? 1000 : definition.length()) + "\n\n**Example**\n " + example.substring(0, example.length() > 1000 ? 1000 : example.length()))
                                 .setFooter(Helpers.getFooterStamp(), null)
                                 .build());
                     } else {
@@ -54,16 +56,6 @@ public class UrbanCommand extends Command {
     }
 
     private String removeBrackets(String input) {
-        return input.replaceAll("\\[", "").replaceAll("\\]", "");
-        /*
-        Matcher match = Pattern.compile("\\[(.+)\\]").matcher(input);
-        int i = 0;
-        if (match.find()) {
-            while (i < match.groupCount()) {
-                if (!match.group(i).matches("\\s+"))
-                    input = input.replaceFirst("\\[" + match.group(i) + "\\]", match.group(i++));
-            }
-        }
-        return input;*/
+        return input.replaceAll("\\[", "").replaceAll("]", "");
     }
 }
