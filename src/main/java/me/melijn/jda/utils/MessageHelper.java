@@ -184,30 +184,29 @@ public class MessageHelper {
     }
 
     public static List<String> getSplitMessage(String message) {
-        String toSplit = message;
         final List<String> messages = new ArrayList<>();
-        while (toSplit.length() > 2000) {
-            final String findLastNewline = toSplit.substring(0, 2000);
+        while (message.length() > 2000) {
+            final String findLastNewline = message.substring(0, 2000);
             int index = findLastNewline.lastIndexOf("\n");
-            if (index < 1600) {
+            if (index < 1800) {
                 index = findLastNewline.lastIndexOf(".");
             }
-            if (index < 1600) {
+            if (index < 1800) {
                 index = findLastNewline.lastIndexOf(" ");
             }
-            if (index < 1600) {
-                index = 2000;
+            if (index < 1800) {
+                index = 1999;
             }
-            messages.add(toSplit.substring(0, index));
-            toSplit = toSplit.substring(index);
+            messages.add(message.substring(0, index));
+            message = message.substring(index);
         }
+        if (message.length() > 0)
+            messages.add(message);
         return messages;
     }
 
     public static void sendSplitMessage(TextChannel channel, String text) {
-        final String toSplit = text;
         final List<String> messages = getSplitMessage(text);
-        messages.add(toSplit);
         messages.forEach(message -> channel.sendMessage(message).queue());
     }
 }
