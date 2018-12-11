@@ -1405,7 +1405,7 @@ public class MySQL {
                             Guild guild = jda.asBot().getShardManager().getGuildById(blubObj.getLong("guildId"));
                             if (guild != null && user != null)
                                 Melijn.mySQL.unban(user, guild, jda.getSelfUser(), "Ban expired");
-                        });
+                        }, failed -> {});
                     }
                 }
             }
@@ -1432,7 +1432,7 @@ public class MySQL {
                             Guild guild = jda.asBot().getShardManager().getGuildById(blubObj.getLong("guildId"));
                             if (guild != null)
                                 Melijn.mySQL.unmute(guild, user, jda.getSelfUser(), "Mute expired");
-                        });
+                        }, failed -> {});
                     }
                 }
             }
