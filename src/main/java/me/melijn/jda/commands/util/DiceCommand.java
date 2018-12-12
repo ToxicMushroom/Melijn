@@ -31,11 +31,11 @@ public class DiceCommand extends Command {
             if (rolls == 1) {
                 final int finalSize = size;
                 event.reply("Rolling dice .. \uD83C\uDFB2", message ->
-                        message.editMessage("Result: **" + MessageHelper.randInt(0, finalSize) + "**").queueAfter(1, TimeUnit.SECONDS));
+                        message.editMessage("Result: **" + MessageHelper.randInt(1, finalSize) + "**").queueAfter(1, TimeUnit.SECONDS));
             } else {
                 StringBuilder sb = new StringBuilder("**Results** \uD83C\uDFB2");
                 for (int i = 1; i <= rolls; i++) {
-                    sb.append("\nroll #").append(i).append(".  **").append(MessageHelper.randInt(0, size)).append("**");
+                    sb.append("\nroll #").append(i).append(".  **").append(MessageHelper.randInt(1, size)).append("**");
                 }
                 MessageHelper.sendSplitMessage(event.getTextChannel(), sb.toString());
             }
