@@ -12,7 +12,7 @@ import java.util.function.Predicate;
 public final class TaskScheduler implements Runnable {
 
     private static final Function<String, ThreadFactory> FACTORY = name -> new ThreadFactoryBuilder().setNameFormat("[" + name + "-Pool-%d] ").build();
-    private static final ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool(FACTORY.apply("TaskScheduler"));
+    public static final ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool(FACTORY.apply("TaskScheduler"));
 
     private final Runnable runnable;
     private final boolean repeating;

@@ -99,7 +99,7 @@ public class MusicManager {
                         for (AudioTrack track : tracks) {
                             songs.append(track.getInfo().title).append("\n");
                         }
-                        String toSend = String.valueOf("You're about to add a playlist which contains these songs:\n" + songs + "Hit \u2705 to accept or \u274E to deny").length() < 2000 ?
+                        String toSend = ("You're about to add a playlist which contains these songs:\n" + songs + "Hit \u2705 to accept or \u274E to deny").length() < 2000 ?
                                 "You're about to add a playlist which contains these songs:\n" + songs + "Hit \u2705 to accept or \u274E to deny" :
                                 "You're about to add a playlist which contains " + tracks.size() + " songs.\nHit \u2705 to accept or \u274E to deny.";
                         channel.sendMessage(toSend).queue(message -> {

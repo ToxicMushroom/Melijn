@@ -89,9 +89,13 @@ public class SelfRoleCommand extends Command {
                     event.reply("SelfRole added: **@" + roleAdded.getName() + "** by **" + event.getFullAuthorName() + "**");
                     break;
                 case "remove":
+                    if (args.length < 2) {
+                        event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " remove <role> [emote | emoji]");
+                        return;
+                    }
                     Role roleRemoved = Helpers.getRoleByArgs(event, args[1]);
                     if (roleRemoved == null || roleRemoved.getIdLong() == guild.getIdLong()) {
-                        event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " add <role> <emote | emoji>");
+                        event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " remove <role> [emote | emoji]");
                         return;
                     }
                     String emote2 = event.getMessage().getEmotes().size() > 0 ? event.getMessage().getEmotes().get(0).getId() : (args.length < 3 ? "" : args[2]);
