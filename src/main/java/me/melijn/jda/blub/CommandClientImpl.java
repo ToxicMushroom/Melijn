@@ -178,6 +178,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                             customCommandSender(command, event.getGuild(), event.getTextChannel());
                             return;
                         }
+                        if (command.getString("aliases").isBlank()) return;
                         for (String alias : command.getString("aliases").split("%split%")) {
                             if (message.equalsIgnoreCase(alias)) {
                                 customCommandSender(command, event.getGuild(), event.getTextChannel());
