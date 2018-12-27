@@ -19,6 +19,7 @@ public class SlowModeCommand extends Command {
         this.permissions = new Permission[]{Permission.MANAGE_CHANNEL};
         this.needs = new Need[]{Need.GUILD};
         this.category = Category.MANAGEMENT;
+        this.id = 91;
     }
     
     @Override

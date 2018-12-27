@@ -21,6 +21,7 @@ public class TriggeredCommand extends Command {
         this.aliases = new String[]{"rage"};
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
+        this.id = 39;
     }
 
     @Override

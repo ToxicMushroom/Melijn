@@ -20,6 +20,7 @@ public class WeebshCommand extends Command {
         this.usage = PREFIX + commandName + " <tags | types | type | tag> [arg]";
         this.category = Category.DEVELOPER;
         webUtils = WebUtils.getWebUtilsInstance();
+        this.id = 28;
     }
 
     @Override

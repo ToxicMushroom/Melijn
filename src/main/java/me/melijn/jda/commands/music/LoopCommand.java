@@ -3,11 +3,12 @@ package me.melijn.jda.commands.music;
 import gnu.trove.list.TLongList;
 import gnu.trove.list.array.TLongArrayList;
 import me.melijn.jda.Helpers;
+import me.melijn.jda.audio.AudioLoader;
+import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.entities.Guild;
 
@@ -24,6 +25,7 @@ public class LoopCommand extends Command {
         this.aliases = new String[]{"repeat", "loopsong"};
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};
         this.category = Category.MUSIC;
+        this.id = 68;
     }
 
     @Override
@@ -35,7 +37,8 @@ public class LoopCommand extends Command {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), cmd.getCommandName(), 0)) {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
-            if (MusicManager.getManagerInstance().getPlayer(guild).getListener().getTrackSize() > 0 || MusicManager.getManagerInstance().getPlayer(guild).getAudioPlayer().getPlayingTrack() != null) {
+            MusicPlayer musicPlayer = AudioLoader.getManagerInstance().getPlayer(guild);
+            if (musicPlayer.getTrackManager().getTrackSize() > 0 || musicPlayer.getAudioPlayer().getPlayingTrack() != null) {
                 if (args.length == 0 || args[0].isBlank()) {
                     if (looped.contains(guild.getIdLong())) {
                         looped.remove(guild.getIdLong());

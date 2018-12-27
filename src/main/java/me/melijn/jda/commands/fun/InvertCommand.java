@@ -20,6 +20,7 @@ public class InvertCommand extends Command {
         this.description = "Inverts an image";
         this.aliases = new String[]{"negative"};
         this.category = Category.FUN;
+        this.id = 4;
     }
 
     @Override

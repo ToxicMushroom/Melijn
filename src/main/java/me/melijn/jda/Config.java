@@ -4,7 +4,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -60,7 +59,7 @@ public class Config {
     private JSONObject read(File file) {
         JSONObject obj = null;
         try {
-            obj = new JSONObject(new String(Files.readAllBytes(Paths.get(file.getPath())), StandardCharsets.UTF_8));
+            obj = new JSONObject(Files.readString(Paths.get(file.getPath())));
         } catch (IOException ex) {
             ex.printStackTrace();
         }

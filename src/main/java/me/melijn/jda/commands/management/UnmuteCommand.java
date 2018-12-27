@@ -25,6 +25,7 @@ public class UnmuteCommand extends Command {
                 Permission.MESSAGE_HISTORY
         };
         this.needs = new Need[]{Need.GUILD};
+        this.id = 51;
     }
 
     @Override

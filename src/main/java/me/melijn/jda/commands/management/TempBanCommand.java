@@ -27,6 +27,7 @@ public class TempBanCommand extends Command {
         this.needs = new Need[]{
                 Need.GUILD
         };
+        this.id = 81;
     }
 
     @Override

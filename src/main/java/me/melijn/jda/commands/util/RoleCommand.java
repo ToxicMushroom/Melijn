@@ -25,6 +25,7 @@ public class RoleCommand extends Command {
         this.aliases = new String[]{"roleinfo"};
         this.category = Category.UTILS;
         this.needs = new Need[]{Need.GUILD};
+        this.id = 76;
     }
 
     @Override

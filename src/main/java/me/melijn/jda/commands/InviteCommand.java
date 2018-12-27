@@ -15,6 +15,7 @@ public class InviteCommand extends Command {
         this.description = "The bot will give an awesome link which you have to click";
         this.usage = PREFIX + commandName;
         this.category = Category.DEFAULT;
+        this.id = 34;
     }
 
     @Override

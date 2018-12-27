@@ -21,6 +21,7 @@ public class BirdCommand extends Command {
         this.aliases = new String[]{"vogel"};
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
+        this.id = 0;
     }
 
     @Override

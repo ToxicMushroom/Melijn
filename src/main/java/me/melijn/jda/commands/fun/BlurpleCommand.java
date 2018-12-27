@@ -19,6 +19,7 @@ public class BlurpleCommand extends Command {
         this.usage = PREFIX + commandName + " [image]";
         this.description = "Blurpifies an image";
         this.category = Category.FUN;
+        this.id = 3;
     }
 
     @Override

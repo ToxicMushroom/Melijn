@@ -20,6 +20,7 @@ public class RolesCommand extends Command {
         this.aliases = new String[]{"rolelist"};
         this.category = Category.UTILS;
         this.needs = new Need[]{Need.GUILD};
+        this.id = 75;
     }
 
 

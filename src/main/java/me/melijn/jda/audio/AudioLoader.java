@@ -1,4 +1,4 @@
-package me.melijn.jda.music;
+package me.melijn.jda.audio;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -30,17 +30,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class MusicManager {
+public class AudioLoader {
 
+    private final Lava lava = Lava.lava;
+    private static final AudioLoader managerInstance = new AudioLoader();
     private final AudioPlayerManager manager = new DefaultAudioPlayerManager();
     private final TLongObjectMap<MusicPlayer> players = new TLongObjectHashMap<>();
-    private static MusicManager managerInstance = new MusicManager();
     public static TLongObjectMap<List<AudioTrack>> userRequestedSongs = new TLongObjectHashMap<>();
     public static TLongLongMap userMessageToAnswer = new TLongLongHashMap();
     private static final YTSearch ytSearch = new YTSearch();
-    private final static String youtubeVideoBase = "https://youtu.be/";
+    private static final String youtubeVideoBase = "https://youtu.be/";
 
-    public MusicManager() {
+    public AudioLoader() {
         manager.getConfiguration().setFilterHotSwapEnabled(true);
         manager.setFrameBufferDuration(1000);
         AudioSourceManagers.registerRemoteSources(manager);
@@ -50,15 +51,16 @@ public class MusicManager {
     public TLongObjectMap<MusicPlayer> getPlayers() {
         return players;
     }
-
-    public static MusicManager getManagerInstance() {
-        return managerInstance;
+    public synchronized MusicPlayer getPlayer(Guild guild) {
+        return getPlayer(guild.getIdLong());
+    }
+    public synchronized MusicPlayer getPlayer(long guildId) {
+        if (!players.containsKey(guildId)) players.put(guildId, new MusicPlayer(guildId));
+        return players.get(guildId);
     }
 
-    public synchronized MusicPlayer getPlayer(Guild guild) {
-        if (!players.containsKey(guild.getIdLong()))
-            players.put(guild.getIdLong(), new MusicPlayer(manager.createPlayer(), guild));
-        return players.get(guild.getIdLong());
+    public static AudioLoader getManagerInstance() {
+        return managerInstance;
     }
 
 
@@ -72,7 +74,7 @@ public class MusicManager {
      */
     public void loadTrack(final TextChannel channel, final String source, User requester, boolean isPlaylist) {
         MusicPlayer player = getPlayer(channel.getGuild());
-        channel.getGuild().getAudioManager().setSendingHandler(player.getAudioHandler());
+        //channel.getGuild().getAudioManager().setSendingHandler(player.getAudioHandler());
         AudioLoadResultHandler resultHandler = new AudioLoadResultHandler() {
 
             @Override
@@ -81,49 +83,48 @@ public class MusicManager {
             }
 
             @Override
-            public void playlistLoaded(AudioPlaylist playlist) {
+            public void playlistLoaded(final AudioPlaylist playlist) {
                 List<AudioTrack> tracks = playlist.getTracks();
                 if (tracks.size() == 0) {
                     boolean prefixed = source.startsWith("ytsearch:") || source.startsWith("scsearch:");
-                    channel.sendMessage("No songs found with this request '" + (prefixed ? source.replaceFirst("ytsearch:|scsearch:", "") : source) + "'").queue();
+                    channel.sendMessage("No tracks found with this request '" + (prefixed ? source.replaceFirst("ytsearch:|scsearch:", "") : source) + "'").queue();
                     return;
                 }
-                if (!isPlaylist) {
-                    trackLoaded(tracks.get(0));
-                } else {
-                    if (tracks.size() > 200)
-                        tracks = tracks.subList(0, 200);
-                    if (!userRequestedSongs.containsKey(requester.getIdLong()) && !userMessageToAnswer.containsKey(requester.getIdLong())) {
-                        userRequestedSongs.put(requester.getIdLong(), tracks);
-                        StringBuilder songs = new StringBuilder();
-                        for (AudioTrack track : tracks) {
-                            songs.append(track.getInfo().title).append("\n");
-                        }
-                        String toSend = ("You're about to add a playlist which contains these songs:\n" + songs + "Hit \u2705 to accept or \u274E to deny").length() < 2000 ?
-                                "You're about to add a playlist which contains these songs:\n" + songs + "Hit \u2705 to accept or \u274E to deny" :
-                                "You're about to add a playlist which contains " + tracks.size() + " songs.\nHit \u2705 to accept or \u274E to deny.";
-                        channel.sendMessage(toSend).queue(message -> {
-                            userMessageToAnswer.put(requester.getIdLong(), message.getIdLong());
-                            message.addReaction("\u2705").queue();
-                            message.addReaction("\u274E").queue();
-                            TaskScheduler.async(() -> {
-                                MusicManager.userRequestedSongs.remove(requester.getIdLong());
-                                MusicManager.userMessageToAnswer.remove(requester.getIdLong());
-                            }, 30_000);
-                            message.delete().queueAfter(30, TimeUnit.SECONDS, null, (failure) -> {
-                            });
-                        });
-                    } else {
-                        channel.sendMessage("You still have a request to answer. (request automatically gets removed after 30 seconds)")
-                                .queue((message) -> message.delete().queueAfter(10, TimeUnit.SECONDS, null, (failure) -> {
-                                }));
+                if (isPlaylist) {
+                    tracks = tracks.size() > 200 ? tracks.subList(0, 200) : tracks;
+                    if (userRequestedSongs.containsKey(requester.getIdLong()) || userMessageToAnswer.containsKey(requester.getIdLong())) {
+                        channel.sendMessage("You still have a request to answer. (requests are automatically removed after 30 seconds)")
+                                .queue((message) -> message.delete().queueAfter(10, TimeUnit.SECONDS, null, (failure) -> {}));
+                        return;
                     }
+
+                    StringBuilder sb = new StringBuilder();
+                    tracks.forEach(track -> sb.append(track.getInfo().title).append("\n"));
+
+                    String toSend = "You're about to add a playlist which contains " +
+                            (("these tracks:\n" + sb + "Hit \u2705 to accept or \u274E to deny").length() < 2000 ?
+                            "these tracks:\n" + sb + "Hit \u2705 to accept or \u274E to deny" :
+                            tracks.size() + " tracks.\nHit \u2705 to accept or \u274E to deny.");
+                    channel.sendMessage(toSend).queue(message -> {
+                        userRequestedSongs.put(requester.getIdLong(), playlist.getTracks());
+                        userMessageToAnswer.put(requester.getIdLong(), message.getIdLong());
+                        message.addReaction("\u2705").queue();
+                        message.addReaction("\u274E").queue();
+                        TaskScheduler.async(() -> {
+                            AudioLoader.userRequestedSongs.remove(requester.getIdLong());
+                            AudioLoader.userMessageToAnswer.remove(requester.getIdLong());
+                        }, 30_000);
+                        message.delete().queueAfter(30, TimeUnit.SECONDS, null, (failure) -> {
+                        });
+                    });
+                } else {
+                    trackLoaded(tracks.get(0));
                 }
             }
 
             @Override
             public void noMatches() {
-                channel.sendMessage("I couldn't find a song called " + source + ". Check for spelling mistakes.").queue();
+                channel.sendMessage("I couldn't find a track named " + source + ". Check for spelling mistakes.").queue();
             }
 
             @Override
@@ -135,7 +136,7 @@ public class MusicManager {
         if (url.startsWith("ytsearch:")) {
             String result = ytSearch.search(url.replaceFirst("ytsearch:", ""));
             if (result == null) {
-                channel.sendMessage("I couldn't find a song called " + source.replaceFirst("ytsearch:", "") + ". Check for spelling mistakes.").queue();
+                channel.sendMessage("I couldn't find a track named " + source.replaceFirst("ytsearch:", "") + ". Check for spelling mistakes.").queue();
                 return;
             }
             url = youtubeVideoBase + result;
@@ -143,33 +144,34 @@ public class MusicManager {
         manager.loadItemOrdered(player, url, resultHandler);
     }
 
-    public void loadSimpleTrack(Guild guild, final String source) {
-        MusicPlayer player = getPlayer(guild);
-        guild.getAudioManager().setSendingHandler(player.getAudioHandler());
+    public void loadSimpleTrack(MusicPlayer player, final String source) {
+        //guild.getAudioManager().setSendingHandler(this.getPlayer(player.getLink().getGuildIdLong()).getAudioHandler());
         manager.loadItemOrdered(player, source, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
-                player.playTrack(track);
+                player.queue(track);
             }
 
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
                 List<AudioTrack> tracks = playlist.getTracks();
                 if (tracks.size() < 1) return;
-                player.playTrack(tracks.get(0));
+                player.queue(tracks.get(0));
             }
 
             @Override
-            public void noMatches() {}
+            public void noMatches() {
+            }
 
             @Override
-            public void loadFailed(FriendlyException ignored) {}
+            public void loadFailed(FriendlyException ignored) {
+            }
         });
     }
 
     public void searchTracks(TextChannel channel, String source, User author) {
         MusicPlayer player = getPlayer(channel.getGuild());
-        channel.getGuild().getAudioManager().setSendingHandler(player.getAudioHandler());
+        //channel.getGuild().getAudioManager().setSendingHandler(player.getAudioHandler());
         manager.loadItemOrdered(player, source, new AudioLoadResultHandler() {
 
             @Override
@@ -218,7 +220,6 @@ public class MusicManager {
 
     public void loadSpotifyTrack(TextChannel textChannel, String name, ArtistSimplified[] artists, int durationMs) {
         MusicPlayer player = getPlayer(textChannel.getGuild());
-        textChannel.getGuild().getAudioManager().setSendingHandler(player.getAudioHandler());
         String title = name.replaceFirst("scsearch:|ytsearch:", "");
         StringBuilder source = new StringBuilder(name);
         List<String> artistNames = new ArrayList<>();
@@ -247,10 +248,10 @@ public class MusicManager {
                 List<AudioTrack> tracks = playlist.getTracks();
                 for (AudioTrack track : tracks.subList(0, tracks.size() > 5 ? 5 : tracks.size())) {
                     if ((durationMs + 2000 > track.getDuration() && track.getDuration() > durationMs - 2000) || track.getInfo().title.toLowerCase().contains(title.toLowerCase())) {
-                        player.playTrack(track);
+                        player.queue(track);
                         EmbedBuilder eb = new Embedder(textChannel.getGuild());
                         eb.setTitle("Added");
-                        eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
+                        eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
                         eb.setFooter(Helpers.getFooterStamp(), null);
                         textChannel.sendMessage(eb.build()).queue();
                         return;
@@ -289,17 +290,17 @@ public class MusicManager {
     }
 
     private void iHateDuplicates(AudioTrack track, MusicPlayer player, TextChannel textChannel) {
-        player.playTrack(track);
-        EmbedBuilder eb = new Embedder(player.getGuild());
+        player.queue(track);
+        EmbedBuilder eb = new Embedder(player.getGuildId());
         eb.setTitle("Added");
-        eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
+        eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
         eb.setFooter(Helpers.getFooterStamp(), null);
         textChannel.sendMessage(eb.build()).queue();
     }
 
     private void loadSpotifyTracks(Guild guild, String name, ArtistSimplified[] artists, ArtistSimplified[] unused, int durationMs) {
         MusicPlayer player = getPlayer(guild);
-        guild.getAudioManager().setSendingHandler(player.getAudioHandler());
+        //guild.getAudioManager().setSendingHandler(player.getAudioHandler());
         String title = name.replaceFirst("scsearch:|ytsearch:", "");
         StringBuilder source = new StringBuilder(name);
         List<String> artistNames = new ArrayList<>();
@@ -310,7 +311,7 @@ public class MusicManager {
             public void trackLoaded(AudioTrack track) {
                 if ((durationMs + 2000 > track.getDuration() && track.getDuration() > durationMs - 2000) ||
                         (track.getInfo().title.toLowerCase().contains(title.toLowerCase()) && (durationMs + 60000 > track.getDuration() && track.getDuration() > durationMs - 60000))) {
-                    player.playTrack(track);
+                    player.queue(track);
                 } else {
                     tryAgain(name, artists, unused, guild, durationMs);
                 }
@@ -322,7 +323,7 @@ public class MusicManager {
                 for (AudioTrack track : tracks.subList(0, tracks.size() > 5 ? 5 : tracks.size())) {
                     if ((durationMs + 2000 > track.getDuration() && track.getDuration() > durationMs - 2000) ||
                             (track.getInfo().title.toLowerCase().contains(title.toLowerCase()) && (durationMs + 60000 > track.getDuration() && track.getDuration() > durationMs - 60000))) {
-                        player.playTrack(track);
+                        player.queue(track);
                         return;
                     }
                 }

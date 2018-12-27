@@ -20,6 +20,7 @@ public class DogCommand extends Command {
         this.category = Category.FUN;
         this.aliases = new String[]{"hond"};
         webUtils = WebUtils.getWebUtilsInstance();
+        this.id = 77;
     }
 
     @Override

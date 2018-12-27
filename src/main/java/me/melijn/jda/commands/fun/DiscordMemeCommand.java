@@ -20,6 +20,7 @@ public class DiscordMemeCommand extends Command {
         this.aliases = new String[]{"dmeme"};
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
+        this.id = 30;
     }
 
     @Override

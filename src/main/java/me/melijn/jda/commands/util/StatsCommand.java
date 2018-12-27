@@ -27,6 +27,7 @@ public class StatsCommand extends Command {
         this.description = "Shows the bot's server statistics";
         this.usage = PREFIX + commandName;
         this.category = Category.UTILS;
+        this.id = 94;
     }
 
     /* CREDITS TO DUNCTE123 FOR SOME OF THESE STATS AND DESIGN */

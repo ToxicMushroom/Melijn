@@ -36,6 +36,7 @@ public class SetStreamerModeCommand extends Command {
         this.category = Category.MANAGEMENT;
         this.extra = "https://melijn.com/guides/guide-5/";
         this.needs = new Need[]{Need.GUILD};
+        this.id = 83;
     }
 
     @Override

@@ -11,7 +11,9 @@ import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
-import net.dv8tion.jda.core.entities.Guild;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
@@ -27,46 +29,61 @@ public class DisableCommand extends Command {
         this.aliases = new String[]{"disabled"};
         this.extra = "You can use >disabled to get a list";
         this.category = Category.MANAGEMENT;
+        this.id = 87;
     }
 
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
-            Guild guild = event.getGuild();
+            long guildId = event.getGuild().getIdLong();
 
             if (event.getExecutor().equalsIgnoreCase("disable") && args.length > 0 && !args[0].isBlank()) {
-                TIntList buffer = new TIntArrayList();
-                if (disabledGuildCommands.containsKey(guild.getIdLong()))
-                    buffer.addAll(disabledGuildCommands.get(guild.getIdLong()));
+                TLongObjectMap<TIntList> map = DisableCommand.disabledGuildCommands;
+                TIntList buffer = map.containsKey(guildId) ? map.get(guildId) : new TIntArrayList();
+
+                int sizeBefore = buffer.size();
                 for (Command cmd : event.getClient().getCommands()) {
-                    if (cmd.getCommandName().equalsIgnoreCase(args[0]))
-                        if (!buffer.contains(event.getClient().getCommands().indexOf(cmd)) && !cmd.getCommandName().equalsIgnoreCase("enable"))
-                            buffer.add(event.getClient().getCommands().indexOf(cmd));
-                        else {
+
+                    if (cmd.getCommandName().equalsIgnoreCase(args[0])) {
+                        if (!buffer.contains(cmd.getId()) && !cmd.getCommandName().equalsIgnoreCase("enable")) {
+                            buffer.add(cmd.getId());
+                        } else {
                             event.reply("**" + cmd.getCommandName() + "** was already disabled");
-                            return;
                         }
+                        return;
+                    }
+
                     if (cmd.getCategory().toString().equalsIgnoreCase(args[0]) &&
-                            !buffer.contains(event.getClient().getCommands().indexOf(cmd)) &&
-                            !cmd.getCommandName().equalsIgnoreCase("enable"))
-                        buffer.add(event.getClient().getCommands().indexOf(cmd));
+                            !buffer.contains(cmd.getId()) &&
+                            !cmd.getCommandName().equalsIgnoreCase("enable")) {
+                        buffer.add(cmd.getId());
+                    }
+
                 }
-                if (buffer.size() == (disabledGuildCommands.containsKey(guild.getIdLong()) ? disabledGuildCommands.get(guild.getIdLong()).size() : 0)) {
+                if (buffer.size() == sizeBefore) {
                     event.reply("The given command or category was unknown");
                 } else {
                     event.reply("Successfully disabled **" + args[0] + "**");
                     TaskScheduler.async(() -> {
-                        Melijn.mySQL.addDisabledCommands(guild.getIdLong(), buffer);
-                        disabledGuildCommands.put(guild.getIdLong(), buffer);
+                        Melijn.mySQL.addDisabledCommands(guildId, buffer);
+                        disabledGuildCommands.put(guildId, buffer);
                     });
                 }
             } else if (event.getExecutor().equalsIgnoreCase("disabled")) {
                 StringBuilder sb = new StringBuilder();
                 int part = 1;
                 sb.append("Part **#").append(part++).append("** of disabled commands```INI\n");
-                for (int i : (disabledGuildCommands.containsKey(event.getGuild().getIdLong()) ? disabledGuildCommands.get(guild.getIdLong()) : new TIntArrayList()).toArray()) {
-                    if (sb.length() + event.getClient().getCommands().get(i).getCommandName().length() < 1950) {
+                for (int i : (disabledGuildCommands.containsKey(event.getGuild().getIdLong()) ? disabledGuildCommands.get(guildId) : new TIntArrayList()).toArray()) {
+                    List<Command> match = event.getClient().getCommands().stream().filter(cmd -> cmd.getId() == i).collect(Collectors.toList());
+                    if (match.size() == 0) {
+                        Melijn.mySQL.removeDisabledCommands(guildId, new TIntArrayList(new int[]{i}));
+                        TIntList newList = disabledGuildCommands.get(guildId);
+                        newList.remove(i);
+                        disabledGuildCommands.put(guildId, newList);
+                        continue;
+                    }
+                    if (sb.length() + match.get(0).getCommandName().length() < 1950) {
                         sb.append(i).append(" - [").append(event.getClient().getCommands().get(i).getCommandName()).append("]\n");
                     } else {
                         sb.append("```");

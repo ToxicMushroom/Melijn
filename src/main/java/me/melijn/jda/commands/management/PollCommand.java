@@ -23,6 +23,7 @@ public class PollCommand extends Command {
         this.category = Category.MANAGEMENT;
         this.aliases = new String[]{"createPoll"};
         this.extra = "example: >poll #announcements 7d \"Which is better?\" \"Minecraft\" \"Roblox\"";
+        this.id = 102;
     }
 
     @Override

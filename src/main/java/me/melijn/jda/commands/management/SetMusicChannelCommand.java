@@ -34,6 +34,7 @@ public class SetMusicChannelCommand extends Command {
         this.needs = new Need[]{Need.GUILD};
         this.extra = "https://melijn.com/guides/guide-5/";
         this.category = Category.MANAGEMENT;
+        this.id = 79;
     }
 
     @Override

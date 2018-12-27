@@ -12,4 +12,8 @@ public class Embedder extends EmbedBuilder {
             setColor(SetEmbedColorCommand.embedColorCache.getUnchecked(guild.getIdLong()));
         } else setColor(Helpers.embedColor);
     }
+
+    public Embedder(long guildId) {
+        setColor(SetEmbedColorCommand.embedColorCache.getUnchecked(guildId));
+    }
 }

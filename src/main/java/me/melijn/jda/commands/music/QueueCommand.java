@@ -1,13 +1,13 @@
 package me.melijn.jda.commands.music;
 
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.melijn.jda.Helpers;
+import me.melijn.jda.audio.AudioLoader;
+import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.music.MusicManager;
-import me.melijn.jda.music.MusicPlayer;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.melijn.jda.utils.Embedder;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
@@ -15,13 +15,13 @@ import net.dv8tion.jda.core.entities.Guild;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
+import java.util.Queue;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class QueueCommand extends Command {
 
-    private MusicManager manager = MusicManager.getManagerInstance();
+    private AudioLoader manager = AudioLoader.getManagerInstance();
 
     public QueueCommand() {
         this.commandName = "queue";
@@ -31,6 +31,7 @@ public class QueueCommand extends Command {
         this.category = Category.MUSIC;
         this.needs = new Need[]{Need.GUILD, Need.VOICECHANNEL};
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.id = 59;
     }
 
     @Override
@@ -38,36 +39,37 @@ public class QueueCommand extends Command {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
             Guild guild = event.getGuild();
             MusicPlayer player = manager.getPlayer(guild);
-            if (player.getListener().getTrackSize() == 0 && player.getAudioPlayer().getPlayingTrack() == null) {
+            if (player.getTrackManager().getTrackSize() == 0 && player.getAudioPlayer().getPlayingTrack() == null) {
                 event.reply("Nothing here..");
                 return;
             }
-            BlockingQueue<AudioTrack> tracks = player.getListener().getTracks();
-            List<String> lijst = new ArrayList<>();
-            int i = 0;
-            long totalqueuelength = 0;
-            if (player.getAudioPlayer().getPlayingTrack() != null) {
-                totalqueuelength = player.getAudioPlayer().getPlayingTrack().getDuration() - player.getAudioPlayer().getPlayingTrack().getPosition();
-                lijst.add(String.valueOf("[#" + i + "](" + player.getAudioPlayer().getPlayingTrack().getInfo().uri + ") - `Now playing:` " + player.getAudioPlayer().getPlayingTrack().getInfo().title + " `" + Helpers.getDurationBreakdown(player.getAudioPlayer().getPlayingTrack().getInfo().length) + "`"));
+            Queue<AudioTrack> tracks = player.getTrackManager().getTracks();
+            List<String> list = new ArrayList<>(); //This is where normal people use a stringbuilder
+            int position = 0;
+            long queueLength = 0;
+            AudioTrack playingTrack = player.getAudioPlayer().getPlayingTrack();
+            if (playingTrack != null) {
+                queueLength = playingTrack.getDuration() - playingTrack.getPosition();
+                list.add("[#" + position + "](" + playingTrack.getInfo().uri + ") - `Now playing:` " + playingTrack.getInfo().title + " `" + Helpers.getDurationBreakdown(playingTrack.getInfo().length) + "`");
             }
             for (AudioTrack track : tracks) {
-                i++;
-                totalqueuelength += track.getDuration();
-                lijst.add(String.valueOf("[#" + i + "](" + track.getInfo().uri + ") - " + track.getInfo().title + " `" + Helpers.getDurationBreakdown(track.getInfo().length) + "`"));
+                position++;
+                queueLength += track.getDuration();
+                list.add("[#" + position + "](" + track.getInfo().uri + ") - " + track.getInfo().title + " `" + Helpers.getDurationBreakdown(track.getInfo().length) + "`");
             }
             String loopedQueue = LoopQueueCommand.looped.contains(guild.getIdLong()) ? " \uD83D\uDD01" : "";
             String looped = LoopCommand.looped.contains(guild.getIdLong()) ? " \uD83D\uDD04" : "";
-            lijst.add("Status: " + (player.getAudioPlayer().isPaused() ? "\u23F8" : "\u25B6") + looped + loopedQueue);
-            lijst.add("Queue size: **" + (lijst.size() - 1) + "** tracks");
-            lijst.add("Queue length: **" + Helpers.getDurationBreakdown(totalqueuelength) + "**");
+            list.add("Status: " + (player.getAudioPlayer().isPaused() ? "\u23F8" : "\u25B6") + looped + loopedQueue);
+            list.add("Queue size: **" + (list.size() - 1) + "** tracks");
+            list.add("Queue length: **" + Helpers.getDurationBreakdown(queueLength) + "**");
             StringBuilder builder = new StringBuilder();
-            for (String s : lijst) {
+            for (String s : list) {
                 builder.append(s).append("\n");
             }
             if (builder.length() > 1800) {
                 int part = 1;
                 builder = new StringBuilder();
-                for (String s : lijst) {
+                for (String s : list) {
                     if (builder.length() + s.length() > 1800) {
                         EmbedBuilder eb = new Embedder(event.getGuild());
                         eb.setTitle("Queue part " + part);

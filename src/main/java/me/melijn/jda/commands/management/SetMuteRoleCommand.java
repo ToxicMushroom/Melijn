@@ -35,6 +35,7 @@ public class SetMuteRoleCommand extends Command {
         this.needs = new Need[]{Need.GUILD};
         this.aliases = new String[]{"smr"};
         this.category = Category.MANAGEMENT;
+        this.id = 49;
     }
 
     @Override

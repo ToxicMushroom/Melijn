@@ -24,6 +24,7 @@ public class InfoCommand extends Command {
         this.aliases = new String[]{"about", "botinfo", "author"};
         this.category = Category.UTILS;
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.id = 66;
     }
 
     /* CREDITS TO DUNCTE123 FOR DESIGN */

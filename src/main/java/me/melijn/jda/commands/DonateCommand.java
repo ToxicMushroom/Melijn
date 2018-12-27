@@ -13,6 +13,7 @@ public class DonateCommand extends Command {
         this.description = "Gives you information on how you can support the developer of Melijn ;)";
         this.usage = PREFIX + commandName;
         this.category = Category.DEFAULT;
+        this.id = 90;
     }
 
     @Override

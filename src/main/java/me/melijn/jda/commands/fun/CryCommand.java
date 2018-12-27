@@ -21,6 +21,7 @@ public class CryCommand extends Command {
         this.category = Category.FUN;
         this.aliases = new String[] {"sad"};
         webUtils = WebUtils.getWebUtilsInstance();
+        this.id = 19;
     }
 
     @Override

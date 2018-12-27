@@ -5,8 +5,8 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.music.MusicManager;
-import me.melijn.jda.music.MusicPlayer;
+import me.melijn.jda.audio.AudioLoader;
+import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.utils.MessageHelper;
 
 import static me.melijn.jda.Melijn.PREFIX;
@@ -19,14 +19,15 @@ public class PauseCommand extends Command {
         this.usage = PREFIX + commandName + " [on/enable/true | off/disable/false]";
         this.category = Category.MUSIC;
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};
+        this.id = 44;
     }
 
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
-            MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
+            MusicPlayer player = AudioLoader.getManagerInstance().getPlayer(event.getGuild());
             String[] args = event.getArgs().split("\\s+");
-            if (player.getAudioPlayer().getPlayingTrack() != null || player.getListener().getTrackSize() > 0) {
+            if (player.getAudioPlayer().getPlayingTrack() != null || player.getTrackManager().getTrackSize() > 0) {
                 if (args.length == 0 || args[0].isBlank()) {
                     if (player.getAudioPlayer().isPaused()) {
                         player.getAudioPlayer().setPaused(false);
@@ -50,7 +51,7 @@ public class PauseCommand extends Command {
                             event.reply("Resumed by **" + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + "**");
                             break;
                         case "info":
-                            String s = player.getPaused() ? "paused" : "playing";
+                            String s = player.isPaused() ? "paused" : "playing";
                             event.reply("The music is currently **" + s + "**.");
                             break;
                         default:

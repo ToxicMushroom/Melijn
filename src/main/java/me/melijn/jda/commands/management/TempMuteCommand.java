@@ -28,6 +28,7 @@ public class TempMuteCommand extends Command {
                 Permission.MANAGE_ROLES,
                 Permission.MESSAGE_HISTORY
         };
+        this.id = 50;
     }
 
     @Override

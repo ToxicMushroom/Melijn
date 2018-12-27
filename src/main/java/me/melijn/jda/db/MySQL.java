@@ -34,8 +34,8 @@ import java.awt.*;
 import java.sql.*;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Queue;
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -1719,11 +1719,24 @@ public class MySQL {
         executeUpdate("UPDATE custom_commands SET aliases= ? WHERE guildId= ? AND name= ?", String.join("%split%", aliases), guildId, name);
     }
 
-    public void addQueue(long guildId, long channelId, boolean paused, BlockingQueue<AudioTrack> queue) {
-        int i = 1;
-        executeUpdate("INSERT INTO saved_queues (guildId, position, url) VALUES (?, ?, ?)", guildId, 0, channelId + "-" + paused);
-        for (AudioTrack track : queue) {
-            executeUpdate("INSERT INTO saved_queues (guildId, position, url) VALUES (?, ?, ?)", guildId, i++, track.getInfo().uri);
+    public void addQueue(long guildId, long channelId, boolean paused, Queue<AudioTrack> queue) {
+        try (Connection con = ds.getConnection()) {
+            try (PreparedStatement statement = con.prepareStatement("INSERT INTO saved_queues (guildId, position, url) VALUES (?, ?, ?)")) {
+                statement.setLong(1, guildId);
+                statement.setInt(2, 0);
+                statement.setString(3, channelId + "-" + paused);
+                statement.addBatch();
+                int i = 1;
+                for (AudioTrack track : queue) {
+                    statement.setLong(1, guildId);
+                    statement.setInt(2, i++);
+                    statement.setString(3, track.getInfo().uri);
+                    statement.addBatch();
+                }
+                statement.executeBatch();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 

@@ -38,6 +38,7 @@ public class SetEmbedColorCommand extends Command {
         this.category = Category.MANAGEMENT;
         this.extra = "The color is formatted as r g b or a hex code";
         this.needs = new Need[]{Need.GUILD};
+        this.id = 105;
     }
 
     @Override

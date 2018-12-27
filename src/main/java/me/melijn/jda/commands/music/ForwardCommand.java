@@ -5,7 +5,7 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.music.MusicManager;
+import me.melijn.jda.audio.AudioLoader;
 import me.melijn.jda.utils.MessageHelper;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
@@ -20,6 +20,7 @@ public class ForwardCommand extends Command {
         this.extra = "e.g. >forward 11 -> +11s | >forward 1:01 -> +61s | >forward 1:02:01 -> +3721s";
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};
         this.category = Category.MUSIC;
+        this.id = 13;
     }
 
     @Override
@@ -29,7 +30,7 @@ public class ForwardCommand extends Command {
                 if (event.getMember().getVoiceState().getChannel() == event.getGuild().getSelfMember().getVoiceState().getChannel()) {
                     String[] args = event.getArgs().replaceAll(":", " ").split("\\s+");
                     if (args.length == 1 && args[0].isBlank()) args = new String[0];
-                    AudioTrack player = MusicManager.getManagerInstance().getPlayer(event.getGuild()).getAudioPlayer().getPlayingTrack();
+                    AudioTrack player = AudioLoader.getManagerInstance().getPlayer(event.getGuild()).getAudioPlayer().getPlayingTrack();
                     if (player != null) {
                         long millis = Helpers.parseTimeFromArgs(args);
                         if (millis != -1) {

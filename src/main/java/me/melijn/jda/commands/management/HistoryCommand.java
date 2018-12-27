@@ -29,6 +29,7 @@ public class HistoryCommand extends Command {
         this.usage = PREFIX + commandName + " <bans | mutes | warns | kicks> <user>";
         this.category = Category.MANAGEMENT;
         this.needs = new Need[]{Need.GUILD};
+        this.id = 47;
     }
 
     @Override

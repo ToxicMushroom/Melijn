@@ -1,11 +1,12 @@
 package me.melijn.jda.commands.music;
 
 import me.melijn.jda.Helpers;
+import me.melijn.jda.audio.AudioLoader;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.music.MusicManager;
+import me.melijn.jda.audio.Lava;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.core.Permission;
@@ -20,7 +21,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 public class PlayCommand extends Command {
 
     static List<String> providers = Arrays.asList("yt", "sc", "link", "youtube", "soundcloud");
-    private MusicManager manager = MusicManager.getManagerInstance();
+    private AudioLoader manager = AudioLoader.getManagerInstance();
+    private Lava lava = Lava.lava;
 
     public PlayCommand() {
         this.commandName = "play";
@@ -31,6 +33,7 @@ public class PlayCommand extends Command {
         this.category = Category.MUSIC;
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL_OR_DISCONNECTED};
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.VOICE_CONNECT};
+        this.id = 58;
     }
 
     @Override
@@ -50,43 +53,42 @@ public class PlayCommand extends Command {
         switch (args[0].toLowerCase()) {
             case "sc":
             case "soundcloud":
-                if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".sc", 0) || access) {
-                    if (SPlayCommand.isNotConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
+                if (!Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".sc", 0) && !access) {
+                    event.reply("You need the permission `" + commandName + ".sc` to execute this command.");
+                    return;
+                }
+                if (lava.tryToConnectToVC(event, guild, senderVoiceChannel))
                     manager.loadTrack(event.getTextChannel(), "scsearch:" + songName, event.getAuthor(), false);
 
-                } else {
-                    event.reply("You need the permission `" + commandName + ".sc` to execute this command.");
-                }
                 break;
             case "link":
-                if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) || access) {
-                    if (SPlayCommand.isNotConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
-                    manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
-                } else {
+                if (!Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) && !access) {
                     event.reply("You need the permission `" + commandName + ".link` to execute this command.");
+                    return;
                 }
+                if (lava.tryToConnectToVC(event, guild, senderVoiceChannel))
+                    manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
+
                 break;
             default:
                 if (songName.contains("https://") || songName.contains("http://")) {
-                    songName = songName.replaceAll("\\s+", "");
-                    if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) || access) {
-                        if (SPlayCommand.isNotConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
-                        if (songName.contains("open.spotify.com")) spotiSearch(event, songName);
-                        else
-                            manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
-                    } else {
+                    if (!Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) && !access) {
                         event.reply("You need the permission `" + commandName + ".link` to execute this command.");
+                        return;
                     }
+                    songName = songName.replaceAll("\\s+", "");
+                    if (!lava.tryToConnectToVC(event, guild, senderVoiceChannel)) return;
+                    if (songName.contains("open.spotify.com")) spotiSearch(event, songName);
+                    else manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
                 } else {
-                    if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".yt", 0) || access) {
-                        if (SPlayCommand.isNotConnectedOrConnecting(event, guild, senderVoiceChannel)) return;
-                        if (songName.replaceFirst("\\s+", "").matches("spotify:(.*)"))
-                            spotiSearch(event, songName.replaceFirst("\\s+", ""));
-                        else
-                            manager.loadTrack(event.getTextChannel(), "ytsearch:" + songName, event.getAuthor(), false);
-                    } else {
+                    if (!Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".yt", 0) && !access) {
                         event.reply("You need the permission `" + commandName + ".yt` to execute this command.");
+                        return;
                     }
+                    songName = songName.replaceAll("\\s+", "");
+                    if (!lava.tryToConnectToVC(event, guild, senderVoiceChannel)) return;
+                    if (songName.matches("spotify:(.*)")) spotiSearch(event, songName);
+                    else manager.loadTrack(event.getTextChannel(), "ytsearch:" + songName, event.getAuthor(), false);
                 }
                 break;
         }

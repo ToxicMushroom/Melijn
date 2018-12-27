@@ -32,6 +32,7 @@ public class CustomCommandCommand extends Command {
         this.aliases = new String[]{"cc", "cCommand", "customC"};
         this.needs = new Need[]{Need.GUILD};
         this.extra = "https://leovoel.github.io/embed-visualizer/ <- handy link if you want embeds ;)";
+        this.id = 100;
     }
 
     @Override

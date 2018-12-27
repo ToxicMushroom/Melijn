@@ -21,6 +21,7 @@ public class LoopQueueCommand extends Command {
         this.aliases = new String[]{"repeatq", "loopq"};
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};
         this.category = Category.MUSIC;
+        this.id = 31;
     }
 
     @Override

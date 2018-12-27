@@ -20,6 +20,7 @@ public class ShrugCommand extends Command {
         this.category = Category.FUN;
         this.aliases = new String[]{"idk"};
         webUtils = WebUtils.getWebUtilsInstance();
+        this.id = 20;
     }
 
     @Override

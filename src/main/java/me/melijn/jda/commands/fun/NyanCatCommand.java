@@ -17,6 +17,7 @@ public class NyanCatCommand extends Command {
         this.description = "Shows a nyancat";
         this.usage = PREFIX + commandName;
         this.category = Category.FUN;
+        this.id = 11;
     }
 
     @Override

@@ -18,6 +18,7 @@ public class HelpCommand extends Command {
         this.usage = PREFIX + commandName + " [command]";
         this.aliases = new String[]{"commands", "cmds"};
         this.category = Category.DEFAULT;
+        this.id = 56;
     }
 
     @Override

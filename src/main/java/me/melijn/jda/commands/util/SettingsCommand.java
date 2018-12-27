@@ -23,6 +23,7 @@ public class SettingsCommand extends Command {
         this.category = Category.UTILS;
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
         this.needs = new Need[]{Need.GUILD};
+        this.id = 89;
     }
 
     @Override

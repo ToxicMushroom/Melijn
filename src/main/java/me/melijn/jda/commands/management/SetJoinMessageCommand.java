@@ -37,6 +37,7 @@ public class SetJoinMessageCommand extends Command {
         this.aliases = new String[]{"sjm"};
         this.category = Category.MANAGEMENT;
         this.needs = new Need[]{Need.GUILD};
+        this.id = 37;
     }
 
     @Override

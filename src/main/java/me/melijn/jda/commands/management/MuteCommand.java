@@ -29,6 +29,7 @@ public class MuteCommand extends Command {
                 Permission.MANAGE_ROLES,
                 Permission.MESSAGE_HISTORY
         };
+        this.id = 48;
     }
 
     @Override

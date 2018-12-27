@@ -20,6 +20,7 @@ public class PatCommand extends Command {
         this.usage = PREFIX + commandName + " [user]";
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
+        this.id = 41;
     }
 
     @Override

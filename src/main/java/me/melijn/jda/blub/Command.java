@@ -6,6 +6,7 @@ import static me.melijn.jda.blub.Category.DEFAULT;
 
 public abstract class Command {
 
+    protected int id = 0;
     protected String commandName = "null";
     protected String description = "no description set";
     protected String usage = "no usage set";
@@ -17,6 +18,10 @@ public abstract class Command {
 
     public String getExtra() {
         return extra;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public Permission[] getPermissions() {

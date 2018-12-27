@@ -25,6 +25,7 @@ public class EvalCommand extends Command {
         this.description = "eval stuff";
         this.usage = PREFIX + commandName + " [insert crappy code]";
         this.category = Category.DEVELOPER;
+        this.id = 27;
     }
 
     @Override

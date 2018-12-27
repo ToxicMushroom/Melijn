@@ -27,6 +27,7 @@ public class MetricsCommand extends Command {
         this.usage = PREFIX + commandName + " <limit|command|category|all> [limit] <timespan>";
         this.category = Category.UTILS;
         this.extra = "Timespan: thisHour, hour, day, today, week, month, all or dd/mm/yyyy - dd/mm/yyyy or hh:mm - hh:mm or hh:mm-dd/mm/yyyy - hh:mm-dd/mm/yyyy";
+        this.id = 88;
     }
 
     @Override

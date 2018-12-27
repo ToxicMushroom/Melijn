@@ -17,6 +17,7 @@ public class PotatoCommand extends Command {
         this.description = "Shows a potato";
         this.usage = PREFIX + commandName;
         this.category = Category.FUN;
+        this.id = 43;
     }
 
     @Override

@@ -19,6 +19,7 @@ public class LewdCommand extends Command {
         this.usage = PREFIX + commandName;
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
+        this.id = 24;
     }
 
     @Override

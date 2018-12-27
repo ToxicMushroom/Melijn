@@ -34,6 +34,7 @@ public class SetVerificationChannel extends Command {
         this.extra = "You can manually approve users by using the verify command";
         this.category = Category.MANAGEMENT;
         this.needs = new Need[]{Need.GUILD};
+        this.id = 8;
     }
 
     @Override

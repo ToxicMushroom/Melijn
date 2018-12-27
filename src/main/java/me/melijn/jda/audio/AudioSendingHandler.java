@@ -1,22 +1,23 @@
-package me.melijn.jda.music;
+package me.melijn.jda.audio;
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioFrame;
+import lavalink.client.player.IPlayer;
+import lavalink.client.player.LavaplayerPlayerWrapper;
 import net.dv8tion.jda.core.audio.AudioSendHandler;
 
-public class AudioHandler implements AudioSendHandler {
+public class AudioSendingHandler implements AudioSendHandler {
 
 
-    private final AudioPlayer audioPlayer;
+    private final IPlayer audioPlayer;
     private AudioFrame lastFrame;
 
-    public AudioHandler(AudioPlayer audioPlayer) {
+    public AudioSendingHandler(IPlayer audioPlayer) {
         this.audioPlayer = audioPlayer;
     }
 
     @Override
     public boolean canProvide() {
-        if (lastFrame == null) lastFrame = audioPlayer.provide();
+        if (lastFrame == null) lastFrame = ((LavaplayerPlayerWrapper) audioPlayer).provide();
         return lastFrame != null;
     }
 

@@ -19,6 +19,7 @@ public class DabCommand extends Command {
         this.usage = PREFIX + commandName;
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
+        this.id = 21;
     }
 
     @Override

@@ -35,6 +35,7 @@ public class SetVerificationCode extends Command {
         this.description = "Sets the VerificationCode that members will have to send in the VerificationChannel in order to get verified";
         this.category = Category.MANAGEMENT;
         this.needs = new Need[]{Need.GUILD};
+        this.id = 7;
     }
 
     @Override

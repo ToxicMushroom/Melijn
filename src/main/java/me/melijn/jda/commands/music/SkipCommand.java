@@ -1,25 +1,26 @@
 package me.melijn.jda.commands.music;
 
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.melijn.jda.Helpers;
+import me.melijn.jda.audio.AudioLoader;
+import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.music.MusicManager;
-import me.melijn.jda.music.MusicPlayer;
 import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.MessageHelper;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 
-import java.util.concurrent.BlockingQueue;
+import java.util.Queue;
 
 import static me.melijn.jda.Melijn.PREFIX;
+import static me.melijn.jda.audio.Lava.lava;
 
 public class SkipCommand extends Command {
 
-    private MusicManager manager = MusicManager.getManagerInstance();
+    private AudioLoader manager = AudioLoader.getManagerInstance();
 
     public SkipCommand() {
         this.commandName = "skip";
@@ -29,19 +30,20 @@ public class SkipCommand extends Command {
         this.aliases = new String[]{"s"};
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.id = 61;
     }
 
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
             MusicPlayer player = manager.getPlayer(event.getGuild());
-            AudioTrack shippableTrack = player.getAudioPlayer().getPlayingTrack();
-            if (shippableTrack == null) {
-                event.reply("There are no songs playing at the moment");
+            AudioTrack skipableTrack = player.getAudioPlayer().getPlayingTrack();
+            if (skipableTrack == null) {
+                event.reply("There are no tracks playing");
                 return;
             }
             String[] args = event.getArgs().split("\\s+");
-            BlockingQueue<AudioTrack> audioTracks = player.getListener().getTracks();
+            Queue<AudioTrack> audioTracks = player.getTrackManager().getTracks();
             int i = 1;
             if (args.length > 0 && !args[0].isBlank()) {
                 if (args[0].matches("\\d+") && args[0].length() < 4) {
@@ -58,20 +60,22 @@ public class SkipCommand extends Command {
             AudioTrack nextSong = null;
             int c = 0;
             for (AudioTrack track : audioTracks) {
-                if (i != c) {
+                if (i == ++c) {
                     nextSong = track;
                     player.skipTrack();
-                    c++;
+                    break;
                 }
+                player.getTrackManager().tracks.poll();
             }
-            String songOrSongs = i == 1 ? "song" : "songs";
             EmbedBuilder eb = new Embedder(event.getGuild());
-            eb.setTitle("Skipped " + i + " " + songOrSongs);
+            eb.setTitle("Skipped " + i + " " + (i == 1 ? "song" : "songs"));
             if (nextSong != null)
-                eb.setDescription("Previous song: **[" + shippableTrack.getInfo().title + "](" + shippableTrack.getInfo().uri + ")**\n" + "Now playing: **[" + nextSong.getInfo().title + "](" + nextSong.getInfo().uri + ")** " + Helpers.getDurationBreakdown(nextSong.getInfo().length));
+                eb.setDescription("Previous song: **[" + skipableTrack.getInfo().title + "](" + skipableTrack.getInfo().uri + ")**\n" + "Now playing: **[" + nextSong.getInfo().title + "](" + nextSong.getInfo().uri + ")** " + Helpers.getDurationBreakdown(nextSong.getInfo().length));
             else {
-                player.skipTrack();
-                eb.setDescription("Previous song: **[" + shippableTrack.getInfo().title + "](" + shippableTrack.getInfo().uri + ")**\n" + "No next song to play");
+                player.stopTrack();
+                player.getTrackManager().clear();
+                lava.closeConnection(event.getGuild().getIdLong());
+                eb.setDescription("Previous song: **[" + skipableTrack.getInfo().title + "](" + skipableTrack.getInfo().uri + ")**\n" + "No next song to play");
             }
             eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
             event.reply(eb.build());

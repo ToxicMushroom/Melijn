@@ -15,6 +15,7 @@ public class UnicodeCommand extends Command {
         this.description = "Converts an input to unicode";
         this.usage = PREFIX + commandName + " <input>";
         this.category = Category.UTILS;
+        this.id = 92;
     }
 
     @Override

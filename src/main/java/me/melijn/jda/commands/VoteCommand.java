@@ -23,6 +23,7 @@ public class VoteCommand extends Command {
         this.usage = PREFIX + commandName + " [info] [user]";
         this.category = Category.DEFAULT;
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.id = 33;
     }
 
     @Override

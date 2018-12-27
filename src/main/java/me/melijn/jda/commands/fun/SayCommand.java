@@ -24,6 +24,7 @@ public class SayCommand extends Command {
         this.aliases = new String[]{"zeg"};
         this.permissions = new Permission[]{Permission.MESSAGE_ATTACH_FILES};
         this.category = Category.FUN;
+        this.id = 29;
     }
 
     @Override

@@ -34,6 +34,7 @@ public class SetJoinRoleCommand extends Command {
         this.aliases = new String[]{"sjr"};
         this.category = Category.MANAGEMENT;
         this.needs = new Need[]{Need.GUILD};
+        this.id = 36;
     }
 
     @Override

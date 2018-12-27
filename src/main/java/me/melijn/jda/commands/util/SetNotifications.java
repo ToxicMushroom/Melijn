@@ -26,6 +26,7 @@ public class SetNotifications extends Command {
         this.extra = "arg1 -> notification type\narg2 -> either view all notifications of the type or toggle a user on and off";
         this.category = Category.UTILS;
         this.aliases = new String[]{"sn"};
+        this.id = 32;
     }
 
     @Override

@@ -23,6 +23,7 @@ public class PurgeCommand extends Command {
                 Permission.MESSAGE_MANAGE, Permission.MESSAGE_HISTORY
         };
         this.needs = new Need[]{Need.GUILD};
+        this.id = 55;
     }
 
     @Override

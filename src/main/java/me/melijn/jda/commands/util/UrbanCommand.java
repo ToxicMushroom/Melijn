@@ -23,6 +23,7 @@ public class UrbanCommand extends Command {
         this.category = Category.UTILS;
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
         this.needs = new Need[]{Need.NSFW};
+        this.id = 2;
     }
 
     @Override

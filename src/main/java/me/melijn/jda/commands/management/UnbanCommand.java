@@ -25,6 +25,7 @@ public class UnbanCommand extends Command {
                 Permission.BAN_MEMBERS,
                 Permission.MESSAGE_HISTORY
         };
+        this.id = 82;
     }
 
     @Override

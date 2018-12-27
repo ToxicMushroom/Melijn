@@ -5,12 +5,12 @@ import gnu.trove.map.TLongLongMap;
 import gnu.trove.map.TLongObjectMap;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
+import me.melijn.jda.audio.AudioLoader;
 import me.melijn.jda.commands.developer.EvalCommand;
 import me.melijn.jda.commands.management.ClearChannelCommand;
 import me.melijn.jda.commands.management.SetSelfRoleChannelCommand;
 import me.melijn.jda.commands.music.SPlayCommand;
-import me.melijn.jda.music.MusicManager;
-import me.melijn.jda.music.MusicPlayer;
+import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -34,16 +34,16 @@ public class AddReaction extends ListenerAdapter {
             return;
         Guild guild = event.getGuild();
         if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
-        if (MusicManager.userMessageToAnswer.containsKey(event.getUser().getIdLong()) && MusicManager.userMessageToAnswer.get(event.getUser().getIdLong()) == event.getMessageIdLong()) {
-            MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
+        if (AudioLoader.userMessageToAnswer.containsKey(event.getUser().getIdLong()) && AudioLoader.userMessageToAnswer.get(event.getUser().getIdLong()) == event.getMessageIdLong()) {
+            MusicPlayer player = AudioLoader.getManagerInstance().getPlayer(event.getGuild());
             if (event.getReactionEmote().getName().equalsIgnoreCase("✅")) {
-                List<AudioTrack> tracks = MusicManager.userRequestedSongs.get(event.getUser().getIdLong());
+                List<AudioTrack> tracks = AudioLoader.userRequestedSongs.get(event.getUser().getIdLong());
                 StringBuilder songs = new StringBuilder();
-                int i = player.getListener().getTrackSize();
+                int i = player.getTrackManager().getTrackSize();
                 int t = 0;
                 for (AudioTrack track : tracks) {
                     i++;
-                    player.playTrack(track);
+                    player.queue(track);
                     songs.append("[#").append(i).append("](").append(track.getInfo().uri).append(") - ").append(track.getInfo().title).append("\n");
                     if (songs.length() > 1700) {
                         t++;
@@ -69,17 +69,17 @@ public class AddReaction extends ListenerAdapter {
                     eb.setDescription(songs);
                     event.getChannel().sendMessage(eb.build()).queue();
                 }
-                event.getChannel().getMessageById(MusicManager.userMessageToAnswer.get(event.getUser().getIdLong())).queue(message -> message.delete().queue(), f -> LoggerFactory.getLogger(this.getClass()).info("72"));
-                MusicManager.userMessageToAnswer.remove(event.getUser().getIdLong());
-                MusicManager.userRequestedSongs.remove(event.getUser().getIdLong());
+                event.getChannel().getMessageById(AudioLoader.userMessageToAnswer.get(event.getUser().getIdLong())).queue(message -> message.delete().queue(), f -> LoggerFactory.getLogger(this.getClass()).info("72"));
+                AudioLoader.userMessageToAnswer.remove(event.getUser().getIdLong());
+                AudioLoader.userRequestedSongs.remove(event.getUser().getIdLong());
             } else if (event.getReactionEmote().getName().equalsIgnoreCase("❎")) {
-                event.getChannel().getMessageById(MusicManager.userMessageToAnswer.get(event.getUser().getIdLong())).queue(message -> message.delete().queue(), f -> LoggerFactory.getLogger(this.getClass()).info("76"));
-                MusicManager.userMessageToAnswer.remove(event.getUser().getIdLong());
-                MusicManager.userRequestedSongs.remove(event.getUser().getIdLong());
+                event.getChannel().getMessageById(AudioLoader.userMessageToAnswer.get(event.getUser().getIdLong())).queue(message -> message.delete().queue(), f -> LoggerFactory.getLogger(this.getClass()).info("76"));
+                AudioLoader.userMessageToAnswer.remove(event.getUser().getIdLong());
+                AudioLoader.userRequestedSongs.remove(event.getUser().getIdLong());
             }
         }
         if (SPlayCommand.usersFormToReply.containsKey(event.getUser().getIdLong()) && SPlayCommand.usersFormToReply.get(event.getUser().getIdLong()).getIdLong() == event.getMessageIdLong()) {
-            MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
+            MusicPlayer player = AudioLoader.getManagerInstance().getPlayer(event.getGuild());
             AudioTrack track;
             EmbedBuilder eb = new Embedder(event.getGuild());
             eb.setTitle("Added");
@@ -88,32 +88,32 @@ public class AddReaction extends ListenerAdapter {
             switch (event.getReactionEmote().getName()) {
                 case "\u0031\u20E3":
                     track = SPlayCommand.userChoices.get(event.getUser().getIdLong()).get(0);
-                    player.playTrack(track);
-                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
+                    player.queue(track);
+                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
                     event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).error("93"));
                     break;
                 case "\u0032\u20E3":
                     track = SPlayCommand.userChoices.get(event.getUser().getIdLong()).get(1);
-                    player.playTrack(track);
-                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
+                    player.queue(track);
+                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
                     event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).error("99"));
                     break;
                 case "\u0033\u20E3":
                     track = SPlayCommand.userChoices.get(event.getUser().getIdLong()).get(2);
-                    player.playTrack(track);
-                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
+                    player.queue(track);
+                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
                     event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).error("105"));
                     break;
                 case "\u0034\u20E3":
                     track = SPlayCommand.userChoices.get(event.getUser().getIdLong()).get(3);
-                    player.playTrack(track);
-                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
+                    player.queue(track);
+                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
                     event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).error("111"));
                     break;
                 case "\u0035\u20E3":
                     track = SPlayCommand.userChoices.get(event.getUser().getIdLong()).get(4);
-                    player.playTrack(track);
-                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getListener().getTrackSize() + "**");
+                    player.queue(track);
+                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
                     event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).error("117"));
                     break;
                 case "\u274E":

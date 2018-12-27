@@ -1,13 +1,12 @@
 package me.melijn.jda.events;
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import me.melijn.jda.Melijn;
+import me.melijn.jda.audio.AudioLoader;
+import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.commands.developer.EvalCommand;
 import me.melijn.jda.commands.management.SetMusicChannelCommand;
 import me.melijn.jda.commands.management.SetStreamerModeCommand;
 import me.melijn.jda.commands.music.LoopCommand;
-import me.melijn.jda.music.MusicManager;
-import me.melijn.jda.music.MusicPlayer;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
@@ -23,27 +22,25 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Channels extends ListenerAdapter {
 
-    private MusicManager manager = MusicManager.getManagerInstance();
+    private AudioLoader manager = AudioLoader.getManagerInstance();
 
     @Override
     public void onGuildVoiceMove(GuildVoiceMoveEvent event) {
-        if (event.getGuild() == null || EvalCommand.serverBlackList.contains(event.getGuild().getIdLong()))
-            return;
+        if (event.getGuild() == null || EvalCommand.serverBlackList.contains(event.getGuild().getIdLong())) return;
         Guild guild = event.getGuild();
         if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
         long guildId = guild.getIdLong();
         AudioManager audioManager = guild.getAudioManager();
         if (audioManager.isConnected()) {
             if (event.getChannelLeft() == audioManager.getConnectedChannel()) {
-                AudioPlayer audioPlayer = manager.getPlayer(guild).getAudioPlayer();
                 if (someoneIsListening(guild)) {
                     String url = Melijn.mySQL.getStreamUrl(guildId);
                     if (!url.isBlank()) {
-                        manager.getPlayer(guild).getListener().tracks.clear();
-                        manager.loadSimpleTrack(guild, url);
+                        manager.getPlayer(guild).getTrackManager().clear();
+                        manager.loadSimpleTrack(manager.getPlayer(guild), url);
                     }
                 } else {
-                    audioPlayer.setPaused(true);
+                    manager.getPlayer(guild).getAudioPlayer().setPaused(true);
                     if (audioManager.getConnectedChannel().getMembers().size() > 1) {
                         runLeaveTimer(guild, 300, true);
                     } else {
@@ -55,7 +52,7 @@ public class Channels extends ListenerAdapter {
                 !audioManager.isConnected() &&
                 event.getChannelJoined().getIdLong() == SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)) {
             audioManager.openAudioConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)));
-            tryPlayStreamUrl(guild);
+            tryPlayStreamUrl(guild.getIdLong());
             TaskScheduler.async(() -> {
                 //Hacky way to unmute bot in afk channel
                 if (guild.getAfkChannel() != null &&
@@ -81,7 +78,7 @@ public class Channels extends ListenerAdapter {
                 !audioManager.isConnected() &&
                 event.getChannelJoined().getIdLong() == (SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId))) {
             audioManager.openAudioConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)));
-            tryPlayStreamUrl(guild);
+            tryPlayStreamUrl(guild.getIdLong());
             TaskScheduler.async(() -> {
                 if (guild.getAfkChannel() != null &&
                         guild.getSelfMember().hasPermission(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)), Permission.VOICE_MUTE_OTHERS) &&
@@ -111,8 +108,7 @@ public class Channels extends ListenerAdapter {
     private void whenListeningDoActions(Guild guild) {
         if (guild.getAudioManager().getConnectedChannel() != null) {
             if (!someoneIsListening(guild)) {
-                AudioPlayer player = manager.getPlayer(guild).getAudioPlayer();
-                player.setPaused(true);
+                manager.getPlayer(guild).getAudioPlayer().setPaused(true);
                 if (guild.getAudioManager().getConnectedChannel().getMembers().size() > 1) {
                     runLeaveTimer(guild, 300, true);
                 } else {
@@ -137,7 +133,7 @@ public class Channels extends ListenerAdapter {
                     LoopCommand.looped.remove(guild2.getIdLong());
                     player.getAudioPlayer().setPaused(false);
                     player.stopTrack();
-                    if (!player.getListener().getTracks().isEmpty()) player.getListener().getTracks().clear();
+                    player.getTrackManager().clear();
                     break;
                 }
                 try {
@@ -150,12 +146,12 @@ public class Channels extends ListenerAdapter {
         });
     }
 
-    private void tryPlayStreamUrl(Guild guild) {
-        if (manager.getPlayer(guild).getAudioPlayer().getPlayingTrack() == null) {
-            String url = Melijn.mySQL.getStreamUrl(guild.getIdLong());
+    private void tryPlayStreamUrl(long guildId) {
+        if (manager.getPlayer(guildId).getAudioPlayer().getPlayingTrack() == null) {
+            String url = Melijn.mySQL.getStreamUrl(guildId);
             if (!url.isBlank()) {
-                manager.getPlayer(guild).getListener().tracks.clear();
-                manager.loadSimpleTrack(guild, url);
+                manager.getPlayer(guildId).getTrackManager().clear();
+                manager.loadSimpleTrack(manager.getPlayer(guildId), url);
             }
         }
     }

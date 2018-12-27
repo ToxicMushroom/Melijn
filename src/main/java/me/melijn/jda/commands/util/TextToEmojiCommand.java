@@ -23,6 +23,7 @@ public class TextToEmojiCommand extends Command {
         this.aliases = new String[]{"TextToEmojis"};
         this.extra = "%spaces% will put a space after each emoji so they don't change into flags when copied and pasted";
         this.category = Category.UTILS;
+        this.id = 69;
     }
 
     @Override

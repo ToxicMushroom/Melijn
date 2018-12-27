@@ -22,6 +22,7 @@ public class CatCommand extends Command {
         this.aliases = new String[]{"kitten", "kat", "poes"};
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
+        this.id = 60;
     }
 
     @Override

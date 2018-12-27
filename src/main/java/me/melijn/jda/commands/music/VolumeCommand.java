@@ -6,8 +6,8 @@ import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.music.MusicManager;
-import me.melijn.jda.music.MusicPlayer;
+import me.melijn.jda.audio.AudioLoader;
+import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.utils.MessageHelper;
 
 import static me.melijn.jda.Melijn.PREFIX;
@@ -23,13 +23,14 @@ public class VolumeCommand extends Command {
         this.extra = "default: 100 (over 100 will cause distortion)";
         this.needs = new Need[]{GUILD};
         this.category = Category.MUSIC;
+        this.id = 65;
     }
 
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
-            MusicPlayer player = MusicManager.getManagerInstance().getPlayer(event.getGuild());
+            MusicPlayer player = AudioLoader.getManagerInstance().getPlayer(event.getGuild());
             int volume;
             if (args.length == 0 || args[0].isEmpty()) {
                 event.reply("Current volume: **" + player.getAudioPlayer().getVolume() + "**");

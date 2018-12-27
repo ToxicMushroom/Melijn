@@ -7,12 +7,12 @@ import gnu.trove.list.TLongList;
 import me.melijn.jda.Config;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
+import me.melijn.jda.audio.AudioLoader;
+import me.melijn.jda.audio.Lava;
 import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.RoleType;
 import me.melijn.jda.commands.developer.EvalCommand;
 import me.melijn.jda.commands.management.*;
-import me.melijn.jda.commands.music.SPlayCommand;
-import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.bot.sharding.ShardManager;
@@ -56,25 +56,23 @@ public class JoinLeave extends ListenerAdapter {
                 .botId(event.getJDA().getSelfUser().getId())
                 .build();
         Helpers.startTimer(event.getJDA(), 0);
-        MusicManager musicManager = MusicManager.getManagerInstance();
+        AudioLoader audioLoader = AudioLoader.getManagerInstance();
         for (JSONObject queue : Melijn.mySQL.getQueues()) {
             Guild guild = shardManager.getGuildById(queue.getLong("guildId"));
-            if (guild != null) {
-                VoiceChannel vc = guild.getVoiceChannelById(queue.getLong("channelId"));
-                if (vc != null) {
-                    SPlayCommand.isNotConnectedOrConnecting(vc);
-                    boolean pause = queue.getBoolean("paused");
-                    String[] urls = queue.getString("urls").split("\n");
-                    musicManager.getPlayer(guild).getAudioPlayer().setPaused(pause);
-                    for (String url : urls) {
-                        if (!url.startsWith("#0 "))
-                            musicManager.loadSimpleTrack(guild, url.replaceFirst("#\\d+ ", ""));
-                    }
-                }
+            if (guild == null) return;
+            VoiceChannel vc = guild.getVoiceChannelById(queue.getLong("channelId"));
+            if (vc == null) return;
+
+            Lava.lava.tryToConnectToVCSilent(vc);
+            boolean pause = queue.getBoolean("paused");
+            String[] urls = queue.getString("urls").split("\n");
+            audioLoader.getPlayer(guild).getAudioPlayer().setPaused(pause);
+            for (String url : urls) {
+                if (!url.startsWith("#0 "))
+                    audioLoader.loadSimpleTrack(audioLoader.getPlayer(guild), url.replaceFirst("#\\d+ ", ""));
             }
         }
         Melijn.mySQL.clearQueues();
-
         started = true;
     }
 

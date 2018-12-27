@@ -34,6 +34,7 @@ public class SetLeaveMessageCommand extends Command {
         this.aliases = new String[]{"slm"};
         this.category = Category.MANAGEMENT;
         this.needs = new Need[]{Need.GUILD};
+        this.id = 38;
     }
 
     @Override

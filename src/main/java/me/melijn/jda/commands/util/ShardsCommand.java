@@ -19,6 +19,7 @@ public class ShardsCommand extends Command {
         this.usage = PREFIX + commandName;
         this.description = "Shows you all the shards with some information about them";
         this.category = Category.UTILS;
+        this.id = 9;
     }
 
     /* CREDITS TO DUNCTE123 FOR DESIGN */

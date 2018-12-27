@@ -18,6 +18,7 @@ public class EmotesCommand extends Command {
         this.usage = PREFIX + commandName;
         this.category = Category.UTILS;
         this.needs = new Need[]{Need.GUILD};
+        this.id = 106;
     }
 
     @Override

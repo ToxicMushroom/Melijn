@@ -32,6 +32,7 @@ public class SetJoinLeaveChannelCommand extends Command {
         this.aliases = new String[]{"sjlc", "SetWelcomeChannel", "swc"};
         this.category = Category.MANAGEMENT;
         this.needs = new Need[]{Need.GUILD};
+        this.id = 35;
     }
 
     @Override

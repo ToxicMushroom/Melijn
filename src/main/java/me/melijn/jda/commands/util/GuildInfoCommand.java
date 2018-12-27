@@ -25,6 +25,7 @@ public class GuildInfoCommand extends Command {
         this.category = Category.UTILS;
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
         this.needs = new Need[]{Need.GUILD};
+        this.id = 74;
     }
 
     @Override

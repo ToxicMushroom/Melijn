@@ -26,6 +26,7 @@ public class BanCommand extends Command {
                 Permission.BAN_MEMBERS,
                 Permission.MESSAGE_HISTORY
         };
+        this.id = 46;
     }
 
     @Override

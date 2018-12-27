@@ -24,6 +24,7 @@ public class PermCommand extends Command {
         this.extra = "A permission is just the name of the command and you'll get more info for each sub section of the command if you just use it wrong or without more arguments";
         this.aliases = new String[]{"permission"};
         this.category = Category.MANAGEMENT;
+        this.id = 71;
     }
 
     @Override

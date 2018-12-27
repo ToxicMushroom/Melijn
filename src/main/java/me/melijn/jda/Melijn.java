@@ -1,6 +1,7 @@
 package me.melijn.jda;
 
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
+import lavalink.client.io.jda.JdaLavalink;
 import me.melijn.jda.blub.CommandClientBuilder;
 import me.melijn.jda.commands.DonateCommand;
 import me.melijn.jda.commands.HelpCommand;
@@ -19,6 +20,7 @@ import me.melijn.jda.events.AddReaction;
 import me.melijn.jda.events.Channels;
 import me.melijn.jda.events.Chat;
 import me.melijn.jda.events.JoinLeave;
+import me.melijn.jda.audio.Lava;
 import me.melijn.jda.rest.Application;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
@@ -31,6 +33,7 @@ import net.dv8tion.jda.core.utils.cache.CacheFlag;
 import org.jooby.Jooby;
 
 import javax.security.auth.login.LoginException;
+import java.net.URI;
 import java.util.EnumSet;
 
 public class Melijn {
@@ -65,10 +68,6 @@ public class Melijn {
                 new SummonCommand(),
                 new ForwardCommand(),
                 new RewindCommand(),
-                new NightCoreCommand(),
-                new TremoloCommand(),
-                new PitchCommand(),
-                new SpeedCommand(),
                 new CryCommand(),
                 new ShrugCommand(),
                 new DabCommand(),
@@ -159,15 +158,25 @@ public class Melijn {
                 new EmotesCommand()
         );
 
+        JdaLavalink lavalink = new JdaLavalink(
+                String.valueOf(OWNERID),
+                Integer.valueOf(config.getValue("shardCount")),
+                shardId -> getShardManager().getShardById(shardId)
+        );
+        lavalink.addNode(URI.create("ws://" + config.getValue("lavalink-host")), config.getValue("lavalink-pwd"));
+        lavalink.setAutoReconnect(true);
+        Lava.lava.init(lavalink);
+
         shardManager = new DefaultShardManagerBuilder()
                 .setShardsTotal(Integer.parseInt(config.getValue("shardCount")))
                 .setToken(config.getValue("token"))
                 .setGame(Game.playing(PREFIX + "help | melijn.com"))
                 .setAutoReconnect(true)
-                .addEventListeners(client.build(), new JoinLeave(), new AddReaction(), new Channels(), new Chat())
+                .addEventListeners(client.build(), lavalink, new JoinLeave(), new AddReaction(), new Channels(), new Chat())
                 .setDisabledCacheFlags(EnumSet.of(CacheFlag.GAME))
                 .setAudioSendFactory(new NativeAudioSendFactory())
                 .build();
+
 
 
         EvalCommand.serverBlackList.add(new long[]{110373943822540800L, 264445053596991498L});

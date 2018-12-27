@@ -35,6 +35,7 @@ public class SetSelfRoleChannelCommand extends Command {
         this.aliases = new String[]{"ssrc"};
         this.needs = new Need[]{Need.GUILD};
         this.category = Category.MANAGEMENT;
+        this.id = 99;
     }
 
     @Override

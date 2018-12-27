@@ -38,6 +38,7 @@ public class SelfRoleCommand extends Command {
         this.aliases = new String[]{"sr"};
         this.category = Category.MANAGEMENT;
         this.needs = new Need[]{Need.GUILD};
+        this.id = 98;
     }
 
     @Override

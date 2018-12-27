@@ -1,11 +1,11 @@
 package me.melijn.jda.commands.music;
 
 import me.melijn.jda.Helpers;
+import me.melijn.jda.audio.AudioLoader;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.music.MusicManager;
 import me.melijn.jda.utils.MessageHelper;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
@@ -20,6 +20,7 @@ public class SeekCommand extends Command {
         this.aliases = new String[]{"skipx", "position"};
         this.needs = new Need[]{Need.GUILD, Need.VOICECHANNEL};
         this.category = Category.MUSIC;
+        this.id = 70;
     }
 
     @Override
@@ -27,7 +28,7 @@ public class SeekCommand extends Command {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
             String[] args = event.getArgs().replaceAll(":", " ").split("\\s+");
             if (args.length == 1 && args[0].isBlank()) args = new String[0];
-            AudioTrack track = MusicManager.getManagerInstance().getPlayer(event.getGuild()).getAudioPlayer().getPlayingTrack();
+            AudioTrack track = AudioLoader.getManagerInstance().getPlayer(event.getGuild()).getAudioPlayer().getPlayingTrack();
             if (track != null) {
                 if (args.length != 0 && !args[0].isBlank()) {
                     if (event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {

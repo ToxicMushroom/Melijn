@@ -36,6 +36,7 @@ public class SetPrefixCommand extends Command {
         this.aliases = new String[]{"prefix"};
         this.category = Category.MANAGEMENT;
         this.needs = new Need[]{Need.GUILD};
+        this.id = 78;
     }
 
     @Override

@@ -34,6 +34,7 @@ public class SetUnverifiedRole extends Command {
         this.needs = new Need[]{Need.GUILD};
         this.category = Category.MANAGEMENT;
         this.aliases = new String[]{"sur"};
+        this.id = 6;
     }
 
     @Override

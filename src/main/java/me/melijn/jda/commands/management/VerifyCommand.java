@@ -25,6 +25,7 @@ public class VerifyCommand extends Command {
         this.needs = new Need[]{Need.GUILD};
         this.permissions = new Permission[]{Permission.MANAGE_ROLES};
         this.category = Category.MANAGEMENT;
+        this.id = 85;
     }
 
     @Override

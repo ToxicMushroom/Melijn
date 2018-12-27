@@ -23,6 +23,7 @@ public class UserInfoCommand extends Command {
         this.aliases = new String[]{"profile", "memberinfo"};
         this.category = Category.UTILS;
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.id = 67;
     }
 
     @Override

@@ -2,12 +2,12 @@ package me.melijn.jda.commands.music;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.melijn.jda.Helpers;
+import me.melijn.jda.audio.AudioLoader;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.music.MusicManager;
-import me.melijn.jda.music.MusicPlayer;
+import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
@@ -19,7 +19,7 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class NowPlayingCommand extends Command {
 
-    private MusicManager musicManager = MusicManager.getManagerInstance();
+    private AudioLoader audioLoader = AudioLoader.getManagerInstance();
     public final static Pattern youtubePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtube\\.com))/watch(.*?)");
     public final static Pattern youtuBePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtu\\.be/))(.*?)");
 
@@ -31,13 +31,14 @@ public class NowPlayingCommand extends Command {
         this.category = Category.MUSIC;
         this.needs = new Need[]{Need.GUILD, Need.VOICECHANNEL};
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.id = 72;
     }
 
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
             Guild guild = event.getGuild();
-            MusicPlayer audioPlayer = musicManager.getPlayer(guild);
+            MusicPlayer audioPlayer = audioLoader.getPlayer(guild);
             if (audioPlayer != null) {
                 AudioTrack track = audioPlayer.getAudioPlayer().getPlayingTrack();
                 String s = audioPlayer.getAudioPlayer().isPaused() ? "paused" : "playing";

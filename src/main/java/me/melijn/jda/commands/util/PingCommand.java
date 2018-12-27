@@ -16,6 +16,7 @@ public class PingCommand extends Command {
         this.description = "Shows the bot's ping";
         this.usage = PREFIX + commandName;
         this.category = Category.UTILS;
+        this.id = 57;
     }
 
     @Override

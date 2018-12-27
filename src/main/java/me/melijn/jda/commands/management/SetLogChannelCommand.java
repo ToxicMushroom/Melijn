@@ -98,6 +98,7 @@ public class SetLogChannelCommand extends Command {
         this.aliases = new String[]{"slc"};
         this.category = Category.MANAGEMENT;
         this.needs = new Need[]{Need.GUILD};
+        this.id = 80;
     }
 
     @Override

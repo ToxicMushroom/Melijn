@@ -20,6 +20,7 @@ public class AvatarCommand extends Command {
         this.aliases = new String[]{"profilepicture"};
         this.category = Category.UTILS;
         this.permissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.id = 53;
     }
 
     @Override

@@ -16,6 +16,7 @@ public class TestCommand extends Command {
         this.description = "this command is for testing";
         this.usage = PREFIX + commandName;
         this.category = Category.DEVELOPER;
+        this.id = 104;
     }
 
     @Override

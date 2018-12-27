@@ -17,6 +17,7 @@ public class AlpacaCommand extends Command {
         this.description = "Shows an alpaca";
         this.usage = PREFIX + commandName;
         this.category = Category.FUN;
+        this.id = 93;
     }
 
     @Override

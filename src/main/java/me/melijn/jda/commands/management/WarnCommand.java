@@ -22,6 +22,7 @@ public class WarnCommand extends Command {
         this.category = Category.MANAGEMENT;
         this.permissions = new Permission[]{Permission.MESSAGE_HISTORY};
         this.needs = new Need[]{Need.GUILD};
+        this.id = 54;
     }
 
     @Override

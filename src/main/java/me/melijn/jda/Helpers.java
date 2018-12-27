@@ -8,17 +8,13 @@ import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.NotificationType;
 import me.melijn.jda.commands.management.SetLogChannelCommand;
 import me.melijn.jda.events.JoinLeave;
-import me.melijn.jda.music.MusicPlayer;
 import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
 import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Role;
-import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.managers.AudioManager;
 
 import java.text.SimpleDateFormat;
@@ -104,9 +100,6 @@ public class Helpers {
             "shuffle",
             "setmusiclogchannel",
             "setnotifications",
-            "pitch",
-            "tremelo",
-            "nightcore",
             "lewd",
             "punch",
             "wasted",
@@ -298,24 +291,22 @@ public class Helpers {
         return id;
     }
 
-    public static void postMusicLog(MusicPlayer player, AudioTrack track) {
-        if (SetLogChannelCommand.musicLogChannelCache.getUnchecked(player.getGuild().getIdLong()) != -1) {
-            TextChannel tc = player.getGuild().getTextChannelById(SetLogChannelCommand.musicLogChannelCache.getUnchecked(player.getGuild().getIdLong()));
-            if (tc == null) {
-                Melijn.mySQL.removeChannel(player.getGuild().getIdLong(), ChannelType.MUSIC_LOG);
-                SetLogChannelCommand.musicLogChannelCache.invalidate(player.getGuild().getIdLong());
-                return;
-            }
-            if (!tc.canTalk())
-                return;
-
-            tc.sendMessage(new Embedder(player.getGuild())
-                    .setTitle("Now playing")
-                    .setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** `" + Helpers.getDurationBreakdown(track.getDuration()) + "`\n")
-                    .setThumbnail(MessageHelper.getThumbnailURL(track.getInfo().uri))
-                    .setFooter(Helpers.getFooterStamp(), null)
-                    .build()).queue();
+    public static void postMusicLog(long guildId, AudioTrack track) {
+        if (SetLogChannelCommand.musicLogChannelCache.getUnchecked(guildId) == -1) return;
+        Guild guild = Melijn.getShardManager().getGuildById(guildId);
+        TextChannel tc = guild.getTextChannelById(SetLogChannelCommand.musicLogChannelCache.getUnchecked(guildId));
+        if (tc == null) {
+            Melijn.mySQL.removeChannel(guildId, ChannelType.MUSIC_LOG);
+            SetLogChannelCommand.musicLogChannelCache.invalidate(guildId);
+            return;
         }
+        if (!tc.canTalk()) return;
+        tc.sendMessage(new Embedder(guild)
+                .setTitle("Now playing")
+                .setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** `" + Helpers.getDurationBreakdown(track.getDuration()) + "`\n")
+                .setThumbnail(MessageHelper.getThumbnailURL(track.getInfo().uri))
+                .setFooter(Helpers.getFooterStamp(), null)
+                .build()).queue();
     }
 
     public static Role getRoleByArgs(CommandEvent event, String arg) {

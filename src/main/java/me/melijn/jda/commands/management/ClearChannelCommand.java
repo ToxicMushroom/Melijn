@@ -31,6 +31,7 @@ public class ClearChannelCommand extends Command {
         this.category = Category.MANAGEMENT;
         this.permissions = new Permission[]{Permission.MANAGE_CHANNEL, Permission.MANAGE_PERMISSIONS};
         this.needs = new Need[]{Need.GUILD, Need.ROLE};
+        this.id = 10;
     }
 
     @Override

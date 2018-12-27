@@ -36,6 +36,7 @@ public class SetVerificationThreshold extends Command {
         this.needs = new Need[]{Need.GUILD};
         this.category = Category.MANAGEMENT;
         this.extra = "0 disables the threshold any higher number is the amount of times the user can answer incorrect before getting kicked";
+        this.id = 5;
     }
 
     @Override
