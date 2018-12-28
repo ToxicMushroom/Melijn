@@ -1,11 +1,12 @@
 package me.melijn.jda.commands.music;
 
 import me.melijn.jda.Helpers;
+import me.melijn.jda.audio.AudioLoader;
+import me.melijn.jda.audio.Lava;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.audio.Lava;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
@@ -27,6 +28,7 @@ public class SummonCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), commandName, 0)) {
+            event.getGuild().getAudioManager().setSendingHandler(AudioLoader.getManagerInstance().getPlayer(event.getGuild()).getAudioHandler());
             if (lava.tryToConnectToVC(event, event.getGuild(), event.getMember().getVoiceState().getChannel())) {
                 event.reply("I have been summoned to your channel");
             }

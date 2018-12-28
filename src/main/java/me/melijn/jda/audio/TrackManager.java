@@ -47,7 +47,6 @@ public class TrackManager extends AudioEventAdapterWrapped {
 
     public void queue(AudioTrack track) {
         if (player.getPlayingTrack() == null) {
-            setSendingHandler(musicPlayer.getGuildId());
             player.playTrack(track);
         } else {
             tracks.offer(track);

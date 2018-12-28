@@ -7,6 +7,7 @@ import gnu.trove.map.TLongLongMap;
 import gnu.trove.map.TLongObjectMap;
 import gnu.trove.map.hash.TLongLongHashMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
+import lavalink.client.player.LavalinkPlayer;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Command;
@@ -115,14 +116,15 @@ public class MessageHelper {
         return hours + ":" + minutes + ":" + seconds + "s";
     }
 
-    public static String progressBar(AudioTrack track) {
+    public static String progressBar(LavalinkPlayer player) {
+        AudioTrack track = player.getPlayingTrack();
         if (track.getInfo().isStream || track.getPosition() > track.getDuration()) {
-            return "**" + Helpers.getDurationBreakdown(track.getPosition()) + " | \uD83D\uDD34 Live**";
+            return "**" + Helpers.getDurationBreakdown(player.getTrackPosition()) + " | \uD83D\uDD34 Live**";
         }
-        int percent = (int) (((double) track.getPosition() / (double) track.getDuration()) * 18D);
+        int percent = (int) (((double) player.getTrackPosition() / (double) track.getDuration()) * 18D);
         StringBuilder sb = new StringBuilder("▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
         sb.insert(percent, "](https://melijn.com/)<a:cool_nyan:490978764264570894>");
-        sb.append(" **").append(Helpers.getDurationBreakdown(track.getPosition())).append("/").append(Helpers.getDurationBreakdown(track.getDuration())).append("**");
+        sb.append(" **").append(Helpers.getDurationBreakdown(player.getTrackPosition())).append("/").append(Helpers.getDurationBreakdown(track.getDuration())).append("**");
         sb.insert(0, "[");
         return sb.toString();
     }

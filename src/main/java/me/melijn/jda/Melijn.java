@@ -1,7 +1,8 @@
 package me.melijn.jda;
 
-import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
+import com.neovisionaries.ws.client.WebSocketFactory;
 import lavalink.client.io.jda.JdaLavalink;
+import me.melijn.jda.audio.Lava;
 import me.melijn.jda.blub.CommandClientBuilder;
 import me.melijn.jda.commands.DonateCommand;
 import me.melijn.jda.commands.HelpCommand;
@@ -20,7 +21,6 @@ import me.melijn.jda.events.AddReaction;
 import me.melijn.jda.events.Channels;
 import me.melijn.jda.events.Chat;
 import me.melijn.jda.events.JoinLeave;
-import me.melijn.jda.audio.Lava;
 import me.melijn.jda.rest.Application;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
@@ -34,6 +34,7 @@ import org.jooby.Jooby;
 
 import javax.security.auth.login.LoginException;
 import java.net.URI;
+import java.util.Base64;
 import java.util.EnumSet;
 
 public class Melijn {
@@ -159,7 +160,7 @@ public class Melijn {
         );
 
         JdaLavalink lavalink = new JdaLavalink(
-                String.valueOf(OWNERID),
+                getIdFromToken(config.getValue("token")),
                 Integer.valueOf(config.getValue("shardCount")),
                 shardId -> getShardManager().getShardById(shardId)
         );
@@ -174,9 +175,8 @@ public class Melijn {
                 .setAutoReconnect(true)
                 .addEventListeners(client.build(), lavalink, new JoinLeave(), new AddReaction(), new Channels(), new Chat())
                 .setDisabledCacheFlags(EnumSet.of(CacheFlag.GAME))
-                .setAudioSendFactory(new NativeAudioSendFactory())
+                .setWebsocketFactory(new WebSocketFactory().setVerifyHostname(false))
                 .build();
-
 
 
         EvalCommand.serverBlackList.add(new long[]{110373943822540800L, 264445053596991498L});
@@ -196,5 +196,13 @@ public class Melijn {
 
     public static ShardManager getShardManager() {
         return shardManager;
+    }
+
+    private static String getIdFromToken(String token) {
+        return new String(
+                Base64.getDecoder().decode(
+                        token.split("\\.")[0]
+                )
+        );
     }
 }

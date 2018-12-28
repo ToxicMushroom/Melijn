@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 
 public class AudioLoader {
 
-    private final Lava lava = Lava.lava;
     private static final AudioLoader managerInstance = new AudioLoader();
     private final AudioPlayerManager manager = new DefaultAudioPlayerManager();
     private final TLongObjectMap<MusicPlayer> players = new TLongObjectHashMap<>();

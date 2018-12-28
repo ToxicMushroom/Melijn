@@ -63,13 +63,14 @@ public class JoinLeave extends ListenerAdapter {
             VoiceChannel vc = guild.getVoiceChannelById(queue.getLong("channelId"));
             if (vc == null) return;
 
-            Lava.lava.tryToConnectToVCSilent(vc);
-            boolean pause = queue.getBoolean("paused");
-            String[] urls = queue.getString("urls").split("\n");
-            audioLoader.getPlayer(guild).getAudioPlayer().setPaused(pause);
-            for (String url : urls) {
-                if (!url.startsWith("#0 "))
-                    audioLoader.loadSimpleTrack(audioLoader.getPlayer(guild), url.replaceFirst("#\\d+ ", ""));
+            if (Lava.lava.tryToConnectToVCSilent(vc)) {
+                boolean pause = queue.getBoolean("paused");
+                String[] urls = queue.getString("urls").split("\n");
+                audioLoader.getPlayer(guild).getAudioPlayer().setPaused(pause);
+                for (String url : urls) {
+                    if (!url.startsWith("#0 "))
+                        audioLoader.loadSimpleTrack(audioLoader.getPlayer(guild), url.replaceFirst("#\\d+ ", ""));
+                }
             }
         }
         Melijn.mySQL.clearQueues();

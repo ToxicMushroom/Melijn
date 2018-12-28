@@ -17,6 +17,7 @@ public class MusicPlayer {
         this.guildId = guildId;
         manager = new TrackManager(player, this);
         sendHandler = new AudioSendingHandler(player);
+        player.addListener(manager);
     }
 
     public LavalinkPlayer getAudioPlayer() {

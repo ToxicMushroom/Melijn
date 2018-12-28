@@ -51,7 +51,7 @@ public class NowPlayingCommand extends Command {
                             .setThumbnail(MessageHelper.getThumbnailURL(track.getInfo().uri))
                             .setDescription("[**" + track.getInfo().title + "**](" + track.getInfo().uri + ")")
                             .addField("status:", (s.equalsIgnoreCase("playing") ? "\u25B6" : "\u23F8") + looped + loopedQueue, false)
-                            .addField("progress:", MessageHelper.progressBar(track), false)
+                            .addField("progress:", MessageHelper.progressBar(audioPlayer.getAudioPlayer()), false)
                             .setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon()).build());
                 }
             } else {
