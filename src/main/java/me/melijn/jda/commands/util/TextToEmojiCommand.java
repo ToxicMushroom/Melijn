@@ -34,7 +34,7 @@ public class TextToEmojiCommand extends Command {
                 StringBuilder sb = new StringBuilder();
                 for (char c : event.getArgs().replaceFirst("%spaces%", "").toCharArray()) {
                     if (Character.isLetter(c)) {
-                        sb.append(":regional_indicator_").append(c).append(":");
+                        sb.append(":regional_indicator_").append(Character.toLowerCase(c)).append(":");
                         if (args[0].equalsIgnoreCase("%spaces%")) {
                             sb.append(" ");
                         }

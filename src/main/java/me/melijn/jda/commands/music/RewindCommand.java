@@ -1,6 +1,6 @@
 package me.melijn.jda.commands.music;
 
-import lavalink.client.player.IPlayer;
+import lavalink.client.player.LavalinkPlayer;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.audio.AudioLoader;
 import me.melijn.jda.blub.Category;
@@ -27,16 +27,17 @@ public class RewindCommand extends Command {
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
             String[] args = event.getArgs().replaceAll(":", " ").split("\\s+");
-            IPlayer player = AudioLoader.getManagerInstance().getPlayer(event.getGuild()).getAudioPlayer();
+            LavalinkPlayer player = AudioLoader.getManagerInstance().getPlayer(event.getGuild()).getAudioPlayer();
             if (player.getPlayingTrack() != null) {
                 long millis = Helpers.parseTimeFromArgs(args);
                 if (millis == -1) {
                     MessageHelper.sendUsage(this, event);
                     return;
                 }
-                player.seekTo(player.getTrackPosition() - millis);
+                millis = player.getTrackPosition() - millis;
+                player.seekTo(millis);
                 event.reply("The position of the song has been changed to **" +
-                        Helpers.getDurationBreakdown(player.getTrackPosition() - millis) + "/" +
+                        Helpers.getDurationBreakdown(Math.max(millis, 0)) + "/" +
                         Helpers.getDurationBreakdown(player.getPlayingTrack().getDuration()) + "** by **" + event.getFullAuthorName() + "**");
 
             } else {

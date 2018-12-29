@@ -37,9 +37,10 @@ public class ForwardCommand extends Command {
                 MessageHelper.sendUsage(this, event);
                 return;
             }
-            player.seekTo(millis + player.getTrackPosition());
+            millis += player.getTrackPosition();
+            player.seekTo(millis);
             event.reply("The position of the song has been changed to **" +
-                    Helpers.getDurationBreakdown(player.getTrackPosition()) + "/" +
+                    Helpers.getDurationBreakdown(Math.min(millis, player.getPlayingTrack().getDuration())) + "/" +
                     Helpers.getDurationBreakdown(player.getPlayingTrack().getDuration()) + "** by **" + event.getFullAuthorName() + "**");
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
