@@ -13,6 +13,7 @@ import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 
+import java.util.LinkedList;
 import java.util.Queue;
 
 import static me.melijn.jda.Melijn.PREFIX;
@@ -43,7 +44,7 @@ public class SkipCommand extends Command {
                 return;
             }
             String[] args = event.getArgs().split("\\s+");
-            Queue<AudioTrack> audioTracks = player.getTrackManager().getTracks();
+            Queue<AudioTrack> audioTracks = new LinkedList<>(player.getTrackManager().getTracks());
             int i = 1;
             if (args.length > 0 && !args[0].isBlank()) {
                 if (args[0].matches("\\d+") && args[0].length() < 4) {
