@@ -157,7 +157,8 @@ public class Melijn {
                 new DiceCommand(),
                 new TestCommand(),
                 new SetEmbedColorCommand(),
-                new EmotesCommand()
+                new EmotesCommand(),
+                new PrivatePrefixCommand()
         );
 
         JdaLavalink lavalink = new JdaLavalink(
