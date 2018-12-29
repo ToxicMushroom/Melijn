@@ -55,7 +55,8 @@ public class Melijn {
         mySQL.executeUpdate("TRUNCATE TABLE commands");
         CommandClientBuilder client = new CommandClientBuilder();
         client.setOwnerId(OWNERID);
-        client.addCommands(new BirdCommand(),//Only add commands at the end of the list for because of commandIndexes
+        client.addCommands(
+                new BirdCommand(), //Only add commands at the end of the list for because of commandIndexes
                 new UrbanCommand(),
                 new BlurpleCommand(),
                 new InvertCommand(),

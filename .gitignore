@@ -9,4 +9,14 @@ gradle/
 
 gradlew\.bat
 
+build/
+
+out/
+
 gradlew
+
+*.iml
+
+src/main/java/me/melijn/jda/utils/Private.java
+
+config.json
