@@ -48,6 +48,13 @@ public class Config {
                     .put("password", "")
                     .put("ipaddress", "")
                     .put("database", "")
+                    .put("spotify", "")
+                    .put("spotifyClientId", "")
+                    .put("environment", "testing")
+                    .put("lavalink-host", "")
+                    .put("lavalink-pwd", "")
+                    .put("shardCount", 1)
+                    .put("restPort", 8080)
                     .toString(4)
                     .getBytes()
             );
