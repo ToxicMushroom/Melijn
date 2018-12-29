@@ -21,10 +21,7 @@ import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,7 +44,7 @@ public class MessageHelper {
         int mHour = start.get(Calendar.HOUR_OF_DAY);
         int mMinutes = start.get(Calendar.MINUTE);
         int mSeconds = start.get(Calendar.SECOND);
-        return String.valueOf(mHour) + ":" + mMinutes + ":" + mSeconds + "s " + mDay + "/" + mMonth + "/" + mYear;
+        return mHour + ":" + mMinutes + ":" + mSeconds + "s " + mDay + "/" + mMonth + "/" + mYear;
     }
 
     public static long dateToMillis(String date) {

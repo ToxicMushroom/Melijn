@@ -2,6 +2,7 @@ package me.melijn.jda.events;
 
 import me.melijn.jda.Melijn;
 import me.melijn.jda.audio.AudioLoader;
+import me.melijn.jda.audio.Lava;
 import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.commands.developer.EvalCommand;
 import me.melijn.jda.commands.management.SetMusicChannelCommand;
@@ -49,9 +50,9 @@ public class Channels extends ListenerAdapter {
                 }
             }
         } else if (SetStreamerModeCommand.streamerModeCache.getUnchecked(guildId) &&
-                !audioManager.isConnected() &&
+                !Lava.lava.isConnected(guildId) &&
                 event.getChannelJoined().getIdLong() == SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)) {
-            audioManager.openAudioConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)));
+            Lava.lava.openConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)));
             tryPlayStreamUrl(guild.getIdLong());
             TaskScheduler.async(() -> {
                 //Hacky way to unmute bot in afk channel
@@ -73,11 +74,10 @@ public class Channels extends ListenerAdapter {
         Guild guild = event.getGuild();
         if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
         long guildId = guild.getIdLong();
-        AudioManager audioManager = guild.getAudioManager();
         if (SetStreamerModeCommand.streamerModeCache.getUnchecked(guildId) &&
-                !audioManager.isConnected() &&
+                !Lava.lava.isConnected(guildId) &&
                 event.getChannelJoined().getIdLong() == (SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId))) {
-            audioManager.openAudioConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)));
+            Lava.lava.openConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)));
             tryPlayStreamUrl(guild.getIdLong());
             TaskScheduler.async(() -> {
                 if (guild.getAfkChannel() != null &&

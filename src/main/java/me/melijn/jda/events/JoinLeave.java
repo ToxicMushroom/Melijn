@@ -186,11 +186,11 @@ public class JoinLeave extends ListenerAdapter {
         }
     }
 
-    private static String variableFormat(String s, Guild guild, User user) {
+    public static String variableFormat(String s, Guild guild, User user) {
         return s.replaceAll("%USER%", "<@" + user.getIdLong() + ">")
                 .replaceAll("%USERNAME%", user.getName() + "#" + user.getDiscriminator())
                 .replaceAll("%GUILDNAME%", guild.getName())
                 .replaceAll("%SERVERNAME%", guild.getName())
-                .replaceAll("%JOINPOSITION%", String.valueOf(guild.getMemberCache().size()));
+                .replaceAll("%MEMBERSIZE%", String.valueOf(guild.getMemberCache().size()));
     }
 }

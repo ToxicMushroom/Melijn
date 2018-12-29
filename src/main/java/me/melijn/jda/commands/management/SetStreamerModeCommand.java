@@ -5,6 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
+import me.melijn.jda.audio.Lava;
 import me.melijn.jda.blub.*;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
@@ -59,9 +60,7 @@ public class SetStreamerModeCommand extends Command {
                         case "on":
                         case "enabled":
                             if (guild.getSelfMember().hasPermission(musicChannel, Permission.VOICE_CONNECT)) {
-                                if (event.getMember().getVoiceState().inVoiceChannel()) {
-                                    guild.getAudioManager().openAudioConnection(musicChannel);
-                                }
+                                Lava.lava.openConnection(musicChannel);
                                 TaskScheduler.async(() -> {
                                     Melijn.mySQL.setStreamerMode(guild.getIdLong(), true);
                                     streamerModeCache.put(guild.getIdLong(), true);
