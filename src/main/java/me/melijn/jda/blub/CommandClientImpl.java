@@ -10,11 +10,14 @@ import me.melijn.jda.Melijn;
 import me.melijn.jda.commands.developer.EvalCommand;
 import me.melijn.jda.commands.management.DisableCommand;
 import me.melijn.jda.commands.management.SetPrefixCommand;
+import me.melijn.jda.commands.util.PrivatePrefixCommand;
+import me.melijn.jda.events.JoinLeave;
 import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.entities.impl.JDAImpl;
 import net.dv8tion.jda.core.events.ShutdownEvent;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -125,6 +128,12 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                 parts = Arrays.copyOf(rawContent.substring(prefix.length()).trim().split("\\s+", 2), 2);
             else if (rawContent.toLowerCase().startsWith(((nickname ? "<@!" : "<@") + event.getJDA().getSelfUser().getId() + ">")))
                 parts = Arrays.copyOf(rawContent.substring(((nickname ? "<@!" : "<@") + event.getJDA().getSelfUser().getId() + ">").length()).trim().split("\\s+", 2), 2);
+            else {
+                for (String s : PrivatePrefixCommand.privatePrefixes.getUnchecked(event.getAuthor().getIdLong())) {
+                    if (rawContent.toLowerCase().startsWith(s.toLowerCase()))
+                        parts = Arrays.copyOf(rawContent.substring(s.length()).trim().split("\\s+", 2), 2);
+                }
+            }
 
             if (parts != null && (event.isFromType(ChannelType.PRIVATE) || event.getTextChannel().canTalk())) {
                 String name = parts[0];
@@ -164,24 +173,24 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                     if (command.getBoolean("prefix")) {
                         if (message.equals(justName)) continue;
                         if (justName.equalsIgnoreCase(command.getString("name"))) {
-                            customCommandSender(command, event.getGuild(), event.getTextChannel());
+                            customCommandSender(command, event.getGuild(), event.getAuthor(), event.getTextChannel());
                             return;
                         }
                         for (String alias : command.getString("aliases").split("%split%")) {
                             if (justName.equalsIgnoreCase(alias)) {
-                                customCommandSender(command, event.getGuild(), event.getTextChannel());
+                                customCommandSender(command, event.getGuild(), event.getAuthor(), event.getTextChannel());
                                 return;
                             }
                         }
                     } else {
                         if (command.getString("name").equalsIgnoreCase(message)) {
-                            customCommandSender(command, event.getGuild(), event.getTextChannel());
+                            customCommandSender(command, event.getGuild(), event.getAuthor(), event.getTextChannel());
                             return;
                         }
                         if (command.getString("aliases").isBlank()) return;
                         for (String alias : command.getString("aliases").split("%split%")) {
                             if (message.equalsIgnoreCase(alias)) {
-                                customCommandSender(command, event.getGuild(), event.getTextChannel());
+                                customCommandSender(command, event.getGuild(), event.getAuthor(), event.getTextChannel());
                                 return;
                             }
                         }
@@ -201,14 +210,14 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
         return false;
     }
 
-    private void customCommandSender(JSONObject command, Guild guild, TextChannel channel) {
+    private void customCommandSender(JSONObject command, Guild guild, User author, TextChannel channel) {
         try {
             String attachment = command.getString("attachment");
             if (isJSONObjectValid(command.getString("message"))) {
                 JSONObject content = new JSONObject(command.getString("message"));
                 MessageAction action = null;
                 if (content.has("content") && !content.getString("content").isBlank()) { //Als er een gewone message bij zit
-                    action = channel.sendMessage(content.getString("content"));
+                    action = channel.sendMessage(JoinLeave.variableFormat(content.getString("content"), guild, author));
                     if (content.has("embed"))
                         action = action.embed(
                                 ((JDAImpl) guild.getJDA()).getEntityBuilder().createMessageEmbed(content.getJSONObject("embed").put("type", "link"))
@@ -229,7 +238,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                 if (action != null)
                     action.queue();
             } else {
-                MessageAction action = channel.sendMessage(command.getString("message"));
+                MessageAction action = channel.sendMessage(JoinLeave.variableFormat(command.getString("message"), guild, author));
                 if (attachment.matches("https?://.*")) {
                     action = action.addFile(new URL(attachment).openStream(), "attachment" + attachment.substring(attachment.lastIndexOf(".")));
                 }
