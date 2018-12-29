@@ -21,8 +21,8 @@ import static me.melijn.jda.Melijn.PREFIX;
 public class SetPrefixCommand extends Command {
 
     public static final LoadingCache<Long, String> prefixes = CacheBuilder.newBuilder()
-            .maximumSize(20)
-            .expireAfterAccess(5, TimeUnit.MINUTES)
+            .maximumSize(100)
+            .expireAfterAccess(2, TimeUnit.MINUTES)
             .build(new CacheLoader<>() {
                 public String load(@NotNull Long key) {
                     return Melijn.mySQL.getPrefix(key);
