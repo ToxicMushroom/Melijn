@@ -21,7 +21,7 @@ public class SeekCommand extends Command {
         this.description = "Seeks the part of the track you desire";
         this.usage = PREFIX + commandName + " [hh:mm:ss]";
         this.aliases = new String[]{"skipx", "position"};
-        this.needs = new Need[]{Need.GUILD, Need.VOICECHANNEL};
+        this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};
         this.category = Category.MUSIC;
         this.id = 70;
     }

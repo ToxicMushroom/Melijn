@@ -118,7 +118,7 @@ public class MessageHelper {
 
     public static String progressBar(LavalinkPlayer player) {
         AudioTrack track = player.getPlayingTrack();
-        if (track.getInfo().isStream || track.getPosition() > track.getDuration()) {
+        if (track.getInfo().isStream) {
             return "**" + Helpers.getDurationBreakdown(player.getTrackPosition()) + " | \uD83D\uDD34 Live**";
         }
         int percent = (int) (((double) player.getTrackPosition() / (double) track.getDuration()) * 18D);

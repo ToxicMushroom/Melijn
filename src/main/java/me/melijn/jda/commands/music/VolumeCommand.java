@@ -11,7 +11,7 @@ import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.utils.MessageHelper;
 
 import static me.melijn.jda.Melijn.PREFIX;
-import static me.melijn.jda.blub.Need.GUILD;
+import static me.melijn.jda.blub.Need.*;
 
 public class VolumeCommand extends Command {
 
@@ -21,7 +21,7 @@ public class VolumeCommand extends Command {
         this.description = "Changes the volume of tracks";
         this.aliases = new String[]{"vol"};
         this.extra = "default: 100 (over 100 will cause distortion)";
-        this.needs = new Need[]{GUILD};
+        this.needs = new Need[]{GUILD, SAME_VOICECHANNEL};
         this.category = Category.MUSIC;
         this.id = 65;
     }
@@ -34,19 +34,11 @@ public class VolumeCommand extends Command {
             int volume;
             if (args.length == 0 || args[0].isEmpty()) {
                 event.reply("Current volume: **" + player.getAudioPlayer().getVolume() + "**");
-            } else if ((!Helpers.voteChecks || Melijn.mySQL.getVotesObject(event.getAuthorId()).getLong("streak") > 0)) {
+            } else if (!Helpers.voteChecks || Melijn.mySQL.getVotesObject(event.getAuthorId()).getLong("streak") > 0) {
                 if (args[0].matches("[0-9]{1,3}|1000")) {
                     volume = Integer.parseInt(args[0]);
-                    if (event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {
-                        if (event.getMember().getVoiceState().getChannel() == event.getGuild().getSelfMember().getVoiceState().getChannel()) {
-                            player.getAudioPlayer().setVolume(volume);
-                            event.reply("Volume has been set to **" + volume + "**");
-                        } else {
-                            event.reply("You have to be in the same voice channel as me to change my volume");
-                        }
-                    } else {
-                        event.reply("I'm not in a voiceChannel");
-                    }
+                    player.getAudioPlayer().setVolume(volume);
+                    event.reply("Volume has been set to **" + volume + "**");
                 } else {
                     MessageHelper.sendUsage(this, event);
                 }

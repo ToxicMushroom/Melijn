@@ -30,7 +30,7 @@ public class SummonCommand extends Command {
         if (Helpers.hasPerm(event.getMember(), commandName, 0)) {
             event.getGuild().getAudioManager().setSendingHandler(AudioLoader.getManagerInstance().getPlayer(event.getGuild()).getAudioHandler());
             if (lava.tryToConnectToVC(event, event.getGuild(), event.getMember().getVoiceState().getChannel())) {
-                event.reply("I have been summoned to your channel");
+                event.reply("I have joined your channel");
             }
         } else {
             event.reply(Helpers.noPerms);
