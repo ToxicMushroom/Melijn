@@ -20,6 +20,7 @@ import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.MessageType;
 import me.melijn.jda.blub.*;
 import me.melijn.jda.commands.management.*;
+import me.melijn.jda.commands.util.PrivatePrefixCommand;
 import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
@@ -125,6 +126,7 @@ public class MySQL {
             executeUpdate("CREATE TABLE IF NOT EXISTS embed_colors(guildId bigint, color bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS stream_urls(guildId bigint, url varchar(2048), PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS prefixes(guildId bigint, prefix bigint, PRIMARY KEY (guildId));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS private_prefixes(userId bigint, prefixes varchar(124), PRIMARY KEY (userId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS verification_thresholds(guildId bigint, threshold tinyint, PRIMARY KEY (guildId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS unverified_users(guildId bigint, userId bigint, UNIQUE KEY (guildId, userId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS verification_codes(guildId bigint, code varchar(2048), PRIMARY KEY (guildId));");
@@ -1804,5 +1806,37 @@ public class MySQL {
 
     public void removeEmbedColor(long guildId) {
         executeUpdate("DELETE FROM embed_colors WHERE guildId= ?", guildId);
+    }
+
+    public List<String> getPrivatePrefixes(long userId) {
+        try (Connection con = ds.getConnection()) {
+            try (PreparedStatement statement = con.prepareStatement("SELECT * FROM private_prefixes WHERE userId= ?")) {
+                statement.setLong(1, userId);
+                try (ResultSet rs = statement.executeQuery()) {
+                    if (rs.next())
+                        return rs.getString("prefixes").length() > 0 ?
+                                Arrays.asList(rs.getString("prefixes").split("%split%")) :
+                                new ArrayList<>();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
+
+    public void addPrivatePrefix(long userId, String prefix) {
+        List<String> prefixes = new ArrayList<>(PrivatePrefixCommand.privatePrefixes.getUnchecked(userId));
+        prefixes.add(prefix);
+        executeUpdate("INSERT INTO private_prefixes (userId, prefixes) VALUES (?, ?) ON DUPLICATE KEY UPDATE prefixes= ?",
+                userId, String.join("%split%", prefixes), String.join("%split%", prefixes));
+
+    }
+
+    public void removePrivatePrefix(long userId, String prefix) {
+        List<String> prefixes = new ArrayList<>(PrivatePrefixCommand.privatePrefixes.getUnchecked(userId));
+        prefixes.remove(prefix);
+        executeUpdate("INSERT INTO private_prefixes (userId, prefixes) VALUES (?, ?) ON DUPLICATE KEY UPDATE prefixes= ?",
+                userId, String.join("%split%", prefixes), String.join("%split%", prefixes));
     }
 }
