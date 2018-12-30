@@ -178,23 +178,23 @@ public class MessageHelper {
 
         ex.printStackTrace(printWriter);
         String message = writer.toString().replaceAll("me\\.melijn\\.jda", "**me.melijn.jda**");
-        final List<String> messages = getSplitMessage(message);
+        final List<String> messages = getSplitMessage(message, 0);
         messages.forEach(msg -> Melijn.getShardManager().getGuildById(340081887265685504L).getTextChannelById(486042641692360704L).sendMessage(msg).queue());
     }
 
-    public static List<String> getSplitMessage(String message) {
+    private static List<String> getSplitMessage(String message, int margin) {
         final List<String> messages = new ArrayList<>();
-        while (message.length() > 2000) {
-            final String findLastNewline = message.substring(0, 2000);
+        while (message.length() > 2000 - margin) {
+            final String findLastNewline = message.substring(0, 2000 - margin);
             int index = findLastNewline.lastIndexOf("\n");
-            if (index < 1800) {
+            if (index < 1800 - margin) {
                 index = findLastNewline.lastIndexOf(".");
             }
-            if (index < 1800) {
+            if (index < 1800 - margin) {
                 index = findLastNewline.lastIndexOf(" ");
             }
-            if (index < 1800) {
-                index = 1999;
+            if (index < 1800 - margin) {
+                index = 1999 - margin;
             }
             messages.add(message.substring(0, index));
             message = message.substring(index);
@@ -205,7 +205,12 @@ public class MessageHelper {
     }
 
     public static void sendSplitMessage(TextChannel channel, String text) {
-        final List<String> messages = getSplitMessage(text);
+        final List<String> messages = getSplitMessage(text, 0);
         messages.forEach(message -> channel.sendMessage(message).queue());
+    }
+
+    public static void sendSplitCodeBlock(TextChannel channel, String text, String style) {
+        final List<String> messages = getSplitMessage(text, 8 + style.length());
+        messages.forEach(message -> channel.sendMessage("```" + style + "\n" + message + "```").queue());
     }
 }
