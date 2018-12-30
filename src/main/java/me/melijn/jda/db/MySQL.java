@@ -8,10 +8,12 @@ import gnu.trove.list.TIntList;
 import gnu.trove.list.TLongList;
 import gnu.trove.list.array.TIntArrayList;
 import gnu.trove.list.array.TLongArrayList;
+import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.TIntLongMap;
 import gnu.trove.map.TLongObjectMap;
 import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
+import gnu.trove.map.hash.TIntIntHashMap;
 import gnu.trove.map.hash.TIntLongHashMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
 import me.melijn.jda.Helpers;
@@ -124,6 +126,7 @@ public class MySQL {
 
             //Other settings
             executeUpdate("CREATE TABLE IF NOT EXISTS embed_colors(guildId bigint, color bigint, PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS cooldowns(guildId bigint, commandId int, cooldown int, UNIQUE KEY (guildId, commandId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS stream_urls(guildId bigint, url varchar(2048), PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS prefixes(guildId bigint, prefix bigint, PRIMARY KEY (guildId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS private_prefixes(userId bigint, prefixes varchar(124), PRIMARY KEY (userId));");
@@ -299,7 +302,7 @@ public class MySQL {
                     "SELECT * FROM perms_roles WHERE guildId= ? AND roleId IN ("
             );
             for (int i = 0; i < roles.size(); i++) {
-                sb.append("?").append(i == roles.size()-1 ? "" : ",");
+                sb.append("?").append(i == roles.size() - 1 ? "" : ",");
             }
             sb.append(") AND (permission= ? OR permission= ?) LIMIT 1");
             PreparedStatement getting = con.prepareStatement(sb.toString());
@@ -1407,7 +1410,8 @@ public class MySQL {
                             Guild guild = jda.asBot().getShardManager().getGuildById(blubObj.getLong("guildId"));
                             if (guild != null && user != null)
                                 Melijn.mySQL.unban(user, guild, jda.getSelfUser(), "Ban expired");
-                        }, failed -> {});
+                        }, failed -> {
+                        });
                     }
                 }
             }
@@ -1434,7 +1438,8 @@ public class MySQL {
                             Guild guild = jda.asBot().getShardManager().getGuildById(blubObj.getLong("guildId"));
                             if (guild != null)
                                 Melijn.mySQL.unmute(guild, user, jda.getSelfUser(), "Mute expired");
-                        }, failed -> {});
+                        }, failed -> {
+                        });
                     }
                 }
             }
@@ -1838,5 +1843,65 @@ public class MySQL {
         prefixes.remove(prefix);
         executeUpdate("INSERT INTO private_prefixes (userId, prefixes) VALUES (?, ?) ON DUPLICATE KEY UPDATE prefixes= ?",
                 userId, String.join("%split%", prefixes), String.join("%split%", prefixes));
+    }
+
+    public void setCooldown(long guildId, List<Command> commands, int cooldown) {
+        try (Connection con = ds.getConnection()) {
+            try (PreparedStatement statement = con.prepareStatement("INSERT INTO cooldowns (guildId, commandId, cooldown) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldown= ?")) {
+                commands.forEach(command -> {
+                    try {
+                        statement.setLong(1, guildId);
+                        statement.setInt(2, command.getId());
+                        statement.setInt(3, cooldown);
+                        statement.setInt(4, cooldown);
+                        statement.addBatch();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                });
+                statement.executeBatch();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        //executeUpdate("INSERT INTO cooldowns (guildId, commandId, cooldown) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldown= ?",guildId, command.getId(), cooldown, cooldown);
+    }
+
+    public void removeCooldown(long guildId, List<Command> commands) {
+        try (Connection con = ds.getConnection()) {
+            try (PreparedStatement statement = con.prepareStatement("DELETE FROM cooldowns WHERE guildId= ? AND commandId= ?")) {
+                commands.forEach(command -> {
+                    try {
+                        statement.setLong(1, guildId);
+                        statement.setInt(2, command.getId());
+                        statement.addBatch();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                });
+                statement.executeBatch();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        //executeUpdate("DELETE FROM cooldowns WHERE guildId= ? AND commandId= ?", guildId, command.getId());
+    }
+
+    public TIntIntMap getCooldowns(long guildId) {
+        try (Connection con = ds.getConnection()) {
+            try (PreparedStatement statement = con.prepareStatement("SELECT * FROM cooldowns WHERE guildId= ?")) {
+                statement.setLong(1, guildId);
+                try (ResultSet rs = statement.executeQuery()) {
+                    TIntIntMap map = new TIntIntHashMap();
+                    while (rs.next()) {
+                        map.put(rs.getInt("commandId"), rs.getInt("cooldown"));
+                    }
+                    return map;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return new TIntIntHashMap();
     }
 }
