@@ -191,4 +191,8 @@ public class CommandEvent {
     public int getOffset() {
         return offset;
     }
+
+    public long getGuildId() {
+        return getGuild().getIdLong();
+    }
 }
