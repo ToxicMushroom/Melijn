@@ -138,12 +138,12 @@ public class Helpers {
             "poll",
             "dice",
             "SetEmbedColor",
-            "emotes"
+            "emotes",
+            "cooldown"
     );
 
     public static void startTimer(JDA jda, int i) {
         if (i == 0 || i == 1) {
-            lastRunTimer1 = System.currentTimeMillis();
             TaskScheduler.scheduleRepeating(() -> {
                 lastRunTimer1 = System.currentTimeMillis();
                 Melijn.mySQL.doUnbans(jda);
@@ -151,7 +151,6 @@ public class Helpers {
             }, 2_000);
         }
         if (i == 0 || i == 2) {
-            lastRunTimer2 = System.currentTimeMillis();
             TaskScheduler.scheduleRepeating(() -> {
                 lastRunTimer2 = System.currentTimeMillis();
                 if (JoinLeave.dblAPI != null)
@@ -175,7 +174,6 @@ public class Helpers {
             }, 60_000);
         }
         if (i == 0 || i == 3) {
-            lastRunTimer3 = System.currentTimeMillis();
             TaskScheduler.scheduleRepeating(() -> {
                 lastRunTimer3 = System.currentTimeMillis();
                 WebUtils.getWebUtilsInstance().updateSpotifyCredentials();

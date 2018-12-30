@@ -158,7 +158,8 @@ public class Melijn {
                 new TestCommand(),
                 new SetEmbedColorCommand(),
                 new EmotesCommand(),
-                new PrivatePrefixCommand()
+                new PrivatePrefixCommand(),
+                new CooldownCommand()
         );
 
         JdaLavalink lavalink = new JdaLavalink(
