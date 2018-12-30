@@ -11,9 +11,7 @@ import com.google.api.services.youtube.model.SearchResult;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 public class YTSearch {
@@ -65,46 +63,6 @@ public class YTSearch {
             List<SearchResult> searchResultList = searchResponse.getItems();
             if (searchResultList.size() == 0) return null;
             return searchResultList.get(0).getId().getVideoId();
-        } catch (GoogleJsonResponseException e) {
-            System.err.println("There was a service error: " + e.getDetails().getCode() + " : " + e.getDetails().getMessage());
-        } catch (IOException e) {
-            System.err.println("There was an IO error: " + e.getCause() + " : " + e.getMessage());
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-        return null;
-    }
-
-    public Map<String, String> searchMore(String query) {
-        try {
-            YouTube.Search.List search = youtube.search().list("id,snippet");
-
-
-            // Set your developer key from the {{ Google Cloud Console }} for
-            // non-authenticated requests. See:
-            // {{ https://cloud.google.com/console }}
-            String apiKey = properties.getProperty("youtube.apikey");
-            search.setKey(apiKey);
-            search.setQ(query);
-
-            // Restrict the search results to only include videos. See:
-            // https://developers.google.com/youtube/v3/docs/search/list#type
-            search.setType("video");
-
-            // To increase efficiency, only retrieve the fields that the
-            // application uses.
-            search.setFields("items(id/videoId, snippet/title)");
-            search.setMaxResults(5L);
-
-            // Call the API adn return results
-            SearchListResponse searchResponse = search.execute();
-            List<SearchResult> searchResultList = searchResponse.getItems();
-            if (searchResultList.size() == 0) return null;
-            Map<String, String> searched = new HashMap<>();
-            for (SearchResult searchResult : searchResultList) {
-                searched.put(searchResult.getId().getVideoId(), searchResult.getSnippet().getTitle());
-            }
-            return searched;
         } catch (GoogleJsonResponseException e) {
             System.err.println("There was a service error: " + e.getDetails().getCode() + " : " + e.getDetails().getMessage());
         } catch (IOException e) {

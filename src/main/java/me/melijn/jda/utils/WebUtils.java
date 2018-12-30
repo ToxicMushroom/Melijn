@@ -13,6 +13,8 @@ import me.duncte123.weebJava.models.image.response.ImageTypesResponse;
 import me.duncte123.weebJava.types.Endpoint;
 import me.duncte123.weebJava.types.TokenType;
 import me.melijn.jda.Config;
+import me.melijn.jda.Helpers;
+import net.dv8tion.jda.core.EmbedBuilder;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -76,8 +78,6 @@ public class WebUtils {
     }
 
 
-
-
     public void getTags(Consumer<List<String>> callback) {
         weebApi.getTags().async(callback);
     }
@@ -92,7 +92,7 @@ public class WebUtils {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            if (response != null && response.body() != null) {
+            if (response.body() != null) {
                 return response.body().string();
             } else return "error";
         } catch (IOException ignored) {
@@ -102,12 +102,11 @@ public class WebUtils {
 
     public String getCatUrl() {
         String catPage = run("http://aws.random.cat/meow");
-        if (catPage.startsWith("{") && (new JSONObject(catPage).get("file").toString().toLowerCase().startsWith("https://") || new JSONObject(catPage).get("file").toString().toLowerCase().startsWith("http://")))
-                return new JSONObject(catPage).get("file").toString().toLowerCase();
+        if (Helpers.isJSONObjectValid(catPage) && EmbedBuilder.URL_PATTERN.matcher(new JSONObject(catPage).getString("file")).matches())
+            return new JSONObject(catPage).getString("file");
         return null;
     }
 
-    //Weeb.sh api
     public void getImage(String type, Consumer<WeebImage> callback) {
         weebApi.getRandomImage(type).async(callback, Throwable::printStackTrace);
     }

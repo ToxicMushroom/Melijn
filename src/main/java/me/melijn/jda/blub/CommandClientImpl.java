@@ -8,11 +8,13 @@ import gnu.trove.map.hash.TObjectIntHashMap;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.commands.developer.EvalCommand;
+import me.melijn.jda.commands.management.CooldownCommand;
 import me.melijn.jda.commands.management.DisableCommand;
 import me.melijn.jda.commands.management.SetPrefixCommand;
 import me.melijn.jda.commands.util.PrivatePrefixCommand;
 import me.melijn.jda.events.JoinLeave;
 import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Guild;
@@ -26,7 +28,6 @@ import net.dv8tion.jda.core.requests.restaction.MessageAction;
 import org.apache.commons.text.WordUtils;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -138,29 +139,24 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
             if (parts != null && (event.isFromType(ChannelType.PRIVATE) || event.getTextChannel().canTalk())) {
                 String name = parts[0];
                 String args = parts[1] == null ? "" : parts[1];
-                if (commands.size() < INDEX_LIMIT + 1) {
-                    commands.stream().filter(cmd -> cmd.isCommandFor(name)).findAny().ifPresent(command -> {
+                commands.stream().filter(cmd -> cmd.isCommandFor(name)).findAny().ifPresent(command -> {
 
-                        if (shouldNotRun(event, command)) return;
-                        if (event.getGuild() != null && DisableCommand.disabledGuildCommands.containsKey(event.getGuild().getIdLong()) && DisableCommand.disabledGuildCommands.get(event.getGuild().getIdLong()).contains(commands.indexOf(command)))
-                            return;
-
-                        Melijn.mySQL.updateUsage(commands.indexOf(command), System.currentTimeMillis());
-                        CommandEvent cevent = new CommandEvent(event, args, this, name);
-                        command.run(cevent);
-                    });
-                } else {
-                    int i = commandIndex.containsKey(name.toLowerCase()) ? commandIndex.get(name.toLowerCase()) : -1;
-                    if (i != -1) {
-                        Command command = commands.get(i);
-
-                        if (shouldNotRun(event, command)) return;
-
-                        Melijn.mySQL.updateUsage(i, System.currentTimeMillis());
-                        CommandEvent cevent = new CommandEvent(event, args, this, name);
-                        command.run(cevent);
+                    if (shouldNotRun(event, command)) return;
+                    if (event.getGuild() != null && DisableCommand.disabledGuildCommands.containsKey(event.getGuild().getIdLong()) && DisableCommand.disabledGuildCommands.get(event.getGuild().getIdLong()).contains(commands.indexOf(command)))
+                        return;
+                    if (event.getGuild() != null && CooldownCommand.activeCooldowns.isActive(event.getGuild().getIdLong(), event.getAuthor().getIdLong(), command.id)) {
+                        event.getTextChannel().sendMessage(String.format("You have to wait **%dms** before using **%s** again",
+                                CooldownCommand.activeCooldowns.getTimeLeft(event.getGuild().getIdLong(), event.getAuthor().getIdLong(), command.id),
+                                command.getCommandName())).queue();
+                        return;
                     }
-                }
+                    CommandEvent cevent = new CommandEvent(event, args, this, name);
+                    command.run(cevent);
+                    TaskScheduler.async(() -> {
+                        Melijn.mySQL.updateUsage(command.getId(), System.currentTimeMillis());
+                        CooldownCommand.activeCooldowns.updateCooldown(event.getGuild().getIdLong(), event.getAuthor().getIdLong(), command.id);
+                    });
+                });
             }
             if (event.getGuild() != null && event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE) && serverHasCC.getUnchecked(event.getGuild().getIdLong())) {
                 JSONArray ccs = Melijn.mySQL.getCustomCommands(event.getGuild().getIdLong());
@@ -213,7 +209,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
     private void customCommandSender(JSONObject command, Guild guild, User author, TextChannel channel) {
         try {
             String attachment = command.getString("attachment");
-            if (isJSONObjectValid(command.getString("message"))) {
+            if (Helpers.isJSONObjectValid(command.getString("message"))) {
                 JSONObject content = new JSONObject(command.getString("message"));
                 MessageAction action = null;
                 if (content.has("content") && !content.getString("content").isBlank()) { //Als er een gewone message bij zit
@@ -246,15 +242,6 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
             }
         } catch (IOException ignored) {
         }
-    }
-
-    private boolean isJSONObjectValid(String test) {
-        try {
-            new JSONObject(test);
-        } catch (JSONException ignored) {
-            return false;
-        }
-        return true;
     }
 
     private boolean noPermission(MessageReceivedEvent event, Command command) {

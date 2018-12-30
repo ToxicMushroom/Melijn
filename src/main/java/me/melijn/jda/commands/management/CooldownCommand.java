@@ -8,6 +8,7 @@ import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.*;
 import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.TaskScheduler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -69,11 +70,13 @@ public class CooldownCommand extends Command {
                         event.reply("Your input was not a number or was not in range of **1-30000** (milliseconds)");
                         return;
                     }
-                    Melijn.mySQL.setCooldown(event.getGuildId(), matches, Integer.parseInt(args[2]));
-                    TIntIntMap map = cooldowns.getUnchecked(event.getGuildId());
-                    matches.forEach(command -> map.put(command.getId(), Integer.parseInt(args[2])));
-                    cooldowns.put(event.getGuildId(), map);
-                    event.reply("The cooldown of **" + matches.get(0).getCommandName() + "** has been set to **" + Integer.parseInt(args[2]) + "ms**");
+                    TaskScheduler.async(() -> {
+                        Melijn.mySQL.setCooldown(event.getGuildId(), matches, Integer.parseInt(args[2]));
+                        TIntIntMap map = cooldowns.getUnchecked(event.getGuildId());
+                        matches.forEach(command -> map.put(command.getId(), Integer.parseInt(args[2])));
+                        cooldowns.put(event.getGuildId(), map);
+                    });
+                    event.reply("The cooldown of **" + args[1] + "** has been set to **" + Integer.parseInt(args[2]) + "ms**");
                     break;
                 case "remove":
                     if (args.length != 2) {
@@ -91,14 +94,16 @@ public class CooldownCommand extends Command {
                         event.reply("Unknown commandName or alias\nTip: check https://melijn.com/commands for commandNames");
                         return;
                     }
-                    Melijn.mySQL.removeCooldown(event.getGuildId(), matches);
-                    map = cooldowns.getUnchecked(event.getGuildId());
-                    matches.forEach(cmd -> map.remove(cmd.getId()));
-                    cooldowns.put(event.getGuildId(), map);
-                    event.reply("The cooldown of **" + matches.get(0).getCommandName() + "** has been removed");
+                    TaskScheduler.async(() -> {
+                        Melijn.mySQL.removeCooldown(event.getGuildId(), matches);
+                        TIntIntMap map = cooldowns.getUnchecked(event.getGuildId());
+                        matches.forEach(cmd -> map.remove(cmd.getId()));
+                        cooldowns.put(event.getGuildId(), map);
+                    });
+                    event.reply("The cooldown of **" + args[1] + "** has been removed");
                     break;
                 case "list":
-                    map = cooldowns.getUnchecked(event.getGuildId());
+                    TIntIntMap map = cooldowns.getUnchecked(event.getGuildId());
                     StringBuilder sb = new StringBuilder();
                     AtomicInteger i = new AtomicInteger(1);
                     map.forEachEntry((a, b) -> {

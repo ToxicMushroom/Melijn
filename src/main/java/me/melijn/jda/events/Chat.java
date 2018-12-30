@@ -178,11 +178,11 @@ public class Chat extends ListenerAdapter {
         if (event.getGuild() == null || EvalCommand.serverBlackList.contains(event.getGuild().getIdLong()))
             return;
         if (EvalCommand.userBlackList.contains(event.getGuild().getOwnerIdLong())) return;
-        if (Helpers.lastRunTimer1 < (System.currentTimeMillis() - 10_000) && Helpers.lastRunTimer1 != -1)
+        if (Helpers.lastRunTimer1 < (System.currentTimeMillis() - 10_000 * 2) && Helpers.lastRunTimer1 != -1)
             Helpers.startTimer(event.getJDA(), 1);
-        if (Helpers.lastRunTimer2 < (System.currentTimeMillis() - 121_000) && Helpers.lastRunTimer2 != -1)
+        if (Helpers.lastRunTimer2 < (System.currentTimeMillis() - 120_000 * 2) && Helpers.lastRunTimer2 != -1)
             Helpers.startTimer(event.getJDA(), 2);
-        if (Helpers.lastRunTimer3 < (System.currentTimeMillis() - 2_610_000) && Helpers.lastRunTimer3 != -1)
+        if (Helpers.lastRunTimer3 < (System.currentTimeMillis() - 1_800_000 * 2) && Helpers.lastRunTimer3 != -1)
             Helpers.startTimer(event.getJDA(), 3);
         Guild guild = event.getGuild();
         if (event.getGuild().getSelfMember().hasPermission(Permission.VIEW_AUDIT_LOGS) &&

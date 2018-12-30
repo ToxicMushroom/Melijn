@@ -15,6 +15,8 @@ import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -224,12 +226,6 @@ public class Helpers {
         }
     }
 
-
-    /*public static void scheduleClose(AudioManager manager) {
-        if (!manager.isConnected() && !manager.isAttemptingToConnect()) return;
-        TaskScheduler.async(manager::closeAudioConnection);
-    }*/
-
     public static String getFooterStamp() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("d MMM yyyy HH:mm:ss");
         Date date = new Date(System.currentTimeMillis());
@@ -393,5 +389,14 @@ public class Helpers {
             return true;
         }
         return false;
+    }
+
+    public static boolean isJSONObjectValid(String test) {
+        try {
+            new JSONObject(test);
+        } catch (JSONException ignored) {
+            return false;
+        }
+        return true;
     }
 }
