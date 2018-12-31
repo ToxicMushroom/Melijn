@@ -141,7 +141,8 @@ public class Helpers {
             "dice",
             "SetEmbedColor",
             "emotes",
-            "cooldown"
+            "cooldown",
+            "SetVerificationType"
     );
 
     public static void startTimer(JDA jda, int i) {

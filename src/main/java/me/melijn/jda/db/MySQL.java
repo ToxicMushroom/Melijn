@@ -125,14 +125,16 @@ public class MySQL {
             executeUpdate("CREATE TABLE IF NOT EXISTS self_role_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
 
             //Other settings
+
             executeUpdate("CREATE TABLE IF NOT EXISTS embed_colors(guildId bigint, color bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS cooldowns(guildId bigint, commandId int, cooldown int, UNIQUE KEY (guildId, commandId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS stream_urls(guildId bigint, url varchar(2048), PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS prefixes(guildId bigint, prefix bigint, PRIMARY KEY (guildId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS private_prefixes(userId bigint, prefixes varchar(124), PRIMARY KEY (userId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS verification_thresholds(guildId bigint, threshold tinyint, PRIMARY KEY (guildId));");
-            executeUpdate("CREATE TABLE IF NOT EXISTS unverified_users(guildId bigint, userId bigint, UNIQUE KEY (guildId, userId));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS verification_types(guildId bigint, type varchar(64), PRIMARY KEY (guildId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS verification_codes(guildId bigint, code varchar(2048), PRIMARY KEY (guildId));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS unverified_users(guildId bigint, userId bigint, UNIQUE KEY (guildId, userId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS streamer_modes(guildId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS filters(guildId bigint, mode varchar(16), content varchar(2048))");
             executeUpdate("CREATE TABLE IF NOT EXISTS join_messages(guildId bigint, content varchar(2048), PRIMARY KEY (guildId))");
@@ -1911,4 +1913,22 @@ public class MySQL {
     }
 
 
+    public VerificationType getVerificationType(long guildId) {
+        try (Connection con = ds.getConnection()) {
+            try (PreparedStatement statement = con.prepareStatement("SELECT * FROM verification_types WHERE guildId=?")) {
+                statement.setLong(1, guildId);
+                ResultSet rs = statement.executeQuery();
+                if (rs.next())
+                    return VerificationType.valueOf(rs.getString("type"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return VerificationType.CODE;
+    }
+
+    public void setVerificationType(long guildId, VerificationType type) {
+        executeUpdate("INSERT INTO verification_types (guildId, type) VALUES (?, ?) ON DUPLICATE KEY UPDATE type= ?",
+                guildId, type.name(), type.name());
+    }
 }
