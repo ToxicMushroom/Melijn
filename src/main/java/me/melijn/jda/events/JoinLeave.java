@@ -92,20 +92,20 @@ public class JoinLeave extends ListenerAdapter {
         if (joinedUser.isBot() && joinedUser.equals(guild.getSelfMember().getUser()) && EvalCommand.serverBlackList.contains(guild.getOwnerIdLong()))
             guild.leave().queue();
         if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
-        if (guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES) && SetVerificationChannel.verificationChannelsCache.getUnchecked(guild.getIdLong()) != -1) {
-            TextChannel verificationChannel = guild.getTextChannelById(SetVerificationChannel.verificationChannelsCache.getUnchecked(guild.getIdLong()));
+        if (guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES) && SetVerificationChannelCommand.verificationChannelsCache.getUnchecked(guild.getIdLong()) != -1) {
+            TextChannel verificationChannel = guild.getTextChannelById(SetVerificationChannelCommand.verificationChannelsCache.getUnchecked(guild.getIdLong()));
             if (verificationChannel != null) {
                 TLongList newList = unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong());
                 newList.add(joinedUser.getIdLong());
                 Melijn.mySQL.addUnverifiedUser(guild.getIdLong(), joinedUser.getIdLong());
                 unVerifiedGuildMembersCache.put(guild.getIdLong(), newList);
-                Role role = guild.getRoleById(SetUnverifiedRole.unverifiedRoleCache.getUnchecked(guild.getIdLong()));
+                Role role = guild.getRoleById(SetUnverifiedRoleCommand.unverifiedRoleCache.getUnchecked(guild.getIdLong()));
                 if (role != null && guild.getSelfMember().canInteract(role))
                     guild.getController().addSingleRoleToMember(event.getMember(), role).reason("unverified user").queue();
             } else {
                 TaskScheduler.async(() -> {
                     Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.VERIFICATION);
-                    SetVerificationChannel.verificationChannelsCache.invalidate(guild.getIdLong());
+                    SetVerificationChannelCommand.verificationChannelsCache.invalidate(guild.getIdLong());
                 });
             }
         } else {
@@ -172,9 +172,9 @@ public class JoinLeave extends ListenerAdapter {
             Melijn.mySQL.removeUnverifiedUser(guild.getIdLong(), user.getIdLong());
             unVerifiedGuildMembersCache.put(guild.getIdLong(), newList);
         });
-        if (guild.getMember(user) != null && guild.getRoleById(SetUnverifiedRole.unverifiedRoleCache.getUnchecked(guild.getIdLong())) != null) {
+        if (guild.getMember(user) != null && guild.getRoleById(SetUnverifiedRoleCommand.unverifiedRoleCache.getUnchecked(guild.getIdLong())) != null) {
             if (guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES)) {
-                guild.getController().removeSingleRoleFromMember(guild.getMember(user), guild.getRoleById(SetUnverifiedRole.unverifiedRoleCache.getUnchecked(guild.getIdLong()))).reason("verified user").queue();
+                guild.getController().removeSingleRoleFromMember(guild.getMember(user), guild.getRoleById(SetUnverifiedRoleCommand.unverifiedRoleCache.getUnchecked(guild.getIdLong()))).reason("verified user").queue();
             } else {
                 user.openPrivateChannel().queue(channel ->
                         channel.sendMessage("" +

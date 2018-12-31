@@ -113,15 +113,15 @@ public class Chat extends ListenerAdapter {
             }
         }
 
-        if (SetVerificationChannel.verificationChannelsCache.getUnchecked(event.getGuild().getIdLong()) == event.getChannel().getIdLong()) {
+        if (SetVerificationChannelCommand.verificationChannelsCache.getUnchecked(event.getGuild().getIdLong()) == event.getChannel().getIdLong()) {
             try {
                 if (!event.getMember().hasPermission(event.getChannel(), Permission.MANAGE_CHANNEL))
                     event.getMessage().delete().reason("Verification Channel").queue(s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()), failed -> {});
-                if (SetVerificationCode.verificationCodeCache.get(event.getGuild().getIdLong()) != null) {
-                    if (event.getMessage().getContentRaw().equalsIgnoreCase(SetVerificationCode.verificationCodeCache.get(event.getGuild().getIdLong()))) {
+                if (SetVerificationCodeCommand.verificationCodeCache.get(event.getGuild().getIdLong()) != null) {
+                    if (event.getMessage().getContentRaw().equalsIgnoreCase(SetVerificationCodeCommand.verificationCodeCache.get(event.getGuild().getIdLong()))) {
                         JoinLeave.verify(event.getGuild(), event.getAuthor());
                         removeMemberFromTriesCache(event);
-                    } else if (SetVerificationThreshold.verificationThresholdCache.get(event.getGuild().getIdLong()) != 0) {
+                    } else if (SetVerificationThresholdCommand.verificationThresholdCache.get(event.getGuild().getIdLong()) != 0) {
                         if (guildUserVerifyTries.containsKey(event.getGuild().getIdLong())) {
                             if (guildUserVerifyTries.get(event.getGuild().getIdLong()).containsKey(event.getAuthor().getIdLong())) {
                                 TLongIntMap userTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
@@ -137,7 +137,7 @@ public class Chat extends ListenerAdapter {
                             userTriesBuffer.put(event.getAuthor().getIdLong(), 1);
                             guildUserVerifyTries.put(event.getGuild().getIdLong(), userTriesBuffer);
                         }
-                        if (guildUserVerifyTries.get(event.getGuild().getIdLong()).get(event.getAuthor().getIdLong()) == SetVerificationThreshold.verificationThresholdCache.get(event.getGuild().getIdLong())) {
+                        if (guildUserVerifyTries.get(event.getGuild().getIdLong()).get(event.getAuthor().getIdLong()) == SetVerificationThresholdCommand.verificationThresholdCache.get(event.getGuild().getIdLong())) {
                             if (event.getGuild().getSelfMember().canInteract(event.getMember()))
                                 event.getGuild().getController().kick(event.getMember()).reason("Failed verification").queue();
                             removeMemberFromTriesCache(event);

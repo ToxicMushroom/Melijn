@@ -60,10 +60,10 @@ public class Melijn {
                 new UrbanCommand(),
                 new BlurpleCommand(),
                 new InvertCommand(),
-                new SetVerificationThreshold(),
-                new SetUnverifiedRole(),
-                new SetVerificationCode(),
-                new SetVerificationChannel(),
+                new SetVerificationThresholdCommand(),
+                new SetUnverifiedRoleCommand(),
+                new SetVerificationCodeCommand(),
+                new SetVerificationChannelCommand(),
                 new ShardsCommand(),
                 new ClearChannelCommand(),
                 new NyanCatCommand(),
@@ -159,7 +159,8 @@ public class Melijn {
                 new SetEmbedColorCommand(),
                 new EmotesCommand(),
                 new PrivatePrefixCommand(),
-                new CooldownCommand()
+                new CooldownCommand(),
+                new SetVerificationTypeCommand()
         );
 
         JdaLavalink lavalink = new JdaLavalink(
