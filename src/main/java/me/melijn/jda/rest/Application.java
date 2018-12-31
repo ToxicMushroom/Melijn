@@ -64,11 +64,11 @@ public class Application extends Jooby {
             //block 2
             SetJoinRoleCommand.joinRoleCache.invalidate(id);
             SetMuteRoleCommand.muteRoleCache.invalidate(id);
-            SetUnverifiedRole.unverifiedRoleCache.invalidate(id);
+            SetUnverifiedRoleCommand.unverifiedRoleCache.invalidate(id);
 
             //block 3
             SetJoinLeaveChannelCommand.welcomeChannelCache.invalidate(id);
-            SetVerificationChannel.verificationChannelsCache.invalidate(id);
+            SetVerificationChannelCommand.verificationChannelsCache.invalidate(id);
             SetLogChannelCommand.musicLogChannelCache.invalidate(id);
             SetLogChannelCommand.banLogChannelCache.invalidate(id);
             SetLogChannelCommand.muteLogChannelCache.invalidate(id);
@@ -80,8 +80,8 @@ public class Application extends Jooby {
             SetLogChannelCommand.fmLogChannelCache.invalidate(id);
 
             //block 4
-            SetVerificationCode.verificationCodeCache.invalidate(id);
-            SetVerificationThreshold.verificationThresholdCache.invalidate(id);
+            SetVerificationCodeCommand.verificationCodeCache.invalidate(id);
+            SetVerificationThresholdCommand.verificationThresholdCache.invalidate(id);
 
             //block 5
             SetMusicChannelCommand.musicChannelCache.invalidate(id);
