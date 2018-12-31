@@ -30,7 +30,7 @@ public class RoleCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
+        if (Helpers.hasPerm(event.getMember(), commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
             if (args.length == 1 && !args[0].isBlank()) {

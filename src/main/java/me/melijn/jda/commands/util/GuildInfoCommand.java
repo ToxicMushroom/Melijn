@@ -30,7 +30,7 @@ public class GuildInfoCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
+        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
             if (args.length == 1 && args[0].matches("\\d+") && event.getJDA().asBot().getShardManager().getGuildById(args[0]) != null)

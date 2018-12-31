@@ -31,7 +31,7 @@ public class InfoCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
+        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
             try {
                 event.reply(new Embedder(event.getGuild())
                         .setThumbnail(event.getJDA().getSelfUser().getAvatarUrl())

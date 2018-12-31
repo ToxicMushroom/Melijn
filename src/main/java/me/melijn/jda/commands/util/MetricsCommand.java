@@ -32,7 +32,7 @@ public class MetricsCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
+        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
             if (args.length >= 2) {
                 StringBuilder sb = new StringBuilder("```INI\n");
@@ -84,6 +84,8 @@ public class MetricsCommand extends Command {
             } else {
                 MessageHelper.sendUsage(this, event);
             }
+        } else {
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
     }
 

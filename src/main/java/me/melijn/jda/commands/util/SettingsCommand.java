@@ -28,7 +28,7 @@ public class SettingsCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
+        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
             TaskScheduler.async(() -> {
                 long guildId = event.getGuild().getIdLong();
                 event.reply(new Embedder(event.getGuild())
@@ -39,9 +39,9 @@ public class SettingsCommand extends Command {
                                 "\n" +
                                 "\n**MuteRole:** " + idToRoleMention(SetMuteRoleCommand.muteRoleCache.getUnchecked(guildId)) +
                                 "\n**JoinRole:** " + idToRoleMention(SetJoinRoleCommand.joinRoleCache.getUnchecked(guildId)) +
-                                "\n**UnverifiedRole:** " + idToRoleMention(SetUnverifiedRole.unverifiedRoleCache.getUnchecked(guildId)) +
+                                "\n**UnverifiedRole:** " + idToRoleMention(SetUnverifiedRoleCommand.unverifiedRoleCache.getUnchecked(guildId)) +
                                 "\n" +
-                                "\n**VerificationChannel:** " + idToChannelMention(SetVerificationChannel.verificationChannelsCache.getUnchecked(guildId)) +
+                                "\n**VerificationChannel:** " + idToChannelMention(SetVerificationChannelCommand.verificationChannelsCache.getUnchecked(guildId)) +
                                 "\n**WelcomeChannel:** " + idToChannelMention(SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guildId)) +
                                 "\n**SelfRoleChannel:** " + idToChannelMention(SetSelfRoleChannelCommand.selfRolesChannel.getUnchecked(guildId)) +
                                 "\n**BanLogChannel:** " + idToChannelMention(SetLogChannelCommand.banLogChannelCache.getUnchecked(guildId)) +
@@ -55,8 +55,8 @@ public class SettingsCommand extends Command {
                                 "\n" +
                                 "\n**JoinMessage: " + stringToString(SetJoinMessageCommand.joinMessages.getUnchecked(guildId).replaceAll("`", "´"), true) +
                                 "\n\nLeaveMessage: " + stringToString(SetLeaveMessageCommand.leaveMessages.getUnchecked(guildId).replaceAll("`", "´"), true) +
-                                "\n\nVerificationCode:** " + stringToString(SetVerificationCode.verificationCodeCache.getUnchecked(guildId), false) +
-                                "\n**VerificationThreshold:** " + SetVerificationThreshold.verificationThresholdCache.getUnchecked(guildId) +
+                                "\n\nVerificationCode:** " + stringToString(SetVerificationCodeCommand.verificationCodeCache.getUnchecked(guildId), false) +
+                                "\n**VerificationThreshold:** " + SetVerificationThresholdCommand.verificationThresholdCache.getUnchecked(guildId) +
                                 "\n**Prefix:** " + SetPrefixCommand.prefixes.getUnchecked(guildId) + "**")
                         .build());
                     }

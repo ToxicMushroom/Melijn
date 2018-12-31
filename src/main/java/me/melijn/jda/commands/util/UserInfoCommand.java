@@ -28,7 +28,7 @@ public class UserInfoCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
+        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm ss");
             String[] args = event.getArgs().split("\\s+");
             Helpers.retrieveUserByArgs(event, args[0], user -> {

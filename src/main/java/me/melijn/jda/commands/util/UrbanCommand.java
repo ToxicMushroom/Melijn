@@ -28,7 +28,7 @@ public class UrbanCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
+        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
             if (args.length > 0 && !args[0].isBlank()) {
                 String result = WebUtils.getWebUtilsInstance().run("https://api.urbandictionary.com/v0/define?term=" + event.getArgs());

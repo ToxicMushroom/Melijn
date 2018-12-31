@@ -31,6 +31,8 @@ public class EmotesCommand extends Command {
             if (sb.toString().length() > 13)
                 MessageHelper.sendSplitMessage(event.getTextChannel(), sb.toString());
             else event.reply("This server as no emotes :/");
+        } else {
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
     }
 }

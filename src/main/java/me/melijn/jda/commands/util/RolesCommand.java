@@ -26,7 +26,7 @@ public class RolesCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
+        if (Helpers.hasPerm(event.getMember(), commandName, 0)) {
             Guild guild = event.getGuild();
             SnowflakeCacheView<Role> roles = guild.getRoleCache();
             StringBuilder sb = new StringBuilder();

@@ -26,7 +26,7 @@ public class ShardsCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
+        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
             ShardManager shardManager = event.getJDA().asBot().getShardManager();
             TableBuilder tableBuilder = new TableBuilder(true).setColumns(List.of("Shard ID", "Ping", "Users", "Guilds", "VCs"));
 
@@ -46,6 +46,8 @@ public class ShardsCommand extends Command {
             for (String part : tableBuilder.build()) {
                 event.reply(part);
             }
+        } else {
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
     }
 }

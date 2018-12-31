@@ -20,7 +20,7 @@ public class UnicodeCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
+        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
             String arg = event.getArgs();
             if (arg.length() <= 0) {
                 MessageHelper.sendUsage(this, event);
@@ -56,6 +56,8 @@ public class UnicodeCommand extends Command {
                 builder.append(String.valueOf(chars)).append("   _").append(Character.getName(code)).append("_");
             });
             MessageHelper.sendSplitMessage(event.getTextChannel(), builder.toString());
+        } else {
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
     }
 }
