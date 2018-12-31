@@ -25,7 +25,7 @@ public class DiscordMemeCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
+        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
             if (event.getArgs().split("\\s+").length > 0 && event.getArgs().split("\\s+")[0].equalsIgnoreCase("everyone"))
                 webUtils.getImageByTag("everyone", image -> MessageHelper.sendFunText(null, image.getUrl() , event));
             else webUtils.getImage("discord_memes", image -> MessageHelper.sendFunText(null, image.getUrl() , event));

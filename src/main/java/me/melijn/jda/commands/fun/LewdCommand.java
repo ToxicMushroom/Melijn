@@ -24,7 +24,7 @@ public class LewdCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
+        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
             webUtils.getImage("lewd",
                     image -> MessageHelper.sendFunText("**" + event.getAuthor().getName() + "** is being lewd", image.getUrl(), event)
             );

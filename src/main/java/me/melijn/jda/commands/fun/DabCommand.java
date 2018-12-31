@@ -24,7 +24,7 @@ public class DabCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
+        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
             webUtils.getImage("dab", image -> MessageHelper.sendFunText("**" + event.getAuthor().getName() + "** is dabbing", image.getUrl() , event));
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

@@ -37,7 +37,7 @@ public class RemoveCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
+        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
             String[] args = event.getArgs().replaceAll("\\s+", "").split(",");
             if (args.length == 0 || args[0].isBlank()) {
                 MessageHelper.sendUsage(this, event);

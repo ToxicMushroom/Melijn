@@ -25,7 +25,7 @@ public class RewindCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
+        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
             String[] args = event.getArgs().replaceAll(":", " ").split("\\s+");
             LavalinkPlayer player = AudioLoader.getManagerInstance().getPlayer(event.getGuild()).getAudioPlayer();
             if (player.getPlayingTrack() != null) {

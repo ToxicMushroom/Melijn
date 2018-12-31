@@ -36,7 +36,7 @@ public class SkipCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
+        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
             MusicPlayer player = manager.getPlayer(event.getGuild());
             AudioTrack skipableTrack = player.getAudioPlayer().getPlayingTrack();
             if (skipableTrack == null) {

@@ -25,7 +25,7 @@ public class ShrugCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), this.commandName, 0)) {
+        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
             webUtils.getImage("shrug", image -> MessageHelper.sendFunText("**" + event.getAuthor().getName() + "** shrugs ¯\\_(ツ)_/¯", image.getUrl(), event));
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

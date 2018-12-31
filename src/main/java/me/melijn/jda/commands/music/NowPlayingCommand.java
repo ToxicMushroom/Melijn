@@ -36,7 +36,7 @@ public class NowPlayingCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), this.commandName, 0)) {
+        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
             Guild guild = event.getGuild();
             LavalinkPlayer audioPlayer = audioLoader.getPlayer(guild).getAudioPlayer();
             AudioTrack track = audioPlayer.getPlayingTrack();

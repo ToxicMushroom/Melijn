@@ -39,7 +39,7 @@ public class PlayCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         Guild guild = event.getGuild();
-        boolean access = Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".*", 1);
+        boolean access = Helpers.hasPerm(guild.getMember(event.getAuthor()), commandName + ".*", 1);
         VoiceChannel senderVoiceChannel = guild.getMember(event.getAuthor()).getVoiceState().getChannel();
         String[] args = event.getArgs().split("\\s+");
         if (args.length == 0 || args[0].isBlank()) {
@@ -53,7 +53,7 @@ public class PlayCommand extends Command {
         switch (args[0].toLowerCase()) {
             case "sc":
             case "soundcloud":
-                if (!Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".sc", 0) && !access) {
+                if (!Helpers.hasPerm(guild.getMember(event.getAuthor()), commandName + ".sc", 0) && !access) {
                     event.reply("You need the permission `" + commandName + ".sc` to execute this command.");
                     return;
                 }
@@ -62,7 +62,7 @@ public class PlayCommand extends Command {
 
                 break;
             case "link":
-                if (!Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) && !access) {
+                if (!Helpers.hasPerm(guild.getMember(event.getAuthor()), commandName + ".link", 0) && !access) {
                     event.reply("You need the permission `" + commandName + ".link` to execute this command.");
                     return;
                 }
@@ -72,7 +72,7 @@ public class PlayCommand extends Command {
                 break;
             default:
                 if (songName.contains("https://") || songName.contains("http://")) {
-                    if (!Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".link", 0) && !access) {
+                    if (!Helpers.hasPerm(guild.getMember(event.getAuthor()), commandName + ".link", 0) && !access) {
                         event.reply("You need the permission `" + commandName + ".link` to execute this command.");
                         return;
                     }
@@ -81,7 +81,7 @@ public class PlayCommand extends Command {
                     if (songName.contains("open.spotify.com")) spotiSearch(event, songName);
                     else manager.loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
                 } else {
-                    if (!Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".yt", 0) && !access) {
+                    if (!Helpers.hasPerm(guild.getMember(event.getAuthor()), commandName + ".yt", 0) && !access) {
                         event.reply("You need the permission `" + commandName + ".yt` to execute this command.");
                         return;
                     }

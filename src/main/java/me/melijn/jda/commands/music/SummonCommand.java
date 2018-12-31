@@ -33,7 +33,7 @@ public class SummonCommand extends Command {
                 event.reply("I have joined your channel");
             }
         } else {
-            event.reply(Helpers.noPerms);
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
     }
 }

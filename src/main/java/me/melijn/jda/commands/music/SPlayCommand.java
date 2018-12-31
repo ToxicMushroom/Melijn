@@ -42,7 +42,7 @@ public class SPlayCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         Guild guild = event.getGuild();
-        boolean access = Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".*", 1);
+        boolean access = Helpers.hasPerm(guild.getMember(event.getAuthor()), commandName + ".*", 1);
         VoiceChannel senderVoiceChannel = guild.getMember(event.getAuthor()).getVoiceState().getChannel();
         String[] args = event.getArgs().split("\\s+");
         if (args.length == 0 || args[0].isEmpty()) {
@@ -55,7 +55,7 @@ public class SPlayCommand extends Command {
         switch (args[0].toLowerCase()) {
             case "sc":
             case "soundcloud":
-                if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".sc", 0) || access) {
+                if (Helpers.hasPerm(guild.getMember(event.getAuthor()), commandName + ".sc", 0) || access) {
                     if (!lava.tryToConnectToVC(event, guild, senderVoiceChannel)) return;
                     manager.searchTracks(event.getTextChannel(), "scsearch:" + songName, event.getAuthor());
                 } else {
@@ -63,7 +63,7 @@ public class SPlayCommand extends Command {
                 }
                 break;
             default:
-                if (Helpers.hasPerm(guild.getMember(event.getAuthor()), this.commandName + ".yt", 0) || access) {
+                if (Helpers.hasPerm(guild.getMember(event.getAuthor()), commandName + ".yt", 0) || access) {
                     if (!lava.tryToConnectToVC(event, guild, senderVoiceChannel)) return;
                     manager.searchTracks(event.getTextChannel(), "ytsearch:" + songName, event.getAuthor());
                 } else {
