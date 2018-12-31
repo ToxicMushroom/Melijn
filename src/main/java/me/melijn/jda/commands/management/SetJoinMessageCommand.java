@@ -42,7 +42,7 @@ public class SetJoinMessageCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
+        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
             String oldMessage = joinMessages.getUnchecked(guild.getIdLong()).isBlank() ? "nothing" : ("'" + joinMessages.getUnchecked(guild.getIdLong()) + "'");
             String newMessage = event.getArgs();

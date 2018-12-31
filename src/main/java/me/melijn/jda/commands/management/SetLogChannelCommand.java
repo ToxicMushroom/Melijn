@@ -103,7 +103,7 @@ public class SetLogChannelCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
+        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
             String[] args = event.getArgs().split("\\s+");
             if (args.length > 1) {

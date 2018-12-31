@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
-public class SetVerificationCode extends Command {
+public class SetVerificationCodeCommand extends Command {
 
     public static final LoadingCache<Long, String> verificationCodeCache = CacheBuilder.newBuilder()
             .maximumSize(10)
@@ -29,7 +29,7 @@ public class SetVerificationCode extends Command {
                 }
             });
 
-    public SetVerificationCode() {
+    public SetVerificationCodeCommand() {
         this.commandName = "setVerificationCode";
         this.usage = PREFIX + commandName + " [code | null]";
         this.description = "Sets the VerificationCode that members will have to send in the VerificationChannel in order to get verified";
@@ -42,7 +42,7 @@ public class SetVerificationCode extends Command {
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
-            if (guild.getTextChannelById(SetVerificationChannel.verificationChannelsCache.getUnchecked(guild.getIdLong())) != null) {
+            if (guild.getTextChannelById(SetVerificationChannelCommand.verificationChannelsCache.getUnchecked(guild.getIdLong())) != null) {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length > 0 && !args[0].isBlank()) {
                     if (args[0].equalsIgnoreCase("null")) {

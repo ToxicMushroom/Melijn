@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
-public class SetVerificationThreshold extends Command {
+public class SetVerificationThresholdCommand extends Command {
 
     public static final LoadingCache<Long, Integer> verificationThresholdCache = CacheBuilder.newBuilder()
             .maximumSize(10)
@@ -28,11 +28,11 @@ public class SetVerificationThreshold extends Command {
                 }
             });
 
-    public SetVerificationThreshold() {
+    public SetVerificationThresholdCommand() {
         this.commandName = "setVerificationThreshold";
         this.usage = PREFIX + commandName + " <0 - 20>";
         this.description = "Sets the VerificationThreshold aka the amount of times the unverified member can try the code before being kicked";
-        this.aliases = new String[]{"svt"};
+        this.aliases = new String[]{"svthreshold"};
         this.needs = new Need[]{Need.GUILD};
         this.category = Category.MANAGEMENT;
         this.extra = "0 disables the threshold any higher number is the amount of times the user can answer incorrect before getting kicked";

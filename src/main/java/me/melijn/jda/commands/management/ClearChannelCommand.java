@@ -56,6 +56,8 @@ public class ClearChannelCommand extends Command {
                     event.reply("There is still another question in this channel which have to be answered\nThat question will be removed after 60 seconds of it's sent time");
                 }
             }
+        } else {
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
     }
 

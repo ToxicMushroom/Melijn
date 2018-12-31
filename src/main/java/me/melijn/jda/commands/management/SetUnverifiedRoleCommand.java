@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
-public class SetUnverifiedRole extends Command {
+public class SetUnverifiedRoleCommand extends Command {
 
     public static final LoadingCache<Long, Long> unverifiedRoleCache = CacheBuilder.newBuilder()
             .maximumSize(10)
@@ -27,7 +27,7 @@ public class SetUnverifiedRole extends Command {
                 }
             });
 
-    public SetUnverifiedRole() {
+    public SetUnverifiedRoleCommand() {
         this.commandName = "setUnverifiedRole";
         this.usage = PREFIX + commandName + " [role | null]";
         this.description = "Sets the UnverifiedRole that will be added to unverified members when they join";

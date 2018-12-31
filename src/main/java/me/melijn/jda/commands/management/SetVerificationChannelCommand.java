@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
-public class SetVerificationChannel extends Command {
+public class SetVerificationChannelCommand extends Command {
 
     public static final LoadingCache<Long, Long> verificationChannelsCache = CacheBuilder.newBuilder()
             .maximumSize(10)
@@ -26,7 +26,7 @@ public class SetVerificationChannel extends Command {
                 }
             });
 
-    public SetVerificationChannel() {
+    public SetVerificationChannelCommand() {
         this.commandName = "setVerificationChannel";
         this.usage = PREFIX + commandName + " [TextChannel | null]";
         this.description = "Sets the channel in which the members will have to prove that they are not a bot by entering the VerificationCode";

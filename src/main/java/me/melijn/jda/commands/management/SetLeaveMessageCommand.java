@@ -39,7 +39,7 @@ public class SetLeaveMessageCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), this.commandName, 1)) {
+        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
             String oldMessage = leaveMessages.getUnchecked(guild.getIdLong()).isBlank() ? "nothing" : ("'" + leaveMessages.getUnchecked(guild.getIdLong()) + "'");
             String newMessage = event.getArgs();

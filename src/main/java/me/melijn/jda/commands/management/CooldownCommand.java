@@ -119,6 +119,8 @@ public class CooldownCommand extends Command {
                     MessageHelper.sendUsage(this, event);
                     break;
             }
+        } else {
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
     }
 }

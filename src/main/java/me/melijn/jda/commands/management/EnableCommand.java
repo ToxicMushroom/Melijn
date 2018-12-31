@@ -62,6 +62,8 @@ public class EnableCommand extends Command {
             } else {
                 MessageHelper.sendUsage(this, event);
             }
+        } else {
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
     }
 }
