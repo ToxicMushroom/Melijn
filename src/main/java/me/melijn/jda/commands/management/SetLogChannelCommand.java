@@ -148,15 +148,15 @@ public class SetLogChannelCommand extends Command {
                                 Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.ODM_LOG);
                                 Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.PM_LOG);
                                 Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.FM_LOG);
-                                banLogChannelCache.put(guild.getIdLong(), id);
-                                muteLogChannelCache.put(guild.getIdLong(), id);
-                                kickLogChannelCache.put(guild.getIdLong(), id);
-                                warnLogChannelCache.put(guild.getIdLong(), id);
+                                banLogChannelCache.put(event.getGuildId(), id);
+                                muteLogChannelCache.put(event.getGuildId(), id);
+                                kickLogChannelCache.put(event.getGuildId(), id);
+                                warnLogChannelCache.put(event.getGuildId(), id);
                                 musicLogChannelCache.put(guild.getIdLong(), id);
                                 sdmLogChannelCache.put(guild.getIdLong(), id);
-                                odmLogChannelCache.put(guild.getIdLong(), id);
-                                pmLogChannelCache.put(guild.getIdLong(), id);
-                                fmLogChannelCache.put(guild.getIdLong(), id);
+                                odmLogChannelCache.put(event.getGuildId(), id);
+                                pmLogChannelCache.put(event.getGuildId(), id);
+                                fmLogChannelCache.put(event.getGuildId(), id);
                             });
                             event.reply("All LogChannels have been changed to <#" + id + "> by **" + event.getFullAuthorName() + "**");
                         }
@@ -164,51 +164,51 @@ public class SetLogChannelCommand extends Command {
                     case "ban":
                     case "bans":
                         chosenType = ChannelType.BAN_LOG;
-                        setLogChannel(event, chosenType, id);
+                        setLogChannel(event, chosenType, id, banLogChannelCache);
                         break;
                     case "mutes":
                     case "mute":
                         chosenType = ChannelType.MUTE_LOG;
-                        setLogChannel(event, chosenType, id);
+                        setLogChannel(event, chosenType, id, muteLogChannelCache);
                         break;
                     case "kicks":
                     case "kick":
                         chosenType = ChannelType.KICK_LOG;
-                        setLogChannel(event, chosenType, id);
+                        setLogChannel(event, chosenType, id, kickLogChannelCache);
                         break;
                     case "warns":
                     case "warn":
                         chosenType = ChannelType.WARN_LOG;
-                        setLogChannel(event, chosenType, id);
+                        setLogChannel(event, chosenType, id, warnLogChannelCache);
                         break;
                     case "songs":
                     case "music":
                         chosenType = ChannelType.MUSIC_LOG;
-                        setLogChannel(event, chosenType, id);
+                        setLogChannel(event, chosenType, id, musicLogChannelCache);
                         break;
                     case "sdm":
                     case "s-d-m":
                     case "self-deleted-messages":
                         chosenType = ChannelType.SDM_LOG;
-                        setLogChannel(event, chosenType, id);
+                        setLogChannel(event, chosenType, id, sdmLogChannelCache);
                         break;
                     case "odm":
                     case "o-d-m":
                     case "other-deleted-messages":
                         chosenType = ChannelType.ODM_LOG;
-                        setLogChannel(event, chosenType, id);
+                        setLogChannel(event, chosenType, id, odmLogChannelCache);
                         break;
                     case "pm":
                     case "p-m":
                     case "purged-messages":
                         chosenType = ChannelType.PM_LOG;
-                        setLogChannel(event, chosenType, id);
+                        setLogChannel(event, chosenType, id, pmLogChannelCache);
                         break;
                     case "fm":
                     case "f-m":
                     case "filtered-messages":
                         chosenType = ChannelType.FM_LOG;
-                        setLogChannel(event, chosenType, id);
+                        setLogChannel(event, chosenType, id, fmLogChannelCache);
                         break;
                     default:
                         MessageHelper.sendUsage(this, event);
@@ -325,21 +325,21 @@ public class SetLogChannelCommand extends Command {
         }
     }
 
-    private void setLogChannel(CommandEvent event, ChannelType chosenType, long channelId) {
+    private void setLogChannel(CommandEvent event, ChannelType chosenType, long channelId, LoadingCache<Long, Long> toUse) {
         Guild guild = event.getGuild();
         if (channelId == -1) {
             MessageHelper.sendUsage(this, event);
         } else if (channelId == 0L) {
-            event.reply(chosenType.toString() + "_CHANNEL has been changed from " + (muteLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ? "<#" + muteLogChannelCache.getUnchecked(guild.getIdLong()) + ">" : "nothing") + " to nothing by **" + event.getFullAuthorName() + "**");
+            event.reply(chosenType.toString() + "_CHANNEL has been changed from " + (toUse.getUnchecked(guild.getIdLong()) != -1 ? "<#" + toUse.getUnchecked(guild.getIdLong()) + ">" : "nothing") + " to nothing by **" + event.getFullAuthorName() + "**");
             TaskScheduler.async(() -> {
                 Melijn.mySQL.removeChannel(guild.getIdLong(), chosenType);
-                muteLogChannelCache.invalidate(guild.getIdLong());
+                toUse.invalidate(guild.getIdLong());
             });
         } else {
-            event.reply(chosenType.toString() + "_CHANNEL has been changed from " + (muteLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ? "<#" + muteLogChannelCache.getUnchecked(guild.getIdLong()) + ">" : "nothing") + " to <#" + channelId + "> by **" + event.getFullAuthorName() + "**");
+            event.reply(chosenType.toString() + "_CHANNEL has been changed from " + (toUse.getUnchecked(guild.getIdLong()) != -1 ? "<#" + toUse.getUnchecked(guild.getIdLong()) + ">" : "nothing") + " to <#" + channelId + "> by **" + event.getFullAuthorName() + "**");
             TaskScheduler.async(() -> {
                 Melijn.mySQL.setChannel(guild.getIdLong(), channelId, chosenType);
-                muteLogChannelCache.put(guild.getIdLong(), channelId);
+                toUse.put(guild.getIdLong(), channelId);
             });
         }
     }
