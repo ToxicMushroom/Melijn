@@ -56,15 +56,15 @@ public class CustomCommandCommand extends Command {
                     return;
                 }
                 String message = event.getArgs().replaceFirst("add\\s+" + name + "\\s+?", "");
-                if (Melijn.mySQL.addCustomCommand(guild.getIdLong(), name, message))
-                    event.reply("Custom command **" + name + "** has been added!");
-                else event.reply("The command already exists or you have hit the limit of " + limitCC + " commands");
+                int i = Melijn.mySQL.addCustomCommand(guild.getIdLong(), name, message);
+                if (i == 0) event.reply("The command already exists or you have hit the limit of " + limitCC + " commands");
+                else if (i == 1) event.reply("Custom command **" + name + "** has been added");
+                else if (i == 2) event.reply("The extra message has been added");
                 serverHasCC.put(guild.getIdLong(), true);
-
 
             } else if (args[0].equalsIgnoreCase("remove")) {
                 if (args.length < 2) {
-                    event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " remove <name>");
+                    event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " remove <name> [message]");
                     return;
                 }
                 String name = args[1];
@@ -72,10 +72,19 @@ public class CustomCommandCommand extends Command {
                     event.reply("A CustomCommandName cannot be longer then **128** characters yours was: **" + (name.length() - 128) + "** characters to long");
                     return;
                 }
-                if (Melijn.mySQL.removeCustomCommand(guild.getIdLong(), name))
-                    event.reply("Custom command **" + name + "** has been removed by **" + event.getFullAuthorName() + "**");
-                else event.reply("I couldn't find a command named: **" + name + "**\nList: " + getCommandList(guild));
-                serverHasCC.invalidate(guild.getIdLong());
+
+                if (args.length > 2) {
+                    if (Melijn.mySQL.removeCustomCommandMessage(guild.getIdLong(), name, event.getArgs().replaceFirst(args[0] + "\\s+" + args[1] + "\\s+", ""))) {
+                        event.reply("The message has been removed");
+                    } else {
+                        event.reply("I couldn't find what you where looking for\nHint: Check for spelling mistakes");
+                    }
+                } else {
+                    if (Melijn.mySQL.removeCustomCommand(guild.getIdLong(), name)) {
+                        event.reply("Custom command **" + name + "** has been removed by **" + event.getFullAuthorName() + "**");
+                    } else event.reply("I couldn't find a command named: **" + name + "**\nList: " + getCommandList(guild));
+                    serverHasCC.invalidate(guild.getIdLong());
+                }
 
 
             } else if (args[0].equalsIgnoreCase("list")) {

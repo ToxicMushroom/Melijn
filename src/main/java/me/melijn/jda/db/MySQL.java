@@ -1696,21 +1696,25 @@ public class MySQL {
         return null;
     }
 
-    public boolean addCustomCommand(long guildId, String name, String message) {
-        if (getCustomCommands(guildId).length() >= CustomCommandCommand.limitCC) return false;
+    public int addCustomCommand(long guildId, String name, String message) {
+        if (getCustomCommands(guildId).length() >= CustomCommandCommand.limitCC) return 0;
         boolean b = executeUpdate("INSERT IGNORE INTO custom_commands (guildId, name, description, aliases, prefix, attachment, message) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 guildId, name, "", "", true, "", message) > 0;
         if (!b) {
             String msg = getCustomCommand(guildId, name).getString("message") + "%split%" + message;
-            executeUpdate("UPDATE custom_commands SET message= ? WHERE guildId= ? AND name= ?",
-                    msg, guildId, name);
-            return true;
+            executeUpdate("UPDATE custom_commands SET message= ? WHERE guildId= ? AND name= ?", msg, guildId, name);
+            return 2;
         }
-        return true;
+        return 1;
     }
 
     public boolean removeCustomCommand(long guildId, String name) {
         return executeUpdate("DELETE FROM custom_commands WHERE guildId= ? AND name= ?", guildId, name) > 0;
+    }
+
+    public boolean removeCustomCommandMessage(long guildId, String name, String message) {
+        String msg = getCustomCommand(guildId, name).getString("message").replaceFirst("(%split%)?" + message, "");
+        return executeUpdate("UPDATE custom_commands SET message= ? WHERE guildId= ? AND name= ?", msg, guildId, name) > 0;
     }
 
     public boolean updateCustomCommand(long guildId, String name, String message) {
@@ -1905,4 +1909,6 @@ public class MySQL {
         }
         return new TIntIntHashMap();
     }
+
+
 }
