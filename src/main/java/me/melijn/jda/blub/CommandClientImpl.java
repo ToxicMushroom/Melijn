@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class CommandClientImpl extends ListenerAdapter implements CommandClient {
@@ -63,18 +64,6 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
             addCommand(command);
         }
     }
-
-
-
-    /*@Override
-    public void setListener(CommandListener listener) {
-        this.listener = listener;
-    }
-
-    @Override
-    public CommandListener getListener() {
-        return listener;
-    }*/
 
     @Override
     public List<Command> getCommands() {
@@ -121,7 +110,6 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                     (event.getGuild() != null && EvalCommand.userBlackList.contains(event.getGuild().getOwnerIdLong())))
                 return;
 
-            //boolean[] isCommand = new boolean[]{false};
             String[] parts = null;
             String rawContent = event.getMessage().getContentRaw();
             String prefix = event.getGuild() != null ? SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong()) : Melijn.PREFIX;
@@ -161,9 +149,10 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
             if (event.getGuild() != null && event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE) && serverHasCC.getUnchecked(event.getGuild().getIdLong())) {
                 JSONArray ccs = Melijn.mySQL.getCustomCommands(event.getGuild().getIdLong());
                 String message = event.getMessage().getContentRaw();
-                String justName = message.replaceFirst(
-                        "<@" + event.getJDA().getSelfUser().getId() + ">(?:\\s+)?|" +
-                                SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong()) + "(?:\\s+)?", "");
+                String regex = "(" +
+                        Pattern.quote(event.getJDA().getSelfUser().getAsMention()) + ")|(" +
+                        Pattern.quote(SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong())) + ")(\\s+)?";
+                String justName = message.replaceFirst(regex, "");
                 for (int i = 0; i < ccs.length(); i++) {
                     JSONObject command = ccs.getJSONObject(i);
                     if (command.getBoolean("prefix")) {
@@ -183,7 +172,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                             customCommandSender(command, event.getGuild(), event.getAuthor(), event.getTextChannel());
                             return;
                         }
-                        if (command.getString("aliases").isBlank()) return;
+                        if (command.getString("aliases").isBlank()) continue;
                         for (String alias : command.getString("aliases").split("%split%")) {
                             if (message.equalsIgnoreCase(alias) && !alias.isBlank()) {
                                 customCommandSender(command, event.getGuild(), event.getAuthor(), event.getTextChannel());
