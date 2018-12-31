@@ -1698,8 +1698,15 @@ public class MySQL {
 
     public boolean addCustomCommand(long guildId, String name, String message) {
         if (getCustomCommands(guildId).length() >= CustomCommandCommand.limitCC) return false;
-        return executeUpdate("INSERT IGNORE INTO custom_commands (guildId, name, description, aliases, prefix, attachment, message) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        boolean b = executeUpdate("INSERT IGNORE INTO custom_commands (guildId, name, description, aliases, prefix, attachment, message) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 guildId, name, "", "", true, "", message) > 0;
+        if (!b) {
+            String msg = getCustomCommand(guildId, name).getString("message") + "%split%" + message;
+            executeUpdate("UPDATE custom_commands SET message= ? WHERE guildId= ? AND name= ?",
+                    msg, guildId, name);
+            return true;
+        }
+        return true;
     }
 
     public boolean removeCustomCommand(long guildId, String name) {

@@ -168,24 +168,24 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                     JSONObject command = ccs.getJSONObject(i);
                     if (command.getBoolean("prefix")) {
                         if (message.equals(justName)) continue;
-                        if (justName.equalsIgnoreCase(command.getString("name"))) {
+                        if (justName.toLowerCase().startsWith(command.getString("name").toLowerCase())) {
                             customCommandSender(command, event.getGuild(), event.getAuthor(), event.getTextChannel());
                             return;
                         }
                         for (String alias : command.getString("aliases").split("%split%")) {
-                            if (justName.equalsIgnoreCase(alias)) {
+                            if (justName.equalsIgnoreCase(alias) && !alias.isBlank()) {
                                 customCommandSender(command, event.getGuild(), event.getAuthor(), event.getTextChannel());
                                 return;
                             }
                         }
                     } else {
-                        if (command.getString("name").equalsIgnoreCase(message)) {
+                        if (message.toLowerCase().startsWith(command.getString("name").toLowerCase())) {
                             customCommandSender(command, event.getGuild(), event.getAuthor(), event.getTextChannel());
                             return;
                         }
                         if (command.getString("aliases").isBlank()) return;
                         for (String alias : command.getString("aliases").split("%split%")) {
-                            if (message.equalsIgnoreCase(alias)) {
+                            if (message.equalsIgnoreCase(alias) && !alias.isBlank()) {
                                 customCommandSender(command, event.getGuild(), event.getAuthor(), event.getTextChannel());
                                 return;
                             }
@@ -210,7 +210,8 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
         try {
             String attachment = command.getString("attachment");
             if (Helpers.isJSONObjectValid(command.getString("message"))) {
-                JSONObject content = new JSONObject(command.getString("message"));
+                String[] messages = command.getString("message").split("%split%");
+                JSONObject content = new JSONObject(messages[MessageHelper.randInt(0, messages.length-1)]);
                 MessageAction action = null;
                 if (content.has("content") && !content.getString("content").isBlank()) { //Als er een gewone message bij zit
                     action = channel.sendMessage(JoinLeave.variableFormat(content.getString("content"), guild, author));
@@ -234,7 +235,10 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                 if (action != null)
                     action.queue();
             } else {
-                MessageAction action = channel.sendMessage(JoinLeave.variableFormat(command.getString("message"), guild, author));
+                String[] messages = command.getString("message").split("%split%");
+                MessageAction action = channel.sendMessage(
+                        JoinLeave.variableFormat(messages[MessageHelper.randInt(0, messages.length-1)], guild, author)
+                );
                 if (attachment.matches("https?://.*")) {
                     action = action.addFile(new URL(attachment).openStream(), "attachment" + attachment.substring(attachment.lastIndexOf(".")));
                 }
