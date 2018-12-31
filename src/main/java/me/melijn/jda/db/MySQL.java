@@ -8,14 +8,8 @@ import gnu.trove.list.TIntList;
 import gnu.trove.list.TLongList;
 import gnu.trove.list.array.TIntArrayList;
 import gnu.trove.list.array.TLongArrayList;
-import gnu.trove.map.TIntIntMap;
-import gnu.trove.map.TIntLongMap;
-import gnu.trove.map.TLongObjectMap;
-import gnu.trove.map.TMap;
-import gnu.trove.map.hash.THashMap;
-import gnu.trove.map.hash.TIntIntHashMap;
-import gnu.trove.map.hash.TIntLongHashMap;
-import gnu.trove.map.hash.TLongObjectHashMap;
+import gnu.trove.map.*;
+import gnu.trove.map.hash.*;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.ChannelType;
@@ -134,7 +128,7 @@ public class MySQL {
             executeUpdate("CREATE TABLE IF NOT EXISTS verification_thresholds(guildId bigint, threshold tinyint, PRIMARY KEY (guildId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS verification_types(guildId bigint, type varchar(64), PRIMARY KEY (guildId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS verification_codes(guildId bigint, code varchar(2048), PRIMARY KEY (guildId));");
-            executeUpdate("CREATE TABLE IF NOT EXISTS unverified_users(guildId bigint, userId bigint, UNIQUE KEY (guildId, userId));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS unverified_users(guildId bigint, userId bigint, moment bigint, UNIQUE KEY (guildId, userId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS streamer_modes(guildId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS filters(guildId bigint, mode varchar(16), content varchar(2048))");
             executeUpdate("CREATE TABLE IF NOT EXISTS join_messages(guildId bigint, content varchar(2048), PRIMARY KEY (guildId))");
@@ -1241,8 +1235,9 @@ public class MySQL {
         executeUpdate("UPDATE votes SET streak=? WHERE lastTime<?", 0, System.currentTimeMillis() - 172_800_000);
     }
 
-    public void addUnverifiedUser(long guildId, long userId) {
-        executeUpdate("INSERT INTO unverified_users (guildId, userId) VALUES (?, ?)", guildId, userId);
+    public void addUnverifiedUser(long guildId, long userId, long time) {
+        executeUpdate("INSERT INTO unverified_users (guildId, userId, moment) VALUES (?, ?, ?)",
+                guildId, userId, time);
     }
 
     public void removeUnverifiedUser(long guildId, long userId) {
@@ -1328,14 +1323,14 @@ public class MySQL {
         }
     }
 
-    public TLongList getUnverifiedMembers(long guildId) {
-        TLongList members = new TLongArrayList();
+    public TLongLongMap getUnverifiedMembers(long guildId) {
+        TLongLongMap members = new TLongLongHashMap();
         try (Connection con = ds.getConnection()) {
             PreparedStatement getUnverifiedMembers = con.prepareStatement("SELECT * FROM unverified_users WHERE guildId= ?");
             getUnverifiedMembers.setLong(1, guildId);
             ResultSet rs = getUnverifiedMembers.executeQuery();
             while (rs.next()) {
-                members.add(rs.getLong("userId"));
+                members.put(rs.getLong("userId"), rs.getLong("moment"));
             }
             rs.close();
             getUnverifiedMembers.close();

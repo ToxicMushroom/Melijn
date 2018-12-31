@@ -3,7 +3,7 @@ package me.melijn.jda.events;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import gnu.trove.list.TLongList;
+import gnu.trove.map.TLongLongMap;
 import me.melijn.jda.Config;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
@@ -33,11 +33,11 @@ import java.util.concurrent.TimeUnit;
 
 public class JoinLeave extends ListenerAdapter {
 
-    public static final LoadingCache<Long, TLongList> unVerifiedGuildMembersCache = CacheBuilder.newBuilder()
+    public static final LoadingCache<Long, TLongLongMap> unVerifiedGuildMembersCache = CacheBuilder.newBuilder()
             .maximumSize(10)
             .expireAfterAccess(1, TimeUnit.MINUTES)
             .build(new CacheLoader<>() {
-                public TLongList load(@NotNull Long key) {
+                public TLongLongMap load(@NotNull Long key) {
                     return Melijn.mySQL.getUnverifiedMembers(key);
                 }
             });
@@ -95,9 +95,10 @@ public class JoinLeave extends ListenerAdapter {
         if (guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES) && SetVerificationChannelCommand.verificationChannelsCache.getUnchecked(guild.getIdLong()) != -1) {
             TextChannel verificationChannel = guild.getTextChannelById(SetVerificationChannelCommand.verificationChannelsCache.getUnchecked(guild.getIdLong()));
             if (verificationChannel != null) {
-                TLongList newList = unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong());
-                newList.add(joinedUser.getIdLong());
-                Melijn.mySQL.addUnverifiedUser(guild.getIdLong(), joinedUser.getIdLong());
+                TLongLongMap newList = unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong());
+                long nanoTime = System.nanoTime();
+                newList.put(joinedUser.getIdLong(), nanoTime);
+                Melijn.mySQL.addUnverifiedUser(guild.getIdLong(), joinedUser.getIdLong(), nanoTime);
                 unVerifiedGuildMembersCache.put(guild.getIdLong(), newList);
                 Role role = guild.getRoleById(SetUnverifiedRoleCommand.unverifiedRoleCache.getUnchecked(guild.getIdLong()));
                 if (role != null && guild.getSelfMember().canInteract(role))
@@ -111,8 +112,7 @@ public class JoinLeave extends ListenerAdapter {
         } else {
             try {
                 joinCode(guild, joinedUser);
-            } catch (ExecutionException ignore) {
-            }
+            } catch (ExecutionException ignore) {}
         }
     }
 
@@ -123,7 +123,7 @@ public class JoinLeave extends ListenerAdapter {
         Guild guild = event.getGuild();
         User leftUser = event.getUser();
         if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
-        if (unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong()).contains(leftUser.getIdLong())) {
+        if (unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong()).keySet().contains(leftUser.getIdLong())) {
             removeUnverified(guild, leftUser);
         } else {
             TaskScheduler.async(() -> {
@@ -166,7 +166,7 @@ public class JoinLeave extends ListenerAdapter {
     }
 
     private static void removeUnverified(Guild guild, User user) {
-        TLongList newList = unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong());
+        TLongLongMap newList = unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong());
         newList.remove(user.getIdLong());
         TaskScheduler.async(() -> {
             Melijn.mySQL.removeUnverifiedUser(guild.getIdLong(), user.getIdLong());

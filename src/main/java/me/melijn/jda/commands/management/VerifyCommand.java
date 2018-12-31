@@ -1,6 +1,6 @@
 package me.melijn.jda.commands.management;
 
-import gnu.trove.list.TLongList;
+import gnu.trove.map.TLongLongMap;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
@@ -34,14 +34,14 @@ public class VerifyCommand extends Command {
             String[] args = event.getArgs().split("\\s+");
             if (args.length > 0 && !args[0].isBlank()) {
                 if (args[0].equals("all")) {
-                    TLongList unVerifiedUsers = JoinLeave.unVerifiedGuildMembersCache.getUnchecked(event.getGuild().getIdLong());
+                    TLongLongMap unVerifiedUsers = JoinLeave.unVerifiedGuildMembersCache.getUnchecked(event.getGuild().getIdLong());
                     verifyMembers(event.getGuild(), unVerifiedUsers);
                     event.reply("Successfully verified all unverified members");
                 } else {
                     User user = Helpers.getUserByArgsN(event, args[0]);
                     if (user != null && event.getGuild().getMember(user) != null) {
-                        TLongList unVerifiedUsers = JoinLeave.unVerifiedGuildMembersCache.getUnchecked(event.getGuild().getIdLong());
-                        if (unVerifiedUsers.contains(user.getIdLong())) {
+                        TLongLongMap unVerifiedUsers = JoinLeave.unVerifiedGuildMembersCache.getUnchecked(event.getGuild().getIdLong());
+                        if (unVerifiedUsers.keySet().contains(user.getIdLong())) {
                             JoinLeave.verify(event.getGuild(), user);
                             event.reply("Successfully verified **" + user.getName() + "#" + user.getDiscriminator() + "**");
                         } else {
@@ -59,9 +59,9 @@ public class VerifyCommand extends Command {
         }
     }
 
-    private void verifyMembers(Guild guild, TLongList users) {
+    private void verifyMembers(Guild guild, TLongLongMap users) {
         TaskScheduler.async(() -> {
-            for (long id : users.toArray()) {
+            for (long id : users.keySet().toArray()) {
                 Member member = guild.getMemberById(id);
                 if (member != null)
                     JoinLeave.verify(guild, member.getUser());
