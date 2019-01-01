@@ -131,16 +131,22 @@ public class AudioLoader {
                 channel.sendMessage("Something went wrong while searching for your track").queue();
             }
         };
-        String url = source;
-        if (url.startsWith("ytsearch:")) {
-            String result = ytSearch.search(url.replaceFirst("ytsearch:", ""));
-            if (result == null) {
-                channel.sendMessage("I couldn't find a track named " + source.replaceFirst("ytsearch:", "") + ". Check for spelling mistakes.").queue();
-                return;
-            }
-            url = youtubeVideoBase + result;
+
+        if (source.startsWith("ytsearch:")) {
+            ytSearch.search(source.replaceFirst("ytsearch:", ""), (result) -> {
+
+                if (result == null) {
+                    channel.sendMessage("I couldn't find a track named " + source.replaceFirst("ytsearch:", "") + ". Check for spelling mistakes.").queue();
+                    return;
+                }
+
+                manager.loadItemOrdered(player, youtubeVideoBase + result, resultHandler);
+            });
+
+            return;
         }
-        manager.loadItemOrdered(player, url, resultHandler);
+
+        manager.loadItemOrdered(player, source, resultHandler);
     }
 
     public void loadSimpleTrack(MusicPlayer player, final String source) {

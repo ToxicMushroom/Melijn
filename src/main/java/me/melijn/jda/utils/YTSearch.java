@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Consumer;
 
 public class YTSearch {
 
@@ -37,7 +38,7 @@ public class YTSearch {
         }).setApplicationName("youtube-search").build();
     }
 
-    public String search(String query) {
+    public void search(String query, Consumer<String> videoCallback) {
         try {
             YouTube.Search.List search = youtube.search().list("id");
 
@@ -61,8 +62,11 @@ public class YTSearch {
             // Call the API adn return results
             SearchListResponse searchResponse = search.execute();
             List<SearchResult> searchResultList = searchResponse.getItems();
-            if (searchResultList.size() == 0) return null;
-            return searchResultList.get(0).getId().getVideoId();
+            if (searchResultList.size() == 0) {
+                videoCallback.accept(null);
+            }
+            String id =  searchResultList.get(0).getId().getVideoId();
+            videoCallback.accept(id);
         } catch (GoogleJsonResponseException e) {
             System.err.println("There was a service error: " + e.getDetails().getCode() + " : " + e.getDetails().getMessage());
         } catch (IOException e) {
@@ -70,6 +74,7 @@ public class YTSearch {
         } catch (Throwable t) {
             t.printStackTrace();
         }
-        return null;
+
+        videoCallback.accept(null);
     }
 }
