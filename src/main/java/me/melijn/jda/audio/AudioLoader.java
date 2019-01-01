@@ -50,9 +50,11 @@ public class AudioLoader {
     public TLongObjectMap<MusicPlayer> getPlayers() {
         return players;
     }
+
     public synchronized MusicPlayer getPlayer(Guild guild) {
         return getPlayer(guild.getIdLong());
     }
+
     public synchronized MusicPlayer getPlayer(long guildId) {
         if (!players.containsKey(guildId)) players.put(guildId, new MusicPlayer(guildId));
         return players.get(guildId);
@@ -93,7 +95,8 @@ public class AudioLoader {
                     tracks = tracks.size() > 200 ? tracks.subList(0, 200) : tracks;
                     if (userRequestedSongs.containsKey(requester.getIdLong()) || userMessageToAnswer.containsKey(requester.getIdLong())) {
                         channel.sendMessage("You still have a request to answer. (requests are automatically removed after 30 seconds)")
-                                .queue((message) -> message.delete().queueAfter(10, TimeUnit.SECONDS, null, (failure) -> {}));
+                                .queue((message) -> message.delete().queueAfter(10, TimeUnit.SECONDS, null, (failure) -> {
+                                }));
                         return;
                     }
 
@@ -102,8 +105,8 @@ public class AudioLoader {
 
                     String toSend = "You're about to add a playlist which contains " +
                             (("these tracks:\n" + sb + "Hit \u2705 to accept or \u274E to deny").length() < 2000 ?
-                            "these tracks:\n" + sb + "Hit \u2705 to accept or \u274E to deny" :
-                            tracks.size() + " tracks.\nHit \u2705 to accept or \u274E to deny.");
+                                    "these tracks:\n" + sb + "Hit \u2705 to accept or \u274E to deny" :
+                                    tracks.size() + " tracks.\nHit \u2705 to accept or \u274E to deny.");
                     channel.sendMessage(toSend).queue(message -> {
                         userRequestedSongs.put(requester.getIdLong(), playlist.getTracks());
                         userMessageToAnswer.put(requester.getIdLong(), message.getIdLong());
@@ -145,7 +148,6 @@ public class AudioLoader {
 
             return;
         }
-
         manager.loadItemOrdered(player, source, resultHandler);
     }
 
