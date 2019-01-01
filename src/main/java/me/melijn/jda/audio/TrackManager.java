@@ -6,10 +6,8 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import lavalink.client.player.LavalinkPlayer;
 import lavalink.client.player.event.AudioEventAdapterWrapped;
 import me.melijn.jda.Helpers;
-import me.melijn.jda.Melijn;
 import me.melijn.jda.commands.music.LoopCommand;
 import me.melijn.jda.commands.music.LoopQueueCommand;
-import net.dv8tion.jda.core.entities.Guild;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -51,11 +49,6 @@ public class TrackManager extends AudioEventAdapterWrapped {
         } else {
             tracks.offer(track);
         }
-    }
-
-    public void setSendingHandler(long guildId) {
-        Guild guild = Melijn.getShardManager().getGuildById(guildId);
-        guild.getAudioManager().setSendingHandler(musicPlayer.getAudioHandler());
     }
 
     public void shuffle() {
