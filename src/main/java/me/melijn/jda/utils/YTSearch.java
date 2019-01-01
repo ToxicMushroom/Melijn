@@ -69,9 +69,11 @@ public class YTSearch {
                 List<SearchResult> searchResultList = searchResponse.getItems();
                 if (searchResultList.size() == 0) {
                     videoCallback.accept(null);
+                    return;
                 }
                 String id = searchResultList.get(0).getId().getVideoId();
                 videoCallback.accept(id);
+                return;
             } catch (GoogleJsonResponseException e) {
                 System.err.println("There was a service error: " + e.getDetails().getCode() + " : " + e.getDetails().getMessage());
             } catch (IOException e) {
@@ -79,9 +81,7 @@ public class YTSearch {
             } catch (Throwable t) {
                 t.printStackTrace();
             }
-
             videoCallback.accept(null);
         });
     }
-
 }
