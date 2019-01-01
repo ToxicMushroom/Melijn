@@ -17,13 +17,13 @@ import net.dv8tion.jda.core.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceMoveEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
-import net.dv8tion.jda.core.managers.AudioManager;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Channels extends ListenerAdapter {
 
     private AudioLoader manager = AudioLoader.getManagerInstance();
+    private Lava lava = Lava.lava;
 
     @Override
     public void onGuildVoiceMove(GuildVoiceMoveEvent event) {
@@ -31,28 +31,26 @@ public class Channels extends ListenerAdapter {
         Guild guild = event.getGuild();
         if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
         long guildId = guild.getIdLong();
-        AudioManager audioManager = guild.getAudioManager();
-        if (audioManager.isConnected()) {
-            if (event.getChannelLeft() == audioManager.getConnectedChannel()) {
-                if (someoneIsListening(guild)) {
-                    String url = Melijn.mySQL.getStreamUrl(guildId);
-                    if (!url.isBlank()) {
-                        manager.getPlayer(guild).getTrackManager().clear();
-                        manager.loadSimpleTrack(manager.getPlayer(guild), url);
-                    }
+        if (lava.isConnected(guildId)) {
+            if (event.getChannelLeft() != lava.getConnectedChannel(guild)) return;
+            if (someoneIsListening(guild)) {
+                String url = Melijn.mySQL.getStreamUrl(guildId);
+                if (!url.isBlank()) {
+                    manager.getPlayer(guild).getTrackManager().clear();
+                    manager.loadSimpleTrack(manager.getPlayer(guild), url);
+                }
+            } else {
+                manager.getPlayer(guild).getAudioPlayer().setPaused(true);
+                if (lava.getConnectedChannel(guild).getMembers().size() > 1) {
+                    runLeaveTimer(guild, 300, true);
                 } else {
-                    manager.getPlayer(guild).getAudioPlayer().setPaused(true);
-                    if (audioManager.getConnectedChannel().getMembers().size() > 1) {
-                        runLeaveTimer(guild, 300, true);
-                    } else {
-                        runLeaveTimer(guild, 60, false);
-                    }
+                    runLeaveTimer(guild, 60, false);
                 }
             }
         } else if (SetStreamerModeCommand.streamerModeCache.getUnchecked(guildId) &&
-                !Lava.lava.isConnected(guildId) &&
+                !lava.isConnected(guildId) &&
                 event.getChannelJoined().getIdLong() == SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)) {
-            Lava.lava.openConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)));
+            lava.openConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)));
             tryPlayStreamUrl(guild.getIdLong());
             TaskScheduler.async(() -> {
                 //Hacky way to unmute bot in afk channel
@@ -75,9 +73,9 @@ public class Channels extends ListenerAdapter {
         if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
         long guildId = guild.getIdLong();
         if (SetStreamerModeCommand.streamerModeCache.getUnchecked(guildId) &&
-                !Lava.lava.isConnected(guildId) &&
+                !lava.isConnected(guildId) &&
                 event.getChannelJoined().getIdLong() == (SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId))) {
-            Lava.lava.openConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)));
+            lava.openConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)));
             tryPlayStreamUrl(guild.getIdLong());
             TaskScheduler.async(() -> {
                 if (guild.getAfkChannel() != null &&
@@ -106,14 +104,13 @@ public class Channels extends ListenerAdapter {
     }
 
     private void whenListeningDoActions(Guild guild) {
-        if (guild.getAudioManager().getConnectedChannel() != null) {
-            if (!someoneIsListening(guild)) {
-                manager.getPlayer(guild).getAudioPlayer().setPaused(true);
-                if (guild.getAudioManager().getConnectedChannel().getMembers().size() > 1) {
-                    runLeaveTimer(guild, 300, true);
-                } else {
-                    runLeaveTimer(guild, 60, false);
-                }
+        if (!lava.isConnected(guild.getIdLong())) return;
+        if (!someoneIsListening(guild)) {
+            manager.getPlayer(guild).getAudioPlayer().setPaused(true);
+            if (lava.getConnectedChannel(guild).getMembers().size() > 1) {
+                runLeaveTimer(guild, 300, true);
+            } else {
+                runLeaveTimer(guild, 60, false);
             }
         }
     }
@@ -124,12 +121,12 @@ public class Channels extends ListenerAdapter {
             while (true) {
                 Guild guild2 = guild.getJDA().asBot().getShardManager().getGuildById(guild.getIdLong());
                 MusicPlayer player = manager.getPlayer(guild2);
-                if (guild2 == null || !guild2.getAudioManager().isConnected())
+                if (guild2 == null || !lava.isConnected(guild.getIdLong()))
                     break;
                 if (someoneIsListening(guild2)) {
                     player.getAudioPlayer().setPaused(false);
                     break;
-                } else if ((guild2.getAudioManager().getConnectedChannel().getMembers().size() == 1 && defeaned) || (amount.getAndIncrement() == seconds)) {
+                } else if ((lava.getConnectedChannel(guild2).getMembers().size() == 1 && defeaned) || (amount.getAndIncrement() == seconds)) {
                     LoopCommand.looped.remove(guild2.getIdLong());
                     player.getAudioPlayer().setPaused(false);
                     player.stopTrack();
@@ -157,15 +154,12 @@ public class Channels extends ListenerAdapter {
     }
 
     private boolean someoneIsListening(Guild guild) {
-        AudioManager audioManager = guild.getAudioManager();
-        if (audioManager.isConnected()) {
-            int doveDuiven = 0;
-            for (Member member : guild.getAudioManager().getConnectedChannel().getMembers()) {
-                if ((member.getVoiceState().isDeafened() || member.getUser().isBot() || member.getVoiceState().isGuildDeafened()) && member != guild.getSelfMember())
-                    doveDuiven++;
-            }
-            return (audioManager.getConnectedChannel().getMembers().size() - doveDuiven) > 1;
+        if (!lava.isConnected(guild.getIdLong())) return false;
+        int doveDuiven = 0;
+        for (Member member : lava.getConnectedChannel(guild).getMembers()) {
+            if ((member.getVoiceState().isDeafened() || member.getUser().isBot() || member.getVoiceState().isGuildDeafened()) && member != guild.getSelfMember())
+                doveDuiven++;
         }
-        return false;
+        return (lava.getConnectedChannel(guild).getMembers().size() - doveDuiven) > 1;
     }
 }

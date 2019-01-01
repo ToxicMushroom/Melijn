@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.tools.PlayerLibrary;
 import me.duncte123.weebJava.WeebInfo;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
+import me.melijn.jda.audio.Lava;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
@@ -59,7 +60,7 @@ public class InfoCommand extends Command {
                     desc.append("```Less\n");
                     int blub = 0;
                     for (Guild guild : event.getJDA().asBot().getShardManager().getGuildCache()) {
-                        if (guild.getAudioManager().isConnected() || guild.getAudioManager().isAttemptingToConnect())
+                        if (Lava.lava.isConnected(guild.getIdLong()))
                             desc.append("#").append(++blub).append(" - ").append(guild.getName()).append("\n");
                     }
                     desc.append("```");
