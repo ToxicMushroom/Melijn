@@ -1,6 +1,5 @@
 package me.melijn.jda.events;
 
-import com.google.common.cache.CacheLoader;
 import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.TLongIntMap;
 import gnu.trove.map.TLongObjectMap;
@@ -33,11 +32,11 @@ import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static me.melijn.jda.Melijn.PREFIX;
+import static me.melijn.jda.blub.VerificationType.CODE;
 
 public class Chat extends ListenerAdapter {
 
@@ -54,8 +53,9 @@ public class Chat extends ListenerAdapter {
                     !event.getAuthor().isBot())
                 event.getChannel().sendMessage(String.format("Hello there my default prefix is %s and you can view all commands using **%shelp**", PREFIX, PREFIX)).queue();
             else return;
+        Guild guild = event.getGuild();
+        long guildId = guild.getIdLong();
         if (event.getMember() != null) {
-            Guild guild = event.getGuild();
             User author = event.getAuthor();
             if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
             Helpers.guildCount = event.getJDA().asBot().getShardManager().getGuildCache().size();
@@ -67,14 +67,14 @@ public class Chat extends ListenerAdapter {
             String finalContent = content.toString();
 
             TaskScheduler.async(() -> {
-                if (SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
-                        SetLogChannelCommand.odmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
-                        SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
-                        SetLogChannelCommand.fmLogChannelCache.getUnchecked(guild.getIdLong()) != -1)
-                    mySQL.createMessage(event.getMessageIdLong(), finalContent, author.getIdLong(), guild.getIdLong(), event.getChannel().getIdLong());
+                if (SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guildId) != -1 ||
+                        SetLogChannelCommand.odmLogChannelCache.getUnchecked(guildId) != -1 ||
+                        SetLogChannelCommand.pmLogChannelCache.getUnchecked(guildId) != -1 ||
+                        SetLogChannelCommand.fmLogChannelCache.getUnchecked(guildId) != -1)
+                    mySQL.createMessage(event.getMessageIdLong(), finalContent, author.getIdLong(), guildId, event.getChannel().getIdLong());
             });
             if (event.getMessage().getContentRaw().equalsIgnoreCase(guild.getSelfMember().getAsMention()) && guild.getSelfMember().hasPermission(event.getChannel(), Permission.MESSAGE_WRITE)) {
-                String prefix = SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong());
+                String prefix = SetPrefixCommand.prefixes.getUnchecked(guildId);
                 event.getChannel().sendMessage(String.format(("Hello there my default prefix is %s " + (prefix.equals(PREFIX) ? "" : String.format("\nThis server has configured %s as the prefix\n", prefix)) + "and you can view all commands using **%shelp**"), PREFIX, prefix)).queue();
             }
             if (guild.getSelfMember().hasPermission(Permission.MESSAGE_MANAGE) && !event.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
@@ -107,48 +107,58 @@ public class Chat extends ListenerAdapter {
                     }
                     if (detectedWord != null) {
                         MessageHelper.filteredMessageDeleteCause.put(event.getMessageIdLong(), detectedWord.substring(0, detectedWord.length() - 2));
-                        event.getMessage().delete().reason("Use of prohibited words").queue(success -> {}, failure -> {});
+                        event.getMessage().delete().reason("Use of prohibited words").queue(success -> {
+                        }, failure -> {
+                        });
                     }
                 });
             }
         }
 
-        if (SetVerificationChannelCommand.verificationChannelsCache.getUnchecked(event.getGuild().getIdLong()) == event.getChannel().getIdLong()) {
-            try {
-                if (!event.getMember().hasPermission(event.getChannel(), Permission.MANAGE_CHANNEL))
-                    event.getMessage().delete().reason("Verification Channel").queue(s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()), failed -> {});
-                if (SetVerificationCodeCommand.verificationCodeCache.get(event.getGuild().getIdLong()) != null) {
-                    if (event.getMessage().getContentRaw().equalsIgnoreCase(SetVerificationCodeCommand.verificationCodeCache.get(event.getGuild().getIdLong()))) {
-                        JoinLeave.verify(event.getGuild(), event.getAuthor());
-                        removeMemberFromTriesCache(event);
-                    } else if (SetVerificationThresholdCommand.verificationThresholdCache.get(event.getGuild().getIdLong()) != 0) {
-                        if (guildUserVerifyTries.containsKey(event.getGuild().getIdLong())) {
-                            if (guildUserVerifyTries.get(event.getGuild().getIdLong()).containsKey(event.getAuthor().getIdLong())) {
-                                TLongIntMap userTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
-                                userTriesBuffer.put(event.getAuthor().getIdLong(), userTriesBuffer.get(event.getAuthor().getIdLong()) + 1);
-                                guildUserVerifyTries.put(event.getGuild().getIdLong(), userTriesBuffer);
-                            } else {
-                                TLongIntMap userTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
-                                userTriesBuffer.put(event.getAuthor().getIdLong(), 1);
-                                guildUserVerifyTries.put(event.getGuild().getIdLong(), userTriesBuffer);
-                            }
-                        } else {
-                            TLongIntMap userTriesBuffer = new TLongIntHashMap();
-                            userTriesBuffer.put(event.getAuthor().getIdLong(), 1);
-                            guildUserVerifyTries.put(event.getGuild().getIdLong(), userTriesBuffer);
+        if (SetVerificationChannelCommand.verificationChannelsCache.getUnchecked(guildId) == event.getChannel().getIdLong()) {
+            if (!event.getMember().hasPermission(event.getChannel(), Permission.MANAGE_CHANNEL))
+                event.getMessage().delete().reason("Verification Channel").queue(
+                        s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()), failed -> {
                         }
-                        if (guildUserVerifyTries.get(event.getGuild().getIdLong()).get(event.getAuthor().getIdLong()) == SetVerificationThresholdCommand.verificationThresholdCache.get(event.getGuild().getIdLong())) {
-                            if (event.getGuild().getSelfMember().canInteract(event.getMember()))
-                                event.getGuild().getController().kick(event.getMember()).reason("Failed verification").queue();
-                            removeMemberFromTriesCache(event);
-                        }
+                );
+            if (SetVerificationCodeCommand.verificationCodeCache.getUnchecked(guildId) == null &&
+                    SetVerificationTypeCommand.verificationTypes.getUnchecked(guildId) == CODE) {
+                return;
+            }
+            String code = SetVerificationTypeCommand.verificationTypes.getUnchecked(guildId) == CODE ?
+                    SetVerificationCodeCommand.verificationCodeCache.getUnchecked(guildId) :
+                    String.valueOf(JoinLeave.unVerifiedGuildMembersCache.getUnchecked(guildId).get(event.getAuthor().getIdLong()));
+
+            if (event.getMessage().getContentRaw().equalsIgnoreCase(code)) {
+                JoinLeave.verify(guild, event.getAuthor());
+                removeMemberFromTriesCache(event);
+            } else if (SetVerificationThresholdCommand.verificationThresholdCache.getUnchecked(guildId) != 0) {
+                if (guildUserVerifyTries.containsKey(guildId)) {
+                    if (guildUserVerifyTries.get(guildId).containsKey(guildId)) {
+                        TLongIntMap userTriesBuffer = guildUserVerifyTries.get(guildId);
+                        userTriesBuffer.put(event.getAuthor().getIdLong(), userTriesBuffer.get(guildId) + 1);
+                        guildUserVerifyTries.put(guildId, userTriesBuffer);
                     } else {
-                        event.getMessage().delete().reason("Verification Channel").queue(
-                                s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()),
-                                failed -> {});
+                        TLongIntMap userTriesBuffer = guildUserVerifyTries.get(guildId);
+                        userTriesBuffer.put(event.getAuthor().getIdLong(), 1);
+                        guildUserVerifyTries.put(guildId, userTriesBuffer);
                     }
+                } else {
+                    TLongIntMap userTriesBuffer = new TLongIntHashMap();
+                    userTriesBuffer.put(event.getAuthor().getIdLong(), 1);
+                    guildUserVerifyTries.put(guildId, userTriesBuffer);
                 }
-            } catch (ExecutionException | CacheLoader.InvalidCacheLoadException ignored) {
+                if (guildUserVerifyTries.get(guildId).get(event.getAuthor().getIdLong()) == SetVerificationThresholdCommand.verificationThresholdCache.getUnchecked(guildId)) {
+                    if (event.getGuild().getSelfMember().canInteract(event.getMember()))
+                        event.getGuild().getController().kick(event.getMember()).reason("Failed verification").queue();
+                    removeMemberFromTriesCache(event);
+                }
+            } else {
+                event.getMessage().delete().reason("Verification Channel").queue(
+                        s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()),
+                        failed -> {
+                        }
+                );
             }
         }
     }
@@ -306,32 +316,31 @@ public class Chat extends ListenerAdapter {
     }
 
     private void log(Guild guild, User author, EmbedBuilder eb, User deleter, JSONObject message, boolean split) {
-        if (deleter != null) {
-            TextChannel sdmChannel = guild.getTextChannelById(SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guild.getIdLong()));
-            TextChannel odmChannel = guild.getTextChannelById(SetLogChannelCommand.odmLogChannelCache.getUnchecked(guild.getIdLong()));
-            if (sdmChannel != null && !guild.getSelfMember().hasPermission(sdmChannel, Permission.MESSAGE_WRITE)) {
-                Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.SDM_LOG);
-            }
-            if (odmChannel != null && !guild.getSelfMember().hasPermission(odmChannel, Permission.MESSAGE_WRITE)) {
-                Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.ODM_LOG);
-            }
-            if (split) {
-                eb.setTitle(eb.build().getTitle() + " part 1");
-                if (author.equals(deleter) && sdmChannel != null && guild.getSelfMember().hasPermission(sdmChannel, Permission.MESSAGE_WRITE)) {
-                    sdmChannel.sendMessage(eb.build()).queue();
-                } else if (odmChannel != null && guild.getSelfMember().hasPermission(sdmChannel, Permission.MESSAGE_WRITE)) {
-                    odmChannel.sendMessage(eb.build()).queue();
-                }
-                eb.setTitle("part 2");
-                eb.setThumbnail("https://melijn.com/files/u/03-09-2018--09.16-29s.png");
-                eb.setDescription("```LDIF\npart 2: " + message.getString("content").substring(1500) + "\nSenderID: " + author.getId() + "\nSent Time: " + MessageHelper.millisToDate(message.getLong("sentTime")) + "```");
-            }
-            eb.setFooter("Deleted by: " + deleter.getName() + "#" + deleter.getDiscriminator(), deleter.getEffectiveAvatarUrl());
+        if (deleter == null) return;
+        TextChannel sdmChannel = guild.getTextChannelById(SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guild.getIdLong()));
+        TextChannel odmChannel = guild.getTextChannelById(SetLogChannelCommand.odmLogChannelCache.getUnchecked(guild.getIdLong()));
+        if (sdmChannel != null && !guild.getSelfMember().hasPermission(sdmChannel, Permission.MESSAGE_WRITE)) {
+            Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.SDM_LOG);
+        }
+        if (odmChannel != null && !guild.getSelfMember().hasPermission(odmChannel, Permission.MESSAGE_WRITE)) {
+            Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.ODM_LOG);
+        }
+        if (split) {
+            eb.setTitle(eb.build().getTitle() + " part 1");
             if (author.equals(deleter) && sdmChannel != null && guild.getSelfMember().hasPermission(sdmChannel, Permission.MESSAGE_WRITE)) {
                 sdmChannel.sendMessage(eb.build()).queue();
-            } else if (odmChannel != null && guild.getSelfMember().hasPermission(odmChannel, Permission.MESSAGE_WRITE)) {
+            } else if (odmChannel != null && guild.getSelfMember().hasPermission(sdmChannel, Permission.MESSAGE_WRITE)) {
                 odmChannel.sendMessage(eb.build()).queue();
             }
+            eb.setTitle("part 2");
+            eb.setThumbnail("https://melijn.com/files/u/03-09-2018--09.16-29s.png");
+            eb.setDescription("```LDIF\npart 2: " + message.getString("content").substring(1500) + "\nSenderID: " + author.getId() + "\nSent Time: " + MessageHelper.millisToDate(message.getLong("sentTime")) + "```");
+        }
+        eb.setFooter("Deleted by: " + deleter.getName() + "#" + deleter.getDiscriminator(), deleter.getEffectiveAvatarUrl());
+        if (author.equals(deleter) && sdmChannel != null && guild.getSelfMember().hasPermission(sdmChannel, Permission.MESSAGE_WRITE)) {
+            sdmChannel.sendMessage(eb.build()).queue();
+        } else if (odmChannel != null && guild.getSelfMember().hasPermission(odmChannel, Permission.MESSAGE_WRITE)) {
+            odmChannel.sendMessage(eb.build()).queue();
         }
     }
 }
