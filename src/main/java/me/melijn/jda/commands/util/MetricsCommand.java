@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
+import java.util.Optional;
 import java.util.TimeZone;
 
 import static me.melijn.jda.Melijn.PREFIX;
@@ -50,28 +51,28 @@ public class MetricsCommand extends Command {
                         case "limit":
                             LinkedHashMap<Integer, Long> topCommandUsage = Melijn.mySQL.getTopUsage(period, defaultInt);
                             for (int id : topCommandUsage.keySet()) {
-                                sb.append(topCommandUsage.get(id)).append(" - [").append(event.getClient().getCommands().get(id).getCommandName()).append("]\n");
+                                sb.append(topCommandUsage.get(id)).append(" - [").append(getCommandById(event, id).getCommandName()).append("]\n");
                             }
                             break;
                         case "all":
                             LinkedHashMap<Integer, Long> allCommandUsage = Melijn.mySQL.getTopUsage(period, event.getClient().getCommands().size());
                             for (int id : allCommandUsage.keySet()) {
-                                sb.append(allCommandUsage.get(id)).append(" - [").append(event.getClient().getCommands().get(id).getCommandName()).append("]\n");
+                                sb.append(allCommandUsage.get(id)).append(" - [").append(getCommandById(event, id).getCommandName()).append("]\n");
                             }
                             break;
                         default:
                             TIntList commandIds = new TIntArrayList();
                             for (Command command : event.getClient().getCommands()) {
                                 if (command.getCommandName().equalsIgnoreCase(args[0])) {
-                                    sb.append(Melijn.mySQL.getUsage(period, event.getClient().getCommands().indexOf(command))).append(" - [").append(command.getCommandName()).append("]\n");
+                                    sb.append(Melijn.mySQL.getUsage(period, command.getId())).append(" - [").append(command.getCommandName()).append("]\n");
                                 } else if (command.getCategory().toString().equalsIgnoreCase(args[0])) {
-                                    commandIds.add(event.getClient().getCommands().indexOf(command));
+                                    commandIds.add(command.getId());
                                 }
                             }
                             if (commandIds.size() > 0) {
                                 TIntLongMap commandUsages = Melijn.mySQL.getUsages(period, commandIds);
-                                for (int index : commandUsages.keySet().toArray()) {
-                                    sb.append(commandUsages.get(index)).append(" - [").append(event.getClient().getCommands().get(index).getCommandName()).append("]\n");
+                                for (int id : commandUsages.keySet().toArray()) {
+                                    sb.append(commandUsages.get(id)).append(" - [").append(getCommandById(event, id).getCommandName()).append("]\n");
                                 }
                             }
                             break;
@@ -155,5 +156,10 @@ public class MetricsCommand extends Command {
                 return new long[]{System.currentTimeMillis(), 0};
             } else return null;
         }
+    }
+
+    public Command getCommandById(CommandEvent event, long id) {
+        Optional<Command> command = event.getClient().getCommands().stream().filter(cmd -> cmd.getId() == id).findAny();
+        return command.orElse(null);
     }
 }
