@@ -46,6 +46,7 @@ public class Application extends Jooby {
             guild.getTextChannelCache().forEach(channel -> channels.put("textChannels", channels.getJSONArray("textChannels").put(channel.getPosition(), new JSONObject().put("id", channel.getId()).put("name", channel.getName()))));
             response.send(new JSONObject()
                     .put("name", guild.getName())
+                    .put("iconUrl", guild.getIconUrl() == null ? "https://melijn.com/data/discord.jpg" : guild.getIconUrl())
                     .put("memberCount", guild.getMemberCache().size())
                     .put("ownerId", guild.getOwnerId())
                     .put("isBotMember", true)
