@@ -40,6 +40,8 @@ public class PatCommand extends Command {
                             image -> MessageHelper.sendFunText("**" + event.getAuthor().getName() + "** patted **" + target.getName() + "**", image.getUrl(), event)
                     );
                 }
+            } else {
+                MessageHelper.sendUsage(this, event);
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

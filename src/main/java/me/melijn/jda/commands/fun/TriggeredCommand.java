@@ -17,7 +17,7 @@ public class TriggeredCommand extends Command {
     public TriggeredCommand() {
         this.commandName = "triggered";
         this.description = "Shows a triggered person";
-        this.usage = PREFIX + commandName;
+        this.usage = PREFIX + commandName + " [user]";
         this.aliases = new String[]{"rage"};
         this.category = Category.FUN;
         webUtils = WebUtils.getWebUtilsInstance();
@@ -41,6 +41,8 @@ public class TriggeredCommand extends Command {
                             image -> MessageHelper.sendFunText("**" + event.getAuthor().getName() + "** got triggered by **" + target.getName() + "**", image.getUrl(), event)
                     );
                 }
+            } else {
+                MessageHelper.sendUsage(this, event);
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

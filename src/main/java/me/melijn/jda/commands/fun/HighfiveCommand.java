@@ -38,6 +38,8 @@ public class HighfiveCommand extends Command {
                             MessageHelper.sendFunText("**" + event.getAuthor().getName() + "** highfived **" + target.getName() + "**", image.getUrl(), event)
                     );
                 }
+            } else {
+                MessageHelper.sendUsage(this, event);
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

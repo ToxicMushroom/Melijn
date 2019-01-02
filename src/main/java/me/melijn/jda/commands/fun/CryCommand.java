@@ -39,6 +39,8 @@ public class CryCommand extends Command {
                             MessageHelper.sendFunText("**" + target.getName() + "** made **" + event.getAuthor().getName() + "** cry", image.getUrl(), event)
                     );
                 }
+            } else {
+                MessageHelper.sendUsage(this, event);
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

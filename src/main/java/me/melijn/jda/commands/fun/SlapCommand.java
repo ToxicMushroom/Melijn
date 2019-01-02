@@ -40,6 +40,8 @@ public class SlapCommand extends Command {
                             image -> MessageHelper.sendFunText("**" + target.getName() + "** got slapped by **" + event.getAuthor().getName() + "**", image.getUrl(), event)
                     );
                 }
+            } else {
+                MessageHelper.sendUsage(this, event);
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

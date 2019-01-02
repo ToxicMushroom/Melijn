@@ -40,6 +40,8 @@ public class WastedCommand extends Command {
                             image -> MessageHelper.sendFunText("**" + event.getAuthor().getName() + "** got wasted by **" + target.getName() + "**", image.getUrl(), event)
                     );
                 }
+            } else {
+                MessageHelper.sendUsage(this, event);
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
