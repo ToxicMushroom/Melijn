@@ -142,6 +142,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                     command.run(cevent);
                     TaskScheduler.async(() -> {
                         Melijn.mySQL.updateUsage(command.getId(), System.currentTimeMillis());
+                        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), "bypass.cooldown", 1)) return;
                         CooldownCommand.activeCooldowns.updateCooldown(event.getGuild().getIdLong(), event.getAuthor().getIdLong(), command.id);
                     });
                 });

@@ -142,7 +142,8 @@ public class Helpers {
             "SetEmbedColor",
             "emotes",
             "cooldown",
-            "SetVerificationType"
+            "SetVerificationType",
+            "bypass.cooldown"
     );
 
     public static void startTimer(JDA jda, int i) {
