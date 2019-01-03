@@ -143,15 +143,16 @@ public class Chat extends ListenerAdapter {
         }
         Melijn.mySQL.updateMessage(event.getMessage());
         TextChannel emChannel = event.getGuild().getTextChannelById(SetLogChannelCommand.emLogChannelCache.getUnchecked(guild.getIdLong()));
-        if (emChannel == null || emChannel.getGuild().getSelfMember().hasPermission(emChannel, Permission.MESSAGE_WRITE)) return;
+        if (emChannel == null || oMessage.isEmpty() || !emChannel.getGuild().getSelfMember().hasPermission(emChannel, Permission.MESSAGE_WRITE)) return;
+
 
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Message edited in " + event.getTextChannel().getAsMention() + MessageHelper.spaces.substring(0, 45 + event.getAuthor().getName().length()) + "\u200B");
+        eb.setTitle("Message edited in #" + event.getTextChannel().getName() + MessageHelper.spaces.substring(0, 45 + event.getAuthor().getName().length()) + "\u200B");
         eb.setThumbnail(event.getAuthor().getEffectiveAvatarUrl());
         eb.setColor(Color.decode("#A1DAC3"));
 
         int nLength = event.getMessage().getContentRaw().length();
-        int oLength = oMessage.getString("contnet").length();
+        int oLength = oMessage.getString("content").length();
         if (oLength + nLength < 1800) {
             eb.setDescription("```LDIF" +
                     "\nSender: " + author.getName() + "#" + author.getDiscriminator() +
@@ -161,6 +162,7 @@ public class Chat extends ListenerAdapter {
                     "\nSent Time: " + MessageHelper.millisToDate(oMessage.getLong("sentTime")) +
                     "\nEdited Time: " + MessageHelper.millisToDate(System.currentTimeMillis()) +
                     "```");
+            emChannel.sendMessage(eb.build()).queue();
         } else if (oLength < 1900 && nLength < 1800) {
             eb.setDescription("```LDIF" +
                     "\nSender: " + author.getName() + "#" + author.getDiscriminator() +
@@ -168,7 +170,7 @@ public class Chat extends ListenerAdapter {
                     "```");
             emChannel.sendMessage(eb.build()).queue();
             eb.setTitle(null);
-            eb.setThumbnail("https://melijn.com/files/u/03-09-2018--09.16-29s.png");
+            eb.setThumbnail(null);
             eb.setDescription("```LDIF" +
                     "\nMessage after: " + event.getMessage().getContentRaw().replaceAll("`", "´").replaceAll("\n", " ") +
                     "\nSenderID: " + author.getId() +
@@ -184,9 +186,9 @@ public class Chat extends ListenerAdapter {
                     "\nEdited Time: " + MessageHelper.millisToDate(System.currentTimeMillis()) +
                     "```");
             emChannel.sendMessage(eb.build()).queue();
+            eb.setThumbnail(null);
             eb.setTitle(null);
-            eb.setThumbnail("https://melijn.com/files/u/03-09-2018--09.16-29s.png");
-            eb.setDescription("```LDIF\nMessage before: " + event.getMessage().getContentRaw().replaceAll("`", "´").replaceAll("\n", " ") + "```");
+            eb.setDescription("```LDIF\nMessage before: " + oMessage.getString("content").replaceAll("`", "´").replaceAll("\n", " ") + "```");
             emChannel.sendMessage(eb.build()).queue();
             eb.setDescription("```LDIF\nMessage after: " + event.getMessage().getContentRaw().replaceAll("`", "´").replaceAll("\n", " ") + "```");
             emChannel.sendMessage(eb.build()).queue();
