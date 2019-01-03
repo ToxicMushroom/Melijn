@@ -9,6 +9,7 @@ import me.melijn.jda.blub.*;
 import me.melijn.jda.utils.MessageHelper;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.TextChannel;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.TimeUnit;
@@ -63,6 +64,14 @@ public class SetLogChannelCommand extends Command {
             .build(new CacheLoader<>() {
                 public Long load(@NotNull Long key) {
                     return Melijn.mySQL.getChannelId(key, ChannelType.SDM_LOG);
+                }
+            });
+    public static final LoadingCache<Long, Long> emLogChannelCache = CacheBuilder.newBuilder()
+            .maximumSize(10)
+            .expireAfterAccess(2, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                public Long load(@NotNull Long key) {
+                    return Melijn.mySQL.getChannelId(key, ChannelType.EM_LOG);
                 }
             });
     public static final LoadingCache<Long, Long> odmLogChannelCache = CacheBuilder.newBuilder()
@@ -125,6 +134,7 @@ public class SetLogChannelCommand extends Command {
                                 Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.ODM_LOG);
                                 Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.PM_LOG);
                                 Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.FM_LOG);
+                                Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.EM_LOG);
                                 banLogChannelCache.invalidate(guild.getIdLong());
                                 muteLogChannelCache.invalidate(guild.getIdLong());
                                 kickLogChannelCache.invalidate(guild.getIdLong());
@@ -134,6 +144,7 @@ public class SetLogChannelCommand extends Command {
                                 odmLogChannelCache.invalidate(guild.getIdLong());
                                 pmLogChannelCache.invalidate(guild.getIdLong());
                                 fmLogChannelCache.invalidate(guild.getIdLong());
+                                emLogChannelCache.invalidate(guild.getIdLong());
                             });
                             event.reply("All LogChannels have been changed to nothing by **" + event.getFullAuthorName() + "**");
                         } else {
@@ -148,6 +159,7 @@ public class SetLogChannelCommand extends Command {
                                 Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.ODM_LOG);
                                 Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.PM_LOG);
                                 Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.FM_LOG);
+                                Melijn.mySQL.setChannel(guild.getIdLong(), id, ChannelType.EM_LOG);
                                 banLogChannelCache.put(event.getGuildId(), id);
                                 muteLogChannelCache.put(event.getGuildId(), id);
                                 kickLogChannelCache.put(event.getGuildId(), id);
@@ -157,6 +169,7 @@ public class SetLogChannelCommand extends Command {
                                 odmLogChannelCache.put(event.getGuildId(), id);
                                 pmLogChannelCache.put(event.getGuildId(), id);
                                 fmLogChannelCache.put(event.getGuildId(), id);
+                                emLogChannelCache.put(event.getGuildId(), id);
                             });
                             event.reply("All LogChannels have been changed to <#" + id + "> by **" + event.getFullAuthorName() + "**");
                         }
@@ -210,6 +223,12 @@ public class SetLogChannelCommand extends Command {
                         chosenType = ChannelType.FM_LOG;
                         setLogChannel(event, chosenType, id, fmLogChannelCache);
                         break;
+                    case "em":
+                    case "e-m":
+                    case "edited-messages":
+                        chosenType = ChannelType.EM_LOG;
+                        setLogChannel(event, chosenType, id, emLogChannelCache);
+                        break;
                     default:
                         MessageHelper.sendUsage(this, event);
                         break;
@@ -218,100 +237,93 @@ public class SetLogChannelCommand extends Command {
                 switch (args[0].toLowerCase()) {
                     case "all":
                         StringBuilder builder = new StringBuilder();
-                        long banChannelId = banLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(banLogChannelCache.getUnchecked(guild.getIdLong())) == null ? -1L : banLogChannelCache.getUnchecked(guild.getIdLong());
-                        long muteChannelId = muteLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(muteLogChannelCache.getUnchecked(guild.getIdLong())) == null ? -1L : muteLogChannelCache.getUnchecked(guild.getIdLong());
-                        long kickChannelId = kickLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(kickLogChannelCache.getUnchecked(guild.getIdLong())) == null ? -1L : kickLogChannelCache.getUnchecked(guild.getIdLong());
-                        long warnChannelId = warnLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(warnLogChannelCache.getUnchecked(guild.getIdLong())) == null ? -1L : warnLogChannelCache.getUnchecked(guild.getIdLong());
-                        long sdmChannelId = sdmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(sdmLogChannelCache.getUnchecked(guild.getIdLong())) == null ? -1L : sdmLogChannelCache.getUnchecked(guild.getIdLong());
-                        long odmChannelId = odmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(odmLogChannelCache.getUnchecked(guild.getIdLong())) == null ? -1L : odmLogChannelCache.getUnchecked(guild.getIdLong());
-                        long pmChannelId = pmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(pmLogChannelCache.getUnchecked(guild.getIdLong())) == null ? -1L : pmLogChannelCache.getUnchecked(guild.getIdLong());
-                        long fmChannelId = fmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(fmLogChannelCache.getUnchecked(guild.getIdLong())) == null ? -1L : fmLogChannelCache.getUnchecked(guild.getIdLong());
-                        long musicChannelId = musicLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(musicLogChannelCache.getUnchecked(guild.getIdLong())) == null ? -1L : musicLogChannelCache.getUnchecked(guild.getIdLong());
+                        TextChannel banChannel = guild.getTextChannelById(banLogChannelCache.getUnchecked(guild.getIdLong()));
+                        TextChannel muteChannel = guild.getTextChannelById(muteLogChannelCache.getUnchecked(guild.getIdLong()));
+                        TextChannel kickChannel = guild.getTextChannelById(kickLogChannelCache.getUnchecked(guild.getIdLong()));
+                        TextChannel warnChannel = guild.getTextChannelById(warnLogChannelCache.getUnchecked(guild.getIdLong()));
+                        TextChannel sdmChannel = guild.getTextChannelById(sdmLogChannelCache.getUnchecked(guild.getIdLong()));
+                        TextChannel odmChannel = guild.getTextChannelById(odmLogChannelCache.getUnchecked(guild.getIdLong()));
+                        TextChannel pmChannel = guild.getTextChannelById(pmLogChannelCache.getUnchecked(guild.getIdLong()));
+                        TextChannel fmChannel = guild.getTextChannelById(fmLogChannelCache.getUnchecked(guild.getIdLong()));
+                        TextChannel musicChannel = guild.getTextChannelById(musicLogChannelCache.getUnchecked(guild.getIdLong()));
+                        TextChannel emChannel = guild.getTextChannelById(emLogChannelCache.getUnchecked(guild.getIdLong()));
 
                         builder.append("**Log Channels :clipboard:**\n")
-                                .append("  Bans: ").append(banChannelId == -1L ? "unset" : "<#" + banChannelId + ">").append("\n")
-                                .append("  Mutes: ").append(muteChannelId == -1L ? "unset" : "<#" + muteChannelId + ">").append("\n")
-                                .append("  Kicks: ").append(kickChannelId == -1L ? "unset" : "<#" + kickChannelId + ">").append("\n")
-                                .append("  Warns: ").append(warnChannelId == -1L ? "unset" : "<#" + warnChannelId + ">").append("\n")
-                                .append("  SelfDeleteMessages: ").append(sdmChannelId == -1L ? "unset" : "<#" + sdmChannelId + ">").append("\n")
-                                .append("  OtherDeleteMessages: ").append(odmChannelId == -1L ? "unset" : "<#" + odmChannelId + ">").append("\n")
-                                .append("  PurgedMessages: ").append(pmChannelId == -1L ? "unset" : "<#" + pmChannelId + ">").append("\n")
-                                .append("  FilteredMessages: ").append(fmChannelId == -1L ? "unset" : "<#" + fmChannelId + ">").append("\n")
-                                .append("  Music: ").append(musicChannelId == -1L ? "unset" : "<#" + musicChannelId + ">").append("\n");
+                                .append("  Bans: ").append(banChannel == null ? "unset" : banChannel.getAsMention()).append("\n")
+                                .append("  Mutes: ").append(muteChannel == null ? "unset" : muteChannel.getAsMention()).append("\n")
+                                .append("  Kicks: ").append(kickChannel == null ? "unset" : kickChannel.getAsMention()).append("\n")
+                                .append("  Warns: ").append(warnChannel == null ? "unset" : warnChannel.getAsMention()).append("\n")
+                                .append("  SelfDeleteMessages: ").append(sdmChannel == null ? "unset" : sdmChannel.getAsMention()).append("\n")
+                                .append("  OtherDeleteMessages: ").append(odmChannel == null ? "unset" : odmChannel.getAsMention()).append("\n")
+                                .append("  PurgedMessages: ").append(pmChannel == null ? "unset" : pmChannel.getAsMention()).append("\n")
+                                .append("  FilteredMessages: ").append(fmChannel == null ? "unset" : fmChannel.getAsMention()).append("\n")
+                                .append("  Music: ").append(musicChannel == null ? "unset" : musicChannel.getAsMention()).append("\n")
+                                .append("  MessageEdits: ").append(emChannel == null ? "unset" : emChannel.getAsMention()).append("\n");
                         event.reply(builder.toString());
                         break;
+
                     case "ban":
                     case "bans":
-                        event.reply("**Ban Log \uD83D\uDD28**\n" +
-                                ((banLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(banLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
-                                        "unset" :
-                                        "<#" + banLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
+                        banChannel = guild.getTextChannelById(banLogChannelCache.getUnchecked(guild.getIdLong()));
+                        event.reply("**Ban Log \uD83D\uDD28**\n" + (banChannel == null ? "unset" : banChannel.getAsMention()));
                         break;
+
                     case "mute":
                     case "mutes":
-                        event.reply("**Mute Log \uD83E\uDD10**\n" +
-                                ((muteLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(muteLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
-                                        "unset" :
-                                        "<#" + muteLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
-
+                        muteChannel = guild.getTextChannelById(muteLogChannelCache.getUnchecked(guild.getIdLong()));
+                        event.reply("**Mute Log \uD83E\uDD10**\n" + (muteChannel == null ? "unset" : muteChannel.getAsMention()));
                         break;
+
                     case "kick":
                     case "kicks":
-                        event.reply("**Kick Log \uD83E\uDD1C\uD83D\uDCA2**\n" +
-                                ((kickLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(kickLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
-                                        "unset" :
-                                        "<#" + kickLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
-
+                        kickChannel = guild.getTextChannelById(kickLogChannelCache.getUnchecked(guild.getIdLong()));
+                        event.reply("**Kick Log \uD83E\uDD1C\uD83D\uDCA2**\n" + (kickChannel == null ? "unset" : kickChannel.getAsMention()));
                         break;
+
                     case "warn":
                     case "warns":
-                        event.reply("**Warn Log \u203C**\n" +
-                                ((warnLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(warnLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
-                                        "unset" :
-                                        "<#" + warnLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
-
+                        warnChannel = guild.getTextChannelById(warnLogChannelCache.getUnchecked(guild.getIdLong()));
+                        event.reply("**Warn Log \u203C**\n" + (warnChannel == null ? "unset" : warnChannel.getAsMention()));
                         break;
+
                     case "music":
-                        event.reply("**Music Log \uD83C\uDFB5**\n" +
-                                ((musicLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(musicLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
-                                        "unset" :
-                                        "<#" + musicLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
-
+                        musicChannel = guild.getTextChannelById(musicLogChannelCache.getUnchecked(guild.getIdLong()));
+                        event.reply("**Music Log \uD83C\uDFB5**\n" + (musicChannel == null ? "unset" : musicChannel.getAsMention()));
                         break;
+
                     case "sdm":
                     case "s-d-m":
                     case "self-deleted-messages":
-                        event.reply("**Self Deleted Log \uD83D\uDC64**\n" +
-                                ((sdmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(sdmLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
-                                        "unset" :
-                                        "<#" + sdmLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
-
+                        sdmChannel = guild.getTextChannelById(sdmLogChannelCache.getUnchecked(guild.getIdLong()));
+                        event.reply("**Self Deleted Log \uD83D\uDC64**\n" + (sdmChannel == null ? "unset" : sdmChannel.getAsMention()));
                         break;
+
                     case "odm":
                     case "o-d-m":
                     case "other-deleted-messages":
+                        odmChannel = guild.getTextChannelById(odmLogChannelCache.getUnchecked(guild.getIdLong()));
                         event.reply("**Other Deleted Log \uD83D\uDC65**\n" +
-                                ((odmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(odmLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
-                                        "unset" :
-                                        "<#" + odmLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
+                                (odmChannel == null ? "unset" : odmChannel.getAsMention()));
 
                         break;
                     case "pm":
                     case "p-m":
                     case "purged-messages":
-                        event.reply("**Purge Log \u267B**\n" +
-                                ((pmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(pmLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
-                                        "unset" :
-                                        "<#" + pmLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
+                        pmChannel = guild.getTextChannelById(pmLogChannelCache.getUnchecked(guild.getIdLong()));
+                        event.reply("**Purge Log \u267B**\n" + (pmChannel == null ? "unset" : pmChannel.getAsMention()));
 
                         break;
                     case "fm":
                     case "f-m":
                     case "filtered-messages":
-                        event.reply("**Filter Log \uD83D\uDEB3**\n" +
-                                ((fmLogChannelCache.getUnchecked(guild.getIdLong()) == -1 || guild.getTextChannelById(fmLogChannelCache.getUnchecked(guild.getIdLong())) == null) ?
-                                        "unset" :
-                                        "<#" + fmLogChannelCache.getUnchecked(guild.getIdLong()) + ">"));
+                        fmChannel = guild.getTextChannelById(fmLogChannelCache.getUnchecked(guild.getIdLong()));
+                        event.reply("**Filter Log \uD83D\uDEB3**\n" + (fmChannel == null ? "unset" : fmChannel.getAsMention()));
+                        break;
+                    case "em":
+                    case "e-m":
+                    case "edited-messages":
+                        emChannel = guild.getTextChannelById(emLogChannelCache.getUnchecked(guild.getIdLong()));
+                        event.reply("**Filter Log \uD83D\uDEB3**\n" + (emChannel == null ? "unset" : emChannel.getAsMention()));
                         break;
                     default:
                         MessageHelper.sendUsage(this, event);
