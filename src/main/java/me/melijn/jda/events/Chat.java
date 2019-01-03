@@ -21,11 +21,13 @@ import net.dv8tion.jda.core.audit.AuditLogEntry;
 import net.dv8tion.jda.core.audit.AuditLogOption;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.entities.Guild.Ban;
+import net.dv8tion.jda.core.events.message.MessageUpdateEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import net.dv8tion.jda.core.utils.MiscUtil;
 import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.time.OffsetDateTime;
@@ -78,48 +80,14 @@ public class Chat extends ListenerAdapter {
                 event.getChannel().sendMessage(String.format(("Hello there my default prefix is %s " + (prefix.equals(PREFIX) ? "" : String.format("\nThis server has configured %s as the prefix\n", prefix)) + "and you can view all commands using **%shelp**"), PREFIX, prefix)).queue();
             }
             if (guild.getSelfMember().hasPermission(Permission.MESSAGE_MANAGE) && !event.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
-                TaskScheduler.async(() -> {
-                    String message = event.getMessage().getContentRaw();
-                    StringBuilder detectedWord = null;
-                    TIntIntMap deniedPositions = new TIntIntHashMap();
-                    TIntIntMap allowedPositions = new TIntIntHashMap();
-                    List<String> deniedList = mySQL.getFilters(guild.getIdLong(), "denied");
-                    List<String> allowedList = mySQL.getFilters(guild.getIdLong(), "allowed");
-                    addPositions(message, deniedPositions, deniedList);
-                    addPositions(message, allowedPositions, allowedList);
-
-                    if (allowedPositions.size() > 0 && deniedPositions.size() > 0) {
-                        for (int beginDenied : deniedPositions.keys()) {
-                            int endDenied = deniedPositions.get(beginDenied);
-                            for (int beginAllowed : allowedPositions.keys()) {
-                                int endAllowed = allowedPositions.get(beginAllowed);
-                                if (beginDenied < beginAllowed || endDenied > endAllowed) {
-                                    detectedWord = new StringBuilder(message.substring(beginDenied, endDenied));
-                                }
-                            }
-                        }
-                    } else if (deniedPositions.size() > 0) {
-                        detectedWord = new StringBuilder();
-                        for (int beginDenied : deniedPositions.keys()) {
-                            int endDenied = deniedPositions.get(beginDenied);
-                            detectedWord.append(message, beginDenied, endDenied).append(", ");
-                        }
-                    }
-                    if (detectedWord != null) {
-                        MessageHelper.filteredMessageDeleteCause.put(event.getMessageIdLong(), detectedWord.substring(0, detectedWord.length() - 2));
-                        event.getMessage().delete().reason("Use of prohibited words").queue(success -> {
-                        }, failure -> {
-                        });
-                    }
-                });
+                filter(event.getMessage());
             }
         }
 
         if (SetVerificationChannelCommand.verificationChannelsCache.getUnchecked(guildId) == event.getChannel().getIdLong()) {
             if (!event.getMember().hasPermission(event.getChannel(), Permission.MANAGE_CHANNEL))
                 event.getMessage().delete().reason("Verification Channel").queue(
-                        s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()), failed -> {
-                        }
+                        s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()), failed -> {}
                 );
             if (SetVerificationCodeCommand.verificationCodeCache.getUnchecked(guildId) == null &&
                     SetVerificationTypeCommand.verificationTypes.getUnchecked(guildId) == CODE) {
@@ -156,10 +124,72 @@ public class Chat extends ListenerAdapter {
             } else {
                 event.getMessage().delete().reason("Verification Channel").queue(
                         s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()),
-                        failed -> {
-                        }
+                        failed -> {}
                 );
             }
+        }
+    }
+
+
+    @Override
+    public void onMessageUpdate(MessageUpdateEvent event) {
+        long messageId = event.getMessageIdLong();
+        Guild guild = event.getGuild();
+        User author = event.getAuthor();
+        JSONObject oMessage = Melijn.mySQL.getMessageObject(messageId);
+        if (guild.getSelfMember().hasPermission(Permission.MESSAGE_MANAGE) && !event.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
+            LoggerFactory.getLogger(this.getClass().getName());
+            filter(event.getMessage());
+        }
+        Melijn.mySQL.updateMessage(event.getMessage());
+        TextChannel emChannel = event.getGuild().getTextChannelById(SetLogChannelCommand.emLogChannelCache.getUnchecked(guild.getIdLong()));
+        if (emChannel == null || emChannel.getGuild().getSelfMember().hasPermission(emChannel, Permission.MESSAGE_WRITE)) return;
+
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("Message edited in " + event.getTextChannel().getAsMention() + MessageHelper.spaces.substring(0, 45 + event.getAuthor().getName().length()) + "\u200B");
+        eb.setThumbnail(event.getAuthor().getEffectiveAvatarUrl());
+        eb.setColor(Color.decode("#A1DAC3"));
+
+        int nLength = event.getMessage().getContentRaw().length();
+        int oLength = oMessage.getString("contnet").length();
+        if (oLength + nLength < 1800) {
+            eb.setDescription("```LDIF" +
+                    "\nSender: " + author.getName() + "#" + author.getDiscriminator() +
+                    "\nMessage before: " + oMessage.getString("content").replaceAll("`", "´").replaceAll("\n", " ") +
+                    "\nMessage after: " + event.getMessage().getContentRaw().replaceAll("`", "´").replaceAll("\n", " ") +
+                    "\nSenderID: " + author.getId() +
+                    "\nSent Time: " + MessageHelper.millisToDate(oMessage.getLong("sentTime")) +
+                    "\nEdited Time: " + MessageHelper.millisToDate(System.currentTimeMillis()) +
+                    "```");
+        } else if (oLength < 1900 && nLength < 1800) {
+            eb.setDescription("```LDIF" +
+                    "\nSender: " + author.getName() + "#" + author.getDiscriminator() +
+                    "\nMessage before: " + oMessage.getString("content").replaceAll("`", "´").replaceAll("\n", " ") +
+                    "```");
+            emChannel.sendMessage(eb.build()).queue();
+            eb.setTitle(null);
+            eb.setThumbnail("https://melijn.com/files/u/03-09-2018--09.16-29s.png");
+            eb.setDescription("```LDIF" +
+                    "\nMessage after: " + event.getMessage().getContentRaw().replaceAll("`", "´").replaceAll("\n", " ") +
+                    "\nSenderID: " + author.getId() +
+                    "\nSent Time: " + MessageHelper.millisToDate(oMessage.getLong("sentTime")) +
+                    "\nEdited Time: " + MessageHelper.millisToDate(System.currentTimeMillis()) +
+                    "```");
+            emChannel.sendMessage(eb.build()).queue();
+        } else {
+            eb.setDescription("```LDIF" +
+                    "\nSender: " + author.getName() + "#" + author.getDiscriminator() +
+                    "\nSenderID: " + author.getId() +
+                    "\nSent Time: " + MessageHelper.millisToDate(oMessage.getLong("sentTime")) +
+                    "\nEdited Time: " + MessageHelper.millisToDate(System.currentTimeMillis()) +
+                    "```");
+            emChannel.sendMessage(eb.build()).queue();
+            eb.setTitle(null);
+            eb.setThumbnail("https://melijn.com/files/u/03-09-2018--09.16-29s.png");
+            eb.setDescription("```LDIF\nMessage before: " + event.getMessage().getContentRaw().replaceAll("`", "´").replaceAll("\n", " ") + "```");
+            emChannel.sendMessage(eb.build()).queue();
+            eb.setDescription("```LDIF\nMessage after: " + event.getMessage().getContentRaw().replaceAll("`", "´").replaceAll("\n", " ") + "```");
+            emChannel.sendMessage(eb.build()).queue();
         }
     }
 
@@ -342,5 +372,42 @@ public class Chat extends ListenerAdapter {
         } else if (odmChannel != null && guild.getSelfMember().hasPermission(odmChannel, Permission.MESSAGE_WRITE)) {
             odmChannel.sendMessage(eb.build()).queue();
         }
+    }
+
+    private void filter(Message msg) {
+        TaskScheduler.async(() -> {
+            String message = msg.getContentRaw();
+            StringBuilder detectedWord = null;
+            TIntIntMap deniedPositions = new TIntIntHashMap();
+            TIntIntMap allowedPositions = new TIntIntHashMap();
+            List<String> deniedList = mySQL.getFilters(msg.getGuild().getIdLong(), "denied");
+            List<String> allowedList = mySQL.getFilters(msg.getGuild().getIdLong(), "allowed");
+            addPositions(message, deniedPositions, deniedList);
+            addPositions(message, allowedPositions, allowedList);
+
+            if (allowedPositions.size() > 0 && deniedPositions.size() > 0) {
+                for (int beginDenied : deniedPositions.keys()) {
+                    int endDenied = deniedPositions.get(beginDenied);
+                    for (int beginAllowed : allowedPositions.keys()) {
+                        int endAllowed = allowedPositions.get(beginAllowed);
+                        if (beginDenied < beginAllowed || endDenied > endAllowed) {
+                            detectedWord = new StringBuilder(message.substring(beginDenied, endDenied));
+                        }
+                    }
+                }
+            } else if (deniedPositions.size() > 0) {
+                detectedWord = new StringBuilder();
+                for (int beginDenied : deniedPositions.keys()) {
+                    int endDenied = deniedPositions.get(beginDenied);
+                    detectedWord.append(message, beginDenied, endDenied).append(", ");
+                }
+            }
+            if (detectedWord != null) {
+                MessageHelper.filteredMessageDeleteCause.put(msg.getIdLong(), detectedWord.substring(0, detectedWord.length() - 2));
+                msg.delete().reason("Use of prohibited words").queue(
+                        success -> {}, failure -> {}
+                );
+            }
+        });
     }
 }
