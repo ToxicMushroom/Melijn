@@ -213,7 +213,7 @@ public class MySQL {
             PreparedStatement preparedStatement = con.prepareStatement("SELECT * FROM history_messages WHERE messageId=?");
             preparedStatement.setLong(1, messageId);
             ResultSet rs = preparedStatement.executeQuery();
-            while (rs.next()) {
+            if (rs.next()) {
                 jsonObject.put("authorId", rs.getLong("authorId"));
                 jsonObject.put("sentTime", rs.getLong("sentTime"));
                 jsonObject.put("content", rs.getString("content"));
@@ -581,9 +581,7 @@ public class MySQL {
                 else logChannel.sendMessage(eb.build()).queue();
             }
 
-            guild.getController().unban(toUnban.getId()).queue(success -> {
-            }, failed -> {
-            });
+            guild.getController().unban(toUnban.getId()).queue(success -> {}, failed -> {});
             return true;
         }
         return false;
@@ -1925,5 +1923,17 @@ public class MySQL {
     public void setVerificationType(long guildId, VerificationType type) {
         executeUpdate("INSERT INTO verification_types (guildId, type) VALUES (?, ?) ON DUPLICATE KEY UPDATE type= ?",
                 guildId, type.name(), type.name());
+    }
+
+    public void updateMessage(Message message) {
+        executeUpdate("INSERT INTO history_messages (guildId, authorId, messageId, content, textChannelId, sentTime) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE content= ?",
+                message.getGuild().getIdLong(),
+                message.getAuthor().getIdLong(),
+                message.getIdLong(),
+                message.getContentRaw(),
+                message.getTextChannel().getIdLong(),
+                message.getCreationTime().toEpochSecond()*1000,
+                message.getContentRaw());
+
     }
 }
