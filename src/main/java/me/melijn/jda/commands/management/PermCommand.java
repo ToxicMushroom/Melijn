@@ -82,7 +82,7 @@ public class PermCommand extends Command {
                         } else if (guild.getRoleById(args[1]) != null && guild.getMemberById(args[1]) == null) {
                             Role target = guild.getRoleById(args[1]);
                             Melijn.mySQL.addRolePermission(guild.getIdLong(), target.getIdLong(), args[2]);
-                            event.reply("Permission: `" + args[2] + "` added to `@" + target.getName() + "`");
+                            event.reply("Permission: `" + args[2] + "` added to `" + target.getName() + "`");
                         } else {
                             event.reply("NANI!?");
                             return;
@@ -96,10 +96,10 @@ public class PermCommand extends Command {
                         if (guild.getRolesByName(args[1], true).size() > 0) {
                             if (guild.getRolesByName(args[1], false).size() > 0) {
                                 Melijn.mySQL.addRolePermission(guild.getIdLong(), guild.getRolesByName(args[1], false).get(0).getIdLong(), args[2]);
-                                event.reply(String.format("Permission: `" + args[2] + "` added to `@%s`", args[1]));
+                                event.reply(String.format("Permission: `" + args[2] + "` added to `%s`", args[1]));
                             } else {
                                 Melijn.mySQL.addRolePermission(guild.getIdLong(), guild.getRolesByName(args[1], true).get(0).getIdLong(), args[2]);
-                                event.reply(String.format("Permission: `" + args[2] + "` added to `@%s`", guild.getRolesByName(args[1], true).get(0).getName()));
+                                event.reply(String.format("Permission: `" + args[2] + "` added to `%s`", guild.getRolesByName(args[1], true).get(0).getName()));
                             }
                         } else if (guild.getMembersByName(args[1], true).size() > 0) {
                             if (guild.getMembersByName(args[1], false).size() > 0) {
@@ -151,7 +151,7 @@ public class PermCommand extends Command {
                         if (mentionedRoles.size() == 1) {
                             Role target = mentionedRoles.get(0);
                             Melijn.mySQL.removeRolePermission(guild.getIdLong(), target.getIdLong(), args[2]);
-                            event.reply("Permission: `" + args[2] + "` removed from `@" + target.getName() + "`");
+                            event.reply("Permission: `" + args[2] + "` removed from `" + target.getName() + "`");
                         }
                         break;
                     case "id":
@@ -164,7 +164,7 @@ public class PermCommand extends Command {
                         } else if (guild.getRoleById(args[1]) != null && guild.getMemberById(args[1]) == null) {
                             Role target = guild.getRoleById(args[1]);
                             Melijn.mySQL.removeRolePermission(guild.getIdLong(), target.getIdLong(), args[2]);
-                            event.reply("Permission: `" + args[2] + "` removed from `@" + target.getName() + "`");
+                            event.reply("Permission: `" + args[2] + "` removed from `" + target.getName() + "`");
                         } else {
                             event.reply("NANI!?");
                             return;
@@ -178,10 +178,10 @@ public class PermCommand extends Command {
                         if (guild.getRolesByName(args[1], true).size() > 0) {
                             if (guild.getRolesByName(args[1], false).size() > 0) {
                                 Melijn.mySQL.removeRolePermission(guild.getIdLong(), guild.getRolesByName(args[1], false).get(0).getIdLong(), args[2]);
-                                event.reply(String.format("Permission: `" + args[2] + "` removed from `@%s`", args[1]));
+                                event.reply(String.format("Permission: `" + args[2] + "` removed from `%s`", args[1]));
                             } else {
                                 Melijn.mySQL.removeRolePermission(guild.getIdLong(), guild.getRolesByName(args[1], true).get(0).getIdLong(), args[2]);
-                                event.reply(String.format("Permission: `" + args[2] + "` removed from `@%s`", guild.getRolesByName(args[1], true).get(0).getName()));
+                                event.reply(String.format("Permission: `" + args[2] + "` removed from `%s`", guild.getRolesByName(args[1], true).get(0).getName()));
                             }
                         } else if (guild.getMembersByName(args[1], true).size() > 0) {
                             if (guild.getMembersByName(args[1], false).size() > 0) {
@@ -244,7 +244,7 @@ public class PermCommand extends Command {
                         } else if (guild.getRoleById(args[1]) != null && guild.getMemberById(args[1]) == null) {
                             Role target = guild.getRoleById(args[1]);
                             Melijn.mySQL.clearRolePermissions(guild.getIdLong(), target.getIdLong());
-                            event.reply("Permissions off `@" + target.getName() + "` have been cleared");
+                            event.reply("Permissions off `" + target.getName() + "` have been cleared");
                         } else {
                             event.reply("NANI!?");
                             return;
@@ -258,10 +258,10 @@ public class PermCommand extends Command {
                         if (guild.getRolesByName(args[1], true).size() > 0) {
                             if (guild.getRolesByName(args[1], false).size() > 0) {
                                 Melijn.mySQL.clearRolePermissions(guild.getIdLong(), guild.getRolesByName(args[1], false).get(0).getIdLong());
-                                event.reply(String.format("Permissions of `@%s` have been cleared", args[1]));
+                                event.reply(String.format("Permissions of `%s` have been cleared", args[1]));
                             } else {
                                 Melijn.mySQL.clearRolePermissions(guild.getIdLong(), guild.getRolesByName(args[1], true).get(0).getIdLong());
-                                event.reply(String.format("Permissions of `@%s` have been cleared", guild.getRolesByName(args[1], true).get(0).getName()));
+                                event.reply(String.format("Permissions of `%s` have been cleared", guild.getRolesByName(args[1], true).get(0).getName()));
                             }
                         } else if (guild.getMembersByName(args[1], true).size() > 0) {
                             if (guild.getMembersByName(args[1], false).size() > 0) {
@@ -313,7 +313,7 @@ public class PermCommand extends Command {
                     case "role":
                         if (mentionedRoles.size() > 0) {
                             lijst = Melijn.mySQL.getRolePermissions(guild.getIdLong(), mentionedRoles.get(0).getIdLong());
-                            targetName = "@" + mentionedRoles.get(0).getName();
+                            targetName = mentionedRoles.get(0).getName();
                         }
                         break;
                     case "id":
@@ -326,7 +326,7 @@ public class PermCommand extends Command {
                         } else if (guild.getRoleById(args[1]) != null) {
                             Role role = guild.getRoleById(args[1]);
                             lijst = Melijn.mySQL.getRolePermissions(guild.getIdLong(), role.getIdLong());
-                            targetName = "@" + role.getName();
+                            targetName = role.getName();
                         } else {
                             event.reply("NANI!?");
                             return;
@@ -339,27 +339,33 @@ public class PermCommand extends Command {
                     case "name":
                         if (guild.getRolesByName(args[1], true).size() > 0) {
                             if (guild.getRolesByName(args[1], false).size() > 0) {
-                                lijst = Melijn.mySQL.getRolePermissions(guild.getIdLong(), guild.getRolesByName(args[1], false).get(0).getIdLong());
-                                targetName = String.format("@%s", guild.getRolesByName(args[1], false).get(0));
+                                Role role = guild.getRolesByName(args[1], false).get(0);
+                                lijst = Melijn.mySQL.getRolePermissions(guild.getIdLong(), role.getIdLong());
+                                targetName = role.getName();
                             } else {
-                                lijst = Melijn.mySQL.getRolePermissions(guild.getIdLong(), guild.getRolesByName(args[1], true).get(0).getIdLong());
-                                targetName = String.format("@%s", guild.getRolesByName(args[1], true).get(0));
+                                Role role = guild.getRolesByName(args[1], true).get(0);
+                                lijst = Melijn.mySQL.getRolePermissions(guild.getIdLong(), role.getIdLong());
+                                targetName = role.getName();
                             }
                         } else if (guild.getMembersByName(args[1], true).size() > 0) {
                             if (guild.getMembersByName(args[1], false).size() > 0) {
-                                lijst = Melijn.mySQL.getUserPermissions(guild.getIdLong(), guild.getMembersByName(args[1], false).get(0).getUser().getIdLong());
-                                targetName = String.format("%#s", guild.getMembersByName(args[1], false).get(0).getUser());
+                                User user = guild.getMembersByName(args[1], false).get(0).getUser();
+                                lijst = Melijn.mySQL.getUserPermissions(guild.getIdLong(), user.getIdLong());
+                                targetName = user.getName() + "#" + user.getDiscriminator();
                             } else {
-                                lijst = Melijn.mySQL.getUserPermissions(guild.getIdLong(), guild.getMembersByName(args[1], true).get(0).getUser().getIdLong());
-                                targetName = String.format("%#s", guild.getMembersByName(args[1], false).get(0).getUser());
+                                User user = guild.getMembersByName(args[1], true).get(0).getUser();
+                                lijst = Melijn.mySQL.getUserPermissions(guild.getIdLong(), user.getIdLong());
+                                targetName = user.getName() + "#" + user.getDiscriminator();
                             }
                         } else if (guild.getMembersByNickname(args[1], true).size() > 0) {
                             if (guild.getMembersByNickname(args[1], false).size() > 0) {
-                                lijst = Melijn.mySQL.getUserPermissions(guild.getIdLong(), guild.getMembersByNickname(args[1], false).get(0).getUser().getIdLong());
-                                targetName = String.format("%#s", guild.getMembersByNickname(args[1], false).get(0).getUser());
+                                User user = guild.getMembersByNickname(args[1], false).get(0).getUser();
+                                lijst = Melijn.mySQL.getUserPermissions(guild.getIdLong(), user.getIdLong());
+                                targetName = user.getName() + "#" + user.getDiscriminator();
                             } else {
-                                lijst = Melijn.mySQL.getUserPermissions(guild.getIdLong(), guild.getMembersByNickname(args[1], true).get(0).getUser().getIdLong());
-                                targetName = String.format("%#s", guild.getMembersByNickname(args[1], false).get(0).getUser());
+                                User user = guild.getMembersByNickname(args[1], true).get(0).getUser();
+                                lijst = Melijn.mySQL.getUserPermissions(guild.getIdLong(), user.getIdLong());
+                                targetName = user.getName() + "#" + user.getDiscriminator();
                             }
                         } else {
                             event.reply("No role or user found with that name or nickname");
