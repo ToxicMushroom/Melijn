@@ -2,13 +2,11 @@ package me.melijn.jda.commands.util;
 
 import com.sun.management.OperatingSystemMXBean;
 import me.melijn.jda.Helpers;
-import me.melijn.jda.audio.Lava;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.Embedder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
-import net.dv8tion.jda.core.entities.Guild;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
