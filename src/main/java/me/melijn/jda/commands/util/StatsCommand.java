@@ -40,11 +40,12 @@ public class StatsCommand extends Command {
         long usedMem = totalMem - (bean.getFreePhysicalMemorySize() >> 20);
         long totalJVMMem = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax() >> 20;
         long usedJVMMem = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed() >> 20;
-        int voiceChannels = 0;
-        for (Guild guild : event.getJDA().asBot().getShardManager().getGuildCache()) {
-            if (Lava.lava.isConnected(guild.getIdLong()))
-                voiceChannels++;
-        }
+        long voiceChannels = event.getJDA().asBot().getShardManager().getShards().stream().map(
+                        (shard) -> shard.getVoiceChannels().stream().filter(
+                                (vc) -> vc.getMembers().contains(vc.getGuild().getSelfMember())
+                        ).count()
+                ).count();
+
         ShardManager shardManager = event.getJDA().asBot().getShardManager();
         event.reply(new Embedder(event.getGuild())
                 .setThumbnail(event.getJDA().getSelfUser().getAvatarUrl())
