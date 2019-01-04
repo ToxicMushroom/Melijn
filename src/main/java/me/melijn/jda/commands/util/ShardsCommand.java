@@ -36,7 +36,10 @@ public class ShardsCommand extends Command {
                 JDA jda = event.getJDA().asBot().getShardManager().getShardById(id);
                 String shardInfo = event.getJDA().getShardInfo().getShardId() == id ? " (current)" : "";
                 avgping += jda.getPing();
-                long jvcs = jda.getGuildCache().stream().filter(guild -> guild.getSelfMember().getVoiceState().inVoiceChannel()).count();
+
+                long jvcs = jda.getVoiceChannels().stream().filter(
+                        (vc) -> vc.getMembers().contains(vc.getGuild().getSelfMember())
+                ).count();
                 vcs += jvcs;
                 tableBuilder.addRow(List.of(id + shardInfo, String.valueOf(jda.getPing()), String.valueOf(jda.getUserCache().size()), String.valueOf(jda.getGuildCache().size()), String.valueOf(jvcs)));
             }
