@@ -133,9 +133,11 @@ public class PermCommand extends Command {
                 }
                 if (args.length != 3) {
                     event.reply(prefix + commandName + " remove <role | user | everyone> <permission>");
+                    return;
                 }
                 if (!Helpers.perms.contains(args[2])) {
                     event.reply("Unknown permission\n" + prefix + commandName + " list");
+                    return;
                 }
 
                 mode = retrieveMode(args[1]);
@@ -216,6 +218,7 @@ public class PermCommand extends Command {
 
                 if (args.length != 2) {
                     event.reply(prefix + commandName + " clear <role | user | everyone>");
+                    return;
                 }
 
                 mode = retrieveMode(args[1]);
@@ -410,7 +413,10 @@ public class PermCommand extends Command {
 
                 if (args.length != 3) {
                     event.reply(prefix + commandName + " copy <role | user | everyone> <role | user | everyone>");
+                    return;
                 }
+
+
                 String transmitterMode = retrieveMode(args[1]);
                 String receiverMode = retrieveMode(args[2]);
                 User transmitter = null;
