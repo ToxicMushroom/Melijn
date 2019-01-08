@@ -57,7 +57,7 @@ public class SettingsCommand extends Command {
                                 "\n**JoinMessage: " + stringToString(SetJoinMessageCommand.joinMessages.getUnchecked(guildId).replaceAll("`", "´"), true) +
                                 "\n\nLeaveMessage: " + stringToString(SetLeaveMessageCommand.leaveMessages.getUnchecked(guildId).replaceAll("`", "´"), true) +
                                 "\n\nVerificationCode:** " + stringToString(SetVerificationCodeCommand.verificationCodeCache.getUnchecked(guildId), false) +
-                                "\nVerificationType:** " + stringToString(SetVerificationTypeCommand.verificationTypes.getUnchecked(guildId).name(), false) +
+                                "\n**VerificationType:** " + stringToString(SetVerificationTypeCommand.verificationTypes.getUnchecked(guildId).name(), false) +
                                 "\n**VerificationThreshold:** " + SetVerificationThresholdCommand.verificationThresholdCache.getUnchecked(guildId) +
                                 "\n**Prefix:** " + SetPrefixCommand.prefixes.getUnchecked(guildId) + "**")
                         .build());
