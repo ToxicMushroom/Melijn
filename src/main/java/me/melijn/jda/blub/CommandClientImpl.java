@@ -41,10 +41,8 @@ import java.util.stream.Collectors;
 
 public class CommandClientImpl extends ListenerAdapter implements CommandClient {
 
-    private static final int INDEX_LIMIT = 200;
     private final TObjectIntMap<String> commandIndex;
     public final List<Command> commands;
-    //private CommandListener listener = null;
 
     public static final LoadingCache<Long, Boolean> serverHasCC = CacheBuilder.newBuilder()
             .maximumSize(100)

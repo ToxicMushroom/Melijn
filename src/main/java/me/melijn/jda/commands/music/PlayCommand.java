@@ -20,7 +20,7 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class PlayCommand extends Command {
 
-    static List<String> providers = Arrays.asList("yt", "sc", "link", "youtube", "soundcloud");
+    final static List<String> providers = Arrays.asList("yt", "sc", "link", "youtube", "soundcloud");
     private AudioLoader manager = AudioLoader.getManagerInstance();
     private Lava lava = Lava.lava;
 

@@ -42,7 +42,7 @@ import static me.melijn.jda.blub.VerificationType.CODE;
 
 public class Chat extends ListenerAdapter {
 
-    private List<User> black = new ArrayList<>();
+    private List<Long> black = new ArrayList<>();
     private MySQL mySQL = Melijn.mySQL;
     private long latestId = 0;
     private int latestChanges = 0;
@@ -51,43 +51,44 @@ public class Chat extends ListenerAdapter {
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
         if (event.getGuild() == null || EvalCommand.serverBlackList.contains(event.getGuild().getIdLong()))
-            if (event.getGuild() == null && (event.getMessage().getContentRaw().equalsIgnoreCase(PREFIX) || event.getMessage().getContentRaw().equalsIgnoreCase(event.getJDA().getSelfUser().getAsMention())) &&
-                    !event.getAuthor().isBot())
+            if (event.getGuild() == null &&
+                    (event.getMessage().getContentRaw().equalsIgnoreCase(PREFIX) || event.getMessage().getContentRaw().equalsIgnoreCase(event.getJDA().getSelfUser().getAsMention())) &&
+                    !event.getAuthor().isBot()) {
                 event.getChannel().sendMessage(String.format("Hello there my default prefix is %s and you can view all commands using **%shelp**", PREFIX, PREFIX)).queue();
-            else return;
+                return;
+            } else return;
         Guild guild = event.getGuild();
         long guildId = guild.getIdLong();
-        if (event.getMember() != null) {
-            User author = event.getAuthor();
-            if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
-            Helpers.guildCount = event.getJDA().asBot().getShardManager().getGuildCache().size();
+        User author = event.getAuthor();
+        if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
+        Helpers.guildCount = event.getJDA().asBot().getShardManager().getGuildCache().size();
 
-            StringBuilder content = new StringBuilder(event.getMessage().getContentRaw());
-            for (Message.Attachment a : event.getMessage().getAttachments()) {
-                content.append("\n").append(a.getUrl());
-            }
-            String finalContent = content.toString();
+        StringBuilder content = new StringBuilder(event.getMessage().getContentRaw());
+        for (Message.Attachment a : event.getMessage().getAttachments()) {
+            content.append("\n").append(a.getUrl());
+        }
+        String finalContent = content.toString();
 
-            TaskScheduler.async(() -> {
-                if (SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guildId) != -1 ||
-                        SetLogChannelCommand.odmLogChannelCache.getUnchecked(guildId) != -1 ||
-                        SetLogChannelCommand.pmLogChannelCache.getUnchecked(guildId) != -1 ||
-                        SetLogChannelCommand.fmLogChannelCache.getUnchecked(guildId) != -1)
-                    mySQL.createMessage(event.getMessageIdLong(), finalContent, author.getIdLong(), guildId, event.getChannel().getIdLong());
-            });
-            if (event.getMessage().getContentRaw().equalsIgnoreCase(guild.getSelfMember().getAsMention()) && guild.getSelfMember().hasPermission(event.getChannel(), Permission.MESSAGE_WRITE)) {
-                String prefix = SetPrefixCommand.prefixes.getUnchecked(guildId);
-                event.getChannel().sendMessage(String.format(("Hello there my default prefix is %s " + (prefix.equals(PREFIX) ? "" : String.format("\nThis server has configured %s as the prefix\n", prefix)) + "and you can view all commands using **%shelp**"), PREFIX, prefix)).queue();
-            }
-            if (guild.getSelfMember().hasPermission(Permission.MESSAGE_MANAGE) && !event.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
-                filter(event.getMessage());
-            }
+        TaskScheduler.async(() -> {
+            if (SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guildId) != -1 ||
+                    SetLogChannelCommand.odmLogChannelCache.getUnchecked(guildId) != -1 ||
+                    SetLogChannelCommand.pmLogChannelCache.getUnchecked(guildId) != -1 ||
+                    SetLogChannelCommand.fmLogChannelCache.getUnchecked(guildId) != -1)
+                mySQL.createMessage(event.getMessageIdLong(), finalContent, author.getIdLong(), guildId, event.getChannel().getIdLong());
+        });
+        if (event.getMessage().getContentRaw().equalsIgnoreCase(guild.getSelfMember().getAsMention()) && guild.getSelfMember().hasPermission(event.getChannel(), Permission.MESSAGE_WRITE)) {
+            String prefix = SetPrefixCommand.prefixes.getUnchecked(guildId);
+            event.getChannel().sendMessage(String.format(("Hello there my default prefix is %s " + (prefix.equals(PREFIX) ? "" : String.format("\nThis server has configured %s as the prefix\n", prefix)) + "and you can view all commands using **%shelp**"), PREFIX, prefix)).queue();
+        }
+        if (guild.getSelfMember().hasPermission(Permission.MESSAGE_MANAGE) && !event.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
+            filter(event.getMessage());
         }
 
         if (SetVerificationChannelCommand.verificationChannelsCache.getUnchecked(guildId) == event.getChannel().getIdLong()) {
             if (!event.getMember().hasPermission(event.getChannel(), Permission.MANAGE_CHANNEL))
                 event.getMessage().delete().reason("Verification Channel").queue(
-                        s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()), failed -> {}
+                        s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()),
+                        failed -> {}
                 );
             if (SetVerificationCodeCommand.verificationCodeCache.getUnchecked(guildId) == null &&
                     SetVerificationTypeCommand.verificationTypes.getUnchecked(guildId) == CODE) {
@@ -143,7 +144,8 @@ public class Chat extends ListenerAdapter {
         }
         Melijn.mySQL.updateMessage(event.getMessage());
         TextChannel emChannel = event.getGuild().getTextChannelById(SetLogChannelCommand.emLogChannelCache.getUnchecked(guild.getIdLong()));
-        if (emChannel == null || oMessage.isEmpty() || !emChannel.getGuild().getSelfMember().hasPermission(emChannel, Permission.MESSAGE_WRITE)) return;
+        if (emChannel == null || oMessage.isEmpty() || !emChannel.getGuild().getSelfMember().hasPermission(emChannel, Permission.MESSAGE_WRITE))
+            return;
 
 
         EmbedBuilder eb = new EmbedBuilder();
@@ -236,13 +238,13 @@ public class Chat extends ListenerAdapter {
             if (!message.keySet().contains("authorId"))
                 return;
             event.getJDA().retrieveUserById(message.getLong("authorId")).queue(author -> {
-                if (author == null || black.contains(author))
+                if (author == null || black.contains(author.getIdLong()))
                     return;
                 if (!event.getGuild().getSelfMember().hasPermission(Permission.BAN_MEMBERS))
                     return;
                 guild.getBanList().queue(bans -> {
                     if (bans.stream().map(Ban::getUser).anyMatch(author::equals)) {
-                        black.add(author);
+                        black.add(author.getIdLong());
                         return;
                     }
                     doMessageDeleteChecks(event, guild, message, author);
@@ -407,7 +409,9 @@ public class Chat extends ListenerAdapter {
             if (detectedWord != null) {
                 MessageHelper.filteredMessageDeleteCause.put(msg.getIdLong(), detectedWord.substring(0, detectedWord.length() - 2));
                 msg.delete().reason("Use of prohibited words").queue(
-                        success -> {}, failure -> {}
+                        success -> {
+                        }, failure -> {
+                        }
                 );
             }
         });

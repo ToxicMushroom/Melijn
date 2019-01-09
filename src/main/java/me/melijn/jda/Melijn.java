@@ -48,7 +48,8 @@ public class Melijn {
             config.getValue("ipaddress"),
             config.getValue("username"),
             config.getValue("password"),
-            config.getValue("database"));
+            config.getValue("database")
+    );
 
     public static void main(String[] args) throws LoginException {
         new WebUtils();
