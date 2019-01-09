@@ -4,18 +4,22 @@ import me.melijn.jda.Melijn;
 import me.melijn.jda.audio.AudioLoader;
 import me.melijn.jda.audio.Lava;
 import me.melijn.jda.audio.MusicPlayer;
+import me.melijn.jda.blub.ChannelType;
+import me.melijn.jda.blub.RoleType;
 import me.melijn.jda.commands.developer.EvalCommand;
-import me.melijn.jda.commands.management.SetMusicChannelCommand;
-import me.melijn.jda.commands.management.SetStreamerModeCommand;
+import me.melijn.jda.commands.management.*;
 import me.melijn.jda.commands.music.LoopCommand;
 import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.events.channel.text.TextChannelDeleteEvent;
+import net.dv8tion.jda.core.events.channel.voice.VoiceChannelDeleteEvent;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceDeafenEvent;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceMoveEvent;
+import net.dv8tion.jda.core.events.role.RoleDeleteEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,6 +28,98 @@ public class Channels extends ListenerAdapter {
 
     private AudioLoader manager = AudioLoader.getManagerInstance();
     private Lava lava = Lava.lava;
+
+    @Override
+    public void onTextChannelDelete(TextChannelDeleteEvent event) {
+        TaskScheduler.async(() -> {
+            long guildId = event.getGuild().getIdLong();
+            long channelId = event.getChannel().getIdLong();
+
+            if (channelId == SetVerificationChannelCommand.verificationChannelsCache.getUnchecked(guildId)) {
+                Melijn.mySQL.removeChannel(guildId, ChannelType.VERIFICATION);
+                SetVerificationChannelCommand.verificationChannelsCache.invalidate(guildId);
+
+            } else if (channelId == SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guildId)) {
+                Melijn.mySQL.removeChannel(guildId, ChannelType.WELCOME);
+                SetJoinLeaveChannelCommand.welcomeChannelCache.invalidate(guildId);
+
+            } else if (channelId == SetSelfRoleChannelCommand.selfRolesChannel.getUnchecked(guildId)) {
+                Melijn.mySQL.removeChannel(guildId, ChannelType.SELF_ROLE);
+                SetSelfRoleChannelCommand.selfRolesChannel.invalidate(guildId);
+
+            } else if (channelId == SetLogChannelCommand.banLogChannelCache.getUnchecked(guildId)) {
+                Melijn.mySQL.removeChannel(guildId, ChannelType.BAN_LOG);
+                SetLogChannelCommand.banLogChannelCache.invalidate(guildId);
+
+            } else if (channelId == SetLogChannelCommand.kickLogChannelCache.getUnchecked(guildId)) {
+                Melijn.mySQL.removeChannel(guildId, ChannelType.KICK_LOG);
+                SetLogChannelCommand.kickLogChannelCache.invalidate(guildId);
+
+            } else if (channelId == SetLogChannelCommand.warnLogChannelCache.getUnchecked(guildId)) {
+                Melijn.mySQL.removeChannel(guildId, ChannelType.WARN_LOG);
+                SetLogChannelCommand.warnLogChannelCache.invalidate(guildId);
+
+            } else if (channelId == SetLogChannelCommand.muteLogChannelCache.getUnchecked(guildId)) {
+                Melijn.mySQL.removeChannel(guildId, ChannelType.MUTE_LOG);
+                SetLogChannelCommand.muteLogChannelCache.invalidate(guildId);
+
+            } else if (channelId == SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guildId)) {
+                Melijn.mySQL.removeChannel(guildId, ChannelType.SDM_LOG);
+                SetLogChannelCommand.sdmLogChannelCache.invalidate(guildId);
+
+            } else if (channelId == SetLogChannelCommand.odmLogChannelCache.getUnchecked(guildId)) {
+                Melijn.mySQL.removeChannel(guildId, ChannelType.ODM_LOG);
+                SetLogChannelCommand.odmLogChannelCache.invalidate(guildId);
+
+            } else if (channelId == SetLogChannelCommand.pmLogChannelCache.getUnchecked(guildId)) {
+                Melijn.mySQL.removeChannel(guildId, ChannelType.PM_LOG);
+                SetLogChannelCommand.pmLogChannelCache.invalidate(guildId);
+
+            } else if (channelId == SetLogChannelCommand.emLogChannelCache.getUnchecked(guildId)) {
+                Melijn.mySQL.removeChannel(guildId, ChannelType.EM_LOG);
+                SetLogChannelCommand.emLogChannelCache.invalidate(guildId);
+
+            } else if (channelId == SetLogChannelCommand.musicLogChannelCache.getUnchecked(guildId)) {
+                Melijn.mySQL.removeChannel(guildId, ChannelType.MUSIC_LOG);
+                SetLogChannelCommand.musicLogChannelCache.invalidate(guildId);
+            }
+        });
+    }
+
+    @Override
+    public void onVoiceChannelDelete(VoiceChannelDeleteEvent event) {
+        TaskScheduler.async(() -> {
+            long guildId = event.getGuild().getIdLong();
+            long channelId = event.getChannel().getIdLong();
+
+            if (channelId == SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)) {
+                Melijn.mySQL.removeChannel(guildId, ChannelType.MUSIC);
+                SetMusicChannelCommand.musicChannelCache.invalidate(guildId);
+            }
+        });
+    }
+
+    @Override
+    public void onRoleDelete(RoleDeleteEvent event) {
+        TaskScheduler.async(() -> {
+            long guildId = event.getGuild().getIdLong();
+            long roleId = event.getRole().getIdLong();
+
+            if (roleId == SetMuteRoleCommand.muteRoleCache.getUnchecked(guildId)) {
+                Melijn.mySQL.removeRole(guildId, RoleType.MUTE);
+                SetMuteRoleCommand.muteRoleCache.invalidate(roleId);
+
+            } else if (roleId == SetJoinRoleCommand.joinRoleCache.getUnchecked(guildId)) {
+                Melijn.mySQL.removeRole(guildId, RoleType.JOIN);
+                SetJoinRoleCommand.joinRoleCache.invalidate(roleId);
+
+            } else if (roleId == SetUnverifiedRoleCommand.unverifiedRoleCache.getUnchecked(guildId)) {
+                Melijn.mySQL.removeRole(guildId, RoleType.UNVERIFIED);
+                SetUnverifiedRoleCommand.unverifiedRoleCache.invalidate(roleId);
+            }
+
+        });
+    }
 
     @Override
     public void onGuildVoiceMove(GuildVoiceMoveEvent event) {
