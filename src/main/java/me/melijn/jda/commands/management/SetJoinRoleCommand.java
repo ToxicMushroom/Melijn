@@ -56,23 +56,26 @@ public class SetJoinRoleCommand extends Command {
                     event.reply("JoinRole has been unset by **" + event.getFullAuthorName() + "**");
                 } else {
                     Role joinRole = Helpers.getRoleByArgs(event, args[0]);
-                    if (joinRole != null) {
-                        if (joinRole.getIdLong() != guild.getIdLong()) {
-                            if (guild.getSelfMember().getRoles().size() != 0 && guild.getSelfMember().getRoles().get(0).canInteract(joinRole)) {
-                                TaskScheduler.async(() -> {
-                                    Melijn.mySQL.setRole(guild.getIdLong(), joinRole.getIdLong(), RoleType.JOIN);
-                                    joinRoleCache.put(guild.getIdLong(), joinRole.getIdLong());
-                                });
-                                event.reply("JoinRole changed to **@" + joinRole.getName() + "** by **" + event.getFullAuthorName() + "**");
-                            } else {
-                                event.reply("The JoinRole hasn't been changed due: **@" + joinRole.getName() + "** is higher or equal in the role-hierarchy then my highest role.\nThis means that I will not be able to give the role to anyone ex.(Mods can't give people Admin it breaks logic)");
-                            }
-                        } else {
-                            event.reply("The @everyone role cannot be as the JoinRole because everyone has it");
-                        }
-                    } else {
+                    if (joinRole == null) {
                         MessageHelper.sendUsage(this, event);
+                        return;
                     }
+
+                    if (joinRole.getIdLong() == guild.getIdLong()) {
+                        event.reply("The @everyone role cannot be set as the JoinRole ;-;");
+                        return;
+                    }
+
+                    if (guild.getSelfMember().getRoles().size() == 0 || !guild.getSelfMember().getRoles().get(0).canInteract(joinRole)) {
+                        event.reply("" + "The JoinRole hasn't been changed due: **@" + joinRole.getName() + "** is higher or equal in the role-hierarchy then my highest role.");
+                        return;
+                    }
+
+                    TaskScheduler.async(() -> {
+                        Melijn.mySQL.setRole(guild.getIdLong(), joinRole.getIdLong(), RoleType.JOIN);
+                        joinRoleCache.put(guild.getIdLong(), joinRole.getIdLong());
+                    });
+                    event.reply("JoinRole changed to **@" + joinRole.getName() + "** by **" + event.getFullAuthorName() + "**");
                 }
             }
         } else {
