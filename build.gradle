@@ -24,11 +24,11 @@ dependencies {
     compile 'com.github.FredBoat:Lavalink-Client:1a4b0f5'
 
     //https://search.maven.org/artifact/com.zaxxer/HikariCP
-    compile "com.zaxxer:HikariCP:3.3.0"
+    compile 'com.zaxxer:HikariCP:3.3.0'
     
     //https://mvnrepository.com/artifact/org.codehaus.janino/janino
-    compile "org.codehaus.janino:janino:3.0.11"
-    compile "org.codehaus.janino:commons-compiler:3.0.11"
+    compile 'org.codehaus.janino:janino:3.0.11'
+    compile 'org.codehaus.janino:commons-compiler:3.0.11'
     
     //https://bintray.com/duncte123/weeb.java/weeb.java
     compile 'me.duncte123:weebJava:2.2.0_12'
