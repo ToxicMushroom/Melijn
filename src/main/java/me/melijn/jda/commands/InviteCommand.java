@@ -9,7 +9,6 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class InviteCommand extends Command {
 
-
     public InviteCommand() {
         this.commandName = "invite";
         this.description = "The bot will give an awesome link which you have to click";
@@ -23,7 +22,8 @@ public class InviteCommand extends Command {
         if (event.getGuild() == null) {
             event.reply("With permissions included: https://melijn.com/invite?perms=true\n or without https://melijn.com/invite");
         } else {
-            if (event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_ADD_REACTION)) event.getMessage().addReaction("\u2705").queue();
+            if (event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_ADD_REACTION) &&
+                    event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_HISTORY)) event.getMessage().addReaction("\u2705").queue();
             else if (event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_WRITE)) event.reply("Check your dm's");
             event.getAuthor().openPrivateChannel().queue(s -> s.sendMessage("With permissions included: https://melijn.com/invite?perms=true\n or without https://melijn.com/invite").queue());
         }
