@@ -9,10 +9,8 @@ public class CommandClientBuilder {
 
     private long ownerId;
     private final List<Command> commands = new ArrayList<>();
-    //private CommandListener listener;
 
     public CommandClient build() {
-        //if (listener != null) client.setListener(listener);
         return new CommandClientImpl(ownerId, commands);
     }
 
@@ -24,12 +22,7 @@ public class CommandClientBuilder {
         this.ownerId = ownerId;
         return this;
     }
-/*
-    public CommandClientBuilder setListener(CommandListener listener) {
-        this.listener = listener;
-        return this;
-    }
-*/
+
     private CommandClientBuilder addCommand(Command command) {
         commands.add(command);
         return this;
