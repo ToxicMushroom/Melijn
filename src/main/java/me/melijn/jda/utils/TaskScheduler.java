@@ -81,14 +81,19 @@ public final class TaskScheduler implements Runnable {
     @Override
     public void run() {
         initWait();
-        if (!this.repeating)
-            runnable.run();
+        try {
+            if (!this.repeating)
+                runnable.run();
 
-        while (repeating && !stop) {
-            if (predicate != null && !predicate.test(LocalDate.now()))
+            while (repeating && !stop) {
+                if (predicate != null && !predicate.test(LocalDate.now()))
+                    waitNow();
+                runnable.run();
                 waitNow();
-            runnable.run();
-            waitNow();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            MessageHelper.printException(Thread.currentThread(), e, null, null);
         }
     }
 
