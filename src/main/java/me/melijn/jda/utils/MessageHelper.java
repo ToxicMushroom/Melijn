@@ -170,7 +170,7 @@ public class MessageHelper {
 
         if (guild != null)
             printWriter.write("**Guild**: " + guild.getName() + " | " + guild.getIdLong() + "\r\n");
-        else if (channel.getType() == ChannelType.PRIVATE) {
+        else if (channel != null && channel.getType() == ChannelType.PRIVATE) {
             final PrivateChannel privateChannel = (PrivateChannel) channel;
             printWriter.write("**Direct-Message**: " + privateChannel.getName() + " | " + privateChannel.getUser().getIdLong() + "\r\n");
         }
