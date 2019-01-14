@@ -232,8 +232,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                 }
                 action.queue();
             }
-        } catch (IOException ignored) {
-        }
+        } catch (IOException | IllegalArgumentException ignored) {}
     }
 
     private boolean noPermission(MessageReceivedEvent event, Command command) {
