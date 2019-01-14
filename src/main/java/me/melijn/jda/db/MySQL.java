@@ -166,7 +166,7 @@ public class MySQL {
                 return preparedStatement.executeUpdate();
             }
         } catch (final SQLException e) {
-            System.out.println("Something went wrong while executing query method the query: " + query);
+            System.out.println("Something went wrong while executing the query: " + query);
             e.printStackTrace();
         }
         return 0;
@@ -185,7 +185,7 @@ public class MySQL {
                 resultSet.close();
             }
         } catch (final SQLException e) {
-            System.out.println("Something went wrong while executing query method the query: " + sql);
+            System.out.println("Something went wrong while executing the query: " + sql);
             e.printStackTrace();
         }
     }
