@@ -15,6 +15,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static me.melijn.jda.Melijn.PREFIX;
 import static me.melijn.jda.blub.CommandClientImpl.serverHasCC;
@@ -50,15 +51,13 @@ public class CustomCommandCommand extends Command {
                     event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " add <name> <message>");
                     return;
                 }
-                String name = args[1];
-                if (name.length() > 128) {
-                    event.reply("A CustomCommandName cannot be longer then **128** characters yours was: **" + (name.length() - 128) + "** characters to long");
-                    return;
-                }
-                String message = event.getArgs().replaceFirst("add\\s+" + name + "\\s+?", "");
-                int i = Melijn.mySQL.addCustomCommand(guild.getIdLong(), name, message);
+
+                if (cantBeName(event, args[1])) return;
+
+                String message = event.getArgs().replaceFirst("add\\s+" + Pattern.quote(args[1]) + "\\s+?", "");
+                int i = Melijn.mySQL.addCustomCommand(guild.getIdLong(), args[1], message);
                 if (i == 0) event.reply("The command already exists or you have hit the limit of " + limitCC + " commands");
-                else if (i == 1) event.reply("Custom command **" + name + "** has been added");
+                else if (i == 1) event.reply("Custom command **" + args[1] + "** has been added");
                 else if (i == 2) event.reply("The extra message has been added");
                 serverHasCC.put(guild.getIdLong(), true);
 
@@ -67,50 +66,37 @@ public class CustomCommandCommand extends Command {
                     event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " remove <name> [message]");
                     return;
                 }
-                String name = args[1];
-                if (name.length() > 128) {
-                    event.reply("A CustomCommandName cannot be longer then **128** characters yours was: **" + (name.length() - 128) + "** characters to long");
-                    return;
-                }
 
-                if (args.length > 2) {
-                    if (Melijn.mySQL.removeCustomCommandMessage(guild.getIdLong(), name, event.getArgs().replaceFirst(args[0] + "\\s+" + args[1] + "\\s+", ""))) {
+                if (cantBeName(event, args[1]))
+
+                    if (args.length > 2) {
+                    if (Melijn.mySQL.removeCustomCommandMessage(guild.getIdLong(), args[1], event.getArgs().replaceFirst(args[0] + "\\s+" + args[1] + "\\s+", ""))) {
                         event.reply("The message has been removed");
                     } else {
                         event.reply("I couldn't find what you where looking for\nHint: Check for spelling mistakes");
                     }
                 } else {
-                    if (Melijn.mySQL.removeCustomCommand(guild.getIdLong(), name)) {
-                        event.reply("Custom command **" + name + "** has been removed by **" + event.getFullAuthorName() + "**");
-                    } else event.reply("I couldn't find a command named: **" + name + "**\nList: " + getCommandList(guild));
+                    if (Melijn.mySQL.removeCustomCommand(guild.getIdLong(), args[1])) {
+                        event.reply("Custom command **" + args[1] + "** has been removed by **" + event.getFullAuthorName() + "**");
+                    } else event.reply("I couldn't find a command named: **" + args[1] + "**\nList: " + getCommandList(guild));
                     serverHasCC.invalidate(guild.getIdLong());
                 }
 
 
             } else if (args[0].equalsIgnoreCase("list")) {
-                JSONArray cCommands = Melijn.mySQL.getCustomCommands(guild.getIdLong());
-                StringBuilder sb = new StringBuilder("```INI\n");
-                for (int i = 0; i < cCommands.length(); i++) {
-                    JSONObject obj = (JSONObject) cCommands.get(i);
-                    sb.append(i + 1).append(" - [").append(obj.get("name")).append("]\n");
-                }
-                sb.append("```");
-                event.reply(sb.toString());
-
+                String s = getCommandList(guild);
+                MessageHelper.sendSplitMessage(event.getTextChannel(), s.length() > 0 ? s : "There are no custom commands");
 
             } else if (args[0].equalsIgnoreCase("update")) {
                 if (args.length < 3) {
                     event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " update <name> <message>");
                     return;
                 }
-                String name = args[1];
-                if (name.length() > 128) {
-                    event.reply("A CustomCommandName cannot be longer then **128** characters yours was: **" + (name.length() - 128) + "** characters to long");
-                    return;
-                }
-                String message = event.getArgs().replaceFirst("update\\s+" + name + "\\s+", "");
-                Melijn.mySQL.updateCustomCommand(guild.getIdLong(), name, message);
-                event.reply("Custom command **" + name + "** has been updated by **" + event.getFullAuthorName() + "**");
+
+                if (cantBeName(event, args[1])) return;
+                String message = event.getArgs().replaceFirst("update\\s+" + args[1] + "\\s+", "");
+                Melijn.mySQL.updateCustomCommand(guild.getIdLong(), args[1], message);
+                event.reply("Custom command **" + args[1] + "** has been updated by **" + event.getFullAuthorName() + "**");
 
 
             } else if (args[0].equalsIgnoreCase("info")) {
@@ -118,14 +104,10 @@ public class CustomCommandCommand extends Command {
                     event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " info <name>");
                     return;
                 }
-                String name = args[1];
-                if (name.length() > 128) {
-                    event.reply("A CustomCommandName cannot be longer then **128** characters yours was: **" + (name.length() - 128) + "** characters to long");
-                    return;
-                }
-                JSONObject command = Melijn.mySQL.getCustomCommand(guild.getIdLong(), name);
+                if (cantBeName(event, args[1])) return;
+                JSONObject command = Melijn.mySQL.getCustomCommand(guild.getIdLong(), args[1]);
                 if (command == null) {
-                    event.reply("I couldn't find a command named: **" + name  + "**\nList: " + getCommandList(guild));
+                    event.reply("I couldn't find a command named: **" + args[1]  + "**\nList: " + getCommandList(guild));
                     return;
                 }
 
@@ -146,20 +128,15 @@ public class CustomCommandCommand extends Command {
                     event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " prefix <name> [on | off]");
                     return;
                 }
-                String name = args[1];
-                if (name.length() > 128) {
-                    event.reply("A CustomCommandName cannot be longer then **128** characters yours was: **" + (name.length() - 128) + "** characters to long");
-                    return;
-                }
-                JSONObject command = Melijn.mySQL.getCustomCommand(guild.getIdLong(), name);
-                if (command == null) {
-                    event.reply("I couldn't find a command named: **" + name  + "**\nList: " + getCommandList(guild));
-                    return;
-                }
+
+                if (cantBeName(event, args[1])) return;
+                JSONObject command = Melijn.mySQL.getCustomCommand(event.getGuildId(), args[1]);
+                if (nameDoesntExist(event, command, args[1])) return;
+
                 if (args.length == 2) {
                     event.reply("The prefix of this command is turned **" + (command.getBoolean("prefix") ? "on**" : "off**"));
                 } else if (args[2].equalsIgnoreCase("on") || args[2].equalsIgnoreCase("off")) {
-                    Melijn.mySQL.updateCustomCommandPrefix(guild.getIdLong(), name, args[2].equalsIgnoreCase("on"));
+                    Melijn.mySQL.updateCustomCommandPrefix(guild.getIdLong(), args[1], args[2].equalsIgnoreCase("on"));
                     event.reply("The prefix for this command has been **" + (args[2].equalsIgnoreCase("on") ? "enabled" : "disabled")
                             + "** by **" + event.getFullAuthorName() + "**");
                 }
@@ -170,22 +147,20 @@ public class CustomCommandCommand extends Command {
                     event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " description <name> [text]");
                     return;
                 }
-                String name = args[1];
-                if (name.length() > 128) {
-                    event.reply("A CustomCommandName cannot be longer then **128** characters yours was: **" + (name.length() - 128) + "** characters to long");
-                    return;
-                }
-                JSONObject command = Melijn.mySQL.getCustomCommand(guild.getIdLong(), name);
+
+                if (cantBeName(event, args[1])) return;
+                JSONObject command = Melijn.mySQL.getCustomCommand(guild.getIdLong(), args[1]);
                 if (command == null) {
-                    event.reply("I couldn't find a command named: **" + name  + "**\nList:" + getCommandList(guild));
+                    event.reply("I couldn't find a command named: **" + args[1]  + "**\nList:" + getCommandList(guild));
                     return;
                 }
+
                 if (args.length == 2) {
                     event.reply("The description of this command is **" + command.getString("description") + "**");
                 } else {
-                    String desc = event.getArgs().replaceFirst("description\\s+" + name + "\\s+", "");
+                    String desc = event.getArgs().replaceFirst("description\\s+" + args[1] + "\\s+", "");
                     if (desc.equalsIgnoreCase("null")) desc = "";
-                    Melijn.mySQL.updateCustomCommandDescription(guild.getIdLong(), name, desc);
+                    Melijn.mySQL.updateCustomCommandDescription(guild.getIdLong(), args[1], desc);
                     event.reply("The description for this command has been changed to **" + desc + "** by **" + event.getFullAuthorName() + "**");
                 }
 
@@ -195,16 +170,11 @@ public class CustomCommandCommand extends Command {
                     event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " aliases <name> <add | remove | list> [alias]");
                     return;
                 }
-                String name = args[1];
-                if (name.length() > 128) {
-                    event.reply("A CustomCommandName cannot be longer then **128** characters yours was: **" + (name.length() - 128) + "** characters to long");
-                    return;
-                }
-                JSONObject command = Melijn.mySQL.getCustomCommand(guild.getIdLong(), name);
-                if (command == null) {
-                    event.reply("I couldn't find a command named: **" + name  + "**\nList: " + getCommandList(guild));
-                    return;
-                }
+
+                if (cantBeName(event, args[1])) return;
+                JSONObject command = Melijn.mySQL.getCustomCommand(event.getGuildId(), args[1]);
+                if (nameDoesntExist(event, command, args[1])) return;
+
                 List<String> aliases = command.getString("aliases").isBlank() ? new ArrayList<>() : new ArrayList<>(Arrays.asList(command.getString("aliases").split("\\+,\\+")));
                 if (args[2].equalsIgnoreCase("list")) {
                     event.reply("Aliases for this command: " + command.getString("aliases"));
@@ -218,7 +188,7 @@ public class CustomCommandCommand extends Command {
                         return;
                     }
                     aliases.add(args[3]);
-                    Melijn.mySQL.updateCustomCommandAliases(guild.getIdLong(), name, aliases);
+                    Melijn.mySQL.updateCustomCommandAliases(guild.getIdLong(), args[1], aliases);
                     event.reply("Successfully added this alias to the command");
                 } else if (args[2].equalsIgnoreCase("remove") && args.length > 3) {
                     if (!aliases.contains(args[3])) {
@@ -226,7 +196,7 @@ public class CustomCommandCommand extends Command {
                         return;
                     }
                     aliases.remove(args[3]);
-                    Melijn.mySQL.updateCustomCommandAliases(guild.getIdLong(), name, aliases);
+                    Melijn.mySQL.updateCustomCommandAliases(guild.getIdLong(), args[1], aliases);
                     event.reply("Successfully removed this alias from the command");
                 } else {
                     event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " aliases <name> <add | remove | list> [alias]");
@@ -238,25 +208,20 @@ public class CustomCommandCommand extends Command {
                     event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " attachment <name> [file]");
                     return;
                 }
-                String name = args[1];
-                if (name.length() > 128) {
-                    event.reply("A CustomCommandName cannot be longer then **128** characters yours was: **" + (name.length() - 128) + "** characters to long");
-                    return;
-                }
-                JSONObject command = Melijn.mySQL.getCustomCommand(guild.getIdLong(), name);
-                if (command == null) {
-                    event.reply("I couldn't find a command named: **" + name  + "**\nList: " + getCommandList(guild));
-                    return;
-                }
+
+                if (cantBeName(event, args[1])) return;
+                JSONObject command = Melijn.mySQL.getCustomCommand(event.getGuildId(), args[1]);
+                if (nameDoesntExist(event, command, args[1])) return;
+
                 if (args.length == 2) {
                     event.reply("The attachment of this command is **" + command.getString("attachment") + "**");
                 } else {
-                    String url = event.getArgs().replaceFirst("attachment\\s+" + name + "\\s+", "");
+                    String url = event.getArgs().replaceFirst("attachment\\s+" + args[1] + "\\s+", "");
                     if (event.getMessage().getAttachments().size() > 0) {
                         url = event.getMessage().getAttachments().get(0).getUrl();
                     }
                     if (url.equalsIgnoreCase("null")) url = "";
-                    Melijn.mySQL.updateCustomCommandAttachment(guild.getIdLong(), name, url);
+                    Melijn.mySQL.updateCustomCommandAttachment(guild.getIdLong(), args[1], url);
                     event.reply("The attachment for this command has been changed to **" + url + "** by **" + event.getFullAuthorName() + "**");
                 }
             } else {
@@ -265,6 +230,22 @@ public class CustomCommandCommand extends Command {
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
+    }
+
+    private boolean cantBeName(CommandEvent event, String arg) {
+        if (arg.length() > 128) {
+            event.reply("A CustomCommandName cannot be longer then **128** characters, yours was: **" + (arg.length() - 128) + "** characters to long");
+            return true;
+        }
+        return false;
+    }
+
+    private boolean nameDoesntExist(CommandEvent event, JSONObject command, String name) {
+        if (command == null) {
+            event.reply("I couldn't find a command named: **" + name  + "**\nList: " + getCommandList(event.getGuild()));
+            return true;
+        }
+        return false;
     }
 
     private String getCommandList(Guild guild) {
