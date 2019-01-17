@@ -34,6 +34,7 @@ import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -382,37 +383,51 @@ public class Chat extends ListenerAdapter {
     private void filter(Message msg) {
         TaskScheduler.async(() -> {
             String message = msg.getContentRaw();
-            StringBuilder detectedWord = null;
-            TIntIntMap deniedPositions = new TIntIntHashMap();
-            TIntIntMap allowedPositions = new TIntIntHashMap();
-            List<String> deniedList = mySQL.getFilters(msg.getGuild().getIdLong(), "denied");
-            List<String> allowedList = mySQL.getFilters(msg.getGuild().getIdLong(), "allowed");
-            addPositions(message, deniedPositions, deniedList);
-            addPositions(message, allowedPositions, allowedList);
+            StringBuilder detectedWord = new StringBuilder();
 
-            if (allowedPositions.size() > 0 && deniedPositions.size() > 0) {
-                for (int beginDenied : deniedPositions.keys()) {
-                    int endDenied = deniedPositions.get(beginDenied);
-                    for (int beginAllowed : allowedPositions.keys()) {
-                        int endAllowed = allowedPositions.get(beginAllowed);
-                        if (beginDenied < beginAllowed || endDenied > endAllowed) {
-                            detectedWord = new StringBuilder(message.substring(beginDenied, endDenied));
+            List<String> deniedList = mySQL.getFilters(msg.getGuild().getIdLong(), "denied");
+            if (deniedList.size() == 0) return;
+            List<String> allowedList = mySQL.getFilters(msg.getGuild().getIdLong(), "allowed");
+
+            AtomicBoolean ranOnce = new AtomicBoolean(false);
+
+            if (allowedList.size() == 0) {
+                deniedList.forEach(deniedWord -> {
+                    if (message.toLowerCase().contains(deniedWord.toLowerCase())) {
+                        detectedWord.append(ranOnce.get() ? ", " : "").append(deniedWord);
+                        ranOnce.set(true);
+                    }
+                });
+
+            } else {
+                TIntIntMap deniedPositions = new TIntIntHashMap();
+                TIntIntMap allowedPositions = new TIntIntHashMap();
+                addPositions(message, deniedPositions, deniedList);
+                addPositions(message, allowedPositions, allowedList);
+
+                if (allowedPositions.size() > 0 && deniedPositions.size() > 0) {
+                    for (int beginDenied : deniedPositions.keys()) {
+                        int endDenied = deniedPositions.get(beginDenied);
+                        for (int beginAllowed : allowedPositions.keys()) {
+                            int endAllowed = allowedPositions.get(beginAllowed);
+
+                            if (beginDenied > beginAllowed && endDenied < endAllowed) continue;
+                            detectedWord.append(message, beginDenied, endDenied);
                         }
                     }
-                }
-            } else if (deniedPositions.size() > 0) {
-                detectedWord = new StringBuilder();
-                for (int beginDenied : deniedPositions.keys()) {
-                    int endDenied = deniedPositions.get(beginDenied);
-                    detectedWord.append(message, beginDenied, endDenied).append(", ");
+                } else if (deniedPositions.size() > 0) {
+                    for (int beginDenied : deniedPositions.keys()) {
+                        int endDenied = deniedPositions.get(beginDenied);
+                        detectedWord.append(ranOnce.get() ? ", " : "").append(message, beginDenied, endDenied);
+                        ranOnce.set(true);
+                    }
                 }
             }
-            if (detectedWord != null) {
+            if (detectedWord.length() > 0) {
                 MessageHelper.filteredMessageDeleteCause.put(msg.getIdLong(), detectedWord.substring(0, detectedWord.length() - 2));
                 msg.delete().reason("Use of prohibited words").queue(
-                        success -> {
-                        }, failure -> {
-                        }
+                        success -> {},
+                        failure -> {}
                 );
             }
         });
