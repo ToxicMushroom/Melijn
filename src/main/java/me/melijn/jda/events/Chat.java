@@ -82,7 +82,8 @@ public class Chat extends ListenerAdapter {
             String prefix = SetPrefixCommand.prefixes.getUnchecked(guildId);
             event.getChannel().sendMessage(String.format(("Hello there my default prefix is %s " + (prefix.equals(PREFIX) ? "" : String.format("\nThis server has configured %s as the prefix\n", prefix)) + "and you can view all commands using **%shelp**"), PREFIX, prefix)).queue();
         }
-        if (guild.getSelfMember().hasPermission(Permission.MESSAGE_MANAGE) && !event.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
+        if (guild.getSelfMember().hasPermission(event.getChannel(), Permission.MESSAGE_MANAGE) &&
+                !event.getMember().hasPermission(event.getChannel(), Permission.MESSAGE_MANAGE)) {
             filter(event.getMessage());
         }
 
@@ -140,7 +141,8 @@ public class Chat extends ListenerAdapter {
         Guild guild = event.getGuild();
         User author = event.getAuthor();
         JSONObject oMessage = Melijn.mySQL.getMessageObject(messageId);
-        if (guild.getSelfMember().hasPermission(Permission.MESSAGE_MANAGE) && !event.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
+        if (guild.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_MANAGE) &&
+                !event.getMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_MANAGE)) {
             LoggerFactory.getLogger(this.getClass().getName());
             filter(event.getMessage());
         }

@@ -175,8 +175,8 @@ public class Channels extends ListenerAdapter {
             tryPlayStreamUrl(guild.getIdLong());
             TaskScheduler.async(() -> {
                 if (guild.getAfkChannel() != null &&
-                        guild.getSelfMember().hasPermission(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)), Permission.VOICE_MUTE_OTHERS) &&
-                        (!guild.getSelfMember().getVoiceState().inVoiceChannel()) || (guild.getAfkChannel().getIdLong() == guild.getSelfMember().getVoiceState().getChannel().getIdLong())) {
+                        (guild.getSelfMember().hasPermission(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)), Permission.VOICE_MUTE_OTHERS) &&
+                        (!guild.getSelfMember().getVoiceState().inVoiceChannel()) || (guild.getAfkChannel().getIdLong() == guild.getSelfMember().getVoiceState().getChannel().getIdLong()))) {
                     guild.getController().setMute(guild.getSelfMember(), true).queue(done -> guild.getController().setMute(guild.getSelfMember(), false).queue());
                 }
             }, 2000);
