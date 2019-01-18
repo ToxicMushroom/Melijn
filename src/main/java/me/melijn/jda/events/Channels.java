@@ -150,10 +150,10 @@ public class Channels extends ListenerAdapter {
             tryPlayStreamUrl(guild.getIdLong());
             TaskScheduler.async(() -> {
                 //Hacky way to unmute bot in afk channel
-                if (guild.getAfkChannel() != null &&
+                if (guild.getAfkChannel() != null && (
                         guild.getSelfMember().hasPermission(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)), Permission.VOICE_MUTE_OTHERS) &&
                         guild.getSelfMember().getVoiceState().getChannel() == null ||
-                        guild.getAfkChannel().getIdLong() == guild.getSelfMember().getVoiceState().getChannel().getIdLong()) {
+                        guild.getAfkChannel().getIdLong() == guild.getSelfMember().getVoiceState().getChannel().getIdLong())) {
                     guild.getController().setMute(guild.getSelfMember(), true).queue(done ->
                             event.getGuild().getController().setMute(event.getGuild().getSelfMember(), false).queue());
                 }
@@ -176,7 +176,7 @@ public class Channels extends ListenerAdapter {
             TaskScheduler.async(() -> {
                 if (guild.getAfkChannel() != null &&
                         (guild.getSelfMember().hasPermission(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)), Permission.VOICE_MUTE_OTHERS) &&
-                        (!guild.getSelfMember().getVoiceState().inVoiceChannel()) || (guild.getAfkChannel().getIdLong() == guild.getSelfMember().getVoiceState().getChannel().getIdLong()))) {
+                        guild.getSelfMember().getVoiceState().inVoiceChannel() && (guild.getAfkChannel().getIdLong() == guild.getSelfMember().getVoiceState().getChannel().getIdLong()))) {
                     guild.getController().setMute(guild.getSelfMember(), true).queue(done -> guild.getController().setMute(guild.getSelfMember(), false).queue());
                 }
             }, 2000);
