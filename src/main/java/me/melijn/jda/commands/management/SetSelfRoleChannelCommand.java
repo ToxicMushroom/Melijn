@@ -42,7 +42,7 @@ public class SetSelfRoleChannelCommand extends Command {
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
-            if (args.length == 0 || args[0].isBlank()) {
+            if (args.length == 0 || args[0].isEmpty()) {
                 String s = selfRolesChannel.getUnchecked(event.getGuild().getIdLong()) == -1 ? "nothing" : "<#" + selfRolesChannel.getUnchecked(event.getGuild().getIdLong()) + ">";
                 event.reply("Current SelfRoleChannel: " + s);
             } else {

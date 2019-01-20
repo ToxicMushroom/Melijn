@@ -131,7 +131,7 @@ public class Channels extends ListenerAdapter {
             if (event.getChannelLeft() != lava.getConnectedChannel(guild)) return;
             if (someoneIsListening(guild)) {
                 String url = Melijn.mySQL.getStreamUrl(guildId);
-                if (!url.isBlank()) {
+                if (!url.isEmpty()) {
                     manager.getPlayer(guild).getTrackManager().clear();
                     manager.loadSimpleTrack(manager.getPlayer(guild), url);
                 }
@@ -242,7 +242,7 @@ public class Channels extends ListenerAdapter {
     private void tryPlayStreamUrl(long guildId) {
         if (manager.getPlayer(guildId).getAudioPlayer().getPlayingTrack() == null) {
             String url = Melijn.mySQL.getStreamUrl(guildId);
-            if (!url.isBlank()) {
+            if (!url.isEmpty()) {
                 manager.getPlayer(guildId).getTrackManager().clear();
                 manager.loadSimpleTrack(manager.getPlayer(guildId), url);
             }

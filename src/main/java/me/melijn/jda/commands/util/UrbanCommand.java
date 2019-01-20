@@ -30,7 +30,7 @@ public class UrbanCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
-            if (args.length > 0 && !args[0].isBlank()) {
+            if (args.length > 0 && !args[0].isEmpty()) {
                 String result = WebUtils.getWebUtilsInstance().run("https://api.urbandictionary.com/v0/define?term=" + event.getArgs());
                 if (result != null) {
                     JSONObject jresult = new JSONObject(result);

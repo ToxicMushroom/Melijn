@@ -66,7 +66,7 @@ public class Config {
     private JSONObject read(File file) {
         JSONObject obj = null;
         try {
-            obj = new JSONObject(Files.readString(Paths.get(file.getPath())));
+            obj = new JSONObject(new String(Files.readAllBytes(Paths.get(file.getPath()))));
         } catch (IOException ex) {
             ex.printStackTrace();
         }

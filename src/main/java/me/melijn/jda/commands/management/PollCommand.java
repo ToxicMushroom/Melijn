@@ -29,12 +29,12 @@ public class PollCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
-            if (event.getArgs().isBlank()) {
+            if (event.getArgs().isEmpty()) {
                 MessageHelper.sendUsage(this, event);
                 return;
             }
             String[] args = event.getArgs().substring(0, event.getArgs().replaceFirst("\".*", "").length()).split("\\s+");
-            if (args.length == 0 || args[0].isBlank()) {
+            if (args.length == 0 || args[0].isEmpty()) {
                 if (noEnoughArguments(event)) return;
                 String question = event.getArgs().replaceFirst("\"", "").substring(0, event.getArgs().replaceFirst("\"", "").indexOf("\""));
                 String answersString = event.getArgs().replaceFirst(Pattern.quote("\"" + question + "\"") + "(?:\\s+)?", "");

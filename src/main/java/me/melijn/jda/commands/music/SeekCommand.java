@@ -37,7 +37,7 @@ public class SeekCommand extends Command {
                 event.reply("There are currently no tracks playing");
                 return;
             }
-            if (args.length == 0 || args[0].isBlank()) {
+            if (args.length == 0 || args[0].isEmpty()) {
                 event.reply("The current position is **" + Helpers.getDurationBreakdown(player.getTrackPosition()) + "/" + Helpers.getDurationBreakdown(track.getDuration()) + "**");
                 return;
             }

@@ -31,7 +31,7 @@ public class SetNotifications extends Command {
     @Override
     protected void execute(CommandEvent event) {
         String[] args = event.getArgs().split("\\s+");
-        if (args.length > 0 && !args[0].isBlank()) {
+        if (args.length > 0 && !args[0].isEmpty()) {
             if ("nextvote".equals(args[0].toLowerCase())) {
                 if (args.length == 1 || args[1].equalsIgnoreCase("info")) {
                     TLongList list = mySQL.getNotifications(event.getAuthorId(), NotificationType.NEXTVOTE);

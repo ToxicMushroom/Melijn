@@ -44,10 +44,10 @@ public class SetJoinMessageCommand extends Command {
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
-            String oldMessage = joinMessages.getUnchecked(guild.getIdLong()).isBlank() ? "nothing" : ("'" + joinMessages.getUnchecked(guild.getIdLong()) + "'");
+            String oldMessage = joinMessages.getUnchecked(guild.getIdLong()).isEmpty() ? "nothing" : ("'" + joinMessages.getUnchecked(guild.getIdLong()) + "'");
             String newMessage = event.getArgs();
             String[] args = event.getArgs().split("\\s+");
-            if (args.length > 0 && !args[0].isBlank()) {
+            if (args.length > 0 && !args[0].isEmpty()) {
                 if (args.length == 1 && args[0].equalsIgnoreCase("null")) {
                     TaskScheduler.async(() -> {
                         Melijn.mySQL.removeMessage(guild.getIdLong(), MessageType.JOIN);

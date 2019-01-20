@@ -27,7 +27,7 @@ public class KissCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
-            if (args.length == 0 || args[0].isBlank()) {
+            if (args.length == 0 || args[0].isEmpty()) {
                 webUtils.getImage("kiss",
                         image -> MessageHelper.sendFunText("**" + event.getAuthor().getName() + "** wants to kiss someone", image.getUrl(), event)
                 );

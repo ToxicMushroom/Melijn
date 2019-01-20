@@ -161,7 +161,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                             return;
                         }
                         for (String alias : command.getString("aliases").split("%split%")) {
-                            if (justName.equalsIgnoreCase(alias) && !alias.isBlank()) {
+                            if (justName.equalsIgnoreCase(alias) && !alias.isEmpty()) {
                                 customCommandSender(command, event.getGuild(), event.getAuthor(), event.getTextChannel());
                                 return;
                             }
@@ -171,9 +171,9 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                             customCommandSender(command, event.getGuild(), event.getAuthor(), event.getTextChannel());
                             return;
                         }
-                        if (command.getString("aliases").isBlank()) continue;
+                        if (command.getString("aliases").isEmpty()) continue;
                         for (String alias : command.getString("aliases").split("%split%")) {
-                            if (message.equalsIgnoreCase(alias) && !alias.isBlank()) {
+                            if (message.equalsIgnoreCase(alias) && !alias.isEmpty()) {
                                 customCommandSender(command, event.getGuild(), event.getAuthor(), event.getTextChannel());
                                 return;
                             }
@@ -201,7 +201,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                 String[] messages = command.getString("message").split("%split%");
                 JSONObject content = new JSONObject(messages[MessageHelper.randInt(0, messages.length-1)]);
                 MessageAction action = null;
-                if (content.has("content") && !content.getString("content").isBlank()) { //Als er een gewone message bij zit
+                if (content.has("content") && !content.getString("content").isEmpty()) { //Als er een gewone message bij zit
                     action = channel.sendMessage(JoinLeave.variableFormat(content.getString("content"), guild, author));
                     if (content.has("embed"))
                         action = action.embed(

@@ -38,7 +38,7 @@ public class DisableCommand extends Command {
             String[] args = event.getArgs().split("\\s+");
             long guildId = event.getGuild().getIdLong();
 
-            if (event.getExecutor().equalsIgnoreCase("disable") && args.length > 0 && !args[0].isBlank()) {
+            if (event.getExecutor().equalsIgnoreCase("disable") && args.length > 0 && !args[0].isEmpty()) {
                 TLongObjectMap<TIntList> map = DisableCommand.disabledGuildCommands;
                 TIntList buffer = map.containsKey(guildId) ? map.get(guildId) : new TIntArrayList();
 

@@ -1,7 +1,7 @@
 package me.melijn.jda.commands.music;
 
-import gnu.trove.list.TLongList;
-import gnu.trove.list.array.TLongArrayList;
+import gnu.trove.set.TLongSet;
+import gnu.trove.set.hash.TLongHashSet;
 import me.melijn.jda.Helpers;
 import me.melijn.jda.audio.AudioLoader;
 import me.melijn.jda.audio.MusicPlayer;
@@ -16,7 +16,7 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class LoopCommand extends Command {
 
-    public static TLongList looped = new TLongArrayList();
+    public static TLongSet looped = new TLongHashSet();
 
     public LoopCommand() {
         this.commandName = "loop";
@@ -33,13 +33,13 @@ public class LoopCommand extends Command {
         executorLoops(this, event, looped);
     }
 
-    static void executorLoops(Command cmd, CommandEvent event, TLongList looped) {
+    static void executorLoops(Command cmd, CommandEvent event, TLongSet looped) {
         if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), cmd.getCommandName(), 0)) {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
             MusicPlayer musicPlayer = AudioLoader.getManagerInstance().getPlayer(guild);
             if (musicPlayer.getTrackManager().getTrackSize() > 0 || musicPlayer.getAudioPlayer().getPlayingTrack() != null) {
-                if (args.length == 0 || args[0].isBlank()) {
+                if (args.length == 0 || args[0].isEmpty()) {
                     if (looped.contains(guild.getIdLong())) {
                         looped.remove(guild.getIdLong());
                         event.reply("Looping has been **disabled**");

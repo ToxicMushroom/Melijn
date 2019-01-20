@@ -32,7 +32,7 @@ public class UnmuteCommand extends Command {
     protected void execute(CommandEvent event) {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
-            if (args.length > 0 && !args[0].isBlank()) {
+            if (args.length > 0 && !args[0].isEmpty()) {
                 Helpers.retrieveUserByArgsN(event, args[0], user -> {
                     if (user == null) {
                         event.reply("Unknown user");

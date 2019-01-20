@@ -128,7 +128,7 @@ public class JoinLeave extends ListenerAdapter {
         } else {
             TaskScheduler.async(() -> {
                 String message = SetLeaveMessageCommand.leaveMessages.getUnchecked(guild.getIdLong());
-                if (!message.isBlank()) {
+                if (!message.isEmpty()) {
                     TextChannel welcomeChannel = guild.getTextChannelById(SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guild.getIdLong()));
                     if (welcomeChannel != null && guild.getSelfMember().hasPermission(welcomeChannel, Permission.MESSAGE_WRITE))
                         welcomeChannel.sendMessage(variableFormat(message, guild, leftUser)).queue();
@@ -146,7 +146,7 @@ public class JoinLeave extends ListenerAdapter {
     }
 
     private static void joinCode(Guild guild, User user) throws ExecutionException {
-        if (!SetJoinMessageCommand.joinMessages.getUnchecked(guild.getIdLong()).isBlank()) {
+        if (!SetJoinMessageCommand.joinMessages.getUnchecked(guild.getIdLong()).isEmpty()) {
             TextChannel welcomeChannel = guild.getTextChannelById(SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guild.getIdLong()));
             if (welcomeChannel != null && guild.getSelfMember().hasPermission(welcomeChannel, Permission.MESSAGE_WRITE))
                 welcomeChannel.sendMessage(variableFormat(SetJoinMessageCommand.joinMessages.getUnchecked(guild.getIdLong()), guild, user)).queue();

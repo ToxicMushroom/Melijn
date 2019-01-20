@@ -46,7 +46,7 @@ public class SkipCommand extends Command {
             String[] args = event.getArgs().split("\\s+");
             Queue<AudioTrack> audioTracks = new LinkedList<>(player.getTrackManager().getTracks());
             int i = 1;
-            if (args.length > 0 && !args[0].isBlank()) {
+            if (args.length > 0 && !args[0].isEmpty()) {
                 if (args[0].matches("\\d+") && args[0].length() < 4) {
                     i = Integer.parseInt(args[0]);
                     if (i >= 50 || i < 1) {

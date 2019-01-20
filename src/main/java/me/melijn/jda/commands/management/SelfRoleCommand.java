@@ -46,7 +46,7 @@ public class SelfRoleCommand extends Command {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
-            if (args.length == 0 || args[0].isBlank()) {
+            if (args.length == 0 || args[0].isEmpty()) {
                 MessageHelper.sendUsage(this, event);
                 return;
             }
@@ -100,11 +100,11 @@ public class SelfRoleCommand extends Command {
                         return;
                     }
                     String emote2 = event.getMessage().getEmotes().size() > 0 ? event.getMessage().getEmotes().get(0).getId() : (args.length < 3 ? "" : args[2]);
-                    if (!cache.containsKey(roleRemoved.getIdLong()) || (emote2.isBlank() && !cache.containsValue(emote2))) {
+                    if (!cache.containsKey(roleRemoved.getIdLong()) || (emote2.isEmpty() && !cache.containsValue(emote2))) {
                         event.reply("This entry does not exist");
                         return;
                     }
-                    if (emote2.isBlank()) {
+                    if (emote2.isEmpty()) {
                         Melijn.mySQL.removeSelfRole(guild.getIdLong(), roleRemoved.getIdLong());
                         selfRoles.invalidate(guild.getIdLong());
                         event.reply("SelfRole entries removed for role: **@" + roleRemoved.getName() + "** by **" + event.getFullAuthorName() + "**");

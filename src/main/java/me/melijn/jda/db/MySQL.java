@@ -728,8 +728,9 @@ public class MySQL {
             else logChannel.sendMessage(embedBuilder.build()).queue();
         }
         if (!target.isBot()) target.openPrivateChannel().queue((channel) -> {
-            channel.sendMessage(embedBuilder.build()).queue();
-            guild.getController().kick(guild.getMember(target)).queueAfter(1, TimeUnit.SECONDS);
+            channel.sendMessage(embedBuilder.build()).queue(
+                    (success) -> guild.getController().kick(guild.getMember(target)).queue(),
+                    (failed) -> guild.getController().kick(guild.getMember(target)).queue());
         });
         return true;
     }
@@ -761,7 +762,7 @@ public class MySQL {
             List<String> toRet = new ArrayList<>();
             AtomicInteger progress = new AtomicInteger();
             for (JSONObject rowObj : set) {
-                String endTime = rowObj.getString("endTime").isBlank() ? "Infinity" : MessageHelper.millisToDate(Long.valueOf(rowObj.getString("endTime")));
+                String endTime = rowObj.getString("endTime").isEmpty() ? "Infinity" : MessageHelper.millisToDate(Long.valueOf(rowObj.getString("endTime")));
                 jda.asBot().getShardManager().retrieveUserById(rowObj.getLong("authorId")).queue(staff -> {
                     if (rowObj.getBoolean("active"))
                         toRet.add("```ini" +
@@ -828,7 +829,7 @@ public class MySQL {
             List<String> toRet = new ArrayList<>();
             AtomicInteger progress = new AtomicInteger();
             for (JSONObject rowObj : set) {
-                String endTime = rowObj.getString("endTime").isBlank() ? "Infinity" : MessageHelper.millisToDate(Long.valueOf(rowObj.getString("endTime")));
+                String endTime = rowObj.getString("endTime").isEmpty() ? "Infinity" : MessageHelper.millisToDate(Long.valueOf(rowObj.getString("endTime")));
                 jda.asBot().getShardManager().retrieveUserById(rowObj.getLong("authorId")).queue(staff -> {
                     if (rowObj.getBoolean("active"))
                         toRet.add("```ini" +

@@ -57,7 +57,7 @@ public class PrivatePrefixCommand extends Command {
                     event.reply("You can't add the same prefix twice");
                     return;
                 }
-                if (list.size() < 5 && prefix.length() < 21 && !prefix.isBlank()) {
+                if (list.size() < 5 && prefix.length() < 21 && !prefix.isEmpty()) {
                     Melijn.mySQL.addPrivatePrefix(event.getAuthorId(), prefix);
                     list.add(prefix);
                     privatePrefixes.put(event.getAuthorId(), list);

@@ -41,7 +41,7 @@ public class CustomCommandCommand extends Command {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
-            if (args.length == 0 || args[0].isBlank()) {
+            if (args.length == 0 || args[0].isEmpty()) {
                 MessageHelper.sendUsage(this, event);
                 return;
             }
@@ -111,8 +111,8 @@ public class CustomCommandCommand extends Command {
                     return;
                 }
 
-                String aliases = command.getString("aliases").isBlank() ? "N/A" : command.getString("aliases");
-                String attachment = command.getString("attachment").isBlank() ? "N/A" : "**[link](" + command.getString("attachment") + ")**";
+                String aliases = command.getString("aliases").isEmpty() ? "N/A" : command.getString("aliases");
+                String attachment = command.getString("attachment").isEmpty() ? "N/A" : "**[link](" + command.getString("attachment") + ")**";
                 event.reply(new Embedder(event.getGuild())
                         .setTitle("CustomCommand: " + command.getString("name"))
                         .addField("description", command.getString("description"), false)
@@ -175,7 +175,7 @@ public class CustomCommandCommand extends Command {
                 JSONObject command = Melijn.mySQL.getCustomCommand(event.getGuildId(), args[1]);
                 if (nameDoesntExist(event, command, args[1])) return;
 
-                List<String> aliases = command.getString("aliases").isBlank() ? new ArrayList<>() : new ArrayList<>(Arrays.asList(command.getString("aliases").split("\\+,\\+")));
+                List<String> aliases = command.getString("aliases").isEmpty() ? new ArrayList<>() : new ArrayList<>(Arrays.asList(command.getString("aliases").split("\\+,\\+")));
                 if (args[2].equalsIgnoreCase("list")) {
                     event.reply("Aliases for this command: " + command.getString("aliases"));
                 } else if (args[2].equalsIgnoreCase("add") && args.length > 3) {

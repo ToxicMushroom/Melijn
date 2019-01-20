@@ -30,7 +30,7 @@ public class EnableCommand extends Command {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             long guildId = event.getGuild().getIdLong();
-            if (args.length > 0 && !args[0].isBlank()) {
+            if (args.length > 0 && !args[0].isEmpty()) {
                 TLongObjectMap<TIntList> map = DisableCommand.disabledGuildCommands;
                 TIntList buffer = map.containsKey(guildId) ? map.get(guildId) : new TIntArrayList();
                 int sizeBefore = buffer.size();

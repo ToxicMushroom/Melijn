@@ -27,7 +27,7 @@ public class HugCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
-            if (args.length == 0 || args[0].isBlank()) {
+            if (args.length == 0 || args[0].isEmpty()) {
                 webUtils.getImage("hug",
                         image -> MessageHelper.sendFunText("**" + event.getAuthor().getName() + "** wants to hug someone", image.getUrl(), event)
                 );

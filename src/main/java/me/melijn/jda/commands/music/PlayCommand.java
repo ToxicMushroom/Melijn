@@ -42,7 +42,7 @@ public class PlayCommand extends Command {
         boolean access = Helpers.hasPerm(guild.getMember(event.getAuthor()), commandName + ".*", 1);
         VoiceChannel senderVoiceChannel = guild.getMember(event.getAuthor()).getVoiceState().getChannel();
         String[] args = event.getArgs().split("\\s+");
-        if (args.length == 0 || args[0].isBlank()) {
+        if (args.length == 0 || args[0].isEmpty()) {
             MessageHelper.sendUsage(this, event);
             return;
         }

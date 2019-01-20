@@ -42,7 +42,7 @@ public class SetMusicChannelCommand extends Command {
         if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
             String[] args = event.getArgs().split("\\s+");
-            if (args.length == 0 || args[0].isBlank()) {
+            if (args.length == 0 || args[0].isEmpty()) {
                 event.reply(musicChannelCache.getUnchecked(guild.getIdLong()) == -1 ? "The MusicChannel is unset" : "MusicChannel: <#" + musicChannelCache.getUnchecked(guild.getIdLong()) + ">");
             } else {
                 long channelId = Helpers.getVoiceChannelByArgsN(event, args[0]);
