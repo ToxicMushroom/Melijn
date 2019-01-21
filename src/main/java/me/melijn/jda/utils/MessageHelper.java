@@ -34,6 +34,7 @@ public class MessageHelper {
     public static TLongList botDeletedMessages = new TLongArrayList();
     public static String spaces = "                                                                                                    ";
     private static final Pattern prefixPattern = Pattern.compile(PREFIX);
+    public static Set<String> unLoggedThreads = new HashSet<>();
 
     public static String millisToDate(long millis) {
         Calendar start = Calendar.getInstance();
@@ -175,6 +176,7 @@ public class MessageHelper {
             printWriter.write("**Direct-Message**: " + privateChannel.getName() + " | " + privateChannel.getUser().getIdLong() + "\r\n");
         }
         if (thread != null) printWriter.write("**Thread**: " + thread.getName() + "\r\n");
+        if (unLoggedThreads.contains(thread.getName())) return;
 
         ex.printStackTrace(printWriter);
         String message = writer.toString().replaceAll("me\\.melijn\\.jda", "**me.melijn.jda**");

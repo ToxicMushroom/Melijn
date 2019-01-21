@@ -192,6 +192,7 @@ public class Melijn {
                 //people who spam the bot
 
         });
+        MessageHelper.unLoggedThreads.addAll(config.getSet("unLoggedThreads"));
 
         RestAction.setPassContext(true); // to find bugs
 

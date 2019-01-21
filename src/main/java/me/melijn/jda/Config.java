@@ -6,6 +6,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Config {
 
@@ -27,11 +30,14 @@ public class Config {
         JSONObject obj = read(configFile);
         if (obj.has("token") &&
                 obj.has("prefix") &&
-                obj.has("ownerid") && obj.has("username") && obj.has("password") && obj.has("ipaddress") && obj.has("database")) {
+                obj.has("ownerid") &&
+                obj.has("username") &&
+                obj.has("password") &&
+                obj.has("ipaddress") &&
+                obj.has("database")) {
             configObject = obj;
         } else {
-            create();
-            System.err.println("You didn't fill in all the values correct.");
+            System.err.println("Missing keys.");
             System.exit(1);
         }
     }
@@ -55,6 +61,7 @@ public class Config {
                     .put("lavalink-pwd", "")
                     .put("shardCount", 1)
                     .put("restPort", 8080)
+                    .put("unLoggedThreads", Collections.singletonList("OkHttp Dispatcher"))
                     .toString(4)
                     .getBytes()
             );
@@ -75,5 +82,12 @@ public class Config {
 
     public String getValue(String key) {
         return configObject == null ? null : configObject.get(key).toString();
+    }
+
+    public Set<String> getSet(String unLoggedThreads) {
+        if (configObject == null) return new HashSet<>();
+        Set<String> set = new HashSet<>();
+        configObject.getJSONArray(unLoggedThreads).toList().forEach(o -> set.add(o.toString()));
+        return set;
     }
 }
