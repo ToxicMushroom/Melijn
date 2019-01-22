@@ -354,29 +354,29 @@ public class MySQL {
         }
     }
 
-    public List<String> getRolePermissions(long guildId, long roleId) {
-        List<String> toReturn = new ArrayList<>();
+    public Set<String> getRolePermissions(long guildId, long roleId) {
+        Set<String> toReturn = new HashSet<>();
         try (Connection con = ds.getConnection()) {
             PreparedStatement getPerms = con.prepareStatement("SELECT * FROM perms_roles WHERE guildId= ? AND roleId= ?");
-            addResultsToList(guildId, roleId, toReturn, getPerms);
+            addResultsToSet(guildId, roleId, toReturn, getPerms);
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return toReturn;
     }
 
-    public List<String> getUserPermissions(long guildId, long userId) {
-        List<String> toReturn = new ArrayList<>();
+    public Set<String> getUserPermissions(long guildId, long userId) {
+        Set<String> toReturn = new HashSet<>();
         try (Connection con = ds.getConnection()) {
             PreparedStatement getPerms = con.prepareStatement("SELECT * FROM perms_users WHERE guildId= ? AND userId= ?");
-            addResultsToList(guildId, userId, toReturn, getPerms);
+            addResultsToSet(guildId, userId, toReturn, getPerms);
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return toReturn;
     }
 
-    private void addResultsToList(long guildId, long userId, List<String> list, PreparedStatement statement) throws SQLException {
+    private void addResultsToSet(long guildId, long userId, Set<String> list, PreparedStatement statement) throws SQLException {
         statement.setLong(1, guildId);
         statement.setLong(2, userId);
         ResultSet rs = statement.executeQuery();
@@ -389,21 +389,17 @@ public class MySQL {
 
     public boolean noOneHasPermission(long guildId, String permission) {
         try (Connection con = ds.getConnection()) {
-            PreparedStatement statement = con.prepareStatement("" +
+            try (PreparedStatement statement = con.prepareStatement("" +
                     "SELECT * FROM perms_roles WHERE guildId= ? AND permission= ? UNION " +
-                    "SELECT * FROM perms_users WHERE guildId= ? AND permission= ? LIMIT 1");
-            statement.setLong(1, guildId);
-            statement.setString(2, permission);
-            statement.setLong(3, guildId);
-            statement.setString(4, permission);
-            ResultSet rs = statement.executeQuery();
-            boolean temp = false;
-            if (!rs.next()) {
-                temp = true;
+                    "SELECT * FROM perms_users WHERE guildId= ? AND permission= ? LIMIT 1")) {
+                statement.setLong(1, guildId);
+                statement.setString(2, permission);
+                statement.setLong(3, guildId);
+                statement.setString(4, permission);
+                try (ResultSet rs = statement.executeQuery()) {
+                    return !rs.next();
+                }
             }
-            statement.close();
-            rs.close();
-            return temp;
         } catch (SQLException e) {
             e.printStackTrace();
             return true;
@@ -411,8 +407,8 @@ public class MySQL {
     }
 
     public void copyRolePermissions(long guildId, long roleId1, long roleId2) {
-        List<String> permsRole1 = getRolePermissions(guildId, roleId1);
-        List<String> permsRole2 = getRolePermissions(guildId, roleId2);
+        Set<String> permsRole1 = getRolePermissions(guildId, roleId1);
+        Set<String> permsRole2 = getRolePermissions(guildId, roleId2);
         for (String permission : permsRole1) {
             if (!permsRole2.contains(permission)) {
                 addRolePermission(guildId, roleId2, permission);
@@ -421,8 +417,8 @@ public class MySQL {
     }
 
     public void copyUserPermissions(long guildId, long userId1, long userId2) {
-        List<String> permsUser1 = getUserPermissions(guildId, userId1);
-        List<String> permsUser2 = getUserPermissions(guildId, userId2);
+        Set<String> permsUser1 = getUserPermissions(guildId, userId1);
+        Set<String> permsUser2 = getUserPermissions(guildId, userId2);
         for (String permission : permsUser1) {
             if (!permsUser2.contains(permission)) {
                 addUserPermission(guildId, userId2, permission);
@@ -431,8 +427,8 @@ public class MySQL {
     }
 
     public void copyRoleUserPermissions(long guildId, long roleId, long userId) {
-        List<String> permsRole = getRolePermissions(guildId, roleId);
-        List<String> permsUser = getUserPermissions(guildId, userId);
+        Set<String> permsRole = getRolePermissions(guildId, roleId);
+        Set<String> permsUser = getUserPermissions(guildId, userId);
         for (String permission : permsRole) {
             if (!permsUser.contains(permission)) {
                 addUserPermission(guildId, userId, permission);
@@ -441,8 +437,8 @@ public class MySQL {
     }
 
     public void copyUserRolePermissions(long guildId, long userId, long roleId) {
-        List<String> permsUser = getUserPermissions(guildId, userId);
-        List<String> permsRole = getRolePermissions(guildId, roleId);
+        Set<String> permsUser = getUserPermissions(guildId, userId);
+        Set<String> permsRole = getRolePermissions(guildId, roleId);
         for (String permission : permsUser) {
             if (!permsRole.contains(permission)) {
                 addRolePermission(guildId, roleId, permission);

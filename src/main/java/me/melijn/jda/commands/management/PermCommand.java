@@ -11,8 +11,9 @@ import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.*;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
@@ -302,7 +303,7 @@ public class PermCommand extends Command {
                     return;
                 }
 
-                List<String> lijst = new ArrayList<>();
+                Set<String> lijst = new HashSet<>();
                 String targetName = "error";
 
                 mode = retrieveMode(args[1]);

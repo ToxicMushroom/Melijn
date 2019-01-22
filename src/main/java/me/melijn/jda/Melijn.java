@@ -184,8 +184,8 @@ public class Melijn {
                 .build();
 
 
-        EvalCommand.serverBlackList.add(new long[]{110373943822540800L, 264445053596991498L});
-        EvalCommand.userBlackList.add(new long[]{/*fabian: 260424455270957058L*/
+        EvalCommand.serverBlackList.addAll(new long[]{110373943822540800L, 264445053596991498L});
+        EvalCommand.userBlackList.addAll(new long[]{/*fabian: 260424455270957058L*/
                 //people who own bot farms
                 244397405846372354L, 324570870800449548L, 444348640450969600L
 
