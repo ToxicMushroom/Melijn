@@ -692,8 +692,11 @@ public class MySQL {
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-                if (guild.getMember(toUnmute) != null)
-                    guild.getController().removeSingleRoleFromMember(guild.getMember(toUnmute), guild.getRoleById(getRoleId(guild.getIdLong(), RoleType.MUTE))).queue();
+
+                final Member toUnmuteMember = guild.getMember(toUnmute);
+
+                if (toUnmuteMember != null && guild.getSelfMember().canInteract(toUnmuteMember))
+                    guild.getController().removeSingleRoleFromMember(toUnmuteMember, guild.getRoleById(getRoleId(guild.getIdLong(), RoleType.MUTE))).queue();
             }, guild.getIdLong(), toUnmute.getIdLong());
             return true;
         }
