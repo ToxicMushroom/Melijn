@@ -176,7 +176,7 @@ public class MessageHelper {
             printWriter.write("**Direct-Message**: " + privateChannel.getName() + " | " + privateChannel.getUser().getIdLong() + "\r\n");
         }
         if (thread != null) printWriter.write("**Thread**: " + thread.getName() + "\r\n");
-        if (unLoggedThreads.contains(thread.getName())) return;
+        if (thread != null && unLoggedThreads.contains(thread.getName())) return;
 
         ex.printStackTrace(printWriter);
         String message = writer.toString().replaceAll("me\\.melijn\\.jda", "**me.melijn.jda**");
