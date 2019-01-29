@@ -1,22 +1,13 @@
 package me.melijn.jda.commands.util;
 
-import gnu.trove.list.TIntList;
-import gnu.trove.list.array.TIntArrayList;
-import gnu.trove.map.TIntLongMap;
-import me.melijn.jda.Helpers;
-import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
-import me.melijn.jda.utils.MessageHelper;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
-import java.util.Calendar;
-import java.util.LinkedHashMap;
-import java.util.Optional;
-import java.util.TimeZone;
+import java.util.*;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
@@ -33,58 +24,58 @@ public class MetricsCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
+        if (event.getGuild() == null || event.hasPerm(event.getMember(), commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
-            if (args.length >= 2) {
-                StringBuilder sb = new StringBuilder("```INI\n");
-                int defaultInt = 10;
-                long[] period;
-                if (args[1].matches("[0-9]{1,2}")) {
-                    defaultInt = Integer.parseInt(args[1]);
-                    period = parseTimes(event.getArgs().replaceFirst(args[0] + "\\s+" + args[1] + "(\\s+)?", ""));
-                } else {
-                    period = parseTimes(event.getArgs().replaceFirst(args[0] + "(\\s+)?", ""));
-                }
-                if (period != null) {
-                    switch (args[0]) {
-                        case "top":
-                        case "limit":
-                            LinkedHashMap<Integer, Long> topCommandUsage = Melijn.mySQL.getTopUsage(period, defaultInt);
-                            for (int id : topCommandUsage.keySet()) {
-                                sb.append(topCommandUsage.get(id)).append(" - [").append(getCommandById(event, id).getCommandName()).append("]\n");
-                            }
-                            break;
-                        case "all":
-                            LinkedHashMap<Integer, Long> allCommandUsage = Melijn.mySQL.getTopUsage(period, event.getClient().getCommands().size());
-                            for (int id : allCommandUsage.keySet()) {
-                                sb.append(allCommandUsage.get(id)).append(" - [").append(getCommandById(event, id).getCommandName()).append("]\n");
-                            }
-                            break;
-                        default:
-                            TIntList commandIds = new TIntArrayList();
-                            for (Command command : event.getClient().getCommands()) {
-                                if (command.getCommandName().equalsIgnoreCase(args[0])) {
-                                    sb.append(Melijn.mySQL.getUsage(period, command.getId())).append(" - [").append(command.getCommandName()).append("]\n");
-                                } else if (command.getCategory().toString().equalsIgnoreCase(args[0])) {
-                                    commandIds.add(command.getId());
-                                }
-                            }
-                            if (commandIds.size() > 0) {
-                                TIntLongMap commandUsages = Melijn.mySQL.getUsages(period, commandIds);
-                                for (int id : commandUsages.keySet().toArray()) {
-                                    sb.append(commandUsages.get(id)).append(" - [").append(getCommandById(event, id).getCommandName()).append("]\n");
-                                }
-                            }
-                            break;
-                    }
-                    sb.append("```");
-                    event.reply(sb.toString());
-                } else {
-                    event.reply("Invalid timespan");
-                }
-            } else {
-                MessageHelper.sendUsage(this, event);
+            if (args.length < 2) {
+                event.sendUsage(this, event);
+                return;
             }
+            StringBuilder sb = new StringBuilder("```INI\n");
+            int defaultInt = 10;
+            long[] period;
+            if (args[1].matches("[0-9]{1,2}")) {
+                defaultInt = Integer.parseInt(args[1]);
+                period = parseTimes(event.getArgs().replaceFirst(args[0] + "\\s+" + args[1] + "(\\s+)?", ""));
+            } else {
+                period = parseTimes(event.getArgs().replaceFirst(args[0] + "(\\s+)?", ""));
+            }
+            if (period == null) {
+                event.reply("Invalid timespan");
+                return;
+            }
+            switch (args[0]) {
+                case "top":
+                case "limit":
+                    LinkedHashMap<Integer, Long> topCommandUsage = event.getMySQL().getTopUsage(period, defaultInt);
+                    for (int id : topCommandUsage.keySet()) {
+                        sb.append(topCommandUsage.get(id)).append(" - [").append(getCommandById(event, id).getCommandName()).append("]\n");
+                    }
+                    break;
+                case "all":
+                    LinkedHashMap<Integer, Long> allCommandUsage = event.getMySQL().getTopUsage(period, event.getClient().getCommands().size());
+                    for (int id : allCommandUsage.keySet()) {
+                        sb.append(allCommandUsage.get(id)).append(" - [").append(getCommandById(event, id).getCommandName()).append("]\n");
+                    }
+                    break;
+                default:
+                    List<Integer> commandIds = new ArrayList<>();
+                    for (Command command : event.getClient().getCommands()) {
+                        if (command.getCommandName().equalsIgnoreCase(args[0])) {
+                            sb.append(event.getMySQL().getUsage(period, command.getId())).append(" - [").append(command.getCommandName()).append("]\n");
+                        } else if (command.getCategory().toString().equalsIgnoreCase(args[0])) {
+                            commandIds.add(command.getId());
+                        }
+                    }
+                    if (commandIds.size() > 0) {
+                        Map<Integer, Long> commandUsages = event.getMySQL().getUsages(period, commandIds);
+                        for (int id : commandUsages.keySet()) {
+                            sb.append(commandUsages.get(id)).append(" - [").append(getCommandById(event, id).getCommandName()).append("]\n");
+                        }
+                    }
+                    break;
+            }
+            sb.append("```");
+            event.reply(sb.toString());
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }
@@ -93,43 +84,40 @@ public class MetricsCommand extends Command {
     private long[] parseTimes(String text) {
         if (text.split("\\s+").length > 1) {
             String[] times = text.split("(\\s+)?--(\\s+)?");
-            if (times.length == 2) {
-                long first = 0;
-                long second = 0;
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm-dd/MM/yyyy");
-                simpleDateFormat.setTimeZone(TimeZone.getTimeZone(ZoneId.of("Europe/Brussels")));
-                if (times[0].equalsIgnoreCase("now")) first = System.currentTimeMillis();
-                else if (times[0].matches("((([0-2])?([0-9]))|([0-3][0-1]))/(((0)?[0-9])|([0-1][0-2]))/(([0-1]?[0-9]{1,3})|(20[0-2][0-9]))")) {
-                    try {
-                        first = simpleDateFormat.parse("00:00-" + times[0]).getTime();
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-                } else if (times[0].matches("((([0-1]?[0-9])|(2[0-3])):([0-5]?[0-9]))-((([0-2])?([0-9]))|([0-3][0-1]))/(((0)?[0-9])|([0-1][0-2]))/(([0-1]?[0-9]{1,3})|(20[0-2][0-9]))")) {
-                    try {
-                        first = simpleDateFormat.parse(times[0]).getTime();
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
+            if (times.length != 2) return null;
+            long first = 0;
+            long second = 0;
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm-dd/MM/yyyy");
+            simpleDateFormat.setTimeZone(TimeZone.getTimeZone(ZoneId.of("Europe/Brussels")));
+            if (times[0].equalsIgnoreCase("now")) first = System.currentTimeMillis();
+            else if (times[0].matches("((([0-2])?([0-9]))|([0-3][0-1]))/(((0)?[0-9])|([0-1][0-2]))/(([0-1]?[0-9]{1,3})|(20[0-2][0-9]))")) {
+                try {
+                    first = simpleDateFormat.parse("00:00-" + times[0]).getTime();
+                } catch (ParseException e) {
+                    e.printStackTrace();
                 }
-                if (times[1].equalsIgnoreCase("now")) second = System.currentTimeMillis();
-                else if (times[1].matches("((([0-2])?([0-9]))|([0-3][0-1]))/(((0)?[0-9])|([0-1][0-2]))/(([0-1]?[0-9]{1,3})|(20[0-2][0-9]))")) {
-                    try {
-                        second = simpleDateFormat.parse("00:00-" + times[1]).getTime();
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-                } else if (times[1].matches("((([0-1]?[0-9])|(2[0-3])):([0-5]?[0-9]))-((([0-2])?([0-9]))|([0-3][0-1]))/(((0)?[0-9])|([0-1][0-2]))/(([0-1]?[0-9]{1,3})|(20[0-2][0-9]))")) {
-                    try {
-                        second = simpleDateFormat.parse(times[1]).getTime();
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
+            } else if (times[0].matches("((([0-1]?[0-9])|(2[0-3])):([0-5]?[0-9]))-((([0-2])?([0-9]))|([0-3][0-1]))/(((0)?[0-9])|([0-1][0-2]))/(([0-1]?[0-9]{1,3})|(20[0-2][0-9]))")) {
+                try {
+                    first = simpleDateFormat.parse(times[0]).getTime();
+                } catch (ParseException e) {
+                    e.printStackTrace();
                 }
-                return new long[]{first, second};
-            } else {
-                return null;
             }
+            if (times[1].equalsIgnoreCase("now")) second = System.currentTimeMillis();
+            else if (times[1].matches("((([0-2])?([0-9]))|([0-3][0-1]))/(((0)?[0-9])|([0-1][0-2]))/(([0-1]?[0-9]{1,3})|(20[0-2][0-9]))")) {
+                try {
+                    second = simpleDateFormat.parse("00:00-" + times[1]).getTime();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            } else if (times[1].matches("((([0-1]?[0-9])|(2[0-3])):([0-5]?[0-9]))-((([0-2])?([0-9]))|([0-3][0-1]))/(((0)?[0-9])|([0-1][0-2]))/(([0-1]?[0-9]{1,3})|(20[0-2][0-9]))")) {
+                try {
+                    second = simpleDateFormat.parse(times[1]).getTime();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+            return new long[]{first, second};
         } else {
             if (text.equalsIgnoreCase("today")) {
                 Calendar c = Calendar.getInstance();

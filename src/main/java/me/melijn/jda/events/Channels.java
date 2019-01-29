@@ -6,10 +6,6 @@ import me.melijn.jda.audio.Lava;
 import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.RoleType;
-import me.melijn.jda.commands.developer.EvalCommand;
-import me.melijn.jda.commands.management.*;
-import me.melijn.jda.commands.music.LoopCommand;
-import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
@@ -26,96 +22,99 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Channels extends ListenerAdapter {
 
-    private AudioLoader manager = AudioLoader.getManagerInstance();
-    private Lava lava = Lava.lava;
+    private final Melijn melijn;
+
+    public Channels(Melijn melijn) {
+        this.melijn = melijn;
+    }
 
     @Override
     public void onTextChannelDelete(TextChannelDeleteEvent event) {
-        TaskScheduler.async(() -> {
+        melijn.getTaskManager().async(() -> {
             long guildId = event.getGuild().getIdLong();
             long channelId = event.getChannel().getIdLong();
 
-            if (channelId == SetVerificationChannelCommand.verificationChannelsCache.getUnchecked(guildId)) {
-                Melijn.mySQL.removeChannel(guildId, ChannelType.VERIFICATION);
-                SetVerificationChannelCommand.verificationChannelsCache.invalidate(guildId);
+            if (channelId == melijn.getVariables().verificationChannelsCache.getUnchecked(guildId)) {
+                melijn.getMySQL().removeChannel(guildId, ChannelType.VERIFICATION);
+                melijn.getVariables().verificationChannelsCache.invalidate(guildId);
 
-            } else if (channelId == SetJoinLeaveChannelCommand.welcomeChannelCache.getUnchecked(guildId)) {
-                Melijn.mySQL.removeChannel(guildId, ChannelType.WELCOME);
-                SetJoinLeaveChannelCommand.welcomeChannelCache.invalidate(guildId);
+            } else if (channelId == melijn.getVariables().welcomeChannelCache.getUnchecked(guildId)) {
+                melijn.getMySQL().removeChannel(guildId, ChannelType.WELCOME);
+                melijn.getVariables().welcomeChannelCache.invalidate(guildId);
 
-            } else if (channelId == SetSelfRoleChannelCommand.selfRolesChannel.getUnchecked(guildId)) {
-                Melijn.mySQL.removeChannel(guildId, ChannelType.SELF_ROLE);
-                SetSelfRoleChannelCommand.selfRolesChannel.invalidate(guildId);
+            } else if (channelId == melijn.getVariables().selfRolesChannels.getUnchecked(guildId)) {
+                melijn.getMySQL().removeChannel(guildId, ChannelType.SELF_ROLE);
+                melijn.getVariables().selfRolesChannels.invalidate(guildId);
 
-            } else if (channelId == SetLogChannelCommand.banLogChannelCache.getUnchecked(guildId)) {
-                Melijn.mySQL.removeChannel(guildId, ChannelType.BAN_LOG);
-                SetLogChannelCommand.banLogChannelCache.invalidate(guildId);
+            } else if (channelId == melijn.getVariables().banLogChannelCache.getUnchecked(guildId)) {
+                melijn.getMySQL().removeChannel(guildId, ChannelType.BAN_LOG);
+                melijn.getVariables().banLogChannelCache.invalidate(guildId);
 
-            } else if (channelId == SetLogChannelCommand.kickLogChannelCache.getUnchecked(guildId)) {
-                Melijn.mySQL.removeChannel(guildId, ChannelType.KICK_LOG);
-                SetLogChannelCommand.kickLogChannelCache.invalidate(guildId);
+            } else if (channelId == melijn.getVariables().kickLogChannelCache.getUnchecked(guildId)) {
+                melijn.getMySQL().removeChannel(guildId, ChannelType.KICK_LOG);
+                melijn.getVariables().kickLogChannelCache.invalidate(guildId);
 
-            } else if (channelId == SetLogChannelCommand.warnLogChannelCache.getUnchecked(guildId)) {
-                Melijn.mySQL.removeChannel(guildId, ChannelType.WARN_LOG);
-                SetLogChannelCommand.warnLogChannelCache.invalidate(guildId);
+            } else if (channelId == melijn.getVariables().warnLogChannelCache.getUnchecked(guildId)) {
+                melijn.getMySQL().removeChannel(guildId, ChannelType.WARN_LOG);
+                melijn.getVariables().warnLogChannelCache.invalidate(guildId);
 
-            } else if (channelId == SetLogChannelCommand.muteLogChannelCache.getUnchecked(guildId)) {
-                Melijn.mySQL.removeChannel(guildId, ChannelType.MUTE_LOG);
-                SetLogChannelCommand.muteLogChannelCache.invalidate(guildId);
+            } else if (channelId == melijn.getVariables().muteLogChannelCache.getUnchecked(guildId)) {
+                melijn.getMySQL().removeChannel(guildId, ChannelType.MUTE_LOG);
+                melijn.getVariables().muteLogChannelCache.invalidate(guildId);
 
-            } else if (channelId == SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guildId)) {
-                Melijn.mySQL.removeChannel(guildId, ChannelType.SDM_LOG);
-                SetLogChannelCommand.sdmLogChannelCache.invalidate(guildId);
+            } else if (channelId == melijn.getVariables().sdmLogChannelCache.getUnchecked(guildId)) {
+                melijn.getMySQL().removeChannel(guildId, ChannelType.SDM_LOG);
+                melijn.getVariables().sdmLogChannelCache.invalidate(guildId);
 
-            } else if (channelId == SetLogChannelCommand.odmLogChannelCache.getUnchecked(guildId)) {
-                Melijn.mySQL.removeChannel(guildId, ChannelType.ODM_LOG);
-                SetLogChannelCommand.odmLogChannelCache.invalidate(guildId);
+            } else if (channelId == melijn.getVariables().odmLogChannelCache.getUnchecked(guildId)) {
+                melijn.getMySQL().removeChannel(guildId, ChannelType.ODM_LOG);
+                melijn.getVariables().odmLogChannelCache.invalidate(guildId);
 
-            } else if (channelId == SetLogChannelCommand.pmLogChannelCache.getUnchecked(guildId)) {
-                Melijn.mySQL.removeChannel(guildId, ChannelType.PM_LOG);
-                SetLogChannelCommand.pmLogChannelCache.invalidate(guildId);
+            } else if (channelId == melijn.getVariables().pmLogChannelCache.getUnchecked(guildId)) {
+                melijn.getMySQL().removeChannel(guildId, ChannelType.PM_LOG);
+                melijn.getVariables().pmLogChannelCache.invalidate(guildId);
 
-            } else if (channelId == SetLogChannelCommand.emLogChannelCache.getUnchecked(guildId)) {
-                Melijn.mySQL.removeChannel(guildId, ChannelType.EM_LOG);
-                SetLogChannelCommand.emLogChannelCache.invalidate(guildId);
+            } else if (channelId == melijn.getVariables().emLogChannelCache.getUnchecked(guildId)) {
+                melijn.getMySQL().removeChannel(guildId, ChannelType.EM_LOG);
+                melijn.getVariables().emLogChannelCache.invalidate(guildId);
 
-            } else if (channelId == SetLogChannelCommand.musicLogChannelCache.getUnchecked(guildId)) {
-                Melijn.mySQL.removeChannel(guildId, ChannelType.MUSIC_LOG);
-                SetLogChannelCommand.musicLogChannelCache.invalidate(guildId);
+            } else if (channelId == melijn.getVariables().musicLogChannelCache.getUnchecked(guildId)) {
+                melijn.getMySQL().removeChannel(guildId, ChannelType.MUSIC_LOG);
+                melijn.getVariables().musicLogChannelCache.invalidate(guildId);
             }
         });
     }
 
     @Override
     public void onVoiceChannelDelete(VoiceChannelDeleteEvent event) {
-        TaskScheduler.async(() -> {
+        melijn.getTaskManager().async(() -> {
             long guildId = event.getGuild().getIdLong();
             long channelId = event.getChannel().getIdLong();
 
-            if (channelId == SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)) {
-                Melijn.mySQL.removeChannel(guildId, ChannelType.MUSIC);
-                SetMusicChannelCommand.musicChannelCache.invalidate(guildId);
+            if (channelId == melijn.getVariables().musicChannelCache.getUnchecked(guildId)) {
+                melijn.getMySQL().removeChannel(guildId, ChannelType.MUSIC);
+                melijn.getVariables().musicChannelCache.invalidate(guildId);
             }
         });
     }
 
     @Override
     public void onRoleDelete(RoleDeleteEvent event) {
-        TaskScheduler.async(() -> {
+        melijn.getTaskManager().async(() -> {
             long guildId = event.getGuild().getIdLong();
             long roleId = event.getRole().getIdLong();
 
-            if (roleId == SetMuteRoleCommand.muteRoleCache.getUnchecked(guildId)) {
-                Melijn.mySQL.removeRole(guildId, RoleType.MUTE);
-                SetMuteRoleCommand.muteRoleCache.invalidate(roleId);
+            if (roleId == melijn.getVariables().muteRoleCache.getUnchecked(guildId)) {
+                melijn.getMySQL().removeRole(guildId, RoleType.MUTE);
+                melijn.getVariables().muteRoleCache.invalidate(roleId);
 
-            } else if (roleId == SetJoinRoleCommand.joinRoleCache.getUnchecked(guildId)) {
-                Melijn.mySQL.removeRole(guildId, RoleType.JOIN);
-                SetJoinRoleCommand.joinRoleCache.invalidate(roleId);
+            } else if (roleId == melijn.getVariables().joinRoleCache.getUnchecked(guildId)) {
+                melijn.getMySQL().removeRole(guildId, RoleType.JOIN);
+                melijn.getVariables().joinRoleCache.invalidate(roleId);
 
-            } else if (roleId == SetUnverifiedRoleCommand.unverifiedRoleCache.getUnchecked(guildId)) {
-                Melijn.mySQL.removeRole(guildId, RoleType.UNVERIFIED);
-                SetUnverifiedRoleCommand.unverifiedRoleCache.invalidate(roleId);
+            } else if (roleId == melijn.getVariables().unverifiedRoleCache.getUnchecked(guildId)) {
+                melijn.getMySQL().removeRole(guildId, RoleType.UNVERIFIED);
+                melijn.getVariables().unverifiedRoleCache.invalidate(roleId);
             }
 
         });
@@ -123,37 +122,40 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceMove(GuildVoiceMoveEvent event) {
-        if (event.getGuild() == null || EvalCommand.serverBlackList.contains(event.getGuild().getIdLong())) return;
+        if (event.getGuild() == null || melijn.getVariables().serverBlackList.contains(event.getGuild().getIdLong()))
+            return;
         Guild guild = event.getGuild();
-        if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
+        Lava lava = melijn.getLava();
+        AudioLoader loader = lava.getAudioLoader();
+        if (melijn.getVariables().userBlackList.contains(guild.getOwnerIdLong())) return;
         long guildId = guild.getIdLong();
         if (lava.isConnected(guildId)) {
             if (event.getChannelLeft() != lava.getConnectedChannel(guild)) return;
             if (someoneIsListening(guild)) {
-                String url = Melijn.mySQL.getStreamUrl(guildId);
+                String url = melijn.getMySQL().getStreamUrl(guildId);
                 if (!url.isEmpty()) {
-                    manager.getPlayer(guild).getTrackManager().clear();
-                    manager.loadSimpleTrack(manager.getPlayer(guild), url);
+                    loader.getPlayer(guild).getTrackManager().clear();
+                    loader.loadSimpleTrack(loader.getPlayer(guild), url);
                 }
             } else {
-                manager.getPlayer(guild).getAudioPlayer().setPaused(true);
+                loader.getPlayer(guild).getAudioPlayer().setPaused(true);
                 if (lava.getConnectedChannel(guild).getMembers().size() > 1) {
                     runLeaveTimer(guild, 300, true);
                 } else {
                     runLeaveTimer(guild, 60, false);
                 }
             }
-        } else if (SetStreamerModeCommand.streamerModeCache.getUnchecked(guildId) &&
+        } else if (melijn.getVariables().streamerModeCache.getUnchecked(guildId) &&
                 !lava.isConnected(guildId) &&
-                event.getChannelJoined().getIdLong() == SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)) {
-            lava.openConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)));
+                event.getChannelJoined().getIdLong() == melijn.getVariables().musicChannelCache.getUnchecked(guildId)) {
+            lava.openConnection(guild.getVoiceChannelById(melijn.getVariables().musicChannelCache.getUnchecked(guildId)));
             tryPlayStreamUrl(guild.getIdLong());
-            TaskScheduler.async(() -> {
+            melijn.getTaskManager().async(() -> {
                 //Hacky way to unmute bot in afk channel
                 if (guild.getAfkChannel() != null && (
-                        guild.getSelfMember().hasPermission(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)), Permission.VOICE_MUTE_OTHERS) &&
-                        guild.getSelfMember().getVoiceState().getChannel() == null ||
-                        guild.getAfkChannel().getIdLong() == guild.getSelfMember().getVoiceState().getChannel().getIdLong())) {
+                        guild.getSelfMember().hasPermission(guild.getVoiceChannelById(melijn.getVariables().musicChannelCache.getUnchecked(guildId)), Permission.VOICE_MUTE_OTHERS) &&
+                                guild.getSelfMember().getVoiceState().getChannel() == null ||
+                                guild.getAfkChannel().getIdLong() == guild.getSelfMember().getVoiceState().getChannel().getIdLong())) {
                     guild.getController().setMute(guild.getSelfMember(), true).queue(done ->
                             event.getGuild().getController().setMute(event.getGuild().getSelfMember(), false).queue());
                 }
@@ -163,20 +165,21 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceJoin(GuildVoiceJoinEvent event) {
-        if (event.getGuild() == null || EvalCommand.serverBlackList.contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || melijn.getVariables().serverBlackList.contains(event.getGuild().getIdLong()))
             return;
         Guild guild = event.getGuild();
-        if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
+        Lava lava = melijn.getLava();
+        if (melijn.getVariables().userBlackList.contains(guild.getOwnerIdLong())) return;
         long guildId = guild.getIdLong();
-        if (SetStreamerModeCommand.streamerModeCache.getUnchecked(guildId) &&
+        if (melijn.getVariables().streamerModeCache.getUnchecked(guildId) &&
                 !lava.isConnected(guildId) &&
-                event.getChannelJoined().getIdLong() == (SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId))) {
-            lava.openConnection(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)));
+                event.getChannelJoined().getIdLong() == (melijn.getVariables().musicChannelCache.getUnchecked(guildId))) {
+            lava.openConnection(guild.getVoiceChannelById(melijn.getVariables().musicChannelCache.getUnchecked(guildId)));
             tryPlayStreamUrl(guild.getIdLong());
-            TaskScheduler.async(() -> {
+            melijn.getTaskManager().async(() -> {
                 if (guild.getAfkChannel() != null &&
-                        (guild.getSelfMember().hasPermission(guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guildId)), Permission.VOICE_MUTE_OTHERS) &&
-                        guild.getSelfMember().getVoiceState().inVoiceChannel() && (guild.getAfkChannel().getIdLong() == guild.getSelfMember().getVoiceState().getChannel().getIdLong()))) {
+                        (guild.getSelfMember().hasPermission(guild.getVoiceChannelById(melijn.getVariables().musicChannelCache.getUnchecked(guildId)), Permission.VOICE_MUTE_OTHERS) &&
+                                guild.getSelfMember().getVoiceState().inVoiceChannel() && (guild.getAfkChannel().getIdLong() == guild.getSelfMember().getVoiceState().getChannel().getIdLong()))) {
                     guild.getController().setMute(guild.getSelfMember(), true).queue(done -> guild.getController().setMute(guild.getSelfMember(), false).queue());
                 }
             }, 2000);
@@ -185,7 +188,7 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
-        if (event.getGuild() == null || EvalCommand.serverBlackList.contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || melijn.getVariables().serverBlackList.contains(event.getGuild().getIdLong()))
             return;
         if (!event.getMember().equals(event.getGuild().getSelfMember()))
             whenListeningDoActions(event.getGuild());
@@ -193,16 +196,17 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceDeafen(GuildVoiceDeafenEvent event) {
-        if (event.getGuild() == null || EvalCommand.userBlackList.contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || melijn.getVariables().userBlackList.contains(event.getGuild().getIdLong()))
             return;
         if (!event.getMember().equals(event.getGuild().getSelfMember()))
             whenListeningDoActions(event.getGuild());
     }
 
     private void whenListeningDoActions(Guild guild) {
+        Lava lava = melijn.getLava();
         if (!lava.isConnected(guild.getIdLong())) return;
         if (!someoneIsListening(guild)) {
-            manager.getPlayer(guild).getAudioPlayer().setPaused(true);
+            lava.getAudioLoader().getPlayer(guild).getAudioPlayer().setPaused(true);
             if (lava.getConnectedChannel(guild).getMembers().size() > 1) {
                 runLeaveTimer(guild, 300, true);
             } else {
@@ -213,17 +217,20 @@ public class Channels extends ListenerAdapter {
 
     private void runLeaveTimer(Guild guild, int seconds, boolean defeaned) {
         AtomicInteger amount = new AtomicInteger();
-        TaskScheduler.async(() -> {
+        Lava lava = melijn.getLava();
+        melijn.getTaskManager().async(() -> {
             while (true) {
                 Guild guild2 = guild.getJDA().asBot().getShardManager().getGuildById(guild.getIdLong());
-                MusicPlayer player = manager.getPlayer(guild2);
-                if (guild2 == null || !lava.isConnected(guild.getIdLong()))
+                if (guild2 == null)
+                    break;
+                MusicPlayer player = lava.getAudioLoader().getPlayer(guild2);
+                if (!lava.isConnected(guild.getIdLong()))
                     break;
                 if (someoneIsListening(guild2)) {
                     player.getAudioPlayer().setPaused(false);
                     break;
                 } else if ((lava.getConnectedChannel(guild2).getMembers().size() == 1 && defeaned) || (amount.getAndIncrement() == seconds)) {
-                    LoopCommand.looped.remove(guild2.getIdLong());
+                    melijn.getVariables().looped.remove(guild2.getIdLong());
                     player.getAudioPlayer().setPaused(false);
                     player.stopTrack();
                     player.getTrackManager().clear();
@@ -240,16 +247,18 @@ public class Channels extends ListenerAdapter {
     }
 
     private void tryPlayStreamUrl(long guildId) {
-        if (manager.getPlayer(guildId).getAudioPlayer().getPlayingTrack() == null) {
-            String url = Melijn.mySQL.getStreamUrl(guildId);
+        AudioLoader audioLoader = melijn.getLava().getAudioLoader();
+        if (audioLoader.getPlayer(guildId).getAudioPlayer().getPlayingTrack() == null) {
+            String url = melijn.getMySQL().getStreamUrl(guildId);
             if (!url.isEmpty()) {
-                manager.getPlayer(guildId).getTrackManager().clear();
-                manager.loadSimpleTrack(manager.getPlayer(guildId), url);
+                audioLoader.getPlayer(guildId).getTrackManager().clear();
+                audioLoader.loadSimpleTrack(audioLoader.getPlayer(guildId), url);
             }
         }
     }
 
     private boolean someoneIsListening(Guild guild) {
+        Lava lava = melijn.getLava();
         if (!lava.isConnected(guild.getIdLong())) return false;
         int doveDuiven = 0;
         for (Member member : lava.getConnectedChannel(guild).getMembers()) {

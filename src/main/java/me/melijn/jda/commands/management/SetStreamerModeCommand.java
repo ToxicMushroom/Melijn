@@ -1,33 +1,13 @@
 package me.melijn.jda.commands.management;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import me.melijn.jda.Helpers;
-import me.melijn.jda.Melijn;
-import me.melijn.jda.audio.Lava;
 import me.melijn.jda.blub.*;
-import me.melijn.jda.utils.MessageHelper;
-import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.VoiceChannel;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.concurrent.TimeUnit;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class SetStreamerModeCommand extends Command {
-
-    public static final LoadingCache<Long, Boolean> streamerModeCache = CacheBuilder.newBuilder()
-            .maximumSize(10)
-            .expireAfterAccess(2, TimeUnit.MINUTES)
-            .build(new CacheLoader<>() {
-                public Boolean load(@NotNull Long key) {
-                    return Melijn.mySQL.getStreamerMode(key);
-                }
-            });
 
     public SetStreamerModeCommand() {
         this.commandName = "setStreamerMode";
@@ -43,16 +23,16 @@ public class SetStreamerModeCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         Guild guild = event.getGuild();
-        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
-            if (SetMusicChannelCommand.musicChannelCache.getUnchecked(guild.getIdLong()) == -1) {
-                event.reply("You first have to set a MusicChannel.\n" + SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + "smc <channelId>");
+        if (event.hasPerm(event.getMember(), commandName, 1)) {
+            if (event.getVariables().musicChannelCache.getUnchecked(guild.getIdLong()) == -1) {
+                event.reply("You first have to set a MusicChannel.\n" + event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + "smc <channelId>");
                 return;
             }
-            VoiceChannel musicChannel = guild.getVoiceChannelById(SetMusicChannelCommand.musicChannelCache.getUnchecked(guild.getIdLong()));
+            VoiceChannel musicChannel = guild.getVoiceChannelById(event.getVariables().musicChannelCache.getUnchecked(guild.getIdLong()));
             if (musicChannel != null) {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length == 0 || args[0].isEmpty()) {
-                    String state = streamerModeCache.getUnchecked(guild.getIdLong()) ? "enabled" : "disabled";
+                    String state = event.getVariables().streamerModeCache.getUnchecked(guild.getIdLong()) ? "enabled" : "disabled";
                     event.reply("StreamerMode: **" + state + "**");
                 } else if (args.length == 1) {
                     switch (args[0]) {
@@ -60,10 +40,10 @@ public class SetStreamerModeCommand extends Command {
                         case "on":
                         case "enabled":
                             if (guild.getSelfMember().hasPermission(musicChannel, Permission.VOICE_CONNECT)) {
-                                Lava.lava.openConnection(musicChannel);
-                                TaskScheduler.async(() -> {
-                                    Melijn.mySQL.setStreamerMode(guild.getIdLong(), true);
-                                    streamerModeCache.put(guild.getIdLong(), true);
+                                event.getClient().getMelijn().getLava().openConnection(musicChannel);
+                                event.async(() -> {
+                                    event.getMySQL().setStreamerMode(guild.getIdLong(), true);
+                                    event.getVariables().streamerModeCache.put(guild.getIdLong(), true);
                                 });
                                 event.reply("\uD83D\uDCF6 The StreamerMode has been **enabled** by **" + event.getFullAuthorName() + "**");
                             } else {
@@ -73,22 +53,22 @@ public class SetStreamerModeCommand extends Command {
                         case "false":
                         case "off":
                         case "disabled":
-                            TaskScheduler.async(() -> {
-                                Melijn.mySQL.setStreamerMode(guild.getIdLong(), false);
-                                streamerModeCache.put(guild.getIdLong(), false);
+                            event.async(() -> {
+                                event.getMySQL().setStreamerMode(guild.getIdLong(), false);
+                                event.getVariables().streamerModeCache.put(guild.getIdLong(), false);
                             });
                             event.reply("The streamer mode has been **disabled** by **" + event.getFullAuthorName() + "**");
                             break;
                         default:
-                            MessageHelper.sendUsage(this, event);
+                            event.sendUsage(this, event);
                             break;
                     }
                 } else {
-                    MessageHelper.sendUsage(this, event);
+                    event.sendUsage(this, event);
                 }
             } else {
-                Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.MUSIC);
-                SetMusicChannelCommand.musicChannelCache.invalidate(guild.getIdLong());
+                event.getMySQL().removeChannel(guild.getIdLong(), ChannelType.MUSIC);
+                event.getVariables().musicChannelCache.invalidate(guild.getIdLong());
                 event.reply("You have to set a MusicChannel to enable this mode :p");
             }
         } else {

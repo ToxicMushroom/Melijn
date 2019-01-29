@@ -4,20 +4,15 @@ import com.google.common.collect.Sets;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import gnu.trove.list.TIntList;
-import gnu.trove.list.TLongList;
-import gnu.trove.list.array.TIntArrayList;
-import gnu.trove.list.array.TLongArrayList;
-import gnu.trove.map.*;
-import gnu.trove.map.hash.*;
-import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.MessageType;
 import me.melijn.jda.blub.*;
-import me.melijn.jda.commands.management.*;
+import me.melijn.jda.commands.management.CustomCommandCommand;
+import me.melijn.jda.commands.management.SetLogChannelCommand;
+import me.melijn.jda.commands.management.SetPrefixCommand;
+import me.melijn.jda.commands.management.SetStreamerModeCommand;
 import me.melijn.jda.commands.util.PrivatePrefixCommand;
-import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
@@ -38,52 +33,44 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static me.melijn.jda.utils.MessageHelper.spaces;
-
 public class MySQL {
 
-    private String ip;
-    private String pass;
-    private String user;
-    private String dbname;
-    private HikariDataSource ds;
-    private Logger logger = LoggerFactory.getLogger(MySQL.class.getName());
+    private final Melijn melijn;
+    private final HikariDataSource ds;
+    private final Logger logger = LoggerFactory.getLogger(MySQL.class.getName());
 
 
     private long currentTime = 0;
     private int currentHour = 25; //Because 25 isn't a valid hour it will be changed on the first updateUsage call
 
-    public MySQL(String ip, String user, String pass, String dbname) {
-        this.ip = ip;
-        this.user = user;
-        this.pass = pass;
-        this.dbname = dbname;
-        connect();
+    public MySQL(Melijn melijn, String ip, String user, String pass, String dbname) {
+        this.melijn = melijn;
+
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:mysql://" + ip + ":3306/" + dbname);
+        config.setUsername(user);
+        config.setPassword(pass);
+        config.setMaximumPoolSize(20);
+        config.addDataSourceProperty("autoReconnect", "true");
+        config.addDataSourceProperty("useUnicode", "true");
+        config.addDataSourceProperty("useSSL", "false");
+        config.addDataSourceProperty("useLegacyDatetimeCode", "false");
+        config.addDataSourceProperty("serverTimezone", "UTC");
+        //https://github.com/brettwooldridge/HikariCP/wiki/MySQL-Configuration
+        config.addDataSourceProperty("allowMultiQueries", "true");
+        config.addDataSourceProperty("prepStmtCacheSize", "350");
+        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        config.addDataSourceProperty("cachePrepStmts", "true");
+        config.addDataSourceProperty("useServerPrepStmts", "true");
+        config.addDataSourceProperty("rewriteBatchedStatements", "true");
+        config.addDataSourceProperty("useLocalTransactionState", "true");
+
+        this.ds = new HikariDataSource(config);
+        init();
     }
 
-    private void connect() {
+    private void init() {
         try {
-            HikariConfig config = new HikariConfig();
-            config.setJdbcUrl("jdbc:mysql://" + this.ip + ":3306/" + this.dbname);
-            config.setUsername(this.user);
-            config.setPassword(this.pass);
-            config.setMaximumPoolSize(20);
-            config.addDataSourceProperty("autoReconnect", "true");
-            config.addDataSourceProperty("useUnicode", "true");
-            config.addDataSourceProperty("useSSL", "false");
-            config.addDataSourceProperty("useLegacyDatetimeCode", "false");
-            config.addDataSourceProperty("serverTimezone", "UTC");
-            //https://github.com/brettwooldridge/HikariCP/wiki/MySQL-Configuration
-            config.addDataSourceProperty("allowMultiQueries", "true");
-            config.addDataSourceProperty("prepStmtCacheSize", "350");
-            config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-            config.addDataSourceProperty("cachePrepStmts", "true");
-            config.addDataSourceProperty("useServerPrepStmts", "true");
-            config.addDataSourceProperty("rewriteBatchedStatements", "true");
-            config.addDataSourceProperty("useLocalTransactionState", "true");
-
-            ds = new HikariDataSource(config);
-
             logger.info("[MySQL] has connected & Loading init");
             Statement statement = ds.getConnection().createStatement();
             statement.executeQuery("SET NAMES 'utf8mb4'");
@@ -147,9 +134,12 @@ public class MySQL {
             executeUpdate("CREATE TABLE IF NOT EXISTS saved_queues(guildId bigint, position int, url varchar(1024), UNIQUE KEY (guildId, position))");
             executeUpdate("CREATE TABLE IF NOT EXISTS votes(userId bigint, votes bigint, streak bigint, lastTime bigint, PRIMARY KEY (userId));");
 
+            //Cleanup commands
+            executeUpdate("TRUNCATE TABLE commands");
+
             logger.info("[MySQL] init loaded");
         } catch (SQLException e) {
-            logger.error("[MySQL] did not connect -> ");
+            logger.error("[MySQL] did not init -> ");
             e.printStackTrace();
             System.exit(500);
         }
@@ -166,7 +156,7 @@ public class MySQL {
                 return preparedStatement.executeUpdate();
             }
         } catch (final SQLException e) {
-            System.out.println("Something went wrong while executing the query: " + query);
+            logger.error("Something went wrong while executing the query: " + query);
             e.printStackTrace();
         }
         return 0;
@@ -185,7 +175,7 @@ public class MySQL {
                 resultSet.close();
             }
         } catch (final SQLException e) {
-            System.out.println("Something went wrong while executing the query: " + sql);
+            logger.error("Something went wrong while executing the query: " + sql);
             e.printStackTrace();
         }
     }
@@ -450,7 +440,7 @@ public class MySQL {
     public void setPrefix(long guildId, String prefix) {
         executeUpdate("INSERT INTO prefixes (guildId, prefix) VALUES (?, ?) ON DUPLICATE KEY UPDATE prefix= ?",
                 guildId, prefix, prefix);
-        SetPrefixCommand.prefixes.put(guildId, prefix);
+        melijn.getVariables().prefixes.put(guildId, prefix);
     }
 
     public String getPrefix(long guildId) {
@@ -484,17 +474,17 @@ public class MySQL {
                     "\nTargetID: " + target.getId() +
                     "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") +
                     "\nGuild: " + guild.getName() +
-                    "\nFrom: " + MessageHelper.millisToDate(moment) +
-                    "\nUntil: " + MessageHelper.millisToDate(until) + "```");
+                    "\nFrom: " + melijn.getMessageHelper().millisToDate(moment) +
+                    "\nUntil: " + melijn.getMessageHelper().millisToDate(until) + "```");
             banned.setThumbnail(target.getEffectiveAvatarUrl());
-            banned.setAuthor("Banned by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
+            banned.setAuthor("Banned by: " + name + " ".repeat(80).substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
             if (!target.isBot())
                 target.openPrivateChannel().queue((privateChannel) -> privateChannel.sendMessage(banned.build()).queue(
                         (success) -> guild.getController().ban(target.getId(), 7, reason).queue(),
                         (failed) -> guild.getController().ban(target.getId(), 7, reason).queue()
                 ), (failed) -> guild.getController().ban(target.getId(), 7, reason).queue());
-            TextChannel logChannel = guild.getTextChannelById(SetLogChannelCommand.banLogChannelCache.getUnchecked(guild.getIdLong()));
+            TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().banLogChannelCache.getUnchecked(guild.getIdLong()));
             if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
                 if (target.isBot())
                     logChannel.sendMessage(banned.build() + "\nTarget is a bot").queue();
@@ -521,16 +511,16 @@ public class MySQL {
                 "\nTargetID: " + target.getId() +
                 "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") +
                 "\nGuild: " + guild.getName() +
-                "\nMoment: " + MessageHelper.millisToDate(moment) + "```");
+                "\nMoment: " + melijn.getMessageHelper().millisToDate(moment) + "```");
         banned.setThumbnail(target.getEffectiveAvatarUrl());
-        banned.setAuthor("Banned by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
+        banned.setAuthor("Banned by: " + name + " ".repeat(80).substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
         if (!target.isBot())
             target.openPrivateChannel().queue((privateChannel) -> privateChannel.sendMessage(banned.build()).queue(
                     (success) -> guild.getController().ban(target.getId(), 7, reason).queue(),
                     (failed) -> guild.getController().ban(target.getId(), 7, reason).queue()
             ), (failed) -> guild.getController().ban(target.getId(), 7, reason).queue());
-        TextChannel logChannel = guild.getTextChannelById(SetLogChannelCommand.banLogChannelCache.getUnchecked(guild.getIdLong()));
+        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().banLogChannelCache.getUnchecked(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
             if (target.isBot())
                 logChannel.sendMessage(banned.build() + "\nTarget is a bot").queue();
@@ -559,19 +549,19 @@ public class MySQL {
                 }
             }, guild.getIdLong(), toUnban.getIdLong());
             EmbedBuilder eb = new EmbedBuilder();
-            eb.setAuthor("Unbanned by: " + author.getName() + "#" + author.getDiscriminator() + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
+            eb.setAuthor("Unbanned by: " + author.getName() + "#" + author.getDiscriminator() + " ".repeat(80).substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
             eb.setDescription("```LDIF" +
                     "\nUnbanned: " + toUnban.getName() + "#" + toUnban.getDiscriminator() +
                     "\nTargetID: " + toUnban.getId() +
                     "\nReason: " + reason +
                     "\nGuild: " + guild.getName() +
-                    "\nMoment: " + MessageHelper.millisToDate(System.currentTimeMillis()) + "```");
+                    "\nMoment: " + melijn.getMessageHelper().millisToDate(System.currentTimeMillis()) + "```");
             eb.setThumbnail(toUnban.getEffectiveAvatarUrl());
             eb.setColor(Color.green);
 
             if (!toUnban.isBot() && !toUnban.isFake())
                 toUnban.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
-            TextChannel logChannel = guild.getTextChannelById(SetLogChannelCommand.banLogChannelCache.getUnchecked(guild.getIdLong()));
+            TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().banLogChannelCache.getUnchecked(guild.getIdLong()));
             if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
                 if (toUnban.isBot())
                     logChannel.sendMessage(eb.build() + "\nTarget is a bot").queue();
@@ -590,17 +580,17 @@ public class MySQL {
         executeUpdate("INSERT INTO warns(guildId, victimId, authorId, reason, moment) VALUES (?, ?, ?, ?, ?);",
                 guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment);
         EmbedBuilder embedBuilder = new EmbedBuilder();
-        embedBuilder.setAuthor("Warned by: " + author.getName() + "#" + author.getDiscriminator() + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
+        embedBuilder.setAuthor("Warned by: " + author.getName() + "#" + author.getDiscriminator() + " ".repeat(80).substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
         embedBuilder.setDescription("```LDIF" +
                 "\nWarned: " + target.getName() + "#" + target.getDiscriminator() +
                 "\nTargetID: " + target.getId() +
                 "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") +
                 "\nGuild: " + guild.getName() +
-                "\nMoment: " + MessageHelper.millisToDate(moment) + "```");
+                "\nMoment: " + melijn.getMessageHelper().millisToDate(moment) + "```");
         embedBuilder.setThumbnail(target.getEffectiveAvatarUrl());
         embedBuilder.setColor(Color.yellow);
 
-        TextChannel logChannel = guild.getTextChannelById(SetLogChannelCommand.warnLogChannelCache.getUnchecked(guild.getIdLong()));
+        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().warnLogChannelCache.getUnchecked(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
             if (target.isBot()) logChannel.sendMessage(embedBuilder.build() + "\nTarget is a bot.").queue();
             else logChannel.sendMessage(embedBuilder.build()).queue();
@@ -618,12 +608,12 @@ public class MySQL {
             String name = author.getName() + "#" + author.getDiscriminator();
             EmbedBuilder muted = new EmbedBuilder();
             muted.setColor(Color.BLUE);
-            muted.setDescription("```LDIF\nMuted: " + nameTarget + "\nTargetID: " + target.getId() + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nFrom: " + MessageHelper.millisToDate(moment) + "\nUntil: " + MessageHelper.millisToDate(until) + "```");
+            muted.setDescription("```LDIF\nMuted: " + nameTarget + "\nTargetID: " + target.getId() + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nFrom: " + melijn.getMessageHelper().millisToDate(moment) + "\nUntil: " + melijn.getMessageHelper().millisToDate(until) + "```");
             muted.setThumbnail(target.getEffectiveAvatarUrl());
-            muted.setAuthor("Muted by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
+            muted.setAuthor("Muted by: " + name + " ".repeat(45).substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
             if (!target.isBot()) target.openPrivateChannel().queue(pc -> pc.sendMessage(muted.build()).queue());
-            TextChannel logChannel = guild.getTextChannelById(SetLogChannelCommand.muteLogChannelCache.getUnchecked(guild.getIdLong()));
+            TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().muteLogChannelCache.getUnchecked(guild.getIdLong()));
             if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
                 if (target.isBot()) logChannel.sendMessage(muted.build() + "\nTarget is a bot").queue();
                 else logChannel.sendMessage(muted.build()).queue();
@@ -646,12 +636,12 @@ public class MySQL {
         String name = author.getName() + "#" + author.getDiscriminator();
         EmbedBuilder muted = new EmbedBuilder();
         muted.setColor(Color.BLUE);
-        muted.setDescription("```LDIF\nMuted: " + nameTarget + "\nTargetID: " + target.getId() + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nMoment: " + MessageHelper.millisToDate(moment) + "```");
+        muted.setDescription("```LDIF\nMuted: " + nameTarget + "\nTargetID: " + target.getId() + "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") + "\nGuild: " + guild.getName() + "\nMoment: " + melijn.getMessageHelper().millisToDate(moment) + "```");
         muted.setThumbnail(target.getEffectiveAvatarUrl());
-        muted.setAuthor("Muted by: " + name + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
+        muted.setAuthor("Muted by: " + name + " ".repeat(45).substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
         if (!target.isBot()) target.openPrivateChannel().queue(pc -> pc.sendMessage(muted.build()).queue());
-        TextChannel logChannel = guild.getTextChannelById(SetLogChannelCommand.muteLogChannelCache.getUnchecked(guild.getIdLong()));
+        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().muteLogChannelCache.getUnchecked(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
             if (target.isBot()) logChannel.sendMessage(muted.build() + "\nTarget is a bot").queue();
             else logChannel.sendMessage(muted.build()).queue();
@@ -676,14 +666,14 @@ public class MySQL {
                                 guild.getIdLong(), toUnmute.getIdLong());
 
                         EmbedBuilder eb = new EmbedBuilder();
-                        eb.setAuthor("Unmuted by: " + author.getName() + "#" + author.getDiscriminator() + spaces.substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
-                        eb.setDescription("```LDIF" + "\nUnmuted: " + toUnmute.getName() + "#" + toUnmute.getDiscriminator() + "\nTargetID: " + toUnmute.getId() + "\nReason: " + reason + "\nGuild: " + guild.getName() + "\nMoment: " + MessageHelper.millisToDate(System.currentTimeMillis()) + "```");
+                        eb.setAuthor("Unmuted by: " + author.getName() + "#" + author.getDiscriminator() + " ".repeat(45).substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
+                        eb.setDescription("```LDIF" + "\nUnmuted: " + toUnmute.getName() + "#" + toUnmute.getDiscriminator() + "\nTargetID: " + toUnmute.getId() + "\nReason: " + reason + "\nGuild: " + guild.getName() + "\nMoment: " + melijn.getMessageHelper().millisToDate(System.currentTimeMillis()) + "```");
                         eb.setThumbnail(toUnmute.getEffectiveAvatarUrl());
                         eb.setColor(Color.green);
 
                         if (!toUnmute.isBot() && !toUnmute.isFake())
                             toUnmute.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
-                        TextChannel logChannel = guild.getTextChannelById(SetLogChannelCommand.muteLogChannelCache.getUnchecked(guild.getIdLong()));
+                        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().muteLogChannelCache.getUnchecked(guild.getIdLong()));
                         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
                             if (toUnmute.isBot()) logChannel.sendMessage(eb.build() + "\nTarget is a bot").queue();
                             else logChannel.sendMessage(eb.build()).queue();
@@ -709,7 +699,7 @@ public class MySQL {
         executeUpdate("INSERT INTO kicks(guildId, victimId, authorId, reason, moment) VALUES (?, ?, ?, ?, ?);",
                 guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment);
         EmbedBuilder embedBuilder = new EmbedBuilder();
-        embedBuilder.setAuthor("Kicked by: " + author.getName() + "#" + author.getDiscriminator() + spaces.substring(0, 45 - author.getName().length()) + "\u200B",
+        embedBuilder.setAuthor("Kicked by: " + author.getName() + "#" + author.getDiscriminator() + " ".repeat(45).substring(0, 45 - author.getName().length()) + "\u200B",
                 null,
                 author.getEffectiveAvatarUrl());
         embedBuilder.setDescription("```LDIF" +
@@ -717,11 +707,11 @@ public class MySQL {
                 "\nTargetID: " + target.getId() +
                 "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") +
                 "\nGuild: " + guild.getName() +
-                "\nMoment: " + MessageHelper.millisToDate(moment) + "```");
+                "\nMoment: " + melijn.getMessageHelper().millisToDate(moment) + "```");
         embedBuilder.setThumbnail(target.getEffectiveAvatarUrl());
         embedBuilder.setColor(Color.ORANGE);
 
-        TextChannel logChannel = guild.getTextChannelById(SetLogChannelCommand.kickLogChannelCache.getUnchecked(guild.getIdLong()));
+        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().kickLogChannelCache.getUnchecked(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
             if (target.isBot()) logChannel.sendMessage(embedBuilder.build() + "\nTarget is a bot").queue();
             else logChannel.sendMessage(embedBuilder.build()).queue();
@@ -761,13 +751,13 @@ public class MySQL {
             List<String> toRet = new ArrayList<>();
             AtomicInteger progress = new AtomicInteger();
             for (JSONObject rowObj : set) {
-                String endTime = rowObj.getString("endTime").isEmpty() ? "Infinity" : MessageHelper.millisToDate(Long.valueOf(rowObj.getString("endTime")));
+                String endTime = rowObj.getString("endTime").isEmpty() ? "Infinity" : melijn.getMessageHelper().millisToDate(Long.valueOf(rowObj.getString("endTime")));
                 jda.asBot().getShardManager().retrieveUserById(rowObj.getLong("authorId")).queue(staff -> {
                     if (rowObj.getBoolean("active"))
                         toRet.add("```ini" +
                                 "\n[Banned by]: " + staff.getName() + "#" + staff.getDiscriminator() +
                                 "\n[Reason]: " + rowObj.getString("reason") +
-                                "\n[From]: " + MessageHelper.millisToDate(rowObj.getLong("startTime")) +
+                                "\n[From]: " + melijn.getMessageHelper().millisToDate(rowObj.getLong("startTime")) +
                                 "\n[Until]: " + endTime +
                                 "\n[active]: " + rowObj.getBoolean("active") + "```");
                     else {
@@ -777,7 +767,7 @@ public class MySQL {
                                 "\n[Reason]: " + rowObj.getString("reason");
                         if (rowObj.get("unbanReason") != null && !rowObj.getBoolean("active"))
                             toAdd += "\n[UnbanReason]: " + (rowObj.get("unbanReason") == null ? "N/A" : rowObj.getString("unbanReason"));
-                        toAdd += "\n[From]: " + MessageHelper.millisToDate(rowObj.getLong("startTime")) +
+                        toAdd += "\n[From]: " + melijn.getMessageHelper().millisToDate(rowObj.getLong("startTime")) +
                                 "\n[Until]: " + endTime +
                                 "\n[active]: " + rowObj.getBoolean("active") + "```";
                         toRet.add(toAdd);
@@ -788,7 +778,7 @@ public class MySQL {
                 }, (failed) -> {
                     toRet.add("```ini" +
                             "\n[Reason]: " + rowObj.getString("reason") +
-                            "\n[From]: " + MessageHelper.millisToDate(rowObj.getLong("startTime")) +
+                            "\n[From]: " + melijn.getMessageHelper().millisToDate(rowObj.getLong("startTime")) +
                             "\n[Until]: " + endTime +
                             "\n[active]: " + rowObj.getBoolean("active") + "```");
                     if (progress.incrementAndGet() == set.size()) {
@@ -828,13 +818,13 @@ public class MySQL {
             List<String> toRet = new ArrayList<>();
             AtomicInteger progress = new AtomicInteger();
             for (JSONObject rowObj : set) {
-                String endTime = rowObj.getString("endTime").isEmpty() ? "Infinity" : MessageHelper.millisToDate(Long.valueOf(rowObj.getString("endTime")));
+                String endTime = rowObj.getString("endTime").isEmpty() ? "Infinity" : melijn.getMessageHelper().millisToDate(Long.valueOf(rowObj.getString("endTime")));
                 jda.asBot().getShardManager().retrieveUserById(rowObj.getLong("authorId")).queue(staff -> {
                     if (rowObj.getBoolean("active"))
                         toRet.add("```ini" +
                                 "\n[Muted by]: " + staff.getName() + "#" + staff.getDiscriminator() +
                                 "\n[Reason]: " + rowObj.getString("reason") +
-                                "\n[From]: " + MessageHelper.millisToDate(rowObj.getLong("startTime")) +
+                                "\n[From]: " + melijn.getMessageHelper().millisToDate(rowObj.getLong("startTime")) +
                                 "\n[Until]: " + endTime +
                                 "\n[active]: " + rowObj.getBoolean("active") + "```");
                     else {
@@ -844,7 +834,7 @@ public class MySQL {
                                 "\n[Reason]: " + rowObj.getString("reason");
                         if (!rowObj.get("unmuteReason").equals("") && !rowObj.getBoolean("active"))
                             toAdd += "\n[UnmuteReason]: " + (rowObj.get("unmuteReason") == null ? "N/A" : rowObj.getString("unmuteReason"));
-                        toAdd += "\n[From]: " + MessageHelper.millisToDate(rowObj.getLong("startTime")) +
+                        toAdd += "\n[From]: " + melijn.getMessageHelper().millisToDate(rowObj.getLong("startTime")) +
                                 "\n[Until]: " + endTime +
                                 "\n[active]: " + rowObj.getBoolean("active") + "```";
                         toRet.add(toAdd);
@@ -855,7 +845,7 @@ public class MySQL {
                 }, (failed) -> {
                     toRet.add("```ini" +
                             "\n[Reason]: " + rowObj.getString("reason") +
-                            "\n[From]: " + MessageHelper.millisToDate(rowObj.getLong("startTime")) +
+                            "\n[From]: " + melijn.getMessageHelper().millisToDate(rowObj.getLong("startTime")) +
                             "\n[Until]: " + endTime +
                             "\n[active]: " + rowObj.getBoolean("active") + "```");
                     if (progress.incrementAndGet() == set.size()) {
@@ -910,14 +900,14 @@ public class MySQL {
                     toRet.add("```ini" +
                             "\n[Warned by]: " + staff.getName() + "#" + staff.getDiscriminator() +
                             "\n[Reason]: " + rowObj.getString("reason") +
-                            "\n[Moment]: " + MessageHelper.millisToDate(rowObj.getLong("moment")) + "```");
+                            "\n[Moment]: " + melijn.getMessageHelper().millisToDate(rowObj.getLong("moment")) + "```");
                     if (progress.incrementAndGet() == set.size()) {
                         warns.accept(toRet.toArray(new String[0]));
                     }
                 }, (failed) -> {
                     toRet.add("```ini" +
                             "\n[Reason]: " + rowObj.getString("reason") +
-                            "\n[Moment]: " + MessageHelper.millisToDate(rowObj.getLong("moment")) + "```");
+                            "\n[Moment]: " + melijn.getMessageHelper().millisToDate(rowObj.getLong("moment")) + "```");
                     if (progress.incrementAndGet() == set.size()) {
                         warns.accept(toRet.toArray(new String[0]));
                     }
@@ -957,14 +947,14 @@ public class MySQL {
                     toRet.add("```ini" +
                             "\n[Kicked by]: " + staff.getName() + "#" + staff.getDiscriminator() +
                             "\n[Reason]: " + rowObj.getString("reason") +
-                            "\n[Moment]: " + MessageHelper.millisToDate(rowObj.getLong("moment")) + "```");
+                            "\n[Moment]: " + melijn.getMessageHelper().millisToDate(rowObj.getLong("moment")) + "```");
                     if (progress.incrementAndGet() == set.size()) {
                         kicks.accept(toRet.toArray(new String[0]));
                     }
                 }, (failed) -> {
                     toRet.add("```ini" +
                             "\n[Reason]: " + rowObj.getString("reason") +
-                            "\n[Moment]: " + MessageHelper.millisToDate(rowObj.getLong("moment")) + "```");
+                            "\n[Moment]: " + melijn.getMessageHelper().millisToDate(rowObj.getLong("moment")) + "```");
                     if (progress.incrementAndGet() == set.size()) {
                         kicks.accept(toRet.toArray(new String[0]));
                     }
@@ -1010,7 +1000,7 @@ public class MySQL {
     //streamer stuff------------------------------------------------
     public void setStreamerMode(long guildId, boolean state) {
         if (state) {
-            if (!SetStreamerModeCommand.streamerModeCache.getUnchecked(guildId)) {
+            if (!melijn.getVariables().streamerModeCache.getUnchecked(guildId)) {
                 executeUpdate("INSERT INTO streamer_modes (guildId) VALUES (?)", guildId);
             }
         } else {
@@ -1171,20 +1161,19 @@ public class MySQL {
         return toReturn;
     }
 
-    public TLongObjectMap<TLongList> getNotificationsMap(NotificationType nextvote) {
+    public Map<Long, Set<Long>> getNotificationsMap(NotificationType nextvote) {
         //userId -> mensen waarvan notificatie moet krijgen -> aan of uit
-        TLongObjectMap<TLongList> mapje = new TLongObjectHashMap<TLongList>();
+        Map<Long, Set<Long>> mapje = new IdentityHashMap<>();
         try (Connection con = ds.getConnection()) {
             PreparedStatement statement = con.prepareStatement("SELECT * FROM " + nextvote.toString().toLowerCase() + "_notifications");
             ResultSet rs = statement.executeQuery();
-            TLongList row = new TLongArrayList();
+            Set<Long> row = new HashSet<>();
             while (rs.next()) {
-                if (!row.contains(rs.getLong("userId")))
-                    row.add(rs.getLong("userId"));
+                row.add(rs.getLong("userId"));
             }
-            for (long s : row.toArray()) {
+            for (long s : row) {
                 rs.beforeFirst();
-                TLongList lijst = new TLongArrayList();
+                Set<Long> lijst = new HashSet<>();
                 while (rs.next()) {
                     if (rs.getLong("userId") == s) {
                         lijst.add(rs.getLong("targetId"));
@@ -1210,13 +1199,13 @@ public class MySQL {
                 userId, targetId);
     }
 
-    public TLongList getVoteList() {
-        TLongList list = new TLongArrayList();
+    public Set<Long> getVoteList() {
+        Set<Long> list = new HashSet<>();
         try (Connection con = ds.getConnection()) {
-            long yesterdayandminute = System.currentTimeMillis() - 43_260_000L;
+            long yesterdayAndMinute = System.currentTimeMillis() - 43_260_000L;
             long yesterday = System.currentTimeMillis() - 43_200_000L;
             PreparedStatement getVoteMap = con.prepareStatement("SELECT * FROM votes WHERE lastTime BETWEEN ? AND ?");
-            getVoteMap.setLong(1, yesterdayandminute);
+            getVoteMap.setLong(1, yesterdayAndMinute);
             getVoteMap.setLong(2, yesterday);
             ResultSet rs = getVoteMap.executeQuery();
             while (rs.next()) {
@@ -1262,18 +1251,18 @@ public class MySQL {
         executeUpdate("DELETE FROM verification_thresholds WHERE guildId= ?", guildId);
     }
 
-    public TLongObjectMap<TIntList> getDisabledCommandsMap() {
-        TLongObjectMap<TIntList> toReturn = new TLongObjectHashMap<>();
+    public Map<Long , List<Integer>> getDisabledCommandsMap() {
+        Map<Long , List<Integer>> toReturn = new IdentityHashMap<>();
         try (Connection con = ds.getConnection()) {
             PreparedStatement statement = con.prepareStatement("SELECT * FROM disabled_commands");
             ResultSet rs = statement.executeQuery();
             while (rs.next()) {
                 if (toReturn.containsKey(rs.getLong("guildId"))) {
-                    TIntList buffertje = toReturn.get(rs.getLong("guildId"));
+                    List<Integer> buffertje = toReturn.get(rs.getLong("guildId"));
                     buffertje.add(rs.getInt("command"));
                     toReturn.put(rs.getLong("guildId"), buffertje);
                 } else {
-                    TIntList temp = new TIntArrayList();
+                    List<Integer> temp = new ArrayList<>();
                     temp.add(rs.getInt("command"));
                     toReturn.put(rs.getLong("guildId"), temp);
                 }
@@ -1286,15 +1275,15 @@ public class MySQL {
         return toReturn;
     }
 
-    public void removeDisabledCommands(long guildId, TIntList buffer) {
-        TIntList toRemove = new TIntArrayList();
-        if (DisableCommand.disabledGuildCommands.containsKey(guildId))
-            toRemove.addAll(DisableCommand.disabledGuildCommands.get(guildId));
+    public void removeDisabledCommands(long guildId, List<Integer> buffer) {
+        List<Integer> toRemove = new ArrayList<>();
+        if (melijn.getVariables().disabledGuildCommands.containsKey(guildId))
+            toRemove.addAll(melijn.getVariables().disabledGuildCommands.get(guildId));
         toRemove.removeAll(buffer);
         try (Connection con = ds.getConnection()) {
             PreparedStatement statement = con.prepareStatement("DELETE FROM disabled_commands WHERE guildId= ? AND command= ?");
             statement.setLong(1, guildId);
-            for (int i : toRemove.toArray()) {
+            for (int i : toRemove) {
                 statement.setInt(2, i);
                 statement.executeUpdate();
             }
@@ -1304,15 +1293,14 @@ public class MySQL {
         }
     }
 
-    public void addDisabledCommands(long guildId, TIntList buffer) {
-        TIntList toAdd = new TIntArrayList();
-        toAdd.addAll(buffer);
-        if (DisableCommand.disabledGuildCommands.containsKey(guildId))
-            toAdd.removeAll(DisableCommand.disabledGuildCommands.get(guildId));
+    public void addDisabledCommands(long guildId, List<Integer> buffer) {
+        List<Integer> toAdd = new ArrayList<>(buffer);
+        if (melijn.getVariables().disabledGuildCommands.containsKey(guildId))
+            toAdd.removeAll(melijn.getVariables().disabledGuildCommands.get(guildId));
         try (Connection con = ds.getConnection()) {
             PreparedStatement statement = con.prepareStatement("INSERT INTO disabled_commands (guildId, command) VALUES (?, ?)");
             statement.setLong(1, guildId);
-            for (int i : toAdd.toArray()) {
+            for (int i : toAdd) {
                 statement.setInt(2, i);
                 statement.executeUpdate();
             }
@@ -1322,8 +1310,8 @@ public class MySQL {
         }
     }
 
-    public TLongLongMap getUnverifiedMembers(long guildId) {
-        TLongLongMap members = new TLongLongHashMap();
+    public Map<Long, Long> getUnverifiedMembers(long guildId) {
+        Map<Long, Long> members = new IdentityHashMap<>();
         try (Connection con = ds.getConnection()) {
             PreparedStatement getUnverifiedMembers = con.prepareStatement("SELECT * FROM unverified_users WHERE guildId= ?");
             getUnverifiedMembers.setLong(1, guildId);
@@ -1371,8 +1359,8 @@ public class MySQL {
         return code;
     }
 
-    public TLongList getNotifications(long userId, NotificationType type) {
-        TLongList lijstje = new TLongArrayList();
+    public List<Long> getNotifications(long userId, NotificationType type) {
+        List<Long> lijstje = new ArrayList<>();
         try (Connection con = ds.getConnection()) {
             try (PreparedStatement statement = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_notifications WHERE userId= ?")) {
                 statement.setLong(1, userId);
@@ -1405,7 +1393,7 @@ public class MySQL {
                         jda.asBot().getShardManager().retrieveUserById(blubObj.getLong("victimId")).queue(user -> {
                             Guild guild = jda.asBot().getShardManager().getGuildById(blubObj.getLong("guildId"));
                             if (guild != null && user != null)
-                                Melijn.mySQL.unban(user, guild, jda.getSelfUser(), "Ban expired");
+                                unban(user, guild, jda.getSelfUser(), "Ban expired");
                         }, failed -> {
                         });
                     }
@@ -1433,7 +1421,7 @@ public class MySQL {
                         jda.asBot().getShardManager().retrieveUserById(blubObj.getLong("victimId")).queue(user -> {
                             Guild guild = jda.asBot().getShardManager().getGuildById(blubObj.getLong("guildId"));
                             if (guild != null)
-                                Melijn.mySQL.unmute(guild, user, jda.getSelfUser(), "Mute expired");
+                                unmute(guild, user, jda.getSelfUser(), "Mute expired");
                         }, failed -> {
                         });
                     }
@@ -1456,7 +1444,7 @@ public class MySQL {
     public LinkedHashMap<Integer, Long> getTopUsage(long[] period, int limit) {
         long smallest = period[0] < period[1] ? period[0] : period[1];
         long biggest = period[0] < period[1] ? period[1] : period[0];
-        TMap<Integer, Long> commandUsages = new THashMap<>();
+        Map<Integer, Long> commandUsages = new IdentityHashMap<>();
         try (PreparedStatement getUsageWithinPeriod = ds.getConnection().prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?")) {
             getUsageWithinPeriod.setLong(1, biggest);
             getUsageWithinPeriod.setLong(2, smallest);
@@ -1490,11 +1478,11 @@ public class MySQL {
         return usage;
     }
 
-    public TIntLongMap getUsages(long[] period, TIntList commandIds) {
+    public Map<Integer, Long> getUsages(long[] period, List<Integer> commandIds) {
         long smallest = period[0] < period[1] ? period[0] : period[1];
         long biggest = period[0] < period[1] ? period[1] : period[0];
-        TIntLongMap sortedCommandUsages = new TIntLongHashMap();
-        TIntLongMap commandUsages = new TIntLongHashMap();
+        Map<Integer, Long> sortedCommandUsages = new IdentityHashMap<>();
+        Map<Integer, Long> commandUsages = new IdentityHashMap<>();
         try (PreparedStatement getUsageWithinPeriod = ds.getConnection().prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?")) {
             getUsageWithinPeriod.setLong(1, biggest);
             getUsageWithinPeriod.setLong(2, smallest);
@@ -1516,12 +1504,11 @@ public class MySQL {
                 int key = -1;
                 long value = -1;
             };
-            commandUsages.forEachEntry((key, value) -> {
+            commandUsages.forEach((key, value) -> {
                 if (value > ref.value) {
                     ref.key = key;
                     ref.value = value;
                 }
-                return false;
             });
             if (ref.key != -1) {
                 commandUsages.remove(ref.key);
@@ -1531,7 +1518,7 @@ public class MySQL {
         return sortedCommandUsages;
     }
 
-    private static <K, V extends Comparable<? super V>> LinkedHashMap<K, V> findGreatest(TMap<K, V> map, int n) {
+    private static <K, V extends Comparable<? super V>> LinkedHashMap<K, V> findGreatest(Map<K, V> map, int n) {
         Comparator<? super Map.Entry<K, V>> comparator = (Comparator<Map.Entry<K, V>>) (e0, e1) -> {
             V v0 = e0.getValue();
             V v1 = e1.getValue();
@@ -1616,8 +1603,8 @@ public class MySQL {
                 member.getGuild().getIdLong(), member.getUser().getIdLong(), time + 1000, time - 1000);
     }
 
-    public TLongObjectMap<String> getSelfRoles(long guildId) {
-        TLongObjectMap<String> collector = new TLongObjectHashMap<>();
+    public Map<Long, String> getSelfRoles(long guildId) {
+        Map<Long, String> collector = new IdentityHashMap<>();
         try (Connection con = ds.getConnection()) {
             try (PreparedStatement statement = con.prepareStatement("SELECT * FROM self_roles WHERE guildId= ?")) {
                 statement.setLong(1, guildId);
@@ -1805,7 +1792,7 @@ public class MySQL {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return Helpers.embedColor;
+        return melijn.getVariables().embedColor;
     }
 
     public void setEmbedColor(long guildId, int color) {
@@ -1834,7 +1821,7 @@ public class MySQL {
     }
 
     public void addPrivatePrefix(long userId, String prefix) {
-        List<String> prefixes = new ArrayList<>(PrivatePrefixCommand.privatePrefixes.getUnchecked(userId));
+        List<String> prefixes = new ArrayList<>(melijn.getVariables().privatePrefixes.getUnchecked(userId));
         prefixes.add(prefix);
         executeUpdate("INSERT INTO private_prefixes (userId, prefixes) VALUES (?, ?) ON DUPLICATE KEY UPDATE prefixes= ?",
                 userId, String.join("%split%", prefixes), String.join("%split%", prefixes));
@@ -1842,7 +1829,7 @@ public class MySQL {
     }
 
     public void removePrivatePrefix(long userId, String prefix) {
-        List<String> prefixes = new ArrayList<>(PrivatePrefixCommand.privatePrefixes.getUnchecked(userId));
+        List<String> prefixes = new ArrayList<>(melijn.getVariables().privatePrefixes.getUnchecked(userId));
         prefixes.remove(prefix);
         executeUpdate("INSERT INTO private_prefixes (userId, prefixes) VALUES (?, ?) ON DUPLICATE KEY UPDATE prefixes= ?",
                 userId, String.join("%split%", prefixes), String.join("%split%", prefixes));
@@ -1888,12 +1875,12 @@ public class MySQL {
         }
     }
 
-    public TIntIntMap getCooldowns(long guildId) {
+    public Map<Integer, Integer> getCooldowns(long guildId) {
         try (Connection con = ds.getConnection()) {
             try (PreparedStatement statement = con.prepareStatement("SELECT * FROM cooldowns WHERE guildId= ?")) {
                 statement.setLong(1, guildId);
                 try (ResultSet rs = statement.executeQuery()) {
-                    TIntIntMap map = new TIntIntHashMap();
+                    Map<Integer, Integer> map = new IdentityHashMap<>();
                     while (rs.next()) {
                         map.put(rs.getInt("commandId"), rs.getInt("cooldown"));
                     }
@@ -1903,7 +1890,7 @@ public class MySQL {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return new TIntIntHashMap();
+        return new IdentityHashMap<>();
     }
 
 

@@ -1,6 +1,5 @@
 package me.melijn.jda.commands.util;
 
-import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
@@ -28,11 +27,11 @@ public class UserInfoCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
+        if (event.getGuild() == null || event.hasPerm(event.getMember(), commandName, 0)) {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm ss");
             String[] args = event.getArgs().split("\\s+");
-            Helpers.retrieveUserByArgs(event, args[0], user -> {
-                EmbedBuilder eb = new Embedder(event.getGuild());
+            event.getHelpers().retrieveUserByArgs(event, args[0], user -> {
+                EmbedBuilder eb = new Embedder(event.getVariables(), event.getGuild());
                 eb.setTitle(user.getName() + "#" + user.getDiscriminator() + "'s profile");
                 eb.setThumbnail(user.getEffectiveAvatarUrl() + "?size=2048");
                 if (event.getGuild() == null || event.getGuild().getMember(user) == null) {

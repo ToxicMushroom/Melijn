@@ -19,18 +19,15 @@ import java.util.function.Consumer;
 
 public class YTSearch {
 
-    private static YouTube youtube;
-    private static Properties properties;
-    //https://github.com/youtube/api-samples/blob/master/java/src/main/java/com/google/api/services/samples/youtube/cmdline/data/Search.java
-    private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
-    private static final JsonFactory JSON_FACTORY = new JacksonFactory();
-    private static final String PROPERTIES_FILENAME = "youtube.properties";
+    private YouTube youtube;
+    private Properties properties;
     private final ExecutorService youtubeService = Executors.newCachedThreadPool(
             (r) -> new Thread(r, "Youtube-Search-Thread")
     );
 
     public YTSearch() {
         properties = new Properties();
+        String PROPERTIES_FILENAME = "youtube.properties";
         try {
             InputStream in = YouTube.Search.class.getResourceAsStream("/" + PROPERTIES_FILENAME);
             properties.load(in);
@@ -38,6 +35,9 @@ public class YTSearch {
             System.err.println("There was an error reading " + PROPERTIES_FILENAME + ": " + e.getCause() + " : " + e.getMessage());
             System.exit(1);
         }
+        JsonFactory JSON_FACTORY = new JacksonFactory();
+        //https://github.com/youtube/api-samples/blob/master/java/src/main/java/com/google/api/services/samples/youtube/cmdline/data/Search.java
+        HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
         youtube = new YouTube.Builder(HTTP_TRANSPORT, JSON_FACTORY, request -> {
         }).setApplicationName("youtube-search").build();
     }

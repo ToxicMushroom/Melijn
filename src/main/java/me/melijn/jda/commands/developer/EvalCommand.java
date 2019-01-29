@@ -1,12 +1,8 @@
 package me.melijn.jda.commands.developer;
 
-import gnu.trove.list.TLongList;
-import gnu.trove.list.array.TLongArrayList;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
-import me.melijn.jda.utils.MessageHelper;
-import me.melijn.jda.utils.TaskScheduler;
 import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 
@@ -16,9 +12,7 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class EvalCommand extends Command {
 
-    public static TLongList serverBlackList = new TLongArrayList();
-    public static TLongList userBlackList = new TLongArrayList();
-    private static final String CLASS_NAME = "EvalTempClass";
+    private final String CLASS_NAME = "EvalTempClass";
 
     public EvalCommand() {
         this.commandName = "eval";
@@ -30,22 +24,22 @@ public class EvalCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        TaskScheduler.async(() -> {
+        event.async(() -> {
             try {
                 evaluate(event.getArgs(), event);
             } catch (Exception e) {
-                MessageHelper.sendSplitMessage(event.getTextChannel(), "```" + e.getMessage() + "```");
+                event.getClient().getMelijn().getMessageHelper().sendSplitMessage(event.getTextChannel(), "```" + e.getMessage() + "```");
             }
         });
     }
 
-    private static void evaluate(final String source, CommandEvent event) throws Exception {
+    private void evaluate(final String source, CommandEvent event) throws Exception {
         final ISimpleCompiler compiler = CompilerFactoryFactory.getDefaultCompilerFactory().newSimpleCompiler();
         compiler.cook(createDummyClassSource(source));
         evaluateDummyClassMethod(event, compiler.getClassLoader());
     }
 
-    private static String createDummyClassSource(final String source) {
+    private String createDummyClassSource(final String source) {
         return  "import me.melijn.jda.blub.*;\n" +
                 "import me.melijn.jda.utils.*;\n" +
                 "import me.melijn.jda.Melijn;\n" +
@@ -76,7 +70,7 @@ public class EvalCommand extends Command {
                 "}\n";
     }
 
-    private static void evaluateDummyClassMethod(final CommandEvent event, final ClassLoader classLoader) throws Exception {
+    private void evaluateDummyClassMethod(final CommandEvent event, final ClassLoader classLoader) throws Exception {
         final Class<?> dummy = classLoader.loadClass(CLASS_NAME);
         final Method eval = dummy.getDeclaredMethod("eval", CommandEvent.class);
         eval.setAccessible(true);

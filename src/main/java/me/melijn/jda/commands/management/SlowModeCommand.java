@@ -1,11 +1,9 @@
 package me.melijn.jda.commands.management;
 
-import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 
 import static me.melijn.jda.Melijn.PREFIX;
@@ -24,7 +22,7 @@ public class SlowModeCommand extends Command {
     
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+        if (event.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             if (args.length > 0 && args[0].matches("[0-9]{1,2}|[0-1]{1,2}[0-9]|[0-1][0-2]0") && args[0].length() < 4) {
                 int seconds = Integer.parseInt(args[0]);
@@ -36,7 +34,7 @@ public class SlowModeCommand extends Command {
                     event.reply("SlowMode has been set to **" + seconds + "** for this TextChannel");
                 }
             } else {
-                MessageHelper.sendUsage(this, event);
+                event.sendUsage(this, event);
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

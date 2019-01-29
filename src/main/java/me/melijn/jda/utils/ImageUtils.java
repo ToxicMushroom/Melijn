@@ -1,6 +1,5 @@
 package me.melijn.jda.utils;
 
-import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.CommandEvent;
 import net.dv8tion.jda.core.entities.User;
 
@@ -11,8 +10,11 @@ import java.net.URL;
 
 public class ImageUtils {
 
+    public ImageUtils() {
 
-    public static BufferedImage createPlane(int side, int color) {
+    }
+
+    public BufferedImage createPlane(int side, int color) {
         BufferedImage bufferedImage = new BufferedImage(side, side, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics2D = bufferedImage.createGraphics();
         graphics2D.setColor(new Color(color));
@@ -35,7 +37,7 @@ public class ImageUtils {
         String[] args = event.getArgs().split("\\s+");
         BufferedImage img = null;
         if (args.length > 0 && !args[0].isEmpty()) {
-            User user = Helpers.getUserByArgsN(event, args[0]);
+            User user = event.getHelpers().getUserByArgsN(event, args[0]);
             if (user != null) {
                 try {
                     img = ImageIO.read(new URL(user.getEffectiveAvatarUrl() + "?size=2048"));

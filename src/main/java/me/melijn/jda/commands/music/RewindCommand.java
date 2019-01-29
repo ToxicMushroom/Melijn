@@ -1,13 +1,10 @@
 package me.melijn.jda.commands.music;
 
 import lavalink.client.player.LavalinkPlayer;
-import me.melijn.jda.Helpers;
-import me.melijn.jda.audio.AudioLoader;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.utils.MessageHelper;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
@@ -25,20 +22,20 @@ public class RewindCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
+        if (event.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
             String[] args = event.getArgs().replaceAll(":", " ").split("\\s+");
-            LavalinkPlayer player = AudioLoader.getManagerInstance().getPlayer(event.getGuild()).getAudioPlayer();
+            LavalinkPlayer player = event.getClient().getMelijn().getLava().getAudioLoader().getPlayer(event.getGuild()).getAudioPlayer();
             if (player.getPlayingTrack() != null) {
-                long millis = Helpers.parseTimeFromArgs(args);
+                long millis = event.getHelpers().parseTimeFromArgs(args);
                 if (millis == -1) {
-                    MessageHelper.sendUsage(this, event);
+                    event.sendUsage(this, event);
                     return;
                 }
                 millis = player.getTrackPosition() - millis;
                 player.seekTo(millis);
                 event.reply("The position of the song has been changed to **" +
-                        Helpers.getDurationBreakdown(Math.max(millis, 0)) + "/" +
-                        Helpers.getDurationBreakdown(player.getPlayingTrack().getDuration()) + "** by **" + event.getFullAuthorName() + "**");
+                        event.getMessageHelper().getDurationBreakdown(Math.max(millis, 0)) + "/" +
+                        event.getMessageHelper().getDurationBreakdown(player.getPlayingTrack().getDuration()) + "** by **" + event.getFullAuthorName() + "**");
 
             } else {
                 event.reply("There are no songs playing at the moment.");

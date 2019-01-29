@@ -1,13 +1,9 @@
 package me.melijn.jda.commands.management;
 
-import me.melijn.jda.Helpers;
-import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.utils.MessageHelper;
-import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 
 import java.util.HashMap;
@@ -45,35 +41,34 @@ public class SetStreamUrlCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+        if (event.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
             String[] args = event.getArgs().split("\\s+");
-            String url = Melijn.mySQL.getStreamUrl(guild.getIdLong());
+            String url = event.getMySQL().getStreamUrl(guild.getIdLong());
             if ("".equals(url)) url = "nothing";
             if (args.length == 0 || "".equals(args[0])) {
                 event.reply("StreamURL: " + url);
             } else if (args.length == 1) {
                 if (args[0].contains("http://") || args[0].contains("https://")) {
-                    TaskScheduler.async(() -> Melijn.mySQL.setStreamUrl(guild.getIdLong(), args[0]));
+                    event.async(() -> event.getMySQL().setStreamUrl(guild.getIdLong(), args[0]));
                     event.reply("Changed the url from **" + url + "** to **" + args[0] + "**");
-                } else {
-                    if (args[0].equalsIgnoreCase("list")) {
-                        event.reply("**Radio**\n" + linkjes.keySet().toString().replaceAll("(,\\s+|,)", "\n+ ").replaceFirst("\\[", "+ ").replaceFirst("]", ""));
-                    } else {
-                        boolean match = false;
-                        for (String key : linkjes.keySet()) {
-                            if (key.equalsIgnoreCase(args[0])) {
-                                TaskScheduler.async(() -> Melijn.mySQL.setStreamUrl(guild.getIdLong(), linkjes.get(key)));
-                                event.reply("Changed the url from **" + url + "** to **" + linkjes.get(key) + "**");
-                                match = true;
-                            }
-                        }
-                        if (!match)
-                            MessageHelper.sendUsage(this, event);
+                    return;
+                }
+                if (args[0].equalsIgnoreCase("list")) {
+                    event.reply("**Radio**\n" + linkjes.keySet().toString().replaceAll("(,\\s+|,)", "\n+ ").replaceFirst("\\[", "+ ").replaceFirst("]", ""));
+                    return;
+                }
+                boolean match = false;
+                for (String key : linkjes.keySet()) {
+                    if (key.equalsIgnoreCase(args[0])) {
+                        event.async(() -> event.getMySQL().setStreamUrl(guild.getIdLong(), linkjes.get(key)));
+                        event.reply("Changed the url from **" + url + "** to **" + linkjes.get(key) + "**");
+                        match = true;
                     }
                 }
+                if (!match) event.sendUsage(this, event);
             } else {
-                MessageHelper.sendUsage(this, event);
+                event.sendUsage(this, event);
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

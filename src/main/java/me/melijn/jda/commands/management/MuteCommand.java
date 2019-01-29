@@ -1,12 +1,9 @@
 package me.melijn.jda.commands.management;
 
-import me.melijn.jda.Helpers;
-import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
@@ -34,19 +31,19 @@ public class MuteCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+        if (event.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
             if (args.length > 0 && !args[0].isEmpty()) {
-                User target = Helpers.getUserByArgsN(event, args[0]);
+                User target = event.getHelpers().getUserByArgsN(event, args[0]);
                 if (target == null || guild.getMember(target) == null) {
                     event.reply("Unknown member");
                     return;
                 }
-                Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoleCache.getUnchecked(guild.getIdLong()));
+                Role muteRole = guild.getRoleById(event.getVariables().muteRoleCache.getUnchecked(guild.getIdLong()));
                 if (muteRole == null) {
                     event.reply("**No mute role set!**\nCreating Role..");
-                    TempMuteCommand.createMuteRole(guild, newMuteRole -> {
+                    TempMuteCommand.createMuteRole(event, guild, newMuteRole -> {
                         event.reply("Role created. You can change the settings of the role to your desires in the role managment tab.\nThis role wil be added to the muted users so it should have no talk permissions!");
                         doMute(event, newMuteRole, target, args);
                     });
@@ -54,7 +51,7 @@ public class MuteCommand extends Command {
                     doMute(event, muteRole, target, args);
                 }
             } else {
-                MessageHelper.sendUsage(this, event);
+                event.sendUsage(this, event);
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
@@ -62,11 +59,11 @@ public class MuteCommand extends Command {
     }
 
     private void doMute(CommandEvent event, Role muteRole, User target, String[] args) {
-        if (Helpers.canNotInteract(event, muteRole)) return;
+        if (event.getHelpers().canNotInteract(event, muteRole)) return;
         Guild guild = muteRole.getGuild();
         guild.getController().addSingleRoleToMember(guild.getMember(target), muteRole).queue(s -> {
             String reason = event.getArgs().replaceFirst(args[0] + "\\s+|" + args[0], "");
-            if (reason.length() <= 1000 && Melijn.mySQL.setPermMute(event.getAuthor(), target, guild, reason)) {
+            if (reason.length() <= 1000 & event.getMySQL().setPermMute(event.getAuthor(), target, guild, reason)) {
                 event.getMessage().addReaction("\u2705").queue();
             } else {
                 event.getMessage().addReaction("\u274C").queue();

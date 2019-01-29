@@ -1,19 +1,16 @@
 package me.melijn.jda.commands.developer;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import gnu.trove.map.TLongObjectMap;
-import me.melijn.jda.Melijn;
-import me.melijn.jda.audio.AudioLoader;
 import me.melijn.jda.audio.Lava;
 import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
-import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 
 import java.io.File;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 
 import static me.melijn.jda.Melijn.PREFIX;
@@ -33,23 +30,24 @@ public class ShutdownCommand extends Command {
         try {
             File file = new File("Melijn.mp3");
             //save players before shutdown
-            TLongObjectMap<MusicPlayer> players = AudioLoader.getManagerInstance().getPlayers();
-            players.forEachValue((player) -> {
+            Lava lava = event.getClient().getMelijn().getLava();
+            Map<Long, MusicPlayer> players = lava.getAudioLoader().getPlayers();
+            players.values().forEach((player) -> {
                 Guild guild = event.getJDA().asBot().getShardManager().getGuildById(player.getGuildId());
-                if (guild == null || !guild.getSelfMember().getVoiceState().inVoiceChannel()) return true;
-                TaskScheduler.async(() -> Lava.lava.closeConnection(player.getGuildId()), 9000);
+                if (guild == null || !guild.getSelfMember().getVoiceState().inVoiceChannel()) return;
+                event.async(() -> lava.closeConnection(player.getGuildId()), 9000);
                 boolean paused = player.isPaused();
                 Queue<AudioTrack> queue = new LinkedList<>();
                 if (player.getAudioPlayer().getPlayingTrack() != null) queue.offer(player.getAudioPlayer().getPlayingTrack());
                 player.getTrackManager().getTracks().forEach(queue::offer);
-                Melijn.mySQL.addQueue(guild.getIdLong(), guild.getSelfMember().getVoiceState().getChannel().getIdLong(), paused, queue);
+                event.getClient().getMelijn().getMySQL().addQueue(guild.getIdLong(), guild.getSelfMember().getVoiceState().getChannel().getIdLong(), paused, queue);
                 player.getTrackManager().getTracks().clear();
                 player.getAudioPlayer().stopTrack();
-                AudioLoader.getManagerInstance().loadSimpleTrack(player, file.getAbsolutePath());
-                return true;
+                lava.getAudioLoader().loadSimpleTrack(player, file.getAbsolutePath());
             });
+
             event.reply("Shutting down in 9 seconds");
-            TaskScheduler.async(() -> event.getJDA().shutdown(), 10_000);
+            event.async(() -> event.getJDA().shutdown(), 10_000);
         } catch (Exception e) {
             e.printStackTrace();
             event.reply("something went wrong :/");

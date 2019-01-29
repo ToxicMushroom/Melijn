@@ -1,13 +1,10 @@
 package me.melijn.jda.commands.music;
 
-import me.melijn.jda.Helpers;
+import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.audio.AudioLoader;
-import me.melijn.jda.audio.MusicPlayer;
-import me.melijn.jda.utils.MessageHelper;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
@@ -24,8 +21,8 @@ public class PauseCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
-            MusicPlayer player = AudioLoader.getManagerInstance().getPlayer(event.getGuild());
+        if (event.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
+            MusicPlayer player = event.getClient().getMelijn().getLava().getAudioLoader().getPlayer(event.getGuild());
             String[] args = event.getArgs().split("\\s+");
             if (player.getAudioPlayer().getPlayingTrack() != null || player.getTrackManager().getTrackSize() > 0) {
                 if (args.length == 0 || args[0].isEmpty()) {
@@ -55,7 +52,7 @@ public class PauseCommand extends Command {
                             event.reply("The music is currently **" + s + "**.");
                             break;
                         default:
-                            MessageHelper.sendUsage(this, event);
+                            event.sendUsage(this, event);
                             break;
                     }
                 }

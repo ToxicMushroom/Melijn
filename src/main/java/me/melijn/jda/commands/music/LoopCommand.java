@@ -1,22 +1,18 @@
 package me.melijn.jda.commands.music;
 
-import gnu.trove.set.TLongSet;
-import gnu.trove.set.hash.TLongHashSet;
-import me.melijn.jda.Helpers;
-import me.melijn.jda.audio.AudioLoader;
 import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.entities.Guild;
+
+import java.util.Set;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class LoopCommand extends Command {
 
-    public static TLongSet looped = new TLongHashSet();
 
     public LoopCommand() {
         this.commandName = "loop";
@@ -30,48 +26,48 @@ public class LoopCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        executorLoops(this, event, looped);
+        executorLoops(this, event, event.getVariables().looped);
     }
 
-    static void executorLoops(Command cmd, CommandEvent event, TLongSet looped) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), cmd.getCommandName(), 0)) {
+    static void executorLoops(Command cmd, CommandEvent event, Set<Long> looped) {
+        if (event.hasPerm(event.getGuild().getMember(event.getAuthor()), cmd.getCommandName(), 0)) {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
-            MusicPlayer musicPlayer = AudioLoader.getManagerInstance().getPlayer(guild);
-            if (musicPlayer.getTrackManager().getTrackSize() > 0 || musicPlayer.getAudioPlayer().getPlayingTrack() != null) {
-                if (args.length == 0 || args[0].isEmpty()) {
-                    if (looped.contains(guild.getIdLong())) {
-                        looped.remove(guild.getIdLong());
-                        event.reply("Looping has been **disabled**");
-                    } else {
-                        looped.add(guild.getIdLong());
-                        event.reply("Looping has been **enabled**");
-                    }
+            MusicPlayer musicPlayer = event.getClient().getMelijn().getLava().getAudioLoader().getPlayer(guild);
+            if (musicPlayer.getTrackManager().getTrackSize() == 0 && musicPlayer.getAudioPlayer().getPlayingTrack() == null) {
+                event.reply("There is no music playing");
+                return;
+            }
+            if (args.length == 0 || args[0].isEmpty()) {
+                if (looped.contains(guild.getIdLong())) {
+                    looped.remove(guild.getIdLong());
+                    event.reply("Looping has been **disabled**");
                 } else {
-                    switch (args[0]) {
-                        case "on":
-                        case "yes":
-                        case "true":
-                            if (!looped.contains(guild.getIdLong())) looped.add(guild.getIdLong());
-                            event.reply("Looping has been **enabled**");
-                            break;
-                        case "off":
-                        case "no":
-                        case "false":
-                            looped.remove(guild.getIdLong());
-                            event.reply("Looping has been **disabled**");
-                            break;
-                        case "info":
-                            String ts = looped.contains(guild.getIdLong()) ? "enabled" : "disabled";
-                            event.reply("Looping is currently **" + ts + "**");
-                            break;
-                        default:
-                            MessageHelper.sendUsage(cmd, event);
-                            break;
-                    }
+                    looped.add(guild.getIdLong());
+                    event.reply("Looping has been **enabled**");
                 }
             } else {
-                event.reply("There is no music playing");
+                switch (args[0]) {
+                    case "on":
+                    case "yes":
+                    case "true":
+                        looped.add(guild.getIdLong());
+                        event.reply("Looping has been **enabled**");
+                        break;
+                    case "off":
+                    case "no":
+                    case "false":
+                        looped.remove(guild.getIdLong());
+                        event.reply("Looping has been **disabled**");
+                        break;
+                    case "info":
+                        String ts = looped.contains(guild.getIdLong()) ? "enabled" : "disabled";
+                        event.reply("Looping is currently **" + ts + "**");
+                        break;
+                    default:
+                        event.sendUsage(cmd, event);
+                        break;
+                }
             }
         } else {
             event.reply("You need the permission `" + cmd.getCommandName() + "` to execute this command.");

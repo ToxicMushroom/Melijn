@@ -1,7 +1,5 @@
 package me.melijn.jda.commands.music;
 
-import me.melijn.jda.Helpers;
-import me.melijn.jda.audio.AudioLoader;
 import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
@@ -24,8 +22,8 @@ public class ShuffleCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
-            MusicPlayer player = AudioLoader.getManagerInstance().getPlayer(event.getGuild());
+        if (event.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
+            MusicPlayer player = event.getClient().getMelijn().getLava().getAudioLoader().getPlayer(event.getGuild());
             player.getTrackManager().shuffle();
             event.reply("The queue has been **shuffled** by **" + event.getFullAuthorName() + "**");
         } else {

@@ -1,12 +1,10 @@
 package me.melijn.jda.commands.music;
 
-import me.melijn.jda.Helpers;
-import me.melijn.jda.audio.AudioLoader;
+import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.audio.MusicPlayer;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
@@ -24,10 +22,10 @@ public class StopCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), commandName, 0)) {
-            LoopCommand.looped.remove(event.getGuild().getIdLong());
-            LoopQueueCommand.looped.remove(event.getGuild().getIdLong());
-            MusicPlayer player = AudioLoader.getManagerInstance().getPlayer(event.getGuild());
+        if (event.hasPerm(event.getMember(), commandName, 0)) {
+            event.getVariables().looped.remove(event.getGuild().getIdLong());
+            event.getVariables().loopedQueues.remove(event.getGuild().getIdLong());
+            MusicPlayer player = event.getClient().getMelijn().getLava().getAudioLoader().getPlayer(event.getGuild());
             player.stopTrack();
             player.getTrackManager().getTracks().clear();
             event.reply("Stopped by **" + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + "**");

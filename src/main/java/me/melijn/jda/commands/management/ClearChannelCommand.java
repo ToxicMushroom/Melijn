@@ -1,27 +1,22 @@
 package me.melijn.jda.commands.management;
 
-import gnu.trove.map.TLongLongMap;
-import gnu.trove.map.TLongObjectMap;
-import gnu.trove.map.hash.TLongLongHashMap;
-import gnu.trove.map.hash.TLongObjectHashMap;
-import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
+import me.melijn.jda.db.Variables;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class ClearChannelCommand extends Command {
-
-    public static TLongObjectMap<TLongLongMap> possibleDeletes = new TLongObjectHashMap<>();
-    public static TLongLongMap messageUser = new TLongLongHashMap();
 
     public ClearChannelCommand() {
         this.commandName = "clearChannel";
@@ -36,13 +31,16 @@ public class ClearChannelCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+        if (event.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
+            Variables vars = event.getVariables();
             if (args.length > 0 && !args[0].isEmpty()) {
-                TextChannel channel = event.getGuild().getTextChannelById(Helpers.getTextChannelByArgsN(event, args[0]));
+                TextChannel channel = event.getGuild().getTextChannelById(event.getHelpers().getTextChannelByArgsN(event, args[0]));
                 if (channel != null) {
-                    if (!possibleDeletes.containsKey(event.getGuild().getIdLong()) || !possibleDeletes.get(event.getGuild().getIdLong()).containsValue(channel.getIdLong())) {
-                        event.getTextChannel().sendMessage("Are you sure you want to remove all messages from " + channel.getAsMention() + "?").queue(s -> setupQuestion(channel, s, event.getAuthorId()));
+                    if (!vars.possibleDeletes.containsKey(event.getGuild().getIdLong()) || !vars.possibleDeletes.get(event.getGuild().getIdLong()).containsValue(channel.getIdLong())) {
+                        event.getTextChannel().sendMessage("Are you sure you want to remove all messages from " + channel.getAsMention() + "?").queue(s ->
+                                setupQuestion(channel, vars, s, event.getAuthorId())
+                        );
                     } else {
                         event.reply("There is still another question in that channel which have to be answered\nThat question will be removed after 60 seconds of it's sent time");
                     }
@@ -50,8 +48,10 @@ public class ClearChannelCommand extends Command {
                     event.reply("Unknown TextChannel");
                 }
             } else {
-                if (!possibleDeletes.containsKey(event.getGuild().getIdLong()) || !possibleDeletes.get(event.getGuild().getIdLong()).containsValue(event.getTextChannel().getIdLong())) {
-                    event.getTextChannel().sendMessage("Are you sure you want to remove all messages from this channel?").queue(s -> setupQuestion(event.getTextChannel(), s, event.getAuthorId()));
+                if (!vars.possibleDeletes.containsKey(event.getGuild().getIdLong()) || !vars.possibleDeletes.get(event.getGuild().getIdLong()).containsValue(event.getTextChannel().getIdLong())) {
+                    event.getTextChannel().sendMessage("Are you sure you want to remove all messages from this channel?").queue(s ->
+                            setupQuestion(event.getTextChannel(), vars, s, event.getAuthorId())
+                    );
                 } else {
                     event.reply("There is still another question in this channel which have to be answered\nThat question will be removed after 60 seconds of it's sent time");
                 }
@@ -61,30 +61,30 @@ public class ClearChannelCommand extends Command {
         }
     }
 
-    private void setupQuestion(TextChannel channel, Message s, long authorId) {
-        TLongLongMap messageChannel = new TLongLongHashMap();
+    private void setupQuestion(TextChannel channel, Variables vars, Message s, long authorId) {
+        Map<Long, Long> messageChannel = new IdentityHashMap<>();
         Guild guild = channel.getJDA().asBot().getShardManager().getGuildById(340081887265685504L);
         long guildId = channel.getGuild().getIdLong();
 
-        if (possibleDeletes.containsKey(guildId)) {
-            messageChannel.putAll(possibleDeletes.get(channel.getGuild().getIdLong()));
+        if (vars.possibleDeletes.containsKey(guildId)) {
+            messageChannel.putAll(vars.possibleDeletes.get(channel.getGuild().getIdLong()));
         }
         messageChannel.put(s.getIdLong(), channel.getIdLong());
-        possibleDeletes.put(guildId, messageChannel);
-        messageUser.put(s.getIdLong(), authorId);
+        vars.possibleDeletes.put(guildId, messageChannel);
+        vars.messageUser.put(s.getIdLong(), authorId);
 
         guild.retrieveEmoteById(463250265026330634L).queue(listedEmote -> s.addReaction(listedEmote).queue());
         guild.retrieveEmoteById(463250264653299713L).queue(listedEmote -> s.addReaction(listedEmote).queue());
 
         s.delete().queueAfter(60, TimeUnit.SECONDS, (success) -> {
-            if (possibleDeletes.containsKey(guildId)) {
-                TLongLongMap messageChannels = possibleDeletes.get(guildId);
+            if (vars.possibleDeletes.containsKey(guildId)) {
+                Map<Long, Long> messageChannels = vars.possibleDeletes.get(guildId);
 
                 messageChannels.remove(s.getIdLong());
-                if (messageChannels.size() > 0) possibleDeletes.put(guildId, messageChannel);
-                else possibleDeletes.remove(guildId);
+                if (messageChannels.size() > 0) vars.possibleDeletes.put(guildId, messageChannel);
+                else vars.possibleDeletes.remove(guildId);
             }
-            messageUser.remove(s.getIdLong());
+            vars.messageUser.remove(s.getIdLong());
         }, (failure) -> {
         });
     }

@@ -1,19 +1,18 @@
 package me.melijn.jda.utils;
 
-import me.melijn.jda.Helpers;
-import me.melijn.jda.commands.management.SetEmbedColorCommand;
+import me.melijn.jda.db.Variables;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 
 public class Embedder extends EmbedBuilder {
 
-    public Embedder(Guild guild) {
+    public Embedder(Variables variables, Guild guild) {
         if (guild != null) {
-            setColor(SetEmbedColorCommand.embedColorCache.getUnchecked(guild.getIdLong()));
-        } else setColor(Helpers.embedColor);
+            setColor(variables.embedColorCache.getUnchecked(guild.getIdLong()));
+        } else setColor(variables.embedColor);
     }
 
-    public Embedder(long guildId) {
-        setColor(SetEmbedColorCommand.embedColorCache.getUnchecked(guildId));
+    public Embedder(Variables variables, long guildId) {
+        setColor(variables.embedColorCache.getUnchecked(guildId));
     }
 }

@@ -1,25 +1,18 @@
 package me.melijn.jda.commands.management;
 
-import gnu.trove.list.TIntList;
-import gnu.trove.list.array.TIntArrayList;
-import gnu.trove.map.TLongObjectMap;
-import me.melijn.jda.Helpers;
-import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.utils.MessageHelper;
-import me.melijn.jda.utils.TaskScheduler;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class DisableCommand extends Command {
-
-    public static TLongObjectMap<TIntList> disabledGuildCommands = Melijn.mySQL.getDisabledCommandsMap();
 
     public DisableCommand() {
         this.commandName = "disable";
@@ -34,13 +27,13 @@ public class DisableCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+        if (event.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             long guildId = event.getGuild().getIdLong();
 
             if (event.getExecutor().equalsIgnoreCase("disable") && args.length > 0 && !args[0].isEmpty()) {
-                TLongObjectMap<TIntList> map = DisableCommand.disabledGuildCommands;
-                TIntList buffer = map.containsKey(guildId) ? map.get(guildId) : new TIntArrayList();
+                Map<Long, List<Integer>> map = event.getVariables().disabledGuildCommands;
+                List<Integer> buffer = map.containsKey(guildId) ? map.get(guildId) : new ArrayList<>();
 
                 int sizeBefore = buffer.size();
                 for (Command cmd : event.getClient().getCommands()) {
@@ -65,22 +58,22 @@ public class DisableCommand extends Command {
                     event.reply("The given command or category was unknown");
                 } else {
                     event.reply("Successfully disabled **" + args[0] + "**");
-                    TaskScheduler.async(() -> {
-                        Melijn.mySQL.addDisabledCommands(guildId, buffer);
-                        disabledGuildCommands.put(guildId, buffer);
+                    event.async(() -> {
+                        event.getMySQL().addDisabledCommands(guildId, buffer);
+                        event.getVariables().disabledGuildCommands.put(guildId, buffer);
                     });
                 }
             } else if (event.getExecutor().equalsIgnoreCase("disabled")) {
                 StringBuilder sb = new StringBuilder();
                 int part = 1;
                 sb.append("Part **#").append(part++).append("** of disabled commands```INI\n");
-                for (int i : (disabledGuildCommands.containsKey(event.getGuild().getIdLong()) ? disabledGuildCommands.get(guildId) : new TIntArrayList()).toArray()) {
+                for (int i : (event.getVariables().disabledGuildCommands.containsKey(event.getGuild().getIdLong()) ? event.getVariables().disabledGuildCommands.get(guildId) : new ArrayList<Integer>())) {
                     List<Command> match = event.getClient().getCommands().stream().filter(cmd -> cmd.getId() == i).collect(Collectors.toList());
                     if (match.size() == 0) {
-                        Melijn.mySQL.removeDisabledCommands(guildId, new TIntArrayList(new int[]{i}));
-                        TIntList newList = disabledGuildCommands.get(guildId);
+                        event.getMySQL().removeDisabledCommands(guildId, new ArrayList<>(i));
+                        List<Integer> newList = event.getVariables().disabledGuildCommands.get(guildId);
                         newList.remove(i);
-                        disabledGuildCommands.put(guildId, newList);
+                        event.getVariables().disabledGuildCommands.put(guildId, newList);
                         continue;
                     }
                     if (sb.length() + match.get(0).getCommandName().length() < 1950) {
@@ -95,7 +88,7 @@ public class DisableCommand extends Command {
                 sb.append("```");
                 event.reply(sb.toString());
             } else {
-                MessageHelper.sendUsage(this, event);
+                event.sendUsage(this, event);
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

@@ -1,6 +1,5 @@
 package me.melijn.jda.commands.fun;
 
-import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
@@ -23,7 +22,7 @@ public class SpookifyCommand extends Command {
     }
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
+        if (event.getGuild() == null || event.hasPerm(event.getMember(), commandName, 0)) {
             BufferedImage img = imageUtils.getBufferedImage(event);
             String[] args = event.getArgs().split("\\s+");
             if (img == null) return;

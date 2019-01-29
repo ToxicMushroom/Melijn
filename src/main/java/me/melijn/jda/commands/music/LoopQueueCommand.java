@@ -1,17 +1,18 @@
 package me.melijn.jda.commands.music;
 
-import gnu.trove.set.TLongSet;
-import gnu.trove.set.hash.TLongHashSet;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class LoopQueueCommand extends Command {
 
-    public static TLongSet looped = new TLongHashSet();
+
 
     public LoopQueueCommand() {
         this.commandName = "loopQueue";
@@ -26,6 +27,6 @@ public class LoopQueueCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        LoopCommand.executorLoops(this, event, looped);
+        LoopCommand.executorLoops(this, event, event.getVariables().loopedQueues);
     }
 }

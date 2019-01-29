@@ -1,6 +1,5 @@
 package me.melijn.jda.commands.util;
 
-import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
@@ -30,12 +29,12 @@ public class GuildInfoCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
+        if (event.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
             if (args.length == 1 && args[0].matches("\\d+") && event.getJDA().asBot().getShardManager().getGuildById(args[0]) != null)
                 guild = event.getJDA().asBot().getShardManager().getGuildById(args[0]);
-            event.reply(new Embedder(event.getGuild())
+            event.reply(new Embedder(event.getVariables(), event.getGuild())
                     .setAuthor(guild.getName(), null, guild.getIconUrl() == null ? null : guild.getIconUrl() + "?size=2048")
                     .addField("ID", guild.getId(), true)
                     .addField("Icon", guild.getIconUrl() == null ? "none" : "[Download](" + guild.getIconUrl() + "?size=2048)", true)
@@ -49,7 +48,7 @@ public class GuildInfoCommand extends Command {
                     .addField("TextChannels", String.valueOf(guild.getTextChannelCache().size()), true)
                     .addField("VoiceChannels", String.valueOf(guild.getVoiceChannelCache().size()), true)
                     .addField("Categories", String.valueOf(guild.getCategoryCache().size()), true)
-                    .setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon())
+                    .setFooter(event.getHelpers().getFooterStamp(), event.getHelpers().getFooterIcon())
                     .build());
 
         } else {

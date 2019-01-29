@@ -1,10 +1,8 @@
 package me.melijn.jda.commands.util;
 
-import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
-import me.melijn.jda.utils.MessageHelper;
 
 import java.util.concurrent.TimeUnit;
 
@@ -23,7 +21,7 @@ public class DiceCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
+        if (event.getGuild() == null || event.hasPerm(event.getMember(), commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
             int size = 6;
             int rolls = 1;
@@ -32,13 +30,13 @@ public class DiceCommand extends Command {
             if (rolls == 1) {
                 final int finalSize = size;
                 event.reply("Rolling dice .. \uD83C\uDFB2", message ->
-                        message.editMessage("Result: **" + MessageHelper.randInt(1, finalSize) + "**").queueAfter(1, TimeUnit.SECONDS));
+                        message.editMessage("Result: **" + event.getMessageHelper().randInt(1, finalSize) + "**").queueAfter(1, TimeUnit.SECONDS));
             } else {
                 StringBuilder sb = new StringBuilder("**Results** \uD83C\uDFB2");
                 for (int i = 1; i <= rolls; i++) {
-                    sb.append("\nroll #").append(i).append(".  **").append(MessageHelper.randInt(1, size)).append("**");
+                    sb.append("\nroll #").append(i).append(".  **").append(event.getMessageHelper().randInt(1, size)).append("**");
                 }
-                MessageHelper.sendSplitMessage(event.getTextChannel(), sb.toString());
+                event.getMessageHelper().sendSplitMessage(event.getTextChannel(), sb.toString());
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

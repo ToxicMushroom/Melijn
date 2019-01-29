@@ -1,34 +1,19 @@
 package me.melijn.jda.commands.management;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import me.melijn.jda.Helpers;
-import me.melijn.jda.Melijn;
+
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.utils.ImageUtils;
-import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.entities.Guild;
-import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
-import java.util.concurrent.TimeUnit;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class SetEmbedColorCommand extends Command {
 
-    public static final LoadingCache<Long, Integer> embedColorCache = CacheBuilder.newBuilder()
-            .maximumSize(20)
-            .expireAfterAccess(2, TimeUnit.MINUTES)
-            .build(new CacheLoader<>() {
-                public Integer load(@NotNull Long key) {
-                    return Melijn.mySQL.getEmbedColor(key);
-                }
-            });
+
 
     public SetEmbedColorCommand() {
         this.commandName = "setEmbedColor";
@@ -43,32 +28,34 @@ public class SetEmbedColorCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+        if (event.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
             if (args.length == 0) {
-                event.reply("EmbedColor: " + new Color(embedColorCache.getUnchecked(guild.getIdLong()), false));
+                event.reply("EmbedColor: " + new Color(event.getVariables().embedColorCache.getUnchecked(guild.getIdLong()), false));
             } else if (args.length == 1 && args[0].matches("#?([0-9a-fA-F]{3}){1,2}")) {
                 int color = hexToIntColor(args[0].replaceFirst("#", ""));
 
-                Melijn.mySQL.setEmbedColor(guild.getIdLong(), color);
-                embedColorCache.put(guild.getIdLong(), color);
+                event.async(() -> {
+                    event.getMySQL().setEmbedColor(guild.getIdLong(), color);
+                    event.getVariables().embedColorCache.put(guild.getIdLong(), color);
+                });
 
-                event.reply("The new color is: ", ImageUtils.createPlane(32, color));
+                event.reply("The new color is: ", event.getImageUtils().createPlane(32, color));
             } else if (args.length == 3 && args[0].matches("\\d{1,3}") && args[1].matches("\\d{1,3}") && args[2].matches("\\d{1,3}")) {
                 int color = rgbToIntColor(Integer.valueOf(args[0]), Integer.valueOf(args[1]), Integer.valueOf(args[2]));
 
-                Melijn.mySQL.setEmbedColor(guild.getIdLong(), color);
-                embedColorCache.put(guild.getIdLong(), color);
+                event.getMySQL().setEmbedColor(guild.getIdLong(), color);
+                event.getVariables().embedColorCache.put(guild.getIdLong(), color);
 
-                event.reply("The new color is: ", ImageUtils.createPlane(32, color));
+                event.reply("The new color is: ", event.getImageUtils().createPlane(32, color));
             } else if (args[0].equalsIgnoreCase("null")) {
-                Melijn.mySQL.removeEmbedColor(guild.getIdLong());
-                embedColorCache.invalidate(guild.getIdLong());
+                event.getMySQL().removeEmbedColor(guild.getIdLong());
+                event.getVariables().embedColorCache.invalidate(guild.getIdLong());
 
                 event.reply("The custom color has been removed");
             } else {
-                MessageHelper.sendUsage(this, event);
+                event.sendUsage(this, event);
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

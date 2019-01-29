@@ -1,28 +1,20 @@
 package me.melijn.jda.commands.music;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
-import me.melijn.jda.Helpers;
 import me.melijn.jda.audio.AudioLoader;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 import me.melijn.jda.utils.Embedder;
-import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class RemoveCommand extends Command {
-
-    private AudioLoader manager = AudioLoader.getManagerInstance();
 
     public RemoveCommand() {
         this.commandName = "remove";
@@ -37,14 +29,15 @@ public class RemoveCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
+        if (event.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
             String[] args = event.getArgs().replaceAll("\\s+", "").split(",");
             if (args.length == 0 || args[0].isEmpty()) {
-                MessageHelper.sendUsage(this, event);
+                event.sendUsage(this, event);
                 return;
             }
-            Queue<AudioTrack> tracks = manager.getPlayer(event.getGuild()).getTrackManager().getTracks();
-            TIntObjectMap<AudioTrack> songs = new TIntObjectHashMap<>();
+            AudioLoader audioLoader = event.getClient().getMelijn().getLava().getAudioLoader();
+            Queue<AudioTrack> tracks = audioLoader.getPlayer(event.getGuild()).getTrackManager().getTracks();
+            Map<Integer, AudioTrack> songs = new IdentityHashMap<>();
             int i = 0;
             for (AudioTrack track : tracks) {
                 i++;
@@ -60,7 +53,7 @@ public class RemoveCommand extends Command {
                             List<String> numbersBetween = getNumbersBetween(Integer.valueOf(list[0]), Integer.valueOf(list[1]));
                             for (String sl : numbersBetween) {
                                 if (songs.get(Integer.valueOf(sl)) != null) {
-                                    manager.getPlayer(event.getGuild()).getTrackManager().tracks.remove(songs.get(Integer.valueOf(sl)));
+                                    audioLoader.getPlayer(event.getGuild()).getTrackManager().tracks.remove(songs.get(Integer.valueOf(sl)));
                                     sb.append("**#").append(sl).append("**").append(" - ").append(songs.get(Integer.valueOf(sl)).getInfo().title).append("\n");
                                     desc.add("**#" + sl + "**" + " - " + songs.get(Integer.valueOf(sl)).getInfo().title + "\n");
                                 }
@@ -72,12 +65,12 @@ public class RemoveCommand extends Command {
                     }
                 } else if (s.matches("\\d+")) {
                     if (songs.get(Integer.valueOf(s)) != null) {
-                        manager.getPlayer(event.getGuild()).getTrackManager().tracks.remove(songs.get(Integer.valueOf(s)));
+                        audioLoader.getPlayer(event.getGuild()).getTrackManager().tracks.remove(songs.get(Integer.valueOf(s)));
                         sb.append("**#").append(s).append("**").append(" - ").append(songs.get(Integer.valueOf(s)).getInfo().title).append("\n");
                         desc.add("**#" + s + "**" + " - " + songs.get(Integer.valueOf(s)).getInfo().title + "\n");
                     }
                 } else {
-                    MessageHelper.sendUsage(this, event);
+                    event.sendUsage(this, event);
                     return;
                 }
             }
@@ -88,27 +81,27 @@ public class RemoveCommand extends Command {
                     if (sb.length() < 1850) {
                         sb.append(s);
                     } else {
-                        EmbedBuilder eb = new Embedder(event.getGuild());
+                        EmbedBuilder eb = new Embedder(event.getVariables(), event.getGuild());
                         eb.setTitle("Removed part **#" + pi + "**");
                         eb.setDescription(sb.toString());
-                        eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
+                        eb.setFooter(event.getHelpers().getFooterStamp(), event.getHelpers().getFooterIcon());
                         event.reply(eb.build());
                         sb = new StringBuilder();
                         pi++;
                     }
                 }
                 if (sb.length() != 0) {
-                    EmbedBuilder eb = new Embedder(event.getGuild());
+                    EmbedBuilder eb = new Embedder(event.getVariables(), event.getGuild());
                     eb.setTitle("Removed part **#" + pi + "**");
                     eb.setDescription(sb.toString());
-                    eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
+                    eb.setFooter(event.getHelpers().getFooterStamp(), event.getHelpers().getFooterIcon());
                     event.reply(eb.build());
                 }
             } else {
-                EmbedBuilder eb = new Embedder(event.getGuild());
+                EmbedBuilder eb = new Embedder(event.getVariables(), event.getGuild());
                 eb.setTitle("Removed");
                 eb.setDescription(sb.toString());
-                eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
+                eb.setFooter(event.getHelpers().getFooterStamp(), event.getHelpers().getFooterIcon());
                 event.reply(eb.build());
             }
         } else {

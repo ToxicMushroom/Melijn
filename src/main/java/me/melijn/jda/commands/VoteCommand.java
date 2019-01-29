@@ -1,13 +1,9 @@
 package me.melijn.jda.commands;
 
-import me.melijn.jda.Helpers;
-import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.Embedder;
-import me.melijn.jda.utils.MessageHelper;
-import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.User;
@@ -32,29 +28,29 @@ public class VoteCommand extends Command {
         if (args.length == 0 || args[0].isEmpty()) {
             event.reply("Support us by voting and get access to locked commands\nhttps://discordbots.org/bot/melijn/vote");
         } else if (args[0].equalsIgnoreCase("info")) {
-            TaskScheduler.async(() -> {
-                User target = Helpers.getUserByArgs(event, args.length > 1 ? args[1] : "");
+            event.async(() -> {
+                User target = event.getHelpers().getUserByArgs(event, args.length > 1 ? args[1] : "");
                 String username = target.getName() + "#" + target.getDiscriminator();
-                JSONObject voteObject = Melijn.mySQL.getVotesObject(target.getIdLong());
+                JSONObject voteObject = event.getMySQL().getVotesObject(target.getIdLong());
                 if (!voteObject.has("votes")) {
                     event.reply(target.getName() + " has never voted.");
                     return;
                 }
-                EmbedBuilder eb = new Embedder(event.getGuild());
+                EmbedBuilder eb = new Embedder(event.getVariables(), event.getGuild());
                 eb.setTitle("Votes of " + username);
                 eb.setThumbnail(target.getAvatarUrl());
                 eb.addField("Votes", String.valueOf(voteObject.getLong("votes")), false);
                 eb.addField("Streak", String.valueOf(voteObject.getLong("streak")), false);
                 long untilNext = 43_200_000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
-                String untilNextFormat = (untilNext > 0) ? MessageHelper.millisToVote(untilNext) : "none (you can vote now)";
+                String untilNextFormat = (untilNext > 0) ? event.getMessageHelper().millisToVote(untilNext) : "none (you can vote now)";
                 eb.addField("Time until next vote", untilNextFormat, false);
                 long untilLoss = 172800000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
-                String untilLossFormat = (untilLoss > 0) ? MessageHelper.millisToVote(untilLoss) : "You don't have a streak atm :/";
+                String untilLossFormat = (untilLoss > 0) ? event.getMessageHelper().millisToVote(untilLoss) : "You don't have a streak atm :/";
                 eb.addField("Time until los of streak", untilLossFormat, false);
                 event.reply(eb.build());
             });
         } else {
-            MessageHelper.sendUsage(this, event);
+            event.sendUsage(this, event);
         }
     }
 }

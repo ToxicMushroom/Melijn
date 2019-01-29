@@ -1,19 +1,8 @@
 package me.melijn.jda.events;
 
-import gnu.trove.map.TIntIntMap;
-import gnu.trove.map.TLongIntMap;
-import gnu.trove.map.TLongObjectMap;
-import gnu.trove.map.hash.TIntIntHashMap;
-import gnu.trove.map.hash.TLongIntHashMap;
-import gnu.trove.map.hash.TLongObjectHashMap;
-import me.melijn.jda.Helpers;
+
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.ChannelType;
-import me.melijn.jda.commands.developer.EvalCommand;
-import me.melijn.jda.commands.management.*;
-import me.melijn.jda.db.MySQL;
-import me.melijn.jda.utils.MessageHelper;
-import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.audit.ActionType;
@@ -32,8 +21,8 @@ import org.slf4j.LoggerFactory;
 import java.awt.*;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,15 +32,20 @@ import static me.melijn.jda.blub.VerificationType.CODE;
 
 public class Chat extends ListenerAdapter {
 
-    private List<Long> black = new ArrayList<>();
-    private MySQL mySQL = Melijn.mySQL;
+    private Set<Long> black = new HashSet<>();
     private long latestId = 0;
     private int latestChanges = 0;
-    private TLongObjectMap<TLongIntMap> guildUserVerifyTries = new TLongObjectHashMap<>();
+    private Map<Long, Map<Long, Integer>> guildUserVerifyTries = new IdentityHashMap<>();
+    private final Melijn melijn;
+
+
+    public Chat(Melijn melijn) {
+        this.melijn = melijn;
+    }
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-        if (event.getGuild() == null || EvalCommand.serverBlackList.contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || melijn.getVariables().serverBlackList.contains(event.getGuild().getIdLong()))
             if (event.getGuild() == null &&
                     (event.getMessage().getContentRaw().equalsIgnoreCase(PREFIX) || event.getMessage().getContentRaw().equalsIgnoreCase(event.getJDA().getSelfUser().getAsMention())) &&
                     !event.getAuthor().isBot()) {
@@ -62,8 +56,8 @@ public class Chat extends ListenerAdapter {
         long guildId = guild.getIdLong();
         User author = event.getAuthor();
         if (event.getMember() == null) return;
-        if (EvalCommand.userBlackList.contains(guild.getOwnerIdLong())) return;
-        Helpers.guildCount = event.getJDA().asBot().getShardManager().getGuildCache().size();
+        if (melijn.getVariables().userBlackList.contains(guild.getOwnerIdLong())) return;
+        melijn.getHelpers().guildCount = event.getJDA().asBot().getShardManager().getGuildCache().size();
 
         StringBuilder content = new StringBuilder(event.getMessage().getContentRaw());
         for (Message.Attachment a : event.getMessage().getAttachments()) {
@@ -71,15 +65,15 @@ public class Chat extends ListenerAdapter {
         }
         String finalContent = content.toString();
 
-        TaskScheduler.async(() -> {
-            if (SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guildId) != -1 ||
-                    SetLogChannelCommand.odmLogChannelCache.getUnchecked(guildId) != -1 ||
-                    SetLogChannelCommand.pmLogChannelCache.getUnchecked(guildId) != -1 ||
-                    SetLogChannelCommand.fmLogChannelCache.getUnchecked(guildId) != -1)
-                mySQL.createMessage(event.getMessageIdLong(), finalContent, author.getIdLong(), guildId, event.getChannel().getIdLong());
+        melijn.getTaskManager().async(() -> {
+            if (melijn.getVariables().sdmLogChannelCache.getUnchecked(guildId) != -1 ||
+                    melijn.getVariables().odmLogChannelCache.getUnchecked(guildId) != -1 ||
+                    melijn.getVariables().pmLogChannelCache.getUnchecked(guildId) != -1 ||
+                    melijn.getVariables().fmLogChannelCache.getUnchecked(guildId) != -1)
+                melijn.getMySQL().createMessage(event.getMessageIdLong(), finalContent, author.getIdLong(), guildId, event.getChannel().getIdLong());
         });
         if (event.getMessage().getContentRaw().equalsIgnoreCase(guild.getSelfMember().getAsMention()) && guild.getSelfMember().hasPermission(event.getChannel(), Permission.MESSAGE_WRITE)) {
-            String prefix = SetPrefixCommand.prefixes.getUnchecked(guildId);
+            String prefix = melijn.getVariables().prefixes.getUnchecked(guildId);
             event.getChannel().sendMessage(String.format(("Hello there my default prefix is %s " + (prefix.equals(PREFIX) ? "" : String.format("\nThis server has configured %s as the prefix\n", prefix)) + "and you can view all commands using **%shelp**"), PREFIX, prefix)).queue();
         }
         if (guild.getSelfMember().hasPermission(event.getChannel(), Permission.MESSAGE_MANAGE) &&
@@ -87,47 +81,47 @@ public class Chat extends ListenerAdapter {
             filter(event.getMessage());
         }
 
-        if (SetVerificationChannelCommand.verificationChannelsCache.getUnchecked(guildId) == event.getChannel().getIdLong()) {
+        if (melijn.getVariables().verificationChannelsCache.getUnchecked(guildId) == event.getChannel().getIdLong()) {
             if (!event.getMember().hasPermission(event.getChannel(), Permission.MANAGE_CHANNEL))
                 event.getMessage().delete().reason("Verification Channel").queue(
-                        s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()),
+                        s -> melijn.getVariables().botDeletedMessages.add(event.getMessageIdLong()),
                         failed -> {}
                 );
-            if (SetVerificationCodeCommand.verificationCodeCache.getUnchecked(guildId) == null &&
-                    SetVerificationTypeCommand.verificationTypes.getUnchecked(guildId) == CODE) {
+            if (melijn.getVariables().verificationCodeCache.getUnchecked(guildId) == null &&
+                    melijn.getVariables().verificationTypes.getUnchecked(guildId) == CODE) {
                 return;
             }
-            String code = SetVerificationTypeCommand.verificationTypes.getUnchecked(guildId) == CODE ?
-                    SetVerificationCodeCommand.verificationCodeCache.getUnchecked(guildId) :
-                    String.valueOf(JoinLeave.unVerifiedGuildMembersCache.getUnchecked(guildId).get(event.getAuthor().getIdLong()));
+            String code = melijn.getVariables().verificationTypes.getUnchecked(guildId) == CODE ?
+                    melijn.getVariables().verificationCodeCache.getUnchecked(guildId) :
+                    String.valueOf(melijn.getVariables().unVerifiedGuildMembersCache.getUnchecked(guildId).get(event.getAuthor().getIdLong()));
 
             if (event.getMessage().getContentRaw().equalsIgnoreCase(code)) {
-                JoinLeave.verify(guild, event.getAuthor());
+                melijn.getHelpers().verify(guild, event.getAuthor());
                 removeMemberFromTriesCache(event);
-            } else if (SetVerificationThresholdCommand.verificationThresholdCache.getUnchecked(guildId) != 0) {
+            } else if (melijn.getVariables().verificationThresholdCache.getUnchecked(guildId) != 0) {
                 if (guildUserVerifyTries.containsKey(guildId)) {
                     if (guildUserVerifyTries.get(guildId).containsKey(guildId)) {
-                        TLongIntMap userTriesBuffer = guildUserVerifyTries.get(guildId);
+                        Map<Long, Integer> userTriesBuffer = guildUserVerifyTries.get(guildId);
                         userTriesBuffer.put(event.getAuthor().getIdLong(), userTriesBuffer.get(guildId) + 1);
                         guildUserVerifyTries.put(guildId, userTriesBuffer);
                     } else {
-                        TLongIntMap userTriesBuffer = guildUserVerifyTries.get(guildId);
+                        Map<Long, Integer> userTriesBuffer = guildUserVerifyTries.get(guildId);
                         userTriesBuffer.put(event.getAuthor().getIdLong(), 1);
                         guildUserVerifyTries.put(guildId, userTriesBuffer);
                     }
                 } else {
-                    TLongIntMap userTriesBuffer = new TLongIntHashMap();
+                    Map<Long, Integer> userTriesBuffer = new IdentityHashMap<>();
                     userTriesBuffer.put(event.getAuthor().getIdLong(), 1);
                     guildUserVerifyTries.put(guildId, userTriesBuffer);
                 }
-                if (guildUserVerifyTries.get(guildId).get(event.getAuthor().getIdLong()) == SetVerificationThresholdCommand.verificationThresholdCache.getUnchecked(guildId)) {
+                if (guildUserVerifyTries.get(guildId).get(event.getAuthor().getIdLong()).equals(melijn.getVariables().verificationThresholdCache.getUnchecked(guildId))) {
                     if (event.getGuild().getSelfMember().canInteract(event.getMember()))
                         event.getGuild().getController().kick(event.getMember()).reason("Failed verification").queue();
                     removeMemberFromTriesCache(event);
                 }
             } else {
                 event.getMessage().delete().reason("Verification Channel").queue(
-                        s -> MessageHelper.botDeletedMessages.add(event.getMessageIdLong()),
+                        s -> melijn.getVariables().botDeletedMessages.add(event.getMessageIdLong()),
                         failed -> {}
                 );
             }
@@ -140,20 +134,20 @@ public class Chat extends ListenerAdapter {
         long messageId = event.getMessageIdLong();
         Guild guild = event.getGuild();
         User author = event.getAuthor();
-        JSONObject oMessage = Melijn.mySQL.getMessageObject(messageId);
+        JSONObject oMessage = melijn.getMySQL().getMessageObject(messageId);
         if (guild.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_MANAGE) &&
                 !event.getMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_MANAGE)) {
             LoggerFactory.getLogger(this.getClass().getName());
             filter(event.getMessage());
         }
-        Melijn.mySQL.updateMessage(event.getMessage());
-        TextChannel emChannel = event.getGuild().getTextChannelById(SetLogChannelCommand.emLogChannelCache.getUnchecked(guild.getIdLong()));
-        if (emChannel == null || oMessage.isEmpty() || !emChannel.getGuild().getSelfMember().hasPermission(emChannel, Permission.MESSAGE_WRITE))
+        melijn.getMySQL().updateMessage(event.getMessage());
+        TextChannel emChannel = event.getGuild().getTextChannelById(melijn.getVariables().emLogChannelCache.getUnchecked(guild.getIdLong()));
+        if (emChannel == null || oMessage.length() == 0 || !emChannel.getGuild().getSelfMember().hasPermission(emChannel, Permission.MESSAGE_WRITE))
             return;
 
 
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Message edited in #" + event.getTextChannel().getName() + MessageHelper.spaces.substring(0, 45 + event.getAuthor().getName().length()) + "\u200B");
+        eb.setTitle("Message edited in #" + event.getTextChannel().getName() + " ".repeat(50).substring(0, 45 + event.getAuthor().getName().length()) + "\u200B");
         eb.setThumbnail(event.getAuthor().getEffectiveAvatarUrl());
         eb.setColor(Color.decode("#A1DAC3"));
 
@@ -165,8 +159,8 @@ public class Chat extends ListenerAdapter {
                     "\nMessage before: " + oMessage.getString("content").replaceAll("`", "´").replaceAll("\n", " ") +
                     "\nMessage after: " + event.getMessage().getContentRaw().replaceAll("`", "´").replaceAll("\n", " ") +
                     "\nSenderID: " + author.getId() +
-                    "\nSent Time: " + MessageHelper.millisToDate(oMessage.getLong("sentTime")) +
-                    "\nEdited Time: " + MessageHelper.millisToDate(System.currentTimeMillis()) +
+                    "\nSent Time: " + melijn.getMessageHelper().millisToDate(oMessage.getLong("sentTime")) +
+                    "\nEdited Time: " + melijn.getMessageHelper().millisToDate(System.currentTimeMillis()) +
                     "```");
             emChannel.sendMessage(eb.build()).queue();
         } else if (oLength < 1900 && nLength < 1800) {
@@ -180,16 +174,16 @@ public class Chat extends ListenerAdapter {
             eb.setDescription("```LDIF" +
                     "\nMessage after: " + event.getMessage().getContentRaw().replaceAll("`", "´").replaceAll("\n", " ") +
                     "\nSenderID: " + author.getId() +
-                    "\nSent Time: " + MessageHelper.millisToDate(oMessage.getLong("sentTime")) +
-                    "\nEdited Time: " + MessageHelper.millisToDate(System.currentTimeMillis()) +
+                    "\nSent Time: " + melijn.getMessageHelper().millisToDate(oMessage.getLong("sentTime")) +
+                    "\nEdited Time: " + melijn.getMessageHelper().millisToDate(System.currentTimeMillis()) +
                     "```");
             emChannel.sendMessage(eb.build()).queue();
         } else {
             eb.setDescription("```LDIF" +
                     "\nSender: " + author.getName() + "#" + author.getDiscriminator() +
                     "\nSenderID: " + author.getId() +
-                    "\nSent Time: " + MessageHelper.millisToDate(oMessage.getLong("sentTime")) +
-                    "\nEdited Time: " + MessageHelper.millisToDate(System.currentTimeMillis()) +
+                    "\nSent Time: " + melijn.getMessageHelper().millisToDate(oMessage.getLong("sentTime")) +
+                    "\nEdited Time: " + melijn.getMessageHelper().millisToDate(System.currentTimeMillis()) +
                     "```");
             emChannel.sendMessage(eb.build()).queue();
             eb.setThumbnail(null);
@@ -201,7 +195,7 @@ public class Chat extends ListenerAdapter {
         }
     }
 
-    private void addPositions(String message, TIntIntMap deniedPositions, List<String> deniedList) {
+    private void addPositions(String message, Map<Integer, Integer> deniedPositions, List<String> deniedList) {
         for (String toFind : deniedList) {
             Pattern word = Pattern.compile(Pattern.quote(toFind.toLowerCase()));
             Matcher match = word.matcher(message.toLowerCase());
@@ -213,7 +207,7 @@ public class Chat extends ListenerAdapter {
 
     private void removeMemberFromTriesCache(GuildMessageReceivedEvent event) {
         if (guildUserVerifyTries.containsKey(event.getGuild().getIdLong())) {
-            TLongIntMap memberTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
+            Map<Long, Integer> memberTriesBuffer = guildUserVerifyTries.get(event.getGuild().getIdLong());
             memberTriesBuffer.remove(event.getAuthor().getIdLong());
             if (memberTriesBuffer.size() > 0) guildUserVerifyTries.put(event.getGuild().getIdLong(), memberTriesBuffer);
             else guildUserVerifyTries.remove(event.getGuild().getIdLong());
@@ -223,22 +217,22 @@ public class Chat extends ListenerAdapter {
 
     @Override
     public void onGuildMessageDelete(GuildMessageDeleteEvent event) {
-        if (event.getGuild() == null || EvalCommand.serverBlackList.contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || melijn.getVariables().serverBlackList.contains(event.getGuild().getIdLong()))
             return;
-        if (EvalCommand.userBlackList.contains(event.getGuild().getOwnerIdLong())) return;
-        if (Helpers.lastRunTimer1 < (System.currentTimeMillis() - 10_000 * 2) && Helpers.lastRunTimer1 != -1)
-            Helpers.startTimer(event.getJDA(), 1);
-        if (Helpers.lastRunTimer2 < (System.currentTimeMillis() - 120_000 * 2) && Helpers.lastRunTimer2 != -1)
-            Helpers.startTimer(event.getJDA(), 2);
-        if (Helpers.lastRunTimer3 < (System.currentTimeMillis() - 1_800_000 * 2) && Helpers.lastRunTimer3 != -1)
-            Helpers.startTimer(event.getJDA(), 3);
+        if (melijn.getVariables().userBlackList.contains(event.getGuild().getOwnerIdLong())) return;
+        if (melijn.getHelpers().lastRunTimer1 < (System.currentTimeMillis() - 10_000 * 2) && melijn.getHelpers().lastRunTimer1 != -1)
+            melijn.getHelpers().startTimer(event.getJDA(), 1);
+        if (melijn.getHelpers().lastRunTimer2 < (System.currentTimeMillis() - 120_000 * 2) && melijn.getHelpers().lastRunTimer2 != -1)
+            melijn.getHelpers().startTimer(event.getJDA(), 2);
+        if (melijn.getHelpers().lastRunTimer3 < (System.currentTimeMillis() - 1_800_000 * 2) && melijn.getHelpers().lastRunTimer3 != -1)
+            melijn.getHelpers().startTimer(event.getJDA(), 3);
         Guild guild = event.getGuild();
         if (event.getGuild().getSelfMember().hasPermission(Permission.VIEW_AUDIT_LOGS) &&
-                (SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
-                        SetLogChannelCommand.odmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
-                        SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
-                        SetLogChannelCommand.fmLogChannelCache.getUnchecked(guild.getIdLong()) != -1)) {
-            JSONObject message = mySQL.getMessageObject(event.getMessageIdLong());
+                (melijn.getVariables().sdmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
+                        melijn.getVariables().odmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
+                        melijn.getVariables().pmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
+                        melijn.getVariables().fmLogChannelCache.getUnchecked(guild.getIdLong()) != -1)) {
+            JSONObject message = melijn.getMySQL().getMessageObject(event.getMessageIdLong());
             if (!message.keySet().contains("authorId"))
                 return;
             event.getJDA().retrieveUserById(message.getLong("authorId")).queue(author -> {
@@ -253,7 +247,7 @@ public class Chat extends ListenerAdapter {
                     }
                     doMessageDeleteChecks(event, guild, message, author);
                 });
-                mySQL.executeUpdate("DELETE FROM history_messages WHERE sentTime < " + (System.currentTimeMillis() - 604_800_000L));
+                melijn.getMySQL().executeUpdate("DELETE FROM history_messages WHERE sentTime < " + (System.currentTimeMillis() - 604_800_000L));
             });
         }
     }
@@ -275,7 +269,7 @@ public class Chat extends ListenerAdapter {
 
             boolean split = false;
             EmbedBuilder eb = new EmbedBuilder();
-            eb.setTitle("Message deleted in #" + event.getChannel().getName() + MessageHelper.spaces.substring(0, 45 + author.getName().length()) + "\u200B");
+            eb.setTitle("Message deleted in #" + event.getChannel().getName() + " ".repeat(50).substring(0, 45 + author.getName().length()) + "\u200B");
             eb.setThumbnail(author.getEffectiveAvatarUrl());
             eb.setColor(Color.decode("#000001"));
             if (message.getString("content").length() > 1850) {
@@ -289,39 +283,39 @@ public class Chat extends ListenerAdapter {
                         "\nSender: " + author.getName() + "#" + author.getDiscriminator() +
                         "\nMessage: " + message.getString("content").replaceAll("`", "´").replaceAll("\n", " ") +
                         "\nSenderID: " + author.getId() +
-                        "\nSent Time: " + MessageHelper.millisToDate(message.getLong("sentTime")) +
+                        "\nSent Time: " + melijn.getMessageHelper().millisToDate(message.getLong("sentTime")) +
                         "```");
             }
 
-            if (MessageHelper.filteredMessageDeleteCause.keySet().contains(event.getMessageIdLong()) && guild.getTextChannelById(SetLogChannelCommand.fmLogChannelCache.getUnchecked(guild.getIdLong())) != null) {
+            if (melijn.getVariables().filteredMessageDeleteCause.keySet().contains(event.getMessageIdLong()) && guild.getTextChannelById(melijn.getVariables().fmLogChannelCache.getUnchecked(guild.getIdLong())) != null) {
                 // FILTERED
                 eb.setColor(Color.ORANGE);
-                TextChannel fmLogChannel = guild.getTextChannelById(SetLogChannelCommand.fmLogChannelCache.getUnchecked(guild.getIdLong()));
+                TextChannel fmLogChannel = guild.getTextChannelById(melijn.getVariables().fmLogChannelCache.getUnchecked(guild.getIdLong()));
                 if (!event.getGuild().getSelfMember().hasPermission(fmLogChannel, Permission.MESSAGE_WRITE)) {
-                    Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.FM_LOG);
+                    melijn.getMySQL().removeChannel(guild.getIdLong(), ChannelType.FM_LOG);
                     return;
                 }
                 sendSplitIfNeeded(message, author, split, eb, fmLogChannel);
-                eb.addField("Detected: ", "`" + MessageHelper.filteredMessageDeleteCause.get(event.getMessageIdLong()).replaceAll("`", "´") + "`", false);
+                eb.addField("Detected: ", "`" + melijn.getVariables().filteredMessageDeleteCause.get(event.getMessageIdLong()).replaceAll("`", "´") + "`", false);
                 User bot = event.getJDA().getSelfUser();
                 eb.setFooter("Deleted by: " + bot.getName() + "#" + bot.getDiscriminator(), bot.getEffectiveAvatarUrl());
                 fmLogChannel.sendMessage(eb.build()).queue();
-                MessageHelper.filteredMessageDeleteCause.remove(event.getMessageIdLong());
-            } else if (MessageHelper.purgedMessageDeleter.containsKey(event.getMessageIdLong()) && guild.getTextChannelById(SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong())) != null) {
+                melijn.getVariables().filteredMessageDeleteCause.remove(event.getMessageIdLong());
+            } else if (melijn.getVariables().purgedMessageDeleter.containsKey(event.getMessageIdLong()) && guild.getTextChannelById(melijn.getVariables().pmLogChannelCache.getUnchecked(guild.getIdLong())) != null) {
                 // PURGED
                 eb.setColor(Color.decode("#551A8B"));
-                User purger = event.getJDA().asBot().getShardManager().getUserById(MessageHelper.purgedMessageDeleter.get(event.getMessageIdLong()));
-                TextChannel pmLogChannel = guild.getTextChannelById(SetLogChannelCommand.pmLogChannelCache.getUnchecked(guild.getIdLong()));
+                User purger = event.getJDA().asBot().getShardManager().getUserById(melijn.getVariables().purgedMessageDeleter.get(event.getMessageIdLong()));
+                TextChannel pmLogChannel = guild.getTextChannelById(melijn.getVariables().pmLogChannelCache.getUnchecked(guild.getIdLong()));
                 if (!event.getGuild().getSelfMember().hasPermission(pmLogChannel, Permission.MESSAGE_WRITE)) {
-                    Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.PM_LOG);
+                    melijn.getMySQL().removeChannel(guild.getIdLong(), ChannelType.PM_LOG);
                     return;
                 }
                 sendSplitIfNeeded(message, author, split, eb, pmLogChannel);
                 if (purger != null)
                     eb.setFooter("Purged by: " + purger.getName() + "#" + purger.getDiscriminator(), purger.getEffectiveAvatarUrl());
                 pmLogChannel.sendMessage(eb.build()).queue();
-                MessageHelper.purgedMessageDeleter.remove(event.getMessageIdLong());
-            } else if (MessageHelper.botDeletedMessages.remove(event.getMessageIdLong())) {
+                melijn.getVariables().purgedMessageDeleter.remove(event.getMessageIdLong());
+            } else if (melijn.getVariables().botDeletedMessages.remove(event.getMessageIdLong())) {
                 // DELETED BY BOT
                 User deleter = event.getJDA().getSelfUser();
                 log(guild, author, eb, deleter, message, split);
@@ -333,7 +327,7 @@ public class Chat extends ListenerAdapter {
                 // SDM
                 User deleter = sameAsLast ? auditLogEntry.getUser() : null;
                 if (deleter == null) {
-                    Member member = guild.getMemberById(Melijn.mySQL.getMessageAuthorId(event.getMessageIdLong()));
+                    Member member = guild.getMemberById(melijn.getMySQL().getMessageAuthorId(event.getMessageIdLong()));
                     if (member == null) return;
                     deleter = member.getUser();
                 }
@@ -347,7 +341,12 @@ public class Chat extends ListenerAdapter {
         if (split) {
             eb.setTitle(eb.build().getTitle() + " part 1");
             channel.sendMessage(eb.build()).queue();
-            eb.setDescription("```LDIF\npart 2: " + message.getString("content").substring(1850) + "\nSenderID: " + author.getId() + "\nSent Time: " + MessageHelper.millisToDate(message.getLong("sentTime")) + "```");
+            eb.setDescription("```LDIF" +
+                    "\npart 2: " + message.getString("content").substring(1850) +
+                    "\nSenderID: " + author.getId() +
+                    "\nSent Time: " + melijn.getMessageHelper().millisToDate(message.getLong("sentTime")) +
+                    "```"
+            );
             eb.setTitle("part 2");
             eb.setThumbnail("https://melijn.com/files/u/03-09-2018--09.16-29s.png");
         }
@@ -355,13 +354,13 @@ public class Chat extends ListenerAdapter {
 
     private void log(Guild guild, User author, EmbedBuilder eb, User deleter, JSONObject message, boolean split) {
         if (deleter == null) return;
-        TextChannel sdmChannel = guild.getTextChannelById(SetLogChannelCommand.sdmLogChannelCache.getUnchecked(guild.getIdLong()));
-        TextChannel odmChannel = guild.getTextChannelById(SetLogChannelCommand.odmLogChannelCache.getUnchecked(guild.getIdLong()));
+        TextChannel sdmChannel = guild.getTextChannelById(melijn.getVariables().sdmLogChannelCache.getUnchecked(guild.getIdLong()));
+        TextChannel odmChannel = guild.getTextChannelById(melijn.getVariables().odmLogChannelCache.getUnchecked(guild.getIdLong()));
         if (sdmChannel != null && !guild.getSelfMember().hasPermission(sdmChannel, Permission.MESSAGE_WRITE)) {
-            Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.SDM_LOG);
+            melijn.getMySQL().removeChannel(guild.getIdLong(), ChannelType.SDM_LOG);
         }
         if (odmChannel != null && !guild.getSelfMember().hasPermission(odmChannel, Permission.MESSAGE_WRITE)) {
-            Melijn.mySQL.removeChannel(guild.getIdLong(), ChannelType.ODM_LOG);
+            melijn.getMySQL().removeChannel(guild.getIdLong(), ChannelType.ODM_LOG);
         }
         if (split) {
             eb.setTitle(eb.build().getTitle() + " part 1");
@@ -372,7 +371,12 @@ public class Chat extends ListenerAdapter {
             }
             eb.setTitle("part 2");
             eb.setThumbnail("https://melijn.com/files/u/03-09-2018--09.16-29s.png");
-            eb.setDescription("```LDIF\npart 2: " + message.getString("content").substring(1500) + "\nSenderID: " + author.getId() + "\nSent Time: " + MessageHelper.millisToDate(message.getLong("sentTime")) + "```");
+            eb.setDescription("```LDIF" +
+                    "\npart 2: " + message.getString("content").substring(1500) +
+                    "\nSenderID: " + author.getId() +
+                    "\nSent Time: " + melijn.getMessageHelper().millisToDate(message.getLong("sentTime")) +
+                    "```"
+            );
         }
         eb.setFooter("Deleted by: " + deleter.getName() + "#" + deleter.getDiscriminator(), deleter.getEffectiveAvatarUrl());
         if (author.equals(deleter) && sdmChannel != null && guild.getSelfMember().hasPermission(sdmChannel, Permission.MESSAGE_WRITE)) {
@@ -383,13 +387,13 @@ public class Chat extends ListenerAdapter {
     }
 
     private void filter(Message msg) {
-        TaskScheduler.async(() -> {
+        melijn.getTaskManager().async(() -> {
             String message = msg.getContentRaw();
             StringBuilder detectedWord = new StringBuilder();
 
-            List<String> deniedList = mySQL.getFilters(msg.getGuild().getIdLong(), "denied");
+            List<String> deniedList = melijn.getMySQL().getFilters(msg.getGuild().getIdLong(), "denied");
             if (deniedList.size() == 0) return;
-            List<String> allowedList = mySQL.getFilters(msg.getGuild().getIdLong(), "allowed");
+            List<String> allowedList = melijn.getMySQL().getFilters(msg.getGuild().getIdLong(), "allowed");
 
             AtomicBoolean ranOnce = new AtomicBoolean(false);
 
@@ -402,15 +406,15 @@ public class Chat extends ListenerAdapter {
                 });
 
             } else {
-                TIntIntMap deniedPositions = new TIntIntHashMap();
-                TIntIntMap allowedPositions = new TIntIntHashMap();
+                Map<Integer, Integer> deniedPositions = new IdentityHashMap<>();
+                Map<Integer, Integer> allowedPositions = new IdentityHashMap<>();
                 addPositions(message, deniedPositions, deniedList);
                 addPositions(message, allowedPositions, allowedList);
 
                 if (allowedPositions.size() > 0 && deniedPositions.size() > 0) {
-                    for (int beginDenied : deniedPositions.keys()) {
+                    for (int beginDenied : deniedPositions.keySet()) {
                         int endDenied = deniedPositions.get(beginDenied);
-                        for (int beginAllowed : allowedPositions.keys()) {
+                        for (int beginAllowed : allowedPositions.keySet()) {
                             int endAllowed = allowedPositions.get(beginAllowed);
 
                             if (beginDenied > beginAllowed && endDenied < endAllowed) continue;
@@ -418,7 +422,7 @@ public class Chat extends ListenerAdapter {
                         }
                     }
                 } else if (deniedPositions.size() > 0) {
-                    for (int beginDenied : deniedPositions.keys()) {
+                    for (int beginDenied : deniedPositions.keySet()) {
                         int endDenied = deniedPositions.get(beginDenied);
                         detectedWord.append(ranOnce.get() ? ", " : "").append(message, beginDenied, endDenied);
                         ranOnce.set(true);
@@ -426,10 +430,12 @@ public class Chat extends ListenerAdapter {
                 }
             }
             if (detectedWord.length() > 0) {
-                MessageHelper.filteredMessageDeleteCause.put(msg.getIdLong(), detectedWord.substring(0, detectedWord.length() - 2));
+                melijn.getVariables().filteredMessageDeleteCause.put(msg.getIdLong(), detectedWord.substring(0, detectedWord.length() - 2));
                 msg.delete().reason("Use of prohibited words").queue(
-                        success -> {},
-                        failure -> {}
+                        success -> {
+                        },
+                        failure -> {
+                        }
                 );
             }
         });

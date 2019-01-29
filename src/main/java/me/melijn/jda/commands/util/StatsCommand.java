@@ -1,7 +1,6 @@
 package me.melijn.jda.commands.util;
 
 import com.sun.management.OperatingSystemMXBean;
-import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
@@ -14,6 +13,7 @@ import java.lang.management.ManagementFactory;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,21 +43,22 @@ public class StatsCommand extends Command {
                                 (vc) -> vc.getMembers().contains(vc.getGuild().getSelfMember())
                         ).count()
                 ).sum();
-
+        ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) event.getClient().getMelijn().getTaskManager().getExecutorService();
         ShardManager shardManager = event.getJDA().asBot().getShardManager();
-        event.reply(new Embedder(event.getGuild())
+        event.reply(new Embedder(event.getVariables(), event.getGuild())
                 .setThumbnail(event.getJDA().getSelfUser().getAvatarUrl())
                 .addField("Bot stats", "" +
                         "\n**Shards** " + shardManager.getShardsTotal() +
                         "\n**Unique users** " + shardManager.getUserCache().size() +
                         "\n**Guilds** " + shardManager.getGuildCache().size() +
                         "\n**Connected VoiceChannels** " + voiceChannels +
-                        "\n**Uptime** " + Helpers.getDurationBreakdown(ManagementFactory.getRuntimeMXBean().getUptime()) +
+                        "\n**Threads** " + threadPoolExecutor.getActiveCount() +
+                        "\n**Uptime** " + event.getMessageHelper().getDurationBreakdown(ManagementFactory.getRuntimeMXBean().getUptime()) +
                         "\n\u200B", false)
                 .addField("Server Stats", "" +
                         "\n**Cores** " + bean.getAvailableProcessors() +
                         "\n**RAM Usage** " + usedMem + "MB/" + totalMem + "MB" +
-                        "\n**System Uptime** " + Helpers.getDurationBreakdown(getSystemUptime()) +
+                        "\n**System Uptime** " + event.getMessageHelper().getDurationBreakdown(getSystemUptime()) +
                         "\n\u200B", false)
                 .addField("JVM Stats", "" +
                         "\n**CPU Usage** " + new DecimalFormat("###.###%").format(bean.getProcessCpuLoad()) +

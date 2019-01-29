@@ -2,25 +2,22 @@ package me.melijn.jda.blub;
 
 import me.melijn.jda.Melijn;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class CommandClientBuilder {
 
-    private long ownerId;
-    private final List<Command> commands = new ArrayList<>();
+    private final long ownerId;
+    private final Set<Command> commands = new HashSet<>();
+    private final Melijn melijn;
+
+    public CommandClientBuilder(Melijn melijn, long ownerId) {
+        this.melijn = melijn;
+        this.ownerId = ownerId;
+    }
 
     public CommandClient build() {
-        return new CommandClientImpl(ownerId, commands);
-    }
-
-    public List<Command> getCommands() {
-        return commands;
-    }
-
-    public CommandClientBuilder setOwnerId(long ownerId) {
-        this.ownerId = ownerId;
-        return this;
+        return new CommandClientImpl(melijn, ownerId, commands);
     }
 
     private CommandClientBuilder addCommand(Command command) {
@@ -30,8 +27,8 @@ public class CommandClientBuilder {
 
     public CommandClientBuilder addCommands(Command... commands) {
         for (Command command : commands) {
-            this.addCommand(command);
-            Melijn.mySQL.addCommand(command);
+            addCommand(command);
+            melijn.getMySQL().addCommand(command);
         }
         return this;
     }

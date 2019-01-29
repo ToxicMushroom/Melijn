@@ -1,17 +1,14 @@
 package me.melijn.jda.commands.music;
 
-import me.melijn.jda.Helpers;
-import me.melijn.jda.Melijn;
+import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.audio.AudioLoader;
-import me.melijn.jda.audio.MusicPlayer;
-import me.melijn.jda.utils.MessageHelper;
 
 import static me.melijn.jda.Melijn.PREFIX;
-import static me.melijn.jda.blub.Need.*;
+import static me.melijn.jda.blub.Need.GUILD;
+import static me.melijn.jda.blub.Need.SAME_VOICECHANNEL;
 
 public class VolumeCommand extends Command {
 
@@ -28,20 +25,20 @@ public class VolumeCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
+        if (event.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
-            MusicPlayer player = AudioLoader.getManagerInstance().getPlayer(event.getGuild());
+            MusicPlayer player = event.getClient().getMelijn().getLava().getAudioLoader().getPlayer(event.getGuild());
             int volume;
             if (args.length == 0 || args[0].isEmpty()) {
                 event.reply("Current volume: **" + player.getAudioPlayer().getVolume() + "**");
-            } else if (!Helpers.voteChecks || Melijn.mySQL.getVotesObject(event.getAuthorId()).getLong("streak") > 0) {
-                if (args[0].matches("[0-9]{1,3}|1000")) {
+            } else if (!event.getHelpers().voteChecks || event.getMySQL().getVotesObject(event.getAuthorId()).getLong("streak") > 0) {
+                if (!args[0].matches("[0-9]{1,3}|1000")) {
+                    event.sendUsage(this, event);
+                    return;
+                }
                     volume = Integer.parseInt(args[0]);
                     player.getAudioPlayer().setVolume(volume);
                     event.reply("Volume has been set to **" + volume + "**");
-                } else {
-                    MessageHelper.sendUsage(this, event);
-                }
             } else {
                 event.reply("Sorry this command takes a lot of CPU usage\nYou can still use this command if you support me by voting each day `>vote`\nor you can just right click my name and use the volume slider");
             }

@@ -1,16 +1,14 @@
 package me.melijn.jda.commands.management;
 
-import gnu.trove.list.TIntList;
-import gnu.trove.list.array.TIntArrayList;
-import gnu.trove.map.TLongObjectMap;
-import me.melijn.jda.Helpers;
-import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.utils.MessageHelper;
-import me.melijn.jda.utils.TaskScheduler;
+import me.melijn.jda.utils.Task;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
@@ -27,12 +25,15 @@ public class EnableCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+        if (event.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             long guildId = event.getGuild().getIdLong();
-            if (args.length > 0 && !args[0].isEmpty()) {
-                TLongObjectMap<TIntList> map = DisableCommand.disabledGuildCommands;
-                TIntList buffer = map.containsKey(guildId) ? map.get(guildId) : new TIntArrayList();
+            if (args.length == 0 || args[0].isEmpty()) {
+                event.sendUsage(this, event);
+                return;
+            }
+                Map<Long, List<Integer>> map = event.getVariables().disabledGuildCommands;
+                List<Integer> buffer = map.containsKey(guildId) ? map.get(guildId) : new ArrayList<>();
                 int sizeBefore = buffer.size();
                 for (Command cmd : event.getClient().getCommands()) {
 
@@ -54,14 +55,11 @@ public class EnableCommand extends Command {
                     event.reply("The given command or category was unknown");
                 } else {
                     event.reply("Successfully enabled **" + args[0] + "**");
-                    TaskScheduler.async(() -> {
-                        Melijn.mySQL.removeDisabledCommands(guildId, buffer);
-                        DisableCommand.disabledGuildCommands.put(guildId, buffer);
+                    event.async(() -> {
+                        event.getMySQL().removeDisabledCommands(guildId, buffer);
+                        event.getVariables().disabledGuildCommands.put(guildId, buffer);
                     });
                 }
-            } else {
-                MessageHelper.sendUsage(this, event);
-            }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }

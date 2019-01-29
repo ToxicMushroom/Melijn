@@ -1,6 +1,5 @@
 package me.melijn.jda.commands.util;
 
-import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
@@ -26,7 +25,7 @@ public class ShardsCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
+        if (event.getGuild() == null || event.hasPerm(event.getMember(), commandName, 0)) {
             ShardManager shardManager = event.getJDA().asBot().getShardManager();
             TableBuilder tableBuilder = new TableBuilder(true).setColumns(List.of("Shard ID", "Ping", "Users", "Guilds", "VCs"));
 

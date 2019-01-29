@@ -1,6 +1,8 @@
 package me.melijn.jda;
 
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,18 +14,16 @@ import java.util.Set;
 
 public class Config {
 
-    private static Config config = new Config();
     private JSONObject configObject;
     private final File configFile = new File("config.json");
 
-    public static Config getConfigInstance() {
-        return config;
-    }
 
-    private Config() {
+    Config() {
+        Logger logger = LoggerFactory.getLogger(Config.class.getName());
+
         if (!configFile.exists()) {
             create();
-            System.out.println("The config file is created. Fill in all the values. If you don't know how to get a value then check out my wiki");
+            logger.info("The config file is created. Fill in all the values. If you don't know how to get a value then check out my wiki");
             System.exit(0);
         }
 
@@ -37,7 +37,7 @@ public class Config {
                 obj.has("database")) {
             configObject = obj;
         } else {
-            System.err.println("Missing keys.");
+            logger.error("Missing keys.");
             System.exit(1);
         }
     }

@@ -1,35 +1,21 @@
 package me.melijn.jda.commands.management;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import gnu.trove.map.TLongObjectMap;
-import me.melijn.jda.Helpers;
-import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.utils.cache.SnowflakeCacheView;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class SelfRoleCommand extends Command {
 
-    public static final LoadingCache<Long, TLongObjectMap<String>> selfRoles = CacheBuilder.newBuilder()
-            .maximumSize(30)
-            .expireAfterAccess(1, TimeUnit.MINUTES)
-            .build(new CacheLoader<>() {
-                public TLongObjectMap<String> load(@NotNull Long key) {
-                    return Melijn.mySQL.getSelfRoles(key);
-                }
-            });
+
 
     public SelfRoleCommand() {
         this.commandName = "selfRole";
@@ -43,14 +29,14 @@ public class SelfRoleCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+        if (event.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
             if (args.length == 0 || args[0].isEmpty()) {
-                MessageHelper.sendUsage(this, event);
+                event.sendUsage(this, event);
                 return;
             }
-            TLongObjectMap<String> cache = selfRoles.getUnchecked(guild.getIdLong());
+            Map<Long, String> cache = event.getVariables().selfRoles.getUnchecked(guild.getIdLong());
             switch (args[0].toLowerCase()) {
                 case "add":
                     StringBuilder builder = new StringBuilder();
@@ -72,12 +58,12 @@ public class SelfRoleCommand extends Command {
                         }
                     });
                     if (args.length < 3 || (event.getMessage().getEmotes().size() < 1 && !builder.toString().matches("\\\\u.*"))) {
-                        event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " add <role> <emote | emoji>");
+                        event.reply(event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " add <role> <emote | emoji>");
                         return;
                     }
-                    Role roleAdded = Helpers.getRoleByArgs(event, args[1]);
+                    Role roleAdded = event.getHelpers().getRoleByArgs(event, args[1]);
                     if (roleAdded == null || roleAdded.getIdLong() == guild.getIdLong()) {
-                        event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " add <role> <emote | emoji>");
+                        event.reply(event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " add <role> <emote | emoji>");
                         return;
                     }
                     String emote = event.getMessage().getEmotes().size() > 0 ? event.getMessage().getEmotes().get(0).getId() : args[2];
@@ -85,18 +71,20 @@ public class SelfRoleCommand extends Command {
                         event.reply("This SelfRole already exist: choose another role or emote/emoji.");
                         return;
                     }
-                    Melijn.mySQL.addSelfRole(guild.getIdLong(), roleAdded.getIdLong(), emote);
-                    selfRoles.invalidate(guild.getIdLong());
+                    event.async(() ->  {
+                        event.getMySQL().addSelfRole(guild.getIdLong(), roleAdded.getIdLong(), emote);
+                        event.getVariables().selfRoles.invalidate(guild.getIdLong());
+                    });
                     event.reply("SelfRole added: **@" + roleAdded.getName() + "** by **" + event.getFullAuthorName() + "**");
                     break;
                 case "remove":
                     if (args.length < 2) {
-                        event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " remove <role> [emote | emoji]");
+                        event.reply(event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " remove <role> [emote | emoji]");
                         return;
                     }
-                    Role roleRemoved = Helpers.getRoleByArgs(event, args[1]);
+                    Role roleRemoved = event.getHelpers().getRoleByArgs(event, args[1]);
                     if (roleRemoved == null || roleRemoved.getIdLong() == guild.getIdLong()) {
-                        event.reply(SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " remove <role> [emote | emoji]");
+                        event.reply(event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " remove <role> [emote | emoji]");
                         return;
                     }
                     String emote2 = event.getMessage().getEmotes().size() > 0 ? event.getMessage().getEmotes().get(0).getId() : (args.length < 3 ? "" : args[2]);
@@ -105,28 +93,30 @@ public class SelfRoleCommand extends Command {
                         return;
                     }
                     if (emote2.isEmpty()) {
-                        Melijn.mySQL.removeSelfRole(guild.getIdLong(), roleRemoved.getIdLong());
-                        selfRoles.invalidate(guild.getIdLong());
+                        event.getMySQL().removeSelfRole(guild.getIdLong(), roleRemoved.getIdLong());
+                        event.getVariables().selfRoles.invalidate(guild.getIdLong());
                         event.reply("SelfRole entries removed for role: **@" + roleRemoved.getName() + "** by **" + event.getFullAuthorName() + "**");
                     } else {
-                        Melijn.mySQL.removeSelfRole(guild.getIdLong(), roleRemoved.getIdLong(), emote2);
-                        selfRoles.invalidate(guild.getIdLong());
+                        event.getMySQL().removeSelfRole(guild.getIdLong(), roleRemoved.getIdLong(), emote2);
+                        event.getVariables().selfRoles.invalidate(guild.getIdLong());
                         event.reply("SelfRole entry removed for role: **@" + roleRemoved.getName() + "** by **" + event.getFullAuthorName() + "**");
                     }
 
                     break;
                 case "list":
                     StringBuilder sb = new StringBuilder("**SelfRoles**\n```INI");
-                    TLongObjectMap<String> rolesIds = selfRoles.getUnchecked(guild.getIdLong());
-                    for (int i = 0; i < rolesIds.keys().length; i++) {
+                    Map<Long, String> rolesIds = event.getVariables().selfRoles.getUnchecked(guild.getIdLong());
+
+                    AtomicInteger i = new AtomicInteger();
+                    rolesIds.forEach((id, mEmote) -> {
                         SnowflakeCacheView<Role> roles = guild.getRoleCache();
-                        Role role = roles.getElementById(rolesIds.keys()[i]);
+                        Role role = roles.getElementById(id);
                         if (role != null)
-                            sb.append("\n").append(i + 1).append(" - [").append(role.getName()).append("] - ").append(rolesIds.get(rolesIds.keys()[i]));
-                    }
+                            sb.append("\n").append(i.getAndIncrement()).append(" - [").append(role.getName()).append("] - ").append(id);
+                    });
                     sb.append("```");
-                    if (rolesIds.keys().length == 0) sb.append("There are no SelfRoles");
-                    MessageHelper.sendSplitMessage(event.getTextChannel(), sb.toString());
+                    if (rolesIds.size() == 0) sb.append("There are no SelfRoles");
+                    event.getMessageHelper().sendSplitMessage(event.getTextChannel(), sb.toString());
                     break;
             }
         } else {

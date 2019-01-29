@@ -15,10 +15,9 @@ import org.json.JSONObject;
 public class Application extends Jooby {
 
 
-
     {
         use(new Jackson());
-        get("/guildCount", (request, response) -> response.send(Melijn.getShardManager().getGuildCache().size()));
+        get("/guildCount", (request, response) -> response.send(melijn.getShardManager().getGuildCache().size()));
         get("/shards", (request, response) -> {
             JSONObject object = new JSONObject();
             for (JDA shard : Melijn.getShardManager().getShardCache())

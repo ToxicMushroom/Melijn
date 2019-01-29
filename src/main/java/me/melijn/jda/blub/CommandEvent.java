@@ -1,5 +1,12 @@
 package me.melijn.jda.blub;
 
+import me.melijn.jda.Helpers;
+import me.melijn.jda.db.MySQL;
+import me.melijn.jda.db.Variables;
+import me.melijn.jda.utils.ImageUtils;
+import me.melijn.jda.utils.MessageHelper;
+import me.melijn.jda.utils.Private;
+import me.melijn.jda.utils.WebUtils;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
@@ -41,6 +48,10 @@ public class CommandEvent {
 
     public Guild getGuild() {
         return event.getGuild();
+    }
+
+    public Helpers getHelpers() {
+        return client.getMelijn().getHelpers();
     }
 
     public CommandClient getClient() {
@@ -194,5 +205,45 @@ public class CommandEvent {
 
     public long getGuildId() {
         return getGuild().getIdLong();
+    }
+
+    public void sendUsage(Command command, CommandEvent event) {
+        event.getClient().getMelijn().getMessageHelper().sendUsage(command, event);
+    }
+
+    public boolean hasPerm(Member member, String commandName, int i) {
+        return client.getMelijn().getHelpers().hasPerm(member, commandName, i);
+    }
+
+    public MessageHelper getMessageHelper() {
+        return client.getMelijn().getMessageHelper();
+    }
+
+    public WebUtils getWebUtils() {
+        return client.getMelijn().getWebUtils();
+    }
+
+    public Private getPrivate() {
+        return client.getMelijn().getPrivate();
+    }
+
+    public MySQL getMySQL() {
+        return client.getMelijn().getMySQL();
+    }
+
+    public Variables getVariables() {
+        return client.getMelijn().getVariables();
+    }
+
+    public ImageUtils getImageUtils() {
+        return client.getMelijn().getImageUtils();
+    }
+
+    public void async(Runnable runnable) {
+        client.getMelijn().getTaskManager().async(runnable);
+    }
+
+    public void async(Runnable runnable, int initialMillis) {
+        client.getMelijn().getTaskManager().async(runnable, initialMillis);
     }
 }

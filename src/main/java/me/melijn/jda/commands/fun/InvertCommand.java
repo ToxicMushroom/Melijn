@@ -1,6 +1,5 @@
 package me.melijn.jda.commands.fun;
 
-import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
@@ -11,8 +10,6 @@ import java.awt.image.BufferedImage;
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class InvertCommand extends Command {
-
-    private ImageUtils imageUtils = new ImageUtils();
 
     public InvertCommand() {
         this.commandName = "invert";
@@ -25,7 +22,8 @@ public class InvertCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
+        if (event.getGuild() == null || event.hasPerm(event.getMember(), commandName, 0)) {
+            ImageUtils imageUtils = new ImageUtils();
             BufferedImage img = imageUtils.getBufferedImage(event);
             if (img == null) return;
             /* >> Right shift in bits

@@ -1,11 +1,9 @@
 package me.melijn.jda.commands.fun;
 
-import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.Embedder;
-import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 
 import static me.melijn.jda.Melijn.PREFIX;
@@ -22,15 +20,16 @@ public class AlpacaCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
+        if (event.getGuild() == null || event.hasPerm(event.getMember(), commandName, 0)) {
             if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EMBED_LINKS))
-                event.reply(new Embedder(event.getGuild())
+                event.reply(new Embedder(event.getVariables(), event.getGuild())
                         .setDescription("Enjoy your alpaca!")
-                        .setImage("http://randomalpaca.com/wp-content/uploads/2015/04/alpaca" + MessageHelper.randInt(1, 144) + ".jpg")
+                        .setImage(String.format("http://randomalpaca.com/wp-content/uploads/2015/04/alpaca%d.jpg",
+                                event.getMessageHelper().randInt(1, 144)))
                         .build());
             else
-                event.reply("Enjoy your alpaca\n"
-                        + "http://randomalpaca.com/wp-content/uploads/2015/04/alpaca" + MessageHelper.randInt(1, 144) + ".jpg");
+                event.reply(String.format("Enjoy your alpaca\nhttp://randomalpaca.com/wp-content/uploads/2015/04/alpaca%d.jpg",
+                        event.getMessageHelper().randInt(1, 144)));
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }

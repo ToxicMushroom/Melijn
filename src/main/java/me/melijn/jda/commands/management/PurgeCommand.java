@@ -1,11 +1,9 @@
 package me.melijn.jda.commands.management;
 
-import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 
 import java.util.concurrent.TimeUnit;
@@ -28,20 +26,20 @@ public class PurgeCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+        if (event.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             if (args.length == 1 && args[0].matches("^([1-9][0-9]{0,2}|1000)$")) {
                 int toPurgeAmount = Integer.parseInt(args[0]);
                 event.getTextChannel().getIterableHistory().takeAsync(toPurgeAmount + 1).thenAccept(messages -> {
-                    messages.forEach(message -> MessageHelper.purgedMessageDeleter.put(message.getIdLong(), event.getAuthorId()));
+                    messages.forEach(message -> event.getVariables().purgedMessageDeleter.put(message.getIdLong(), event.getAuthorId()));
                     event.getTextChannel().purgeMessages(messages);
                     event.getTextChannel().sendMessage("**Done**").queue(m -> {
                         m.delete().queueAfter(3, TimeUnit.SECONDS);
-                        MessageHelper.botDeletedMessages.add(m.getIdLong());
+                        event.getVariables().botDeletedMessages.add(m.getIdLong());
                     });
                 });
             } else {
-                MessageHelper.sendUsage(this, event);
+                event.sendUsage(this, event);
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

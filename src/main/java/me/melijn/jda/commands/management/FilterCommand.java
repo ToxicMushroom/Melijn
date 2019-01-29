@@ -1,12 +1,9 @@
 package me.melijn.jda.commands.management;
 
-import me.melijn.jda.Helpers;
-import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
-import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.entities.Guild;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,7 +24,7 @@ public class FilterCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+        if (event.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
             String[] args = event.getArgs().split("\\s+");
             if (args.length >= 2) {
@@ -37,25 +34,25 @@ public class FilterCommand extends Command {
                         switch (args[1]) {
                             case "add":
                                 if (args.length > 2) {
-                                    Melijn.mySQL.addFilter(guild.getIdLong(), "allowed", content);
+                                    event.getMySQL().addFilter(guild.getIdLong(), "allowed", content);
                                     event.reply("`" + content + "` has been added to the allowed list.");
                                 } else {
-                                    MessageHelper.sendUsage(this, event);
+                                    event.sendUsage(this, event);
                                 }
                                 break;
                             case "remove":
                                 if (args.length > 2) {
-                                    Melijn.mySQL.removeFilter(guild.getIdLong(), "allowed", content);
+                                    event.getMySQL().removeFilter(guild.getIdLong(), "allowed", content);
                                     event.reply("`" + content + "` has been removed from the allowed list.");
                                 } else {
-                                    MessageHelper.sendUsage(this, event);
+                                    event.sendUsage(this, event);
                                 }
                                 break;
                             case "list":
                                 int filterNumber = 0;
                                 StringBuilder partBuilder = new StringBuilder();
                                 partBuilder.append("**Allowed List**\n```Markdown\n");
-                                for (String s : Melijn.mySQL.getFilters(guild.getIdLong(), "allowed")) {
+                                for (String s : event.getMySQL().getFilters(guild.getIdLong(), "allowed")) {
                                     partBuilder = addListParts(event, partBuilder, s);
                                     partBuilder.append(++filterNumber).append(". ").append(s.replaceAll("`", "´")).append("\n");
                                 }
@@ -63,7 +60,7 @@ public class FilterCommand extends Command {
                                 event.reply(partBuilder.toString());
                                 break;
                             default:
-                                MessageHelper.sendUsage(this, event);
+                                event.sendUsage(this, event);
                                 break;
                         }
                         break;
@@ -71,25 +68,25 @@ public class FilterCommand extends Command {
                         switch (args[1]) {
                             case "add":
                                 if (args.length > 2) {
-                                    Melijn.mySQL.addFilter(guild.getIdLong(), "denied", content);
+                                    event.getMySQL().addFilter(guild.getIdLong(), "denied", content);
                                     event.reply("`" + content + "` has been added to the denied list.");
                                 } else {
-                                    MessageHelper.sendUsage(this, event);
+                                    event.sendUsage(this, event);
                                 }
                                 break;
                             case "remove":
                                 if (args.length > 2) {
-                                    Melijn.mySQL.removeFilter(guild.getIdLong(), "denied", content);
+                                    event.getMySQL().removeFilter(guild.getIdLong(), "denied", content);
                                     event.reply("`" + content + "` has been removed from the denied list.");
                                 } else {
-                                    MessageHelper.sendUsage(this, event);
+                                    event.sendUsage(this, event);
                                 }
                                 break;
                             case "list":
                                 int filterNumber = 0;
                                 StringBuilder partBuilder = new StringBuilder();
                                 partBuilder.append("**Denied List**\n```Markdown\n");
-                                for (String s : Melijn.mySQL.getFilters(guild.getIdLong(), "denied")) {
+                                for (String s : event.getMySQL().getFilters(guild.getIdLong(), "denied")) {
                                     partBuilder = addListParts(event, partBuilder, s);
                                     partBuilder.append(++filterNumber).append(". ").append(s.replaceAll("`", "´")).append("\n");
                                 }
@@ -97,16 +94,16 @@ public class FilterCommand extends Command {
                                 event.reply(partBuilder.toString());
                                 break;
                             default:
-                                MessageHelper.sendUsage(this, event);
+                                event.sendUsage(this, event);
                                 break;
                         }
                         break;
                     default:
-                        MessageHelper.sendUsage(this, event);
+                        event.sendUsage(this, event);
                         break;
                 }
             } else {
-                MessageHelper.sendUsage(this, event);
+                event.sendUsage(this, event);
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

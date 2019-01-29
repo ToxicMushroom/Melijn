@@ -1,9 +1,6 @@
 package me.melijn.jda.commands.management;
 
-import me.melijn.jda.Helpers;
-import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.*;
-import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
@@ -33,31 +30,31 @@ public class TempMuteCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+        if (event.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
-            if (args.length > 1) {
-                User target = Helpers.getUserByArgsN(event, args[0]);
-                if (target == null || guild.getMember(target) == null) {
-                    event.reply("Unknown " + (target == null ? "user" : "member"));
-                    return;
-                }
-                if (MessageHelper.isRightFormat(args[1])) {
-                    Role muteRole = guild.getRoleById(SetMuteRoleCommand.muteRoleCache.getUnchecked(guild.getIdLong()));
-                    if (muteRole == null) {
-                        event.reply("**No mute role set!**\nCreating Role..");
-                        createMuteRole(guild, role -> {
-                            event.reply("Role created. You can change the settings of the role to your desires in the role managment tab.\nThis role wil be added to the muted members so it shouldn't have talk permissions!");
-                            doTempMute(event, role, target, args);
-                        });
-                    } else {
-                        doTempMute(event, muteRole, target, args);
-                    }
-                } else {
-                    event.reply("`" + args[1] + "` is not the right format.\n**Format:** (number)(*timeunit*) *timeunit* = s, m, h, d, M or y\n**Example:** 1__m__ (1 __minute__)");
-                }
+            if (args.length < 2) {
+                event.sendUsage(this, event);
+                return;
+            }
+            User target = event.getHelpers().getUserByArgsN(event, args[0]);
+            if (target == null || guild.getMember(target) == null) {
+                event.reply("Unknown " + (target == null ? "user" : "member"));
+                return;
+            }
+            if (!event.getMessageHelper().isRightFormat(args[1])) {
+                event.reply("`" + args[1] + "` is not the right format.\n**Format:** (number)(*timeunit*) *timeunit* = s, m, h, d, M or y\n**Example:** 1__m__ (1 __minute__)");
+                return;
+            }
+            Role muteRole = guild.getRoleById(event.getVariables().muteRoleCache.getUnchecked(guild.getIdLong()));
+            if (muteRole == null) {
+                event.reply("**No mute role set!**\nCreating Role..");
+                createMuteRole(event, guild, role -> {
+                    event.reply("Role created. You can change the settings of the role to your desires in the role managment tab.\nThis role wil be added to the muted members so it shouldn't have talk permissions!");
+                    doTempMute(event, role, target, args);
+                });
             } else {
-                MessageHelper.sendUsage(this, event);
+                doTempMute(event, muteRole, target, args);
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
@@ -65,11 +62,11 @@ public class TempMuteCommand extends Command {
     }
 
     private void doTempMute(CommandEvent event, Role muteRole, User target, String[] args) {
-        if (Helpers.canNotInteract(event, muteRole)) return;
+        if (event.getHelpers().canNotInteract(event, muteRole)) return;
         Guild guild = muteRole.getGuild();
         guild.getController().addSingleRoleToMember(guild.getMember(target), muteRole).queue(s -> {
             String reason = event.getArgs().replaceFirst(args[0] + "\\s+" + args[1] + "\\s+|" + args[0] + "\\s+" + args[1], "");
-            if (reason.length() <= 1000 && Melijn.mySQL.setTempMute(event.getAuthor(), target, guild, reason, MessageHelper.easyFormatToSeconds(args[1]))) {
+            if (reason.length() <= 1000 && event.getMySQL().setTempMute(event.getAuthor(), target, guild, reason, event.getMessageHelper().easyFormatToSeconds(args[1]))) {
                 event.getMessage().addReaction("\u2705").queue();
             } else {
                 event.getMessage().addReaction("\u274C").queue();
@@ -77,15 +74,15 @@ public class TempMuteCommand extends Command {
         });
     }
 
-    static void createMuteRole(Guild guild, Consumer<Role> role) {
+    static void createMuteRole(CommandEvent event, Guild guild, Consumer<Role> role) {
         guild.getController().createRole()
                 .setColor(Color.gray)
                 .setMentionable(false)
                 .setName("muted")
                 .setPermissions(Permission.MESSAGE_READ, Permission.MESSAGE_HISTORY, Permission.VOICE_CONNECT).queue(newRole -> {
             role.accept(newRole);
-            Melijn.mySQL.setRole(guild.getIdLong(), newRole.getIdLong(), RoleType.MUTE);
-            SetMuteRoleCommand.muteRoleCache.put(guild.getIdLong(), newRole.getIdLong());
+            event.getMySQL().setRole(guild.getIdLong(), newRole.getIdLong(), RoleType.MUTE);
+            event.getVariables().muteRoleCache.put(guild.getIdLong(), newRole.getIdLong());
         });
     }
 }

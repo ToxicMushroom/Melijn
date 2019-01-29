@@ -1,6 +1,5 @@
 package me.melijn.jda.commands.util;
 
-import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
@@ -25,16 +24,16 @@ public class AvatarCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
+        if (event.getGuild() == null || event.hasPerm(event.getMember(), commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
             User user;
             if (args.length == 0 || args[0].isEmpty()) {
                 user = event.getAuthor();
             } else {
-                user = Helpers.getUserByArgsN(event, args[0]);
+                user = event.getHelpers().getUserByArgsN(event, args[0]);
             }
             if (user != null) {
-                EmbedBuilder eb = new Embedder(event.getGuild());
+                EmbedBuilder eb = new Embedder(event.getVariables(), event.getGuild());
                 eb.setTitle(user.getName() + "#" + user.getDiscriminator() + "'s avatar");
                 eb.setImage(user.getEffectiveAvatarUrl() + "?size=2048");
                 eb.setDescription("[open](" + user.getEffectiveAvatarUrl() + "?size=2048)");

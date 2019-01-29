@@ -1,14 +1,10 @@
 package me.melijn.jda.commands.management;
 
-import me.melijn.jda.Helpers;
-import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 import me.melijn.jda.utils.Embedder;
-import me.melijn.jda.utils.MessageHelper;
-import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.User;
@@ -19,7 +15,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import static me.melijn.jda.Melijn.PREFIX;
-import static me.melijn.jda.utils.MessageHelper.spaces;
 
 public class HistoryCommand extends Command {
 
@@ -34,10 +29,10 @@ public class HistoryCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+        if (event.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             if (args.length < 2) {
-                MessageHelper.sendUsage(this, event);
+                event.sendUsage(this, event);
                 return;
             }
             if (args[0].equalsIgnoreCase("remove")) {
@@ -45,7 +40,7 @@ public class HistoryCommand extends Command {
                 return;
             }
 
-            Helpers.retrieveUserByArgsN(event, args[1], (success) -> {
+            event.getHelpers().retrieveUserByArgsN(event, args[1], (success) -> {
                 if (success == null) {
                     event.reply("Unknown user");
                     return;
@@ -53,14 +48,14 @@ public class HistoryCommand extends Command {
                 switch (args[0]) {
                     case "ban":
                     case "bans":
-                        TaskScheduler.async(() -> Melijn.mySQL.getUserBans(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA(), bans -> {
-                            EmbedBuilder ebBan = new Embedder(event.getGuild());
+                        event.async(() -> event.getMySQL().getUserBans(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA(), bans -> {
+                            EmbedBuilder ebBan = new Embedder(event.getVariables(), event.getGuild());
                             getLongMessageInParts(new ArrayList<>(Arrays.asList(bans)), parts -> {
                                         int partnumber = 0;
                                         int size = Integer.parseInt(parts.get(parts.size() - 1));
                                         parts.remove(parts.size() - 1);
                                         for (String part : parts) {
-                                            ebBan.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s bans " + ++partnumber + "/" + size + spaces.substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
+                                            ebBan.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s bans " + ++partnumber + "/" + size + " ".repeat(50).substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                             ebBan.setDescription(part);
                                             event.reply(ebBan.build());
                                         }
@@ -70,14 +65,14 @@ public class HistoryCommand extends Command {
                         break;
                     case "mute":
                     case "mutes":
-                        TaskScheduler.async(() -> Melijn.mySQL.getUserMutes(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA(), mutes -> {
-                            EmbedBuilder ebMute = new Embedder(event.getGuild());
+                        event.async(() -> event.getMySQL().getUserMutes(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA(), mutes -> {
+                            EmbedBuilder ebMute = new Embedder(event.getVariables(), event.getGuild());
                             getLongMessageInParts(new ArrayList<>(Arrays.asList(mutes)), parts -> {
                                         int partnumber = 0;
                                         int size = Integer.parseInt(parts.get(parts.size() - 1));
                                         parts.remove(parts.size() - 1);
                                         for (String part : parts) {
-                                            ebMute.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s mutes " + ++partnumber + "/" + size + spaces.substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
+                                            ebMute.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s mutes " + ++partnumber + "/" + size + " ".repeat(50).substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                             ebMute.setDescription(part);
                                             event.reply(ebMute.build());
                                         }
@@ -87,14 +82,14 @@ public class HistoryCommand extends Command {
                         break;
                     case "warn":
                     case "warns":
-                        TaskScheduler.async(() -> Melijn.mySQL.getUserWarns(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA(), warns -> {
-                            EmbedBuilder ebWarn = new Embedder(event.getGuild());
+                        event.async(() -> event.getMySQL().getUserWarns(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA(), warns -> {
+                            EmbedBuilder ebWarn = new Embedder(event.getVariables(), event.getGuild());
                             getLongMessageInParts(new ArrayList<>(Arrays.asList(warns)), parts -> {
                                         int partnumber = 0;
                                         int size = Integer.parseInt(parts.get(parts.size() - 1));
                                         parts.remove(parts.size() - 1);
                                         for (String part : parts) {
-                                            ebWarn.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s warns " + ++partnumber + "/" + size + spaces.substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
+                                            ebWarn.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s warns " + ++partnumber + "/" + size + " ".repeat(50).substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                             ebWarn.setDescription(part);
                                             event.reply(ebWarn.build());
                                         }
@@ -104,14 +99,14 @@ public class HistoryCommand extends Command {
                         break;
                     case "kick":
                     case "kicks":
-                        TaskScheduler.async(() -> Melijn.mySQL.getUserKicks(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA(), kicks -> {
-                            EmbedBuilder ebKick = new Embedder(event.getGuild());
+                        event.async(() -> event.getMySQL().getUserKicks(event.getGuild().getIdLong(), success.getIdLong(), event.getJDA(), kicks -> {
+                            EmbedBuilder ebKick = new Embedder(event.getVariables(), event.getGuild());
                             getLongMessageInParts(new ArrayList<>(Arrays.asList(kicks)), parts -> {
                                         int partnumber = 0;
                                         int size = Integer.parseInt(parts.get(parts.size() - 1));
                                         parts.remove(parts.size() - 1);
                                         for (String part : parts) {
-                                            ebKick.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s kicks " + ++partnumber + "/" + size + spaces.substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
+                                            ebKick.setAuthor(success.getName() + "#" + success.getDiscriminator() + "'s kicks " + ++partnumber + "/" + size + " ".repeat(50).substring(0, 45 - success.getName().length()) + "\u200B", null, success.getEffectiveAvatarUrl());
                                             ebKick.setDescription(part);
                                             event.reply(ebKick.build());
                                         }
@@ -120,7 +115,7 @@ public class HistoryCommand extends Command {
                         }));
                         break;
                     default:
-                        MessageHelper.sendUsage(this, event);
+                        event.sendUsage(this, event);
                         break;
                 }
             });
@@ -154,17 +149,17 @@ public class HistoryCommand extends Command {
         String[] args = event.getArgs().split("\\s+");
         Guild guild = event.getGuild();
         if (args.length < 4) {
-            event.reply("Usage: " + SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " remove <ban | warn | kick | mute> <user> <moment>");
+            event.reply("Usage: " + event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " remove <ban | warn | kick | mute> <user> <moment>");
             return;
         }
 
-        User user = Helpers.getUserByArgs(event, args[2]);
+        User user = event.getHelpers().getUserByArgs(event, args[2]);
         if (user == null || guild.getMember(user) == null) {
             event.reply("Unknown member");
             return;
         }
 
-        long millis = MessageHelper.dateToMillis(event.getArgs().replaceFirst("\\s+" + args[0] + "\\s+" + args[1] + "\\s+", ""));
+        long millis = event.getMessageHelper().dateToMillis(event.getArgs().replaceFirst("\\s+" + args[0] + "\\s+" + args[1] + "\\s+", ""));
 
         if (millis == -1) {
             event.reply("Wrong time format it should be: `h:m:s`s `d:M:yyyy`");
@@ -173,23 +168,23 @@ public class HistoryCommand extends Command {
 
         switch (args[1]) {
             case "ban":
-                Melijn.mySQL.removeBan(guild.getMember(user), millis);
+                event.getMySQL().removeBan(guild.getMember(user), millis);
                 event.reply("Successfully removed the ban");
                 break;
             case "mute":
-                Melijn.mySQL.removeMute(guild.getMember(user), millis);
+                event.getMySQL().removeMute(guild.getMember(user), millis);
                 event.reply("Successfully removed the mute");
                 break;
             case "warn":
-                Melijn.mySQL.removeWarn(guild.getMember(user), millis);
+                event.getMySQL().removeWarn(guild.getMember(user), millis);
                 event.reply("Successfully removed the warn");
                 break;
             case "kick":
-                Melijn.mySQL.removeKick(guild.getMember(user), millis);
+                event.getMySQL().removeKick(guild.getMember(user), millis);
                 event.reply("Successfully removed the kick");
                 break;
             default:
-                event.reply("Usage: " + SetPrefixCommand.prefixes.getUnchecked(guild.getIdLong()) + commandName + " remove <ban | warn | kick | mute> <user> <moment>");
+                event.reply("Usage: " + event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " remove <ban | warn | kick | mute> <user> <moment>");
                 break;
         }
     }

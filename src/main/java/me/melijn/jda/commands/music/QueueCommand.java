@@ -1,8 +1,6 @@
 package me.melijn.jda.commands.music;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import me.melijn.jda.Helpers;
-import me.melijn.jda.audio.AudioLoader;
 import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
@@ -21,8 +19,6 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class QueueCommand extends Command {
 
-    private AudioLoader manager = AudioLoader.getManagerInstance();
-
     public QueueCommand() {
         this.commandName = "queue";
         this.description = "Shows you a list of all tracks in queue.";
@@ -36,9 +32,9 @@ public class QueueCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
+        if (event.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
             Guild guild = event.getGuild();
-            MusicPlayer player = manager.getPlayer(guild);
+            MusicPlayer player = event.getClient().getMelijn().getLava().getAudioLoader().getPlayer(guild);
             if (player.getTrackManager().getTrackSize() == 0 && player.getAudioPlayer().getPlayingTrack() == null) {
                 event.reply("Nothing here..");
                 return;
@@ -50,18 +46,18 @@ public class QueueCommand extends Command {
             AudioTrack playingTrack = player.getAudioPlayer().getPlayingTrack();
             if (playingTrack != null) {
                 queueLength = playingTrack.getDuration() - playingTrack.getPosition();
-                list.add("[#" + position + "](" + playingTrack.getInfo().uri + ") - `Now playing:` " + playingTrack.getInfo().title + " `" + Helpers.getDurationBreakdown(playingTrack.getInfo().length) + "`");
+                list.add("[#" + position + "](" + playingTrack.getInfo().uri + ") - `Now playing:` " + playingTrack.getInfo().title + " `" + event.getMessageHelper().getDurationBreakdown(playingTrack.getInfo().length) + "`");
             }
             for (AudioTrack track : tracks) {
                 position++;
                 queueLength += track.getDuration();
-                list.add("[#" + position + "](" + track.getInfo().uri + ") - " + track.getInfo().title + " `" + Helpers.getDurationBreakdown(track.getInfo().length) + "`");
+                list.add("[#" + position + "](" + track.getInfo().uri + ") - " + track.getInfo().title + " `" + event.getMessageHelper().getDurationBreakdown(track.getInfo().length) + "`");
             }
-            String loopedQueue = LoopQueueCommand.looped.contains(guild.getIdLong()) ? " \uD83D\uDD01" : "";
-            String looped = LoopCommand.looped.contains(guild.getIdLong()) ? " \uD83D\uDD04" : "";
+            String loopedQueue = event.getVariables().loopedQueues.contains(guild.getIdLong()) ? " \uD83D\uDD01" : "";
+            String looped = event.getVariables().looped.contains(guild.getIdLong()) ? " \uD83D\uDD04" : "";
             list.add("Status: " + (player.getAudioPlayer().isPaused() ? "\u23F8" : "\u25B6") + looped + loopedQueue);
             list.add("Queue size: **" + (list.size() - 1) + "** tracks");
-            list.add("Queue length: **" + Helpers.getDurationBreakdown(queueLength) + "**");
+            list.add("Queue length: **" + event.getMessageHelper().getDurationBreakdown(queueLength) + "**");
             StringBuilder builder = new StringBuilder();
             for (String s : list) {
                 builder.append(s).append("\n");
@@ -71,26 +67,26 @@ public class QueueCommand extends Command {
                 builder = new StringBuilder();
                 for (String s : list) {
                     if (builder.length() + s.length() > 1800) {
-                        EmbedBuilder eb = new Embedder(event.getGuild());
+                        EmbedBuilder eb = new Embedder(event.getVariables(), event.getGuild());
                         eb.setTitle("Queue part " + part);
                         eb.setDescription(builder.toString());
-                        eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
+                        eb.setFooter(event.getHelpers().getFooterStamp(), event.getHelpers().getFooterIcon());
                         event.reply(eb.build());
                         builder = new StringBuilder();
                         part++;
                     }
                     builder.append(s).append("\n");
                 }
-                EmbedBuilder eb = new Embedder(event.getGuild());
+                EmbedBuilder eb = new Embedder(event.getVariables(), event.getGuild());
                 eb.setTitle("Queue part " + part);
                 eb.setDescription(builder.toString());
-                eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
+                eb.setFooter(event.getHelpers().getFooterStamp(), event.getHelpers().getFooterIcon());
                 event.reply(eb.build());
             } else {
-                EmbedBuilder eb = new Embedder(event.getGuild());
+                EmbedBuilder eb = new Embedder(event.getVariables(), event.getGuild());
                 eb.setTitle("Queue");
                 eb.setDescription(builder.toString());
-                eb.setFooter(Helpers.getFooterStamp(), Helpers.getFooterIcon());
+                eb.setFooter(event.getHelpers().getFooterStamp(), event.getHelpers().getFooterIcon());
                 event.reply(eb.build());
             }
         } else {

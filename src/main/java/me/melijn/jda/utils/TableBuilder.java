@@ -1,22 +1,13 @@
 package me.melijn.jda.utils;
 
-import gnu.trove.map.TIntIntMap;
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntIntHashMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import static me.melijn.jda.utils.MessageHelper.spaces;
+import java.util.*;
 
 public class TableBuilder {
 
 
     private List<String> headerRow = new ArrayList<>();
-    private TIntObjectMap<List<String>> valueRows = new TIntObjectHashMap<>();
-    private TIntIntMap columnWidth = new TIntIntHashMap();
+    private Map<Integer, List<String>> valueRows = new IdentityHashMap<>();
+    private Map<Integer, Integer> columnWidth = new IdentityHashMap<>();
     private List<String> footerRow = new ArrayList<>();
     private boolean split;
 
@@ -45,7 +36,7 @@ public class TableBuilder {
     private void findWidest(Collection<String> footerNames, int startColumn) {
         int temp = startColumn;
         for (String s : footerNames) {
-            if ((columnWidth.containsKey(temp) ? columnWidth.get(temp) : 0) < s.length()) {
+            if ((columnWidth.getOrDefault(temp, 0)) < s.length()) {
                 columnWidth.put(temp, s.length());
             }
             temp++;
@@ -53,7 +44,7 @@ public class TableBuilder {
     }
 
     public List<String> build() {
-        if (valueRows.valueCollection().stream().anyMatch(array -> array.size() > headerRow.size())) {
+        if (valueRows.values().stream().anyMatch(array -> array.size() > headerRow.size())) {
             throw new IllegalArgumentException("A value row cannot have more values then the header (you can make empty header slots)");
         }
 
@@ -81,7 +72,7 @@ public class TableBuilder {
         int nums = 0;
         sb.append("║");
         for (String value : headerRow) {
-            sb.append(" ").append(value).append(spaces, 0, columnWidth.get(nums++) - value.length()).append(" ║");
+            sb.append(" ").append(value).append(" ".repeat(50), 0, columnWidth.get(nums++) - value.length()).append(" ║");
         }
         sb.append("\n");
 
@@ -102,7 +93,7 @@ public class TableBuilder {
             }
             sb.append("║");
             for (String value : valueRows.get(i)) {
-                sb.append(" ").append(value).append(spaces, 0, columnWidth.get(numm++) - value.length()).append(" ║");
+                sb.append(" ").append(value).append(" ".repeat(50), 0, columnWidth.get(numm++) - value.length()).append(" ║");
             }
             sb.append("\n");
         }
@@ -118,7 +109,7 @@ public class TableBuilder {
             int nume = 0;
             sb.append("║");
             for (String value : footerRow) {
-                sb.append(" ").append(value).append(spaces, 0, columnWidth.get(nume++) - value.length()).append(" ║");
+                sb.append(" ").append(value).append(" ".repeat(50), 0, columnWidth.get(nume++) - value.length()).append(" ║");
             }
             sb.append("\n");
         }

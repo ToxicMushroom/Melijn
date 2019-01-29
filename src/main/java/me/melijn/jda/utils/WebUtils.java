@@ -14,6 +14,7 @@ import me.duncte123.weebJava.types.Endpoint;
 import me.duncte123.weebJava.types.TokenType;
 import me.melijn.jda.Config;
 import me.melijn.jda.Helpers;
+import me.melijn.jda.Melijn;
 import net.dv8tion.jda.core.EmbedBuilder;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -29,10 +30,10 @@ import java.util.regex.Pattern;
 
 public class WebUtils {
 
-    private WeebApi weebApi;
-    private static WebUtils webUtils = new WebUtils();
-    private OkHttpClient client = new OkHttpClient();
+    private final WeebApi weebApi;
+    private final OkHttpClient client = new OkHttpClient();
     private SpotifyApi spotifyApi;
+    private final Melijn melijn;
 
     private final Pattern spotifyTrackUrl = Pattern.compile("https://open.spotify.com/track/(\\S+)");
     private final Pattern spotifyTrackUri = Pattern.compile("spotify:track:(\\S+)");
@@ -42,16 +43,17 @@ public class WebUtils {
     private final Pattern spotifyAlbumUri = Pattern.compile("spotify:album:(\\S+)");
 
 
-    public WebUtils() {
+    public WebUtils(Melijn melijn) {
+        this.melijn = melijn;
         weebApi = new WeebApiBuilder(TokenType.WOLKETOKENS)
                 .setEndpoint(Endpoint.PRODUCTION)
-                .setBotInfo("Weeb.java_Melijn", "1.0", Config.getConfigInstance().getValue("environment"))
-                .setToken(Config.getConfigInstance().getValue("wolketoken"))
+                .setBotInfo("Weeb.java_Melijn", "1.0", melijn.getConfig().getValue("environment"))
+                .setToken(melijn.getConfig().getValue("wolketoken"))
                 .build();
         try {
             spotifyApi = new SpotifyApi.Builder()
-                    .setClientId(Config.getConfigInstance().getValue("spotifyClientId"))
-                    .setClientSecret(Config.getConfigInstance().getValue("spotify"))
+                    .setClientId(melijn.getConfig().getValue("spotifyClientId"))
+                    .setClientSecret(melijn.getConfig().getValue("spotify"))
                     .build();
             ClientCredentialsRequest credentialsRequest = spotifyApi.clientCredentials().build();
             spotifyApi.setAccessToken(credentialsRequest.execute().getAccessToken());
@@ -62,8 +64,8 @@ public class WebUtils {
 
     public void updateSpotifyCredentials() {
         spotifyApi = new SpotifyApi.Builder()
-                .setClientId(Config.getConfigInstance().getValue("spotifyClientId"))
-                .setClientSecret(Config.getConfigInstance().getValue("spotify"))
+                .setClientId(melijn.getConfig().getValue("spotifyClientId"))
+                .setClientSecret(melijn.getConfig().getValue("spotify"))
                 .build();
         ClientCredentialsRequest credentialsRequest = spotifyApi.clientCredentials().build();
         try {
@@ -71,10 +73,6 @@ public class WebUtils {
         } catch (IOException | SpotifyWebApiException e) {
             e.printStackTrace();
         }
-    }
-
-    public static WebUtils getWebUtilsInstance() {
-        return webUtils;
     }
 
 
@@ -102,7 +100,7 @@ public class WebUtils {
 
     public String getCatUrl() {
         String catPage = run("http://aws.random.cat/meow");
-        if (Helpers.isJSONObjectValid(catPage) && EmbedBuilder.URL_PATTERN.matcher(new JSONObject(catPage).getString("file")).matches())
+        if (melijn.getHelpers().isJSONObjectValid(catPage) && EmbedBuilder.URL_PATTERN.matcher(new JSONObject(catPage).getString("file")).matches())
             return new JSONObject(catPage).getString("file");
         return null;
     }
@@ -112,7 +110,7 @@ public class WebUtils {
     }
 
     public void getTracksFromSpotifyUrl(String url, Consumer<Track> track, Consumer<PlaylistTrack[]> tracks, Consumer<TrackSimplified[]> tracksa, Consumer<Object> rip) {
-        TaskScheduler.async(() -> {
+        melijn.getTaskManager().async(() -> {
             try {
 
                 //Tracks

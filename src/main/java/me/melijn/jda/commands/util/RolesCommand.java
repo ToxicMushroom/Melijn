@@ -1,6 +1,5 @@
 package me.melijn.jda.commands.util;
 
-import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
@@ -26,7 +25,7 @@ public class RolesCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), commandName, 0)) {
+        if (event.hasPerm(event.getMember(), commandName, 0)) {
             Guild guild = event.getGuild();
             SnowflakeCacheView<Role> roles = guild.getRoleCache();
             StringBuilder sb = new StringBuilder();

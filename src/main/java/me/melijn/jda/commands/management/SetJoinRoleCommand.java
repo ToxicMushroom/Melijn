@@ -1,31 +1,13 @@
 package me.melijn.jda.commands.management;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import me.melijn.jda.Helpers;
-import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.*;
-import me.melijn.jda.utils.MessageHelper;
-import me.melijn.jda.utils.TaskScheduler;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.concurrent.TimeUnit;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class SetJoinRoleCommand extends Command {
 
-    public static final LoadingCache<Long, Long> joinRoleCache = CacheBuilder.newBuilder()
-            .maximumSize(10)
-            .expireAfterAccess(2, TimeUnit.MINUTES)
-            .build(new CacheLoader<>() {
-                public Long load(@NotNull Long key) {
-                    return Melijn.mySQL.getRoleId(key, RoleType.JOIN);
-                }
-            });
 
     public SetJoinRoleCommand() {
         this.commandName = "setJoinRole";
@@ -39,25 +21,25 @@ public class SetJoinRoleCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+        if (event.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
             String[] args = event.getArgs().split("\\s+");
-            long role = joinRoleCache.getUnchecked(guild.getIdLong());
+            long role = event.getVariables().joinRoleCache.getUnchecked(guild.getIdLong());
             if (args.length == 0 || args[0].isEmpty()) {
                 if (role != -1 && guild.getRoleById(role) != null)
                     event.reply("Current JoinRole: **@" + guild.getRoleById(role).getName() + "**");
                 else event.reply("Current JoinRole is unset");
             } else {
                 if (args[0].equalsIgnoreCase("null")) {
-                    TaskScheduler.async(() -> {
-                        Melijn.mySQL.removeRole(guild.getIdLong(), RoleType.JOIN);
-                        joinRoleCache.invalidate(guild.getIdLong());
+                    event.async(() -> {
+                        event.getMySQL().removeRole(guild.getIdLong(), RoleType.JOIN);
+                        event.getVariables().joinRoleCache.invalidate(guild.getIdLong());
                     });
                     event.reply("JoinRole has been unset by **" + event.getFullAuthorName() + "**");
                 } else {
-                    Role joinRole = Helpers.getRoleByArgs(event, args[0]);
+                    Role joinRole = event.getHelpers().getRoleByArgs(event, args[0]);
                     if (joinRole == null) {
-                        MessageHelper.sendUsage(this, event);
+                        event.getMessageHelper().sendUsage(this, event);
                         return;
                     }
 
@@ -71,9 +53,9 @@ public class SetJoinRoleCommand extends Command {
                         return;
                     }
 
-                    TaskScheduler.async(() -> {
-                        Melijn.mySQL.setRole(guild.getIdLong(), joinRole.getIdLong(), RoleType.JOIN);
-                        joinRoleCache.put(guild.getIdLong(), joinRole.getIdLong());
+                    event.async(() -> {
+                        event.getMySQL().setRole(guild.getIdLong(), joinRole.getIdLong(), RoleType.JOIN);
+                        event.getVariables().joinRoleCache.put(guild.getIdLong(), joinRole.getIdLong());
                     });
                     event.reply("JoinRole changed to **@" + joinRole.getName() + "** by **" + event.getFullAuthorName() + "**");
                 }

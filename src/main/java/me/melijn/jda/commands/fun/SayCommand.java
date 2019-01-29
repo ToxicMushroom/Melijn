@@ -1,10 +1,8 @@
 package me.melijn.jda.commands.fun;
 
-import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
-import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 
 import javax.imageio.ImageIO;
@@ -29,7 +27,7 @@ public class SayCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
+        if (event.getGuild() == null || event.hasPerm(event.getMember(), commandName, 0)) {
             if (event.getArgs().length() > 0) {
                 final BufferedImage image;
                 try {
@@ -78,7 +76,7 @@ public class SayCommand extends Command {
                 }
 
             } else {
-                MessageHelper.sendUsage(this, event);
+                event.sendUsage(this, event);
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");

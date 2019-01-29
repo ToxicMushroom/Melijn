@@ -1,11 +1,9 @@
 package me.melijn.jda.commands.util;
 
-import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.Embedder;
-import me.melijn.jda.utils.MessageHelper;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,33 +26,34 @@ public class TextToEmojiCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
+        if (event.getGuild() == null || event.hasPerm(event.getMember(), commandName, 0)) {
             String[] args = event.getArgs().split("\\s+");
-            if (event.getArgs().length() > 0) {
-                StringBuilder sb = new StringBuilder();
-                for (char c : event.getArgs().replaceFirst("%spaces%", "").toCharArray()) {
-                    if (Character.isLetter(c)) {
-                        sb.append(":regional_indicator_").append(Character.toLowerCase(c)).append(":");
-                        if (args[0].equalsIgnoreCase("%spaces%")) {
-                            sb.append(" ");
-                        }
-                    } else if (Character.isDigit(c)) {
-                        sb.append(":").append(numbers.get(Character.getNumericValue(c))).append(":");
-                        if (args[0].equalsIgnoreCase("%spaces%")) {
-                            sb.append(" ");
-                        }
-                    } else {
-                        sb.append(c);
-                    }
-                    if (sb.length() > 1900)  {
-                        event.reply(sb.toString());
-                        sb = new StringBuilder();
-                    }
-                }
-                event.reply(new Embedder(event.getGuild()).setDescription(sb.toString()).build());
-            } else {
-                MessageHelper.sendUsage(this, event);
+            if (event.getArgs().isEmpty()) {
+                event.sendUsage(this, event);
+                return;
             }
+            StringBuilder sb = new StringBuilder();
+            for (char c : event.getArgs().replaceFirst("%spaces%", "").toCharArray()) {
+                if (Character.isLetter(c)) {
+                    sb.append(":regional_indicator_").append(Character.toLowerCase(c)).append(":");
+                    if (args[0].equalsIgnoreCase("%spaces%")) {
+                        sb.append(" ");
+                    }
+                } else if (Character.isDigit(c)) {
+                    sb.append(":").append(numbers.get(Character.getNumericValue(c))).append(":");
+                    if (args[0].equalsIgnoreCase("%spaces%")) {
+                        sb.append(" ");
+                    }
+                } else {
+                    sb.append(c);
+                }
+                if (sb.length() > 1900) {
+                    event.reply(sb.toString());
+                    sb = new StringBuilder();
+                }
+            }
+            event.reply(new Embedder(event.getVariables(), event.getGuild()).setDescription(sb.toString()).build());
+
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }

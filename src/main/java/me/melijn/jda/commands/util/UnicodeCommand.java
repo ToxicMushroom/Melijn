@@ -1,10 +1,8 @@
 package me.melijn.jda.commands.util;
 
-import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
-import me.melijn.jda.utils.MessageHelper;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
@@ -20,10 +18,10 @@ public class UnicodeCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (event.getGuild() == null || Helpers.hasPerm(event.getMember(), commandName, 0)) {
+        if (event.getGuild() == null || event.hasPerm(event.getMember(), commandName, 0)) {
             String arg = event.getArgs();
-            if (arg.length() <= 0) {
-                MessageHelper.sendUsage(this, event);
+            if (arg.isEmpty()) {
+                event.sendUsage(this, event);
                 return;
             }
 
@@ -55,7 +53,7 @@ public class UnicodeCommand extends Command {
                 }
                 builder.append(String.valueOf(chars)).append("   _").append(Character.getName(code)).append("_");
             });
-            MessageHelper.sendSplitMessage(event.getTextChannel(), builder.toString());
+            event.getMessageHelper().sendSplitMessage(event.getTextChannel(), builder.toString());
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }

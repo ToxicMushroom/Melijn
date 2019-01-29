@@ -10,16 +10,8 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.wrapper.spotify.model_objects.specification.ArtistSimplified;
 import com.wrapper.spotify.model_objects.specification.PlaylistTrack;
 import com.wrapper.spotify.model_objects.specification.TrackSimplified;
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.TLongLongMap;
-import gnu.trove.map.TLongObjectMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
-import gnu.trove.map.hash.TLongLongHashMap;
-import gnu.trove.map.hash.TLongObjectHashMap;
-import me.melijn.jda.Helpers;
-import me.melijn.jda.commands.music.SPlayCommand;
+import me.melijn.jda.Melijn;
 import me.melijn.jda.utils.Embedder;
-import me.melijn.jda.utils.TaskScheduler;
 import me.melijn.jda.utils.YTSearch;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
@@ -27,27 +19,29 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class AudioLoader {
 
-    private static final AudioLoader managerInstance = new AudioLoader();
-    private final AudioPlayerManager manager = new DefaultAudioPlayerManager();
-    private final TLongObjectMap<MusicPlayer> players = new TLongObjectHashMap<>();
-    public static TLongObjectMap<List<AudioTrack>> userRequestedSongs = new TLongObjectHashMap<>();
-    public static TLongLongMap userMessageToAnswer = new TLongLongHashMap();
-    private static final YTSearch ytSearch = new YTSearch();
-    private static final String youtubeVideoBase = "https://youtu.be/";
 
-    public AudioLoader() {
+    private final Melijn melijn;
+    private final AudioPlayerManager manager = new DefaultAudioPlayerManager();
+    private Map<Long, MusicPlayer> players = new IdentityHashMap<>();
+    private final YTSearch ytSearch = new YTSearch();
+    private final String youtubeVideoBase = "https://youtu.be/";
+
+    public AudioLoader(Melijn melijn) {
         manager.getConfiguration().setFilterHotSwapEnabled(true);
         manager.setFrameBufferDuration(1000);
         AudioSourceManagers.registerRemoteSources(manager);
         AudioSourceManagers.registerLocalSource(manager);
+        this.melijn = melijn;
     }
 
-    public TLongObjectMap<MusicPlayer> getPlayers() {
+    public Map<Long, MusicPlayer> getPlayers() {
         return players;
     }
 
@@ -56,14 +50,9 @@ public class AudioLoader {
     }
 
     public synchronized MusicPlayer getPlayer(long guildId) {
-        if (!players.containsKey(guildId)) players.put(guildId, new MusicPlayer(guildId));
+        if (!players.containsKey(guildId)) players.put(guildId, new MusicPlayer(melijn, guildId));
         return players.get(guildId);
     }
-
-    public static AudioLoader getManagerInstance() {
-        return managerInstance;
-    }
-
 
     /*
       source/identifier:
@@ -93,7 +82,7 @@ public class AudioLoader {
                 }
                 if (isPlaylist) {
                     tracks = tracks.size() > 200 ? tracks.subList(0, 200) : tracks;
-                    if (userRequestedSongs.containsKey(requester.getIdLong()) || userMessageToAnswer.containsKey(requester.getIdLong())) {
+                    if (melijn.getVariables().userRequestedSongs.containsKey(requester.getIdLong()) || melijn.getVariables().userMessageToAnswer.containsKey(requester.getIdLong())) {
                         channel.sendMessage("You still have a request to answer. (requests are automatically removed after 30 seconds)")
                                 .queue((message) -> message.delete().queueAfter(10, TimeUnit.SECONDS, null, (failure) -> {
                                 }));
@@ -108,13 +97,13 @@ public class AudioLoader {
                                     "these tracks:\n" + sb + "Hit \u2705 to accept or \u274E to deny" :
                                     tracks.size() + " tracks.\nHit \u2705 to accept or \u274E to deny.");
                     channel.sendMessage(toSend).queue(message -> {
-                        userRequestedSongs.put(requester.getIdLong(), playlist.getTracks());
-                        userMessageToAnswer.put(requester.getIdLong(), message.getIdLong());
+                        melijn.getVariables().userRequestedSongs.put(requester.getIdLong(), playlist.getTracks());
+                        melijn.getVariables().userMessageToAnswer.put(requester.getIdLong(), message.getIdLong());
                         message.addReaction("\u2705").queue();
                         message.addReaction("\u274E").queue();
-                        TaskScheduler.async(() -> {
-                            AudioLoader.userRequestedSongs.remove(requester.getIdLong());
-                            AudioLoader.userMessageToAnswer.remove(requester.getIdLong());
+                        melijn.getTaskManager().async(() -> {
+                            melijn.getVariables().userRequestedSongs.remove(requester.getIdLong());
+                            melijn.getVariables().userMessageToAnswer.remove(requester.getIdLong());
                         }, 30_000);
                         message.delete().queueAfter(30, TimeUnit.SECONDS, null, (failure) -> {
                         });
@@ -189,21 +178,22 @@ public class AudioLoader {
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
                 List<AudioTrack> tracks = playlist.getTracks();
-                EmbedBuilder eb = new Embedder(channel.getGuild());
+                EmbedBuilder eb = new Embedder(melijn.getVariables(), channel.getGuild());
                 eb.setTitle("Select Menu");
-                eb.setFooter(Helpers.getFooterStamp(), null);
+                eb.setFooter(melijn.getHelpers().getFooterStamp(), null);
                 StringBuilder sb = new StringBuilder();
-                TIntObjectMap<AudioTrack> map = new TIntObjectHashMap<>();
+                Map<Integer, AudioTrack> map = new IdentityHashMap<>();
                 int i = 0;
                 for (AudioTrack track : tracks) {
                     map.put(i, track);
                     if (i == 5) break;
-                    sb.append("[").append(++i).append("](").append(track.getInfo().uri).append(") - ").append(track.getInfo().title).append(" `[").append(Helpers.getDurationBreakdown(track.getInfo().length)).append("]`\n");
+                    sb.append("[").append(++i).append("](").append(track.getInfo().uri).append(") - ").append(track.getInfo().title)
+                            .append(" `[").append(melijn.getMessageHelper().getDurationBreakdown(track.getInfo().length)).append("]`\n");
                 }
                 eb.setDescription(sb.toString());
-                SPlayCommand.userChoices.put(author.getIdLong(), map);
+                melijn.getVariables().userChoices.put(author.getIdLong(), map);
                 channel.sendMessage(eb.build()).queue((s) -> {
-                    SPlayCommand.usersFormToReply.put(author.getIdLong(), s);
+                    melijn.getVariables().usersFormToReply.put(author.getIdLong(), s);
                     s.addReaction("\u0031\u20E3").queue();
                     s.addReaction("\u0032\u20E3").queue();
                     s.addReaction("\u0033\u20E3").queue();
@@ -256,10 +246,10 @@ public class AudioLoader {
                 for (AudioTrack track : tracks.subList(0, tracks.size() > 5 ? 5 : tracks.size())) {
                     if ((durationMs + 2000 > track.getDuration() && track.getDuration() > durationMs - 2000) || track.getInfo().title.toLowerCase().contains(title.toLowerCase())) {
                         player.queue(track);
-                        EmbedBuilder eb = new Embedder(textChannel.getGuild());
+                        EmbedBuilder eb = new Embedder(melijn.getVariables(), textChannel.getGuild());
                         eb.setTitle("Added");
                         eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
-                        eb.setFooter(Helpers.getFooterStamp(), null);
+                        eb.setFooter(melijn.getHelpers().getFooterStamp(), null);
                         textChannel.sendMessage(eb.build()).queue();
                         return;
                     }
@@ -298,10 +288,10 @@ public class AudioLoader {
 
     private void iHateDuplicates(AudioTrack track, MusicPlayer player, TextChannel textChannel) {
         player.queue(track);
-        EmbedBuilder eb = new Embedder(player.getGuildId());
+        EmbedBuilder eb = new Embedder(melijn.getVariables(), player.getGuildId());
         eb.setTitle("Added");
         eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
-        eb.setFooter(Helpers.getFooterStamp(), null);
+        eb.setFooter(melijn.getHelpers().getFooterStamp(), null);
         textChannel.sendMessage(eb.build()).queue();
     }
 

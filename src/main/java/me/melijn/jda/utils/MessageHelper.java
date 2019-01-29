@@ -1,19 +1,10 @@
 package me.melijn.jda.utils;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import gnu.trove.list.TLongList;
-import gnu.trove.list.array.TLongArrayList;
-import gnu.trove.map.TLongLongMap;
-import gnu.trove.map.TLongObjectMap;
-import gnu.trove.map.hash.TLongLongHashMap;
-import gnu.trove.map.hash.TLongObjectHashMap;
 import lavalink.client.player.LavalinkPlayer;
-import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
-import me.melijn.jda.commands.management.SetPrefixCommand;
-import me.melijn.jda.commands.music.NowPlayingCommand;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
 import okhttp3.HttpUrl;
@@ -22,21 +13,26 @@ import org.apache.commons.text.StringEscapeUtils;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
+
 public class MessageHelper {
 
-    public static TLongObjectMap<String> filteredMessageDeleteCause = new TLongObjectHashMap<>();
-    public static TLongLongMap purgedMessageDeleter = new TLongLongHashMap();
-    public static TLongList botDeletedMessages = new TLongArrayList();
-    public static String spaces = "                                                                                                    ";
-    private static final Pattern prefixPattern = Pattern.compile(PREFIX);
-    public static Set<String> unLoggedThreads = new HashSet<>();
+    public final Pattern youtubePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtube\\.com))/watch(.*?)");
+    public final Pattern youtuBePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtu\\.be/))(.*?)");
+    private final Pattern prefixPattern;
+    private final Melijn melijn;
 
-    public static String millisToDate(long millis) {
+    public MessageHelper(Melijn melijn) {
+        this.melijn = melijn;
+        prefixPattern = Pattern.compile(PREFIX);
+    }
+
+    public String millisToDate(long millis) {
         Calendar start = Calendar.getInstance();
         start.setTimeInMillis(millis);
         int mYear = start.get(Calendar.YEAR);
@@ -48,7 +44,7 @@ public class MessageHelper {
         return mHour + ":" + mMinutes + ":" + mSeconds + "s " + mDay + "/" + mMonth + "/" + mYear;
     }
 
-    public static long dateToMillis(String date) {
+    public long dateToMillis(String date) {
         Matcher matcher = Pattern.compile("(\\d+):(\\d+):(\\d+)s (\\d+)/(\\d+)/(\\d+)").matcher(date);
         if (!matcher.find()) return -1;
         int hour = matcher.group(1).length() < 3 ? Integer.parseInt(matcher.group(1)) : -1;
@@ -71,11 +67,11 @@ public class MessageHelper {
         return start.getTimeInMillis();
     }
 
-    public static boolean isRightFormat(String string) {
+    public boolean isRightFormat(String string) {
         return string.matches("\\d{0,18}[smhdwMy]");
     }
 
-    public static long easyFormatToSeconds(String string) {
+    public long easyFormatToSeconds(String string) {
         if (string.matches("\\d{0,18}[s]")) {
             return Long.parseLong(string.replaceAll("s", ""));
         }
@@ -100,11 +96,11 @@ public class MessageHelper {
         return 0;
     }
 
-    public static void sendUsage(Command cmd, CommandEvent event) {
-        event.reply(prefixPattern.matcher(cmd.getUsage()).replaceFirst(StringEscapeUtils.escapeJava(SetPrefixCommand.prefixes.getUnchecked(event.getGuild().getIdLong()))));
+    public void sendUsage(Command cmd, CommandEvent event) {
+        event.reply(prefixPattern.matcher(cmd.getUsage()).replaceFirst(StringEscapeUtils.escapeJava(event.getVariables().prefixes.getUnchecked(event.getGuild().getIdLong()))));
     }
 
-    public static String millisToVote(long untilNext) {
+    public String millisToVote(long untilNext) {
         long temp = untilNext;
         String hours = String.valueOf(temp / 3600000);
         temp -= (temp / 3600000) * 3600000;
@@ -114,38 +110,74 @@ public class MessageHelper {
         return hours + ":" + minutes + ":" + seconds + "s";
     }
 
-    public static String progressBar(LavalinkPlayer player) {
+    public String progressBar(LavalinkPlayer player) {
         AudioTrack track = player.getPlayingTrack();
         if (track.getInfo().isStream) {
-            return "**" + Helpers.getDurationBreakdown(player.getTrackPosition()) + " | \uD83D\uDD34 Live**";
+            return "**" + getDurationBreakdown(player.getTrackPosition()) + " | \uD83D\uDD34 Live**";
         }
         int percent = (int) (((double) player.getTrackPosition() / (double) track.getDuration()) * 18D);
         StringBuilder sb = new StringBuilder("▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
         sb.insert(percent, "](https://melijn.com/)<a:cool_nyan:490978764264570894>");
-        sb.append(" **").append(Helpers.getDurationBreakdown(player.getTrackPosition())).append("/").append(Helpers.getDurationBreakdown(track.getDuration())).append("**");
+        sb.append(" **").append(getDurationBreakdown(player.getTrackPosition())).append("/").append(getDurationBreakdown(track.getDuration())).append("**");
         sb.insert(0, "[");
         return sb.toString();
     }
 
-    public static String getThumbnailURL(String url) {
+    public String getDurationBreakdown(long milliseconds) {
+        long millis = milliseconds;
+        if (millis < 0L) {
+            return "error";
+        }
+        if (millis > 43200000000L) return "LIVE";
+        long days = TimeUnit.MILLISECONDS.toDays(millis);
+        millis -= TimeUnit.DAYS.toMillis(days);
+        long hours = TimeUnit.MILLISECONDS.toHours(millis);
+        millis -= TimeUnit.HOURS.toMillis(hours);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
+        millis -= TimeUnit.MINUTES.toMillis(minutes);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
+
+        StringBuilder sb = new StringBuilder(64);
+        if (days != 0) {
+            sb.append(days);
+            sb.append("d ");
+        }
+        appendTimePart(hours, sb);
+        appendTimePart(minutes, sb);
+        if (seconds < 10) sb.append(0);
+        sb.append(seconds);
+        sb.append("s");
+
+        return (sb.toString());
+    }
+
+    private void appendTimePart(long hours, StringBuilder sb) {
+        if (hours != 0) {
+            if (hours < 10) sb.append(0);
+            sb.append(hours);
+            sb.append(":");
+        }
+    }
+
+    public String getThumbnailURL(String url) {
         HttpUrl httpUrl = HttpUrl.parse(url);
         if (httpUrl != null) {
-            if (url.matches(NowPlayingCommand.youtubePattern.pattern())) {
+            if (url.matches(youtubePattern.pattern())) {
                 if (httpUrl.queryParameter("v") != null) {
                     return "https://img.youtube.com/vi/" + httpUrl.queryParameter("v") + "/hqdefault.jpg";
                 }
-            } else if (url.matches(NowPlayingCommand.youtuBePattern.pattern())) {
-                return "https://img.youtube.com/vi/" + url.replaceFirst(NowPlayingCommand.youtuBePattern.pattern(), "") + "/hqdefault.jpg";
+            } else if (url.matches(youtuBePattern.pattern())) {
+                return "https://img.youtube.com/vi/" + url.replaceFirst(youtuBePattern.pattern(), "") + "/hqdefault.jpg";
             }
         }
         return null;
     }
 
-    public static void sendFunText(String desc, String url, CommandEvent event) {
+    public void sendFunText(String desc, String url, CommandEvent event) {
         String tempUrl = url;
         if (tempUrl == null) tempUrl = "https://melijn.com/files/u/07-05-2018--19.42-08s.png";
         if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EMBED_LINKS)) {
-            event.reply(new Embedder(event.getGuild())
+            event.reply(new Embedder(melijn.getVariables(), event.getGuild())
                     .setDescription(desc)
                     .setImage(tempUrl)
                     .setFooter("Powered by weeb.sh & weeb.java", null)
@@ -155,17 +187,17 @@ public class MessageHelper {
         }
     }
 
-    public static int randInt(int start, int end) {
+    public int randInt(int start, int end) {
         Random random = new Random();
         return random.nextInt(end + 1 - start) + start;
     }
 
-    public static String capFirstChar(String input) {
+    public String capFirstChar(String input) {
         return input.substring(0, 1).toUpperCase() + input.substring(1);
     }
 
 
-    public static void printException(final Thread thread, final Throwable ex, Guild guild, final MessageChannel channel) {
+    public void printException(final Thread thread, final Throwable ex, Guild guild, final MessageChannel channel) {
         StringWriter writer = new StringWriter();
         PrintWriter printWriter = new PrintWriter(writer);
 
@@ -176,15 +208,15 @@ public class MessageHelper {
             printWriter.write("**Direct-Message**: " + privateChannel.getName() + " | " + privateChannel.getUser().getIdLong() + "\r\n");
         }
         if (thread != null) printWriter.write("**Thread**: " + thread.getName() + "\r\n");
-        if (thread != null && unLoggedThreads.contains(thread.getName())) return;
+        if (thread != null && melijn.getVariables().unLoggedThreads.contains(thread.getName())) return;
 
         ex.printStackTrace(printWriter);
         String message = writer.toString().replaceAll("me\\.melijn\\.jda", "**me.melijn.jda**");
         final List<String> messages = getSplitMessage(message, 0);
-        messages.forEach(msg -> Melijn.getShardManager().getGuildById(340081887265685504L).getTextChannelById(486042641692360704L).sendMessage(msg).queue());
+        messages.forEach(msg -> melijn.getShardManager().getGuildById(340081887265685504L).getTextChannelById(486042641692360704L).sendMessage(msg).queue());
     }
 
-    private static List<String> getSplitMessage(String message, int margin) {
+    private List<String> getSplitMessage(String message, int margin) {
         final List<String> messages = new ArrayList<>();
         while (message.length() > 2000 - margin) {
             final String findLastNewline = message.substring(0, 2000 - margin);
@@ -206,13 +238,35 @@ public class MessageHelper {
         return messages;
     }
 
-    public static void sendSplitMessage(TextChannel channel, String text) {
+    public void sendSplitMessage(TextChannel channel, String text) {
         final List<String> messages = getSplitMessage(text, 0);
         messages.forEach(message -> channel.sendMessage(message).queue());
     }
 
-    public static void sendSplitCodeBlock(TextChannel channel, String text, String style) {
+    public void sendSplitCodeBlock(TextChannel channel, String text, String style) {
         final List<String> messages = getSplitMessage(text, 8 + style.length());
         messages.forEach(message -> channel.sendMessage("```" + style + "\n" + message + "```").queue());
+    }
+
+    public void argsToSongName(String[] args, StringBuilder sb, Set<String> providers) {
+        if (providers.contains(args[0].toLowerCase())) {
+            int i = 0;
+            for (String s : args) {
+                if (i != 0) sb.append(s).append(" ");
+                i++;
+            }
+        } else {
+            for (String s : args) {
+                sb.append(s).append(" ");
+            }
+        }
+    }
+
+    public String variableFormat(String s, Guild guild, User user) {
+        return s.replaceAll("%USER%", "<@" + user.getIdLong() + ">")
+                .replaceAll("%USERNAME%", user.getName() + "#" + user.getDiscriminator())
+                .replaceAll("%GUILDNAME%", guild.getName())
+                .replaceAll("%SERVERNAME%", guild.getName())
+                .replaceAll("%MEMBERSIZE%", String.valueOf(guild.getMemberCache().size()));
     }
 }

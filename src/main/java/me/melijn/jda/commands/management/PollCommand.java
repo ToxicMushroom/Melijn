@@ -1,10 +1,8 @@
 package me.melijn.jda.commands.management;
 
-import me.melijn.jda.Helpers;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
-import me.melijn.jda.utils.MessageHelper;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -28,9 +26,9 @@ public class PollCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        if (Helpers.hasPerm(event.getMember(), commandName, 1)) {
+        if (event.hasPerm(event.getMember(), commandName, 1)) {
             if (event.getArgs().isEmpty()) {
-                MessageHelper.sendUsage(this, event);
+                event.sendUsage(this, event);
                 return;
             }
             String[] args = event.getArgs().substring(0, event.getArgs().replaceFirst("\".*", "").length()).split("\\s+");
@@ -48,9 +46,9 @@ public class PollCommand extends Command {
                 }
                 event.getTextChannel().sendMessage(sb.toString()).queue(message -> addReactions(message, answers));
             } else if (args.length == 1) {
-                TextChannel textChannel = event.getGuild().getTextChannelById(Helpers.getTextChannelByArgsN(event, args[0]));
+                TextChannel textChannel = event.getGuild().getTextChannelById(event.getHelpers().getTextChannelByArgsN(event, args[0]));
                 if (textChannel == null) {
-                    MessageHelper.sendUsage(this, event);
+                    event.sendUsage(this, event);
                     return;
                 }
                 if (!event.getGuild().getSelfMember().hasPermission(textChannel, Permission.MESSAGE_WRITE)) {
@@ -71,7 +69,7 @@ public class PollCommand extends Command {
                 }
                 textChannel.sendMessage(sb.toString()).queue(message -> addReactions(message, answers));
             } else {
-                MessageHelper.sendUsage(this, event);
+                event.sendUsage(this, event);
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
@@ -81,7 +79,7 @@ public class PollCommand extends Command {
     private boolean noEnoughArguments(CommandEvent event) {
         int amount = StringUtils.countMatches(event.getArgs(), "\"");
         if (amount < 6 || amount > 20 || (amount & 1) == 1) {
-            MessageHelper.sendUsage(this, event);
+            event.sendUsage(this, event);
             return true;
         }
         return false;

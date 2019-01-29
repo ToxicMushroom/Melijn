@@ -3,6 +3,7 @@ package me.melijn.jda.audio;
 import lavalink.client.io.Link;
 import lavalink.client.io.jda.JdaLavalink;
 import lavalink.client.player.LavalinkPlayer;
+import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.CommandEvent;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
@@ -10,7 +11,11 @@ import net.dv8tion.jda.core.entities.VoiceChannel;
 
 public class Lava {
 
-    public static final Lava lava = new Lava();
+    private final AudioLoader audioLoader;
+
+    public Lava(Melijn melijn) {
+        audioLoader = new AudioLoader(melijn);
+    }
     private JdaLavalink lavalink = null;
 
     public void init(JdaLavalink lavalink) {
@@ -72,5 +77,9 @@ public class Lava {
 
     public JdaLavalink getLavalink() {
         return lavalink;
+    }
+
+    public AudioLoader getAudioLoader() {
+        return audioLoader;
     }
 }

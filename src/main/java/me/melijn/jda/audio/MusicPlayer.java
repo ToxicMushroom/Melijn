@@ -2,20 +2,22 @@ package me.melijn.jda.audio;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import lavalink.client.player.LavalinkPlayer;
+import me.melijn.jda.Melijn;
 
 public class MusicPlayer {
 
     private final LavalinkPlayer player;
     private final TrackManager manager;
-    private final Lava lava = Lava.lava;
     private final long guildId;
+    private final Lava lava;
 
     private final AudioSendingHandler sendHandler;
 
-    public MusicPlayer(long guildId) {
-        this.player = Lava.lava.createPlayer(guildId);
+    public MusicPlayer(Melijn melijn, long guildId) {
+        this.lava = melijn.getLava();
+        this.player = lava.createPlayer(guildId);
         this.guildId = guildId;
-        manager = new TrackManager(player, this);
+        manager = new TrackManager(melijn, player, this);
         sendHandler = new AudioSendingHandler(player);
         player.addListener(manager);
     }
