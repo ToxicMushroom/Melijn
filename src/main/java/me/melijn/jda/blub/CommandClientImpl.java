@@ -100,7 +100,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                 commands.stream().filter(cmd -> cmd.isCommandFor(name)).findAny().ifPresent(command -> {
 
                     if (shouldNotRun(event, command)) return;
-                    if (event.getGuild() != null && melijn.getVariables().disabledGuildCommands.containsKey(event.getGuild().getIdLong()) && melijn.getVariables().disabledGuildCommands.get(event.getGuild().getIdLong()).contains(commands.indexOf(command)))
+                    if (event.getGuild() != null && melijn.getVariables().disabledGuildCommands.containsKey(event.getGuild().getIdLong()) && melijn.getVariables().disabledGuildCommands.get(event.getGuild().getIdLong()).contains(command.getId()))
                         return;
                     if (event.getGuild() != null && melijn.getVariables().cooldownManager.isActive(event.getGuild().getIdLong(), event.getAuthor().getIdLong(), command.id)) {
                         event.getTextChannel().sendMessage(String.format("You have to wait **%dms** before using **%s** again",

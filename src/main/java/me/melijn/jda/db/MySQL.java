@@ -1271,19 +1271,20 @@ public class MySQL {
         return toReturn;
     }
 
-    public void removeDisabledCommands(long guildId, List<Integer> buffer) {
+    public void removeDisabledCommands(long guildId, List<Integer> disabledBuffer) {
         List<Integer> toRemove = new ArrayList<>();
         if (melijn.getVariables().disabledGuildCommands.containsKey(guildId))
             toRemove.addAll(melijn.getVariables().disabledGuildCommands.get(guildId));
-        toRemove.removeAll(buffer);
+        toRemove.removeAll(disabledBuffer);
         try (Connection con = ds.getConnection()) {
-            PreparedStatement statement = con.prepareStatement("DELETE FROM disabled_commands WHERE guildId= ? AND command= ?");
-            statement.setLong(1, guildId);
-            for (int i : toRemove) {
-                statement.setInt(2, i);
-                statement.executeUpdate();
+            try (PreparedStatement statement = con.prepareStatement("DELETE FROM disabled_commands WHERE guildId= ? AND command= ?")) {
+                for (int i : toRemove) {
+                    statement.setLong(1, guildId);
+                    statement.setInt(2, i);
+                    statement.addBatch();
+                }
+                statement.executeBatch();
             }
-            statement.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1294,13 +1295,14 @@ public class MySQL {
         if (melijn.getVariables().disabledGuildCommands.containsKey(guildId))
             toAdd.removeAll(melijn.getVariables().disabledGuildCommands.get(guildId));
         try (Connection con = ds.getConnection()) {
-            PreparedStatement statement = con.prepareStatement("INSERT INTO disabled_commands (guildId, command) VALUES (?, ?)");
-            statement.setLong(1, guildId);
-            for (int i : toAdd) {
-                statement.setInt(2, i);
-                statement.executeUpdate();
+            try (PreparedStatement statement = con.prepareStatement("INSERT INTO disabled_commands (guildId, command) VALUES (?, ?)")) {
+                for (int i : toAdd) {
+                    statement.setLong(1, guildId);
+                    statement.setInt(2, i);
+                    statement.addBatch();
+                }
+                statement.executeBatch();
             }
-            statement.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1390,8 +1392,7 @@ public class MySQL {
                             Guild guild = jda.asBot().getShardManager().getGuildById(blubObj.getLong("guildId"));
                             if (guild != null && user != null)
                                 unban(user, guild, jda.getSelfUser(), "Ban expired");
-                        }, failed -> {
-                        });
+                        }, failed -> {});
                     }
                 }
             }
@@ -1418,8 +1419,7 @@ public class MySQL {
                             Guild guild = jda.asBot().getShardManager().getGuildById(blubObj.getLong("guildId"));
                             if (guild != null)
                                 unmute(guild, user, jda.getSelfUser(), "Mute expired");
-                        }, failed -> {
-                        });
+                        }, failed -> {});
                     }
                 }
             }

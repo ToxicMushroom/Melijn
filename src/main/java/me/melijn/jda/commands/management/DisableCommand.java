@@ -6,6 +6,7 @@ import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,24 +33,22 @@ public class DisableCommand extends Command {
             long guildId = event.getGuild().getIdLong();
 
             if (event.getExecutor().equalsIgnoreCase("disable") && args.length > 0 && !args[0].isEmpty()) {
-                Map<Long, List<Integer>> map = event.getVariables().disabledGuildCommands;
-                List<Integer> buffer = map.containsKey(guildId) ? map.get(guildId) : new ArrayList<>();
+                Map<Long, List<Integer>> map = new HashMap<>(event.getVariables().disabledGuildCommands);
+                List<Integer> buffer = new ArrayList<>(map.containsKey(guildId) ? map.get(guildId) : new ArrayList<>());
 
                 int sizeBefore = buffer.size();
                 for (Command cmd : event.getClient().getCommands()) {
-
-                    if (cmd.getCommandName().equalsIgnoreCase(args[0])) {
-                        if (!buffer.contains(cmd.getId()) && !cmd.getCommandName().equalsIgnoreCase("enable")) {
-                            buffer.add(cmd.getId());
-                        } else {
+                    if (cmd.isCommandFor("enable")) return;
+                    if (cmd.isCommandFor(args[0])) {
+                        if (buffer.contains(cmd.getId())) {
                             event.reply("**" + cmd.getCommandName() + "** was already disabled");
+                        } else {
+                            buffer.add(cmd.getId());
                         }
-                        return;
+                        break;
                     }
 
-                    if (cmd.getCategory().toString().equalsIgnoreCase(args[0]) &&
-                            !buffer.contains(cmd.getId()) &&
-                            !cmd.getCommandName().equalsIgnoreCase("enable")) {
+                    if (cmd.getCategory().toString().equalsIgnoreCase(args[0]) && !buffer.contains(cmd.getId())) {
                         buffer.add(cmd.getId());
                     }
 
@@ -77,7 +76,7 @@ public class DisableCommand extends Command {
                         continue;
                     }
                     if (sb.length() + match.get(0).getCommandName().length() < 1950) {
-                        sb.append(i).append(" - [").append(event.getClient().getCommands().get(i).getCommandName()).append("]\n");
+                        sb.append(i).append(" - [").append(match.get(0).getCommandName()).append("]\n");
                     } else {
                         sb.append("```");
                         event.reply(sb.toString());

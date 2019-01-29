@@ -17,19 +17,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static me.melijn.jda.Melijn.PREFIX;
-
 
 public class MessageHelper {
 
-    public final Pattern youtubePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtube\\.com))/watch(.*?)");
-    public final Pattern youtuBePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtu\\.be/))(.*?)");
+    private final Pattern youtubePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtube\\.com))/watch(.*?)");
+    private final Pattern youtuBePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtu\\.be/))(.*?)");
+    private final Pattern datePattern = Pattern.compile("(\\d+):(\\d+):(\\d+)s (\\d+)/(\\d+)/(\\d+)");
     private final Pattern prefixPattern;
     private final Melijn melijn;
 
     public MessageHelper(Melijn melijn) {
         this.melijn = melijn;
-        prefixPattern = Pattern.compile(PREFIX);
+        prefixPattern = Pattern.compile(Melijn.PREFIX);
     }
 
     public String millisToDate(long millis) {
@@ -45,7 +44,7 @@ public class MessageHelper {
     }
 
     public long dateToMillis(String date) {
-        Matcher matcher = Pattern.compile("(\\d+):(\\d+):(\\d+)s (\\d+)/(\\d+)/(\\d+)").matcher(date);
+        Matcher matcher = datePattern.matcher(date);
         if (!matcher.find()) return -1;
         int hour = matcher.group(1).length() < 3 ? Integer.parseInt(matcher.group(1)) : -1;
         int minutes = matcher.group(2).length() < 3 ? Integer.parseInt(matcher.group(2)) : -1;
