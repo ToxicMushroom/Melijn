@@ -18,10 +18,7 @@ import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class AudioLoader {
@@ -29,7 +26,7 @@ public class AudioLoader {
 
     private final Melijn melijn;
     private final AudioPlayerManager manager = new DefaultAudioPlayerManager();
-    private Map<Long, MusicPlayer> players = new IdentityHashMap<>();
+    private Map<Long, MusicPlayer> players = new HashMap<>();
     private final YTSearch ytSearch = new YTSearch();
     private final String youtubeVideoBase = "https://youtu.be/";
 
@@ -50,7 +47,7 @@ public class AudioLoader {
     }
 
     public synchronized MusicPlayer getPlayer(long guildId) {
-        if (!players.containsKey(guildId)) players.put(guildId, new MusicPlayer(melijn, guildId));
+        if (!players.containsKey(guildId) || players.get(guildId) == null) players.put(guildId, new MusicPlayer(melijn, guildId));
         return players.get(guildId);
     }
 
@@ -132,7 +129,8 @@ public class AudioLoader {
                     return;
                 }
 
-                manager.loadItemOrdered(player, youtubeVideoBase + result, resultHandler);
+                manager.loadItemOrdered(player, youtubeVideoBase + result, resultHandler
+                );
             });
 
             return;
@@ -182,7 +180,7 @@ public class AudioLoader {
                 eb.setTitle("Select Menu");
                 eb.setFooter(melijn.getHelpers().getFooterStamp(), null);
                 StringBuilder sb = new StringBuilder();
-                Map<Integer, AudioTrack> map = new IdentityHashMap<>();
+                Map<Integer, AudioTrack> map = new HashMap<>();
                 int i = 0;
                 for (AudioTrack track : tracks) {
                     map.put(i, track);

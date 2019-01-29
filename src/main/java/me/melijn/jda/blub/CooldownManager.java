@@ -2,7 +2,7 @@ package me.melijn.jda.blub;
 
 import me.melijn.jda.db.Variables;
 
-import java.util.IdentityHashMap;
+import java.util.HashMap;
 import java.util.Map;
 
 public class CooldownManager {
@@ -11,11 +11,11 @@ public class CooldownManager {
     public CooldownManager(Variables variables) {
         this.variables = variables;
     }
-    private final Map<Long, Map<Long, Map<Integer, Long>>> cooldowns = new IdentityHashMap<>();// Guild -> User -> command -> time used
+    private final Map<Long, Map<Long, Map<Integer, Long>>> cooldowns = new HashMap<>();// Guild -> User -> command -> time used
 
     private void checkOldEntries() {
         long currentTime = System.currentTimeMillis();
-        new IdentityHashMap<>(cooldowns).forEach((guildId, users) -> users.forEach((userId, commands) -> commands.forEach((commandId, time) -> {
+        new HashMap<>(cooldowns).forEach((guildId, users) -> users.forEach((userId, commands) -> commands.forEach((commandId, time) -> {
             if (time > currentTime) return;
             Map<Integer, Long> freshCommands = cooldowns.get(guildId).get(userId);
             freshCommands.remove(commandId);
@@ -38,8 +38,8 @@ public class CooldownManager {
     public void updateCooldown(long guildId, long userId, int commandId) {
         checkOldEntries();
         if (!variables.cooldowns.getUnchecked(guildId).containsKey(commandId)) return;
-        Map<Long, Map<Integer, Long>> users = cooldowns.containsKey(guildId) ? cooldowns.get(guildId) : new IdentityHashMap<>();
-        if (!users.containsKey(userId)) users.put(userId, new IdentityHashMap<>());
+        Map<Long, Map<Integer, Long>> users = cooldowns.containsKey(guildId) ? cooldowns.get(guildId) : new HashMap<>();
+        if (!users.containsKey(userId)) users.put(userId, new HashMap<>());
         Map<Integer, Long> commands = users.get(userId);
         commands.put(commandId, System.currentTimeMillis() + variables.cooldowns.getUnchecked(guildId).get(commandId));
         users.put(userId, commands);

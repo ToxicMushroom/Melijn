@@ -10,7 +10,7 @@ import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 
-import java.util.IdentityHashMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -62,7 +62,7 @@ public class ClearChannelCommand extends Command {
     }
 
     private void setupQuestion(TextChannel channel, Variables vars, Message s, long authorId) {
-        Map<Long, Long> messageChannel = new IdentityHashMap<>();
+        Map<Long, Long> messageChannel = new HashMap<>();
         Guild guild = channel.getJDA().asBot().getShardManager().getGuildById(340081887265685504L);
         long guildId = channel.getGuild().getIdLong();
 

@@ -37,7 +37,7 @@ public class RemoveCommand extends Command {
             }
             AudioLoader audioLoader = event.getClient().getMelijn().getLava().getAudioLoader();
             Queue<AudioTrack> tracks = audioLoader.getPlayer(event.getGuild()).getTrackManager().getTracks();
-            Map<Integer, AudioTrack> songs = new IdentityHashMap<>();
+            Map<Integer, AudioTrack> songs = new HashMap<>();
             int i = 0;
             for (AudioTrack track : tracks) {
                 i++;

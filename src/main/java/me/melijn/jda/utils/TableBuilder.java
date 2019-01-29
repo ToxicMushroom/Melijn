@@ -6,8 +6,8 @@ public class TableBuilder {
 
 
     private List<String> headerRow = new ArrayList<>();
-    private Map<Integer, List<String>> valueRows = new IdentityHashMap<>();
-    private Map<Integer, Integer> columnWidth = new IdentityHashMap<>();
+    private Map<Integer, List<String>> valueRows = new HashMap<>();
+    private Map<Integer, Integer> columnWidth = new HashMap<>();
     private List<String> footerRow = new ArrayList<>();
     private boolean split;
 

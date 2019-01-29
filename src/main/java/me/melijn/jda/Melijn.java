@@ -58,14 +58,6 @@ public class Melijn {
     private Melijn() {
         melijn = this;
         config = new Config();
-        lava = new Lava(this);
-
-        PREFIX = config.getValue("prefix");
-        OWNERID = Long.parseLong(config.getValue("ownerid"));
-
-        webUtils = new WebUtils(this);
-        imageUtils = new ImageUtils();
-        ytSearch = new YTSearch();
         mySQL = new MySQL(
                 melijn,
                 config.getValue("ipaddress"),
@@ -74,7 +66,16 @@ public class Melijn {
                 config.getValue("database")
         );
         variables = new Variables(this);
+
+        PREFIX = config.getValue("prefix");
+        OWNERID = Long.parseLong(config.getValue("ownerid"));
+
+        webUtils = new WebUtils(this);
+        imageUtils = new ImageUtils();
+        ytSearch = new YTSearch();
+
         helpers = new Helpers(this);
+        lava = new Lava(this);
         messageHelper = new MessageHelper(this);
 
         aPrivate = new Private(webUtils);

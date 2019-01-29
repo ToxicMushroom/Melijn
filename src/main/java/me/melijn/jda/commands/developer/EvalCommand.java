@@ -40,17 +40,7 @@ public class EvalCommand extends Command {
     }
 
     private String createDummyClassSource(final String source) {
-        return  "import me.melijn.jda.blub.*;\n" +
-                "import me.melijn.jda.utils.*;\n" +
-                "import me.melijn.jda.Melijn;\n" +
-                "import me.melijn.jda.commands.*;\n" +
-                "import me.melijn.jda.commands.management.*;\n" +
-                "import me.melijn.jda.commands.util.*;\n" +
-                "import me.melijn.jda.commands.music.*;\n" +
-                "import me.melijn.jda.commands.fun.*;\n" +
-                "import me.melijn.jda.commands.developer.*;\n" +
-                "import me.melijn.jda.Helpers;\n" +
-                "import me.melijn.jda.*;\n" +
+        return  "import me.melijn.jda.blub.CommandEvent;\n" +
                 "import java.io.*;\n" +
                 "import java.lang.*;\n" +
                 "import java.util.*;\n" +

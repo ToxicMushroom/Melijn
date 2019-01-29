@@ -9,10 +9,6 @@ import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.MessageType;
 import me.melijn.jda.blub.*;
 import me.melijn.jda.commands.management.CustomCommandCommand;
-import me.melijn.jda.commands.management.SetLogChannelCommand;
-import me.melijn.jda.commands.management.SetPrefixCommand;
-import me.melijn.jda.commands.management.SetStreamerModeCommand;
-import me.melijn.jda.commands.util.PrivatePrefixCommand;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
@@ -1163,7 +1159,7 @@ public class MySQL {
 
     public Map<Long, Set<Long>> getNotificationsMap(NotificationType nextvote) {
         //userId -> mensen waarvan notificatie moet krijgen -> aan of uit
-        Map<Long, Set<Long>> mapje = new IdentityHashMap<>();
+        Map<Long, Set<Long>> mapje = new HashMap<>();
         try (Connection con = ds.getConnection()) {
             PreparedStatement statement = con.prepareStatement("SELECT * FROM " + nextvote.toString().toLowerCase() + "_notifications");
             ResultSet rs = statement.executeQuery();
@@ -1252,7 +1248,7 @@ public class MySQL {
     }
 
     public Map<Long , List<Integer>> getDisabledCommandsMap() {
-        Map<Long , List<Integer>> toReturn = new IdentityHashMap<>();
+        Map<Long , List<Integer>> toReturn = new HashMap<>();
         try (Connection con = ds.getConnection()) {
             PreparedStatement statement = con.prepareStatement("SELECT * FROM disabled_commands");
             ResultSet rs = statement.executeQuery();
@@ -1311,7 +1307,7 @@ public class MySQL {
     }
 
     public Map<Long, Long> getUnverifiedMembers(long guildId) {
-        Map<Long, Long> members = new IdentityHashMap<>();
+        Map<Long, Long> members = new HashMap<>();
         try (Connection con = ds.getConnection()) {
             PreparedStatement getUnverifiedMembers = con.prepareStatement("SELECT * FROM unverified_users WHERE guildId= ?");
             getUnverifiedMembers.setLong(1, guildId);
@@ -1444,7 +1440,7 @@ public class MySQL {
     public LinkedHashMap<Integer, Long> getTopUsage(long[] period, int limit) {
         long smallest = period[0] < period[1] ? period[0] : period[1];
         long biggest = period[0] < period[1] ? period[1] : period[0];
-        Map<Integer, Long> commandUsages = new IdentityHashMap<>();
+        Map<Integer, Long> commandUsages = new HashMap<>();
         try (PreparedStatement getUsageWithinPeriod = ds.getConnection().prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?")) {
             getUsageWithinPeriod.setLong(1, biggest);
             getUsageWithinPeriod.setLong(2, smallest);
@@ -1481,8 +1477,8 @@ public class MySQL {
     public Map<Integer, Long> getUsages(long[] period, List<Integer> commandIds) {
         long smallest = period[0] < period[1] ? period[0] : period[1];
         long biggest = period[0] < period[1] ? period[1] : period[0];
-        Map<Integer, Long> sortedCommandUsages = new IdentityHashMap<>();
-        Map<Integer, Long> commandUsages = new IdentityHashMap<>();
+        Map<Integer, Long> sortedCommandUsages = new HashMap<>();
+        Map<Integer, Long> commandUsages = new HashMap<>();
         try (PreparedStatement getUsageWithinPeriod = ds.getConnection().prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?")) {
             getUsageWithinPeriod.setLong(1, biggest);
             getUsageWithinPeriod.setLong(2, smallest);
@@ -1604,7 +1600,7 @@ public class MySQL {
     }
 
     public Map<Long, String> getSelfRoles(long guildId) {
-        Map<Long, String> collector = new IdentityHashMap<>();
+        Map<Long, String> collector = new HashMap<>();
         try (Connection con = ds.getConnection()) {
             try (PreparedStatement statement = con.prepareStatement("SELECT * FROM self_roles WHERE guildId= ?")) {
                 statement.setLong(1, guildId);
@@ -1880,7 +1876,7 @@ public class MySQL {
             try (PreparedStatement statement = con.prepareStatement("SELECT * FROM cooldowns WHERE guildId= ?")) {
                 statement.setLong(1, guildId);
                 try (ResultSet rs = statement.executeQuery()) {
-                    Map<Integer, Integer> map = new IdentityHashMap<>();
+                    Map<Integer, Integer> map = new HashMap<>();
                     while (rs.next()) {
                         map.put(rs.getInt("commandId"), rs.getInt("cooldown"));
                     }
@@ -1890,7 +1886,7 @@ public class MySQL {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return new IdentityHashMap<>();
+        return new HashMap<>();
     }
 
 

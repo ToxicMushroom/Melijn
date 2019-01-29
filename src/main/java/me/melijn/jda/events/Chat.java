@@ -35,7 +35,7 @@ public class Chat extends ListenerAdapter {
     private Set<Long> black = new HashSet<>();
     private long latestId = 0;
     private int latestChanges = 0;
-    private Map<Long, Map<Long, Integer>> guildUserVerifyTries = new IdentityHashMap<>();
+    private Map<Long, Map<Long, Integer>> guildUserVerifyTries = new HashMap<>();
     private final Melijn melijn;
 
 
@@ -110,7 +110,7 @@ public class Chat extends ListenerAdapter {
                         guildUserVerifyTries.put(guildId, userTriesBuffer);
                     }
                 } else {
-                    Map<Long, Integer> userTriesBuffer = new IdentityHashMap<>();
+                    Map<Long, Integer> userTriesBuffer = new HashMap<>();
                     userTriesBuffer.put(event.getAuthor().getIdLong(), 1);
                     guildUserVerifyTries.put(guildId, userTriesBuffer);
                 }
@@ -147,7 +147,7 @@ public class Chat extends ListenerAdapter {
 
 
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Message edited in #" + event.getTextChannel().getName() + " ".repeat(50).substring(0, 45 + event.getAuthor().getName().length()) + "\u200B");
+        eb.setTitle("Message edited in #" + event.getTextChannel().getName() + " ".repeat(80).substring(0, 45 + event.getAuthor().getName().length()) + "\u200B");
         eb.setThumbnail(event.getAuthor().getEffectiveAvatarUrl());
         eb.setColor(Color.decode("#A1DAC3"));
 
@@ -269,7 +269,7 @@ public class Chat extends ListenerAdapter {
 
             boolean split = false;
             EmbedBuilder eb = new EmbedBuilder();
-            eb.setTitle("Message deleted in #" + event.getChannel().getName() + " ".repeat(50).substring(0, 45 + author.getName().length()) + "\u200B");
+            eb.setTitle("Message deleted in #" + event.getChannel().getName() + " ".repeat(80).substring(0, 45 + author.getName().length()) + "\u200B");
             eb.setThumbnail(author.getEffectiveAvatarUrl());
             eb.setColor(Color.decode("#000001"));
             if (message.getString("content").length() > 1850) {
@@ -406,8 +406,8 @@ public class Chat extends ListenerAdapter {
                 });
 
             } else {
-                Map<Integer, Integer> deniedPositions = new IdentityHashMap<>();
-                Map<Integer, Integer> allowedPositions = new IdentityHashMap<>();
+                Map<Integer, Integer> deniedPositions = new HashMap<>();
+                Map<Integer, Integer> allowedPositions = new HashMap<>();
                 addPositions(message, deniedPositions, deniedList);
                 addPositions(message, allowedPositions, allowedList);
 
