@@ -63,7 +63,7 @@ public class Melijn {
         PREFIX = config.getValue("prefix");
         OWNERID = Long.parseLong(config.getValue("ownerid"));
 
-        webUtils = new WebUtils(melijn);
+        webUtils = new WebUtils(this);
         imageUtils = new ImageUtils();
         ytSearch = new YTSearch();
         mySQL = new MySQL(
@@ -73,9 +73,10 @@ public class Melijn {
                 config.getValue("password"),
                 config.getValue("database")
         );
+        variables = new Variables(this);
         helpers = new Helpers(this);
         messageHelper = new MessageHelper(this);
-        variables = new Variables(this);
+
         aPrivate = new Private(webUtils);
         taskManager = new TaskManager(messageHelper);
 
@@ -225,7 +226,7 @@ public class Melijn {
                 .build();
         RestAction.setPassContext(true);
 
-        taskManager.async(() -> Jooby.run(Application::new, "application.port=" + config.getValue("restPort")));
+        taskManager.async(() -> Jooby.run(() -> new Application(this), "application.port=" + config.getValue("restPort")));
         Thread.setDefaultUncaughtExceptionHandler((thread, exception) -> messageHelper.printException(thread, exception, null, null));
     }
 

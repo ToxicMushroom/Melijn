@@ -19,8 +19,6 @@ import java.util.Map;
 
 public class JoinLeave extends ListenerAdapter {
 
-
-    public static DiscordBotListAPI dblAPI = null;
     private boolean started = false;
 
     private final Melijn melijn;
@@ -39,7 +37,7 @@ public class JoinLeave extends ListenerAdapter {
                 melijn.getMessageHelper().printException(thread, exception, null, null)
         );
 
-        dblAPI = new DiscordBotListAPI.Builder()
+        melijn.getVariables().dblAPI = new DiscordBotListAPI.Builder()
                 .token(melijn.getConfig().getValue("dbltoken"))
                 .botId(event.getJDA().getSelfUser().getId())
                 .build();

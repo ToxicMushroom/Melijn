@@ -1,7 +1,6 @@
 package me.melijn.jda.rest;
 
 import me.melijn.jda.Melijn;
-import me.melijn.jda.commands.management.*;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
@@ -15,12 +14,12 @@ import org.json.JSONObject;
 public class Application extends Jooby {
 
 
-    {
+    public Application(Melijn melijn) {
         use(new Jackson());
         get("/guildCount", (request, response) -> response.send(melijn.getShardManager().getGuildCache().size()));
         get("/shards", (request, response) -> {
             JSONObject object = new JSONObject();
-            for (JDA shard : Melijn.getShardManager().getShardCache())
+            for (JDA shard : melijn.getShardManager().getShardCache())
                 object.put(String.valueOf(shard.getShardInfo().getShardId()), new JSONObject()
                         .put("guildCount", shard.getGuildCache().size())
                         .put("userCount", shard.getUserCache().size())
@@ -30,7 +29,7 @@ public class Application extends Jooby {
         });
         get("/guild/{id:\\d+}", (request, response) -> {
             long id = request.param("id").longValue();
-            Guild guild = Melijn.getShardManager().getGuildById(id);
+            Guild guild = melijn.getShardManager().getGuildById(id);
             if (guild == null) {
                 response.send(new JSONObject().put("isBotMember", false).toMap());
                 return;
@@ -57,35 +56,35 @@ public class Application extends Jooby {
             long id = request.param("id").longValue();
 
             //block 1
-            SetPrefixCommand.prefixes.invalidate(id);
-            SetJoinMessageCommand.joinMessages.invalidate(id);
-            SetLeaveMessageCommand.leaveMessages.invalidate(id);
+            melijn.getVariables().prefixes.invalidate(id);
+            melijn.getVariables().joinMessages.invalidate(id);
+            melijn.getVariables().leaveMessages.invalidate(id);
 
             //block 2
-            SetJoinRoleCommand.joinRoleCache.invalidate(id);
-            SetMuteRoleCommand.muteRoleCache.invalidate(id);
-            SetUnverifiedRoleCommand.unverifiedRoleCache.invalidate(id);
+            melijn.getVariables().joinRoleCache.invalidate(id);
+            melijn.getVariables().muteRoleCache.invalidate(id);
+            melijn.getVariables().unverifiedRoleCache.invalidate(id);
 
             //block 3
-            SetJoinLeaveChannelCommand.welcomeChannelCache.invalidate(id);
-            SetVerificationChannelCommand.verificationChannelsCache.invalidate(id);
-            SetLogChannelCommand.musicLogChannelCache.invalidate(id);
-            SetLogChannelCommand.banLogChannelCache.invalidate(id);
-            SetLogChannelCommand.muteLogChannelCache.invalidate(id);
-            SetLogChannelCommand.kickLogChannelCache.invalidate(id);
-            SetLogChannelCommand.warnLogChannelCache.invalidate(id);
-            SetLogChannelCommand.sdmLogChannelCache.invalidate(id);
-            SetLogChannelCommand.odmLogChannelCache.invalidate(id);
-            SetLogChannelCommand.pmLogChannelCache.invalidate(id);
-            SetLogChannelCommand.fmLogChannelCache.invalidate(id);
+            melijn.getVariables().welcomeChannelCache.invalidate(id);
+            melijn.getVariables().verificationChannelsCache.invalidate(id);
+            melijn.getVariables().musicLogChannelCache.invalidate(id);
+            melijn.getVariables().banLogChannelCache.invalidate(id);
+            melijn.getVariables().muteLogChannelCache.invalidate(id);
+            melijn.getVariables().kickLogChannelCache.invalidate(id);
+            melijn.getVariables().warnLogChannelCache.invalidate(id);
+            melijn.getVariables().sdmLogChannelCache.invalidate(id);
+            melijn.getVariables().odmLogChannelCache.invalidate(id);
+            melijn.getVariables().pmLogChannelCache.invalidate(id);
+            melijn.getVariables().fmLogChannelCache.invalidate(id);
 
             //block 4
-            SetVerificationCodeCommand.verificationCodeCache.invalidate(id);
-            SetVerificationThresholdCommand.verificationThresholdCache.invalidate(id);
+            melijn.getVariables().verificationCodeCache.invalidate(id);
+            melijn.getVariables().verificationThresholdCache.invalidate(id);
 
             //block 5
-            SetMusicChannelCommand.musicChannelCache.invalidate(id);
-            SetStreamerModeCommand.streamerModeCache.invalidate(id);
+            melijn.getVariables().musicChannelCache.invalidate(id);
+            melijn.getVariables().streamerModeCache.invalidate(id);
             response.send(new JSONObject()
                     .put("state", "refreshed")
                     .toMap());
@@ -93,7 +92,7 @@ public class Application extends Jooby {
 
 
         get("/member/{guildId:\\d+}/{userId:\\d+}", (request, response) -> {
-            Guild guild = Melijn.getShardManager().getGuildById(request.param("guildId").longValue());
+            Guild guild = melijn.getShardManager().getGuildById(request.param("guildId").longValue());
             if (guild == null) {
                 response.send(new JSONObject()
                         .put("error", "Invalid guildId")
@@ -101,7 +100,7 @@ public class Application extends Jooby {
                         .toMap());
                 return;
             }
-            User user = Melijn.getShardManager().getUserById(request.param("userId").longValue());
+            User user = melijn.getShardManager().getUserById(request.param("userId").longValue());
             if (user == null || guild.getMember(user) == null) {
                 response.send(new JSONObject()
                         .put("error", "Member not found")

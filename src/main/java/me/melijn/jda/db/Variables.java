@@ -8,6 +8,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.*;
 import net.dv8tion.jda.core.entities.Message;
+import org.discordbots.api.client.DiscordBotListAPI;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -73,6 +74,7 @@ public class Variables {
     public final LoadingCache<Long, Long> fmLogChannelCache;
 
     public final LoadingCache<Long, Long> musicChannelCache;
+    public DiscordBotListAPI dblAPI = null;
 
 
 

@@ -12,8 +12,6 @@ import me.duncte123.weebJava.models.image.WeebImage;
 import me.duncte123.weebJava.models.image.response.ImageTypesResponse;
 import me.duncte123.weebJava.types.Endpoint;
 import me.duncte123.weebJava.types.TokenType;
-import me.melijn.jda.Config;
-import me.melijn.jda.Helpers;
 import me.melijn.jda.Melijn;
 import net.dv8tion.jda.core.EmbedBuilder;
 import okhttp3.OkHttpClient;
@@ -160,11 +158,10 @@ public class WebUtils {
     }
 
     public String getBirdUrl() {
-        String birdPage = run("http://random.birb.pw/tweet.json/");
-        if (birdPage.contains("You don't have permission to access"))
-            return null;
-        if (new JSONObject(birdPage).get("file") != null)
-            return "https://random.birb.pw/img/" + new JSONObject(birdPage).get("file").toString();
+        String birdPage = run("https://some-random-api.ml/birbimg");
+        if (!melijn.getHelpers().isJSONObjectValid(birdPage)) return null;
+        if (new JSONObject(birdPage).has("link"))
+            return new JSONObject(birdPage).get("link").toString();
         else return null;
     }
 }

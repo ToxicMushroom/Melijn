@@ -6,7 +6,6 @@ import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.NotificationType;
 import me.melijn.jda.blub.RoleType;
-import me.melijn.jda.events.JoinLeave;
 import me.melijn.jda.utils.Embedder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
@@ -154,22 +153,21 @@ public class Helpers {
         if (i == 0 || i == 2) {
             melijn.getTaskManager().scheduleRepeating(() -> {
                 lastRunTimer2 = System.currentTimeMillis();
-                if (JoinLeave.dblAPI != null)
-                    JoinLeave.dblAPI.setStats(Math.toIntExact(guildCount == 0 ? jda.asBot().getShardManager().getGuildCache().size() : guildCount));
+                if (melijn.getVariables().dblAPI != null)
+                    melijn.getVariables().dblAPI.setStats(Math.toIntExact(guildCount == 0 ? jda.asBot().getShardManager().getGuildCache().size() : guildCount));
                 Set<Long> votesList = melijn.getMySQL().getVoteList();
                 Map<Long, Set<Long>> nextVoteMap = melijn.getMySQL().getNotificationsMap(NotificationType.NEXTVOTE);
                 for (long userId : nextVoteMap.keySet()) {
-                    for (long targetId : nextVoteMap.get(userId)) {
-                        if (votesList.contains(targetId)) {
-                            jda.asBot().getShardManager().retrieveUserById(userId).queue((u) -> {
-                                if (userId != targetId)
-                                    jda.asBot().getShardManager().retrieveUserById(targetId).queue((t) ->
-                                            u.openPrivateChannel().queue((c) -> c.sendMessage(String.format("It's time to vote for **%#s**", t)).queue()));
-                                else {
-                                    u.openPrivateChannel().queue((c) -> c.sendMessage(String.format("It's time to vote for **%#s**", u)).queue());
-                                }
-                            });
-                        }
+                    for (long targetId : nextVoteMap.getOrDefault(userId, Sets.newHashSet(-1L))) {
+                        if (targetId == -1L || !votesList.contains(targetId)) continue;
+                        jda.asBot().getShardManager().retrieveUserById(userId).queue((u) -> {
+                            if (userId != targetId)
+                                jda.asBot().getShardManager().retrieveUserById(targetId).queue((t) ->
+                                        u.openPrivateChannel().queue((c) -> c.sendMessage(String.format("It's time to vote for **%#s**", t)).queue()));
+                            else {
+                                u.openPrivateChannel().queue((c) -> c.sendMessage(String.format("It's time to vote for **%#s**", u)).queue());
+                            }
+                        });
                     }
                 }
             }, 60_000);
