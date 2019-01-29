@@ -31,7 +31,7 @@ dependencies {
     implementation 'org.codehaus.janino:commons-compiler:3.0.11'
 
     //https://bintray.com/duncte123/weeb.java/weeb.java
-    implementation 'me.duncte123:weebJava:2.2.0_18'
+    implementation 'me.duncte123:weebJava:2.2.0_25'
 
     //https://mvnrepository.com/artifact/mysql/mysql-connector-java
     implementation 'mysql:mysql-connector-java:8.0.13'
