@@ -217,9 +217,10 @@ public class MessageHelper {
     }
 
     private List<String> getSplitMessage(String message, int margin) {
+        String msg = message;
         final List<String> messages = new ArrayList<>();
-        while (message.length() > 2000 - margin) {
-            final String findLastNewline = message.substring(0, 2000 - margin);
+        while (msg.length() > 2000 - margin) {
+            final String findLastNewline = msg.substring(0, 2000 - margin);
             int index = findLastNewline.lastIndexOf("\n");
             if (index < 1800 - margin) {
                 index = findLastNewline.lastIndexOf(".");
@@ -230,11 +231,11 @@ public class MessageHelper {
             if (index < 1800 - margin) {
                 index = 1999 - margin;
             }
-            messages.add(message.substring(0, index));
-            message = message.substring(index);
+            messages.add(msg.substring(0, index));
+            msg = msg.substring(index);
         }
-        if (message.length() > 0)
-            messages.add(message);
+        if (msg.length() > 0)
+            messages.add(msg);
         return messages;
     }
 

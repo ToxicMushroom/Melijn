@@ -7,7 +7,6 @@ import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.entities.impl.JDAImpl;
-import net.dv8tion.jda.core.events.ShutdownEvent;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import net.dv8tion.jda.core.requests.restaction.MessageAction;
@@ -28,7 +27,6 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
     private final Melijn melijn;
     private final String guildOnly = "This command is to be used in guilds only";
     private final String nsfwOnly = "This command is to be used in (not safe for work) better known as [NSFW] channels only and can contain 18+ content";
-    private final String noPerms = "You don't have the permission: ";
 
     public CommandClientImpl(Melijn melijn, long ownerId, Set<Command> commands) {
         this.melijn = melijn;
@@ -69,10 +67,6 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                 commandIndex.keySet().stream().filter(key -> commandIndex.get(key) > index).collect(Collectors.toList()).forEach(key -> commandIndex.put(key, commandIndex.get(key) + 1));
         }
         commands.add(command);
-    }
-
-    @Override
-    public void onShutdown(ShutdownEvent event) {
     }
 
     @Override
@@ -169,8 +163,7 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
         if (command.getCategory() == Category.DEVELOPER && event.getAuthor().getIdLong() != Melijn.OWNERID)
             return true;
         if (noPermission(event, command)) return true;
-        if (unFulfilledNeeds(event, command)) return true;
-        return false;
+        return unFulfilledNeeds(event, command);
     }
 
     private void customCommandSender(JSONObject command, Guild guild, User author, TextChannel channel) {

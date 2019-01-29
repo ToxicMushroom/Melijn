@@ -31,22 +31,27 @@ public class VoteCommand extends Command {
             event.async(() -> {
                 User target = event.getHelpers().getUserByArgs(event, args.length > 1 ? args[1] : "");
                 String username = target.getName() + "#" + target.getDiscriminator();
+
                 JSONObject voteObject = event.getMySQL().getVotesObject(target.getIdLong());
                 if (!voteObject.has("votes")) {
                     event.reply(target.getName() + " has never voted.");
                     return;
                 }
+
                 EmbedBuilder eb = new Embedder(event.getVariables(), event.getGuild());
                 eb.setTitle("Votes of " + username);
                 eb.setThumbnail(target.getAvatarUrl());
                 eb.addField("Votes", String.valueOf(voteObject.getLong("votes")), false);
                 eb.addField("Streak", String.valueOf(voteObject.getLong("streak")), false);
+
                 long untilNext = 43_200_000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
                 String untilNextFormat = (untilNext > 0) ? event.getMessageHelper().millisToVote(untilNext) : "none (you can vote now)";
                 eb.addField("Time until next vote", untilNextFormat, false);
+
                 long untilLoss = 172800000 - (System.currentTimeMillis() - voteObject.getLong("lastTime"));
                 String untilLossFormat = (untilLoss > 0) ? event.getMessageHelper().millisToVote(untilLoss) : "You don't have a streak atm :/";
                 eb.addField("Time until los of streak", untilLossFormat, false);
+
                 event.reply(eb.build());
             });
         } else {

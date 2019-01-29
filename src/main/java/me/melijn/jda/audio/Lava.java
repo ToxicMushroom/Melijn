@@ -12,11 +12,11 @@ import net.dv8tion.jda.core.entities.VoiceChannel;
 public class Lava {
 
     private final AudioLoader audioLoader;
+    private JdaLavalink lavalink = null;
 
     public Lava(Melijn melijn) {
         audioLoader = new AudioLoader(melijn);
     }
-    private JdaLavalink lavalink = null;
 
     public void init(JdaLavalink lavalink) {
         this.lavalink = lavalink;

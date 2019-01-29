@@ -255,7 +255,7 @@ public class CustomCommandCommand extends Command {
             sb.append(i + 1).append(" - [").append(obj.get("name")).append("]\n");
         }
         sb.append("```");
-        if (sb.toString().length() < 12) return "";
+        if (sb.length() < 12) return "";
         return sb.toString();
     }
 }

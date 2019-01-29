@@ -31,7 +31,7 @@ public class CooldownCommand extends Command {
         if (event.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             Variables vars = event.getVariables();
-            if (args.length == 0) {
+            if (event.getArgs().isEmpty()) {
                 event.getMessageHelper().sendUsage(this, event);
                 return;
             }
@@ -97,7 +97,7 @@ public class CooldownCommand extends Command {
                         if (match.size() > 0)
                             sb.append(i.getAndIncrement()).append(". ").append(match.get(0).getCommandName()).append(" ").append(b).append("ms\n");
                     });
-                    if (sb.toString().length() == 0) event.reply("Looks empty to me");
+                    if (sb.length() == 0) event.reply("Looks empty to me");
                     else event.getMessageHelper().sendSplitCodeBlock(event.getTextChannel(), sb.toString(), "Markdown");
                     break;
                 default:

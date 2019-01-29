@@ -8,7 +8,6 @@ import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.ReadyEvent;
-import net.dv8tion.jda.core.events.ShutdownEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -62,11 +61,6 @@ public class JoinLeave extends ListenerAdapter {
         }
         melijn.getMySQL().clearQueues();
         started = true;
-    }
-
-    @Override
-    public void onShutdown(ShutdownEvent event) {
-
     }
 
     @Override

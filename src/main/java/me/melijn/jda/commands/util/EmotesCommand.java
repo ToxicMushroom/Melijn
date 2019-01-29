@@ -26,7 +26,7 @@ public class EmotesCommand extends Command {
             for (Emote emote : event.getGuild().getEmoteCache()) {
                 sb.append(emote.getAsMention()).append("   ").append(emote.getName()).append("   `").append(emote.getId()).append("`\n");
             }
-            if (sb.toString().length() > 13)
+            if (sb.length() > 13)
                 event.getMessageHelper().sendSplitMessage(event.getTextChannel(), sb.toString());
             else event.reply("This server as no emotes :/");
         } else {

@@ -1,17 +1,7 @@
 package me.melijn.jda.commands.management;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import me.melijn.jda.Helpers;
-import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.*;
-import me.melijn.jda.utils.MessageHelper;
-import me.melijn.jda.utils.Task;
 import net.dv8tion.jda.core.entities.Guild;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.concurrent.TimeUnit;
 
 import static me.melijn.jda.Melijn.PREFIX;
 

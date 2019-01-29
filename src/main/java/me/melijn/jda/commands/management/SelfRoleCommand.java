@@ -16,7 +16,6 @@ import static me.melijn.jda.Melijn.PREFIX;
 public class SelfRoleCommand extends Command {
 
 
-
     public SelfRoleCommand() {
         this.commandName = "selfRole";
         this.description = "Main command to manage SelfRoles";
@@ -32,7 +31,7 @@ public class SelfRoleCommand extends Command {
         if (event.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
-            if (args.length == 0 || args[0].isEmpty()) {
+            if (event.getArgs().isEmpty()) {
                 event.sendUsage(this, event);
                 return;
             }
@@ -71,7 +70,7 @@ public class SelfRoleCommand extends Command {
                         event.reply("This SelfRole already exist: choose another role or emote/emoji.");
                         return;
                     }
-                    event.async(() ->  {
+                    event.async(() -> {
                         event.getMySQL().addSelfRole(guild.getIdLong(), roleAdded.getIdLong(), emote);
                         event.getVariables().selfRoles.invalidate(guild.getIdLong());
                     });
@@ -117,6 +116,9 @@ public class SelfRoleCommand extends Command {
                     sb.append("```");
                     if (rolesIds.size() == 0) sb.append("There are no SelfRoles");
                     event.getMessageHelper().sendSplitMessage(event.getTextChannel(), sb.toString());
+                    break;
+                default:
+                    event.sendUsage(this, event);
                     break;
             }
         } else {

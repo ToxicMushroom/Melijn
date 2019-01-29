@@ -70,7 +70,7 @@ public class PrivatePrefixCommand extends Command {
                 StringBuilder sb = new StringBuilder("```Markdown\n");
                 list.forEach(string -> sb.append(list.indexOf(string) + 1).append(". ").append(string).append("\n"));
                 sb.append("```");
-                if (list.size() == 0) sb.replace(0, sb.toString().length(), "Looks empty to me");
+                if (list.size() == 0) sb.replace(0, sb.length(), "Looks empty to me");
                 event.reply(sb.toString());
                 break;
             default:

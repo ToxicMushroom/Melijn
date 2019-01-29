@@ -7,26 +7,13 @@ import me.melijn.jda.blub.Need;
 import net.dv8tion.jda.core.entities.Guild;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class SetStreamUrlCommand extends Command {
 
-    private HashMap<String, String> linkjes = new HashMap<>() {{
-        put("slam-nonstop", "http://stream.radiocorp.nl/web10_mp3");
-        put("radio538", "http://18973.live.streamtheworld.com/RADIO538.mp3");
-        put("Joe-fm", "http://icecast-qmusic.cdp.triple-it.nl/JOEfm_be_live_128.mp3");
-        put("mnm", "http://icecast.vrtcdn.be/mnm-high.mp3");
-        put("mnm-hits", "http://icecast.vrtcdn.be/mnm_hits-high.mp3");
-        put("Q-music", "http://icecast-qmusic.cdp.triple-it.nl/Qmusic_be_live_64.aac");
-        put("Nostalgie", "http://nostalgiewhatafeeling.ice.infomaniak.ch/nostalgiewhatafeeling-128.mp3");
-        put("Radio1", "http://icecast.vrtcdn.be/radio1-high.mp3");
-        put("Radio2", "http://icecast.vrtcdn.be/ra2wvl-high.mp3");
-        put("Studio-Brussel", "http://icecast.vrtcdn.be/stubru-high.mp3");
-        put("BBC_Radio_1", "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio1_mf_p");
-        put("BBC_Radio_4FM", "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio4fm_mf_p");
-        put("BBC_Radio_6_Music", "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_6music_mf_p");
-    }};
+    private Map<String, String> linkjes = new HashMap<>();
 
     public SetStreamUrlCommand() {
         this.commandName = "setStreamUrl";
@@ -37,6 +24,20 @@ public class SetStreamUrlCommand extends Command {
         this.extra = "https://melijn.com/guides/guide-5/";
         this.category = Category.MANAGEMENT;
         this.id = 84;
+
+        linkjes.put("slam-nonstop", "http://stream.radiocorp.nl/web10_mp3");
+        linkjes.put("radio538", "http://18973.live.streamtheworld.com/RADIO538.mp3");
+        linkjes.put("Joe-fm", "http://icecast-qmusic.cdp.triple-it.nl/JOEfm_be_live_128.mp3");
+        linkjes.put("mnm", "http://icecast.vrtcdn.be/mnm-high.mp3");
+        linkjes.put("mnm-hits", "http://icecast.vrtcdn.be/mnm_hits-high.mp3");
+        linkjes.put("Q-music", "http://icecast-qmusic.cdp.triple-it.nl/Qmusic_be_live_64.aac");
+        linkjes.put("Nostalgie", "http://nostalgiewhatafeeling.ice.infomaniak.ch/nostalgiewhatafeeling-128.mp3");
+        linkjes.put("Radio1", "http://icecast.vrtcdn.be/radio1-high.mp3");
+        linkjes.put("Radio2", "http://icecast.vrtcdn.be/ra2wvl-high.mp3");
+        linkjes.put("Studio-Brussel", "http://icecast.vrtcdn.be/stubru-high.mp3");
+        linkjes.put("BBC_Radio_1", "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio1_mf_p");
+        linkjes.put("BBC_Radio_4FM", "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio4fm_mf_p");
+        linkjes.put("BBC_Radio_6_Music", "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_6music_mf_p");
     }
 
     @Override

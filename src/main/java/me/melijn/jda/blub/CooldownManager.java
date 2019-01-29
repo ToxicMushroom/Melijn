@@ -8,10 +8,11 @@ import java.util.Map;
 public class CooldownManager {
 
     private final Variables variables;
+    private final Map<Long, Map<Long, Map<Integer, Long>>> cooldowns = new HashMap<>();// Guild -> User -> command -> time used
+
     public CooldownManager(Variables variables) {
         this.variables = variables;
     }
-    private final Map<Long, Map<Long, Map<Integer, Long>>> cooldowns = new HashMap<>();// Guild -> User -> command -> time used
 
     private void checkOldEntries() {
         long currentTime = System.currentTimeMillis();

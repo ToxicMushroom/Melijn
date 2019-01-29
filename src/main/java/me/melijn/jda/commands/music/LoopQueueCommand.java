@@ -5,9 +5,6 @@ import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.Need;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class LoopQueueCommand extends Command {
