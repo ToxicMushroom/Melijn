@@ -46,7 +46,7 @@ public class EnableCommand extends Command {
                     break;
                 }
 
-                if (cmd.getCategory().toString().equalsIgnoreCase(args[0]) && buffer.contains(cmd.getId())) {
+                if (cmd.getCategory().toString().equalsIgnoreCase(args[0])) {
                     buffer.remove(Integer.valueOf(cmd.getId()));
                 }
 
