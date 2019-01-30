@@ -43,7 +43,7 @@ public class TempBanCommand extends Command {
                         return;
                     }
 
-                    if (event.getHelpers().canNotInteract(event, target)) return;
+                    if (event.getGuild().isMember(target) && event.getHelpers().canNotInteract(event, target)) return;
                     String reason = event.getArgs().replaceFirst(args[0] + "\\s+" + args[1] + "\\s+|" + args[0] + "\\s+" + args[1], "");
                     if (reason.length() <= 1000 && event.getMySQL().setTempBan(event.getAuthor(), target, event.getGuild(), reason, event.getMessageHelper().easyFormatToSeconds(time))) {
                         event.getMessage().addReaction("\u2705").queue();

@@ -39,7 +39,7 @@ public class BanCommand extends Command {
                     event.reply("Unknown user");
                     return;
                 }
-                if (event.getHelpers().canNotInteract(event, target)) return;
+                if (event.getGuild().isMember(target) && event.getHelpers().canNotInteract(event, target)) return;
                 String reason = event.getArgs().replaceFirst(args[0] + "\\s+|" + args[0], "");
                 if (reason.length() <= 1000 && event.getMySQL().setPermBan(event.getAuthor(), target, event.getGuild(), reason)) {
                     event.getMessage().addReaction("\u2705").queue();
