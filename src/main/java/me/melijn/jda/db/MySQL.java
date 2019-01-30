@@ -68,9 +68,11 @@ public class MySQL {
     private void init() {
         try {
             logger.info("[MySQL] has connected & Loading init");
-            Statement statement = ds.getConnection().createStatement();
-            statement.executeQuery("SET NAMES 'utf8mb4'");
-            statement.close();
+            try (Connection con = ds.getConnection()) {
+                try (Statement statement = con.createStatement()) {
+                    statement.executeQuery("SET NAMES 'utf8mb4'");
+                }
+            }
 
             //Commands
             executeUpdate("CREATE TABLE IF NOT EXISTS commands(commandName varchar(128), gebruik varchar(1024), description varchar(2048), extra varchar(2048), category varchar(128), aliases varchar(256), PRIMARY KEY (commandName));");
@@ -166,9 +168,9 @@ public class MySQL {
                     preparedStatement.setObject(current, object);
                     current++;
                 }
-                final ResultSet resultSet = preparedStatement.executeQuery();
-                consumer.accept(resultSet);
-                resultSet.close();
+                try (final ResultSet resultSet = preparedStatement.executeQuery()) {
+                    consumer.accept(resultSet);
+                }
             }
         } catch (final SQLException e) {
             logger.error("Something went wrong while executing the query: " + sql);
@@ -564,7 +566,9 @@ public class MySQL {
                 else logChannel.sendMessage(eb.build()).queue();
             }
 
-            guild.getController().unban(toUnban.getId()).queue(success -> {}, failed -> {});
+            guild.getController().unban(toUnban.getId()).queue(success -> {
+            }, failed -> {
+            });
             return true;
         }
         return false;
@@ -722,8 +726,8 @@ public class MySQL {
 
     //Punishment getters
     public void getUserBans(long guildId, long userId, JDA jda, Consumer<String[]> bans) {
-        try {
-            PreparedStatement getBans = ds.getConnection().prepareStatement("SELECT * FROM history_bans WHERE victimId= ? AND guildId= ?");
+        try (Connection con = ds.getConnection()) {
+            PreparedStatement getBans = con.prepareStatement("SELECT * FROM history_bans WHERE victimId= ? AND guildId= ?");
             getBans.setLong(1, userId);
             getBans.setLong(2, guildId);
             ResultSet rs = getBans.executeQuery();
@@ -789,8 +793,8 @@ public class MySQL {
     }
 
     public void getUserMutes(long guildId, long userId, JDA jda, Consumer<String[]> mutes) {
-        try {
-            PreparedStatement getMutes = ds.getConnection().prepareStatement("SELECT * FROM history_mutes WHERE victimId= ? AND guildId= ?");
+        try (Connection connection = ds.getConnection()) {
+            PreparedStatement getMutes = connection.prepareStatement("SELECT * FROM history_mutes WHERE victimId= ? AND guildId= ?");
             getMutes.setLong(1, userId);
             getMutes.setLong(2, guildId);
             ResultSet rs = getMutes.executeQuery();
@@ -870,8 +874,8 @@ public class MySQL {
     }
 
     public void getUserWarns(long guildId, long userId, JDA jda, Consumer<String[]> warns) {
-        try {
-            PreparedStatement getWarns = ds.getConnection().prepareStatement("SELECT * FROM warns WHERE victimId= ? AND guildId= ?");
+        try (Connection con = ds.getConnection()) {
+            PreparedStatement getWarns = con.prepareStatement("SELECT * FROM warns WHERE victimId= ? AND guildId= ?");
             getWarns.setLong(1, userId);
             getWarns.setLong(2, guildId);
             ResultSet rs = getWarns.executeQuery();
@@ -1247,8 +1251,8 @@ public class MySQL {
         executeUpdate("DELETE FROM verification_thresholds WHERE guildId= ?", guildId);
     }
 
-    public Map<Long , List<Integer>> getDisabledCommandsMap() {
-        Map<Long , List<Integer>> toReturn = new HashMap<>();
+    public Map<Long, List<Integer>> getDisabledCommandsMap() {
+        Map<Long, List<Integer>> toReturn = new HashMap<>();
         try (Connection con = ds.getConnection()) {
             PreparedStatement statement = con.prepareStatement("SELECT * FROM disabled_commands");
             ResultSet rs = statement.executeQuery();
@@ -1392,7 +1396,8 @@ public class MySQL {
                             Guild guild = jda.asBot().getShardManager().getGuildById(blubObj.getLong("guildId"));
                             if (guild != null && user != null)
                                 unban(user, guild, jda.getSelfUser(), "Ban expired");
-                        }, failed -> {});
+                        }, failed -> {
+                        });
                     }
                 }
             }
@@ -1419,7 +1424,8 @@ public class MySQL {
                             Guild guild = jda.asBot().getShardManager().getGuildById(blubObj.getLong("guildId"));
                             if (guild != null)
                                 unmute(guild, user, jda.getSelfUser(), "Mute expired");
-                        }, failed -> {});
+                        }, failed -> {
+                        });
                     }
                 }
             }
@@ -1441,14 +1447,16 @@ public class MySQL {
         long smallest = period[0] < period[1] ? period[0] : period[1];
         long biggest = period[0] < period[1] ? period[1] : period[0];
         Map<Integer, Long> commandUsages = new HashMap<>();
-        try (PreparedStatement getUsageWithinPeriod = ds.getConnection().prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?")) {
-            getUsageWithinPeriod.setLong(1, biggest);
-            getUsageWithinPeriod.setLong(2, smallest);
-            ResultSet rs = getUsageWithinPeriod.executeQuery();
-            while (rs.next()) {
-                commandUsages.put(rs.getInt("commandId"), (commandUsages.containsKey(rs.getInt("commandId")) ? commandUsages.get(rs.getInt("commandId")) : 0) + rs.getLong("usageCount"));
+        try (Connection con = ds.getConnection()) {
+            try (PreparedStatement getUsageWithinPeriod = con.prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?")) {
+                getUsageWithinPeriod.setLong(1, biggest);
+                getUsageWithinPeriod.setLong(2, smallest);
+                try (ResultSet rs = getUsageWithinPeriod.executeQuery()) {
+                    while (rs.next()) {
+                        commandUsages.put(rs.getInt("commandId"), (commandUsages.containsKey(rs.getInt("commandId")) ? commandUsages.get(rs.getInt("commandId")) : 0) + rs.getLong("usageCount"));
+                    }
+                }
             }
-            rs.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1459,13 +1467,15 @@ public class MySQL {
         long smallest = period[0] < period[1] ? period[0] : period[1];
         long biggest = period[0] < period[1] ? period[1] : period[0];
         long usage = 0;
-        try (PreparedStatement getUsageWithinPeriod = ds.getConnection().prepareStatement("SELECT * FROM command_usage WHERE commandId = ? AND time < ? AND time > ?")) {
-            getUsageWithinPeriod.setInt(1, commandId);
-            getUsageWithinPeriod.setLong(2, biggest);
-            getUsageWithinPeriod.setLong(3, smallest);
-            try (ResultSet rs = getUsageWithinPeriod.executeQuery()) {
-                while (rs.next()) {
-                    usage += rs.getLong("usageCount");
+        try (Connection con = ds.getConnection()) {
+            try (PreparedStatement getUsageWithinPeriod = con.prepareStatement("SELECT * FROM command_usage WHERE commandId = ? AND time < ? AND time > ?")) {
+                getUsageWithinPeriod.setInt(1, commandId);
+                getUsageWithinPeriod.setLong(2, biggest);
+                getUsageWithinPeriod.setLong(3, smallest);
+                try (ResultSet rs = getUsageWithinPeriod.executeQuery()) {
+                    while (rs.next()) {
+                        usage += rs.getLong("usageCount");
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -1479,17 +1489,19 @@ public class MySQL {
         long biggest = period[0] < period[1] ? period[1] : period[0];
         Map<Integer, Long> sortedCommandUsages = new HashMap<>();
         Map<Integer, Long> commandUsages = new HashMap<>();
-        try (PreparedStatement getUsageWithinPeriod = ds.getConnection().prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?")) {
-            getUsageWithinPeriod.setLong(1, biggest);
-            getUsageWithinPeriod.setLong(2, smallest);
-            try (ResultSet rs = getUsageWithinPeriod.executeQuery()) {
-                while (rs.next()) {
-                    if (commandIds.contains(rs.getInt("commandId")))
-                        commandUsages.put(rs.getInt("commandId"),
-                                (commandUsages.containsKey(rs.getInt("commandId")) ?
-                                        commandUsages.get(rs.getInt("commandId")) :
-                                        0
-                                ) + rs.getLong("usageCount"));
+        try (Connection con = ds.getConnection()) {
+            try (PreparedStatement getUsageWithinPeriod = con.prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?")) {
+                getUsageWithinPeriod.setLong(1, biggest);
+                getUsageWithinPeriod.setLong(2, smallest);
+                try (ResultSet rs = getUsageWithinPeriod.executeQuery()) {
+                    while (rs.next()) {
+                        if (commandIds.contains(rs.getInt("commandId")))
+                            commandUsages.put(rs.getInt("commandId"),
+                                    (commandUsages.containsKey(rs.getInt("commandId")) ?
+                                            commandUsages.get(rs.getInt("commandId")) :
+                                            0
+                                    ) + rs.getLong("usageCount"));
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -1564,16 +1576,16 @@ public class MySQL {
     }
 
     public String getMySQLVersion() {
-        try {
-            return ds.getConnection().getMetaData().getDatabaseProductVersion().replaceAll("(\\d+\\.\\d+\\.\\d+)-.*", "$1");
+        try (Connection con = ds.getConnection()){
+            return con.getMetaData().getDatabaseProductVersion().replaceAll("(\\d+\\.\\d+\\.\\d+)-.*", "$1");
         } catch (SQLException e) {
             return null;
         }
     }
 
     public String getConnectorVersion() {
-        try {
-            return ds.getConnection().getMetaData().getDriverVersion().replaceAll("mysql-connector-java-(\\d+\\.\\d+\\.\\d+).*", "$1");
+        try (Connection con = ds.getConnection()){
+            return con.getMetaData().getDriverVersion().replaceAll("mysql-connector-java-(\\d+\\.\\d+\\.\\d+).*", "$1");
         } catch (SQLException e) {
             return null;
         }
@@ -1916,7 +1928,7 @@ public class MySQL {
                 message.getIdLong(),
                 message.getContentRaw(),
                 message.getTextChannel().getIdLong(),
-                message.getCreationTime().toEpochSecond()*1000,
+                message.getCreationTime().toEpochSecond() * 1000,
                 message.getContentRaw());
 
     }
