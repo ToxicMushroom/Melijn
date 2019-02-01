@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -144,15 +145,14 @@ public class MySQL {
     }
 
     public int executeUpdate(final String query, final Object... objects) {
-        try (final Connection connection = ds.getConnection()) {
-            try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                int current = 1;
-                for (final Object object : objects) {
-                    preparedStatement.setObject(current, object);
-                    current++;
-                }
-                return preparedStatement.executeUpdate();
+        try (final Connection connection = ds.getConnection();
+             final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            int current = 1;
+            for (final Object object : objects) {
+                preparedStatement.setObject(current, object);
+                current++;
             }
+            return preparedStatement.executeUpdate();
         } catch (final SQLException e) {
             logger.error("Something went wrong while executing the query: " + query);
             e.printStackTrace();
@@ -161,16 +161,15 @@ public class MySQL {
     }
 
     private void executeQuery(final String sql, final Consumer<ResultSet> consumer, final Object... objects) {
-        try (final Connection connection = ds.getConnection()) {
-            try (final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                int current = 1;
-                for (final Object object : objects) {
-                    preparedStatement.setObject(current, object);
-                    current++;
-                }
-                try (final ResultSet resultSet = preparedStatement.executeQuery()) {
-                    consumer.accept(resultSet);
-                }
+        try (final Connection connection = ds.getConnection();
+             final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            int current = 1;
+            for (final Object object : objects) {
+                preparedStatement.setObject(current, object);
+                current++;
+            }
+            try (final ResultSet resultSet = preparedStatement.executeQuery()) {
+                consumer.accept(resultSet);
             }
         } catch (final SQLException e) {
             logger.error("Something went wrong while executing the query: " + sql);
@@ -179,17 +178,12 @@ public class MySQL {
     }
 
     public long getMessageAuthorId(long messageId) {
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement getAuthor = con.prepareStatement("SELECT * FROM history_messages WHERE messageId= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement getAuthor = con.prepareStatement("SELECT * FROM history_messages WHERE messageId= ?")) {
             getAuthor.setLong(1, messageId);
-            ResultSet rs = getAuthor.executeQuery();
-            long temp = -1;
-            if (rs.next()) {
-                temp = rs.getLong("authorId");
+            try (ResultSet rs = getAuthor.executeQuery()) {
+                if (rs.next()) return rs.getLong("authorId");
             }
-            rs.close();
-            getAuthor.close();
-            return temp;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -198,19 +192,18 @@ public class MySQL {
 
     public JSONObject getMessageObject(long messageId) {
         JSONObject jsonObject = new JSONObject();
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement preparedStatement = con.prepareStatement("SELECT * FROM history_messages WHERE messageId=?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement preparedStatement = con.prepareStatement("SELECT * FROM history_messages WHERE messageId=? LIMIT 1")) {
             preparedStatement.setLong(1, messageId);
-            ResultSet rs = preparedStatement.executeQuery();
-            if (rs.next()) {
-                jsonObject.put("authorId", rs.getLong("authorId"));
-                jsonObject.put("sentTime", rs.getLong("sentTime"));
-                jsonObject.put("content", rs.getString("content"));
-                jsonObject.put("guildId", rs.getLong("guildId"));
-                jsonObject.put("textChannelId", rs.getLong("textChannelId"));
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                if (rs.next()) {
+                    jsonObject.put("authorId", rs.getLong("authorId"));
+                    jsonObject.put("sentTime", rs.getLong("sentTime"));
+                    jsonObject.put("content", rs.getString("content"));
+                    jsonObject.put("guildId", rs.getLong("guildId"));
+                    jsonObject.put("textChannelId", rs.getLong("textChannelId"));
+                }
             }
-            rs.close();
-            preparedStatement.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -218,8 +211,8 @@ public class MySQL {
     }
 
     public void createMessage(long messageId, String content, long authorId, long guildId, long textChannelId) {
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement createMessage = con.prepareStatement("INSERT INTO history_messages(guildId, authorId, messageId, content, textChannelId, sentTime) VALUES (?, ?, ?, ?, ?, ?)");
+        try (Connection con = ds.getConnection();
+             PreparedStatement createMessage = con.prepareStatement("INSERT INTO history_messages(guildId, authorId, messageId, content, textChannelId, sentTime) VALUES (?, ?, ?, ?, ?, ?)")) {
             createMessage.setLong(1, guildId);
             createMessage.setLong(2, authorId);
             createMessage.setLong(3, messageId);
@@ -227,7 +220,6 @@ public class MySQL {
             createMessage.setLong(5, textChannelId);
             createMessage.setLong(6, System.currentTimeMillis());
             createMessage.executeUpdate();
-            createMessage.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -235,8 +227,8 @@ public class MySQL {
 
     //Permissions stuff---------------------------------------------------------
     public void addRolePermission(long guildId, long roleId, String permission) {
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement adding = con.prepareStatement("INSERT INTO perms_roles(guildId, roleId, permission) VALUES (?, ?, ?)");
+        try (Connection con = ds.getConnection();
+             PreparedStatement adding = con.prepareStatement("INSERT INTO perms_roles(guildId, roleId, permission) VALUES (?, ?, ?)")) {
             setPermissionParams(guildId, roleId, permission, adding);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -244,8 +236,8 @@ public class MySQL {
     }
 
     public void addUserPermission(long guildId, long userId, String permission) {
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement adding = con.prepareStatement("INSERT INTO perms_users(guildId, userId, permission) VALUES (?, ?, ?)");
+        try (Connection con = ds.getConnection();
+             PreparedStatement adding = con.prepareStatement("INSERT INTO perms_users(guildId, userId, permission) VALUES (?, ?, ?)")) {
             setPermissionParams(guildId, userId, permission, adding);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -253,8 +245,8 @@ public class MySQL {
     }
 
     public void removeRolePermission(long guildId, long roleId, String permission) {
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement removing = con.prepareStatement("DELETE FROM perms_roles WHERE guildId= ? AND roleId= ? AND permission= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement removing = con.prepareStatement("DELETE FROM perms_roles WHERE guildId= ? AND roleId= ? AND permission= ?")) {
             setPermissionParams(guildId, roleId, permission, removing);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -270,8 +262,8 @@ public class MySQL {
     }
 
     public void removeUserPermission(long guildId, long userId, String permission) {
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement removing = con.prepareStatement("DELETE FROM perms_users WHERE guildId= ? AND userId= ? AND permission= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement removing = con.prepareStatement("DELETE FROM perms_users WHERE guildId= ? AND userId= ? AND permission= ?")) {
             setPermissionParams(guildId, userId, permission, removing);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -283,34 +275,30 @@ public class MySQL {
             List<Long> roles = guild.getMemberById(userId).getRoles().stream().map(ISnowflake::getIdLong).collect(Collectors.toList());
             roles.add(guild.getIdLong()); //Everyone role
             StringBuilder sb = new StringBuilder("" +
-                    "SELECT * FROM perms_users WHERE guildId= ? AND userId= ? AND (permission= ? OR permission= ?) UNION " +
+                    "SELECT * FROM perms_users WHERE guildId= ? AND userId= ? AND (permission= ? OR permission= ?) LIMIT 1 UNION " +
                     "SELECT * FROM perms_roles WHERE guildId= ? AND roleId IN ("
             );
             for (int i = 0; i < roles.size(); i++) {
                 sb.append("?").append(i == roles.size() - 1 ? "" : ",");
             }
             sb.append(") AND (permission= ? OR permission= ?) LIMIT 1");
-            PreparedStatement getting = con.prepareStatement(sb.toString());
-            getting.setLong(1, guild.getIdLong());
-            getting.setLong(2, userId);
-            getting.setString(3, permission);
-            getting.setString(4, "*");
-            getting.setLong(5, guild.getIdLong());
-            int index = 6;
-            for (long l : roles) {
-                getting.setLong(index++, l);
+            try (PreparedStatement getting = con.prepareStatement(sb.toString())) {
+                getting.setLong(1, guild.getIdLong());
+                getting.setLong(2, userId);
+                getting.setString(3, permission);
+                getting.setString(4, "*");
+                getting.setLong(5, guild.getIdLong());
+                int index = 6;
+                for (long l : roles) {
+                    getting.setLong(index++, l);
+                }
+                getting.setString(index++, permission);
+                getting.setString(index, "*");
+                try (ResultSet rs = getting.executeQuery()) {
+                    return rs.next();
+                }
             }
-            getting.setString(index++, permission);
-            getting.setString(index, "*");
-            ResultSet rs = getting.executeQuery();
-            boolean temp = false;
-            if (rs.next()) {
-                temp = true;
-            }
-            getting.close();
-            rs.close();
-            con.close();
-            return temp;
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -319,24 +307,22 @@ public class MySQL {
 
 
     public void clearRolePermissions(long guildId, long roleId) {
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement clearing = con.prepareStatement("DELETE FROM perms_roles WHERE guildId= ? AND roleId= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement clearing = con.prepareStatement("DELETE FROM perms_roles WHERE guildId= ? AND roleId= ?")) {
             clearing.setLong(1, guildId);
             clearing.setLong(2, roleId);
             clearing.executeUpdate();
-            clearing.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public void clearUserPermissions(long guildId, long userId) {
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement clearing = con.prepareStatement("DELETE FROM perms_users WHERE guildId= ? AND userId= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement clearing = con.prepareStatement("DELETE FROM perms_users WHERE guildId= ? AND userId= ?")) {
             clearing.setLong(1, guildId);
             clearing.setLong(2, userId);
             clearing.executeUpdate();
-            clearing.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -344,8 +330,8 @@ public class MySQL {
 
     public Set<String> getRolePermissions(long guildId, long roleId) {
         Set<String> toReturn = new HashSet<>();
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement getPerms = con.prepareStatement("SELECT * FROM perms_roles WHERE guildId= ? AND roleId= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement getPerms = con.prepareStatement("SELECT * FROM perms_roles WHERE guildId= ? AND roleId= ?")) {
             addResultsToSet(guildId, roleId, toReturn, getPerms);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -355,8 +341,8 @@ public class MySQL {
 
     public Set<String> getUserPermissions(long guildId, long userId) {
         Set<String> toReturn = new HashSet<>();
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement getPerms = con.prepareStatement("SELECT * FROM perms_users WHERE guildId= ? AND userId= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement getPerms = con.prepareStatement("SELECT * FROM perms_users WHERE guildId= ? AND userId= ?")) {
             addResultsToSet(guildId, userId, toReturn, getPerms);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -367,26 +353,26 @@ public class MySQL {
     private void addResultsToSet(long guildId, long userId, Set<String> list, PreparedStatement statement) throws SQLException {
         statement.setLong(1, guildId);
         statement.setLong(2, userId);
-        ResultSet rs = statement.executeQuery();
-        while (rs.next()) {
-            list.add(rs.getString("permission"));
+        try (ResultSet rs = statement.executeQuery()) {
+            while (rs.next()) {
+                list.add(rs.getString("permission"));
+            }
+            statement.close();
         }
-        statement.close();
-        rs.close();
     }
 
     public boolean noOneHasPermission(long guildId, String permission) {
-        try (Connection con = ds.getConnection()) {
-            try (PreparedStatement statement = con.prepareStatement("" +
-                    "SELECT * FROM perms_roles WHERE guildId= ? AND permission= ? UNION " +
-                    "SELECT * FROM perms_users WHERE guildId= ? AND permission= ? LIMIT 1")) {
-                statement.setLong(1, guildId);
-                statement.setString(2, permission);
-                statement.setLong(3, guildId);
-                statement.setString(4, permission);
-                try (ResultSet rs = statement.executeQuery()) {
-                    return !rs.next();
-                }
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("" +
+                     "SELECT * FROM perms_roles WHERE guildId= ? AND permission= ? UNION " +
+                     "SELECT * FROM perms_users WHERE guildId= ? AND permission= ? LIMIT 1")
+        ) {
+            statement.setLong(1, guildId);
+            statement.setString(2, permission);
+            statement.setLong(3, guildId);
+            statement.setString(4, permission);
+            try (ResultSet rs = statement.executeQuery()) {
+                return !rs.next();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -442,15 +428,14 @@ public class MySQL {
     }
 
     public String getPrefix(long guildId) {
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement getPrefix = con.prepareStatement("SELECT * FROM prefixes WHERE guildId= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement getPrefix = con.prepareStatement("SELECT * FROM prefixes WHERE guildId= ?")) {
             getPrefix.setLong(1, guildId);
-            ResultSet rs = getPrefix.executeQuery();
-            if (rs.next()) {
-                return rs.getString("prefix");
+            try (ResultSet rs = getPrefix.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("prefix");
+                }
             }
-            rs.close();
-            getPrefix.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -726,27 +711,26 @@ public class MySQL {
 
     //Punishment getters
     public void getUserBans(long guildId, long userId, JDA jda, Consumer<String[]> bans) {
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement getBans = con.prepareStatement("SELECT * FROM history_bans WHERE victimId= ? AND guildId= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement getBans = con.prepareStatement("SELECT * FROM history_bans WHERE victimId= ? AND guildId= ?")) {
             getBans.setLong(1, userId);
             getBans.setLong(2, guildId);
-            ResultSet rs = getBans.executeQuery();
-
             Set<JSONObject> set = Sets.newHashSet();
-            while (rs.next()) {
-                set.add(new JSONObject()
-                        .put("authorId", rs.getLong("authorId"))
-                        .put("reason", rs.getString("reason"))
-                        .put("unbanReason", rs.getString("unbanReason") == null ? "" : rs.getString("unbanReason"))
-                        .put("startTime", rs.getLong("startTime"))
-                        .put("endTime", rs.getString("endTime") == null ? "" : rs.getString("endTime"))
-                        .put("active", rs.getBoolean("active"))
-                );
+            try (ResultSet rs = getBans.executeQuery()) {
+                while (rs.next()) {
+                    set.add(new JSONObject()
+                            .put("authorId", rs.getLong("authorId"))
+                            .put("reason", rs.getString("reason"))
+                            .put("unbanReason", rs.getString("unbanReason") == null ? "" : rs.getString("unbanReason"))
+                            .put("startTime", rs.getLong("startTime"))
+                            .put("endTime", rs.getString("endTime") == null ? "" : rs.getString("endTime"))
+                            .put("active", rs.getBoolean("active"))
+                    );
+                }
             }
-            rs.close();
-            getBans.close();
             if (set.size() == 0) {
                 bans.accept(new String[]{"No bans"});
+                return;
             }
             List<String> toRet = new ArrayList<>();
             AtomicInteger progress = new AtomicInteger();
@@ -793,25 +777,24 @@ public class MySQL {
     }
 
     public void getUserMutes(long guildId, long userId, JDA jda, Consumer<String[]> mutes) {
-        try (Connection connection = ds.getConnection()) {
-            PreparedStatement getMutes = connection.prepareStatement("SELECT * FROM history_mutes WHERE victimId= ? AND guildId= ?");
+        try (Connection connection = ds.getConnection();
+             PreparedStatement getMutes = connection.prepareStatement("SELECT * FROM history_mutes WHERE victimId= ? AND guildId= ?")) {
             getMutes.setLong(1, userId);
             getMutes.setLong(2, guildId);
-            ResultSet rs = getMutes.executeQuery();
-
             Set<JSONObject> set = Sets.newHashSet();
-            while (rs.next()) {
-                set.add(new JSONObject()
-                        .put("authorId", rs.getLong("authorId"))
-                        .put("reason", rs.getString("reason"))
-                        .put("unmuteReason", rs.getString("unmuteReason") == null ? "" : rs.getString("unmuteReason"))
-                        .put("startTime", rs.getLong("startTime"))
-                        .put("endTime", rs.getString("endTime") == null ? "" : rs.getString("endTime"))
-                        .put("active", rs.getBoolean("active"))
-                );
+
+            try (ResultSet rs = getMutes.executeQuery()) {
+                while (rs.next()) {
+                    set.add(new JSONObject()
+                            .put("authorId", rs.getLong("authorId"))
+                            .put("reason", rs.getString("reason"))
+                            .put("unmuteReason", rs.getString("unmuteReason") == null ? "" : rs.getString("unmuteReason"))
+                            .put("startTime", rs.getLong("startTime"))
+                            .put("endTime", rs.getString("endTime") == null ? "" : rs.getString("endTime"))
+                            .put("active", rs.getBoolean("active"))
+                    );
+                }
             }
-            rs.close();
-            getMutes.close();
             if (set.size() == 0) {
                 mutes.accept(new String[]{"No mutes"});
             }
@@ -860,36 +843,32 @@ public class MySQL {
     }
 
     public boolean isUserMuted(long guildId, long userId) {
-        var ref = new Object() {
-            boolean ret = false;
-        };
+        AtomicBoolean atomicBoolean = new AtomicBoolean(false);
         executeQuery("SELECT * FROM active_mutes WHERE victimId= ? AND guildId= ?", rs -> {
             try {
-                ref.ret = rs.next();
+                atomicBoolean.set(rs.next());
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }, userId, guildId);
-        return ref.ret;
+        return atomicBoolean.get();
     }
 
     public void getUserWarns(long guildId, long userId, JDA jda, Consumer<String[]> warns) {
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement getWarns = con.prepareStatement("SELECT * FROM warns WHERE victimId= ? AND guildId= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement getWarns = con.prepareStatement("SELECT * FROM warns WHERE victimId= ? AND guildId= ?")) {
             getWarns.setLong(1, userId);
             getWarns.setLong(2, guildId);
-            ResultSet rs = getWarns.executeQuery();
-
             Set<JSONObject> set = Sets.newHashSet();
-            while (rs.next()) {
-                set.add(new JSONObject()
-                        .put("authorId", rs.getLong("authorId"))
-                        .put("reason", rs.getString("reason"))
-                        .put("moment", rs.getLong("moment"))
-                );
+            try (ResultSet rs = getWarns.executeQuery()) {
+                while (rs.next()) {
+                    set.add(new JSONObject()
+                            .put("authorId", rs.getLong("authorId"))
+                            .put("reason", rs.getString("reason"))
+                            .put("moment", rs.getLong("moment"))
+                    );
+                }
             }
-            rs.close();
-            getWarns.close();
             if (set.size() == 0) {
                 warns.accept(new String[]{"No warns"});
             }
@@ -921,22 +900,22 @@ public class MySQL {
 
 
     public void getUserKicks(long guildId, long userId, JDA jda, Consumer<String[]> kicks) {
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement getKicks = con.prepareStatement("SELECT * FROM kicks WHERE victimId= ? AND guildId= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement getKicks = con.prepareStatement("SELECT * FROM kicks WHERE victimId= ? AND guildId= ?")) {
             getKicks.setLong(1, userId);
             getKicks.setLong(2, guildId);
-            ResultSet rs = getKicks.executeQuery();
-
             Set<JSONObject> set = Sets.newHashSet();
-            while (rs.next()) {
-                set.add(new JSONObject()
-                        .put("authorId", rs.getLong("authorId"))
-                        .put("reason", rs.getString("reason"))
-                        .put("moment", rs.getLong("moment"))
-                );
+
+            try (ResultSet rs = getKicks.executeQuery()) {
+                while (rs.next()) {
+                    set.add(new JSONObject()
+                            .put("authorId", rs.getLong("authorId"))
+                            .put("reason", rs.getString("reason"))
+                            .put("moment", rs.getLong("moment"))
+                    );
+                }
             }
-            rs.close();
-            getKicks.close();
+
             if (set.size() == 0) {
                 kicks.accept(new String[]{"No kicks"});
             }
@@ -977,15 +956,14 @@ public class MySQL {
     }
 
     public long getChannelId(long guildId, ChannelType type) {
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement getChannel = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_channels WHERE guildId= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement getChannel = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_channels WHERE guildId= ? LIMIT 1")) {
             getChannel.setLong(1, guildId);
-            ResultSet rs = getChannel.executeQuery();
-            long s = -1;
-            while (rs.next()) s = rs.getLong("channelId");
-            rs.close();
-            getChannel.close();
-            return s;
+            try (ResultSet rs = getChannel.executeQuery()) {
+                if (rs.next()) return rs.getLong("channelId");
+                else return -1;
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
             return -1;
@@ -1009,14 +987,12 @@ public class MySQL {
     }
 
     public boolean getStreamerMode(long guildId) {
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement getLogChannel = con.prepareStatement("SELECT * FROM streamer_modes WHERE guildId= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement getLogChannel = con.prepareStatement("SELECT * FROM streamer_modes WHERE guildId= ? LIMIT 1")) {
             getLogChannel.setLong(1, guildId);
-            ResultSet rs = getLogChannel.executeQuery();
-            boolean s = rs.next();
-            rs.close();
-            getLogChannel.close();
-            return s;
+            try (ResultSet rs = getLogChannel.executeQuery()) {
+                return rs.next();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -1030,15 +1006,12 @@ public class MySQL {
     }
 
     public String getStreamUrl(long guildId) {
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement getStreamUrl = con.prepareStatement("SELECT * FROM stream_urls WHERE guildId= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement getStreamUrl = con.prepareStatement("SELECT * FROM stream_urls WHERE guildId= ? LIMIT 1")) {
             getStreamUrl.setLong(1, guildId);
-            ResultSet rs = getStreamUrl.executeQuery();
-            String s = "";
-            while (rs.next()) s = rs.getString("url");
-            rs.close();
-            getStreamUrl.close();
-            return s;
+            try (ResultSet rs = getStreamUrl.executeQuery()) {
+                return rs.next() ? rs.getString("url") : "";
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
@@ -1058,15 +1031,12 @@ public class MySQL {
 
     //Mute role stuff--------------------------------------------------
     public long getRoleId(long guildId, RoleType type) {
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement getRoleId = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_roles WHERE guildId= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement getRoleId = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_roles WHERE guildId= ? LIMIT 1")) {
             getRoleId.setLong(1, guildId);
-            ResultSet rs = getRoleId.executeQuery();
-            long roleId = -1;
-            if (rs.next()) roleId = rs.getLong("roleId");
-            rs.close();
-            getRoleId.close();
-            return roleId;
+            try (ResultSet rs = getRoleId.executeQuery()) {
+                return rs.next() ? rs.getLong("roleId") : -1L;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             return -1;
@@ -1097,16 +1067,15 @@ public class MySQL {
 
     public List<String> getFilters(long guildId, String mode) {
         List<String> filters = new ArrayList<>();
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement addFilter = con.prepareStatement("SELECT * FROM filters WHERE guildId= ? AND mode= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement addFilter = con.prepareStatement("SELECT * FROM filters WHERE guildId= ? AND mode= ?")) {
             addFilter.setLong(1, guildId);
             addFilter.setString(2, mode);
-            ResultSet rs = addFilter.executeQuery();
-            while (rs.next()) {
-                filters.add(rs.getString("content"));
+            try (ResultSet rs = addFilter.executeQuery()) {
+                while (rs.next()) {
+                    filters.add(rs.getString("content"));
+                }
             }
-            rs.close();
-            addFilter.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1115,15 +1084,12 @@ public class MySQL {
 
     //Message stuff ---------------------------------------------------------
     public String getMessage(long guildId, MessageType type) {
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement getLogChannel = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_messages WHERE guildId= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement getLogChannel = con.prepareStatement("SELECT * FROM " + type.toString().toLowerCase() + "_messages WHERE guildId= ? LIMIT 1")) {
             getLogChannel.setLong(1, guildId);
-            ResultSet rs = getLogChannel.executeQuery();
-            String s = "";
-            while (rs.next()) s = rs.getString("content");
-            rs.close();
-            getLogChannel.close();
-            return s;
+            try (ResultSet rs = getLogChannel.executeQuery()) {
+                return rs.next() ? rs.getString("content") : "";
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             return "";
@@ -1143,30 +1109,27 @@ public class MySQL {
     public JSONObject getVotesObject(long userId) {
         int bonus = userId == 231459866630291459L || userId == 258939128870207488L ? 1 : 0;
         JSONObject toReturn = new JSONObject().put("streak", bonus);
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM votes WHERE userId= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("SELECT * FROM votes WHERE userId= ? LIMIT 1")) {
             statement.setLong(1, userId);
-            ResultSet rs = statement.executeQuery();
-            while (rs.next()) {
-                toReturn.put("votes", rs.getLong("votes"));
-                toReturn.put("streak", rs.getLong("streak") + bonus);
-                toReturn.put("lastTime", rs.getLong("lastTime"));
+            try (ResultSet rs = statement.executeQuery()) {
+                return rs.next() ? toReturn.put("votes", rs.getLong("votes"))
+                        .put("streak", rs.getLong("streak") + bonus)
+                        .put("lastTime", rs.getLong("lastTime")) :
+                        toReturn;
             }
-            rs.close();
-            statement.close();
         } catch (SQLException e) {
             e.printStackTrace();
-            return null;
+            return toReturn;
         }
-        return toReturn;
     }
 
     public Map<Long, Set<Long>> getNotificationsMap(NotificationType nextvote) {
         //userId -> mensen waarvan notificatie moet krijgen -> aan of uit
         Map<Long, Set<Long>> mapje = new HashMap<>();
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM " + nextvote.toString().toLowerCase() + "_notifications");
-            ResultSet rs = statement.executeQuery();
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("SELECT * FROM " + nextvote.toString().toLowerCase() + "_notifications");
+             ResultSet rs = statement.executeQuery()) {
             Set<Long> row = new HashSet<>();
             while (rs.next()) {
                 row.add(rs.getLong("userId"));
@@ -1181,8 +1144,6 @@ public class MySQL {
                 }
                 mapje.put(s, lijst);
             }
-            rs.close();
-            statement.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1201,18 +1162,17 @@ public class MySQL {
 
     public Set<Long> getVoteList() {
         Set<Long> list = new HashSet<>();
-        try (Connection con = ds.getConnection()) {
+        try (Connection con = ds.getConnection();
+             PreparedStatement getVoteMap = con.prepareStatement("SELECT * FROM votes WHERE lastTime BETWEEN ? AND ?")) {
             long yesterdayAndMinute = System.currentTimeMillis() - 43_260_000L;
             long yesterday = System.currentTimeMillis() - 43_200_000L;
-            PreparedStatement getVoteMap = con.prepareStatement("SELECT * FROM votes WHERE lastTime BETWEEN ? AND ?");
             getVoteMap.setLong(1, yesterdayAndMinute);
             getVoteMap.setLong(2, yesterday);
-            ResultSet rs = getVoteMap.executeQuery();
-            while (rs.next()) {
-                list.add(rs.getLong("userId"));
+            try (ResultSet rs = getVoteMap.executeQuery()) {
+                while (rs.next()) {
+                    list.add(rs.getLong("userId"));
+                }
             }
-            rs.close();
-            getVoteMap.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1253,9 +1213,10 @@ public class MySQL {
 
     public Map<Long, List<Integer>> getDisabledCommandsMap() {
         Map<Long, List<Integer>> toReturn = new HashMap<>();
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM disabled_commands");
-            ResultSet rs = statement.executeQuery();
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("SELECT * FROM disabled_commands");
+             ResultSet rs = statement.executeQuery()) {
+
             while (rs.next()) {
                 if (toReturn.containsKey(rs.getLong("guildId"))) {
                     List<Integer> buffertje = toReturn.get(rs.getLong("guildId"));
@@ -1267,8 +1228,6 @@ public class MySQL {
                     toReturn.put(rs.getLong("guildId"), temp);
                 }
             }
-            rs.close();
-            statement.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1280,15 +1239,14 @@ public class MySQL {
         if (melijn.getVariables().disabledGuildCommands.containsKey(guildId))
             toRemove.addAll(melijn.getVariables().disabledGuildCommands.get(guildId));
         toRemove.removeAll(disabledBuffer);
-        try (Connection con = ds.getConnection()) {
-            try (PreparedStatement statement = con.prepareStatement("DELETE FROM disabled_commands WHERE guildId= ? AND command= ?")) {
-                for (int i : toRemove) {
-                    statement.setLong(1, guildId);
-                    statement.setInt(2, i);
-                    statement.addBatch();
-                }
-                statement.executeBatch();
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("DELETE FROM disabled_commands WHERE guildId= ? AND command= ?")) {
+            for (int i : toRemove) {
+                statement.setLong(1, guildId);
+                statement.setInt(2, i);
+                statement.addBatch();
             }
+            statement.executeBatch();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1314,15 +1272,14 @@ public class MySQL {
 
     public Map<Long, Long> getUnverifiedMembers(long guildId) {
         Map<Long, Long> members = new HashMap<>();
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement getUnverifiedMembers = con.prepareStatement("SELECT * FROM unverified_users WHERE guildId= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement getUnverifiedMembers = con.prepareStatement("SELECT * FROM unverified_users WHERE guildId= ?")) {
             getUnverifiedMembers.setLong(1, guildId);
-            ResultSet rs = getUnverifiedMembers.executeQuery();
-            while (rs.next()) {
-                members.put(rs.getLong("userId"), rs.getLong("moment"));
+            try (ResultSet rs = getUnverifiedMembers.executeQuery()) {
+                while (rs.next()) {
+                    members.put(rs.getLong("userId"), rs.getLong("moment"));
+                }
             }
-            rs.close();
-            getUnverifiedMembers.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1330,35 +1287,29 @@ public class MySQL {
     }
 
     public int getGuildVerificationThreshold(long guildId) {
-        int threshold = 0;
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement getVerificationThreshold = con.prepareStatement("SELECT * FROM verification_thresholds WHERE guildId= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement getVerificationThreshold = con.prepareStatement("SELECT * FROM verification_thresholds WHERE guildId= ? LIMIT 1")) {
             getVerificationThreshold.setLong(1, guildId);
-            ResultSet rs = getVerificationThreshold.executeQuery();
-            if (rs.next())
-                threshold = rs.getInt("threshold");
-            rs.close();
-            getVerificationThreshold.close();
+            try (ResultSet rs = getVerificationThreshold.executeQuery()) {
+                return rs.next() ? rs.getInt("threshold") : 0;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return threshold;
+        return 0;
     }
 
     public String getGuildVerificationCode(long guildId) {
-        String code = "";
-        try (Connection con = ds.getConnection()) {
-            PreparedStatement getVerificationThreshold = con.prepareStatement("SELECT * FROM verification_codes WHERE guildId= ?");
+        try (Connection con = ds.getConnection();
+             PreparedStatement getVerificationThreshold = con.prepareStatement("SELECT * FROM verification_codes WHERE guildId= ?")) {
             getVerificationThreshold.setLong(1, guildId);
-            ResultSet rs = getVerificationThreshold.executeQuery();
-            if (rs.next())
-                code = rs.getString("code");
-            rs.close();
-            getVerificationThreshold.close();
+            try (ResultSet rs = getVerificationThreshold.executeQuery()) {
+                if (rs.next()) return rs.getString("code");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return code;
+        return "";
     }
 
     public List<Long> getNotifications(long userId, NotificationType type) {
@@ -1379,26 +1330,24 @@ public class MySQL {
     }
 
     public void doUnbans(JDA jda) {
-        try (Connection con = ds.getConnection()) {
-            try (PreparedStatement statement = con.prepareStatement("SELECT * FROM active_bans WHERE endTime < ?")) {
-                statement.setLong(1, System.currentTimeMillis());
-                try (ResultSet rs = statement.executeQuery()) {
-                    List<JSONObject> blubjes = new ArrayList<>();
-                    while (rs.next()) {
-                        blubjes.add(new JSONObject()
-                                .put("victimId", rs.getLong("victimId"))
-                                .put("guildId", rs.getLong("guildId"))
-                        );
-                    }
-                    rs.close();
-                    for (JSONObject blubObj : blubjes) {
-                        jda.asBot().getShardManager().retrieveUserById(blubObj.getLong("victimId")).queue(user -> {
-                            Guild guild = jda.asBot().getShardManager().getGuildById(blubObj.getLong("guildId"));
-                            if (guild != null && user != null)
-                                unban(user, guild, jda.getSelfUser(), "Ban expired");
-                        }, failed -> {
-                        });
-                    }
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("SELECT * FROM active_bans WHERE endTime < ?")) {
+            statement.setLong(1, System.currentTimeMillis());
+            try (ResultSet rs = statement.executeQuery()) {
+                List<JSONObject> blubjes = new ArrayList<>();
+                while (rs.next()) {
+                    blubjes.add(new JSONObject()
+                            .put("victimId", rs.getLong("victimId"))
+                            .put("guildId", rs.getLong("guildId"))
+                    );
+                }
+                for (JSONObject blubObj : blubjes) {
+                    jda.asBot().getShardManager().retrieveUserById(blubObj.getLong("victimId")).queue(user -> {
+                        Guild guild = jda.asBot().getShardManager().getGuildById(blubObj.getLong("guildId"));
+                        if (guild != null && user != null)
+                            unban(user, guild, jda.getSelfUser(), "Ban expired");
+                    }, failed -> {
+                    });
                 }
             }
         } catch (SQLException e) {
@@ -1407,26 +1356,25 @@ public class MySQL {
     }
 
     public void doUnmutes(JDA jda) {
-        try (Connection con = ds.getConnection()) {
-            try (PreparedStatement statement = con.prepareStatement("SELECT * FROM active_mutes WHERE endTime < ?")) {
-                statement.setLong(1, System.currentTimeMillis());
-                try (ResultSet rs = statement.executeQuery()) {
-                    List<JSONObject> blubjes = new ArrayList<>();
-                    while (rs.next()) {
-                        blubjes.add(new JSONObject()
-                                .put("victimId", rs.getLong("victimId"))
-                                .put("guildId", rs.getLong("guildId"))
-                        );
-                    }
-                    rs.close();
-                    for (JSONObject blubObj : blubjes) {
-                        jda.asBot().getShardManager().retrieveUserById(blubObj.getLong("victimId")).queue(user -> {
-                            Guild guild = jda.asBot().getShardManager().getGuildById(blubObj.getLong("guildId"));
-                            if (guild != null)
-                                unmute(guild, user, jda.getSelfUser(), "Mute expired");
-                        }, failed -> {
-                        });
-                    }
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("SELECT * FROM active_mutes WHERE endTime < ?")) {
+            statement.setLong(1, System.currentTimeMillis());
+            try (ResultSet rs = statement.executeQuery()) {
+                List<JSONObject> blubjes = new ArrayList<>();
+                while (rs.next()) {
+                    blubjes.add(new JSONObject()
+                            .put("victimId", rs.getLong("victimId"))
+                            .put("guildId", rs.getLong("guildId"))
+                    );
+                }
+                rs.close();
+                for (JSONObject blubObj : blubjes) {
+                    jda.asBot().getShardManager().retrieveUserById(blubObj.getLong("victimId")).queue(user -> {
+                        Guild guild = jda.asBot().getShardManager().getGuildById(blubObj.getLong("guildId"));
+                        if (guild != null)
+                            unmute(guild, user, jda.getSelfUser(), "Mute expired");
+                    }, failed -> {
+                    });
                 }
             }
         } catch (SQLException e) {
@@ -1447,35 +1395,33 @@ public class MySQL {
         long smallest = period[0] < period[1] ? period[0] : period[1];
         long biggest = period[0] < period[1] ? period[1] : period[0];
         Map<Integer, Long> commandUsages = new HashMap<>();
-        try (Connection con = ds.getConnection()) {
-            try (PreparedStatement getUsageWithinPeriod = con.prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?")) {
-                getUsageWithinPeriod.setLong(1, biggest);
-                getUsageWithinPeriod.setLong(2, smallest);
-                try (ResultSet rs = getUsageWithinPeriod.executeQuery()) {
-                    while (rs.next()) {
-                        commandUsages.put(rs.getInt("commandId"), (commandUsages.containsKey(rs.getInt("commandId")) ? commandUsages.get(rs.getInt("commandId")) : 0) + rs.getLong("usageCount"));
-                    }
+        try (Connection con = ds.getConnection();
+             PreparedStatement getUsageWithinPeriod = con.prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?")) {
+            getUsageWithinPeriod.setLong(1, biggest);
+            getUsageWithinPeriod.setLong(2, smallest);
+            try (ResultSet rs = getUsageWithinPeriod.executeQuery()) {
+                while (rs.next()) {
+                    commandUsages.put(rs.getInt("commandId"), (commandUsages.containsKey(rs.getInt("commandId")) ? commandUsages.get(rs.getInt("commandId")) : 0) + rs.getLong("usageCount"));
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return findGreatest(commandUsages, limit);
+        return sortMetricsMap(commandUsages, limit);
     }
 
     public long getUsage(long[] period, int commandId) {
         long smallest = period[0] < period[1] ? period[0] : period[1];
         long biggest = period[0] < period[1] ? period[1] : period[0];
         long usage = 0;
-        try (Connection con = ds.getConnection()) {
-            try (PreparedStatement getUsageWithinPeriod = con.prepareStatement("SELECT * FROM command_usage WHERE commandId = ? AND time < ? AND time > ?")) {
-                getUsageWithinPeriod.setInt(1, commandId);
-                getUsageWithinPeriod.setLong(2, biggest);
-                getUsageWithinPeriod.setLong(3, smallest);
-                try (ResultSet rs = getUsageWithinPeriod.executeQuery()) {
-                    while (rs.next()) {
-                        usage += rs.getLong("usageCount");
-                    }
+        try (Connection con = ds.getConnection();
+             PreparedStatement getUsageWithinPeriod = con.prepareStatement("SELECT * FROM command_usage WHERE commandId = ? AND time < ? AND time > ?")) {
+            getUsageWithinPeriod.setInt(1, commandId);
+            getUsageWithinPeriod.setLong(2, biggest);
+            getUsageWithinPeriod.setLong(3, smallest);
+            try (ResultSet rs = getUsageWithinPeriod.executeQuery()) {
+                while (rs.next()) {
+                    usage += rs.getLong("usageCount");
                 }
             }
         } catch (SQLException e) {
@@ -1489,19 +1435,18 @@ public class MySQL {
         long biggest = period[0] < period[1] ? period[1] : period[0];
         Map<Integer, Long> sortedCommandUsages = new HashMap<>();
         Map<Integer, Long> commandUsages = new HashMap<>();
-        try (Connection con = ds.getConnection()) {
-            try (PreparedStatement getUsageWithinPeriod = con.prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?")) {
-                getUsageWithinPeriod.setLong(1, biggest);
-                getUsageWithinPeriod.setLong(2, smallest);
-                try (ResultSet rs = getUsageWithinPeriod.executeQuery()) {
-                    while (rs.next()) {
-                        if (commandIds.contains(rs.getInt("commandId")))
-                            commandUsages.put(rs.getInt("commandId"),
-                                    (commandUsages.containsKey(rs.getInt("commandId")) ?
-                                            commandUsages.get(rs.getInt("commandId")) :
-                                            0
-                                    ) + rs.getLong("usageCount"));
-                    }
+        try (Connection con = ds.getConnection();
+             PreparedStatement getUsageWithinPeriod = con.prepareStatement("SELECT * FROM command_usage WHERE time < ? AND time > ?")) {
+            getUsageWithinPeriod.setLong(1, biggest);
+            getUsageWithinPeriod.setLong(2, smallest);
+            try (ResultSet rs = getUsageWithinPeriod.executeQuery()) {
+                while (rs.next()) {
+                    if (commandIds.contains(rs.getInt("commandId")))
+                        commandUsages.put(rs.getInt("commandId"),
+                                (commandUsages.containsKey(rs.getInt("commandId")) ?
+                                        commandUsages.get(rs.getInt("commandId")) :
+                                        0
+                                ) + rs.getLong("usageCount"));
                 }
             }
         } catch (SQLException e) {
@@ -1526,12 +1471,13 @@ public class MySQL {
         return sortedCommandUsages;
     }
 
-    private static <K, V extends Comparable<? super V>> LinkedHashMap<K, V> findGreatest(Map<K, V> map, int n) {
-        Comparator<? super Map.Entry<K, V>> comparator = (Comparator<Map.Entry<K, V>>) (e0, e1) -> {
+    private <K, V extends Comparable<V>> LinkedHashMap<K, V> sortMetricsMap(Map<K, V> map, int n) {
+        Comparator<Map.Entry<K, V>> comparator = (e0, e1) -> {
             V v0 = e0.getValue();
             V v1 = e1.getValue();
             return v0.compareTo(v1);
         };
+
         PriorityQueue<Map.Entry<K, V>> highest = new PriorityQueue<>(n, comparator);
         for (Map.Entry<K, V> entry : map.entrySet()) {
             highest.offer(entry);
@@ -1550,7 +1496,7 @@ public class MySQL {
             coolMap.put(entry.getKey(), entry.getValue());
         }
 
-        Comparator<? super Map.Entry<K, V>> comparator2 = (Comparator<Map.Entry<K, V>>) (e0, e1) -> {
+        Comparator<Map.Entry<K, V>> comparator2 = (e0, e1) -> {
             V v0 = e0.getValue();
             V v1 = e1.getValue();
             return v1.compareTo(v0);
@@ -1576,7 +1522,7 @@ public class MySQL {
     }
 
     public String getMySQLVersion() {
-        try (Connection con = ds.getConnection()){
+        try (Connection con = ds.getConnection()) {
             return con.getMetaData().getDatabaseProductVersion().replaceAll("(\\d+\\.\\d+\\.\\d+)-.*", "$1");
         } catch (SQLException e) {
             return null;
@@ -1584,7 +1530,7 @@ public class MySQL {
     }
 
     public String getConnectorVersion() {
-        try (Connection con = ds.getConnection()){
+        try (Connection con = ds.getConnection()) {
             return con.getMetaData().getDriverVersion().replaceAll("mysql-connector-java-(\\d+\\.\\d+\\.\\d+).*", "$1");
         } catch (SQLException e) {
             return null;
@@ -1613,13 +1559,12 @@ public class MySQL {
 
     public Map<Long, String> getSelfRoles(long guildId) {
         Map<Long, String> collector = new HashMap<>();
-        try (Connection con = ds.getConnection()) {
-            try (PreparedStatement statement = con.prepareStatement("SELECT * FROM self_roles WHERE guildId= ?")) {
-                statement.setLong(1, guildId);
-                try (ResultSet rs = statement.executeQuery()) {
-                    while (rs.next()) {
-                        collector.put(rs.getLong("roleId"), rs.getString("emote"));
-                    }
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("SELECT * FROM self_roles WHERE guildId= ?")) {
+            statement.setLong(1, guildId);
+            try (ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) {
+                    collector.put(rs.getLong("roleId"), rs.getString("emote"));
                 }
             }
         } catch (SQLException e) {
@@ -1642,20 +1587,19 @@ public class MySQL {
 
     public JSONArray getCustomCommands(long guildId) {
         JSONArray toRet = new JSONArray();
-        try (Connection con = ds.getConnection()) {
-            try (PreparedStatement statement = con.prepareStatement("SELECT * FROM custom_commands WHERE guildId= ?")) {
-                statement.setLong(1, guildId);
-                try (ResultSet rs = statement.executeQuery()) {
-                    while (rs.next()) {
-                        toRet.put(new JSONObject()
-                                .put("name", rs.getString("name"))
-                                .put("description", rs.getString("description"))
-                                .put("aliases", rs.getString("aliases"))
-                                .put("message", rs.getString("message"))
-                                .put("attachment", rs.getString("attachment"))
-                                .put("prefix", rs.getBoolean("prefix"))
-                        );
-                    }
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("SELECT * FROM custom_commands WHERE guildId= ?")) {
+            statement.setLong(1, guildId);
+            try (ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) {
+                    toRet.put(new JSONObject()
+                            .put("name", rs.getString("name"))
+                            .put("description", rs.getString("description"))
+                            .put("aliases", rs.getString("aliases"))
+                            .put("message", rs.getString("message"))
+                            .put("attachment", rs.getString("attachment"))
+                            .put("prefix", rs.getBoolean("prefix"))
+                    );
                 }
             }
         } catch (SQLException e) {
@@ -1665,20 +1609,19 @@ public class MySQL {
     }
 
     public JSONObject getCustomCommand(long guildId, String name) {
-        try (Connection con = ds.getConnection()) {
-            try (PreparedStatement statement = con.prepareStatement("SELECT * FROM custom_commands WHERE guildId= ? AND name= ?")) {
-                statement.setLong(1, guildId);
-                statement.setString(2, name);
-                try (ResultSet rs = statement.executeQuery()) {
-                    if (rs.next()) {
-                        return new JSONObject()
-                                .put("name", rs.getString("name"))
-                                .put("description", rs.getString("description"))
-                                .put("aliases", rs.getString("aliases"))
-                                .put("message", rs.getString("message"))
-                                .put("attachment", rs.getString("attachment"))
-                                .put("prefix", rs.getBoolean("prefix"));
-                    }
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("SELECT * FROM custom_commands WHERE guildId= ? AND name= ? LIMIT 1")) {
+            statement.setLong(1, guildId);
+            statement.setString(2, name);
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return new JSONObject()
+                            .put("name", rs.getString("name"))
+                            .put("description", rs.getString("description"))
+                            .put("aliases", rs.getString("aliases"))
+                            .put("message", rs.getString("message"))
+                            .put("attachment", rs.getString("attachment"))
+                            .put("prefix", rs.getBoolean("prefix"));
                 }
             }
         } catch (SQLException e) {
@@ -1729,21 +1672,20 @@ public class MySQL {
     }
 
     public void addQueue(long guildId, long channelId, boolean paused, Queue<AudioTrack> queue) {
-        try (Connection con = ds.getConnection()) {
-            try (PreparedStatement statement = con.prepareStatement("INSERT INTO saved_queues (guildId, position, url) VALUES (?, ?, ?)")) {
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("INSERT INTO saved_queues (guildId, position, url) VALUES (?, ?, ?)")) {
+            statement.setLong(1, guildId);
+            statement.setInt(2, 0);
+            statement.setString(3, channelId + "-" + paused);
+            statement.addBatch();
+            int i = 1;
+            for (AudioTrack track : queue) {
                 statement.setLong(1, guildId);
-                statement.setInt(2, 0);
-                statement.setString(3, channelId + "-" + paused);
+                statement.setInt(2, i++);
+                statement.setString(3, track.getInfo().uri);
                 statement.addBatch();
-                int i = 1;
-                for (AudioTrack track : queue) {
-                    statement.setLong(1, guildId);
-                    statement.setInt(2, i++);
-                    statement.setString(3, track.getInfo().uri);
-                    statement.addBatch();
-                }
-                statement.executeBatch();
             }
+            statement.executeBatch();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1790,13 +1732,13 @@ public class MySQL {
     }
 
     public Integer getEmbedColor(Long guildId) {
-        try (Connection con = ds.getConnection()) {
-            try (PreparedStatement statement = con.prepareStatement("SELECT * FROM embed_colors WHERE guildId= ?")) {
-                statement.setLong(1, guildId);
-                try (ResultSet rs = statement.executeQuery()) {
-                    if (rs.next()) return rs.getInt("color");
-                }
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("SELECT * FROM embed_colors WHERE guildId= ? LIMIT 1")) {
+            statement.setLong(1, guildId);
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) return rs.getInt("color");
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1812,15 +1754,14 @@ public class MySQL {
     }
 
     public List<String> getPrivatePrefixes(long userId) {
-        try (Connection con = ds.getConnection()) {
-            try (PreparedStatement statement = con.prepareStatement("SELECT * FROM private_prefixes WHERE userId= ?")) {
-                statement.setLong(1, userId);
-                try (ResultSet rs = statement.executeQuery()) {
-                    if (rs.next())
-                        return rs.getString("prefixes").length() > 0 ?
-                                Arrays.asList(rs.getString("prefixes").split("%split%")) :
-                                new ArrayList<>();
-                }
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("SELECT * FROM private_prefixes WHERE userId= ? LIMIT 1")) {
+            statement.setLong(1, userId);
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next())
+                    return rs.getString("prefixes").length() > 0 ?
+                            Arrays.asList(rs.getString("prefixes").split("%split%")) :
+                            new ArrayList<>();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -1844,56 +1785,45 @@ public class MySQL {
     }
 
     public void setCooldown(long guildId, List<Command> commands, int cooldown) {
-        try (Connection con = ds.getConnection()) {
-            try (PreparedStatement statement = con.prepareStatement("INSERT INTO cooldowns (guildId, commandId, cooldown) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldown= ?")) {
-                commands.forEach(command -> {
-                    try {
-                        statement.setLong(1, guildId);
-                        statement.setInt(2, command.getId());
-                        statement.setInt(3, cooldown);
-                        statement.setInt(4, cooldown);
-                        statement.addBatch();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                });
-                statement.executeBatch();
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("INSERT INTO cooldowns (guildId, commandId, cooldown) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldown= ?")) {
+            for (Command command : commands) {
+                statement.setLong(1, guildId);
+                statement.setInt(2, command.getId());
+                statement.setInt(3, cooldown);
+                statement.setInt(4, cooldown);
+                statement.addBatch();
             }
+            statement.executeBatch();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public void removeCooldown(long guildId, List<Command> commands) {
-        try (Connection con = ds.getConnection()) {
-            try (PreparedStatement statement = con.prepareStatement("DELETE FROM cooldowns WHERE guildId= ? AND commandId= ?")) {
-                commands.forEach(command -> {
-                    try {
-                        statement.setLong(1, guildId);
-                        statement.setInt(2, command.getId());
-                        statement.addBatch();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                });
-                statement.executeBatch();
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("DELETE FROM cooldowns WHERE guildId= ? AND commandId= ?")) {
+            for (Command command : commands) {
+                statement.setLong(1, guildId);
+                statement.setInt(2, command.getId());
+                statement.addBatch();
             }
+            statement.executeBatch();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public Map<Integer, Integer> getCooldowns(long guildId) {
-        try (Connection con = ds.getConnection()) {
-            try (PreparedStatement statement = con.prepareStatement("SELECT * FROM cooldowns WHERE guildId= ?")) {
-                statement.setLong(1, guildId);
-                try (ResultSet rs = statement.executeQuery()) {
-                    Map<Integer, Integer> map = new HashMap<>();
-                    while (rs.next()) {
-                        map.put(rs.getInt("commandId"), rs.getInt("cooldown"));
-                    }
-                    return map;
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("SELECT * FROM cooldowns WHERE guildId= ?")) {
+            statement.setLong(1, guildId);
+            try (ResultSet rs = statement.executeQuery()) {
+                Map<Integer, Integer> map = new HashMap<>();
+                while (rs.next()) {
+                    map.put(rs.getInt("commandId"), rs.getInt("cooldown"));
                 }
+                return map;
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -1903,10 +1833,10 @@ public class MySQL {
 
 
     public VerificationType getVerificationType(long guildId) {
-        try (Connection con = ds.getConnection()) {
-            try (PreparedStatement statement = con.prepareStatement("SELECT * FROM verification_types WHERE guildId=?")) {
-                statement.setLong(1, guildId);
-                ResultSet rs = statement.executeQuery();
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("SELECT * FROM verification_types WHERE guildId=? LIMIT 1")) {
+            statement.setLong(1, guildId);
+            try (ResultSet rs = statement.executeQuery()) {
                 if (rs.next())
                     return VerificationType.valueOf(rs.getString("type"));
             }
