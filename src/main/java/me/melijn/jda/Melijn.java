@@ -44,7 +44,6 @@ public class Melijn {
     private final WebUtils webUtils;
     private final ImageUtils imageUtils;
     private final TaskManager taskManager;
-    private final YTSearch ytSearch;
     private final MySQL mySQL;
     private final Helpers helpers;
     private final MessageHelper messageHelper;
@@ -55,7 +54,7 @@ public class Melijn {
     public static String PREFIX;
     private ShardManager shardManager;
 
-    private Melijn() {
+    private Melijn() throws LoginException {
         melijn = this;
         config = new Config();
         mySQL = new MySQL(
@@ -72,7 +71,6 @@ public class Melijn {
 
         webUtils = new WebUtils(this);
         imageUtils = new ImageUtils();
-        ytSearch = new YTSearch();
 
         helpers = new Helpers(this);
         lava = new Lava(this);
@@ -81,19 +79,6 @@ public class Melijn {
         aPrivate = new Private(webUtils);
         taskManager = new TaskManager(messageHelper);
 
-
-        try {
-            init();
-        } catch (LoginException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void main(String[] args) {
-        new Melijn();
-    }
-
-    private void init() throws LoginException {
         CommandClient commandClient = new CommandClientBuilder(melijn, OWNERID)
                 .addCommands(
                         new BirdCommand(), //Only add commands at the end of the list for because of commandIndexes
@@ -231,6 +216,14 @@ public class Melijn {
         Thread.setDefaultUncaughtExceptionHandler((thread, exception) -> messageHelper.printException(thread, exception, null, null));
     }
 
+    public static void main(String[] args) {
+        try {
+            new Melijn();
+        } catch (LoginException e) {
+            e.printStackTrace();
+        }
+    }
+
     public ShardManager getShardManager() {
         return shardManager;
     }
@@ -273,10 +266,6 @@ public class Melijn {
 
     public ImageUtils getImageUtils() {
         return imageUtils;
-    }
-
-    public YTSearch getYtSearch() {
-        return ytSearch;
     }
 
     public TaskManager getTaskManager() {

@@ -67,7 +67,7 @@ public class StatsCommand extends Command {
                 .build());
     }
 
-    private static long getSystemUptime() {
+    private long getSystemUptime() {
         try {
             long uptime = -1;
             String os = System.getProperty("os.name").toLowerCase();
