@@ -39,7 +39,6 @@ import java.util.EnumSet;
 
 public class Melijn {
 
-    private final Melijn melijn;
     private final Config config;
     private final WebUtils webUtils;
     private final ImageUtils imageUtils;
@@ -55,10 +54,9 @@ public class Melijn {
     private ShardManager shardManager;
 
     private Melijn() throws LoginException {
-        melijn = this;
         config = new Config();
         mySQL = new MySQL(
-                melijn,
+                this,
                 config.getValue("ipaddress"),
                 config.getValue("username"),
                 config.getValue("password"),
@@ -79,7 +77,7 @@ public class Melijn {
         aPrivate = new Private(webUtils);
         taskManager = new TaskManager(messageHelper);
 
-        CommandClient commandClient = new CommandClientBuilder(melijn, OWNERID)
+        CommandClient commandClient = new CommandClientBuilder(this, OWNERID)
                 .addCommands(
                         new BirdCommand(), //Only add commands at the end of the list for because of commandIndexes
                         new UrbanCommand(),
@@ -203,10 +201,10 @@ public class Melijn {
                 .setGame(Game.playing(PREFIX + "help | melijn.com"))
                 .setAutoReconnect(true)
                 .addEventListeners(commandClient, lavalink,
-                        new JoinLeave(melijn),
-                        new AddReaction(melijn),
-                        new Channels(melijn),
-                        new Chat(melijn))
+                        new JoinLeave(this),
+                        new AddReaction(this),
+                        new Channels(this),
+                        new Chat(this))
                 .setDisabledCacheFlags(EnumSet.of(CacheFlag.GAME))
                 .setWebsocketFactory(new WebSocketFactory().setVerifyHostname(false))
                 .build();
