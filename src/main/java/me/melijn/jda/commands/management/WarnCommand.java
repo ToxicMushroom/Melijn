@@ -24,11 +24,11 @@ public class WarnCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (event.hasPerm(event.getMember(), commandName, 1)) {
-            event.sendUsage(this, event);
-            return;
-        }
-        String[] args = event.getArgs().split("\\s+");
-        if (event.getArgs().isEmpty()) {
+            String[] args = event.getArgs().split("\\s+");
+            if (event.getArgs().isEmpty()) {
+                event.sendUsage(this, event);
+                return;
+            }
             User target = event.getHelpers().getUserByArgsN(event, args[0]);
             if (target == null || event.getGuild().getMember(target) == null) {
                 event.reply("Unknown member");
