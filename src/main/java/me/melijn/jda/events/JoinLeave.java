@@ -32,6 +32,7 @@ public class JoinLeave extends ListenerAdapter {
         ShardManager shardManager = event.getJDA().asBot().getShardManager();
         if (started || shardManager.getShardCache().stream().filter(shard -> shard.getStatus().equals(JDA.Status.CONNECTED)).count() == shardManager.getShardsTotal())
             return;
+        started = true;
         Thread.setDefaultUncaughtExceptionHandler((thread, exception) ->
                 melijn.getMessageHelper().printException(thread, exception, null, null)
         );
@@ -60,7 +61,7 @@ public class JoinLeave extends ListenerAdapter {
             }
         }
         melijn.getMySQL().clearQueues();
-        started = true;
+
     }
 
     @Override

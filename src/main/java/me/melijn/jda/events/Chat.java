@@ -16,7 +16,6 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import net.dv8tion.jda.core.utils.MiscUtil;
 import org.json.JSONObject;
-import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.time.OffsetDateTime;
@@ -131,20 +130,23 @@ public class Chat extends ListenerAdapter {
 
     @Override
     public void onMessageUpdate(MessageUpdateEvent event) {
+        if (event.getMember() == null) return;
         long messageId = event.getMessageIdLong();
+
         Guild guild = event.getGuild();
         User author = event.getAuthor();
         JSONObject oMessage = melijn.getMySQL().getMessageObject(messageId);
+
+        //Redo filter
         if (guild.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_MANAGE) &&
                 !event.getMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_MANAGE)) {
-            LoggerFactory.getLogger(this.getClass().getName());
             filter(event.getMessage());
         }
         melijn.getMySQL().updateMessage(event.getMessage());
-        TextChannel emChannel = event.getGuild().getTextChannelById(melijn.getVariables().emLogChannelCache.getUnchecked(guild.getIdLong()));
-        if (emChannel == null || oMessage.length() == 0 || !emChannel.getGuild().getSelfMember().hasPermission(emChannel, Permission.MESSAGE_WRITE))
-            return;
 
+        //Logging part
+        TextChannel emChannel = event.getGuild().getTextChannelById(melijn.getVariables().emLogChannelCache.getUnchecked(guild.getIdLong()));
+        if (emChannel == null || oMessage.length() == 0 || !guild.getSelfMember().hasPermission(emChannel, Permission.MESSAGE_WRITE)) return;
 
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Message edited in #" + event.getTextChannel().getName() + " ".repeat(80).substring(0, 45 + event.getAuthor().getName().length()) + "\u200B");
