@@ -10,14 +10,13 @@ sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
     jcenter()
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url 'https://jitpack.io' }
     mavenCentral()
-    maven {
-        url 'https://jitpack.io'
-    }
 }
 
 dependencies {
-    implementation('net.dv8tion:JDA:3.8.1_457') {
+    implementation('net.dv8tion:JDA:3.8.2_459') {
         exclude module: 'opus-java'
     }
     implementation 'com.sedmelluq:lavaplayer:1.3.10'
@@ -55,5 +54,4 @@ dependencies {
     //https://mvnrepository.com/artifact/com.google.apis/google-api-services-youtube
     implementation 'com.google.apis:google-api-services-youtube:v3-rev206-1.25.0'
 }
-
 compileJava.options.encoding = 'UTF-8'
