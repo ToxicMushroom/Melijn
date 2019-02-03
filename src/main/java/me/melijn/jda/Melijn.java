@@ -30,6 +30,8 @@ import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.requests.RestAction;
 import net.dv8tion.jda.core.utils.cache.CacheFlag;
+import okhttp3.OkHttpClient;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.jooby.Jooby;
 
 import javax.security.auth.login.LoginException;
@@ -51,7 +53,7 @@ public class Melijn {
     private final Lava lava;
     public static long OWNERID;
     public static String PREFIX;
-    private ShardManager shardManager;
+    private final ShardManager shardManager;
 
     private Melijn() throws LoginException {
         config = new Config();
@@ -207,6 +209,8 @@ public class Melijn {
                         new Chat(this))
                 .setDisabledCacheFlags(EnumSet.of(CacheFlag.GAME))
                 .setWebsocketFactory(new WebSocketFactory().setVerifyHostname(false))
+                .setHttpClient(new OkHttpClient.Builder().hostnameVerifier(new NoopHostnameVerifier()).build())
+                .setCallbackPool(taskManager.getExecutorService())
                 .build();
         RestAction.setPassContext(true);
 
