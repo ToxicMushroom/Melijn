@@ -148,8 +148,7 @@ public class MySQL {
              final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             int current = 1;
             for (final Object object : objects) {
-                preparedStatement.setObject(current, object);
-                current++;
+                preparedStatement.setObject(current++, object);
             }
             return preparedStatement.executeUpdate();
         } catch (final SQLException e) {
@@ -160,12 +159,12 @@ public class MySQL {
     }
 
     private void executeQuery(final String sql, final Consumer<ResultSet> consumer, final Object... objects) {
+        melijn.getVariables().queryAmount++;
         try (final Connection connection = ds.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             int current = 1;
             for (final Object object : objects) {
-                preparedStatement.setObject(current, object);
-                current++;
+                preparedStatement.setObject(current++, object);
             }
             try (final ResultSet resultSet = preparedStatement.executeQuery()) {
                 consumer.accept(resultSet);

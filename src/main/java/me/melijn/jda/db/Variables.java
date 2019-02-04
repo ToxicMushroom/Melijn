@@ -79,6 +79,8 @@ public class Variables {
 
 
     public long startTime = 0;
+    public double queryAmount = 0.0;
+    public double timerAmount = 0.0;
 
 
     public Variables(Melijn melijn) {

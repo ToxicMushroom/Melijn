@@ -149,7 +149,7 @@ public class Helpers {
                 lastRunTimer1 = System.currentTimeMillis();
                 melijn.getMySQL().doUnbans(jda);
                 melijn.getMySQL().doUnmutes(jda);
-                uses++;
+                melijn.getVariables().timerAmount++;
             }, 2_000);
         }
         if (i == 0 || i == 2) {
@@ -172,7 +172,7 @@ public class Helpers {
                         });
                     }
                 }
-                uses++;
+                melijn.getVariables().timerAmount++;
             }, 60_000);
         }
         if (i == 0 || i == 3) {
@@ -180,7 +180,7 @@ public class Helpers {
                 lastRunTimer3 = System.currentTimeMillis();
                 melijn.getWebUtils().updateSpotifyCredentials();
                 melijn.getMySQL().updateVoteStreak();
-                uses++;
+                melijn.getVariables().timerAmount++;
             }, 1_800_000, 1_800_000);
         }
     }

@@ -18,6 +18,6 @@ public class TestCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        event.reply("Repeats: " + event.getHelpers().uses);
+        event.reply("Repeats: " + event.getVariables().timerAmount + "\nQueries: " + event.getVariables().queryAmount);
     }
 }
