@@ -444,7 +444,7 @@ public class MySQL {
     //Punishment stuff--------------------------------------------------------------
     public boolean setTempBan(User author, User target, Guild guild, String reasonRaw, long seconds) {
         final String reason = reasonRaw.matches("\\s+|") ? "N/A" : reasonRaw;
-        if (seconds > 0) {
+        if (seconds <= 0) return false;
             long moment = System.currentTimeMillis();
             long until = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(seconds);
             String namet = target.getName() + "#" + target.getDiscriminator();
@@ -463,9 +463,9 @@ public class MySQL {
 
             if (!target.isBot())
                 target.openPrivateChannel().queue((privateChannel) -> privateChannel.sendMessage(banned.build()).queue(
-                        (success) -> guild.getController().ban(target.getId(), 7, reason).queue(),
-                        (failed) -> guild.getController().ban(target.getId(), 7, reason).queue()
-                ), (failed) -> guild.getController().ban(target.getId(), 7, reason).queue());
+                        (success) -> guild.getController().ban(target, 7, reason).queue(),
+                        (failed) -> guild.getController().ban(target, 7, reason).queue()
+                ), (failed) -> guild.getController().ban(target, 7, reason).queue());
             TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().banLogChannelCache.getUnchecked(guild.getIdLong()));
             if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
                 if (target.isBot())
@@ -477,8 +477,6 @@ public class MySQL {
                     guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, until, author.getIdLong(), reason, moment, until,
                     guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, until, true);
             return true;
-        }
-        return false;
     }
 
     public boolean setPermBan(User author, User target, Guild guild, String reasonRaw) {
@@ -499,13 +497,13 @@ public class MySQL {
 
         if (!target.isBot())
             target.openPrivateChannel().queue((privateChannel) -> privateChannel.sendMessage(banned.build()).queue(
-                    (success) -> guild.getController().ban(target.getId(), 7, reason).queue(),
-                    (failed) -> guild.getController().ban(target.getId(), 7, reason).queue()
-            ), (failed) -> guild.getController().ban(target.getId(), 7, reason).queue());
+                    (success) -> guild.getController().ban(target, 7, reason).queue(),
+                    (failed) -> guild.getController().ban(target, 7, reason).queue()
+            ), (failed) -> guild.getController().ban(target, 7, reason).queue());
         TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().banLogChannelCache.getUnchecked(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
             if (target.isBot())
-                logChannel.sendMessage(banned.build() + "\nTarget is a bot").queue();
+                logChannel.sendMessage(banned.build()).append("Target is a bot").queue();
             else logChannel.sendMessage(banned.build()).queue();
         }
         executeUpdate("INSERT INTO active_bans (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE authorId= ?, reason= ?, startTime= ?, endTime= ?; " +
@@ -576,7 +574,7 @@ public class MySQL {
 
         TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().warnLogChannelCache.getUnchecked(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
-            if (target.isBot()) logChannel.sendMessage(embedBuilder.build() + "\nTarget is a bot.").queue();
+            if (target.isBot()) logChannel.sendMessage(embedBuilder.build()).append("Target is a bot.").queue();
             else logChannel.sendMessage(embedBuilder.build()).queue();
         }
         if (!target.isBot()) target.openPrivateChannel().queue((m) -> m.sendMessage(embedBuilder.build()).queue());
@@ -601,7 +599,7 @@ public class MySQL {
         if (!target.isBot()) target.openPrivateChannel().queue(pc -> pc.sendMessage(muted.build()).queue());
         TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().muteLogChannelCache.getUnchecked(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
-            if (target.isBot()) logChannel.sendMessage(muted.build() + "\nTarget is a bot").queue();
+            if (target.isBot()) logChannel.sendMessage(muted.build()).append("Target is a bot").queue();
             else logChannel.sendMessage(muted.build()).queue();
         }
         executeUpdate("INSERT INTO active_mutes (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?) " +
@@ -628,7 +626,7 @@ public class MySQL {
         if (!target.isBot()) target.openPrivateChannel().queue(pc -> pc.sendMessage(muted.build()).queue());
         TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().muteLogChannelCache.getUnchecked(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
-            if (target.isBot()) logChannel.sendMessage(muted.build() + "\nTarget is a bot").queue();
+            if (target.isBot()) logChannel.sendMessage(muted.build()).append("Target is a bot").queue();
             else logChannel.sendMessage(muted.build()).queue();
         }
         executeUpdate("INSERT INTO active_mutes (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?) " +
@@ -696,7 +694,7 @@ public class MySQL {
 
         TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().kickLogChannelCache.getUnchecked(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
-            if (target.isBot()) logChannel.sendMessage(embedBuilder.build() + "\nTarget is a bot").queue();
+            if (target.isBot()) logChannel.sendMessage(embedBuilder.build()).append("Target is a bot").queue();
             else logChannel.sendMessage(embedBuilder.build()).queue();
         }
         if (!target.isBot()) target.openPrivateChannel().queue((channel) -> {

@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 public class Helpers {
 
     public long lastRunTimer1 = -1, lastRunTimer2 = -1, lastRunTimer3 = -1, guildCount = 0;
+    public double uses = 0.0;
     private final Melijn melijn;
     public boolean voteChecks = true;
     public final Set<String> perms = Sets.newHashSet(
@@ -148,6 +149,7 @@ public class Helpers {
                 lastRunTimer1 = System.currentTimeMillis();
                 melijn.getMySQL().doUnbans(jda);
                 melijn.getMySQL().doUnmutes(jda);
+                uses++;
             }, 2_000);
         }
         if (i == 0 || i == 2) {
@@ -170,6 +172,7 @@ public class Helpers {
                         });
                     }
                 }
+                uses++;
             }, 60_000);
         }
         if (i == 0 || i == 3) {
@@ -177,6 +180,7 @@ public class Helpers {
                 lastRunTimer3 = System.currentTimeMillis();
                 melijn.getWebUtils().updateSpotifyCredentials();
                 melijn.getMySQL().updateVoteStreak();
+                uses++;
             }, 1_800_000, 1_800_000);
         }
     }

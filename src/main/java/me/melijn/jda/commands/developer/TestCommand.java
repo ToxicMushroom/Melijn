@@ -18,6 +18,6 @@ public class TestCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        event.reply("Test is not in use atm!");
+        event.reply("Repeats: " + event.getHelpers().uses);
     }
 }
