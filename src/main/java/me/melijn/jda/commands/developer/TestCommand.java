@@ -19,9 +19,5 @@ public class TestCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         event.reply("Repeats: " + event.getVariables().timerAmount + "\nQueries: " + event.getVariables().queryAmount);
-        if (event.getArgs().contains("start")) {
-            event.reply("Started timer :3");
-            event.getHelpers().startTimer(event.getJDA(), 0);
-        }
     }
 }

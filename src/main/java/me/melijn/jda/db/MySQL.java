@@ -514,19 +514,17 @@ public class MySQL {
 
     public boolean unban(User toUnban, Guild guild, User author, String reason) {
         if (toUnban == null) return false;
-        executeQuery("SELECT * FROM active_bans WHERE guildId= ? AND victimId= ?", rs -> {
-            try {
-                if (rs.next()) {
-                    executeUpdate("UPDATE history_bans SET active= ? AND unbanReason= ? WHERE victimId= ? AND guildId= ?",
-                            false, reason, toUnban.getIdLong(), guild.getIdLong());
-                    executeUpdate("DELETE FROM active_bans WHERE guildId= ? AND victimId= ?",
-                            guild.getIdLong(), toUnban.getIdLong());
-                }
-                rs.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("DELETE FROM active_bans WHERE guildId= ? AND victimId= ?")) {
+            statement.setLong(1, guild.getIdLong());
+            statement.setLong(2, toUnban.getIdLong());
+            if (statement.executeUpdate() > 0) {
+                executeUpdate("UPDATE history_bans SET active= ? AND unbanReason= ? WHERE victimId= ? AND guildId= ?",
+                        false, reason, toUnban.getIdLong(), guild.getIdLong());
             }
-        }, guild.getIdLong(), toUnban.getIdLong());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         EmbedBuilder eb = new EmbedBuilder();
         eb.setAuthor("Unbanned by: " + author.getName() + "#" + author.getDiscriminator() + " ".repeat(80).substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
@@ -549,10 +547,43 @@ public class MySQL {
         }
 
         guild.getController().unban(toUnban.getId()).queue(success -> {
-        }, failed -> {
-        });
+        }, failed -> {});
         return true;
+    }
 
+    public boolean hardUnban(long targetId, long guildId, String reason) {
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("DELETE FROM active_bans WHERE guildId= ? AND victimId= ?")) {
+            statement.setLong(1, guildId);
+            statement.setLong(2, targetId);
+            if (statement.executeUpdate() > 0) {
+                executeUpdate("UPDATE history_bans SET active= ? AND unbanReason= ? WHERE victimId= ? AND guildId= ?",
+                        false, reason, targetId, guildId);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    public boolean softUnban(long targetId, Guild guild, String reason) {
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("DELETE FROM active_bans WHERE guildId= ? AND victimId= ?")) {
+            statement.setLong(1, guild.getIdLong());
+            statement.setLong(2, targetId);
+            if (statement.executeUpdate() > 0) {
+                executeUpdate("UPDATE history_bans SET active= ? AND unbanReason= ? WHERE victimId= ? AND guildId= ?",
+                        false, reason, targetId, guild.getIdLong());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        if (guild.getSelfMember().hasPermission(Permission.BAN_MEMBERS)) {
+            guild.getController().unban(Long.toString(targetId)).queue();
+        }
+        return true;
     }
 
     public boolean addWarn(User author, User target, Guild guild, String reasonRaw) {
@@ -637,20 +668,20 @@ public class MySQL {
         return true;
     }
 
-    public boolean unmute(Guild guild, User toUnmute, User author, String reason) {
-        if (toUnmute == null) return false;
-        executeQuery("SELECT * FROM active_mutes WHERE guildId= ? AND victimId= ? LIMIT 1", rs -> {
-            try {
-                if (rs.next()) {
-                    executeUpdate("UPDATE history_mutes SET active= ? AND unmuteReason= ? WHERE victimId= ? AND guildId= ?; " +
-                                    "DELETE FROM active_mutes WHERE guildId= ? AND victimId= ?",
-                            false, reason, toUnmute.getIdLong(), guild.getIdLong(),
-                            guild.getIdLong(), toUnmute.getIdLong());
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
+    public boolean unmute(Member member, User author, String reason) {
+        User toUnmute = member.getUser();
+        Guild guild = member.getGuild();
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("DELETE FROM active_mutes WHERE guildId= ? AND victimId= ?")) {
+            statement.setLong(1, guild.getIdLong());
+            statement.setLong(2, toUnmute.getIdLong());
+            if (statement.executeUpdate() > 0) {
+                executeUpdate("UPDATE history_mutes SET active= ? AND unmuteReason= ? WHERE victimId= ? AND guildId= ?",
+                        false, reason, toUnmute.getIdLong(), guild.getIdLong());
             }
-        }, guild.getIdLong(), toUnmute.getIdLong());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         EmbedBuilder eb = new EmbedBuilder();
         eb.setAuthor("Unmuted by: " + author.getName() + "#" + author.getDiscriminator() + " ".repeat(45).substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
@@ -670,6 +701,22 @@ public class MySQL {
         if (toUnmuteMember != null && guild.getSelfMember().canInteract(toUnmuteMember))
             guild.getController().removeSingleRoleFromMember(toUnmuteMember, guild.getRoleById(getRoleId(guild.getIdLong(), RoleType.MUTE))).queue();
 
+        return true;
+    }
+
+    public boolean hardUnmute(long guildId, long targetId, String reason) {
+        try (Connection con = ds.getConnection();
+             PreparedStatement statement = con.prepareStatement("DELETE FROM active_mutes WHERE guildId= ? AND victimId= ?")) {
+            statement.setLong(1, guildId);
+            statement.setLong(2, targetId);
+            if (statement.executeUpdate() > 0) {
+                executeUpdate("UPDATE history_mutes SET active= ? AND unmuteReason= ? WHERE victimId= ? AND guildId= ?",
+                        false, reason, targetId, guildId);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
         return true;
     }
 
@@ -840,7 +887,7 @@ public class MySQL {
 
     public boolean isUserMuted(long guildId, long userId) {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
-        executeQuery("SELECT * FROM active_mutes WHERE victimId= ? AND guildId= ?", rs -> {
+        executeQuery("SELECT * FROM active_mutes WHERE victimId= ? AND guildId= ? LIMIT 1", rs -> {
             try {
                 atomicBoolean.set(rs.next());
             } catch (SQLException e) {
@@ -1335,17 +1382,18 @@ public class MySQL {
                 while (rs.next()) {
                     victimGuilds.put(rs.getLong("victimId"), rs.getLong("guildId"));
                 }
-
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        victimGuilds.forEach((victimId, guildId) -> jda.asBot().getShardManager().retrieveUserById(victimId).queue(user -> {
+        victimGuilds.forEach((victimId, guildId) -> {
             Guild guild = jda.asBot().getShardManager().getGuildById(guildId);
-            if (guild != null)
-                unban(user, guild, jda.getSelfUser(), "Ban expired");
-        }, failed -> {
-        }));
+            if (guild == null) {
+                hardUnban(victimId, guildId, "Ban expired");
+                return;
+            }
+            softUnban(victimId, guild, "Ban expired");
+        });
     }
 
     public void doUnmutes(JDA jda) {
@@ -1361,12 +1409,20 @@ public class MySQL {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        victimGuilds.forEach((victimId, guildId) -> jda.asBot().getShardManager().retrieveUserById(victimId).queue(user -> {
+        victimGuilds.forEach((victimId, guildId) -> {
             Guild guild = jda.asBot().getShardManager().getGuildById(guildId);
-            if (guild != null)
-                unmute(guild, user, jda.getSelfUser(), "Mute expired");
-        }, failed -> {
-        }));
+            if (guild == null) {
+                hardUnmute(guildId, victimId, "Mute expired");
+                return;
+            }
+            Member member = guild.getMemberById(victimId);
+            if (member == null) {
+                hardUnmute(guildId, victimId, "Mute expired");
+                return;
+            }
+            unmute(member, jda.getSelfUser(), "Mute expired");
+
+        });
     }
 
     public void updateUsage(int commandId, long currentTimeMillis) {
@@ -1716,6 +1772,7 @@ public class MySQL {
 
     public void clearQueues() {
         executeUpdate("TRUNCATE saved_queues");
+        logger.info("Truncated queues");
     }
 
     public Integer getEmbedColor(Long guildId) {
@@ -1849,4 +1906,6 @@ public class MySQL {
                 message.getContentRaw());
 
     }
+
+
 }

@@ -41,10 +41,18 @@ public class UnmuteCommand extends Command {
                     String reason = event.getArgs().replaceFirst(args[0], "");
                     if (reason.length() == 0 || reason.matches("\\s+")) reason = "N/A";
                     if (reason.startsWith(" ")) reason = reason.replaceFirst("\\s+", "");
-                    if (event.getMySQL().unmute(event.getGuild(), user, event.getAuthor(), reason)) {
-                        event.getMessage().addReaction("\u2705").queue();
+                    if (event.getGuild().isMember(user)) {
+                        if (event.getMySQL().unmute(event.getGuild().getMember(user), event.getAuthor(), reason)) {
+                            event.getMessage().addReaction("\u2705").queue();
+                        } else {
+                            event.getMessage().addReaction("\u274C").queue();
+                        }
                     } else {
-                        event.getMessage().addReaction("\u274C").queue();
+                        if (event.getMySQL().hardUnmute(event.getGuild().getIdLong(), user.getIdLong(), reason)) {
+                            event.getMessage().addReaction("\u2705").queue();
+                        } else {
+                            event.getMessage().addReaction("\u274C").queue();
+                        }
                     }
                 });
             });
