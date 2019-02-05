@@ -221,13 +221,13 @@ public class Chat extends ListenerAdapter {
     public void onGuildMessageDelete(GuildMessageDeleteEvent event) {
         if (event.getGuild() == null || melijn.getVariables().serverBlackList.contains(event.getGuild().getIdLong()))
             return;
-        if (melijn.getVariables().userBlackList.contains(event.getGuild().getOwnerIdLong())) return;
+        if (melijn.getVariables().userBlackList.contains(event.getGuild().getOwnerIdLong())) return;/*
         if (melijn.getHelpers().lastRunTimer1 < (System.currentTimeMillis() - 10_000 * 2) && melijn.getHelpers().lastRunTimer1 != -1)
             melijn.getHelpers().startTimer(event.getJDA(), 1);
         if (melijn.getHelpers().lastRunTimer2 < (System.currentTimeMillis() - 120_000 * 2) && melijn.getHelpers().lastRunTimer2 != -1)
             melijn.getHelpers().startTimer(event.getJDA(), 2);
         if (melijn.getHelpers().lastRunTimer3 < (System.currentTimeMillis() - 1_800_000 * 2) && melijn.getHelpers().lastRunTimer3 != -1)
-            melijn.getHelpers().startTimer(event.getJDA(), 3);
+            melijn.getHelpers().startTimer(event.getJDA(), 3);*/
         Guild guild = event.getGuild();
         if (event.getGuild().getSelfMember().hasPermission(Permission.VIEW_AUDIT_LOGS) &&
                 (melijn.getVariables().sdmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||

@@ -6,7 +6,10 @@ import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.NotificationType;
 import me.melijn.jda.blub.RoleType;
+import me.melijn.jda.db.MySQL;
+import me.melijn.jda.db.Variables;
 import me.melijn.jda.utils.Embedder;
+import me.melijn.jda.utils.TaskManager;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
@@ -144,21 +147,23 @@ public class Helpers {
     }
 
     public void startTimer(JDA jda, int i) {
+        MySQL mySQL = melijn.getMySQL();
+        Variables variables = melijn.getVariables();
         if (i == 0 || i == 1) {
             melijn.getTaskManager().scheduleRepeating(() -> {
                 lastRunTimer1 = System.currentTimeMillis();
-                melijn.getMySQL().doUnbans(jda);
-                melijn.getMySQL().doUnmutes(jda);
-                melijn.getVariables().timerAmount++;
+                mySQL.doUnbans(jda);
+                mySQL.doUnmutes(jda);
+                variables.timerAmount++;
             }, 2_000);
         }
         if (i == 0 || i == 2) {
             melijn.getTaskManager().scheduleRepeating(() -> {
                 lastRunTimer2 = System.currentTimeMillis();
-                if (melijn.getVariables().dblAPI != null)
-                    melijn.getVariables().dblAPI.setStats(Math.toIntExact(guildCount == 0 ? jda.asBot().getShardManager().getGuildCache().size() : guildCount));
+                if (variables.dblAPI != null)
+                    variables.dblAPI.setStats(Math.toIntExact(guildCount == 0 ? jda.asBot().getShardManager().getGuildCache().size() : guildCount));
                 Set<Long> votesList = melijn.getMySQL().getVoteList();
-                Map<Long, Set<Long>> nextVoteMap = melijn.getMySQL().getNotificationsMap(NotificationType.NEXTVOTE);
+                Map<Long, Set<Long>> nextVoteMap = mySQL.getNotificationsMap(NotificationType.NEXTVOTE);
                 for (long userId : nextVoteMap.keySet()) {
                     for (long targetId : nextVoteMap.getOrDefault(userId, Sets.newHashSet(-1L))) {
                         if (targetId == -1L || !votesList.contains(targetId)) continue;
@@ -172,15 +177,15 @@ public class Helpers {
                         });
                     }
                 }
-                melijn.getVariables().timerAmount++;
+                variables.timerAmount++;
             }, 60_000);
         }
         if (i == 0 || i == 3) {
             melijn.getTaskManager().scheduleRepeating(() -> {
                 lastRunTimer3 = System.currentTimeMillis();
                 melijn.getWebUtils().updateSpotifyCredentials();
-                melijn.getMySQL().updateVoteStreak();
-                melijn.getVariables().timerAmount++;
+                mySQL.updateVoteStreak();
+                variables.timerAmount++;
             }, 1_800_000, 1_800_000);
         }
     }

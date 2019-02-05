@@ -42,7 +42,7 @@ public class JoinLeave extends ListenerAdapter {
                 .botId(event.getJDA().getSelfUser().getId())
                 .build();
 
-        melijn.getHelpers().startTimer(event.getJDA(), 0);
+        //melijn.getHelpers().startTimer(event.getJDA(), 0);
         AudioLoader audioLoader = melijn.getLava().getAudioLoader();
         for (JSONObject queue : melijn.getMySQL().getQueues()) {
             Guild guild = shardManager.getGuildById(queue.getLong("guildId"));
