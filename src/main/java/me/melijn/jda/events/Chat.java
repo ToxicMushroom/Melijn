@@ -432,7 +432,7 @@ public class Chat extends ListenerAdapter {
                 }
             }
             if (detectedWord.length() > 0) {
-                melijn.getVariables().filteredMessageDeleteCause.put(msg.getIdLong(), detectedWord.substring(0, detectedWord.length() - 2));
+                melijn.getVariables().filteredMessageDeleteCause.put(msg.getIdLong(), detectedWord.substring(0, detectedWord.length()));
                 msg.delete().reason("Use of prohibited words").queue(
                         success -> {
                         },

@@ -1,5 +1,6 @@
 package me.melijn.jda.commands.management;
 
+import com.google.common.collect.Sets;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
@@ -9,6 +10,7 @@ import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.User;
 
+import java.util.HashSet;
 import java.util.Map;
 
 import static me.melijn.jda.Melijn.PREFIX;
@@ -60,7 +62,7 @@ public class VerifyCommand extends Command {
 
     private void verifyMembers(CommandEvent event, Guild guild, Map<Long, Long> users) {
         event.async(() -> {
-            for (long id : users.keySet()) {
+            for (long id : Sets.newHashSet(users.keySet())) {
                 Member member = guild.getMemberById(id);
                 if (member != null)
                     event.getHelpers().verify(guild, member.getUser());
