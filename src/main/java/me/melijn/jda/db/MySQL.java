@@ -139,7 +139,7 @@ public class MySQL {
         } catch (SQLException e) {
             logger.error("[MySQL] did not init -> ");
             e.printStackTrace();
-            System.exit(500);
+            throw new RuntimeException();
         }
     }
 

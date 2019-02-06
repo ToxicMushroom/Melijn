@@ -57,6 +57,7 @@ public class Melijn {
 
     private Melijn() throws LoginException {
         config = new Config();
+        if (config.isNotValid()) throw new RuntimeException("Config error");
         mySQL = new MySQL(
                 this,
                 config.getValue("ipaddress"),

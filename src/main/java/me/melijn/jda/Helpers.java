@@ -9,7 +9,6 @@ import me.melijn.jda.blub.RoleType;
 import me.melijn.jda.db.MySQL;
 import me.melijn.jda.db.Variables;
 import me.melijn.jda.utils.Embedder;
-import me.melijn.jda.utils.TaskManager;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
@@ -26,7 +25,6 @@ import java.util.function.Consumer;
 public class Helpers {
 
     public long lastRunTimer1 = -1, lastRunTimer2 = -1, lastRunTimer3 = -1, guildCount = 0;
-    public double uses = 0.0;
     private final Melijn melijn;
     public boolean voteChecks = true;
     public final Set<String> perms = Sets.newHashSet(
