@@ -38,7 +38,7 @@ public class DisableCommand extends Command {
 
                 int sizeBefore = buffer.size();
                 for (Command cmd : event.getClient().getCommands()) {
-                    if (cmd.isCommandFor("enable")) return;
+                    if (cmd.isCommandFor("enable")) continue;
                     if (cmd.isCommandFor(args[0])) {
                         if (buffer.contains(cmd.getId())) {
                             event.reply("**" + cmd.getCommandName() + "** was already disabled");
@@ -51,7 +51,6 @@ public class DisableCommand extends Command {
                     if (cmd.getCategory().toString().equalsIgnoreCase(args[0]) && !buffer.contains(cmd.getId())) {
                         buffer.add(cmd.getId());
                     }
-
                 }
                 if (buffer.size() == sizeBefore) {
                     event.reply("The given command or category was unknown");
