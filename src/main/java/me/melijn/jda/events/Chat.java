@@ -149,7 +149,7 @@ public class Chat extends ListenerAdapter {
         if (emChannel == null || oMessage.length() == 0 || !guild.getSelfMember().hasPermission(emChannel, Permission.MESSAGE_WRITE)) return;
 
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Message edited in #" + event.getTextChannel().getName() + " ".repeat(80).substring(0, 45 + event.getAuthor().getName().length()) + "\u200B");
+        eb.setTitle("Message edited in #" + event.getTextChannel().getName() + " ".repeat(100).substring(0, 45 + event.getAuthor().getName().length()) + "\u200B");
         eb.setThumbnail(event.getAuthor().getEffectiveAvatarUrl());
         eb.setColor(Color.decode("#A1DAC3"));
 
@@ -271,7 +271,7 @@ public class Chat extends ListenerAdapter {
 
             boolean split = false;
             EmbedBuilder eb = new EmbedBuilder();
-            eb.setTitle("Message deleted in #" + event.getChannel().getName() + " ".repeat(80).substring(0, 45 + author.getName().length()) + "\u200B");
+            eb.setTitle("Message deleted in #" + event.getChannel().getName() + " ".repeat(100).substring(0, 45 + author.getName().length()) + "\u200B");
             eb.setThumbnail(author.getEffectiveAvatarUrl());
             eb.setColor(Color.decode("#000001"));
             if (message.getString("content").length() > 1850) {

@@ -284,9 +284,11 @@ public class Helpers {
             melijn.getMySQL().removeUnverifiedUser(guild.getIdLong(), user.getIdLong());
             melijn.getVariables().unVerifiedGuildMembersCache.put(guild.getIdLong(), newList);
         });
-        if (guild.getMember(user) != null && guild.getRoleById(melijn.getVariables().unverifiedRoleCache.getUnchecked(guild.getIdLong())) != null) {
-            if (guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES)) {
-                guild.getController().removeSingleRoleFromMember(guild.getMember(user), guild.getRoleById(melijn.getVariables().unverifiedRoleCache.getUnchecked(guild.getIdLong()))).reason("verified user").queue();
+        Member member = guild.getMember(user);
+        Role unverifiedRole = guild.getRoleById(melijn.getVariables().unverifiedRoleCache.getUnchecked(guild.getIdLong()));
+        if (member != null && guild.getRoleById(melijn.getVariables().unverifiedRoleCache.getUnchecked(guild.getIdLong())) != null) {
+            if (guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES) && guild.getSelfMember().canInteract(unverifiedRole) && guild.getSelfMember().canInteract(member)) {
+                guild.getController().removeSingleRoleFromMember(member, guild.getRoleById(melijn.getVariables().unverifiedRoleCache.getUnchecked(guild.getIdLong()))).reason("verified user").queue();
             } else {
                 user.openPrivateChannel().queue(channel ->
                         channel.sendMessage("" +

@@ -55,7 +55,8 @@ public class CustomCommandCommand extends Command {
 
                 String message = event.getArgs().replaceFirst("add\\s+" + Pattern.quote(args[1]) + "\\s+?", "");
                 int i = event.getMySQL().addCustomCommand(guild.getIdLong(), args[1], message);
-                if (i == 0) event.reply("The command already exists or you have hit the limit of " + limitCC + " commands");
+                if (i == 0)
+                    event.reply("The command already exists or you have hit the limit of " + limitCC + " commands");
                 else if (i == 1) event.reply("Custom command **" + args[1] + "** has been added");
                 else if (i == 2) event.reply("The extra message has been added");
                 vars.serverHasCC.put(guild.getIdLong(), true);
@@ -66,9 +67,9 @@ public class CustomCommandCommand extends Command {
                     return;
                 }
 
-                if (cantBeName(event, args[1]))
+                if (cantBeName(event, args[1])) return;
 
-                    if (args.length > 2) {
+                if (args.length > 2) {
                     if (event.getMySQL().removeCustomCommandMessage(guild.getIdLong(), args[1], event.getArgs().replaceFirst(args[0] + "\\s+" + args[1] + "\\s+", ""))) {
                         event.reply("The message has been removed");
                     } else {
@@ -77,8 +78,9 @@ public class CustomCommandCommand extends Command {
                 } else {
                     if (event.getMySQL().removeCustomCommand(guild.getIdLong(), args[1])) {
                         event.reply("Custom command **" + args[1] + "** has been removed by **" + event.getFullAuthorName() + "**");
-                    } else event.reply("I couldn't find a command named: **" + args[1] + "**\nList: " + getCommandList(guild, event.getMySQL()));
-                        vars.serverHasCC.invalidate(guild.getIdLong());
+                    } else
+                        event.reply("I couldn't find a command named: **" + args[1] + "**\nList: " + getCommandList(guild, event.getMySQL()));
+                    vars.serverHasCC.invalidate(guild.getIdLong());
                 }
 
 
@@ -106,7 +108,7 @@ public class CustomCommandCommand extends Command {
                 if (cantBeName(event, args[1])) return;
                 JSONObject command = event.getMySQL().getCustomCommand(guild.getIdLong(), args[1]);
                 if (command == null) {
-                    event.reply("I couldn't find a command named: **" + args[1]  + "**\nList: " + getCommandList(guild, event.getMySQL()));
+                    event.reply("I couldn't find a command named: **" + args[1] + "**\nList: " + getCommandList(guild, event.getMySQL()));
                     return;
                 }
 
@@ -150,7 +152,7 @@ public class CustomCommandCommand extends Command {
                 if (cantBeName(event, args[1])) return;
                 JSONObject command = event.getMySQL().getCustomCommand(guild.getIdLong(), args[1]);
                 if (command == null) {
-                    event.reply("I couldn't find a command named: **" + args[1]  + "**\nList:" + getCommandList(guild, event.getMySQL()));
+                    event.reply("I couldn't find a command named: **" + args[1] + "**\nList:" + getCommandList(guild, event.getMySQL()));
                     return;
                 }
 
@@ -241,7 +243,7 @@ public class CustomCommandCommand extends Command {
 
     private boolean nameDoesntExist(CommandEvent event, JSONObject command, String name) {
         if (command == null) {
-            event.reply("I couldn't find a command named: **" + name  + "**\nList: " + getCommandList(event.getGuild(), event.getMySQL()));
+            event.reply("I couldn't find a command named: **" + name + "**\nList: " + getCommandList(event.getGuild(), event.getMySQL()));
             return true;
         }
         return false;
