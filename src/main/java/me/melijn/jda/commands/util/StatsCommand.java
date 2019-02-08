@@ -13,6 +13,7 @@ import java.lang.management.ManagementFactory;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,6 +45,8 @@ public class StatsCommand extends Command {
                         ).count()
                 ).sum();
         ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) event.getClient().getMelijn().getTaskManager().getExecutorService();
+        ThreadPoolExecutor scheduledExecutorService = (ThreadPoolExecutor) event.getClient().getMelijn().getTaskManager().getScheduledExecutorService();
+
         ShardManager shardManager = event.getJDA().asBot().getShardManager();
         event.reply(new Embedder(event.getVariables(), event.getGuild())
                 .setThumbnail(event.getJDA().getSelfUser().getAvatarUrl())
@@ -52,7 +55,7 @@ public class StatsCommand extends Command {
                         "\n**Unique users** " + shardManager.getUserCache().size() +
                         "\n**Guilds** " + shardManager.getGuildCache().size() +
                         "\n**Connected VoiceChannels** " + voiceChannels +
-                        "\n**Threads** " + threadPoolExecutor.getActiveCount() +
+                        "\n**Threads** " + (threadPoolExecutor.getActiveCount() + scheduledExecutorService.getActiveCount() + scheduledExecutorService.getQueue().size()) +
                         "\n**Uptime** " + event.getMessageHelper().getDurationBreakdown(ManagementFactory.getRuntimeMXBean().getUptime()) +
                         "\n\u200B", false)
                 .addField("Server Stats", "" +
