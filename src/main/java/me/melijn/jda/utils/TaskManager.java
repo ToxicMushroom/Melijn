@@ -37,4 +37,8 @@ public class TaskManager {
     public ExecutorService getExecutorService() {
         return executorService;
     }
+
+    public ScheduledExecutorService getScheduledExecutorService() {
+        return scheduledExecutorService;
+    }
 }
