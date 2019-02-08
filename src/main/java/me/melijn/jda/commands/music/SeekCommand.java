@@ -18,7 +18,7 @@ public class SeekCommand extends Command {
         this.description = "Seeks the part of the track you desire";
         this.usage = PREFIX + commandName + " [hh:mm:ss]";
         this.aliases = new String[]{"skipx", "position"};
-        this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL};
+        this.needs = new Need[]{Need.SAME_VOICECHANNEL};
         this.category = Category.MUSIC;
         this.id = 70;
     }
@@ -35,21 +35,19 @@ public class SeekCommand extends Command {
                 event.reply("There are currently no tracks playing");
                 return;
             }
+
             if (args.length == 0 || args[0].isEmpty()) {
                 event.reply("The current position is **" + event.getMessageHelper().getDurationBreakdown(player.getTrackPosition()) + "/" + event.getMessageHelper().getDurationBreakdown(track.getDuration()) + "**");
                 return;
             }
-            if (event.getMember().getVoiceState().getChannel() == lava.getConnectedChannel(guild) || event.hasPerm(event.getMember(), "bypass.sameVoiceChannel", 1)) {
-                long millis = event.getHelpers().parseTimeFromArgs(args);
-                if (millis == -1) event.sendUsage(this, event);
-                else {
-                    track.setPosition(millis);
-                    event.reply("The position of the song has been changed to **" +
-                            event.getMessageHelper().getDurationBreakdown(Math.min(millis, track.getDuration())) + "/" +
-                            event.getMessageHelper().getDurationBreakdown(track.getDuration()) + "** by **" + event.getFullAuthorName() + "**");
-                }
-            } else {
-                event.reply("You have to be in the same voice channel as me to seek");
+
+            long millis = event.getHelpers().parseTimeFromArgs(args);
+            if (millis == -1) event.sendUsage(this, event);
+            else {
+                track.setPosition(millis);
+                event.reply("The position of the song has been changed to **" +
+                        event.getMessageHelper().getDurationBreakdown(Math.min(millis, track.getDuration())) + "/" +
+                        event.getMessageHelper().getDurationBreakdown(track.getDuration()) + "** by **" + event.getFullAuthorName() + "**");
             }
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
