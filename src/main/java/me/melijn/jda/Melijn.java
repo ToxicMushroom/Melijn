@@ -186,7 +186,8 @@ public class Melijn {
                         new EmotesCommand(),
                         new PrivatePrefixCommand(),
                         new CooldownCommand(),
-                        new SetVerificationTypeCommand()
+                        new SetVerificationTypeCommand(),
+                        new RestartCommand()
                 ).build();
 
         JdaLavalink lavalink = new JdaLavalink(

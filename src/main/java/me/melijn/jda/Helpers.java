@@ -135,7 +135,8 @@ public class Helpers {
             "emotes",
             "cooldown",
             "SetVerificationType",
-            "bypass.cooldown"
+            "bypass.cooldown",
+            "restart"
     );
 
     public Helpers(Melijn melijn) {
