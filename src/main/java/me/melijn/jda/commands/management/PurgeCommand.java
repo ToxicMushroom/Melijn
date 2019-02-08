@@ -17,6 +17,7 @@ public class PurgeCommand extends Command {
         this.description = "Deletes messages";
         this.usage = PREFIX + commandName + " [1 - 1000]";
         this.category = Category.MANAGEMENT;
+        this.aliases = new String[]{"prune"};
         this.permissions = new Permission[]{
                 Permission.MESSAGE_MANAGE, Permission.MESSAGE_HISTORY
         };
