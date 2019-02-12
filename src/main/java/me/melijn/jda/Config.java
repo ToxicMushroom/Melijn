@@ -16,8 +16,6 @@ public class Config {
 
     private JSONObject configObject;
     private final File configFile = new File("config.json");
-    private boolean isValid;
-
 
     Config() {
         Logger logger = LoggerFactory.getLogger(Config.class.getName());
@@ -25,8 +23,7 @@ public class Config {
         if (!configFile.exists()) {
             create();
             logger.warn("The config file is created. Fill in all the values. If you don't know how to get a value then check out my wiki");
-            isValid = false;
-            return;
+            throw new RuntimeException("Config error");
         }
 
         JSONObject obj = read(configFile);
@@ -38,10 +35,9 @@ public class Config {
                 obj.has("ipaddress") &&
                 obj.has("database")) {
             configObject = obj;
-            isValid = true;
         } else {
             logger.error("Missing keys.");
-            isValid = false;
+            throw new RuntimeException("Config error");
         }
     }
 
@@ -92,9 +88,5 @@ public class Config {
         Set<String> set = new HashSet<>();
         configObject.getJSONArray(unLoggedThreads).toList().forEach(o -> set.add(o.toString()));
         return set;
-    }
-
-    public boolean isNotValid() {
-        return !isValid;
     }
 }

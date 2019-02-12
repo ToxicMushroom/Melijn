@@ -34,7 +34,7 @@ public class PermCommand extends Command {
         String[] args = event.getArgs().split("\\s+");
         MySQL mySQL = event.getMySQL();
 
-        Member member = event.getGuild().getMember(event.getAuthor());
+        Member member = event.getMember();
         Guild guild = event.getGuild();
         Message message = event.getMessage();
         JDA jda = event.getJDA();

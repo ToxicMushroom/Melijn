@@ -35,7 +35,6 @@ public class MySQL {
     private final HikariDataSource ds;
     private final Logger logger = LoggerFactory.getLogger(MySQL.class.getName());
 
-
     private long currentTime = 0;
     private int currentHour = 25; //Because 25 isn't a valid hour it will be changed on the first updateUsage call
 

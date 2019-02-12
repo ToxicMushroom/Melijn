@@ -38,7 +38,7 @@ public class TempBanCommand extends Command {
                         event.reply("Unknown user");
                         return;
                     }
-                    if (!event.getMessageHelper().isRightFormat(time)) {
+                    if (event.getMessageHelper().isWrongFormat(time)) {
                         event.reply("`" + time + "` is not the right format.\n**Format:** (number)(*timeunit*) *timeunit* = s, m, h, d, M or y\n**Example:** 1__m__ (1 __minute__)");
                         return;
                     }

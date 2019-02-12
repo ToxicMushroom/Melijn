@@ -12,6 +12,9 @@ import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -23,6 +26,7 @@ public class MessageHelper {
     private final Pattern youtubePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtube\\.com))/watch(.*?)");
     private final Pattern youtuBePattern = Pattern.compile("^((?:https?:)?//)?((?:www|m)\\.)?((?:youtu\\.be/))(.*?)");
     private final Pattern datePattern = Pattern.compile("(\\d+):(\\d+):(\\d+)s (\\d+)/(\\d+)/(\\d+)");
+    private static final Random random = new Random();
     private final Pattern prefixPattern;
     private final Melijn melijn;
 
@@ -32,14 +36,13 @@ public class MessageHelper {
     }
 
     public String millisToDate(long millis) {
-        Calendar start = Calendar.getInstance();
-        start.setTimeInMillis(millis);
-        int mYear = start.get(Calendar.YEAR);
-        int mMonth = start.get(Calendar.MONTH);
-        int mDay = start.get(Calendar.DAY_OF_MONTH);
-        int mHour = start.get(Calendar.HOUR_OF_DAY);
-        int mMinutes = start.get(Calendar.MINUTE);
-        int mSeconds = start.get(Calendar.SECOND);
+        LocalDateTime dateTime = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDateTime();
+        int mYear = dateTime.getYear();
+        int mMonth = dateTime.getMonthValue();
+        int mDay = dateTime.getDayOfMonth();
+        int mHour = dateTime.getHour();
+        int mMinutes = dateTime.getMinute();
+        int mSeconds = dateTime.getSecond();
         return mHour + ":" + mMinutes + ":" + mSeconds + "s " + mDay + "/" + mMonth + "/" + mYear;
     }
 
@@ -61,13 +64,11 @@ public class MessageHelper {
                 year < 2016)
             return -1;
 
-        Calendar start = Calendar.getInstance();
-        start.set(year, month, day, hour, minutes, seconds);
-        return start.getTimeInMillis();
+        return LocalDateTime.of(year, month, day, hour, minutes, seconds).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000;
     }
 
-    public boolean isRightFormat(String string) {
-        return string.matches("\\d{0,18}[smhdwMy]");
+    public boolean isWrongFormat(String string) {
+        return !string.matches("\\d{0,18}[smhdwMy]");
     }
 
     public long easyFormatToSeconds(String string) {
@@ -187,7 +188,6 @@ public class MessageHelper {
     }
 
     public int randInt(int start, int end) {
-        Random random = new Random();
         return random.nextInt(end + 1 - start) + start;
     }
 
@@ -250,10 +250,8 @@ public class MessageHelper {
 
     public void argsToSongName(String[] args, StringBuilder sb, Set<String> providers) {
         if (providers.contains(args[0].toLowerCase())) {
-            int i = 0;
-            for (String s : args) {
-                if (i != 0) sb.append(s).append(" ");
-                i++;
+            for (int i = 1; i < args.length; i++) {
+                sb.append(args[i]).append(" ");
             }
         } else {
             for (String s : args) {

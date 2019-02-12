@@ -76,8 +76,6 @@ public class Variables {
     public final LoadingCache<Long, Long> musicChannelCache;
     public DiscordBotListAPI dblAPI = null;
 
-
-
     public long startTime = 0;
     public double queryAmount = 0.0;
     public double timerAmount = 0.0;

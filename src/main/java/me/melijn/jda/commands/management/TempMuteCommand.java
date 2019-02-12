@@ -42,7 +42,7 @@ public class TempMuteCommand extends Command {
                 event.reply("Unknown " + (target == null ? "user" : "member"));
                 return;
             }
-            if (!event.getMessageHelper().isRightFormat(args[1])) {
+            if (event.getMessageHelper().isWrongFormat(args[1])) {
                 event.reply("`" + args[1] + "` is not the right format.\n**Format:** (number)(*timeunit*) *timeunit* = s, m, h, d, M or y\n**Example:** 1__m__ (1 __minute__)");
                 return;
             }
