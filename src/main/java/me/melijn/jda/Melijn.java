@@ -6,18 +6,6 @@ import me.melijn.jda.audio.Lava;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandClient;
 import me.melijn.jda.blub.CommandClientBuilder;
-import me.melijn.jda.commands.DonateCommand;
-import me.melijn.jda.commands.HelpCommand;
-import me.melijn.jda.commands.InviteCommand;
-import me.melijn.jda.commands.VoteCommand;
-import me.melijn.jda.commands.developer.EvalCommand;
-import me.melijn.jda.commands.developer.ShutdownCommand;
-import me.melijn.jda.commands.developer.TestCommand;
-import me.melijn.jda.commands.developer.WeebshCommand;
-import me.melijn.jda.commands.fun.*;
-import me.melijn.jda.commands.management.*;
-import me.melijn.jda.commands.music.*;
-import me.melijn.jda.commands.util.*;
 import me.melijn.jda.db.MySQL;
 import me.melijn.jda.db.Variables;
 import me.melijn.jda.events.AddReaction;
@@ -34,6 +22,7 @@ import net.dv8tion.jda.core.utils.cache.CacheFlag;
 import okhttp3.OkHttpClient;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.jooby.Jooby;
+import org.reflections.Reflections;
 
 import javax.security.auth.login.LoginException;
 import java.net.URI;
@@ -155,7 +144,6 @@ public class Melijn {
                 }
         );
     }
-
 
     public WebUtils getWebUtils() {
         return webUtils;
