@@ -57,7 +57,6 @@ public class Melijn {
 
     private Melijn() throws LoginException {
         config = new Config();
-        if (config.isNotValid()) throw new RuntimeException("Config error");
         mySQL = new MySQL(
                 this,
                 config.getValue("ipaddress"),
@@ -79,7 +78,10 @@ public class Melijn {
 
         aPrivate = new Private(webUtils);
         taskManager = new TaskManager(messageHelper);
+        shardManager = initJDA();
+    }
 
+    private ShardManager initJDA() throws LoginException {
         CommandClient commandClient = new CommandClientBuilder(this, OWNERID)
                 .addCommands(
                         new BirdCommand(), //Only add commands at the end of the list for because of commandIndexes
@@ -199,7 +201,12 @@ public class Melijn {
         lavalink.setAutoReconnect(true);
         lava.init(lavalink);
 
-        shardManager = new DefaultShardManagerBuilder()
+        RestAction.setPassContext(true);
+
+        taskManager.async(() -> Jooby.run(() -> new Application(this), "application.port=" + config.getValue("restPort")));
+        Thread.setDefaultUncaughtExceptionHandler((thread, exception) -> messageHelper.printException(thread, exception, null, null));
+
+        return new DefaultShardManagerBuilder()
                 .setShardsTotal(Integer.parseInt(config.getValue("shardCount")))
                 .setToken(config.getValue("token"))
                 .setGame(Game.playing(PREFIX + "help | melijn.com"))
@@ -214,10 +221,6 @@ public class Melijn {
                 .setHttpClient(new OkHttpClient.Builder().hostnameVerifier(new NoopHostnameVerifier()).build())
                 .setCallbackPool(taskManager.getExecutorService())
                 .build();
-        RestAction.setPassContext(true);
-
-        taskManager.async(() -> Jooby.run(() -> new Application(this), "application.port=" + config.getValue("restPort")));
-        Thread.setDefaultUncaughtExceptionHandler((thread, exception) -> messageHelper.printException(thread, exception, null, null));
     }
 
     public static void main(String[] args) {
