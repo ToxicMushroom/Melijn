@@ -3,6 +3,7 @@ package me.melijn.jda;
 import com.neovisionaries.ws.client.WebSocketFactory;
 import lavalink.client.io.jda.JdaLavalink;
 import me.melijn.jda.audio.Lava;
+import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandClient;
 import me.melijn.jda.blub.CommandClientBuilder;
 import me.melijn.jda.commands.DonateCommand;
@@ -38,6 +39,7 @@ import javax.security.auth.login.LoginException;
 import java.net.URI;
 import java.util.Base64;
 import java.util.EnumSet;
+import java.util.Set;
 
 public class Melijn {
 
@@ -82,115 +84,9 @@ public class Melijn {
     }
 
     private ShardManager initJDA() throws LoginException {
-        CommandClient commandClient = new CommandClientBuilder(this, OWNERID)
-                .addCommands(
-                        new BirdCommand(), //Only add commands at the end of the list for because of commandIndexes
-                        new UrbanCommand(),
-                        new BlurpleCommand(),
-                        new InvertCommand(),
-                        new SetVerificationThresholdCommand(),
-                        new SetUnverifiedRoleCommand(),
-                        new SetVerificationCodeCommand(),
-                        new SetVerificationChannelCommand(),
-                        new ShardsCommand(),
-                        new ClearChannelCommand(),
-                        new NyanCatCommand(),
-                        new SummonCommand(),
-                        new ForwardCommand(),
-                        new RewindCommand(),
-                        new CryCommand(),
-                        new ShrugCommand(),
-                        new DabCommand(),
-                        new HighfiveCommand(),
-                        new WastedCommand(),
-                        new LewdCommand(),
-                        new PunchCommand(),
-                        new ShuffleCommand(),
-                        new EvalCommand(),
-                        new WeebshCommand(),
-                        new SayCommand(),
-                        new DiscordMemeCommand(),
-                        new LoopQueueCommand(),
-                        new SetNotifications(),
-                        new VoteCommand(),
-                        new InviteCommand(),
-                        new SetJoinLeaveChannelCommand(),
-                        new SetJoinRoleCommand(),
-                        new SetJoinMessageCommand(),
-                        new SetLeaveMessageCommand(),
-                        new TriggeredCommand(),
-                        new SlapCommand(),
-                        new PatCommand(),
-                        new FilterCommand(),
-                        new PotatoCommand(),
-                        new PauseCommand(),
-                        new SPlayCommand(),
-                        new BanCommand(),
-                        new HistoryCommand(),
-                        new MuteCommand(),
-                        new SetMuteRoleCommand(),
-                        new TempMuteCommand(),
-                        new UnmuteCommand(),
-                        new KickCommand(),
-                        new AvatarCommand(),
-                        new WarnCommand(),
-                        new PurgeCommand(),
-                        new HelpCommand(),
-                        new PingCommand(),
-                        new PlayCommand(),
-                        new QueueCommand(),
-                        new CatCommand(),
-                        new SkipCommand(),
-                        new ClearCommand(),
-                        new StopCommand(),
-                        new ResumeCommand(),
-                        new VolumeCommand(),
-                        new InfoCommand(),
-                        new UserInfoCommand(),
-                        new LoopCommand(),
-                        new TextToEmojiCommand(),
-                        new SeekCommand(),
-                        new PermCommand(),
-                        new NowPlayingCommand(),
-                        new RemoveCommand(),
-                        new GuildInfoCommand(),
-                        new RolesCommand(),
-                        new RoleCommand(),
-                        new DogCommand(),
-                        new SetPrefixCommand(),
-                        new SetMusicChannelCommand(),
-                        new SetLogChannelCommand(),
-                        new TempBanCommand(),
-                        new UnbanCommand(),
-                        new SetStreamerModeCommand(),
-                        new SetStreamUrlCommand(),
-                        new VerifyCommand(),
-                        new EnableCommand(),
-                        new DisableCommand(),
-                        new MetricsCommand(),
-                        new SettingsCommand(),
-                        new DonateCommand(),
-                        new SlowModeCommand(),
-                        new UnicodeCommand(),
-                        new AlpacaCommand(),
-                        new StatsCommand(),
-                        new KissCommand(),
-                        new HugCommand(),
-                        new SpookifyCommand(),
-                        new SelfRoleCommand(),
-                        new SetSelfRoleChannelCommand(),
-                        new CustomCommandCommand(),
-                        new ShutdownCommand(),
-                        new PollCommand(),
-                        new DiceCommand(),
-                        new TestCommand(),
-                        new SetEmbedColorCommand(),
-                        new EmotesCommand(),
-                        new PrivatePrefixCommand(),
-                        new CooldownCommand(),
-                        new SetVerificationTypeCommand(),
-                        new RestartCommand()
-                ).build();
+        CommandClient commandClient = new CommandClientBuilder(this, OWNERID).build();
+
+        loadCommands(commandClient);
 
         JdaLavalink lavalink = new JdaLavalink(
                 getIdFromToken(config.getValue("token")),
@@ -242,6 +138,24 @@ public class Melijn {
                 )
         );
     }
+
+    private void loadCommands(CommandClient client) {
+        Reflections reflections = new Reflections("me.melijn.jda.commands");
+
+        Set<Class<? extends Command>> commands = reflections.getSubTypesOf(Command.class);
+
+        commands.forEach(
+                (command) -> {
+                    try {
+                        Command cmd = command.getDeclaredConstructor().newInstance();
+
+                        client.addCommand(cmd);
+                    } catch (Exception ignored) {
+                    }
+                }
+        );
+    }
+
 
     public WebUtils getWebUtils() {
         return webUtils;

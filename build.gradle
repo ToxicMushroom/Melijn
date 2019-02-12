@@ -53,5 +53,7 @@ dependencies {
 
     //https://mvnrepository.com/artifact/com.google.apis/google-api-services-youtube
     implementation 'com.google.apis:google-api-services-youtube:v3-rev206-1.25.0'
+
+    implementation group: 'org.reflections', name: 'reflections', version: '0.9.11'
 }
 compileJava.options.encoding = 'UTF-8'
