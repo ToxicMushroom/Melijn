@@ -23,7 +23,9 @@ dependencies {
     implementation 'com.github.FredBoat:Lavalink-Client:1a4b0f5'
 
     //https://search.maven.org/artifact/com.zaxxer/HikariCP
-    implementation 'com.zaxxer:HikariCP:3.3.0'
+    //https://mvnrepository.com/artifact/mysql/mysql-connector-java
+    implementation 'com.zaxxer:HikariCP:3.3.1'
+    implementation 'mysql:mysql-connector-java:8.0.15'
 
     //https://mvnrepository.com/artifact/org.codehaus.janino/janino
     implementation 'org.codehaus.janino:janino:3.0.12'
@@ -31,9 +33,6 @@ dependencies {
 
     //https://bintray.com/duncte123/weeb.java/weeb.java
     implementation 'me.duncte123:weebJava:2.2.0_25'
-
-    //https://mvnrepository.com/artifact/mysql/mysql-connector-java
-    implementation 'mysql:mysql-connector-java:8.0.14'
 
     //https://jitpack.io/#DiscordBotList/DBL-Java-Library
     implementation 'com.github.DiscordBotList:DBL-Java-Library:2.0.1'
@@ -48,12 +47,13 @@ dependencies {
     implementation 'ch.qos.logback:logback-core:1.2.3'
 
     //https://mvnrepository.com/artifact/org.jooby/jooby
-    implementation 'org.jooby:jooby-netty:1.5.1'
-    implementation 'org.jooby:jooby-jackson:1.5.1'
+    implementation 'org.jooby:jooby-netty:1.6.0'
+    implementation 'org.jooby:jooby-jackson:1.6.0'
 
     //https://mvnrepository.com/artifact/com.google.apis/google-api-services-youtube
     implementation 'com.google.apis:google-api-services-youtube:v3-rev206-1.25.0'
 
-    implementation group: 'org.reflections', name: 'reflections', version: '0.9.11'
+    //https://mvnrepository.com/artifact/org.reflections/reflections
+    implementation 'org.reflections:reflections:0.9.11'
 }
 compileJava.options.encoding = 'UTF-8'
