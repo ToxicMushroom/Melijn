@@ -6,14 +6,13 @@ import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.utils.Embedder;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Role;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionRemoveEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -172,6 +171,28 @@ public class AddReaction extends ListenerAdapter {
                     guild.getController().addSingleRoleToMember(event.getMember(), role).reason("SelfRole added").queue();
                 });
             });
+        if (melijn.getVariables().reactionLogChannelCache.getUnchecked(guild.getIdLong()) != -1L) {
+            TextChannel textChannel = guild.getTextChannelById(melijn.getVariables().reactionLogChannelCache.getUnchecked(guild.getIdLong()));
+            User user = event.getUser();
+            MessageReaction.ReactionEmote reactionEmote = event.getReactionEmote();
+            if (textChannel != null && guild.getSelfMember().hasPermission(textChannel, Permission.MESSAGE_WRITE)) {
+                textChannel.sendMessage(new EmbedBuilder()
+                        .setTitle("Reaction added in #" + textChannel.getName() + " ".repeat(80).substring(0, 55 - user.getName().length()) + "\u200B")
+                        .setColor(Color.WHITE)
+                        .setDescription("```LDIF" +
+                                "\nUserID: " + user.getName() + "#" + user.getDiscriminator() +
+                                "\nMessageID: " + event.getMessageIdLong() +
+                                "\n" + (reactionEmote.isEmote() ? "Emote" : "Emoji") + ": " + event.getReactionEmote().getName() +
+                                (reactionEmote.isEmote() ? "\nEmoteId: " + reactionEmote.getId() : "") +
+                                "\nMoment: " + melijn.getMessageHelper().millisToDate(System.currentTimeMillis()) +
+                                "\n```")
+
+                        .setThumbnail(reactionEmote.isEmote() ? reactionEmote.getEmote().getImageUrl() + "?size=2048" : null)
+                        .setFooter("Reacted by: " + user.getName() + "#" + user.getDiscriminator(), user.getEffectiveAvatarUrl())
+                        .build()
+                ).queue();
+            }
+        }
     }
 
     @Override

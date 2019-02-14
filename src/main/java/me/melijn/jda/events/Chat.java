@@ -18,6 +18,7 @@ import net.dv8tion.jda.core.utils.MiscUtil;
 import org.json.JSONObject;
 
 import java.awt.*;
+import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -54,6 +55,7 @@ public class Chat extends ListenerAdapter {
         Guild guild = event.getGuild();
         long guildId = guild.getIdLong();
         User author = event.getAuthor();
+
         if (event.getMember() == null) return;
         if (melijn.getVariables().userBlackList.contains(guild.getOwnerIdLong())) return;
         melijn.getHelpers().guildCount = event.getJDA().asBot().getShardManager().getGuildCache().size();

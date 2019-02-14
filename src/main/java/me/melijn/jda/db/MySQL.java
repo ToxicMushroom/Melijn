@@ -97,6 +97,7 @@ public class MySQL {
             executeUpdate("CREATE TABLE IF NOT EXISTS pm_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS fm_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS em_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS reaction_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS music_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS welcome_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS music_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
@@ -104,7 +105,6 @@ public class MySQL {
             executeUpdate("CREATE TABLE IF NOT EXISTS self_role_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
 
             //Other settings
-
             executeUpdate("CREATE TABLE IF NOT EXISTS embed_colors(guildId bigint, color bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS cooldowns(guildId bigint, commandId int, cooldown int, UNIQUE KEY (guildId, commandId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS stream_urls(guildId bigint, url varchar(2048), PRIMARY KEY (guildId))");

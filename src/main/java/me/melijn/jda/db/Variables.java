@@ -11,6 +11,7 @@ import net.dv8tion.jda.core.entities.Message;
 import org.discordbots.api.client.DiscordBotListAPI;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -72,6 +73,7 @@ public class Variables {
     public final LoadingCache<Long, Long> odmLogChannelCache;
     public final LoadingCache<Long, Long> pmLogChannelCache;
     public final LoadingCache<Long, Long> fmLogChannelCache;
+    public final LoadingCache<Long, Long> reactionLogChannelCache;
 
     public final LoadingCache<Long, Long> musicChannelCache;
     public DiscordBotListAPI dblAPI = null;
@@ -329,6 +331,14 @@ public class Variables {
                 .build(new CacheLoader<>() {
                     public Long load(@NotNull Long key) {
                         return melijn.getMySQL().getChannelId(key, ChannelType.FM_LOG);
+                    }
+                });
+        reactionLogChannelCache = CacheBuilder.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(new CacheLoader<>() {
+                    public Long load(@NotNull Long key) {
+                        return melijn.getMySQL().getChannelId(key, ChannelType.REACTION_LOG);
                     }
                 });
 
