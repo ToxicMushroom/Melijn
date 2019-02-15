@@ -74,6 +74,7 @@ public class Variables {
     public final LoadingCache<Long, Long> pmLogChannelCache;
     public final LoadingCache<Long, Long> fmLogChannelCache;
     public final LoadingCache<Long, Long> reactionLogChannelCache;
+    public final LoadingCache<Long, Long> attachmentLogChannelCache;
 
     public final LoadingCache<Long, Long> musicChannelCache;
     public DiscordBotListAPI dblAPI = null;
@@ -339,6 +340,14 @@ public class Variables {
                 .build(new CacheLoader<>() {
                     public Long load(@NotNull Long key) {
                         return melijn.getMySQL().getChannelId(key, ChannelType.REACTION_LOG);
+                    }
+                });
+        attachmentLogChannelCache = CacheBuilder.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(new CacheLoader<>() {
+                    public Long load(@NotNull Long key) {
+                        return melijn.getMySQL().getChannelId(key, ChannelType.ATTACHMENT_LOG);
                     }
                 });
 
