@@ -98,11 +98,13 @@ public class MySQL {
             executeUpdate("CREATE TABLE IF NOT EXISTS fm_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS em_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS reaction_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS attachment_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS music_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS welcome_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS music_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS verification_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS self_role_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
+
 
             //Other settings
             executeUpdate("CREATE TABLE IF NOT EXISTS embed_colors(guildId bigint, color bigint, PRIMARY KEY (guildId))");
@@ -443,38 +445,38 @@ public class MySQL {
     public boolean setTempBan(User author, User target, Guild guild, String reasonRaw, long seconds) {
         final String reason = reasonRaw.matches("\\s+|") ? "N/A" : reasonRaw;
         if (seconds <= 0) return false;
-            long moment = System.currentTimeMillis();
-            long until = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(seconds);
-            String namet = target.getName() + "#" + target.getDiscriminator();
-            String name = author.getName() + "#" + author.getDiscriminator();
-            EmbedBuilder banned = new EmbedBuilder();
-            banned.setColor(Color.RED);
-            banned.setDescription("```LDIF" +
-                    "\nBanned: " + namet +
-                    "\nTargetID: " + target.getId() +
-                    "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") +
-                    "\nGuild: " + guild.getName() +
-                    "\nFrom: " + melijn.getMessageHelper().millisToDate(moment) +
-                    "\nUntil: " + melijn.getMessageHelper().millisToDate(until) + "```");
-            banned.setThumbnail(target.getEffectiveAvatarUrl());
-            banned.setAuthor("Banned by: " + name + " ".repeat(80).substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
+        long moment = System.currentTimeMillis();
+        long until = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(seconds);
+        String namet = target.getName() + "#" + target.getDiscriminator();
+        String name = author.getName() + "#" + author.getDiscriminator();
+        EmbedBuilder banned = new EmbedBuilder();
+        banned.setColor(Color.RED);
+        banned.setDescription("```LDIF" +
+                "\nBanned: " + namet +
+                "\nTargetID: " + target.getId() +
+                "\nReason: " + reason.replaceAll("`", "´").replaceAll("\n", " ") +
+                "\nGuild: " + guild.getName() +
+                "\nFrom: " + melijn.getMessageHelper().millisToDate(moment) +
+                "\nUntil: " + melijn.getMessageHelper().millisToDate(until) + "```");
+        banned.setThumbnail(target.getEffectiveAvatarUrl());
+        banned.setAuthor("Banned by: " + name + " ".repeat(80).substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
-            if (!target.isBot())
-                target.openPrivateChannel().queue((privateChannel) -> privateChannel.sendMessage(banned.build()).queue(
-                        (success) -> guild.getController().ban(target, 7, reason).queue(),
-                        (failed) -> guild.getController().ban(target, 7, reason).queue()
-                ), (failed) -> guild.getController().ban(target, 7, reason).queue());
-            TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().banLogChannelCache.getUnchecked(guild.getIdLong()));
-            if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
-                if (target.isBot())
-                    logChannel.sendMessage(banned.build()).append("Target is a bot").queue();
-                else logChannel.sendMessage(banned.build()).queue();
-            }
-            executeUpdate("INSERT INTO active_bans (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE authorId= ?, reason= ?, startTime= ?, endTime= ?; " +
-                            "INSERT INTO history_bans (guildId, victimId, authorId, reason, startTime, endTime, active) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                    guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, until, author.getIdLong(), reason, moment, until,
-                    guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, until, true);
-            return true;
+        if (!target.isBot())
+            target.openPrivateChannel().queue((privateChannel) -> privateChannel.sendMessage(banned.build()).queue(
+                    (success) -> guild.getController().ban(target, 7, reason).queue(),
+                    (failed) -> guild.getController().ban(target, 7, reason).queue()
+            ), (failed) -> guild.getController().ban(target, 7, reason).queue());
+        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().banLogChannelCache.getUnchecked(guild.getIdLong()));
+        if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
+            if (target.isBot())
+                logChannel.sendMessage(banned.build()).append("Target is a bot").queue();
+            else logChannel.sendMessage(banned.build()).queue();
+        }
+        executeUpdate("INSERT INTO active_bans (guildId, victimId, authorId, reason, startTime, endTime) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE authorId= ?, reason= ?, startTime= ?, endTime= ?; " +
+                        "INSERT INTO history_bans (guildId, victimId, authorId, reason, startTime, endTime, active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, until, author.getIdLong(), reason, moment, until,
+                guild.getIdLong(), target.getIdLong(), author.getIdLong(), reason, moment, until, true);
+        return true;
     }
 
     public boolean setPermBan(User author, User target, Guild guild, String reasonRaw) {
@@ -546,7 +548,8 @@ public class MySQL {
         }
 
         guild.getController().unban(toUnban.getId()).queue(success -> {
-        }, failed -> {});
+        }, failed -> {
+        });
         return true;
     }
 
@@ -1770,8 +1773,15 @@ public class MySQL {
     }
 
     public void clearQueues() {
-        executeUpdate("TRUNCATE saved_queues");
-        logger.info("Truncated queues");
+        try (Connection connection = ds.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.executeUpdate("TRUNCATE saved_queues");
+            logger.info("Truncated queues");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            logger.error("Not truncated queues");
+        }
+
     }
 
     public Integer getEmbedColor(Long guildId) {
