@@ -4,7 +4,6 @@ import com.neovisionaries.ws.client.WebSocketFactory;
 import lavalink.client.io.jda.JdaLavalink;
 import me.melijn.jda.audio.Lava;
 import me.melijn.jda.blub.Command;
-import me.melijn.jda.blub.CommandClient;
 import me.melijn.jda.blub.CommandClientBuilder;
 import me.melijn.jda.db.MySQL;
 import me.melijn.jda.db.Variables;
@@ -73,9 +72,9 @@ public class Melijn {
     }
 
     private ShardManager initJDA() throws LoginException {
-        CommandClient commandClient = new CommandClientBuilder(this, OWNERID).build();
+        CommandClientBuilder commandClientBuilder = new CommandClientBuilder(this, OWNERID);
 
-        loadCommands(commandClient);
+        loadCommands(commandClientBuilder);
 
         JdaLavalink lavalink = new JdaLavalink(
                 getIdFromToken(config.getValue("token")),
@@ -96,7 +95,7 @@ public class Melijn {
                 .setToken(config.getValue("token"))
                 .setGame(Game.playing(PREFIX + "help | melijn.com"))
                 .setAutoReconnect(true)
-                .addEventListeners(commandClient, lavalink,
+                .addEventListeners(commandClientBuilder.build(), lavalink,
                         new JoinLeave(this),
                         new AddReaction(this),
                         new Channels(this),
@@ -128,16 +127,14 @@ public class Melijn {
         );
     }
 
-    private void loadCommands(CommandClient client) {
+    private void loadCommands(CommandClientBuilder client) {
         Reflections reflections = new Reflections("me.melijn.jda.commands");
 
         Set<Class<? extends Command>> commands = reflections.getSubTypesOf(Command.class);
-
         commands.forEach(
                 (command) -> {
                     try {
                         Command cmd = command.getDeclaredConstructor().newInstance();
-
                         client.addCommand(cmd);
                     } catch (Exception ignored) {
                     }

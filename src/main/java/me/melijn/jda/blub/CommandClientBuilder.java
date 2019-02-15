@@ -20,16 +20,9 @@ public class CommandClientBuilder {
         return new CommandClientImpl(melijn, ownerId, commands);
     }
 
-    private CommandClientBuilder addCommand(Command command) {
+    public CommandClientBuilder addCommand(Command command) {
         commands.add(command);
-        return this;
-    }
-
-    public CommandClientBuilder addCommands(Command... commands) {
-        for (Command command : commands) {
-            addCommand(command);
-            melijn.getMySQL().addCommand(command);
-        }
+        melijn.getMySQL().addCommand(command);
         return this;
     }
 }
