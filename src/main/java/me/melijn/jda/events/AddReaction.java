@@ -177,7 +177,7 @@ public class AddReaction extends ListenerAdapter {
             MessageReaction.ReactionEmote reactionEmote = event.getReactionEmote();
             if (textChannel != null && guild.getSelfMember().hasPermission(textChannel, Permission.MESSAGE_WRITE)) {
                 textChannel.sendMessage(new EmbedBuilder()
-                        .setTitle("Reaction added in #" + textChannel.getName() + " ".repeat(80).substring(0, 55 - user.getName().length()) + "\u200B")
+                        .setTitle("Reaction added in #" + event.getChannel().getName() + " ".repeat(80).substring(0, 55 - user.getName().length()) + "\u200B")
                         .setColor(Color.WHITE)
                         .setDescription("```LDIF" +
                                 "\nUserID: " + user.getName() + "#" + user.getDiscriminator() +
