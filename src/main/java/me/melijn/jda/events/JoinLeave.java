@@ -61,7 +61,6 @@ public class JoinLeave extends ListenerAdapter {
             }
         }
         melijn.getMySQL().clearQueues();
-
     }
 
     @Override
