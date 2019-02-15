@@ -51,7 +51,7 @@ public class UnicodeCommand extends Command {
                         hex.insert(0, "0");
                     builder.append("\n`\\u").append(hex).append("`   ");
                 }
-                builder.append(String.valueOf(chars)).append("   _").append(Character.getName(code)).append("_");
+                builder.append(String.valueOf(chars)).append("   _").append(Character.getName(code)).append("_\n");
             });
             event.getMessageHelper().sendSplitMessage(event.getTextChannel(), builder.toString());
         } else {
