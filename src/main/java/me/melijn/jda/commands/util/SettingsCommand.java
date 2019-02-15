@@ -49,6 +49,8 @@ public class SettingsCommand extends Command {
                                 "\n**PMLogChannel:** " + idToChannelMention(event.getVariables().pmLogChannelCache.getUnchecked(guildId)) +
                                 "\n**FMLogChannel:** " + idToChannelMention(event.getVariables().fmLogChannelCache.getUnchecked(guildId)) +
                                 "\n**EMLogChannel:** " + idToChannelMention(event.getVariables().emLogChannelCache.getUnchecked(guildId)) +
+                                "\n**ReactionChannel:** " + idToChannelMention(event.getVariables().reactionLogChannelCache.getUnchecked(guildId)) +
+                                "\n**AttachmentChannel:** " + idToChannelMention(event.getVariables().attachmentLogChannelCache.getUnchecked(guildId)) +
                                 "\n" +
                                 "\n**JoinMessage: " + stringToString(event.getVariables().joinMessages.getUnchecked(guildId).replaceAll("`", "´"), true) +
                                 "\n\nLeaveMessage: " + stringToString(event.getVariables().leaveMessages.getUnchecked(guildId).replaceAll("`", "´"), true) +
