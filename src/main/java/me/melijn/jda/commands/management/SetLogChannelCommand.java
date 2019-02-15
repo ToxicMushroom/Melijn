@@ -47,6 +47,7 @@ public class SetLogChannelCommand extends Command {
                                 event.getMySQL().removeChannel(guild.getIdLong(), ChannelType.FM_LOG);
                                 event.getMySQL().removeChannel(guild.getIdLong(), ChannelType.EM_LOG);
                                 event.getMySQL().removeChannel(guild.getIdLong(), ChannelType.REACTION_LOG);
+                                event.getMySQL().removeChannel(guild.getIdLong(), ChannelType.ATTACHMENT_LOG);
                                 event.getVariables().banLogChannelCache.invalidate(guild.getIdLong());
                                 event.getVariables().muteLogChannelCache.invalidate(guild.getIdLong());
                                 event.getVariables().kickLogChannelCache.invalidate(guild.getIdLong());
@@ -58,6 +59,7 @@ public class SetLogChannelCommand extends Command {
                                 event.getVariables().fmLogChannelCache.invalidate(guild.getIdLong());
                                 event.getVariables().emLogChannelCache.invalidate(guild.getIdLong());
                                 event.getVariables().reactionLogChannelCache.invalidate(guild.getIdLong());
+                                event.getVariables().attachmentLogChannelCache.invalidate(guild.getIdLong());
                             });
                             event.reply("All LogChannels have been changed to nothing by **" + event.getFullAuthorName() + "**");
                         } else {
@@ -74,6 +76,7 @@ public class SetLogChannelCommand extends Command {
                                 event.getMySQL().setChannel(guild.getIdLong(), id, ChannelType.FM_LOG);
                                 event.getMySQL().setChannel(guild.getIdLong(), id, ChannelType.EM_LOG);
                                 event.getMySQL().setChannel(guild.getIdLong(), id, ChannelType.REACTION_LOG);
+                                event.getMySQL().setChannel(guild.getIdLong(), id, ChannelType.ATTACHMENT_LOG);
                                 event.getVariables().banLogChannelCache.put(event.getGuildId(), id);
                                 event.getVariables().muteLogChannelCache.put(event.getGuildId(), id);
                                 event.getVariables().kickLogChannelCache.put(event.getGuildId(), id);
@@ -85,6 +88,7 @@ public class SetLogChannelCommand extends Command {
                                 event.getVariables().fmLogChannelCache.put(event.getGuildId(), id);
                                 event.getVariables().emLogChannelCache.put(event.getGuildId(), id);
                                 event.getVariables().reactionLogChannelCache.put(event.getGuildId(), id);
+                                event.getVariables().attachmentLogChannelCache.put(event.getGuildId(), id);
                             });
                             event.reply("All LogChannels have been changed to <#" + id + "> by **" + event.getFullAuthorName() + "**");
                         }
@@ -149,6 +153,11 @@ public class SetLogChannelCommand extends Command {
                         chosenType = ChannelType.REACTION_LOG;
                         setLogChannel(event, chosenType, id, event.getVariables().reactionLogChannelCache);
                         break;
+                    case "attachment":
+                    case "attachments":
+                        chosenType = ChannelType.ATTACHMENT_LOG;
+                        setLogChannel(event, chosenType, id, event.getVariables().attachmentLogChannelCache);
+                        break;
                     default:
                         event.sendUsage(this, event);
                         break;
@@ -168,6 +177,7 @@ public class SetLogChannelCommand extends Command {
                         TextChannel musicChannel = guild.getTextChannelById(event.getVariables().musicLogChannelCache.getUnchecked(guild.getIdLong()));
                         TextChannel emChannel = guild.getTextChannelById(event.getVariables().emLogChannelCache.getUnchecked(guild.getIdLong()));
                         TextChannel reactionChannel = guild.getTextChannelById(event.getVariables().reactionLogChannelCache.getUnchecked(guild.getIdLong()));
+                        TextChannel attachmentChannel = guild.getTextChannelById(event.getVariables().attachmentLogChannelCache.getUnchecked(guild.getIdLong()));
 
                         builder.append("**Log Channels :clipboard:**\n")
                                 .append("  Bans: ").append(banChannel == null ? "unset" : banChannel.getAsMention()).append("\n")
@@ -180,7 +190,8 @@ public class SetLogChannelCommand extends Command {
                                 .append("  FilteredMessages: ").append(fmChannel == null ? "unset" : fmChannel.getAsMention()).append("\n")
                                 .append("  Music: ").append(musicChannel == null ? "unset" : musicChannel.getAsMention()).append("\n")
                                 .append("  MessageEdits: ").append(emChannel == null ? "unset" : emChannel.getAsMention()).append("\n")
-                                .append("  Reactions: ").append(reactionChannel == null ? "unset" : reactionChannel.getAsMention()).append("\n");
+                                .append("  Reactions: ").append(reactionChannel == null ? "unset" : reactionChannel.getAsMention()).append("\n")
+                                .append("  Attachments: ").append(attachmentChannel == null ? "unset" : attachmentChannel.getAsMention()).append("\n");
                         event.reply(builder.toString());
                         break;
 
@@ -251,6 +262,11 @@ public class SetLogChannelCommand extends Command {
                     case "reactions":
                         reactionChannel = guild.getTextChannelById(event.getVariables().reactionLogChannelCache.getUnchecked(guild.getIdLong()));
                         event.reply("**Reaction Log \uD83D\uDC4C**\n" + (reactionChannel == null ? "unset" : reactionChannel.getAsMention()));
+                        break;
+                    case "attachment":
+                    case "attachments":
+                        attachmentChannel = guild.getTextChannelById(event.getVariables().attachmentLogChannelCache.getUnchecked(guild.getIdLong()));
+                        event.reply("**Reaction Log \uD83D\uDC4C**\n" + (attachmentChannel == null ? "unset" : attachmentChannel.getAsMention()));
                         break;
                     default:
                         event.sendUsage(this, event);

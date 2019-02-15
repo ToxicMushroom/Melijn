@@ -18,7 +18,6 @@ import net.dv8tion.jda.core.utils.MiscUtil;
 import org.json.JSONObject;
 
 import java.awt.*;
-import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -67,6 +66,9 @@ public class Chat extends ListenerAdapter {
         String finalContent = content.toString();
 
         melijn.getTaskManager().async(() -> {
+            long attachmentsId = melijn.getVariables().attachmentLogChannelCache.getUnchecked(guildId);
+            if (attachmentsId != -1)
+                postAttachmentLog(guild, author, event.getChannel(), attachmentsId, event.getMessage().getAttachments());
             if (melijn.getVariables().sdmLogChannelCache.getUnchecked(guildId) != -1 ||
                     melijn.getVariables().odmLogChannelCache.getUnchecked(guildId) != -1 ||
                     melijn.getVariables().pmLogChannelCache.getUnchecked(guildId) != -1 ||
@@ -126,6 +128,27 @@ public class Chat extends ListenerAdapter {
                         failed -> {}
                 );
             }
+        }
+    }
+
+    private void postAttachmentLog(Guild guild, User author, TextChannel origin, long attachmentsId, List<Message.Attachment> attachments) {
+        TextChannel textChannel = guild.getTextChannelById(attachmentsId);
+        if (textChannel == null || !guild.getSelfMember().hasPermission(textChannel, Permission.MESSAGE_WRITE)) return;
+
+        for (Message.Attachment attachment : attachments) {
+            textChannel.sendMessage(new EmbedBuilder()
+            .setTitle("Attachment sent in #" + origin.getName())
+                    .setColor(Color.decode("#DC143C"))
+                    .setDescription("```LDIF" +
+                            "\nSenderID: " + author.getId() +
+                            "\nMessageID: " + attachment.getId() +
+                            "\nURL: " + attachment.getUrl() +
+                            "```\n" +
+                            "**Attachment**: [Click to view](" + attachment.getUrl() + (attachment.isImage() ? "?size=2048" : "") + ")")
+                    .setImage(attachment.isImage() ? attachment.getUrl() + "?size=2048" : null)
+                    .setFooter("Sent by " + author.getName() + "#" + author.getDiscriminator(), author.getEffectiveAvatarUrl())
+            .build()
+            ).queue();
         }
     }
 
