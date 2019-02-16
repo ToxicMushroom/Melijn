@@ -133,7 +133,7 @@ public class Chat extends ListenerAdapter {
 
     private void postAttachmentLog(Guild guild, User author, TextChannel origin, long attachmentsId, List<Message.Attachment> attachments) {
         TextChannel textChannel = guild.getTextChannelById(attachmentsId);
-        if (textChannel == null || !guild.getSelfMember().hasPermission(textChannel, Permission.MESSAGE_WRITE)) return;
+        if (author.isBot() || textChannel == null || !guild.getSelfMember().hasPermission(textChannel, Permission.MESSAGE_WRITE)) return;
 
         for (Message.Attachment attachment : attachments) {
             textChannel.sendMessage(new EmbedBuilder()

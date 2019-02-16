@@ -33,9 +33,6 @@ public class JoinLeave extends ListenerAdapter {
         if (started || shardManager.getShardCache().stream().filter(shard -> shard.getStatus().equals(JDA.Status.CONNECTED)).count() == shardManager.getShardsTotal())
             return;
         started = true;
-        Thread.setDefaultUncaughtExceptionHandler((thread, exception) ->
-                melijn.getMessageHelper().printException(thread, exception, null, null)
-        );
 
         melijn.getVariables().dblAPI = new DiscordBotListAPI.Builder()
                 .token(melijn.getConfig().getValue("dbltoken"))

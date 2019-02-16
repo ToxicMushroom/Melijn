@@ -331,22 +331,22 @@ public class Helpers {
         return null;
     }
 
-    public void retrieveUserByArgs(CommandEvent event, String arg, Consumer<User> success) {
+    public void retrieveUserByArgs(CommandEvent event, String arg, Consumer<User> target) {
         User user = getUserByArgsN(event, arg);
         if (user != null)
-            success.accept(user);
+            target.accept(user);
         else if (arg.matches("\\d+"))
-            event.getJDA().asBot().getShardManager().retrieveUserById(arg).queue(success);
-        else success.accept(event.getAuthor());
+            event.getJDA().asBot().getShardManager().retrieveUserById(arg).queue(target, failure -> target.accept(event.getAuthor()));
+        else target.accept(event.getAuthor());
     }
 
-    public void retrieveUserByArgsN(CommandEvent event, String arg, Consumer<User> success) {
+    public void retrieveUserByArgsN(CommandEvent event, String arg, Consumer<User> target) {
         User user = getUserByArgsN(event, arg);
         if (user != null)
-            success.accept(user);
+            target.accept(user);
         else if (arg.matches("\\d+"))
-            event.getJDA().asBot().getShardManager().retrieveUserById(arg).queue(success);
-        else success.accept(null);
+            event.getJDA().asBot().getShardManager().retrieveUserById(arg).queue(target, failure -> target.accept(null));
+        else target.accept(null);
     }
 
     public long parseTimeFromArgs(String[] args) {
