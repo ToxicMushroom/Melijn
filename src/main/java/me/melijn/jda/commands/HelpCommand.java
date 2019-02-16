@@ -16,7 +16,7 @@ public class HelpCommand extends Command {
         this.commandName = "help";
         this.description = "Shows you help for commands";
         this.usage = PREFIX + commandName + " [command]";
-        this.aliases = new String[]{"commands", "cmds"};
+        this.aliases = new String[]{"commands", "cmds", "cmd"};
         this.category = Category.DEFAULT;
         this.id = 56;
     }
