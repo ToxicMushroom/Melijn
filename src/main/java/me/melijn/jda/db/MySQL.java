@@ -461,14 +461,14 @@ public class MySQL {
         banned.setThumbnail(target.getEffectiveAvatarUrl());
         banned.setAuthor("Banned by: " + name + " ".repeat(80).substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
-        if (!target.isBot())
+        if (!target.isBot() && !target.isFake())
             target.openPrivateChannel().queue((privateChannel) -> privateChannel.sendMessage(banned.build()).queue(
                     (success) -> guild.getController().ban(target, 7, reason).queue(),
                     (failed) -> guild.getController().ban(target, 7, reason).queue()
             ), (failed) -> guild.getController().ban(target, 7, reason).queue());
         TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().banLogChannelCache.getUnchecked(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
-            if (target.isBot())
+            if (target.isBot() && !target.isFake())
                 logChannel.sendMessage(banned.build()).append("Target is a bot").queue();
             else logChannel.sendMessage(banned.build()).queue();
         }
@@ -495,14 +495,14 @@ public class MySQL {
         banned.setThumbnail(target.getEffectiveAvatarUrl());
         banned.setAuthor("Banned by: " + name + " ".repeat(80).substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
-        if (!target.isBot())
+        if (!target.isBot() && !target.isFake())
             target.openPrivateChannel().queue((privateChannel) -> privateChannel.sendMessage(banned.build()).queue(
                     (success) -> guild.getController().ban(target, 7, reason).queue(),
                     (failed) -> guild.getController().ban(target, 7, reason).queue()
             ), (failed) -> guild.getController().ban(target, 7, reason).queue());
         TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().banLogChannelCache.getUnchecked(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
-            if (target.isBot())
+            if (target.isBot() && !target.isFake())
                 logChannel.sendMessage(banned.build()).append("Target is a bot").queue();
             else logChannel.sendMessage(banned.build()).queue();
         }
