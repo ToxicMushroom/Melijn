@@ -20,7 +20,7 @@ public class PollCommand extends Command {
         this.usage = PREFIX + commandName + " [channel] <\"question\"> <\"answer1\"> <\"answer2\"> [\"up to 9 answers...\"]";
         this.category = Category.MANAGEMENT;
         this.aliases = new String[]{"createPoll"};
-        this.extra = "example: >poll #announcements 7d \"Which is better?\" \"Minecraft\" \"Roblox\"";
+        this.extra = "example: >poll #announcements \"Which is better?\" \"Minecraft\" \"Roblox\"";
         this.id = 102;
     }
 
@@ -31,9 +31,10 @@ public class PollCommand extends Command {
                 event.sendUsage(this, event);
                 return;
             }
+
             String[] args = event.getArgs().substring(0, event.getArgs().replaceFirst("\".*", "").length()).split("\\s+");
             if (args.length == 0 || args[0].isEmpty()) {
-                if (noEnoughArguments(event)) return;
+                if (notEnoughArguments(event)) return;
                 String question = event.getArgs().replaceFirst("\"", "").substring(0, event.getArgs().replaceFirst("\"", "").indexOf("\""));
                 String answersString = event.getArgs().replaceFirst(Pattern.quote("\"" + question + "\"") + "(?:\\s+)?", "");
                 String[] answers = answersString.split("\"(?:\\s+)?\"");
@@ -55,7 +56,7 @@ public class PollCommand extends Command {
                     event.reply("I need the permission **Message Write** to post a poll in that channel.");
                     return;
                 }
-                if (noEnoughArguments(event)) return;
+                if (notEnoughArguments(event)) return;
                 String question = event.getArgs().replaceFirst(Pattern.quote(args[0]) + "(?:\\s+)?\"", "")
                         .substring(0, event.getArgs().replaceFirst(Pattern.quote(args[0]) + "(?:\\s+)?\"", "").indexOf("\""));
                 String answersString = event.getArgs().replaceFirst(Pattern.quote(args[0]) + "(?:\\s+)?" + Pattern.quote("\"" + question + "\"") + "(?:\\s+)?", "");
@@ -76,7 +77,7 @@ public class PollCommand extends Command {
         }
     }
 
-    private boolean noEnoughArguments(CommandEvent event) {
+    private boolean notEnoughArguments(CommandEvent event) {
         int amount = StringUtils.countMatches(event.getArgs(), "\"");
         if (amount < 6 || amount > 20 || (amount & 1) == 1) {
             event.sendUsage(this, event);
