@@ -14,6 +14,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.discordbots.api.client.DiscordBotListAPI;
 import org.json.JSONObject;
 
+import java.util.List;
 import java.util.Map;
 
 public class JoinLeave extends ListenerAdapter {
@@ -40,8 +41,12 @@ public class JoinLeave extends ListenerAdapter {
                 .build();
 
         melijn.getHelpers().startTimer(event.getJDA(), 0);
+
         AudioLoader audioLoader = melijn.getLava().getAudioLoader();
-        for (JSONObject queue : melijn.getMySQL().getQueues()) {
+        List<JSONObject> tracks = melijn.getMySQL().getQueues();
+        melijn.getMySQL().clearQueues();
+
+        for (JSONObject queue : tracks) {
             Guild guild = shardManager.getGuildById(queue.getLong("guildId"));
             if (guild == null) return;
             VoiceChannel vc = guild.getVoiceChannelById(queue.getLong("channelId"));
@@ -57,7 +62,7 @@ public class JoinLeave extends ListenerAdapter {
                 }
             }
         }
-        melijn.getMySQL().clearQueues();
+
     }
 
     @Override
