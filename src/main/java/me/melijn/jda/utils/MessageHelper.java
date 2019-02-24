@@ -97,7 +97,8 @@ public class MessageHelper {
     }
 
     public void sendUsage(Command cmd, CommandEvent event) {
-        event.reply(prefixPattern.matcher(cmd.getUsage()).replaceFirst(StringEscapeUtils.escapeJava(event.getVariables().prefixes.getUnchecked(event.getGuild().getIdLong()))));
+        String prefix = event.getGuild() == null ? Melijn.PREFIX : event.getVariables().prefixes.getUnchecked(event.getGuild().getIdLong());
+        event.reply(prefixPattern.matcher(cmd.getUsage()).replaceFirst(StringEscapeUtils.escapeJava(prefix)));
     }
 
     public String millisToVote(long untilNext) {
