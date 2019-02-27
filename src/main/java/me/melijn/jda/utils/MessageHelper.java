@@ -125,11 +125,15 @@ public class MessageHelper {
     }
 
     public String getDurationBreakdown(long milliseconds) {
-        long millis = milliseconds;
-        if (millis < 0L) {
+        return getDurationBreakdown(Double.valueOf(milliseconds));
+    }
+
+    public String getDurationBreakdown(double milliseconds) {
+        if (milliseconds < 0D) {
             return "error";
         }
-        if (millis > 43200000000L) return "LIVE";
+        if (milliseconds > 43200000000D) return "LIVE";
+        long millis = (long) milliseconds;
         long days = TimeUnit.MILLISECONDS.toDays(millis);
         millis -= TimeUnit.DAYS.toMillis(days);
         long hours = TimeUnit.MILLISECONDS.toHours(millis);

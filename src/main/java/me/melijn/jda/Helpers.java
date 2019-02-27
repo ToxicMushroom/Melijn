@@ -2,6 +2,7 @@ package me.melijn.jda;
 
 import com.google.common.collect.Sets;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.blub.NotificationType;
@@ -186,6 +187,18 @@ public class Helpers {
                 mySQL.updateVoteStreak();
                 variables.timerAmount++;
             }, 1_800_000, 1_800_000);
+        }
+        if (i == 0 || i == 4) {
+            melijn.getTaskManager().scheduleRepeating(() -> melijn.getVariables().toLeaveTimeMap.forEach((guildId, time) -> {
+                if (time < System.currentTimeMillis()) { //Leaves after 5 minutes
+                    MusicPlayer player = melijn.getLava().getAudioLoader().getPlayer(guildId);
+                    melijn.getVariables().looped.remove(guildId);
+                    melijn.getVariables().loopedQueues.remove(guildId);
+                    player.getAudioPlayer().setPaused(false);
+                    player.getTrackManager().clear();
+                    player.stopTrack();
+                }
+            }), 60_000);
         }
     }
 

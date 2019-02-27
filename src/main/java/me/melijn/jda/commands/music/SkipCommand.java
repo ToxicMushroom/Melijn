@@ -67,8 +67,8 @@ public class SkipCommand extends Command {
             eb.setTitle("Skipped " + i + " " + (i == 1 ? "song" : "songs"));
             if (nextSong != null)
                 eb.setDescription("" +
-                        "Previous song: **[" + skipableTrack.getInfo().title + "](" + skipableTrack.getInfo().uri + ")**\n" +
-                        "Now playing: **[" + nextSong.getInfo().title + "](" + nextSong.getInfo().uri + ")** " + event.getMessageHelper().getDurationBreakdown(nextSong.getInfo().length)
+                        "Previous song: **[" + skipableTrack.getInfo().title.replaceAll("\\*", "\\*") + "](" + skipableTrack.getInfo().uri + ")**\n" +
+                        "Now playing: **[" + nextSong.getInfo().title.replaceAll("\\*", "\\*") + "](" + nextSong.getInfo().uri + ")** " + event.getMessageHelper().getDurationBreakdown(nextSong.getInfo().length)
                 );
             else {
                 player.stopTrack();

@@ -105,7 +105,7 @@ public class StatsCommand extends Command {
                         int days = _days != null ? Integer.parseInt(_days) : 0;
                         int hours = _hours != null ? Integer.parseInt(_hours) : 0;
                         int minutes = _minutes != null ? Integer.parseInt(_minutes) : 0;
-                        uptime = (minutes * 60000) + (hours * 60000 * 60) + (days * 60000 * 60 * 24);
+                        uptime = (minutes * 60_000) + (hours * 60_000 * 60) + (days * 60_000 * 60 * 24);
                     }
                 }
             }

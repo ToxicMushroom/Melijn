@@ -16,19 +16,21 @@ public class CooldownManager {
 
     private void checkOldEntries() {
         long currentTime = System.currentTimeMillis();
-        new HashMap<>(cooldowns).forEach((guildId, users) -> users.forEach((userId, commands) -> commands.forEach((commandId, time) -> {
-            if (time > currentTime) return;
-            Map<Integer, Long> freshCommands = cooldowns.get(guildId).get(userId);
-            freshCommands.remove(commandId);
-            if (freshCommands.isEmpty()) {
+        new HashMap<>(cooldowns).forEach((guildId, users) -> //Loop safely through the map so I can modify it
+                new HashMap<>(users).forEach((userId, commands) ->
+                        new HashMap<>(commands).forEach((commandId, time) -> {
+            if (time > currentTime) return; //if the a command his delay isn't finished yet return; (return goes to next iteration)
+            Map<Integer, Long> freshCommands = cooldowns.get(guildId).get(userId); //Create object to easily edit active command delays for a user
+            freshCommands.remove(commandId); //Remove the command
+            if (freshCommands.isEmpty()) { //If the user has no active command delays anymore then remove it from the map to save space
                 Map<Long, Map<Integer, Long>> freshUsers = cooldowns.get(guildId);
                 freshUsers.remove(userId);
-                if (freshUsers.isEmpty()) {
+                if (freshUsers.isEmpty()) { //If none of the users in the guild have active command delays then remove the guild
                     cooldowns.remove(guildId);
-                } else {
+                } else { //Else update the users
                     cooldowns.put(guildId, freshUsers);
                 }
-            } else {
+            } else { //Else update the user's command delays
                 Map<Long, Map<Integer, Long>> freshUsers = cooldowns.get(guildId);
                 freshUsers.put(userId, freshCommands);
                 cooldowns.put(guildId, freshUsers);

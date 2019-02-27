@@ -9,6 +9,7 @@ import me.melijn.jda.blub.RoleType;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.events.channel.text.TextChannelDeleteEvent;
 import net.dv8tion.jda.core.events.channel.voice.VoiceChannelDeleteEvent;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceDeafenEvent;
@@ -130,8 +131,13 @@ public class Channels extends ListenerAdapter {
         if (melijn.getVariables().userBlackList.contains(guild.getOwnerIdLong())) return;
         long guildId = guild.getIdLong();
         if (lava.isConnected(guildId)) {
-            if (event.getChannelLeft() != lava.getConnectedChannel(guild)) return;
+            VoiceChannel botVC = lava.getConnectedChannel(guild);
+            if (event.getChannelJoined() != botVC && event.getChannelLeft() != botVC) return;
+            if (event.getChannelJoined() == lava.getConnectedChannel(guild) && someoneIsListening(guild))
+                melijn.getVariables().toLeaveTimeMap.remove(guildId);
             if (someoneIsListening(guild)) {
+                lava.getAudioLoader().getPlayer(guild).getAudioPlayer().setPaused(false);
+                if (loader.getPlayer(guildId).getAudioPlayer().getPlayingTrack() != null) return;
                 String url = melijn.getMySQL().getStreamUrl(guildId);
                 if (!url.isEmpty()) {
                     loader.getPlayer(guild).getTrackManager().clear();
@@ -140,9 +146,9 @@ public class Channels extends ListenerAdapter {
             } else {
                 loader.getPlayer(guild).getAudioPlayer().setPaused(true);
                 if (lava.getConnectedChannel(guild).getMembers().size() > 1) {
-                    runLeaveTimer(guild, 300, true);
+                    melijn.getVariables().toLeaveTimeMap.put(guildId, System.currentTimeMillis() + 300_000);
                 } else {
-                    runLeaveTimer(guild, 60, false);
+                    melijn.getVariables().toLeaveTimeMap.put(guildId, System.currentTimeMillis() + 60_000);
                 }
             }
         } else if (melijn.getVariables().streamerModeCache.getUnchecked(guildId) &&
@@ -182,7 +188,10 @@ public class Channels extends ListenerAdapter {
                                 guild.getSelfMember().getVoiceState().inVoiceChannel() && (guild.getAfkChannel().getIdLong() == guild.getSelfMember().getVoiceState().getChannel().getIdLong()))) {
                     guild.getController().setMute(guild.getSelfMember(), true).queue(done -> guild.getController().setMute(guild.getSelfMember(), false).queue());
                 }
-            }, 2000);
+            }, event.getJDA().getPing() + 2000);
+        } else if (lava.isConnected(guildId) && someoneIsListening(guild)) {
+            melijn.getVariables().toLeaveTimeMap.remove(guildId);
+            lava.getAudioLoader().getPlayer(guild).getAudioPlayer().setPaused(false);
         }
     }
 
@@ -190,16 +199,22 @@ public class Channels extends ListenerAdapter {
     public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
         if (event.getGuild() == null || melijn.getVariables().serverBlackList.contains(event.getGuild().getIdLong()))
             return;
-        if (!event.getMember().equals(event.getGuild().getSelfMember()))
+        if (!event.getMember().equals(event.getGuild().getSelfMember())) {
             whenListeningDoActions(event.getGuild());
+        } else {
+            melijn.getVariables().toLeaveTimeMap.remove(event.getGuild().getIdLong());
+        }
     }
 
     @Override
     public void onGuildVoiceDeafen(GuildVoiceDeafenEvent event) {
         if (event.getGuild() == null || melijn.getVariables().userBlackList.contains(event.getGuild().getIdLong()))
             return;
-        if (!event.getMember().equals(event.getGuild().getSelfMember()))
+        if (!event.getMember().equals(event.getGuild().getSelfMember())) {
             whenListeningDoActions(event.getGuild());
+        } else {
+            melijn.getVariables().toLeaveTimeMap.remove(event.getGuild().getIdLong());
+        }
     }
 
     private void whenListeningDoActions(Guild guild) {
@@ -208,42 +223,13 @@ public class Channels extends ListenerAdapter {
         if (!someoneIsListening(guild)) {
             lava.getAudioLoader().getPlayer(guild).getAudioPlayer().setPaused(true);
             if (lava.getConnectedChannel(guild).getMembers().size() > 1) {
-                runLeaveTimer(guild, 300, true);
+                melijn.getVariables().toLeaveTimeMap.put(guild.getIdLong(), System.currentTimeMillis() + 300_000);
             } else {
-                runLeaveTimer(guild, 60, false);
+                melijn.getVariables().toLeaveTimeMap.put(guild.getIdLong(), System.currentTimeMillis() + 60_000);
             }
+        } else {
+            melijn.getVariables().toLeaveTimeMap.remove(guild.getIdLong());
         }
-    }
-
-    private void runLeaveTimer(Guild guild, int seconds, boolean defeaned) {
-        AtomicInteger amount = new AtomicInteger();
-        Lava lava = melijn.getLava();
-        melijn.getTaskManager().async(() -> {
-            while (true) {
-                Guild guild2 = guild.getJDA().asBot().getShardManager().getGuildById(guild.getIdLong());
-                if (guild2 == null)
-                    break;
-                MusicPlayer player = lava.getAudioLoader().getPlayer(guild2);
-                if (!lava.isConnected(guild.getIdLong()))
-                    break;
-                if (someoneIsListening(guild2)) {
-                    player.getAudioPlayer().setPaused(false);
-                    break;
-                } else if ((lava.getConnectedChannel(guild2).getMembers().size() == 1 && defeaned) || (amount.getAndIncrement() == seconds)) {
-                    melijn.getVariables().looped.remove(guild2.getIdLong());
-                    player.getAudioPlayer().setPaused(false);
-                    player.stopTrack();
-                    player.getTrackManager().clear();
-                    break;
-                }
-                try {
-                    Thread.sleep(1_000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    break;
-                }
-            }
-        });
     }
 
     private void tryPlayStreamUrl(long guildId) {
