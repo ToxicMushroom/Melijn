@@ -243,12 +243,14 @@ public class MessageHelper {
         return messages;
     }
 
-    public void sendSplitMessage(TextChannel channel, String text) {
+
+
+    public void sendSplitMessage(MessageChannel channel, String text) {
         final List<String> messages = getSplitMessage(text, 0);
         messages.forEach(message -> channel.sendMessage(message).queue());
     }
 
-    public void sendSplitCodeBlock(TextChannel channel, String text, String style) {
+    public void sendSplitCodeBlock(MessageChannel channel, String text, String style) {
         final List<String> messages = getSplitMessage(text, 8 + style.length());
         messages.forEach(message -> channel.sendMessage("```" + style + "\n" + message + "```").queue());
     }
