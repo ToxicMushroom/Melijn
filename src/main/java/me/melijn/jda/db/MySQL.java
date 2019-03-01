@@ -83,6 +83,7 @@ public class MySQL {
             executeUpdate("CREATE TABLE IF NOT EXISTS self_roles(guildId bigint, roleId bigint, emote varchar(128), UNIQUE KEY (guildId, roleId, emote));");
             executeUpdate("CREATE TABLE IF NOT EXISTS mute_roles(guildId bigint, roleId bigint, PRIMARY KEY (guildId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS join_roles(guildId bigint, roleId bigint, PRIMARY KEY (guildId));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS forced_roles(guildId bigint, userId bigint, roleId bigint, UNIQUE KEY (guildId, userId, roleId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS unverified_roles(guildId bigint, roleId bigint, PRIMARY KEY (guildId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS perms_roles(guildId bigint, roleId bigint, permission varchar(256), UNIQUE KEY (guildId, roleId, permission));");
             executeUpdate("CREATE TABLE IF NOT EXISTS perms_users(guildId bigint, userId bigint, permission varchar(256), UNIQUE KEY (guildId, userId, permission));");
@@ -1916,5 +1917,30 @@ public class MySQL {
 
     }
 
+    public void addForceRole(long guildId, long userId, long roleId) {
+        executeUpdate("INSERT INTO forced_roles(guildId, userId, roleId) VALUES (?, ?, ?)",
+                guildId, userId, roleId);
+    }
 
+    public void removeForceRole(long guildId, long userId, long roleId) {
+        executeUpdate("DELETE FROM forced_roles WHERE guildId= ? AND userId= ? AND roleId= ?",
+                guildId, userId, roleId);
+    }
+
+    public List<Long> getForcedRoles(long guildId, long userId) {
+        List<Long> roles = new ArrayList<>();
+        try (Connection con = ds.getConnection();
+        PreparedStatement statement = con.prepareStatement("SELECT * FROM forced_roles WHERE guildId= ? AND userId= ?")) {
+            statement.setLong(1, guildId);
+            statement.setLong(2, userId);
+            try (ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) {
+                    roles.add(rs.getLong("roleId"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return roles;
+    }
 }

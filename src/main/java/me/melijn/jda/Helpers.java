@@ -17,10 +17,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class Helpers {
@@ -329,6 +326,15 @@ public class Helpers {
                         melijn.getMySQL().isUserMuted(user.getIdLong(), guild.getIdLong()) &&
                         guild.getSelfMember().getRoles().get(0).canInteract(muteRole))
                     guild.getController().addSingleRoleToMember(guild.getMember(user), muteRole).queue();
+            });
+        }
+        List<Long> forcedRoles = melijn.getMySQL().getForcedRoles(guild.getIdLong(), user.getIdLong());
+        if (guild.getSelfMember().canInteract(guild.getMember(user))) {
+            forcedRoles.forEach(roleId -> {
+                Role role = guild.getRoleById(roleId);
+                if (guild.getSelfMember().canInteract(role)) {
+                    guild.getController().addSingleRoleToMember(guild.getMember(user), role).queue();
+                }
             });
         }
     }
