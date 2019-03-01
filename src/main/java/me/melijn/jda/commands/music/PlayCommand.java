@@ -68,7 +68,6 @@ public class PlayCommand extends Command {
                         event.reply("You need the permission `" + commandName + ".link` to execute this command.");
                         return;
                     }
-                    songName = songName.replaceAll("\\s+", "");
                     if (!lava.tryToConnectToVC(event, guild, senderVoiceChannel)) return;
                     if (songName.contains("open.spotify.com")) spotiSearch(lava.getAudioLoader(), event, songName);
                     else
@@ -78,7 +77,6 @@ public class PlayCommand extends Command {
                         event.reply("You need the permission `" + commandName + ".yt` to execute this command.");
                         return;
                     }
-                    songName = songName.replaceAll("\\s+", "");
                     if (!lava.tryToConnectToVC(event, guild, senderVoiceChannel)) return;
                     if (songName.matches("spotify:(.*)")) spotiSearch(lava.getAudioLoader(), event, songName);
                     else
