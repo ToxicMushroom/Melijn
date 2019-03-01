@@ -62,7 +62,7 @@ public class InfoCommand extends Command {
                 }
                 desc.append("```");
                 if (desc.length() > 11)
-                    event.getAuthor().openPrivateChannel().queue((channel) -> channel.sendMessage(desc.toString()).queue());
+                    event.getAuthor().openPrivateChannel().queue((channel) -> event.getMessageHelper().sendSplitMessage(channel, desc.toString()));
             }
 
         } else {
