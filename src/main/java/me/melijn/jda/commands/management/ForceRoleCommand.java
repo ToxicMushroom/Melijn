@@ -18,7 +18,7 @@ public class ForceRoleCommand extends Command {
     public ForceRoleCommand() {
         this.commandName = "forceRole";
         this.description = "Forces a role to a user in your server (user keeps role after rejoining)";
-        this.usage = PREFIX + commandName + " <add | remove | list> [user]";
+        this.usage = PREFIX + commandName + " <add | remove | list> <user> [role]";
         this.aliases = new String[]{"fr"};
         this.needs = new Need[]{Need.GUILD};
         this.category = Category.MANAGEMENT;
