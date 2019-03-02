@@ -45,9 +45,9 @@ public class SetLeaveChannelCommand extends Command {
                         if (event.getVariables().leaveMessages.getUnchecked(guild.getIdLong()).isEmpty()) {
                             event.getMySQL().setMessage(guild.getIdLong(), "**%USERNAME%** left us :C", MessageType.LEAVE);
                             event.getVariables().leaveMessages.put(guild.getIdLong(), "**%USERNAME%** left us :C");
+                            event.reply("I've set the default leave message :beginner:");
                         }
 
-                        event.reply("I've set the default leave message :beginner:");
 
                         String oldChannel = leaveChannelId == -1 ? "nothing" : "<#" + leaveChannelId + ">";
                         String newChannel = "<#" + id + ">";

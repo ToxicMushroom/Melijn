@@ -42,12 +42,14 @@ public class SetJoinChannelCommand extends Command {
                     event.async(() -> {
                         event.getMySQL().setChannel(guild.getIdLong(), id, ChannelType.JOIN);
                         event.getVariables().joinChannelCache.put(guild.getIdLong(), id);
+
                         if (event.getVariables().joinMessages.getUnchecked(guild.getIdLong()).isEmpty()) {
                             event.getMySQL().setMessage(guild.getIdLong(), "Welcome **%USER%** to our awesome discord server :D", MessageType.JOIN);
                             event.getVariables().joinMessages.put(guild.getIdLong(), "Welcome %USER% to the %GUILDNAME% discord server");
+                            event.reply("I've set the default join message :beginner:");
                         }
 
-                        event.reply("I've set the default join message :beginner:");
+
 
                         String oldChannel = joinChannelId == -1 ? "nothing" : "<#" + joinChannelId + ">";
                         String newChannel = "<#" + id + ">";
