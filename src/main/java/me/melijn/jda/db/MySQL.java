@@ -701,8 +701,9 @@ public class MySQL {
         }
 
         Member toUnmuteMember = guild.getMember(toUnmute);
-        if (toUnmuteMember != null && guild.getSelfMember().canInteract(toUnmuteMember))
-            guild.getController().removeSingleRoleFromMember(toUnmuteMember, guild.getRoleById(getRoleId(guild.getIdLong(), RoleType.MUTE))).queue();
+        Role role = guild.getRoleById(melijn.getVariables().muteRoleCache.getUnchecked(guild.getIdLong()));
+        if (toUnmuteMember != null && role != null && guild.getSelfMember().canInteract(toUnmuteMember) && guild.getSelfMember().canInteract(role))
+            guild.getController().removeSingleRoleFromMember(toUnmuteMember, role).queue();
 
         return true;
     }
