@@ -9,7 +9,7 @@ import static me.melijn.jda.Melijn.PREFIX;
 public class DiscordMemeCommand extends Command {
 
     public DiscordMemeCommand() {
-        this.commandName = "DiscordMeme";
+        this.commandName = "discordMeme";
         this.description = "Shows a discord meme";
         this.usage = PREFIX + commandName;
         this.aliases = new String[]{"dmeme"};
