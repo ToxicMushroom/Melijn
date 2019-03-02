@@ -113,10 +113,10 @@ public class JoinLeave extends ListenerAdapter {
             melijn.getTaskManager().async(() -> {
                 String message = melijn.getVariables().leaveMessages.getUnchecked(guild.getIdLong());
                 if (message.isEmpty()) return;
-                TextChannel welcomeChannel = guild.getTextChannelById(melijn.getVariables().welcomeChannelCache.getUnchecked(guild.getIdLong()));
-                if (welcomeChannel == null || !guild.getSelfMember().hasPermission(welcomeChannel, Permission.MESSAGE_WRITE))
+                TextChannel leaveChannel = guild.getTextChannelById(melijn.getVariables().leaveChannelCache.getUnchecked(guild.getIdLong()));
+                if (leaveChannel == null || !guild.getSelfMember().hasPermission(leaveChannel, Permission.MESSAGE_WRITE))
                     return;
-                welcomeChannel.sendMessage(melijn.getMessageHelper().variableFormat(message, guild, leftUser)).queue();
+                leaveChannel.sendMessage(melijn.getMessageHelper().variableFormat(message, guild, leftUser)).queue();
             });
         }
     }

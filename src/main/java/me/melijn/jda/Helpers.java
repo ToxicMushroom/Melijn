@@ -312,9 +312,9 @@ public class Helpers {
 
     public void joinCode(Guild guild, User user) {
         if (!melijn.getVariables().joinMessages.getUnchecked(guild.getIdLong()).isEmpty()) {
-            TextChannel welcomeChannel = guild.getTextChannelById(melijn.getVariables().welcomeChannelCache.getUnchecked(guild.getIdLong()));
-            if (welcomeChannel != null && guild.getSelfMember().hasPermission(welcomeChannel, Permission.MESSAGE_WRITE))
-                welcomeChannel.sendMessage(melijn.getMessageHelper().variableFormat(melijn.getVariables().joinMessages.getUnchecked(guild.getIdLong()), guild, user)).queue();
+            TextChannel joinChannel = guild.getTextChannelById(melijn.getVariables().joinChannelCache.getUnchecked(guild.getIdLong()));
+            if (joinChannel != null && guild.getSelfMember().hasPermission(joinChannel, Permission.MESSAGE_WRITE))
+                joinChannel.sendMessage(melijn.getMessageHelper().variableFormat(melijn.getVariables().joinMessages.getUnchecked(guild.getIdLong()), guild, user)).queue();
         }
         if (guild.getSelfMember().getRoles().size() > 0) {
             Role joinRole = guild.getRoleById(melijn.getVariables().joinRoleCache.getUnchecked(guild.getIdLong()));

@@ -56,7 +56,8 @@ public class Variables {
 
     public final Map<Long, List<AudioTrack>> userRequestedSongs = new HashMap<>();
     public final Map<Long, Long> userMessageToAnswer = new HashMap<>();
-    public final LoadingCache<Long, Long> welcomeChannelCache;
+    public final LoadingCache<Long, Long> joinChannelCache;
+    public final LoadingCache<Long, Long> leaveChannelCache;
     public final LoadingCache<Long, Long> muteRoleCache;
     public final LoadingCache<Long, String> prefixes;
     public final LoadingCache<Long, List<String>> privatePrefixes;
@@ -196,14 +197,23 @@ public class Variables {
                     }
                 });
 
-        welcomeChannelCache = CacheBuilder.newBuilder()
+        joinChannelCache = CacheBuilder.newBuilder()
                 .maximumSize(normalSize)
                 .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
                 .build(new CacheLoader<>() {
                     public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getChannelId(key, ChannelType.WELCOME);
+                        return melijn.getMySQL().getChannelId(key, ChannelType.JOIN);
                     }
                 });
+        leaveChannelCache = CacheBuilder.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(new CacheLoader<>() {
+                    public Long load(@NotNull Long key) {
+                        return melijn.getMySQL().getChannelId(key, ChannelType.LEAVE);
+                    }
+                });
+
         muteRoleCache = CacheBuilder.newBuilder()
                 .maximumSize(normalSize)
                 .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)

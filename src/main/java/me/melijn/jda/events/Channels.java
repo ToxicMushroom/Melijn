@@ -39,9 +39,13 @@ public class Channels extends ListenerAdapter {
                 melijn.getMySQL().removeChannel(guildId, ChannelType.VERIFICATION);
                 melijn.getVariables().verificationChannelsCache.invalidate(guildId);
 
-            } else if (channelId == melijn.getVariables().welcomeChannelCache.getUnchecked(guildId)) {
-                melijn.getMySQL().removeChannel(guildId, ChannelType.WELCOME);
-                melijn.getVariables().welcomeChannelCache.invalidate(guildId);
+            } else if (channelId == melijn.getVariables().joinChannelCache.getUnchecked(guildId)) {
+                melijn.getMySQL().removeChannel(guildId, ChannelType.JOIN);
+                melijn.getVariables().joinChannelCache.invalidate(guildId);
+
+            } else if (channelId == melijn.getVariables().leaveChannelCache.getUnchecked(guildId)) {
+                melijn.getMySQL().removeChannel(guildId, ChannelType.LEAVE);
+                melijn.getVariables().leaveChannelCache.invalidate(guildId);
 
             } else if (channelId == melijn.getVariables().selfRolesChannels.getUnchecked(guildId)) {
                 melijn.getMySQL().removeChannel(guildId, ChannelType.SELF_ROLE);

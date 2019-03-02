@@ -101,7 +101,8 @@ public class MySQL {
             executeUpdate("CREATE TABLE IF NOT EXISTS reaction_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS attachment_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS music_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
-            executeUpdate("CREATE TABLE IF NOT EXISTS welcome_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS join_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
+            executeUpdate("CREATE TABLE IF NOT EXISTS leave_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS music_log_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS verification_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS self_role_channels(guildId bigint, channelId bigint, PRIMARY KEY (guildId))");

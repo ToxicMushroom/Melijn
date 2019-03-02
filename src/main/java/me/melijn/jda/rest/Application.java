@@ -66,7 +66,8 @@ public class Application extends Jooby {
             melijn.getVariables().unverifiedRoleCache.invalidate(id);
 
             //block 3
-            melijn.getVariables().welcomeChannelCache.invalidate(id);
+            melijn.getVariables().joinChannelCache.invalidate(id);
+            melijn.getVariables().leaveChannelCache.invalidate(id);
             melijn.getVariables().verificationChannelsCache.invalidate(id);
             melijn.getVariables().musicLogChannelCache.invalidate(id);
             melijn.getVariables().banLogChannelCache.invalidate(id);

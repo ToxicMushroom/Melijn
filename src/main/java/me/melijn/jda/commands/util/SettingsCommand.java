@@ -38,7 +38,8 @@ public class SettingsCommand extends Command {
                                 "\n**UnverifiedRole:** " + idToRoleMention(event.getVariables().unverifiedRoleCache.getUnchecked(guildId)) +
                                 "\n" +
                                 "\n**VerificationChannel:** " + idToChannelMention(event.getVariables().verificationChannelsCache.getUnchecked(guildId)) +
-                                "\n**WelcomeChannel:** " + idToChannelMention(event.getVariables().welcomeChannelCache.getUnchecked(guildId)) +
+                                "\n**JoinChannel:** " + idToChannelMention(event.getVariables().joinChannelCache.getUnchecked(guildId)) +
+                                "\n**LeaveChannel:** " + idToChannelMention(event.getVariables().leaveChannelCache.getUnchecked(guildId)) +
                                 "\n**SelfRoleChannel:** " + idToChannelMention(event.getVariables().selfRolesChannels.getUnchecked(guildId)) +
                                 "\n**BanLogChannel:** " + idToChannelMention(event.getVariables().banLogChannelCache.getUnchecked(guildId)) +
                                 "\n**MuteLogChannel:** " + idToChannelMention(event.getVariables().muteLogChannelCache.getUnchecked(guildId)) +
