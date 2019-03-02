@@ -276,7 +276,7 @@ public class Helpers {
         if (!tc.canTalk()) return;
         tc.sendMessage(new Embedder(melijn.getVariables(), guild)
                 .setTitle("Now playing")
-                .setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** `" + melijn.getMessageHelper().getDurationBreakdown(track.getDuration()) + "`\n")
+                .setDescription("**[" + melijn.getMessageHelper().escapeMarkDown(track.getInfo().title) + "](" + track.getInfo().uri + ")** `" + melijn.getMessageHelper().getDurationBreakdown(track.getDuration()) + "`\n")
                 .setThumbnail(melijn.getMessageHelper().getThumbnailURL(track.getInfo().uri))
                 .setFooter(getFooterStamp(), null)
                 .build()).queue();

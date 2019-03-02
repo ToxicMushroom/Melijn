@@ -46,12 +46,12 @@ public class QueueCommand extends Command {
             AudioTrack playingTrack = player.getAudioPlayer().getPlayingTrack();
             if (playingTrack != null) {
                 queueLength = playingTrack.getDuration() - playingTrack.getPosition();
-                list.add("[#" + position + "](" + playingTrack.getInfo().uri + ") - `Now playing:` " + playingTrack.getInfo().title.replaceAll("\\*", "\\\\*") + " `" + event.getMessageHelper().getDurationBreakdown(playingTrack.getInfo().length) + "`");
+                list.add("[#" + position + "](" + playingTrack.getInfo().uri + ") - `Now playing:` " + event.getMessageHelper().escapeMarkDown(playingTrack.getInfo().title) + " `" + event.getMessageHelper().getDurationBreakdown(playingTrack.getInfo().length) + "`");
             }
             for (AudioTrack track : tracks) {
                 position++;
                 queueLength += track.getDuration();
-                list.add("[#" + position + "](" + track.getInfo().uri + ") - " + track.getInfo().title.replaceAll("\\*", "\\\\*") + " `" + event.getMessageHelper().getDurationBreakdown(track.getInfo().length) + "`");
+                list.add("[#" + position + "](" + track.getInfo().uri + ") - " + event.getMessageHelper().escapeMarkDown(track.getInfo().title) + " `" + event.getMessageHelper().getDurationBreakdown(track.getInfo().length) + "`");
             }
             String loopedQueue = event.getVariables().loopedQueues.contains(guild.getIdLong()) ? " \uD83D\uDD01" : "";
             String looped = event.getVariables().looped.contains(guild.getIdLong()) ? " \uD83D\uDD04" : "";

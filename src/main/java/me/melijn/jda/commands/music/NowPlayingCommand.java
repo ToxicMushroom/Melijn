@@ -42,7 +42,7 @@ public class NowPlayingCommand extends Command {
             event.reply(new Embedder(event.getVariables(), event.getGuild())
                     .setTitle("Now " + s)
                     .setThumbnail(event.getMessageHelper().getThumbnailURL(track.getInfo().uri))
-                    .setDescription("[**" + track.getInfo().title + "**](" + track.getInfo().uri + ")")
+                    .setDescription("[**" + event.getMessageHelper().escapeMarkDown(track.getInfo().title) + "**](" + track.getInfo().uri + ")")
                     .addField("status:", (s.equalsIgnoreCase("playing") ? "\u25B6" : "\u23F8") + looped + loopedQueue, false)
                     .addField("progress:", event.getMessageHelper().progressBar(audioPlayer), false)
                     .setFooter(event.getHelpers().getFooterStamp(), event.getHelpers().getFooterIcon()).build());

@@ -274,4 +274,13 @@ public class MessageHelper {
                 .replaceAll("%SERVERNAME%", guild.getName())
                 .replaceAll("%MEMBERSIZE%", String.valueOf(guild.getMemberCache().size()));
     }
+
+    public String escapeMarkDown(String title) {
+        return title
+                .replaceAll("\\*", "\\\\*")
+                .replaceAll("\\|", "\\\\|")
+                .replaceAll("`", "\\\\`")
+                .replaceAll("_", "\\\\_")
+                .replaceAll("~", "\\\\~");
+    }
 }

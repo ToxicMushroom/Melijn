@@ -246,7 +246,7 @@ public class AudioLoader {
                         player.queue(track);
                         EmbedBuilder eb = new Embedder(melijn.getVariables(), textChannel.getGuild());
                         eb.setTitle("Added");
-                        eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
+                        eb.setDescription("**[" + melijn.getMessageHelper().escapeMarkDown(track.getInfo().title) + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
                         eb.setFooter(melijn.getHelpers().getFooterStamp(), null);
                         textChannel.sendMessage(eb.build()).queue();
                         return;
@@ -288,7 +288,7 @@ public class AudioLoader {
         player.queue(track);
         EmbedBuilder eb = new Embedder(melijn.getVariables(), player.getGuildId());
         eb.setTitle("Added");
-        eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
+        eb.setDescription("**[" + melijn.getMessageHelper().escapeMarkDown(track.getInfo().title) + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
         eb.setFooter(melijn.getHelpers().getFooterStamp(), null);
         textChannel.sendMessage(eb.build()).queue();
     }

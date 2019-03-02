@@ -67,14 +67,16 @@ public class SkipCommand extends Command {
             eb.setTitle("Skipped " + i + " " + (i == 1 ? "song" : "songs"));
             if (nextSong != null)
                 eb.setDescription("" +
-                        "Previous song: **[" + skipableTrack.getInfo().title.replaceAll("\\*", "\\*") + "](" + skipableTrack.getInfo().uri + ")**\n" +
-                        "Now playing: **[" + nextSong.getInfo().title.replaceAll("\\*", "\\*") + "](" + nextSong.getInfo().uri + ")** " + event.getMessageHelper().getDurationBreakdown(nextSong.getInfo().length)
+                        "Previous song: **[" + event.getMessageHelper().escapeMarkDown(skipableTrack.getInfo().title) + "](" + skipableTrack.getInfo().uri + ")**\n" +
+                        "Now playing: **[" + event.getMessageHelper().escapeMarkDown(nextSong.getInfo().title) + "](" + nextSong.getInfo().uri + ")** " + event.getMessageHelper().getDurationBreakdown(nextSong.getInfo().length)
                 );
             else {
                 player.stopTrack();
                 player.getTrackManager().clear();
                 event.getClient().getMelijn().getLava().closeConnection(event.getGuild().getIdLong());
-                eb.setDescription("Previous song: **[" + skipableTrack.getInfo().title + "](" + skipableTrack.getInfo().uri + ")**\n" + "No next song to play");
+                eb.setDescription("" +
+                        "Previous song: **[" + event.getMessageHelper().escapeMarkDown(skipableTrack.getInfo().title) + "](" + skipableTrack.getInfo().uri + ")**\n" +
+                        "No next song to play");
             }
             eb.setFooter(event.getHelpers().getFooterStamp(), event.getHelpers().getFooterIcon());
             event.reply(eb.build());
