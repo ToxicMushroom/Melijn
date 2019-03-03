@@ -70,6 +70,10 @@ public class SelfRoleCommand extends Command {
                         event.reply("This SelfRole already exist: choose another role or emote/emoji.");
                         return;
                     }
+                    if (!guild.getSelfMember().canInteract(roleAdded)) {
+                        event.reply("The SelfRole hasn't been added, cause: **@" + roleAdded.getName() + "** is higher or equal in the role-hierarchy then my highest role.");
+                        return;
+                    }
                     event.async(() -> {
                         event.getMySQL().addSelfRole(guild.getIdLong(), roleAdded.getIdLong(), emote);
                         event.getVariables().selfRoles.invalidate(guild.getIdLong());

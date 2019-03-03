@@ -53,11 +53,21 @@ public class ForceRoleCommand extends Command {
                     return;
                 }
 
+                if (!guild.getSelfMember().canInteract(role)) {
+                    event.reply("The role hasn't been forced upon **" + target.getName() + "#" + target.getDiscriminator() + "**, cause: **@" + role.getName() + "** is higher or equal in the role-hierarchy then my highest role.");
+                    return;
+                }
+
+                Member member = guild.getMember(target);
+                if (member != null && !guild.getSelfMember().canInteract(member)) {
+                    event.reply("The role hasn't been forced upon **" + target.getName() + "#" + target.getDiscriminator() + "**, cause: The target has a higher or equal role in the role-hierarchy then my highest role.");
+                    return;
+                }
+
                 event.getMySQL().addForceRole(event.getGuildId(), target.getIdLong(), role.getIdLong());
                 event.reply("Forced the `@" + role.getName() + "` role upon **" + target.getName() + "#" + target.getDiscriminator() + "**");
 
-                Member member = guild.getMember(target);
-                if (member != null && guild.getSelfMember().canInteract(member) && guild.getSelfMember().canInteract(role)) {
+                if (member != null) {
                     guild.getController().addSingleRoleToMember(member, role).queue();
                 }
 

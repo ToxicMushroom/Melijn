@@ -168,7 +168,9 @@ public class AddReaction extends ListenerAdapter {
                         return;
                     Role role = guild.getRoleCache().getElementById(key);
                     if (role == null) return;
-                    guild.getController().addSingleRoleToMember(event.getMember(), role).reason("SelfRole added").queue();
+
+                    if (guild.getSelfMember().canInteract(role))
+                        guild.getController().addSingleRoleToMember(event.getMember(), role).reason("SelfRole added").queue();
                 });
             });
         if (melijn.getVariables().reactionLogChannelCache.getUnchecked(guild.getIdLong()) != -1L) {
@@ -208,7 +210,8 @@ public class AddReaction extends ListenerAdapter {
                     Role role = guild.getRoleCache().getElementById(key);
                     if (role == null) return;
 
-                    guild.getController().removeSingleRoleFromMember(event.getMember(), role).reason("SelfRole added").queue();
+                    if (guild.getSelfMember().canInteract(role))
+                        guild.getController().removeSingleRoleFromMember(event.getMember(), role).reason("SelfRole added").queue();
                 });
             });
     }
