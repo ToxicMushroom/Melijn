@@ -10,13 +10,13 @@ import java.lang.reflect.Method;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
-public class EvalCommand extends Command {
+public class JEvalCommand extends Command {
 
     private final String CLASS_NAME = "EvalTempClass";
 
-    public EvalCommand() {
-        this.commandName = "eval";
-        this.description = "eval stuff";
+    public JEvalCommand() {
+        this.commandName = "jEval";
+        this.description = "evaluates java code";
         this.usage = PREFIX + commandName + " [insert crappy code]";
         this.category = Category.DEVELOPER;
         this.id = 27;
