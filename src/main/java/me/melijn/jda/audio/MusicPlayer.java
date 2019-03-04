@@ -11,14 +11,11 @@ public class MusicPlayer {
     private final long guildId;
     private final Lava lava;
 
-    private final AudioSendingHandler sendHandler;
-
     public MusicPlayer(Melijn melijn, long guildId) {
         this.lava = melijn.getLava();
         this.player = lava.createPlayer(guildId);
         this.guildId = guildId;
         manager = new TrackManager(melijn, player, this);
-        sendHandler = new AudioSendingHandler(player);
         player.addListener(manager);
     }
 
@@ -32,10 +29,6 @@ public class MusicPlayer {
 
     public TrackManager getTrackManager() {
         return manager;
-    }
-
-    public AudioSendingHandler getAudioHandler() {
-        return sendHandler;
     }
 
     public synchronized void queue(AudioTrack track) {
