@@ -28,9 +28,10 @@ dependencies {
     implementation 'mysql:mysql-connector-java:8.0.15'
 
     //https://mvnrepository.com/artifact/org.codehaus.janino/janino
+    //Used for java eval
     implementation 'org.codehaus.janino:janino:3.0.12'
     implementation 'org.codehaus.janino:commons-compiler:3.0.12'
-
+    
     //https://bintray.com/duncte123/weeb.java/weeb.java
     implementation 'me.duncte123:weebJava:2.2.0_25'
 
@@ -41,12 +42,14 @@ dependencies {
     implementation 'se.michaelthelin.spotify:spotify-web-api-java:2.1.2'
 
     //https://mvnrepository.com/artifact/com.google.guava/guava
+    //Used for loading caches and other utils
     implementation 'com.google.guava:guava:27.0.1-jre'
 
     //https://mvnrepository.com/artifact/ch.qos.logback/logback-core
     implementation 'ch.qos.logback:logback-core:1.2.3'
 
     //https://mvnrepository.com/artifact/org.jooby/jooby
+    //WebServer
     implementation 'org.jooby:jooby-netty:1.6.0'
     implementation 'org.jooby:jooby-jackson:1.6.0'
 
@@ -54,6 +57,7 @@ dependencies {
     implementation 'com.google.apis:google-api-services-youtube:v3-rev206-1.25.0'
 
     //https://mvnrepository.com/artifact/org.reflections/reflections
+    //simplifies loading commands
     implementation 'org.reflections:reflections:0.9.11'
 }
 compileJava.options.encoding = 'UTF-8'
