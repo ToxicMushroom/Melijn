@@ -255,16 +255,13 @@ public class MessageHelper {
         messages.forEach(message -> channel.sendMessage("```" + style + "\n" + message + "```").queue());
     }
 
-    public void argsToSongName(String[] args, StringBuilder sb, Set<String> providers) {
-        if (providers.contains(args[0].toLowerCase())) {
-            for (int i = 1; i < args.length; i++) {
-                sb.append(args[i]).append(" ");
-            }
-        } else {
-            for (String s : args) {
-                sb.append(s).append(" ");
-            }
-        }
+    public String argsToSongName(String[] args, Set<String> providers) {
+        String buffer = args[0];
+        if (providers.contains(args[0].toLowerCase()))
+            args[0] = "";
+        String toRet = String.join(" ", args);
+        args[0] = buffer;
+        return toRet;
     }
 
     public String variableFormat(String s, Guild guild, User user) {
