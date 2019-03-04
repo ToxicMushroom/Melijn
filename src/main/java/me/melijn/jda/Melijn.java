@@ -39,7 +39,7 @@ public class Melijn {
     private final Helpers helpers;
     private final MessageHelper messageHelper;
     private final Variables variables;
-    private final Private aPrivate;
+    private final Private _private; //private is a preserved keyword :/
     private final Lava lava;
     public static long OWNERID;
     public static String PREFIX;
@@ -66,7 +66,7 @@ public class Melijn {
         lava = new Lava(this);
         messageHelper = new MessageHelper(this);
 
-        aPrivate = new Private(webUtils);
+        _private = new Private(webUtils);
         taskManager = new TaskManager(messageHelper);
         shardManager = initJDA();
     }
@@ -167,7 +167,7 @@ public class Melijn {
     }
 
     public Private getPrivate() {
-        return aPrivate;
+        return _private;
     }
 
     public ImageUtils getImageUtils() {
