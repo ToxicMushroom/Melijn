@@ -117,7 +117,7 @@ public class AudioLoader {
 
             @Override
             public void loadFailed(FriendlyException ignored) {
-                channel.sendMessage("Something went wrong while searching for your track").queue();
+                channel.sendMessage("Something went wrong while loading your track `" + source + "`").queue();
             }
         };
 
@@ -208,7 +208,7 @@ public class AudioLoader {
 
             @Override
             public void loadFailed(FriendlyException ignored) {
-                channel.sendMessage("Something went wrong while searching for your track").queue();
+                channel.sendMessage("Something went wrong while loading your track").queue();
             }
         });
     }
@@ -279,7 +279,7 @@ public class AudioLoader {
 
             @Override
             public void loadFailed(FriendlyException ignored) {
-                textChannel.sendMessage("Something went wrong while searching for your track").queue();
+                textChannel.sendMessage("Something went wrong while loading your track").queue();
             }
         });
     }
