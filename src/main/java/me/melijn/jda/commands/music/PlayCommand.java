@@ -18,8 +18,8 @@ public class PlayCommand extends Command {
     public PlayCommand() {
         this.commandName = "play";
         this.description = "Plays a track or adds it to the queue";
-        this.usage = PREFIX + commandName + " [sc] <songname | link>";
-        this.extra = "You only have to use sc if you want to search on soundcloud";
+        this.usage = PREFIX + commandName + " [yt | sc | file] <trackName | url | file_attachment>";
+        this.extra = "yt is youtube, sc is soundcloud, you can leave the first argument out if you just want youtube";
         this.aliases = new String[]{"p"};
         this.category = Category.MUSIC;
         this.needs = new Need[]{Need.GUILD, Need.SAME_VOICECHANNEL_OR_DISCONNECTED};
@@ -33,15 +33,14 @@ public class PlayCommand extends Command {
         boolean access = event.hasPerm(guild.getMember(event.getAuthor()), commandName + ".*", 1);
         VoiceChannel senderVoiceChannel = guild.getMember(event.getAuthor()).getVoiceState().getChannel();
         String[] args = event.getArgs().split("\\s+");
-        if (args.length == 0 || args[0].isEmpty()) {
+        if (args[0].isEmpty()) {
             event.sendUsage(this, event);
             return;
         }
         Lava lava = event.getClient().getMelijn().getLava();
         String songName;
-        StringBuilder sb = new StringBuilder();
-        event.getMessageHelper().argsToSongName(args, sb, event.getVariables().providers);
-        songName = sb.toString();
+
+        songName = event.getMessageHelper().argsToSongName(args, event.getVariables().providers);
         switch (args[0].toLowerCase()) {
             case "sc":
             case "soundcloud":
@@ -54,18 +53,33 @@ public class PlayCommand extends Command {
 
                 break;
             case "link":
-                if (!event.hasPerm(guild.getMember(event.getAuthor()), commandName + ".link", 0) && !access) {
-                    event.reply("You need the permission `" + commandName + ".link` to execute this command.");
+                if (!event.hasPerm(guild.getMember(event.getAuthor()), commandName + ".url", 0) && !access) {
+                    event.reply("You need the permission `" + commandName + ".url` to execute this command.");
                     return;
                 }
                 if (lava.tryToConnectToVC(event, guild, senderVoiceChannel))
                     lava.getAudioLoader().loadTrack(event.getTextChannel(), args[(args.length - 1)], event.getAuthor(), true);
 
                 break;
+            case "file":
+                if (!event.hasPerm(guild.getMember(event.getAuthor()), commandName + ".file", 0) && !access) {
+                    event.reply("You need the permission `" + commandName + ".file` to execute this command.");
+                    return;
+                }
+
+                if (event.getMessage().getAttachments().size() == 0) {
+                    event.reply("You need to attach a video or audio file");
+                    return;
+                }
+
+                if (lava.tryToConnectToVC(event, guild, senderVoiceChannel))
+                    lava.getAudioLoader().loadTrack(event.getTextChannel(), event.getMessage().getAttachments().get(0).getUrl(), event.getAuthor(), true);
+                break;
+
             default:
                 if (songName.contains("https://") || songName.contains("http://")) {
-                    if (!event.hasPerm(guild.getMember(event.getAuthor()), commandName + ".link", 0) && !access) {
-                        event.reply("You need the permission `" + commandName + ".link` to execute this command.");
+                    if (!event.hasPerm(guild.getMember(event.getAuthor()), commandName + ".url", 0) && !access) {
+                        event.reply("You need the permission `" + commandName + ".url` to execute this command.");
                         return;
                     }
                     if (!lava.tryToConnectToVC(event, guild, senderVoiceChannel)) return;

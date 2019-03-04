@@ -35,9 +35,8 @@ public class SPlayCommand extends Command {
             return;
         }
         Lava lava = event.getClient().getMelijn().getLava();
-        StringBuilder sb = new StringBuilder();
-        event.getMessageHelper().argsToSongName(args, sb, event.getVariables().providers);
-        String songName = sb.toString();
+        String songName;
+        songName = event.getMessageHelper().argsToSongName(args,  event.getVariables().providers);
         switch (args[0].toLowerCase()) {
             case "sc":
             case "soundcloud":

@@ -16,6 +16,10 @@ import net.dv8tion.jda.core.entities.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptException;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Consumer;
@@ -26,14 +30,14 @@ public class Helpers {
     private final Melijn melijn;
     public boolean voteChecks = true;
     public final Set<String> perms = Sets.newHashSet(
+            "*",
             "pause",
-            "splay.yt",
-            "splay.sc",
-            "splay.link",
-            "splay.*",
+            "splay",
             "play.yt",
             "play.sc",
-            "play.link",
+            "play.url",
+            "play.file",
+            "play.*",
             "skip",
             "skipx",
             "stop",
@@ -55,8 +59,6 @@ public class Helpers {
             "perm.view",
             "perm.copy",
             "perm.*",
-            "*",
-            "play.*",
             "guildinfo",
             "role",
             "roles",
@@ -197,6 +199,23 @@ public class Helpers {
                 }
             }), 60_000);
         }
+    }
+
+    public void eval(CommandEvent event, ScriptEngine engine) {
+        ScriptContext context = engine.getContext();
+        context.setAttribute("event", event, ScriptContext.ENGINE_SCOPE);
+        context.setAttribute("Melijn", Melijn.class, ScriptContext.ENGINE_SCOPE);
+        StringWriter writer = new StringWriter();
+        context.setWriter(writer);
+
+        try {
+            engine.eval(event.getArgs());
+        } catch (ScriptException e) {
+            event.reply(e.getMessage());
+        }
+
+        String output = writer.toString();
+        event.reply("Script output: " + output);
     }
 
     public boolean hasPerm(Member member, String permission, int level) {
