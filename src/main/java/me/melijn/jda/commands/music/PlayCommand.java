@@ -52,6 +52,7 @@ public class PlayCommand extends Command {
                     lava.getAudioLoader().loadTrack(event.getTextChannel(), "scsearch:" + songName, event.getAuthor(), false);
 
                 break;
+            case "url":
             case "link":
                 if (!event.hasPerm(guild.getMember(event.getAuthor()), commandName + ".url", 0) && !access) {
                     event.reply("You need the permission `" + commandName + ".url` to execute this command.");
