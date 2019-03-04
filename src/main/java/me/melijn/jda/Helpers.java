@@ -32,7 +32,9 @@ public class Helpers {
     public final Set<String> perms = Sets.newHashSet(
             "*",
             "pause",
-            "splay",
+            "splay.yt",
+            "splay.sc",
+            "splay.*",
             "play.yt",
             "play.sc",
             "play.url",
