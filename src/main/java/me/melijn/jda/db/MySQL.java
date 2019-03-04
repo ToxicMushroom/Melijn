@@ -134,6 +134,7 @@ public class MySQL {
             executeUpdate("CREATE TABLE IF NOT EXISTS history_messages(guildId bigint, authorId bigint, messageId bigint, content varchar(2048), textChannelId bigint, sentTime bigint, PRIMARY KEY (messageId));");
             executeUpdate("CREATE TABLE IF NOT EXISTS saved_queues(guildId bigint, position int, url varchar(1024), UNIQUE KEY (guildId, position))");
             executeUpdate("CREATE TABLE IF NOT EXISTS votes(userId bigint, votes bigint, streak bigint, lastTime bigint, PRIMARY KEY (userId));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS blocked_list(type varchar(32), id bigint, PRIMARY KEY (id));");
 
             //Cleanup commands
             executeUpdate("TRUNCATE TABLE commands");
@@ -1932,7 +1933,7 @@ public class MySQL {
     public List<Long> getForcedRoles(long guildId, long userId) {
         List<Long> roles = new ArrayList<>();
         try (Connection con = ds.getConnection();
-        PreparedStatement statement = con.prepareStatement("SELECT * FROM forced_roles WHERE guildId= ? AND userId= ?")) {
+             PreparedStatement statement = con.prepareStatement("SELECT * FROM forced_roles WHERE guildId= ? AND userId= ?")) {
             statement.setLong(1, guildId);
             statement.setLong(2, userId);
             try (ResultSet rs = statement.executeQuery()) {
@@ -1944,5 +1945,23 @@ public class MySQL {
             e.printStackTrace();
         }
         return roles;
+    }
+
+    public List<Long> getBlockedIds(String type) {
+        List<Long> blocked = new ArrayList<>();
+        try (
+            Connection con = ds.getConnection();
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM blocked_list WHERE type= ?")
+        ) {
+            statement.setString(1, type);
+            try (ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) {
+                    blocked.add(rs.getLong("id"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return blocked;
     }
 }

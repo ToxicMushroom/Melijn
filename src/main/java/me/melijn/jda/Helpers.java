@@ -143,8 +143,6 @@ public class Helpers {
 
     public Helpers(Melijn melijn) {
         this.melijn = melijn;
-        melijn.getVariables().serverBlackList.addAll(Arrays.asList(110373943822540800L, 264445053596991498L));
-        melijn.getVariables().userBlackList.addAll(Arrays.asList(244397405846372354L, 324570870800449548L, 444348640450969600L));
     }
 
     public void startTimer(JDA jda, int i) {

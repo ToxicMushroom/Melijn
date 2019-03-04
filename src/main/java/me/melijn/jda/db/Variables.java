@@ -11,7 +11,6 @@ import net.dv8tion.jda.core.entities.Message;
 import org.discordbots.api.client.DiscordBotListAPI;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -32,8 +31,8 @@ public class Variables {
     public final LoadingCache<Long, Integer> embedColorCache;
 
     public final int embedColor = -16711720;
-    public final List<Long> userBlackList = new ArrayList<>();
-    public final List<Long> serverBlackList = new ArrayList<>();
+    public final List<Long> blockedUserIds = new ArrayList<>();
+    public final List<Long> blockedGuildIds = new ArrayList<>();
 
     public final LoadingCache<Long, Long> selfRolesChannels;
     public final LoadingCache<Long, Boolean> streamerModeCache;
@@ -88,6 +87,10 @@ public class Variables {
 
     public Variables(Melijn melijn) {
         disabledGuildCommands = melijn.getMySQL().getDisabledCommandsMap();
+
+        blockedGuildIds.addAll(melijn.getMySQL().getBlockedIds("guild"));
+        blockedUserIds.addAll(melijn.getMySQL().getBlockedIds("user"));
+
         int frequentSize = 150;
         int frequentDecayMinutes = 4;
         serverHasCC = CacheBuilder.newBuilder()
