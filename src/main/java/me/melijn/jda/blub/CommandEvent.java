@@ -14,7 +14,7 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.function.Consumer;
 
@@ -92,55 +92,33 @@ public class CommandEvent {
 
     public void reply(String text) {
         if (text == null || text.isEmpty()) return;
-        if (event.getPrivateChannel() != null) {
-            event.getPrivateChannel().sendMessage(text).queue();
-        } else {
-            event.getTextChannel().sendMessage(text).queue();
-        }
+        event.getChannel().sendMessage(text).queue();
     }
 
     public void reply(String text, Consumer<Message> message) {
         if (text == null || text.isEmpty()) return;
-        if (event.getPrivateChannel() != null) {
-            event.getPrivateChannel().sendMessage(text).queue(message);
-        } else {
-            event.getTextChannel().sendMessage(text).queue(message);
-        }
+        event.getChannel().sendMessage(text).queue(message);
     }
 
     public void reply(MessageEmbed embed) {
-        if (event.getGuild() == null) {
-            event.getPrivateChannel().sendMessage(embed).queue();
-        } else if (event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EMBED_LINKS))
-            event.getTextChannel().sendMessage(embed).queue();
+        if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EMBED_LINKS))
+            event.getChannel().sendMessage(embed).queue();
         else reply("I don't have permission to send embeds here.");
     }
 
     public void reply(String text, BufferedImage image) {
         try {
-            if (event.getGuild() == null) {
-                long time = System.currentTimeMillis();
-                ImageIO.write(image, "png", new File(time + ".png"));
-                if (new File(time + ".png").length() > 8_000_000) {
-                    reply("The image is bigger then 8MB and cannot be send");
-                    new File(time + ".png").delete();
-                } else
-                    event.getPrivateChannel().sendMessage(text).addFile(new File(time + ".png"), "finished.png").queue(
-                            done -> new File(time + ".png").delete(),
-                            failed -> new File(time + ".png").delete()
-                    );
-            } else if (event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_ATTACH_FILES)) {
-                long time = System.currentTimeMillis();
-                ImageIO.write(image, "png", new File(time + ".png"));
-                if (new File(time + ".png").length() > 8_000_000) {
-                    reply("The image is bigger then 8MB and cannot be send");
-                    new File(time + ".png").delete();
-                } else event.getTextChannel().sendMessage(text).addFile(new File(time + ".png"), "finished.png").queue(
-                        done -> new File(time + ".png").delete(),
-                        failed -> new File(time + ".png").delete()
-                );
-
-            } else reply("I don't have permission to send images here.");
+            if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_ATTACH_FILES)) {
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                ImageIO.write(image, "png", byteArrayOutputStream);
+                if (byteArrayOutputStream.size() > 8_000_000) {
+                    reply("The image is bigger then 8MB and cannot be sent");
+                    return;
+                }
+                event.getChannel().sendMessage(text).addFile(byteArrayOutputStream.toByteArray(), "finished.png").queue();
+            } else {
+                reply("I don't have permission to send images here.");
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -148,28 +126,17 @@ public class CommandEvent {
 
     public void reply(BufferedImage image) {
         try {
-            if (event.getGuild() == null) {
-                long time = System.currentTimeMillis();
-                ImageIO.write(image, "png", new File(time + ".png"));
-                if (new File(time + ".png").length() > 8_000_000) {
-                    reply("The image is bigger then 8MB and cannot be send");
-                    new File(time + ".png").delete();
-                } else event.getPrivateChannel().sendFile(new File(time + ".png"), "finished.png").queue(
-                        done -> new File(time + ".png").delete(),
-                        failed -> new File(time + ".png").delete()
-                );
-            } else if (event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_ATTACH_FILES)) {
-                long time = System.currentTimeMillis();
-                ImageIO.write(image, "png", new File(time + ".png"));
-                if (new File(time + ".png").length() > 8_000_000) {
-                    reply("The image is bigger then 8MB and cannot be send");
-                    new File(time + ".png").delete();
-                } else event.getTextChannel().sendFile(new File(time + ".png"), "finished.png").queue(
-                        done -> new File(time + ".png").delete(),
-                        failed -> new File(time + ".png").delete()
-                );
-
-            } else reply("I don't have permission to send images here.");
+            if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_ATTACH_FILES)) {
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                ImageIO.write(image, "png", byteArrayOutputStream);
+                if (byteArrayOutputStream.size() > 8_000_000) {
+                    reply("The image is bigger then 8MB and cannot be sent");
+                    return;
+                }
+                event.getChannel().sendFile(byteArrayOutputStream.toByteArray(), "finished.png").queue();
+            } else {
+                reply("I don't have permission to send images here.");
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
