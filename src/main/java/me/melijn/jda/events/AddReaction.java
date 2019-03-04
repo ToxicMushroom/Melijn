@@ -27,10 +27,10 @@ public class AddReaction extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event) {
-        if (event.getGuild() == null || melijn.getVariables().serverBlackList.contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || melijn.getVariables().blockedGuildIds.contains(event.getGuild().getIdLong()))
             return;
         Guild guild = event.getGuild();
-        if (melijn.getVariables().userBlackList.contains(guild.getOwnerIdLong())) return;
+        if (melijn.getVariables().blockedUserIds.contains(guild.getOwnerIdLong())) return;
         if (melijn.getVariables().userMessageToAnswer.containsKey(event.getUser().getIdLong()) &&
                 melijn.getVariables().userMessageToAnswer.get(event.getUser().getIdLong()) == event.getMessageIdLong()) {
             MusicPlayer player = melijn.getLava().getAudioLoader().getPlayer(event.getGuild());

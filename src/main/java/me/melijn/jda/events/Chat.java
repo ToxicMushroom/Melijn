@@ -44,7 +44,7 @@ public class Chat extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-        if (event.getGuild() == null || melijn.getVariables().serverBlackList.contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || melijn.getVariables().blockedGuildIds.contains(event.getGuild().getIdLong()))
             if (event.getGuild() == null &&
                     (event.getMessage().getContentRaw().equalsIgnoreCase(PREFIX) || event.getMessage().getContentRaw().equalsIgnoreCase(event.getJDA().getSelfUser().getAsMention())) &&
                     !event.getAuthor().isBot()) {
@@ -56,7 +56,7 @@ public class Chat extends ListenerAdapter {
         User author = event.getAuthor();
 
         if (event.getMember() == null) return;
-        if (melijn.getVariables().userBlackList.contains(guild.getOwnerIdLong())) return;
+        if (melijn.getVariables().blockedUserIds.contains(guild.getOwnerIdLong())) return;
         melijn.getHelpers().guildCount = event.getJDA().asBot().getShardManager().getGuildCache().size();
 
         StringBuilder content = new StringBuilder(event.getMessage().getContentRaw());
@@ -244,9 +244,9 @@ public class Chat extends ListenerAdapter {
 
     @Override
     public void onGuildMessageDelete(GuildMessageDeleteEvent event) {
-        if (event.getGuild() == null || melijn.getVariables().serverBlackList.contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || melijn.getVariables().blockedGuildIds.contains(event.getGuild().getIdLong()))
             return;
-        if (melijn.getVariables().userBlackList.contains(event.getGuild().getOwnerIdLong())) return;
+        if (melijn.getVariables().blockedUserIds.contains(event.getGuild().getOwnerIdLong())) return;
         if (melijn.getHelpers().lastRunTimer1 < (System.currentTimeMillis() - 10_000 * 2) && melijn.getHelpers().lastRunTimer1 != -1)
             melijn.getHelpers().startTimer(event.getJDA(), 1);
         if (melijn.getHelpers().lastRunTimer2 < (System.currentTimeMillis() - 120_000 * 2) && melijn.getHelpers().lastRunTimer2 != -1)

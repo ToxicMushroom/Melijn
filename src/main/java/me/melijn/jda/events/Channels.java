@@ -3,7 +3,6 @@ package me.melijn.jda.events;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.audio.AudioLoader;
 import me.melijn.jda.audio.Lava;
-import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.blub.ChannelType;
 import me.melijn.jda.blub.RoleType;
 import net.dv8tion.jda.core.Permission;
@@ -18,8 +17,6 @@ import net.dv8tion.jda.core.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceMoveEvent;
 import net.dv8tion.jda.core.events.role.RoleDeleteEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Channels extends ListenerAdapter {
 
@@ -127,12 +124,12 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceMove(GuildVoiceMoveEvent event) {
-        if (event.getGuild() == null || melijn.getVariables().serverBlackList.contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || melijn.getVariables().blockedGuildIds.contains(event.getGuild().getIdLong()))
             return;
         Guild guild = event.getGuild();
         Lava lava = melijn.getLava();
         AudioLoader loader = lava.getAudioLoader();
-        if (melijn.getVariables().userBlackList.contains(guild.getOwnerIdLong())) return;
+        if (melijn.getVariables().blockedUserIds.contains(guild.getOwnerIdLong())) return;
         long guildId = guild.getIdLong();
         if (lava.isConnected(guildId)) {
             VoiceChannel botVC = lava.getConnectedChannel(guild);
@@ -175,11 +172,11 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceJoin(GuildVoiceJoinEvent event) {
-        if (event.getGuild() == null || melijn.getVariables().serverBlackList.contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || melijn.getVariables().blockedGuildIds.contains(event.getGuild().getIdLong()))
             return;
         Guild guild = event.getGuild();
         Lava lava = melijn.getLava();
-        if (melijn.getVariables().userBlackList.contains(guild.getOwnerIdLong())) return;
+        if (melijn.getVariables().blockedUserIds.contains(guild.getOwnerIdLong())) return;
         long guildId = guild.getIdLong();
         if (melijn.getVariables().streamerModeCache.getUnchecked(guildId) &&
                 !lava.isConnected(guildId) &&
@@ -201,7 +198,7 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
-        if (event.getGuild() == null || melijn.getVariables().serverBlackList.contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || melijn.getVariables().blockedGuildIds.contains(event.getGuild().getIdLong()))
             return;
         if (!event.getMember().equals(event.getGuild().getSelfMember())) {
             whenListeningDoActions(event.getGuild());
@@ -212,7 +209,7 @@ public class Channels extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceDeafen(GuildVoiceDeafenEvent event) {
-        if (event.getGuild() == null || melijn.getVariables().userBlackList.contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || melijn.getVariables().blockedUserIds.contains(event.getGuild().getIdLong()))
             return;
         if (!event.getMember().equals(event.getGuild().getSelfMember())) {
             whenListeningDoActions(event.getGuild());

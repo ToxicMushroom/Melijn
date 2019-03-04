@@ -75,9 +75,9 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
             if (event.getAuthor().isBot()) return;
             boolean nickname = event.getGuild() != null && event.getGuild().getSelfMember().getNickname() != null;
 
-            if ((event.getGuild() != null && melijn.getVariables().serverBlackList.contains(event.getGuild().getIdLong()) && event.getAuthor().getIdLong() != Melijn.OWNERID) ||
-                    melijn.getVariables().userBlackList.contains(event.getAuthor().getIdLong()) ||
-                    (event.getGuild() != null && melijn.getVariables().userBlackList.contains(event.getGuild().getOwnerIdLong())))
+            if ((event.getGuild() != null && melijn.getVariables().blockedGuildIds.contains(event.getGuild().getIdLong()) && event.getAuthor().getIdLong() != Melijn.OWNERID) ||
+                    melijn.getVariables().blockedUserIds.contains(event.getAuthor().getIdLong()) ||
+                    (event.getGuild() != null && melijn.getVariables().blockedUserIds.contains(event.getGuild().getOwnerIdLong())))
                 return;
 
             String[] parts = null;

@@ -67,15 +67,15 @@ public class JoinLeave extends ListenerAdapter {
 
     @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
-        if (event.getGuild() == null || melijn.getVariables().serverBlackList.contains(event.getGuild().getIdLong())) {
+        if (event.getGuild() == null || melijn.getVariables().blockedGuildIds.contains(event.getGuild().getIdLong())) {
             return;
         }
         Guild guild = event.getGuild();
         User joinedUser = event.getUser();
         if (joinedUser.isBot() && joinedUser.equals(guild.getSelfMember().getUser()) &&
-                melijn.getVariables().serverBlackList.contains(guild.getOwnerIdLong()))
+                melijn.getVariables().blockedGuildIds.contains(guild.getOwnerIdLong()))
             guild.leave().queue();
-        if (melijn.getVariables().userBlackList.contains(guild.getOwnerIdLong())) return;
+        if (melijn.getVariables().blockedUserIds.contains(guild.getOwnerIdLong())) return;
         if (guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES) &&
                 melijn.getVariables().verificationChannelsCache.getUnchecked(guild.getIdLong()) != -1) {
             TextChannel verificationChannel = guild.getTextChannelById(melijn.getVariables().verificationChannelsCache.getUnchecked(guild.getIdLong()));
@@ -102,11 +102,11 @@ public class JoinLeave extends ListenerAdapter {
 
     @Override
     public void onGuildMemberLeave(GuildMemberLeaveEvent event) {
-        if (event.getGuild() == null || melijn.getVariables().serverBlackList.contains(event.getGuild().getIdLong()))
+        if (event.getGuild() == null || melijn.getVariables().blockedGuildIds.contains(event.getGuild().getIdLong()))
             return;
         Guild guild = event.getGuild();
         User leftUser = event.getUser();
-        if (melijn.getVariables().userBlackList.contains(guild.getOwnerIdLong())) return;
+        if (melijn.getVariables().blockedUserIds.contains(guild.getOwnerIdLong())) return;
         if (melijn.getVariables().unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong()).keySet().contains(leftUser.getIdLong())) {
             melijn.getHelpers().removeUnverified(guild, leftUser);
         } else {
