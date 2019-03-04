@@ -4,8 +4,10 @@ import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
+import com.sedmelluq.discord.lavaplayer.source.http.HttpAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
+import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.wrapper.spotify.model_objects.specification.ArtistSimplified;
 import com.wrapper.spotify.model_objects.specification.PlaylistTrack;
@@ -33,6 +35,7 @@ public class AudioLoader {
     public AudioLoader(Melijn melijn) {
         manager.getConfiguration().setFilterHotSwapEnabled(true);
         manager.setFrameBufferDuration(1000);
+
         AudioSourceManagers.registerRemoteSources(manager);
         AudioSourceManagers.registerLocalSource(manager);
         this.melijn = melijn;
@@ -61,7 +64,7 @@ public class AudioLoader {
      */
     public void loadTrack(final TextChannel channel, final String source, User requester, boolean isPlaylist) {
         MusicPlayer player = getPlayer(channel.getGuild());
-        //channel.getGuild().getAudioManager().setSendingHandler(player.getAudioHandler());
+
         AudioLoadResultHandler resultHandler = new AudioLoadResultHandler() {
 
             @Override
@@ -139,7 +142,6 @@ public class AudioLoader {
     }
 
     public void loadSimpleTrack(MusicPlayer player, final String source) {
-        //guild.getAudioManager().setSendingHandler(this.getPlayer(player.getLink().getGuildIdLong()).getAudioHandler());
         manager.loadItemOrdered(player, source, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
@@ -165,7 +167,7 @@ public class AudioLoader {
 
     public void searchTracks(TextChannel channel, String source, User author) {
         MusicPlayer player = getPlayer(channel.getGuild());
-        //channel.getGuild().getAudioManager().setSendingHandler(player.getAudioHandler());
+
         manager.loadItemOrdered(player, source, new AudioLoadResultHandler() {
 
             @Override
