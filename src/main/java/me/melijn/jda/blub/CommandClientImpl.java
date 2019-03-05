@@ -163,7 +163,11 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
         if (command.getCategory() == Category.DEVELOPER && event.getAuthor().getIdLong() != Melijn.OWNERID)
             return true;
         if (noPermission(event, command)) return true;
-        if (event.getGuild() != null && !event.getMember().hasPermission(Permission.ADMINISTRATOR) && event.getTextChannel().getTopic().contains("\u200B")) return true;
+        if (event.getGuild() != null &&
+                !event.getMember().hasPermission(Permission.ADMINISTRATOR) &&
+                event.getTextChannel() != null &&
+                event.getTextChannel().getTopic() == null &&
+                event.getTextChannel().getTopic().contains("\u200B")) return true;
         return unFulfilledNeeds(event, command);
     }
 
