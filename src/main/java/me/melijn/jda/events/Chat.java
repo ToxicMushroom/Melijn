@@ -1,8 +1,11 @@
 package me.melijn.jda.events;
 
 
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.melijn.jda.Melijn;
+import me.melijn.jda.audio.MusicPlayer;
 import me.melijn.jda.blub.ChannelType;
+import me.melijn.jda.utils.Embedder;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.audit.ActionType;
@@ -16,6 +19,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import net.dv8tion.jda.core.utils.MiscUtil;
 import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.time.OffsetDateTime;
@@ -84,11 +88,121 @@ public class Chat extends ListenerAdapter {
             filter(event.getMessage());
         }
 
+        if (melijn.getVariables().userMessageToAnswer.containsKey(author.getIdLong())) {
+            if (event.getMessage().getContentRaw().equalsIgnoreCase("agree")) {
+                MusicPlayer player = melijn.getLava().getAudioLoader().getPlayer(event.getGuild());
+                List<AudioTrack> tracks = melijn.getVariables().userRequestedSongs.get(author.getIdLong());
+                StringBuilder songs = new StringBuilder();
+                int i = player.getTrackManager().getTrackSize();
+                int t = 0;
+                for (AudioTrack track : tracks) {
+                    i++;
+                    player.queue(track);
+                    songs.append("[#").append(i).append("](").append(track.getInfo().uri).append(") - ").append(track.getInfo().title).append("\n");
+                    if (songs.length() > 1700) {
+                        t++;
+                        EmbedBuilder eb = new Embedder(melijn.getVariables(), event.getGuild());
+                        eb.setTitle("Added part **#" + t + "**");
+                        eb.setFooter(melijn.getHelpers().getFooterStamp(), melijn.getHelpers().getFooterIcon());
+                        eb.setDescription(songs);
+                        event.getChannel().sendMessage(eb.build()).queue();
+                        songs = new StringBuilder();
+                    }
+                }
+                if (t == 0) {
+                    EmbedBuilder eb = new Embedder(melijn.getVariables(), event.getGuild());
+                    eb.setTitle("Added");
+                    eb.setFooter(melijn.getHelpers().getFooterStamp(), melijn.getHelpers().getFooterIcon());
+                    eb.setDescription(songs);
+                    event.getChannel().sendMessage(eb.build()).queue();
+                } else {
+                    t++;
+                    EmbedBuilder eb = new Embedder(melijn.getVariables(), event.getGuild());
+                    eb.setTitle("Added part **#" + t + "**");
+                    eb.setFooter(melijn.getHelpers().getFooterStamp(), melijn.getHelpers().getFooterIcon());
+                    eb.setDescription(songs);
+                    event.getChannel().sendMessage(eb.build()).queue();
+                }
+                event.getChannel().getMessageById(melijn.getVariables().userMessageToAnswer.get(author.getIdLong()))
+                        .queue(message -> message.delete().queue());
+                melijn.getVariables().userMessageToAnswer.remove(author.getIdLong());
+                melijn.getVariables().userRequestedSongs.remove(author.getIdLong());
+
+            } else if (event.getMessage().getContentRaw().equalsIgnoreCase("deny")) {
+                event.getChannel().getMessageById(melijn.getVariables().userMessageToAnswer.get(author.getIdLong()))
+                        .queue(message -> message.delete().queue());
+                melijn.getVariables().userMessageToAnswer.remove(author.getIdLong());
+                melijn.getVariables().userRequestedSongs.remove(author.getIdLong());
+            }
+        }
+
+        if (melijn.getVariables().usersFormToReply.containsKey(author.getIdLong())) {
+            MusicPlayer player = melijn.getLava().getAudioLoader().getPlayer(event.getGuild());
+            AudioTrack track;
+
+            EmbedBuilder eb = new Embedder(melijn.getVariables(), event.getGuild());
+            eb.setTitle("Added");
+            eb.setFooter(melijn.getHelpers().getFooterStamp(), null);
+            switch (event.getMessage().getContentRaw()) {
+                case "1":
+                    track = melijn.getVariables().userChoices.get(author.getIdLong()).get(0);
+                    player.queue(track);
+                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
+
+                    event.getChannel().getMessageById(melijn.getVariables().usersFormToReply.get(author.getIdLong())).queue(s ->
+                            s.editMessage(eb.build()).queue()
+                    );
+                    break;
+                case "2":
+                    track = melijn.getVariables().userChoices.get(author.getIdLong()).get(1);
+                    player.queue(track);
+                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
+                    event.getChannel().getMessageById(melijn.getVariables().usersFormToReply.get(author.getIdLong())).queue(s ->
+                            s.editMessage(eb.build()).queue()
+                    );
+                    break;
+                case "3":
+                    track = melijn.getVariables().userChoices.get(author.getIdLong()).get(2);
+                    player.queue(track);
+                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
+                    event.getChannel().getMessageById(melijn.getVariables().usersFormToReply.get(author.getIdLong())).queue(s ->
+                            s.editMessage(eb.build()).queue());
+                    break;
+                case "4":
+                    track = melijn.getVariables().userChoices.get(author.getIdLong()).get(3);
+                    player.queue(track);
+                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
+                    event.getChannel().getMessageById(melijn.getVariables().usersFormToReply.get(author.getIdLong())).queue(s ->
+                            s.editMessage(eb.build()).queue()
+                    );
+                    break;
+                case "5":
+                    track = melijn.getVariables().userChoices.get(author.getIdLong()).get(4);
+                    player.queue(track);
+                    eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
+                    event.getChannel().getMessageById(melijn.getVariables().usersFormToReply.get(author.getIdLong())).queue(s ->
+                            s.editMessage(eb.build()).queue()
+                    );
+                    break;
+                case "cancel":
+                    melijn.getVariables().usersFormToReply.remove(author.getIdLong());
+                    melijn.getVariables().userChoices.remove(author.getIdLong());
+                    event.getChannel().getMessageById(melijn.getVariables().usersFormToReply.get(author.getIdLong())).queue(s ->
+                            s.delete().queue()
+                    );
+                    break;
+                default:
+                    break;
+
+            }
+        }
+
         if (melijn.getVariables().verificationChannelsCache.getUnchecked(guildId) == event.getChannel().getIdLong()) {
             if (!event.getMember().hasPermission(event.getChannel(), Permission.MANAGE_CHANNEL))
                 event.getMessage().delete().reason("Verification Channel").queue(
                         s -> melijn.getVariables().botDeletedMessages.add(event.getMessageIdLong()),
-                        failed -> {}
+                        failed -> {
+                        }
                 );
             if (melijn.getVariables().verificationCodeCache.getUnchecked(guildId) == null &&
                     melijn.getVariables().verificationTypes.getUnchecked(guildId) == CODE) {
@@ -125,7 +239,8 @@ public class Chat extends ListenerAdapter {
             } else {
                 event.getMessage().delete().reason("Verification Channel").queue(
                         s -> melijn.getVariables().botDeletedMessages.add(event.getMessageIdLong()),
-                        failed -> {}
+                        failed -> {
+                        }
                 );
             }
         }
@@ -133,11 +248,12 @@ public class Chat extends ListenerAdapter {
 
     private void postAttachmentLog(Guild guild, User author, TextChannel origin, long attachmentsId, List<Message.Attachment> attachments) {
         TextChannel textChannel = guild.getTextChannelById(attachmentsId);
-        if (author.isBot() || textChannel == null || !guild.getSelfMember().hasPermission(textChannel, Permission.MESSAGE_WRITE)) return;
+        if (author.isBot() || textChannel == null || !guild.getSelfMember().hasPermission(textChannel, Permission.MESSAGE_WRITE))
+            return;
 
         for (Message.Attachment attachment : attachments) {
             textChannel.sendMessage(new EmbedBuilder()
-            .setTitle("Attachment sent in #" + origin.getName())
+                    .setTitle("Attachment sent in #" + origin.getName())
                     .setColor(Color.decode("#DC143C"))
                     .setDescription("```LDIF" +
                             "\nSenderID: " + author.getId() +
@@ -147,7 +263,7 @@ public class Chat extends ListenerAdapter {
                             "**Attachment**: [Click to view](" + attachment.getUrl() + (attachment.isImage() ? "?size=2048" : "") + ")")
                     .setImage(attachment.isImage() ? attachment.getUrl() + "?size=2048" : null)
                     .setFooter("Sent by " + author.getName() + "#" + author.getDiscriminator(), author.getEffectiveAvatarUrl())
-            .build()
+                    .build()
             ).queue();
         }
     }
@@ -171,7 +287,8 @@ public class Chat extends ListenerAdapter {
 
         //Logging part
         TextChannel emChannel = event.getGuild().getTextChannelById(melijn.getVariables().emLogChannelCache.getUnchecked(guild.getIdLong()));
-        if (emChannel == null || oMessage.length() == 0 || !guild.getSelfMember().hasPermission(emChannel, Permission.MESSAGE_WRITE)) return;
+        if (emChannel == null || oMessage.length() == 0 || !guild.getSelfMember().hasPermission(emChannel, Permission.MESSAGE_WRITE))
+            return;
 
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Message edited in #" + event.getTextChannel().getName() + " ".repeat(100).substring(0, 45 + event.getAuthor().getName().length()) + "\u200B");

@@ -38,8 +38,10 @@ public class TrackManager extends AudioEventAdapterWrapped {
             player.getLink().disconnect();
             return;
         }
+        if (player == null) return;
         AudioTrack track = tracks.poll();
-        if (track.equals(lastTrack)) player.playTrack(track.makeClone());
+        if (track.equals(lastTrack))
+            player.playTrack(track.makeClone());
         else player.playTrack(track);
     }
 

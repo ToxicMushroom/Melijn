@@ -78,7 +78,7 @@ public class AddReaction extends ListenerAdapter {
                 melijn.getVariables().userRequestedSongs.remove(event.getUser().getIdLong());
             }
         }
-        if (melijn.getVariables().usersFormToReply.containsKey(event.getUser().getIdLong()) && melijn.getVariables().usersFormToReply.get(event.getUser().getIdLong()).getIdLong() == event.getMessageIdLong()) {
+        if (melijn.getVariables().usersFormToReply.containsKey(event.getUser().getIdLong()) && melijn.getVariables().usersFormToReply.get(event.getUser().getIdLong()) == event.getMessageIdLong()) {
             MusicPlayer player = melijn.getLava().getAudioLoader().getPlayer(event.getGuild());
             AudioTrack track;
             EmbedBuilder eb = new Embedder(melijn.getVariables(), event.getGuild());
@@ -90,36 +90,36 @@ public class AddReaction extends ListenerAdapter {
                     track = melijn.getVariables().userChoices.get(event.getUser().getIdLong()).get(0);
                     player.queue(track);
                     eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
-                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).error("93"));
+                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
                     break;
                 case "\u0032\u20E3":
                     track = melijn.getVariables().userChoices.get(event.getUser().getIdLong()).get(1);
                     player.queue(track);
                     eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
-                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).error("99"));
+                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
                     break;
                 case "\u0033\u20E3":
                     track = melijn.getVariables().userChoices.get(event.getUser().getIdLong()).get(2);
                     player.queue(track);
                     eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
-                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).error("105"));
+                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
                     break;
                 case "\u0034\u20E3":
                     track = melijn.getVariables().userChoices.get(event.getUser().getIdLong()).get(3);
                     player.queue(track);
                     eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
-                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).error("111"));
+                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
                     break;
                 case "\u0035\u20E3":
                     track = melijn.getVariables().userChoices.get(event.getUser().getIdLong()).get(4);
                     player.queue(track);
                     eb.setDescription("**[" + track.getInfo().title + "](" + track.getInfo().uri + ")** is queued at position **#" + player.getTrackManager().getTrackSize() + "**");
-                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue(), f -> LoggerFactory.getLogger(this.getClass()).error("117"));
+                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.editMessage(eb.build()).queue());
                     break;
                 case "\u274E":
                     melijn.getVariables().usersFormToReply.remove(event.getUser().getIdLong());
                     melijn.getVariables().userChoices.remove(event.getUser().getIdLong());
-                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.delete().queue(), f -> LoggerFactory.getLogger(this.getClass()).error("122"));
+                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.delete().queue());
                     wrongemote = true;
                     break;
                 default:

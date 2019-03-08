@@ -14,6 +14,7 @@ import me.melijn.jda.Melijn;
 import me.melijn.jda.utils.Embedder;
 import me.melijn.jda.utils.YTSearch;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
@@ -85,29 +86,38 @@ public class AudioLoader {
                     tracks = tracks.size() > 200 ? tracks.subList(0, 200) : tracks;
                     if (melijn.getVariables().userRequestedSongs.containsKey(requester.getIdLong()) || melijn.getVariables().userMessageToAnswer.containsKey(requester.getIdLong())) {
                         channel.sendMessage("You still have a request to answer. (requests are automatically removed after 30 seconds)")
-                                .queue((message) -> message.delete().queueAfter(10, TimeUnit.SECONDS, null, (failure) -> {
+                                .queue(
+                                        (message) -> message.delete().queueAfter(10, TimeUnit.SECONDS, null, (failure) -> {
                                 }));
                         return;
                     }
 
+
                     StringBuilder sb = new StringBuilder();
                     tracks.forEach(track -> sb.append(track.getInfo().title).append("\n"));
 
-                    String toSend = "You're about to add a playlist which contains " +
-                            (("these tracks:\n" + sb + "Hit \u2705 to accept or \u274E to deny").length() < 2000 ?
-                                    "these tracks:\n" + sb + "Hit \u2705 to accept or \u274E to deny" :
-                                    tracks.size() + " tracks.\nHit \u2705 to accept or \u274E to deny.");
-                    channel.sendMessage(toSend).queue(message -> {
+                    sb.insert(0, "You're about to add a playlist which contains these tracks:\n");
+                    if (channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_ADD_REACTION)) {
+                        sb.append("Hit \u2705 to accept or \u274E to deny");
+                    } else {
+                        sb.append("Type `accept` to accept or `deny` to deny");
+                    }
+
+
+                    melijn.getMessageHelper().sendSplitMessage(channel, sb.toString(), message -> {
                         melijn.getVariables().userRequestedSongs.put(requester.getIdLong(), playlist.getTracks());
                         melijn.getVariables().userMessageToAnswer.put(requester.getIdLong(), message.getIdLong());
-                        message.addReaction("\u2705").queue();
-                        message.addReaction("\u274E").queue();
+
+                        if (channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_ADD_REACTION)) {
+                            message.addReaction("\u2705").queue();
+                            message.addReaction("\u274E").queue();
+                        }
+
                         melijn.getTaskManager().async(() -> {
                             melijn.getVariables().userRequestedSongs.remove(requester.getIdLong());
                             melijn.getVariables().userMessageToAnswer.remove(requester.getIdLong());
                         }, 30_000);
-                        message.delete().queueAfter(30, TimeUnit.SECONDS, null, (failure) -> {
-                        });
+                        message.delete().queueAfter(30, TimeUnit.SECONDS, null, (failure) -> {});
                     });
                 } else {
                     trackLoaded(tracks.get(0));
@@ -192,15 +202,20 @@ public class AudioLoader {
                             .append(" `[").append(melijn.getMessageHelper().getDurationBreakdown(track.getInfo().length)).append("]`\n");
                 }
                 eb.setDescription(sb.toString());
+                if (!channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_ADD_REACTION)) {
+                    eb.setFooter("Reply with 1 - 5 to select a track or 'cancel' to cancel!", null);
+                }
                 melijn.getVariables().userChoices.put(author.getIdLong(), map);
                 channel.sendMessage(eb.build()).queue((s) -> {
-                    melijn.getVariables().usersFormToReply.put(author.getIdLong(), s);
-                    s.addReaction("\u0031\u20E3").queue();
-                    s.addReaction("\u0032\u20E3").queue();
-                    s.addReaction("\u0033\u20E3").queue();
-                    s.addReaction("\u0034\u20E3").queue();
-                    s.addReaction("\u0035\u20E3").queue();
-                    s.addReaction("\u274E").queue();
+                    melijn.getVariables().usersFormToReply.put(author.getIdLong(), s.getIdLong());
+                    if (channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_ADD_REACTION)) {
+                        s.addReaction("\u0031\u20E3").queue();
+                        s.addReaction("\u0032\u20E3").queue();
+                        s.addReaction("\u0033\u20E3").queue();
+                        s.addReaction("\u0034\u20E3").queue();
+                        s.addReaction("\u0035\u20E3").queue();
+                        s.addReaction("\u274E").queue();
+                    }
                 });
             }
 

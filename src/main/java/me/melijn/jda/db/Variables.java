@@ -50,7 +50,7 @@ public class Variables {
     public final Set<Long> loopedQueues = new HashSet<>();
     public final Map<Long, Long> toLeaveTimeMap = new HashMap<>(); // guild, insert time
     public final Set<String> providers = Sets.newHashSet("yt", "sc", "link", "youtube", "soundcloud");
-    public final Map<Long, Message> usersFormToReply = new HashMap<>();
+    public final Map<Long, Long> usersFormToReply = new HashMap<>();
     public final Map<Long, Map<Integer, AudioTrack>> userChoices = new HashMap<>();
 
     public final Map<Long, List<AudioTrack>> userRequestedSongs = new HashMap<>();

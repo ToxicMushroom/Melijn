@@ -7,6 +7,7 @@ import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.requests.restaction.MessageAction;
 import okhttp3.HttpUrl;
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -248,6 +250,16 @@ public class MessageHelper {
     public void sendSplitMessage(MessageChannel channel, String text) {
         final List<String> messages = getSplitMessage(text, 0);
         messages.forEach(message -> channel.sendMessage(message).queue());
+    }
+
+    public void sendSplitMessage(MessageChannel channel, String text, Consumer<Message> success) {
+        final List<String> messages = getSplitMessage(text, 0);
+        int size = messages.size();
+        for (int i = 0; i < size; i++) {
+            MessageAction action = channel.sendMessage(messages.get(i));
+            if (size == i+1) action.queue(success);
+            else action.queue();
+        }
     }
 
     public void sendSplitCodeBlock(MessageChannel channel, String text, String style) {
