@@ -127,6 +127,7 @@ public class Helpers {
             "stats",
             "kiss",
             "hug",
+            "shoot",
             "spookify",
             "SetSelfRoleChannel",
             "SelfRole",
@@ -189,10 +190,15 @@ public class Helpers {
         }
         if (i == 0 || i == 4) {
             melijn.getTaskManager().scheduleRepeating(() -> melijn.getVariables().toLeaveTimeMap.forEach((guildId, time) -> {
+                if (melijn.getShardManager().getGuildCache().getElementById(guildId) == null) {
+                    melijn.getVariables().toLeaveTimeMap.remove(guildId);
+                    return;
+                }
                 if (time < System.currentTimeMillis()) { //Leaves after 5 minutes
                     MusicPlayer player = melijn.getLava().getAudioLoader().getPlayer(guildId);
                     melijn.getVariables().looped.remove(guildId);
                     melijn.getVariables().loopedQueues.remove(guildId);
+                    melijn.getVariables().toLeaveTimeMap.remove(guildId);
                     player.getAudioPlayer().setPaused(false);
                     player.getTrackManager().clear();
                     player.stopTrack();
