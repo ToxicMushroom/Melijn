@@ -23,6 +23,6 @@ public class GEvalCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         ScriptEngine engine = new ScriptEngineManager().getEngineByName("groovy");
-        event.getHelpers().eval(event, engine);
+        event.getHelpers().eval(event, engine, "groovy");
     }
 }

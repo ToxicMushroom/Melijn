@@ -23,6 +23,6 @@ public class JSEvalCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         ScriptEngine engine = new ScriptEngineManager().getEngineByName("javascript");
-        event.getHelpers().eval(event, engine);
+        event.getHelpers().eval(event, engine, "js");
     }
 }
