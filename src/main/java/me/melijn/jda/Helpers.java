@@ -189,7 +189,8 @@ public class Helpers {
             }, 1_800_000, 1_800_000);
         }
         if (i == 0 || i == 4) {
-            melijn.getTaskManager().scheduleRepeating(() -> melijn.getVariables().toLeaveTimeMap.forEach((guildId, time) -> {
+            melijn.getTaskManager().scheduleRepeating(() ->
+                    new HashMap<>(melijn.getVariables().toLeaveTimeMap).forEach((guildId, time) -> {
                 if (melijn.getShardManager().getGuildCache().getElementById(guildId) == null) {
                     melijn.getVariables().toLeaveTimeMap.remove(guildId);
                     return;
@@ -207,21 +208,18 @@ public class Helpers {
         }
     }
 
-    public void eval(CommandEvent event, ScriptEngine engine) {
-        ScriptContext context = engine.getContext();
-        context.setAttribute("event", event, ScriptContext.ENGINE_SCOPE);
-        context.setAttribute("Melijn", Melijn.class, ScriptContext.ENGINE_SCOPE);
-        StringWriter writer = new StringWriter();
-        context.setWriter(writer);
-
+    public void eval(CommandEvent event, ScriptEngine engine, String lang) {
+        engine.put("event", event);
+        engine.put("Melijn", Melijn.class);
         try {
-            engine.eval(event.getArgs());
+            String output = engine.eval(event.getArgs()).toString();
+            event.reply("" +
+                    "Script input: ```" + lang + "\n" + event.getArgs() + "```\n" +
+                    "Script evaluation output: ```" + output + "```"
+            );
         } catch (ScriptException e) {
             event.reply(e.getMessage());
         }
-
-        String output = writer.toString();
-        event.reply("Script output: " + output);
     }
 
     public boolean hasPerm(Member member, String permission, int level) {
