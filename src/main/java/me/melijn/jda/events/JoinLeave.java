@@ -45,6 +45,11 @@ public class JoinLeave extends ListenerAdapter {
         AudioLoader audioLoader = melijn.getLava().getAudioLoader();
         List<JSONObject> tracks = melijn.getMySQL().getQueues();
         melijn.getMySQL().clearQueues();
+//        try {
+//            melijn.getShardManager().getShards().get(0).getSelfUser().getManager().setAvatar(Icon.from(new File("avatar.png"))).queue();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
         for (JSONObject queue : tracks) {
             Guild guild = shardManager.getGuildById(queue.getLong("guildId"));

@@ -45,7 +45,7 @@ public class WebUtils {
         this.melijn = melijn;
         weebApi = new WeebApiBuilder(TokenType.WOLKETOKENS)
                 .setEndpoint(Endpoint.PRODUCTION)
-                .setBotInfo("Weeb.java_Melijn", "1.0", melijn.getConfig().getValue("environment"))
+                .setBotInfo("Melijn", "1.0", melijn.getConfig().getValue("environment"))
                 .setToken(melijn.getConfig().getValue("wolketoken"))
                 .build();
         try {
