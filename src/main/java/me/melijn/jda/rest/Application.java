@@ -24,6 +24,9 @@ public class Application extends Jooby {
                         .put("guildCount", shard.getGuildCache().size())
                         .put("userCount", shard.getUserCache().size())
                         .put("connectedVoiceChannels", shard.getGuildCache().stream().filter(guild -> guild.getSelfMember().getVoiceState().inVoiceChannel()).count())
+                        .put("ping", shard.getPing())
+                        .put("status", shard.getStatus())
+                        .put("responses", shard.getResponseTotal())
                 );
             response.send(object.toMap());
         });
