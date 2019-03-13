@@ -86,9 +86,9 @@ public class HelpCommand extends Command {
             for (Command command : event.getClient().getCommands()) {
                 if (command.isCommandFor(args[0])) {
                     event.reply("" +
-                            "**Help off " + command.getCommandName() + "**\n" +
+                            "Help off **" + command.getCommandName() + "**\n" +
                             "**Usage:**  `" + command.getUsage() + "`\n" +
-                            "**Aliases** `" + String.join(", ", command.getAliases()) + "`\n" +
+                            (command.getAliases().length > 0 ? ("**Aliases:** `" + String.join(", ", command.getAliases()) + "`\n") : "") +
                             "**Description:**  " + command.getDescription() +
                             (command.getExtra().isEmpty() ? "" : "\n**Extra:**  " + command.getExtra()));
                     return;
