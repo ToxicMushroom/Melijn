@@ -10,7 +10,6 @@ import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.User;
 
-import java.util.HashSet;
 import java.util.Map;
 
 import static me.melijn.jda.Melijn.PREFIX;

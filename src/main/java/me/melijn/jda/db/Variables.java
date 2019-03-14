@@ -7,7 +7,6 @@ import com.google.common.collect.Sets;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.*;
-import net.dv8tion.jda.core.entities.Message;
 import org.discordbots.api.client.DiscordBotListAPI;
 import org.jetbrains.annotations.NotNull;
 

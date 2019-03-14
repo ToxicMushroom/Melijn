@@ -4,7 +4,6 @@ import me.melijn.jda.Melijn;
 import me.melijn.jda.audio.AudioLoader;
 import me.melijn.jda.audio.Lava;
 import me.melijn.jda.blub.ChannelType;
-import me.melijn.jda.blub.RoleType;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
