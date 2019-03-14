@@ -31,59 +31,7 @@ public class Channels extends ListenerAdapter {
         melijn.getTaskManager().async(() -> {
             long guildId = event.getGuild().getIdLong();
             long channelId = event.getChannel().getIdLong();
-
-            if (channelId == melijn.getVariables().verificationChannelsCache.getUnchecked(guildId)) {
-                melijn.getMySQL().removeChannel(guildId, ChannelType.VERIFICATION);
-                melijn.getVariables().verificationChannelsCache.invalidate(guildId);
-
-            } else if (channelId == melijn.getVariables().joinChannelCache.getUnchecked(guildId)) {
-                melijn.getMySQL().removeChannel(guildId, ChannelType.JOIN);
-                melijn.getVariables().joinChannelCache.invalidate(guildId);
-
-            } else if (channelId == melijn.getVariables().leaveChannelCache.getUnchecked(guildId)) {
-                melijn.getMySQL().removeChannel(guildId, ChannelType.LEAVE);
-                melijn.getVariables().leaveChannelCache.invalidate(guildId);
-
-            } else if (channelId == melijn.getVariables().selfRolesChannels.getUnchecked(guildId)) {
-                melijn.getMySQL().removeChannel(guildId, ChannelType.SELF_ROLE);
-                melijn.getVariables().selfRolesChannels.invalidate(guildId);
-
-            } else if (channelId == melijn.getVariables().banLogChannelCache.getUnchecked(guildId)) {
-                melijn.getMySQL().removeChannel(guildId, ChannelType.BAN_LOG);
-                melijn.getVariables().banLogChannelCache.invalidate(guildId);
-
-            } else if (channelId == melijn.getVariables().kickLogChannelCache.getUnchecked(guildId)) {
-                melijn.getMySQL().removeChannel(guildId, ChannelType.KICK_LOG);
-                melijn.getVariables().kickLogChannelCache.invalidate(guildId);
-
-            } else if (channelId == melijn.getVariables().warnLogChannelCache.getUnchecked(guildId)) {
-                melijn.getMySQL().removeChannel(guildId, ChannelType.WARN_LOG);
-                melijn.getVariables().warnLogChannelCache.invalidate(guildId);
-
-            } else if (channelId == melijn.getVariables().muteLogChannelCache.getUnchecked(guildId)) {
-                melijn.getMySQL().removeChannel(guildId, ChannelType.MUTE_LOG);
-                melijn.getVariables().muteLogChannelCache.invalidate(guildId);
-
-            } else if (channelId == melijn.getVariables().sdmLogChannelCache.getUnchecked(guildId)) {
-                melijn.getMySQL().removeChannel(guildId, ChannelType.SDM_LOG);
-                melijn.getVariables().sdmLogChannelCache.invalidate(guildId);
-
-            } else if (channelId == melijn.getVariables().odmLogChannelCache.getUnchecked(guildId)) {
-                melijn.getMySQL().removeChannel(guildId, ChannelType.ODM_LOG);
-                melijn.getVariables().odmLogChannelCache.invalidate(guildId);
-
-            } else if (channelId == melijn.getVariables().pmLogChannelCache.getUnchecked(guildId)) {
-                melijn.getMySQL().removeChannel(guildId, ChannelType.PM_LOG);
-                melijn.getVariables().pmLogChannelCache.invalidate(guildId);
-
-            } else if (channelId == melijn.getVariables().emLogChannelCache.getUnchecked(guildId)) {
-                melijn.getMySQL().removeChannel(guildId, ChannelType.EM_LOG);
-                melijn.getVariables().emLogChannelCache.invalidate(guildId);
-
-            } else if (channelId == melijn.getVariables().musicLogChannelCache.getUnchecked(guildId)) {
-                melijn.getMySQL().removeChannel(guildId, ChannelType.MUSIC_LOG);
-                melijn.getVariables().musicLogChannelCache.invalidate(guildId);
-            }
+            melijn.getMySQL().removeTextChannelEverywhere(guildId, channelId);
         });
     }
 
@@ -105,20 +53,7 @@ public class Channels extends ListenerAdapter {
         melijn.getTaskManager().async(() -> {
             long guildId = event.getGuild().getIdLong();
             long roleId = event.getRole().getIdLong();
-
-            if (roleId == melijn.getVariables().muteRoleCache.getUnchecked(guildId)) {
-                melijn.getMySQL().removeRole(guildId, RoleType.MUTE);
-                melijn.getVariables().muteRoleCache.invalidate(roleId);
-
-            } else if (roleId == melijn.getVariables().joinRoleCache.getUnchecked(guildId)) {
-                melijn.getMySQL().removeRole(guildId, RoleType.JOIN);
-                melijn.getVariables().joinRoleCache.invalidate(roleId);
-
-            } else if (roleId == melijn.getVariables().unverifiedRoleCache.getUnchecked(guildId)) {
-                melijn.getMySQL().removeRole(guildId, RoleType.UNVERIFIED);
-                melijn.getVariables().unverifiedRoleCache.invalidate(roleId);
-            }
-
+            melijn.getMySQL().removeRoleEverywhere(guildId, roleId);
         });
     }
 

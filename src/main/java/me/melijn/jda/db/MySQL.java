@@ -1964,4 +1964,50 @@ public class MySQL {
         }
         return blocked;
     }
+
+    public void removeRoleEverywhere(long guildId, long roleId) {
+        executeUpdate("DELETE FROM forced_roles WHERE roleId= ?", roleId);
+        executeUpdate("DELETE FROM self_roles WHERE roleId= ?", roleId);
+        melijn.getVariables().selfRoles.invalidate(guildId);
+        executeUpdate("DELETE FROM join_roles WHERE roleId= ?", roleId);
+        melijn.getVariables().joinRoleCache.invalidate(guildId);
+        executeUpdate("DELETE FROM unverified_roles WHERE roleId= ?", roleId);
+        melijn.getVariables().unverifiedRoleCache.invalidate(guildId);
+        executeUpdate("DELETE FROM mute_roles WHERE roleId= ?", roleId);
+        melijn.getVariables().muteLogChannelCache.invalidate(guildId);
+        executeUpdate("DELETE FROM perms_roles WHERE roleId= ?", roleId);
+    }
+
+    public void removeTextChannelEverywhere(long guildId, long channelId) {
+        executeUpdate("DELETE FROM attachment_log_channels WHERE channelId= ?", channelId);
+        melijn.getVariables().attachmentLogChannelCache.invalidate(guildId);
+        executeUpdate("DELETE FROM ban_log_channels WHERE channelId= ?", channelId);
+        melijn.getVariables().banLogChannelCache.invalidate(guildId);
+        executeUpdate("DELETE FROM em_log_channels WHERE channelId= ?", channelId);
+        melijn.getVariables().emLogChannelCache.invalidate(guildId);
+        executeUpdate("DELETE FROM fm_log_channels WHERE channelId= ?", channelId);
+        melijn.getVariables().fmLogChannelCache.invalidate(guildId);
+        executeUpdate("DELETE FROM kick_log_channels WHERE channelId= ?", channelId);
+        melijn.getVariables().kickLogChannelCache.invalidate(guildId);
+        executeUpdate("DELETE FROM music_log_channels WHERE channelId= ?", channelId);
+        melijn.getVariables().musicLogChannelCache.invalidate(guildId);
+        executeUpdate("DELETE FROM mute_log_channels WHERE channelId= ?", channelId);
+        melijn.getVariables().muteLogChannelCache.invalidate(guildId);
+        executeUpdate("DELETE FROM odm_log_channels WHERE channelId= ?", channelId);
+        melijn.getVariables().odmLogChannelCache.invalidate(guildId);
+        executeUpdate("DELETE FROM pm_log_channels WHERE channelId= ?", channelId);
+        melijn.getVariables().pmLogChannelCache.invalidate(guildId);
+        executeUpdate("DELETE FROM sdm_log_channels WHERE channelId= ?", channelId);
+        melijn.getVariables().sdmLogChannelCache.invalidate(guildId);
+        executeUpdate("DELETE FROM reaction_log_channels WHERE channelId= ?", channelId);
+        melijn.getVariables().reactionLogChannelCache.invalidate(guildId);
+        executeUpdate("DELETE FROM join_channels WHERE channelId= ?", channelId);
+        melijn.getVariables().joinChannelCache.invalidate(guildId);
+        executeUpdate("DELETE FROM leave_channels WHERE channelId= ?", channelId);
+        melijn.getVariables().leaveChannelCache.invalidate(guildId);
+        executeUpdate("DELETE FROM verification_channels WHERE channelId= ?", channelId);
+        melijn.getVariables().verificationChannelsCache.invalidate(guildId);
+        executeUpdate("DELETE FROM self_role_channels WHERE channelId= ?", channelId);
+        melijn.getVariables().selfRoles.invalidate(guildId);
+    }
 }
