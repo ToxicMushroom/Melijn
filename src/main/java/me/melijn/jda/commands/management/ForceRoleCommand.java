@@ -27,6 +27,10 @@ public class ForceRoleCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
+        if (!event.hasPerm(event.getMember(), commandName, 1)) {
+            event.reply("You need the permission `" + commandName + "` to execute this command.");
+            return;
+        }
         String[] args = event.getArgs().split("\\s+");
         if (args.length < 2) {
             event.sendUsage(this, event);
@@ -46,6 +50,10 @@ public class ForceRoleCommand extends Command {
                     return;
                 }
                 Role role = event.getHelpers().getRoleByArgs(event, args[2]);
+                if (role == null) {
+                    event.reply("unknown role");
+                    return;
+                }
 
                 List<Long> roles = event.getMySQL().getForcedRoles(event.getGuildId(), target.getIdLong());
                 if (roles.contains(role.getIdLong())) {
@@ -78,6 +86,10 @@ public class ForceRoleCommand extends Command {
                 }
 
                 Role role = event.getHelpers().getRoleByArgs(event, args[2]);
+                if (role == null) {
+                    event.reply("unknown role");
+                    return;
+                }
 
                 List<Long> roles = event.getMySQL().getForcedRoles(event.getGuildId(), target.getIdLong());
                 if (!roles.contains(role.getIdLong())) {
@@ -100,6 +112,7 @@ public class ForceRoleCommand extends Command {
 
                 roles.forEach(roleId -> {
                     Role role = event.getGuild().getRoleById(roleId);
+                    if (role != null)
                     builder.append(i.getAndIncrement()).append(". ").append(role.getName()).append("\n");
                 });
                 builder.append("```");
