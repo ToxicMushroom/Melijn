@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class MySQL {
@@ -1696,7 +1697,12 @@ public class MySQL {
     }
 
     public boolean removeCustomCommandMessage(long guildId, String name, String message) {
-        String msg = getCustomCommand(guildId, name).getString("message").replaceFirst("(%split%)?" + message, "");
+        JSONObject cc = getCustomCommand(guildId, name);
+        if (cc == null) return false;
+        String msg = cc.getString("message")
+                .replaceFirst(Pattern.quote(message), "")
+                .replaceFirst("%split%%split%", "%split%");
+
         return executeUpdate("UPDATE custom_commands SET message= ? WHERE guildId= ? AND name= ?", msg, guildId, name) > 0;
     }
 
