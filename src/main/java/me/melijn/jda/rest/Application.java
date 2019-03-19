@@ -13,8 +13,10 @@ import org.json.JSONObject;
 
 public class Application extends Jooby {
 
+    private final String token;
 
     public Application(Melijn melijn) {
+        token = melijn.getConfig().getValue("cacheToken");
         use(new Jackson());
         get("/guildCount", (request, response) -> response.send(melijn.getShardManager().getGuildCache().size()));
         get("/shards", (request, response) -> {
@@ -26,6 +28,7 @@ public class Application extends Jooby {
                         .put("connectedVoiceChannels", shard.getGuildCache().stream().filter(guild -> guild.getSelfMember().getVoiceState().inVoiceChannel()).count())
                         .put("ping", shard.getPing())
                         .put("status", shard.getStatus())
+                        .put("queuedMessages", 0)
                         .put("responses", shard.getResponseTotal())
                 );
             response.send(object.toMap());
@@ -57,6 +60,14 @@ public class Application extends Jooby {
         });
         get("/guild/{id:\\d+}/refreshCache", (request, response) -> {
             long id = request.param("id").longValue();
+            String providedToken = request.header("token").toString();
+            providedToken = providedToken.substring(1, providedToken.length() - 1);
+            if (!providedToken.equals(token)) {
+                response.send(new JSONObject()
+                        .put("state", "unauthorized")
+                        .toMap());
+                return;
+            }
 
             //block 1
             melijn.getVariables().prefixes.invalidate(id);
@@ -93,7 +104,6 @@ public class Application extends Jooby {
                     .put("state", "refreshed")
                     .toMap());
         });
-
 
         get("/member/{guildId:\\d+}/{userId:\\d+}", (request, response) -> {
             Guild guild = melijn.getShardManager().getGuildById(request.param("guildId").longValue());
