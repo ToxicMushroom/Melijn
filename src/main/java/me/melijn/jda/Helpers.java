@@ -19,16 +19,23 @@ import org.json.JSONObject;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Helpers {
 
     public long lastRunTimer1 = -1, lastRunTimer2 = -1, lastRunTimer3 = -1, guildCount = 0;
     private final Melijn melijn;
     public boolean voteChecks = true;
+    private final Pattern linuxUptimePattern = Pattern.compile("" +
+            "(?:\\s+)?\\d+:\\d+:\\d+ up(?: (\\d+) days?,)?(?:\\s+(\\d+):(\\d+)|\\s+?(\\d+)\\s+?min).*"
+    );
     public final Set<String> perms = Sets.newHashSet(
             "*",
             "pause",
@@ -452,5 +459,48 @@ public class Helpers {
             return false;
         }
         return true;
+    }
+
+    public long getSystemUptime() {
+        try {
+            long uptime = -1;
+            String os = System.getProperty("os.name").toLowerCase();
+            if (os.contains("win")) {
+                Process uptimeProc = Runtime.getRuntime().exec("net stats workstation");
+                BufferedReader in = new BufferedReader(new InputStreamReader(uptimeProc.getInputStream()));
+                String line;
+                while ((line = in.readLine()) != null) {
+                    if (line.startsWith("Statistieken vanaf")) {
+                        SimpleDateFormat format = new SimpleDateFormat("'Statistieken vanaf' dd/MM/yyyy hh:mm:ss"); //Dutch windows version
+                        Date bootTime = format.parse(line);
+                        uptime = System.currentTimeMillis() - bootTime.getTime();
+                        break;
+                    } else if (line.startsWith("Statistics since")) {
+                        SimpleDateFormat format = new SimpleDateFormat("'Statistics since' MM/dd/yyyy hh:mm:ss a"); //English windows version
+                        Date bootTime = format.parse(line);
+                        uptime = System.currentTimeMillis() - bootTime.getTime();
+                        break;
+                    }
+                }
+            } else if (os.contains("mac") || os.contains("nix") || os.contains("nux") || os.contains("aix")) {
+                Process uptimeProc = Runtime.getRuntime().exec("uptime"); //Parse time to groups if possible
+                BufferedReader in = new BufferedReader(new InputStreamReader(uptimeProc.getInputStream()));
+                String line = in.readLine();
+                if (line == null) return uptime;
+                Matcher matcher = linuxUptimePattern.matcher(line);
+
+                if (!matcher.find()) return uptime; //Extract ints out of groups
+                String _days = matcher.group(1);
+                String _hours = matcher.group(2);
+                String _minutes = matcher.group(3) == null ? matcher.group(4) : matcher.group(3);
+                int days = _days != null ? Integer.parseInt(_days) : 0;
+                int hours = _hours != null ? Integer.parseInt(_hours) : 0;
+                int minutes = _minutes != null ? Integer.parseInt(_minutes) : 0;
+                uptime = (minutes * 60_000) + (hours * 60_000 * 60) + (days * 60_000 * 60 * 24);
+            }
+            return uptime;
+        } catch (Exception e) {
+            return -1;
+        }
     }
 }

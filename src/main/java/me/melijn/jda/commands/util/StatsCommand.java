@@ -21,10 +21,6 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class StatsCommand extends Command {
 
-    private final Pattern linuxUptimePattern = Pattern.compile("" +
-            "(?:\\s+)?\\d+:\\d+:\\d+ up(?: (\\d+) days?,)?(?:\\s+(\\d+):(\\d+)|\\s+?(\\d+)\\s+?min).*"
-    );
-
     public StatsCommand() {
         this.commandName = "stats";
         this.description = "Shows the bot's server statistics";
@@ -64,55 +60,12 @@ public class StatsCommand extends Command {
                 .addField("Server Stats", "" +
                         "\n**Cores** " + bean.getAvailableProcessors() +
                         "\n**RAM Usage** " + usedMem + "MB/" + totalMem + "MB" +
-                        "\n**System Uptime** " + event.getMessageHelper().getDurationBreakdown(getSystemUptime()) +
+                        "\n**System Uptime** " + event.getMessageHelper().getDurationBreakdown(event.getHelpers().getSystemUptime()) +
                         "\n\u200B", false)
                 .addField("JVM Stats", "" +
                         "\n**CPU Usage** " + new DecimalFormat("###.###%").format(bean.getProcessCpuLoad()) +
                         "\n**RAM Usage** " + usedJVMMem + "MB/" + totalJVMMem + "MB" +
                         "\n**Threads** " + Thread.activeCount() + "/" + Thread.getAllStackTraces().size(), false)
                 .build());
-    }
-
-    private long getSystemUptime() {
-        try {
-            long uptime = -1;
-            String os = System.getProperty("os.name").toLowerCase();
-            if (os.contains("win")) {
-                Process uptimeProc = Runtime.getRuntime().exec("net stats workstation");
-                BufferedReader in = new BufferedReader(new InputStreamReader(uptimeProc.getInputStream()));
-                String line;
-                while ((line = in.readLine()) != null) {
-                    if (line.startsWith("Statistieken vanaf")) {
-                        SimpleDateFormat format = new SimpleDateFormat("'Statistieken vanaf' dd/MM/yyyy hh:mm:ss"); //Dutch windows version
-                        Date bootTime = format.parse(line);
-                        uptime = System.currentTimeMillis() - bootTime.getTime();
-                        break;
-                    } else if (line.startsWith("Statistics since")) {
-                        SimpleDateFormat format = new SimpleDateFormat("'Statistics since' MM/dd/yyyy hh:mm:ss a"); //English windows version
-                        Date bootTime = format.parse(line);
-                        uptime = System.currentTimeMillis() - bootTime.getTime();
-                        break;
-                    }
-                }
-            } else if (os.contains("mac") || os.contains("nix") || os.contains("nux") || os.contains("aix")) {
-                Process uptimeProc = Runtime.getRuntime().exec("uptime"); //Parse time to groups if possible
-                BufferedReader in = new BufferedReader(new InputStreamReader(uptimeProc.getInputStream()));
-                String line = in.readLine();
-                if (line == null) return uptime;
-                Matcher matcher = linuxUptimePattern.matcher(line);
-
-                if (!matcher.find()) return uptime; //Extract ints out of groups
-                String _days = matcher.group(1);
-                String _hours = matcher.group(2);
-                String _minutes = matcher.group(3) == null ? matcher.group(4) : matcher.group(3);
-                int days = _days != null ? Integer.parseInt(_days) : 0;
-                int hours = _hours != null ? Integer.parseInt(_hours) : 0;
-                int minutes = _minutes != null ? Integer.parseInt(_minutes) : 0;
-                uptime = (minutes * 60_000) + (hours * 60_000 * 60) + (days * 60_000 * 60 * 24);
-            }
-            return uptime;
-        } catch (Exception e) {
-            return -1;
-        }
     }
 }
