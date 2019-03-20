@@ -5,8 +5,8 @@ plugins {
 }
 
 mainClassName = 'me.melijn.jda.Melijn'
-version = '1.3.2'
-sourceCompatibility = JavaVersion.VERSION_11
+version = '1.3.3'
+sourceCompatibility = JavaVersion.VERSION_12
 
 repositories {
     jcenter()
