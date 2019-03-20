@@ -1,15 +1,23 @@
 package me.melijn.jda.rest;
 
+import com.sun.management.OperatingSystemMXBean;
 import me.melijn.jda.Melijn;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.entities.impl.JDAImpl;
+import net.dv8tion.jda.core.requests.ratelimit.IBucket;
 import org.jooby.Jooby;
 import org.jooby.json.Jackson;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.lang.management.ManagementFactory;
+import java.text.DecimalFormat;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.function.Function;
 
 public class Application extends Jooby {
 
@@ -19,6 +27,34 @@ public class Application extends Jooby {
         token = melijn.getConfig().getValue("cacheToken");
         use(new Jackson());
         get("/guildCount", (request, response) -> response.send(melijn.getShardManager().getGuildCache().size()));
+        get("/stats", (req, response) -> {
+            OperatingSystemMXBean bean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
+            long totalMem = bean.getTotalPhysicalMemorySize() >> 20;
+            long usedMem = totalMem - (bean.getFreePhysicalMemorySize() >> 20);
+            long totalJVMMem = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax() >> 20;
+            long usedJVMMem = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed() >> 20;
+            ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) melijn.getTaskManager().getExecutorService();
+            ThreadPoolExecutor scheduledExecutorService = (ThreadPoolExecutor) melijn.getTaskManager().getScheduledExecutorService();
+
+            JSONObject object = new JSONObject();
+            object.put("bot", new JSONObject()
+                    .put("uptime", melijn.getMessageHelper().getDurationBreakdown(ManagementFactory.getRuntimeMXBean().getUptime()))
+                    .put("melijnThreads", (threadPoolExecutor.getActiveCount() + scheduledExecutorService.getActiveCount() + scheduledExecutorService.getQueue().size()))
+                    .put("ramUsage",  usedJVMMem)
+                    .put("ramTotal", totalJVMMem)
+                    .put("jvmThreads", Thread.activeCount())
+                    .put("cpuUsage", bean.getProcessCpuLoad())
+            );
+
+            object.put("server", new JSONObject()
+                    .put("uptime", melijn.getHelpers().getSystemUptime())
+                    .put("ramUsage", usedMem)
+                    .put("ramTotal", totalMem)
+            );
+
+
+            response.send(object.toMap());
+        });
         get("/shards", (request, response) -> {
             JSONObject object = new JSONObject();
             for (JDA shard : melijn.getShardManager().getShardCache())
@@ -28,7 +64,7 @@ public class Application extends Jooby {
                         .put("connectedVoiceChannels", shard.getGuildCache().stream().filter(guild -> guild.getSelfMember().getVoiceState().inVoiceChannel()).count())
                         .put("ping", shard.getPing())
                         .put("status", shard.getStatus())
-                        .put("queuedMessages", 0)
+                        .put("queuedMessages", QUEUE_SIZE.apply(shard).longValue())
                         .put("responses", shard.getResponseTotal())
                 );
             response.send(object.toMap());
@@ -130,4 +166,12 @@ public class Application extends Jooby {
         });
         get("*", () -> "blub");
     }
+
+    private final Function<JDA, Integer> QUEUE_SIZE = jda -> {
+        int sum = 0;
+        for (final IBucket bucket : ((JDAImpl) jda).getRequester().getRateLimiter().getRouteBuckets()) {
+            sum += bucket.getRequests().size();
+        }
+        return sum;
+    };
 }
