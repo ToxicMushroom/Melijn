@@ -33,7 +33,6 @@ public class YTSearch {
             properties.load(in);
         } catch (IOException e) {
             System.err.println("There was an error reading " + PROPERTIES_FILENAME + ": " + e.getCause() + " : " + e.getMessage());
-            System.exit(1);
         }
         JsonFactory JSON_FACTORY = new JacksonFactory();
         //https://github.com/youtube/api-samples/blob/master/java/src/main/java/com/google/api/services/samples/youtube/cmdline/data/Search.java
