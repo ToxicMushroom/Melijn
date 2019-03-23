@@ -9,6 +9,7 @@ import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
+import org.apache.commons.text.WordUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,26 +35,32 @@ public class ClearChannelCommand extends Command {
         if (event.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             Variables vars = event.getVariables();
-            if (args.length > 0 && !args[0].isEmpty()) {
-                TextChannel channel = event.getGuild().getTextChannelById(event.getHelpers().getTextChannelByArgsN(event, args[0]));
-                if (channel != null) {
-                    if (!vars.possibleDeletes.containsKey(event.getGuild().getIdLong()) || !vars.possibleDeletes.get(event.getGuild().getIdLong()).containsValue(channel.getIdLong())) {
-                        event.getTextChannel().sendMessage("Are you sure you want to remove all messages from " + channel.getAsMention() + "?").queue(s ->
-                                setupQuestion(channel, vars, s, event.getAuthorId())
-                        );
-                    } else {
-                        event.reply("There is still another question in that channel which have to be answered\nThat question will be removed after 60 seconds of it's sent time");
-                    }
-                } else {
-                    event.reply("Unknown TextChannel");
-                }
-            } else {
+            if (event.getArgs().isEmpty()) {
                 if (!vars.possibleDeletes.containsKey(event.getGuild().getIdLong()) || !vars.possibleDeletes.get(event.getGuild().getIdLong()).containsValue(event.getTextChannel().getIdLong())) {
                     event.getTextChannel().sendMessage("Are you sure you want to remove all messages from this channel?").queue(s ->
                             setupQuestion(event.getTextChannel(), vars, s, event.getAuthorId())
                     );
                 } else {
                     event.reply("There is still another question in this channel which have to be answered\nThat question will be removed after 60 seconds of it's sent time");
+                }
+            } else {
+                TextChannel channel = event.getGuild().getTextChannelById(event.getHelpers().getTextChannelByArgsN(event, args[0]));
+                if (channel == null) {
+                    event.reply("Unknown TextChannel");
+                    return;
+                }
+
+                if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MANAGE_CHANNEL)) {
+                   event.reply("To use `" + commandName + "` in " + channel.getAsMention() + ", I need the **" + WordUtils.capitalizeFully(Permission.MANAGE_CHANNEL.toString().replaceAll("_", " ")) + "** permission in that channel");
+                   return;
+                }
+
+                if (!vars.possibleDeletes.containsKey(event.getGuild().getIdLong()) || !vars.possibleDeletes.get(event.getGuild().getIdLong()).containsValue(channel.getIdLong())) {
+                    event.getTextChannel().sendMessage("Are you sure you want to remove all messages from " + channel.getAsMention() + "?").queue(s ->
+                            setupQuestion(channel, vars, s, event.getAuthorId())
+                    );
+                } else {
+                    event.reply("There is still another question in that channel which have to be answered\nThat question will be removed after 60 seconds of it's sent time");
                 }
             }
         } else {

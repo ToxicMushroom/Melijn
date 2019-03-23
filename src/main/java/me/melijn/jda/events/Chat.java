@@ -500,11 +500,13 @@ public class Chat extends ListenerAdapter {
         if (deleter == null) return;
         TextChannel sdmChannel = guild.getTextChannelById(melijn.getVariables().sdmLogChannelCache.getUnchecked(guild.getIdLong()));
         TextChannel odmChannel = guild.getTextChannelById(melijn.getVariables().odmLogChannelCache.getUnchecked(guild.getIdLong()));
-        if (sdmChannel != null && !guild.getSelfMember().hasPermission(sdmChannel, Permission.MESSAGE_WRITE)) {
+        if (sdmChannel == null || !guild.getSelfMember().hasPermission(sdmChannel, Permission.MESSAGE_WRITE)) {
             melijn.getMySQL().removeChannel(guild.getIdLong(), ChannelType.SDM_LOG);
+            melijn.getVariables().sdmLogChannelCache.invalidate(guild.getIdLong());
         }
-        if (odmChannel != null && !guild.getSelfMember().hasPermission(odmChannel, Permission.MESSAGE_WRITE)) {
+        if (odmChannel == null || !guild.getSelfMember().hasPermission(odmChannel, Permission.MESSAGE_WRITE)) {
             melijn.getMySQL().removeChannel(guild.getIdLong(), ChannelType.ODM_LOG);
+            melijn.getVariables().odmLogChannelCache.invalidate(guild.getIdLong());
         }
         if (split) {
             eb.setTitle(eb.build().getTitle() + " part 1");
