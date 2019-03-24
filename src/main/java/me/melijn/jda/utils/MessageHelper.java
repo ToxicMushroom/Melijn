@@ -70,29 +70,29 @@ public class MessageHelper {
     }
 
     public boolean isWrongFormat(String string) {
-        return !string.matches("\\d{0,18}[smhdwMy]");
+        return !string.matches("\\d{1,18}[smhdwMy]");
     }
 
     public long easyFormatToSeconds(String string) {
-        if (string.matches("\\d{0,18}[s]")) {
+        if (string.matches("\\d{1,18}[s]")) {
             return Long.parseLong(string.replaceAll("s", ""));
         }
-        if (string.matches("\\d{0,18}[m]")) {
+        if (string.matches("\\d{1,18}[m]")) {
             return Long.parseLong(string.replaceAll("m", "")) * 60;
         }
-        if (string.matches("\\d{0,18}[h]")) {
+        if (string.matches("\\d{1,18}[h]")) {
             return Long.parseLong(string.replaceAll("h", "")) * 3600;
         }
-        if (string.matches("\\d{0,18}[d]")) {
+        if (string.matches("\\d{1,18}[d]")) {
             return Long.parseLong(string.replaceAll("d", "")) * 86_400;
         }
-        if (string.matches("\\d{0,18}[w]")) {
+        if (string.matches("\\d{1,18}[w]")) {
             return Long.parseLong(string.replaceAll("w", "")) * 604_800;
         }
-        if (string.matches("\\d{0,18}[M]")) {
+        if (string.matches("\\d{1,18}[M]")) {
             return Long.parseLong(string.replaceAll("M", "")) * 18_144_000;
         }
-        if (string.matches("\\d{0,18}[y]")) {
+        if (string.matches("\\d{1,18}[y]")) {
             return Long.parseLong(string.replaceAll("y", "")) * 217_728_000;
         }
         return 0;

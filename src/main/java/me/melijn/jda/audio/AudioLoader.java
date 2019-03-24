@@ -108,7 +108,8 @@ public class AudioLoader {
                         melijn.getVariables().userRequestedSongs.put(requester.getIdLong(), playlist.getTracks());
                         melijn.getVariables().userMessageToAnswer.put(requester.getIdLong(), message.getIdLong());
 
-                        if (channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_ADD_REACTION)) {
+                        if (channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_ADD_REACTION) &&
+                        channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_HISTORY)) {
                             message.addReaction("\u2705").queue();
                             message.addReaction("\u274E").queue();
                         }

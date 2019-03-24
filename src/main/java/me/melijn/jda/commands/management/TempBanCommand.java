@@ -31,30 +31,31 @@ public class TempBanCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
-            if (args.length > 1) {
-                event.getHelpers().retrieveUserByArgsN(event, args[0], target -> {
-                    String time = args[1];
-                    if (target == null) {
-                        event.reply("Unknown user");
-                        return;
-                    }
-                    if (event.getMessageHelper().isWrongFormat(time)) {
-                        event.reply("`" + time + "` is not the right format.\n**Format:** (number)(*timeunit*) *timeunit* = s, m, h, d, M or y\n**Example:** 1__m__ (1 __minute__)");
-                        return;
-                    }
-
-                    if (event.getGuild().isMember(target) && event.getHelpers().canNotInteract(event, target)) return;
-                    String reason = event.getArgs().replaceFirst(args[0] + "\\s+" + args[1] + "\\s+|" + args[0] + "\\s+" + args[1], "");
-                    if (reason.length() <= 1000 && event.getMySQL().setTempBan(event.getAuthor(), target, event.getGuild(), reason, event.getMessageHelper().easyFormatToSeconds(time))) {
-                        event.getMessage().addReaction("\u2705").queue();
-                    } else {
-                        event.getMessage().addReaction("\u274C").queue();
-                    }
-
-                });
-            } else {
+            if (event.getArgs().isEmpty()) {
                 event.sendUsage(this, event);
+                return;
             }
+
+            event.getHelpers().retrieveUserByArgsN(event, args[0], target -> {
+                String time = args[1];
+                if (target == null) {
+                    event.reply("Unknown user");
+                    return;
+                }
+                if (event.getMessageHelper().isWrongFormat(time)) {
+                    event.reply("`" + time + "` is not the right format.\n**Format:** (number)(*timeunit*) *timeunit* = s, m, h, d, M or y\n**Example:** 1__m__ (1 __minute__)");
+                    return;
+                }
+
+                if (event.getGuild().isMember(target) && event.getHelpers().canNotInteract(event, target)) return;
+                String reason = event.getArgs().replaceFirst(args[0] + "\\s+" + args[1] + "\\s+|" + args[0] + "\\s+" + args[1], "");
+                if (reason.length() <= 1000 && event.getMySQL().setTempBan(event.getAuthor(), target, event.getGuild(), reason, event.getMessageHelper().easyFormatToSeconds(time))) {
+                    event.getMessage().addReaction("\u2705").queue();
+                } else {
+                    event.getMessage().addReaction("\u274C").queue();
+                }
+
+            });
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }

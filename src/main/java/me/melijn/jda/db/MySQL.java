@@ -1235,7 +1235,8 @@ public class MySQL {
     }
 
     public void addUnverifiedUser(long guildId, long userId, long time) {
-        executeUpdate("INSERT INTO unverified_users (guildId, userId, moment) VALUES (?, ?, ?)",
+        executeUpdate("INSERT IGNORE " +
+                        "INTO unverified_users (guildId, userId, moment) VALUES (?, ?, ?)",
                 guildId, userId, time);
     }
 
