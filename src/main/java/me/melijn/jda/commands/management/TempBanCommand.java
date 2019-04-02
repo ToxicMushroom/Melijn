@@ -31,7 +31,7 @@ public class TempBanCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
-            if (event.getArgs().isEmpty()) {
+            if (args.length < 2) {
                 event.sendUsage(this, event);
                 return;
             }
