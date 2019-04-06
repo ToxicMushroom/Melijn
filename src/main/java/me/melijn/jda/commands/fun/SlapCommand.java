@@ -3,6 +3,7 @@ package me.melijn.jda.commands.fun;
 import me.melijn.jda.blub.Category;
 import me.melijn.jda.blub.Command;
 import me.melijn.jda.blub.CommandEvent;
+import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.User;
 
 import static me.melijn.jda.Melijn.PREFIX;
@@ -29,11 +30,16 @@ public class SlapCommand extends Command {
                 );
             } else if (args.length == 1) {
                 User target = event.getHelpers().getUserByArgsN(event, args[0]);
-                if (target == null) {
+                Role role = event.getHelpers().getRoleByArgs(event, args[0]);
+                if (target == null && role == null) {
                     event.reply("Didn't catch that? Try harder");
+                } else if (target != null) {
+                    event.getWebUtils().getImage("slap",
+                            image -> event.getMessageHelper().sendFunText("**" + event.getAuthor().getName() + "** slapped **" + target.getName() + "**", image.getUrl(), event)
+                    );
                 } else {
                     event.getWebUtils().getImage("slap",
-                            image -> event.getMessageHelper().sendFunText("**" + target.getName() + "** got slapped by **" + event.getAuthor().getName() + "**", image.getUrl(), event)
+                            image -> event.getMessageHelper().sendFunText("**" + event.getAuthor().getName() + "** slapped **" + role.getAsMention() + "**", image.getUrl(), event)
                     );
                 }
             } else {
