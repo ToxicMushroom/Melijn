@@ -76,6 +76,8 @@ public class Variables {
     public final LoadingCache<Long, Long> reactionLogChannelCache;
     public final LoadingCache<Long, Long> attachmentLogChannelCache;
 
+    public final LoadingCache<Long, Long> antiRaidThresholdChache;
+
     public final LoadingCache<Long, Long> musicChannelCache;
     public DiscordBotListAPI dblAPI = null;
 
@@ -373,7 +375,14 @@ public class Variables {
                     }
                 });
 
-
+        antiRaidThresholdChache = CacheBuilder.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalSize, TimeUnit.MINUTES)
+                .build(new CacheLoader<>() {
+                    public Long load(@NotNull Long key) {
+                        return melijn.getMySQL().getAntiRaidThreshold(key);
+                    }
+                });
 
         unLoggedThreads.addAll(melijn.getConfig().getSet("unLoggedThreads"));
 

@@ -14,12 +14,13 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.discordbots.api.client.DiscordBotListAPI;
 import org.json.JSONObject;
 
-import java.util.List;
-import java.util.Map;
+import java.time.OffsetDateTime;
+import java.util.*;
 
 public class JoinLeave extends ListenerAdapter {
 
     private boolean started = false;
+    private Map<Long, List<Long>> guildJoinedUsers = new HashMap<>();
 
     private final Melijn melijn;
 
@@ -77,6 +78,30 @@ public class JoinLeave extends ListenerAdapter {
         }
         Guild guild = event.getGuild();
         User joinedUser = event.getUser();
+
+        long threshold = melijn.getVariables().antiRaidThresholdChache.getUnchecked(guild.getIdLong());
+        if (threshold >= 0) {
+            List<Long> joinedUsers = guildJoinedUsers.getOrDefault(guild.getIdLong(), new ArrayList<>());
+            joinedUsers.add(joinedUser.getIdLong());
+            guildJoinedUsers.put(guild.getIdLong(), joinedUsers);
+
+            if (joinedUsers.size() > threshold) {
+                Member oldMember = guild.getMemberById(joinedUsers.get((int) (joinedUsers.size() - threshold)));
+                if (oldMember != null && oldMember.getJoinDate().isAfter(OffsetDateTime.now().minusHours(1))) {
+                    joinedUser.openPrivateChannel().queue(channel -> channel.sendMessage("To many users are joining in a short time. Try again later!")
+                            .queue(
+                                    sent -> guild.getController().kick(event.getMember()).reason("To many users joining!").queue(),
+                                    failed -> guild.getController().kick(event.getMember()).reason("To many users joining!").queue()
+                            ), failure -> guild.getController().kick(event.getMember()).reason("To many users joining!").queue());
+                } else {
+                    for (int i = 0; i < joinedUsers.size() - threshold; i++) {
+                        joinedUsers.remove(i);
+                    }
+                    guildJoinedUsers.put(guild.getIdLong(), joinedUsers);
+                }
+            }
+        }
+
         if (joinedUser.isBot() && joinedUser.equals(guild.getSelfMember().getUser()) &&
                 melijn.getVariables().blockedGuildIds.contains(guild.getOwnerIdLong()))
             guild.leave().queue();
@@ -111,6 +136,11 @@ public class JoinLeave extends ListenerAdapter {
             return;
         Guild guild = event.getGuild();
         User leftUser = event.getUser();
+
+        List<Long> joinedUsers = guildJoinedUsers.getOrDefault(guild.getIdLong(), new ArrayList<>());
+        joinedUsers.remove(leftUser.getIdLong());
+        guildJoinedUsers.put(guild.getIdLong(), joinedUsers);
+
         if (melijn.getVariables().blockedUserIds.contains(guild.getOwnerIdLong())) return;
         if (melijn.getVariables().unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong()).keySet().contains(leftUser.getIdLong())) {
             melijn.getHelpers().removeUnverified(guild, leftUser);

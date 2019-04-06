@@ -124,6 +124,7 @@ public class MySQL {
             executeUpdate("CREATE TABLE IF NOT EXISTS join_messages(guildId bigint, content varchar(2048), PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS leave_messages(guildId bigint, content varchar(2048), PRIMARY KEY (guildId))");
             executeUpdate("CREATE TABLE IF NOT EXISTS nextvote_notifications(userId bigint, targetId bigint, UNIQUE KEY(userId, targetId));");
+            executeUpdate("CREATE TABLE IF NOT EXISTS anti_raid_thresholds(guildId bigint, threshold bigint, PRIMARY KEY(guildId));");
 
             //Backend saves
             executeUpdate("CREATE TABLE IF NOT EXISTS warns(guildId bigint, victimId bigint, authorId bigint, reason varchar(2048), moment bigint);");
@@ -1957,8 +1958,8 @@ public class MySQL {
     public List<Long> getBlockedIds(String type) {
         List<Long> blocked = new ArrayList<>();
         try (
-            Connection con = ds.getConnection();
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM blocked_list WHERE type= ?")
+                Connection con = ds.getConnection();
+                PreparedStatement statement = con.prepareStatement("SELECT * FROM blocked_list WHERE type= ?")
         ) {
             statement.setString(1, type);
             try (ResultSet rs = statement.executeQuery()) {
@@ -2016,5 +2017,27 @@ public class MySQL {
         melijn.getVariables().verificationChannelsCache.invalidate(guildId);
         executeUpdate("DELETE FROM self_role_channels WHERE channelId= ?", channelId);
         melijn.getVariables().selfRoles.invalidate(guildId);
+    }
+
+    public void setAntiRaidThreshold(long guildId, long threshold) {
+        if (threshold < 0)
+            executeUpdate("REMOVE FROM anti_raid_thresholds WHERE guildId= ?", guildId);
+        else
+            executeUpdate("INSERT INTO anti_raid_thresholds (guildId, threshold) VALUES (?, ?) ON DUPLICATE KEY UPDATE threshold= ?",
+                    guildId, threshold, threshold);
+    }
+
+    public long getAntiRaidThreshold(long guildId) {
+        try (Connection con = ds.getConnection();
+             PreparedStatement preparedStatement = con.prepareStatement("SELECT * FROM anti_raid_thresholds WHERE guildId=?")) {
+            preparedStatement.setLong(1, guildId);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next())
+                    return resultSet.getLong("threshold");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 }
