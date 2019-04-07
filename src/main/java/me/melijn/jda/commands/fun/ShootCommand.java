@@ -13,7 +13,7 @@ public class ShootCommand extends Command {
     public ShootCommand() {
         this.commandName = "shoot";
         this.description = "Shoots someone [anime]";
-        this.usage = PREFIX + commandName + " [member]";
+        this.usage = PREFIX + commandName + " [user | role]";
         this.aliases = new String[]{"bang"};
         this.category = Category.FUN;
         this.id = 115;
@@ -31,7 +31,7 @@ public class ShootCommand extends Command {
                 User target = event.getHelpers().getUserByArgsN(event, args[0]);
                 Role role = event.getHelpers().getRoleByArgs(event, args[0]);
                 if (target == null && role == null) {
-                    event.reply(event.getAuthor().getAsMention() + " is shooting");
+                    event.reply("Unknown user or role");
                 } else if (target != null) {
                     event.getWebUtils().getImage("bang",
                             image -> event.getMessageHelper().sendFunText("**" + event.getAuthor().getName() + "** shot **" + target.getName() + "**", image.getUrl(), event)

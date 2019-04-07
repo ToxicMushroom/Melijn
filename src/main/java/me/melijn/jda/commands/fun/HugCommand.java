@@ -14,7 +14,7 @@ public class HugCommand extends Command {
     public HugCommand() {
         this.commandName = "hug";
         this.description = "Shows a hugging person [anime]";
-        this.usage = PREFIX + commandName + " [user]";
+        this.usage = PREFIX + commandName + " [user | role]";
         this.category = Category.FUN;
         this.id = 96;
     }
@@ -30,8 +30,8 @@ public class HugCommand extends Command {
             } else if (args.length == 1) {
                 User target = event.getHelpers().getUserByArgsN(event, args[0]);
                 Role role = event.getHelpers().getRoleByArgs(event, args[0]);
-                if (target == null && role != null) {
-                    event.reply("Unknown user");
+                if (target == null && role == null) {
+                    event.reply("Unknown user or role");
                 } else if (target != null) {
                     event.getWebUtils().getImage("hug",
                             image -> event.getMessageHelper().sendFunText("**" + event.getAuthor().getName() + "** hugged **" + target.getName() + "**", image.getUrl(), event)

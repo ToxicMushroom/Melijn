@@ -13,7 +13,7 @@ public class PunchCommand extends Command {
     public PunchCommand() {
         this.commandName = "punch";
         this.description = "Shows a person punching [anime]";
-        this.usage = PREFIX + commandName + " [user]";
+        this.usage = PREFIX + commandName + " [user | role]";
         this.category = Category.FUN;
         this.id = 25;
     }
@@ -30,7 +30,7 @@ public class PunchCommand extends Command {
                 User target = event.getHelpers().getUserByArgsN(event, args[0]);
                 Role role = event.getHelpers().getRoleByArgs(event, args[0]);
                 if (target == null && role == null) {
-                    event.reply(event.getAuthor().getAsMention() + " is punching air >.<");
+                    event.reply("Unknown user or role");
                 } else if (target != null) {
                     event.getWebUtils().getImage("punch",
                             image -> event.getMessageHelper().sendFunText("**" + event.getAuthor().getName() + "** punched **" + target.getName() + "**", image.getUrl(), event)

@@ -13,7 +13,7 @@ public class HighfiveCommand extends Command {
     public HighfiveCommand() {
         this.commandName = "highfive";
         this.description = "Shows a highfiving person [anime]";
-        this.usage = PREFIX + commandName + " [user]";
+        this.usage = PREFIX + commandName + " [user | role]";
         this.category = Category.FUN;
         this.id = 22;
     }
@@ -28,7 +28,7 @@ public class HighfiveCommand extends Command {
                 User target = event.getHelpers().getUserByArgsN(event, args[0]);
                 Role role = event.getHelpers().getRoleByArgs(event, args[0]);
                 if (target == null && role == null) {
-                    event.reply(event.getAuthor().getAsMention() + " is highfiving air");
+                    event.reply("Unknown user or role");
                 } else if (target != null) {
                     event.getWebUtils().getImage("highfive", image ->
                             event.getMessageHelper().sendFunText("**" + event.getAuthor().getName() + "** highfived **" + target.getName() + "**", image.getUrl(), event)

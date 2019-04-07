@@ -14,7 +14,7 @@ public class TriggeredCommand extends Command {
     public TriggeredCommand() {
         this.commandName = "triggered";
         this.description = "Shows a triggered person";
-        this.usage = PREFIX + commandName + " [user]";
+        this.usage = PREFIX + commandName + " [user | role]";
         this.aliases = new String[]{"rage"};
         this.category = Category.FUN;
         this.id = 39;
@@ -32,7 +32,7 @@ public class TriggeredCommand extends Command {
                 User target = event.getHelpers().getUserByArgsN(event, args[0]);
                 Role role = event.getHelpers().getRoleByArgs(event, args[0]);
                 if (target == null && role == null) {
-                    event.reply("The wind is trigge.. NO, stop it");
+                    event.reply("Unknown user or role");
                 } else if (target != null) {
                     event.getWebUtils().getImage("triggered",
                             image -> event.getMessageHelper().sendFunText("**" + event.getAuthor().getName() + "** got triggered by **" + target.getName() + "**", image.getUrl(), event)

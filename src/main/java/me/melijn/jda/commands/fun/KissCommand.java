@@ -13,7 +13,7 @@ public class KissCommand extends Command {
     public KissCommand() {
         this.commandName = "kiss";
         this.description = "Shows a kissing person [anime]";
-        this.usage = PREFIX + commandName + " [user]";
+        this.usage = PREFIX + commandName + " [user | role]";
         this.category = Category.FUN;
         this.id = 95;
     }
@@ -30,7 +30,7 @@ public class KissCommand extends Command {
                 User target = event.getHelpers().getUserByArgsN(event, args[0]);
                 Role role = event.getHelpers().getRoleByArgs(event, args[0]);
                 if (target == null && role == null) {
-                    event.reply("Unknown user");
+                    event.reply("Unknown user or role");
                 } else if (target != null) {
                     event.getWebUtils().getImage("kiss", image ->
                             event.getMessageHelper().sendFunText("**" +  event.getAuthor().getName() + "** kissed **" + target.getName() + "**", image.getUrl(), event)

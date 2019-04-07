@@ -14,7 +14,7 @@ public class CryCommand extends Command {
     public CryCommand() {
         this.commandName = "cry";
         this.description = "Shows a crying person [anime]";
-        this.usage = PREFIX + commandName + " [user]";
+        this.usage = PREFIX + commandName + " [user | role]";
         this.category = Category.FUN;
         this.aliases = new String[] {"sad"};
         this.id = 19;
@@ -30,7 +30,7 @@ public class CryCommand extends Command {
                 User target = event.getHelpers().getUserByArgsN(event, args[0]);
                 Role role = event.getHelpers().getRoleByArgs(event, args[0]);
                 if (target == null && role == null) {
-                    event.reply(event.getAuthor().getAsMention() + " is crying because of rain");
+                    event.reply("Unknown user or role");
                 } else if (target != null) {
                     event.getWebUtils().getImage("cry", image ->
                             event.getMessageHelper().sendFunText("**" + target.getName() + "** made **" + event.getAuthor().getName() + "** cry", image.getUrl(), event)

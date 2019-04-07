@@ -119,7 +119,7 @@ public class AddReaction extends ListenerAdapter {
                 case "\u274E":
                     melijn.getVariables().usersFormToReply.remove(event.getUser().getIdLong());
                     melijn.getVariables().userChoices.remove(event.getUser().getIdLong());
-                    event.getChannel().getMessageById(event.getMessageId()).queue(s -> s.delete().queue());
+                    event.getChannel().getMessageById(event.getMessageId()).queue(message -> message.delete().queue());
                     wrongemote = true;
                     break;
                 default:

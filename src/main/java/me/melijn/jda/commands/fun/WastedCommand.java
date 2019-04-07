@@ -14,7 +14,7 @@ public class WastedCommand extends Command {
     public WastedCommand() {
         this.commandName = "wasted";
         this.description = "Shows a wasted gif [anime]";
-        this.usage = PREFIX + commandName + " [user]";
+        this.usage = PREFIX + commandName + " [user | role]";
         this.category = Category.FUN;
         this.id = 23;
     }
@@ -32,7 +32,7 @@ public class WastedCommand extends Command {
                 User target = event.getHelpers().getUserByArgsN(event, args[0]);
                 Role role = event.getHelpers().getRoleByArgs(event, args[0]);
                 if (target == null && role == null) {
-                    event.reply("Wind got wasted.. wait whatt!");
+                    event.reply("Unknown user or role");
                 } else if (target != null) {
                     event.getWebUtils().getImage("wasted",
                             image -> event.getMessageHelper().sendFunText("**" + event.getAuthor().getName() + "** got wasted by **" + target.getName() + "**", image.getUrl(), event)
