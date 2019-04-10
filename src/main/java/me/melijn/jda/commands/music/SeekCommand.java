@@ -44,7 +44,7 @@ public class SeekCommand extends Command {
             long millis = event.getHelpers().parseTimeFromArgs(args);
             if (millis == -1) event.sendUsage(this, event);
             else {
-                track.setPosition(millis);
+                player.seekTo(millis);
                 event.reply("The position of the song has been changed to **" +
                         event.getMessageHelper().getDurationBreakdown(Math.min(millis, track.getDuration())) + "/" +
                         event.getMessageHelper().getDurationBreakdown(track.getDuration()) + "** by **" + event.getFullAuthorName() + "**");
