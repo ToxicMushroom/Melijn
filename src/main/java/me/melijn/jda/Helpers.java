@@ -17,6 +17,8 @@ import okhttp3.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
@@ -36,6 +38,7 @@ public class Helpers {
     private final Pattern linuxUptimePattern = Pattern.compile("" +
             "(?:\\s+)?\\d+:\\d+:\\d+ up(?: (\\d+) days?,)?(?:\\s+(\\d+):(\\d+)|\\s+?(\\d+)\\s+?min).*"
     );
+    Logger logger = LoggerFactory.getLogger(this.getClass().getName());
     public final Set<String> perms = Sets.newHashSet(
             "*",
             "pause",
@@ -213,7 +216,13 @@ public class Helpers {
                     }), 60_000);
         }
         if (i == 0 || i == 5) {
-            melijn.getTaskManager().scheduleRepeating(this::postBotServerCounts, 60_000, 150_000);
+            melijn.getTaskManager().scheduleRepeating(() -> {
+                try {
+                    postBotServerCounts();
+                } catch (Exception e) {
+                    melijn.getMessageHelper().printException(Thread.currentThread(), e, null, null);
+                }
+            }, 60_000, 150_000);
         }
     }
 
@@ -252,7 +261,7 @@ public class Helpers {
                     .addHeader("authorization", variables.devineDBLToken)
                     .build();
             okHttpClient.newCall(request);
-        }
+        } else logger.info("devineDBLToken is not set");
 
         if (variables.dblDotComToken != null) {
             Request request = new Request.Builder()
@@ -264,10 +273,10 @@ public class Helpers {
                             .addFormDataPart("voice_connections", String.valueOf(voiceChannels))
                             .build())
                     .addHeader("Content-Type", "application/x-www-form-urlencoded")
-                    .addHeader("Authorization", "Bot " + variables.devineDBLToken)
+                    .addHeader("Authorization", "Bot " + variables.dblDotComToken)
                     .build();
             okHttpClient.newCall(request);
-        }
+        } else logger.info("dblDotComToken is not set");
 
         if (variables.blDotSpaceToken != null) {
             RequestBody requestBody = RequestBody.create(JSON, new JSONObject()
@@ -280,7 +289,7 @@ public class Helpers {
                     .addHeader("Authorization", variables.blDotSpaceToken)
                     .build();
             okHttpClient.newCall(request);
-        }
+        } else logger.info("blDotSpaceToken is not set");
 
         if (variables.odDotXYZToken != null) {
             RequestBody requestBody = RequestBody.create(JSON, new JSONObject()
@@ -293,7 +302,7 @@ public class Helpers {
                     .addHeader("Authorization", variables.odDotXYZToken)
                     .build();
             okHttpClient.newCall(request);
-        }
+        } else logger.info("odDotXYZToken is not set");
     }
 
     public void eval(CommandEvent event, ScriptEngine engine, String lang) {
