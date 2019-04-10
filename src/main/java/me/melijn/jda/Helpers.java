@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -246,6 +247,17 @@ public class Helpers {
             variables.dblAPI.setStats(Math.toIntExact(serverCount));
         }
 
+        Callback callbackHandler = new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                call.cancel();
+                logger.warn("DevineDiscordBots stats didn't update: " + e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) {}
+        };
+
 
         OkHttpClient okHttpClient = new OkHttpClient();
 
@@ -260,8 +272,8 @@ public class Helpers {
                     .addHeader("Content-Type", "application/x-www-form-urlencoded")
                     .addHeader("Authorization", variables.devineDBLToken)
                     .build();
-            okHttpClient.newCall(request);
-        } else logger.info("devineDBLToken is not set");
+            okHttpClient.newCall(request).enqueue(callbackHandler);
+        }
 
         if (variables.dblDotComToken != null) {
             Request request = new Request.Builder()
@@ -275,8 +287,8 @@ public class Helpers {
                     .addHeader("Content-Type", "application/x-www-form-urlencoded")
                     .addHeader("Authorization", "Bot " + variables.dblDotComToken)
                     .build();
-            okHttpClient.newCall(request);
-        } else logger.info("dblDotComToken is not set");
+            okHttpClient.newCall(request).enqueue(callbackHandler);
+        }
 
         if (variables.blDotSpaceToken != null) {
             RequestBody requestBody = RequestBody.create(JSON, new JSONObject()
@@ -288,8 +300,8 @@ public class Helpers {
                     .addHeader("Content-Type", "application/json")
                     .addHeader("Authorization", variables.blDotSpaceToken)
                     .build();
-            okHttpClient.newCall(request);
-        } else logger.info("blDotSpaceToken is not set");
+            okHttpClient.newCall(request).enqueue(callbackHandler);
+        }
 
         if (variables.odDotXYZToken != null) {
             RequestBody requestBody = RequestBody.create(JSON, new JSONObject()
@@ -301,8 +313,8 @@ public class Helpers {
                     .addHeader("Content-Type", "application/json")
                     .addHeader("Authorization", variables.odDotXYZToken)
                     .build();
-            okHttpClient.newCall(request);
-        } else logger.info("odDotXYZToken is not set");
+            okHttpClient.newCall(request).enqueue(callbackHandler);
+        }
     }
 
     public void eval(CommandEvent event, ScriptEngine engine, String lang) {
