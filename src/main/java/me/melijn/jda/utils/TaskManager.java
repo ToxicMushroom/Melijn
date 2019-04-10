@@ -2,10 +2,8 @@ package me.melijn.jda.utils;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-import java.time.LocalDate;
 import java.util.concurrent.*;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 public class TaskManager {
 

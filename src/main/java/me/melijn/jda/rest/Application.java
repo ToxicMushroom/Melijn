@@ -15,7 +15,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.lang.management.ManagementFactory;
-import java.text.DecimalFormat;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Function;
 
