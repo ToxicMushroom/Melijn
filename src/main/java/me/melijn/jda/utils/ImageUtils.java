@@ -68,4 +68,54 @@ public class ImageUtils {
         if (brightness >= threshold) return new int[]{255, 128, 0}; //ORANGE #FF8000
         else return new int[]{50, 50, 50}; //DARK #323232
     }
+
+    public BufferedImage putText(BufferedImage bufferedImage, String text, int startx, int endx, int starty, int endy, Graphics graphics) {
+
+        FontMetrics fontMetrics = graphics.getFontMetrics(graphics.getFont());
+        int lineWidth = endx - startx;
+        int lineHeight = fontMetrics.getHeight();
+
+        if (fontMetrics.stringWidth(text) <= lineWidth) {
+            graphics.drawString(text, startx, starty + lineHeight);
+        } else {
+            StringBuilder sb = new StringBuilder();
+            String[] parts = text.split("\\s+");
+            for (String part : parts) {
+                String currentLineContent = sb.substring(Math.max(0, sb.lastIndexOf("\n")), sb.length());
+                String possibleFutureLineContent = (currentLineContent.isEmpty() ? part : (currentLineContent + " " + part));
+
+                if (fontMetrics.stringWidth(part) > lineWidth) {
+                    int contentWidth = fontMetrics.stringWidth(currentLineContent + " ");
+                    int partProgress = 0;
+                    int dashWidth = fontMetrics.charWidth('-');
+                    sb.append(" ");
+                    for (char c : part.toCharArray()) {
+                        int charWidth = fontMetrics.charWidth(c);
+                        if (contentWidth + dashWidth + charWidth > lineWidth) {
+                            if (partProgress != 0) sb.append("-\n");
+                            else sb.append("\n");
+                            contentWidth = 0;
+                        }
+                        sb.append(c);
+                        contentWidth += fontMetrics.charWidth(c);
+                        partProgress++;
+                    }
+                } else if (fontMetrics.stringWidth(possibleFutureLineContent) > lineWidth) {
+                    sb.append("\n").append(part);
+                } else {
+                    if (sb.length() > 0) sb.append(" ");
+                    sb.append(part);
+                }
+            }
+
+            int i = 0;
+            for (String line : sb.toString().split("\n")) {
+                i++;
+                graphics.drawString(line, 1133, 82 + (lineHeight * i));
+            }
+        }
+        graphics.dispose();
+        return bufferedImage;
+    }
+
 }
