@@ -13,6 +13,7 @@ import me.melijn.jda.utils.Embedder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.requests.Requester;
 import okhttp3.*;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -237,7 +238,6 @@ public class Helpers {
                         (vc) -> vc.getMembers().contains(vc.getGuild().getSelfMember())
                 ).count()
         ).sum();
-        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         Variables variables = melijn.getVariables();
         JSONArray shardArray = new JSONArray();
         melijn.getShardManager().getShards().forEach(jda -> shardArray.put(jda.getGuildCache().size()));
@@ -250,12 +250,13 @@ public class Helpers {
         Callback callbackHandler = new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                call.cancel();
                 logger.warn("DevineDiscordBots stats didn't update: " + e.getMessage());
             }
 
             @Override
-            public void onResponse(Call call, Response response) {}
+            public void onResponse(Call call, Response response) {
+                response.close();
+            }
         };
 
 
@@ -264,12 +265,10 @@ public class Helpers {
         if (variables.devineDBLToken != null) {
             Request request = new Request.Builder()
                     .url(String.format("https://divinediscordbots.com/bot/%d/stats", botId))
-                    .post(new MultipartBody.Builder()
-                            .setType(MultipartBody.FORM)
-                            .addFormDataPart("server_count", String.valueOf(serverCount))
-                            .addFormDataPart("shards", String.valueOf(shards))
-                            .build())
-                    .addHeader("Content-Type", "application/x-www-form-urlencoded")
+                    .post(RequestBody.create(Requester.MEDIA_TYPE_JSON, new JSONObject()
+                            .put("server_count", serverCount)
+                            .toString(4)))
+                    .addHeader("Content-Type", "application/json")
                     .addHeader("Authorization", variables.devineDBLToken)
                     .build();
             okHttpClient.newCall(request).enqueue(callbackHandler);
@@ -291,7 +290,7 @@ public class Helpers {
         }
 
         if (variables.blDotSpaceToken != null) {
-            RequestBody requestBody = RequestBody.create(JSON, new JSONObject()
+            RequestBody requestBody = RequestBody.create(Requester.MEDIA_TYPE_JSON, new JSONObject()
                     .put("shards", shardArray)
                     .toString(4));
             Request request = new Request.Builder()
@@ -304,7 +303,7 @@ public class Helpers {
         }
 
         if (variables.odDotXYZToken != null) {
-            RequestBody requestBody = RequestBody.create(JSON, new JSONObject()
+            RequestBody requestBody = RequestBody.create(Requester.MEDIA_TYPE_JSON, new JSONObject()
                     .put("guildCount", guildCount)
                     .toString(4));
             Request request = new Request.Builder()
