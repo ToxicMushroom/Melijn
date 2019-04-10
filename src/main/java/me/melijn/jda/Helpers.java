@@ -313,6 +313,19 @@ public class Helpers {
                     .build();
             okHttpClient.newCall(request).enqueue(callbackHandler);
         }
+
+        if (variables.dDotBDotGGToken != null) {
+            Request request = new Request.Builder()
+                    .url(String.format("https://discord.bots.gg/api/v1/bots/%d/stats", botId))
+                    .post(RequestBody.create(Requester.MEDIA_TYPE_JSON, new JSONObject()
+                            .put("guildCount", serverCount)
+                            .put("shardCount", melijn.getShardManager().getShardCache().size())
+                            .toString(4)))
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("Authorization", variables.dDotBDotGGToken)
+                    .build();
+            okHttpClient.newCall(request).enqueue(callbackHandler);
+        }
     }
 
     public void eval(CommandEvent event, ScriptEngine engine, String lang) {

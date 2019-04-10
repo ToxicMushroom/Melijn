@@ -89,6 +89,7 @@ public class Variables {
     public final String dblDotComToken;
     public final String blDotSpaceToken;
     public final String odDotXYZToken;
+    public final String dDotBDotGGToken;
 
 
     public Variables(Melijn melijn) {
@@ -96,6 +97,7 @@ public class Variables {
         dblDotComToken = melijn.getConfig().getValue("dblDotComToken");
         blDotSpaceToken = melijn.getConfig().getValue("blDotSpaceToken");
         odDotXYZToken = melijn.getConfig().getValue("odDotXYZToken");
+        dDotBDotGGToken = melijn.getConfig().getValue("dDotBDotGGToken");
 
         disabledGuildCommands = melijn.getMySQL().getDisabledCommandsMap();
 
