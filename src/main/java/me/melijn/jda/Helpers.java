@@ -326,6 +326,42 @@ public class Helpers {
                     .build();
             okHttpClient.newCall(request).enqueue(callbackHandler);
         }
+
+        if (variables.bfdDotComToken != null) {
+            Request request = new Request.Builder()
+                    .url(String.format("https://botsfordiscord.com/api/bot/%d", botId))
+                    .post(RequestBody.create(Requester.MEDIA_TYPE_JSON, new JSONObject()
+                            .put("server_count", serverCount)
+                            .toString(4)))
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("Authorization", variables.bfdDotComToken)
+                    .build();
+            okHttpClient.newCall(request).enqueue(callbackHandler);
+        }
+
+        if (variables.dDotBToken != null) {
+            Request request = new Request.Builder()
+                    .url(String.format("https://discord.boats/api/bot/%d", botId))
+                    .post(RequestBody.create(Requester.MEDIA_TYPE_JSON, new JSONObject()
+                            .put("server_count", serverCount)
+                            .toString(4)))
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("Authorization", variables.dDotBToken)
+                    .build();
+            okHttpClient.newCall(request).enqueue(callbackHandler);
+        }
+
+        if (variables.dbDotGToken != null) {
+            Request request = new Request.Builder()
+                    .url(String.format("https://discordbots.group/api/bot/%d", botId))
+                    .post(RequestBody.create(Requester.MEDIA_TYPE_JSON, new JSONObject()
+                            .put("server_count", serverCount)
+                            .toString(4)))
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("Authorization", variables.dbDotGToken)
+                    .build();
+            okHttpClient.newCall(request).enqueue(callbackHandler);
+        }
     }
 
     public void eval(CommandEvent event, ScriptEngine engine, String lang) {
