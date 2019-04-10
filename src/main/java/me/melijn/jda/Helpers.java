@@ -232,7 +232,6 @@ public class Helpers {
         long botId = melijn.getShardManager().getShards().get(0).getSelfUser().getIdLong();
         long serverCount = melijn.getShardManager().getGuildCache().size();
         long userCount = melijn.getShardManager().getUserCache().size();
-        int shards = melijn.getShardManager().getShardsTotal();
         long voiceChannels = melijn.getShardManager().getShards().stream().mapToLong(
                 (shard) -> shard.getVoiceChannels().stream().filter(
                         (vc) -> vc.getMembers().contains(vc.getGuild().getSelfMember())
@@ -250,7 +249,7 @@ public class Helpers {
         Callback callbackHandler = new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                logger.warn("DevineDiscordBots stats didn't update: " + e.getMessage());
+                logger.warn("Stats didn't update: " + e.getMessage());
             }
 
             @Override
