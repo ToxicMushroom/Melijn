@@ -38,7 +38,7 @@ public class Helpers {
     private final Pattern linuxUptimePattern = Pattern.compile("" +
             "(?:\\s+)?\\d+:\\d+:\\d+ up(?: (\\d+) days?,)?(?:\\s+(\\d+):(\\d+)|\\s+?(\\d+)\\s+?min).*"
     );
-    Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
     public final Set<String> perms = Sets.newHashSet(
             "*",
             "pause",
