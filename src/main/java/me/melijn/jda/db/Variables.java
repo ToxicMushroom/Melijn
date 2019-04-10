@@ -85,8 +85,18 @@ public class Variables {
     public double queryAmount = 0.0;
     public double timerAmount = 0.0;
 
+    public final String devineDBLToken;
+    public final String dblDotComToken;
+    public final String blDotSpaceToken;
+    public final String odDotXYZToken;
+
 
     public Variables(Melijn melijn) {
+        devineDBLToken = melijn.getConfig().getValue("devineDBLToken");
+        dblDotComToken = melijn.getConfig().getValue("dblDotComToken");
+        blDotSpaceToken = melijn.getConfig().getValue("blDotSpaceToken");
+        odDotXYZToken = melijn.getConfig().getValue("odDotXYZToken");
+
         disabledGuildCommands = melijn.getMySQL().getDisabledCommandsMap();
 
         blockedGuildIds.addAll(melijn.getMySQL().getBlockedIds("guild"));

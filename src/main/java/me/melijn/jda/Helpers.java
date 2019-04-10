@@ -13,15 +13,15 @@ import me.melijn.jda.utils.Embedder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
+import okhttp3.*;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Consumer;
@@ -167,8 +167,7 @@ public class Helpers {
         if (i == 0 || i == 2) {
             melijn.getTaskManager().scheduleRepeating(() -> {
                 lastRunTimer2 = System.currentTimeMillis();
-                if (variables.dblAPI != null)
-                    variables.dblAPI.setStats(Math.toIntExact(guildCount == 0 ? jda.asBot().getShardManager().getGuildCache().size() : guildCount));
+
                 Set<Long> votesList = melijn.getMySQL().getVoteList();
                 Map<Long, Set<Long>> nextVoteMap = mySQL.getNotificationsMap(NotificationType.NEXTVOTE);
                 for (long userId : nextVoteMap.keySet()) {
@@ -198,20 +197,102 @@ public class Helpers {
         if (i == 0 || i == 4) {
             melijn.getTaskManager().scheduleRepeating(() ->
                     new HashMap<>(melijn.getVariables().toLeaveTimeMap).forEach((guildId, time) -> {
-                if (melijn.getShardManager().getGuildCache().getElementById(guildId) == null) {
-                    melijn.getVariables().toLeaveTimeMap.remove(guildId);
-                    return;
-                }
-                if (time < System.currentTimeMillis()) { //Leaves after 5 minutes
-                    MusicPlayer player = melijn.getLava().getAudioLoader().getPlayer(guildId);
-                    melijn.getVariables().looped.remove(guildId);
-                    melijn.getVariables().loopedQueues.remove(guildId);
-                    melijn.getVariables().toLeaveTimeMap.remove(guildId);
-                    player.getAudioPlayer().setPaused(false);
-                    player.getTrackManager().clear();
-                    player.stopTrack();
-                }
-            }), 60_000);
+                        if (melijn.getShardManager().getGuildCache().getElementById(guildId) == null) {
+                            melijn.getVariables().toLeaveTimeMap.remove(guildId);
+                            return;
+                        }
+                        if (time < System.currentTimeMillis()) { //Leaves after 5 minutes
+                            MusicPlayer player = melijn.getLava().getAudioLoader().getPlayer(guildId);
+                            melijn.getVariables().looped.remove(guildId);
+                            melijn.getVariables().loopedQueues.remove(guildId);
+                            melijn.getVariables().toLeaveTimeMap.remove(guildId);
+                            player.getAudioPlayer().setPaused(false);
+                            player.getTrackManager().clear();
+                            player.stopTrack();
+                        }
+                    }), 60_000);
+        }
+        if (i == 0 || i == 5) {
+            melijn.getTaskManager().scheduleRepeating(this::postBotServerCounts, 60_000, 150_000);
+        }
+    }
+
+    private void postBotServerCounts() {
+        long botId = melijn.getShardManager().getShards().get(0).getSelfUser().getIdLong();
+        long serverCount = melijn.getShardManager().getGuildCache().size();
+        long userCount = melijn.getShardManager().getUserCache().size();
+        int shards = melijn.getShardManager().getShardsTotal();
+        long voiceChannels = melijn.getShardManager().getShards().stream().mapToLong(
+                (shard) -> shard.getVoiceChannels().stream().filter(
+                        (vc) -> vc.getMembers().contains(vc.getGuild().getSelfMember())
+                ).count()
+        ).sum();
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        Variables variables = melijn.getVariables();
+        JSONArray shardArray = new JSONArray();
+        melijn.getShardManager().getShards().forEach(jda -> shardArray.put(jda.getGuildCache().size()));
+
+
+        if (variables.dblAPI != null) {
+            variables.dblAPI.setStats(Math.toIntExact(serverCount));
+        }
+
+
+        OkHttpClient okHttpClient = new OkHttpClient();
+
+        if (variables.devineDBLToken != null) {
+            Request request = new Request.Builder()
+                    .url(String.format("https://divinediscordbots.com/bot/%d/stats", botId))
+                    .post(new MultipartBody.Builder()
+                            .setType(MultipartBody.FORM)
+                            .addFormDataPart("server_count", String.valueOf(serverCount))
+                            .addFormDataPart("shards", String.valueOf(shards))
+                            .build())
+                    .addHeader("content-type", "application/x-www-form-urlencoded")
+                    .addHeader("authorization", variables.devineDBLToken)
+                    .build();
+            okHttpClient.newCall(request);
+        }
+
+        if (variables.dblDotComToken != null) {
+            Request request = new Request.Builder()
+                    .url(String.format("https://discordbotlist.com/api/bots/%d/stats", botId))
+                    .post(new MultipartBody.Builder()
+                            .setType(MultipartBody.FORM)
+                            .addFormDataPart("guilds", String.valueOf(serverCount))
+                            .addFormDataPart("users", String.valueOf(userCount))
+                            .addFormDataPart("voice_connections", String.valueOf(voiceChannels))
+                            .build())
+                    .addHeader("Content-Type", "application/x-www-form-urlencoded")
+                    .addHeader("Authorization", "Bot " + variables.devineDBLToken)
+                    .build();
+            okHttpClient.newCall(request);
+        }
+
+        if (variables.blDotSpaceToken != null) {
+            RequestBody requestBody = RequestBody.create(JSON, new JSONObject()
+                    .put("shards", shardArray)
+                    .toString(4));
+            Request request = new Request.Builder()
+                    .url(String.format("https://api.botlist.space/v1/bots/%d", botId))
+                    .post(requestBody)
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("Authorization", variables.blDotSpaceToken)
+                    .build();
+            okHttpClient.newCall(request);
+        }
+
+        if (variables.odDotXYZToken != null) {
+            RequestBody requestBody = RequestBody.create(JSON, new JSONObject()
+                    .put("guildCount", guildCount)
+                    .toString(4));
+            Request request = new Request.Builder()
+                    .url(String.format("https://bots.ondiscord.xyz/bot-api/bots/%d/guilds", botId))
+                    .post(requestBody)
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("Authorization", variables.odDotXYZToken)
+                    .build();
+            okHttpClient.newCall(request);
         }
     }
 
