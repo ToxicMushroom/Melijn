@@ -7,15 +7,9 @@ import me.melijn.jda.blub.CommandEvent;
 import me.melijn.jda.utils.Embedder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static me.melijn.jda.Melijn.PREFIX;
 
