@@ -80,7 +80,7 @@ public class Config {
     }
 
     public String getValue(String key) {
-        return configObject == null ? null : configObject.get(key).toString();
+        return configObject == null ? null : (configObject.has(key) ? configObject.get(key).toString() : null);
     }
 
     public Set<String> getSet(String unLoggedThreads) {

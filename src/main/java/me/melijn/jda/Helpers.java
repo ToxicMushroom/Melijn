@@ -257,8 +257,8 @@ public class Helpers {
                             .addFormDataPart("server_count", String.valueOf(serverCount))
                             .addFormDataPart("shards", String.valueOf(shards))
                             .build())
-                    .addHeader("content-type", "application/x-www-form-urlencoded")
-                    .addHeader("authorization", variables.devineDBLToken)
+                    .addHeader("Content-Type", "application/x-www-form-urlencoded")
+                    .addHeader("Authorization", variables.devineDBLToken)
                     .build();
             okHttpClient.newCall(request);
         } else logger.info("devineDBLToken is not set");

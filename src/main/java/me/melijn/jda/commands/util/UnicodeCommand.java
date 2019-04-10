@@ -49,7 +49,7 @@ public class UnicodeCommand extends Command {
                     StringBuilder hex = new StringBuilder(Integer.toHexString(code).toUpperCase());
                     while (hex.length() < 4)
                         hex.insert(0, "0");
-                    builder.append("\n`\\u").append(hex).append("`   ");
+                    builder.append("`\\u").append(hex).append("`   ");
                 }
                 builder.append(String.valueOf(chars)).append("   _").append(Character.getName(code)).append("_\n");
             });
