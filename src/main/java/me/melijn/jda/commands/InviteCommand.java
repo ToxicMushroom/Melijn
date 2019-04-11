@@ -22,10 +22,15 @@ public class InviteCommand extends Command {
         if (event.getGuild() == null) {
             event.reply("With permissions included: https://melijn.com/invite?perms=true\n or without https://melijn.com/invite");
         } else {
-            if (event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_ADD_REACTION) &&
-                    event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_HISTORY)) event.getMessage().addReaction("\u2705").queue();
-            else if (event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_WRITE)) event.reply("Check your dm's");
-            event.getAuthor().openPrivateChannel().queue(s -> s.sendMessage("With permissions included: https://melijn.com/invite?perms=true\n or without https://melijn.com/invite").queue());
+            event.getAuthor().openPrivateChannel().queue(channel -> {
+                channel.sendMessage("With permissions included: https://melijn.com/invite?perms=true\nor without: https://melijn.com/invite").queue();
+                if (event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_HISTORY, Permission.MESSAGE_ADD_REACTION)) {
+                    event.getMessage().addReaction("\u2705").queue();
+                } else if (event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_WRITE))
+                    event.reply("Check your dm's");
+            }, failed -> {
+                event.reply("Your dm's are disabled");
+            });
         }
     }
 }
