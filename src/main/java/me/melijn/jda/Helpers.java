@@ -598,12 +598,7 @@ public class Helpers {
     }
 
     public boolean canNotInteract(CommandEvent event, User target) {
-        if (event.getGuild().getMember(target).getRoles().size() > 0 && event.getGuild().getSelfMember().getRoles().size() > 0) {
-            if (!event.getGuild().getSelfMember().getRoles().get(0).canInteract(event.getGuild().getMember(target).getRoles().get(0))) {
-                event.reply("Can't modify a member with higher or equal highest role than myself");
-                return true;
-            }
-        } else if (event.getGuild().getSelfMember().getRoles().size() == 0) {
+        if (!event.getGuild().getSelfMember().canInteract(event.getGuild().getMember(target))) {
             event.reply("Can't modify a member with higher or equal highest role than myself");
             return true;
         }
@@ -611,13 +606,8 @@ public class Helpers {
     }
 
     public boolean canNotInteract(CommandEvent event, Role target) {
-        if (event.getGuild().getSelfMember().getRoles().size() > 0) {
-            if (!event.getGuild().getSelfMember().getRoles().get(0).canInteract(target)) {
-                event.reply("Can't modify a member with higher or equal highest role than myself");
-                return true;
-            }
-        } else {
-            event.reply("Can't modify a member with higher or equal highest role than myself");
+        if (!event.getGuild().getSelfMember().canInteract(target)) {
+            event.reply("Can't modify a role which is higher or equal to my highest role");
             return true;
         }
         return false;
