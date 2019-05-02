@@ -153,6 +153,7 @@ public class Helpers {
             "bypass.cooldown",
             "restart"
     );
+    private final Set<Integer> activeShards = new HashSet<>();
 
     public Helpers(Melijn melijn) {
         this.melijn = melijn;
@@ -221,10 +222,29 @@ public class Helpers {
             melijn.getTaskManager().scheduleRepeating(() -> {
                 try {
                     postBotServerCounts();
+                    //checkAndPostStatus();
                 } catch (Exception e) {
                     melijn.getMessageHelper().printException(Thread.currentThread(), e, null, null);
                 }
             }, 60_000, 150_000);
+        }
+    }
+
+    private void checkAndPostStatus() {
+        for (JDA jda : melijn.getShardManager().getShards()) {
+            int shardId = jda.getShardInfo().getShardId();
+            boolean active = jda.getStatus() == JDA.Status.CONNECTED;
+            if (active) {
+                if (!activeShards.contains(shardId)) {
+                    activeShards.add(shardId);
+                    melijn.getMessageHelper().printShardStatus(shardId, true);
+                }
+            } else {
+                if (activeShards.contains(shardId)) {
+                    activeShards.remove(shardId);
+                    melijn.getMessageHelper().printShardStatus(shardId, false);
+                }
+            }
         }
     }
 
@@ -362,6 +382,8 @@ public class Helpers {
                     .build();
             okHttpClient.newCall(request).enqueue(callbackHandler);
         }
+
+
     }
 
     public void eval(CommandEvent event, ScriptEngine engine, String lang) {

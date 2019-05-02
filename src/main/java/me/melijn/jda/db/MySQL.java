@@ -544,7 +544,9 @@ public class MySQL {
         eb.setColor(Color.green);
 
         if (!toUnban.isBot() && !toUnban.isFake())
-            toUnban.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
+            toUnban.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue(message -> {
+            }, throwable -> {
+            }));
         TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().banLogChannelCache.getUnchecked(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
             if (toUnban.isBot())
@@ -614,7 +616,10 @@ public class MySQL {
             if (target.isBot()) logChannel.sendMessage(embedBuilder.build()).append("Target is a bot.").queue();
             else logChannel.sendMessage(embedBuilder.build()).queue();
         }
-        if (!target.isBot()) target.openPrivateChannel().queue((m) -> m.sendMessage(embedBuilder.build()).queue());
+        if (!target.isBot())
+            target.openPrivateChannel().queue((m) -> m.sendMessage(embedBuilder.build()).queue(message -> {
+            }, throwable -> {
+            }));
         return true;
     }
 
@@ -633,7 +638,9 @@ public class MySQL {
         muted.setThumbnail(target.getEffectiveAvatarUrl());
         muted.setAuthor("Muted by: " + name + " ".repeat(45).substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
-        if (!target.isBot()) target.openPrivateChannel().queue(pc -> pc.sendMessage(muted.build()).queue());
+        if (!target.isBot()) target.openPrivateChannel().queue(pc -> pc.sendMessage(muted.build()).queue(message -> {
+        }, throwable -> {
+        }), failed -> {/*Riperino*/});
         TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().muteLogChannelCache.getUnchecked(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
             if (target.isBot()) logChannel.sendMessage(muted.build()).append("Target is a bot").queue();
@@ -660,7 +667,9 @@ public class MySQL {
         muted.setThumbnail(target.getEffectiveAvatarUrl());
         muted.setAuthor("Muted by: " + name + " ".repeat(45).substring(0, 45 - author.getName().length()) + "\u200B", null, author.getEffectiveAvatarUrl());
 
-        if (!target.isBot()) target.openPrivateChannel().queue(pc -> pc.sendMessage(muted.build()).queue());
+        if (!target.isBot()) target.openPrivateChannel().queue(pc -> pc.sendMessage(muted.build()).queue(message -> {
+        }, throwable -> {
+        }), failed -> {/*Riperino*/});
         TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().muteLogChannelCache.getUnchecked(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
             if (target.isBot()) logChannel.sendMessage(muted.build()).append("Target is a bot").queue();
@@ -697,7 +706,9 @@ public class MySQL {
         eb.setColor(Color.green);
 
         if (!toUnmute.isBot() && !toUnmute.isFake())
-            toUnmute.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue());
+            toUnmute.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue(message -> {
+            }, throwable -> {
+            }), failed -> {/*Riperino*/});
         TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().muteLogChannelCache.getUnchecked(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
             if (toUnmute.isBot()) logChannel.sendMessage(eb.build()).append("Target is a bot").queue();
@@ -751,11 +762,11 @@ public class MySQL {
             if (target.isBot()) logChannel.sendMessage(embedBuilder.build()).append("Target is a bot").queue();
             else logChannel.sendMessage(embedBuilder.build()).queue();
         }
-        if (!target.isBot()) target.openPrivateChannel().queue((channel) -> {
-            channel.sendMessage(embedBuilder.build()).queue(
+        if (!target.isBot())
+            target.openPrivateChannel().queue((channel) -> channel.sendMessage(embedBuilder.build()).queue(
                     (success) -> guild.getController().kick(guild.getMember(target)).queue(),
-                    (failed) -> guild.getController().kick(guild.getMember(target)).queue());
-        });
+                    (failed) -> guild.getController().kick(guild.getMember(target)).queue()),
+                    failed -> {/*Riperino*/});
         return true;
     }
 

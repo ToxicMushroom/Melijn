@@ -7,6 +7,8 @@ import me.melijn.jda.blub.Need;
 import me.melijn.jda.utils.Embedder;
 import net.dv8tion.jda.core.Permission;
 
+import java.util.List;
+
 import static me.melijn.jda.Melijn.PREFIX;
 
 public class SettingsCommand extends Command {
@@ -27,9 +29,7 @@ public class SettingsCommand extends Command {
         if (event.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
             event.async(() -> {
                 long guildId = event.getGuild().getIdLong();
-                event.reply(new Embedder(event.getVariables(), event.getGuild())
-                        .setTitle("Server settings")
-                        .setDescription("MusicChannel:** " + idToChannelMention(event.getVariables().musicChannelCache.getUnchecked(guildId)) +
+                String description = "MusicChannel:** " + idToChannelMention(event.getVariables().musicChannelCache.getUnchecked(guildId)) +
                                 "\n**StreamUrl:** " + stringToString(event.getMySQL().getStreamUrl(guildId), false) +
                                 "\n**StreamerMode:** " + (event.getVariables().streamerModeCache.getUnchecked(guildId) ? "on" : "off") +
                                 "\n" +
@@ -58,8 +58,22 @@ public class SettingsCommand extends Command {
                                 "\n\nVerificationCode:** " + stringToString(event.getVariables().verificationCodeCache.getUnchecked(guildId), false) +
                                 "\n**VerificationType:** " + stringToString(event.getVariables().verificationTypes.getUnchecked(guildId).name(), false) +
                                 "\n**VerificationThreshold:** " + event.getVariables().verificationThresholdCache.getUnchecked(guildId) +
-                                "\n**Prefix:** " + event.getVariables().prefixes.getUnchecked(guildId) + "**")
-                        .build());
+                        "\n**Prefix:** " + event.getVariables().prefixes.getUnchecked(guildId) + "**";
+                if (description.length() > 2048) {
+                    List<String> parts = event.getMessageHelper().getSplitMessage(description, 0);
+                    int i = 1;
+                    for (String part : parts) {
+                        event.reply(new Embedder(event.getVariables(), event.getGuild())
+                                .setTitle("Server settings part #" + i++)
+                                .setDescription(part)
+                                .build());
+                    }
+                } else {
+                    event.reply(new Embedder(event.getVariables(), event.getGuild())
+                            .setTitle("Server settings")
+                            .setDescription(description)
+                            .build());
+                }
                     }
             );
         } else {

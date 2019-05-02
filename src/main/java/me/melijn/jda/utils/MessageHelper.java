@@ -16,7 +16,10 @@ import java.io.StringWriter;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -222,7 +225,7 @@ public class MessageHelper {
         messages.forEach(msg -> melijn.getShardManager().getGuildById(340081887265685504L).getTextChannelById(486042641692360704L).sendMessage(msg).queue());
     }
 
-    private List<String> getSplitMessage(String message, int margin) {
+    public List<String> getSplitMessage(String message, int margin) {
         String msg = message;
         final List<String> messages = new ArrayList<>();
         while (msg.length() > 2000 - margin) {
@@ -291,5 +294,13 @@ public class MessageHelper {
                 .replaceAll("`", "\\\\`")
                 .replaceAll("_", "\\\\_")
                 .replaceAll("~", "\\\\~");
+    }
+
+    public void printShardStatus(int shardId, boolean active) {
+        String message = "Shard-" + shardId + ": `";
+        if (active) message += " CONNECTED to the discord websocket.";
+        else message += " DISCONNECTED from the discord websocket!";
+        message += "`";
+        melijn.getShardManager().getGuildById(340081887265685504L).getTextChannelById(567424198906216460L).sendMessage(message).queue();
     }
 }

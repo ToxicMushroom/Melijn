@@ -78,11 +78,13 @@ public class Chat extends ListenerAdapter {
                     melijn.getVariables().fmLogChannelCache.getUnchecked(guildId) != -1)
                 melijn.getMySQL().createMessage(event.getMessageIdLong(), finalContent, author.getIdLong(), guildId, event.getChannel().getIdLong());
         });
-        if (event.getMessage().getContentRaw().equalsIgnoreCase(guild.getSelfMember().getAsMention()) && guild.getSelfMember().hasPermission(event.getChannel(), Permission.MESSAGE_WRITE)) {
+        if (event.getMessage().getContentRaw().equalsIgnoreCase(guild.getSelfMember().getAsMention()) &&
+                !event.getAuthor().isBot() &&
+                guild.getSelfMember().hasPermission(event.getChannel(), Permission.MESSAGE_WRITE)) {
             String prefix = melijn.getVariables().prefixes.getUnchecked(guildId);
             event.getChannel().sendMessage(String.format(("Hello there my default prefix is %s " + (prefix.equals(PREFIX) ? "" : String.format("\nThis server has configured %s as the prefix\n", prefix)) + "and you can view all commands using **%shelp**"), PREFIX, prefix)).queue();
         }
-        if (guild.getSelfMember().hasPermission(event.getChannel(), Permission.MESSAGE_MANAGE) &&
+        if (!event.getAuthor().isBot() && guild.getSelfMember().hasPermission(event.getChannel(), Permission.MESSAGE_MANAGE) &&
                 !event.getMember().hasPermission(event.getChannel(), Permission.MESSAGE_MANAGE)) {
             filter(event.getMessage());
         }
