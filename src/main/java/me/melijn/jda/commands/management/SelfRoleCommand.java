@@ -96,13 +96,17 @@ public class SelfRoleCommand extends Command {
                         return;
                     }
                     if (emote2.isEmpty()) {
-                        event.getMySQL().removeSelfRole(guild.getIdLong(), roleRemoved.getIdLong());
-                        event.getVariables().selfRoles.invalidate(guild.getIdLong());
-                        event.reply("SelfRole entries removed for role: **@" + roleRemoved.getName() + "** by **" + event.getFullAuthorName() + "**");
+                        event.async(() -> {
+                            event.getMySQL().removeSelfRole(guild.getIdLong(), roleRemoved.getIdLong());
+                            event.getVariables().selfRoles.invalidate(guild.getIdLong());
+                            event.reply("SelfRole entries removed for role: **@" + roleRemoved.getName() + "** by **" + event.getFullAuthorName() + "**");
+                        });
                     } else {
-                        event.getMySQL().removeSelfRole(guild.getIdLong(), roleRemoved.getIdLong(), emote2);
-                        event.getVariables().selfRoles.invalidate(guild.getIdLong());
-                        event.reply("SelfRole entry removed for role: **@" + roleRemoved.getName() + "** by **" + event.getFullAuthorName() + "**");
+                        event.async(() -> {
+                            event.getMySQL().removeSelfRole(guild.getIdLong(), roleRemoved.getIdLong(), emote2);
+                            event.getVariables().selfRoles.invalidate(guild.getIdLong());
+                            event.reply("SelfRole entry removed for role: **@" + roleRemoved.getName() + "** by **" + event.getFullAuthorName() + "**");
+                        });
                     }
 
                     break;
