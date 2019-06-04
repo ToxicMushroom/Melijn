@@ -11,8 +11,6 @@ import static me.melijn.jda.Melijn.PREFIX;
 
 public class BlurpleCommand extends Command {
 
-
-
     public BlurpleCommand() {
         this.commandName = "blurple";
         this.usage = PREFIX + commandName + " [image]";
@@ -37,10 +35,10 @@ public class BlurpleCommand extends Command {
                     int g = (pixel >> 8) & 0xff;
                     int b = pixel & 0xff;
 
-                    int[] newcolor = imageUtils.getBurpleForPixel(r, g, b);
-                    r = newcolor[0];
-                    g = newcolor[1];
-                    b = newcolor[2];
+                    int[] newColor = imageUtils.getBurpleForPixel(r, g, b);
+                    r = newColor[0];
+                    g = newColor[1];
+                    b = newColor[2];
                     pixel = (a << 24) | (r << 16) | (g << 8) | b;
 
                     img.setRGB(x, y, pixel);

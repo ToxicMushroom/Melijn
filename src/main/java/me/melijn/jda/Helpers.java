@@ -371,17 +371,18 @@ public class Helpers {
             okHttpClient.newCall(request).enqueue(callbackHandler);
         }
 
-        if (variables.dbDotGToken != null) {
-            Request request = new Request.Builder()
-                    .url(String.format("https://discordbots.group/api/bot/%d", botId))
-                    .post(RequestBody.create(Requester.MEDIA_TYPE_JSON, new JSONObject()
-                            .put("server_count", serverCount)
-                            .toString(4)))
-                    .addHeader("Content-Type", "application/json")
-                    .addHeader("Authorization", variables.dbDotGToken)
-                    .build();
-            okHttpClient.newCall(request).enqueue(callbackHandler);
-        }
+        //NOTE: Currently down
+//        if (variables.dbDotGToken != null) {
+//            Request request = new Request.Builder()
+//                    .url(String.format("https://discordbots.group/api/bot/%d", botId))
+//                    .post(RequestBody.create(Requester.MEDIA_TYPE_JSON, new JSONObject()
+//                            .put("server_count", serverCount)
+//                            .toString(4)))
+//                    .addHeader("Content-Type", "application/json")
+//                    .addHeader("Authorization", variables.dbDotGToken)
+//                    .build();
+//            okHttpClient.newCall(request).enqueue(callbackHandler);
+//        }
 
 
     }
@@ -519,13 +520,13 @@ public class Helpers {
         }
         if (guild.getSelfMember().getRoles().size() > 0) {
             Role joinRole = guild.getRoleById(melijn.getVariables().joinRoleCache.getUnchecked(guild.getIdLong()));
-            if (joinRole != null && guild.getSelfMember().getRoles().get(0).canInteract(joinRole))
+            if (joinRole != null && guild.getSelfMember().canInteract(joinRole))
                 guild.getController().addSingleRoleToMember(guild.getMember(user), joinRole).queue();
             melijn.getTaskManager().async(() -> {
                 Role muteRole = guild.getRoleById(melijn.getMySQL().getRoleId(guild.getIdLong(), RoleType.MUTE));
                 if (muteRole != null &&
                         melijn.getMySQL().isUserMuted(user.getIdLong(), guild.getIdLong()) &&
-                        guild.getSelfMember().getRoles().get(0).canInteract(muteRole))
+                        guild.getSelfMember().canInteract(muteRole))
                     guild.getController().addSingleRoleToMember(guild.getMember(user), muteRole).queue();
             });
         }
