@@ -269,7 +269,7 @@ public class Helpers {
         Callback callbackHandler = new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                logger.warn("Stats didn't update: " + e.getMessage());
+                logger.debug("Stats didn't update: " + e.getMessage());
             }
 
             @Override
@@ -371,20 +371,17 @@ public class Helpers {
             okHttpClient.newCall(request).enqueue(callbackHandler);
         }
 
-        //NOTE: Currently down
-//        if (variables.dbDotGToken != null) {
-//            Request request = new Request.Builder()
-//                    .url(String.format("https://discordbots.group/api/bot/%d", botId))
-//                    .post(RequestBody.create(Requester.MEDIA_TYPE_JSON, new JSONObject()
-//                            .put("server_count", serverCount)
-//                            .toString(4)))
-//                    .addHeader("Content-Type", "application/json")
-//                    .addHeader("Authorization", variables.dbDotGToken)
-//                    .build();
-//            okHttpClient.newCall(request).enqueue(callbackHandler);
-//        }
-
-
+        if (variables.dbDotGToken != null) {
+            Request request = new Request.Builder()
+                    .url(String.format("https://discordbots.group/api/bot/%d", botId))
+                    .post(RequestBody.create(Requester.MEDIA_TYPE_JSON, new JSONObject()
+                            .put("server_count", serverCount)
+                            .toString(4)))
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("Authorization", variables.dbDotGToken)
+                    .build();
+            okHttpClient.newCall(request).enqueue(callbackHandler);
+        }
     }
 
     public void eval(CommandEvent event, ScriptEngine engine, String lang) {
@@ -443,7 +440,7 @@ public class Helpers {
         if (event.getMessage().getMentionedChannels().size() == 1) {
             id = event.getMessage().getMentionedChannels().get(0).getIdLong();
         } else if (arg.matches("\\d+") && event.getGuild().getTextChannelById(arg) != null) {
-            id = Long.valueOf(arg);
+            id = Long.parseLong(arg);
         } else if (arg.equalsIgnoreCase("null")) {
             id = 0L;
         } else if (event.getGuild().getTextChannelsByName(arg, true).size() > 0) {
@@ -457,7 +454,7 @@ public class Helpers {
         if (event.getMessage().getMentionedChannels().size() == 1) {
             id = event.getMessage().getMentionedChannels().get(0).getIdLong();
         } else if (arg.matches("\\d+") && event.getGuild().getVoiceChannelById(arg) != null) {
-            id = Long.valueOf(arg);
+            id = Long.parseLong(arg);
         } else if (arg.equalsIgnoreCase("null")) {
             id = 0L;
         } else if (event.getGuild().getVoiceChannelsByName(arg, true).size() > 0) {
