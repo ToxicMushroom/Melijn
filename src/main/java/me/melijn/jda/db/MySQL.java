@@ -215,63 +215,29 @@ public class MySQL {
     }
 
     public void createMessage(long messageId, String content, long authorId, long guildId, long textChannelId) {
-        try (Connection con = ds.getConnection();
-             PreparedStatement createMessage = con.prepareStatement("INSERT INTO history_messages(guildId, authorId, messageId, content, textChannelId, sentTime) VALUES (?, ?, ?, ?, ?, ?)")) {
-            createMessage.setLong(1, guildId);
-            createMessage.setLong(2, authorId);
-            createMessage.setLong(3, messageId);
-            createMessage.setString(4, content);
-            createMessage.setLong(5, textChannelId);
-            createMessage.setLong(6, System.currentTimeMillis());
-            createMessage.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        executeUpdate("INSERT INTO history_messages(guildId, authorId, messageId, content, textChannelId, sentTime) VALUES (?, ?, ?, ?, ?, ?)",
+                guildId, authorId, messageId, content, textChannelId, System.currentTimeMillis());
     }
 
     //Permissions stuff---------------------------------------------------------
     public void addRolePermission(long guildId, long roleId, String permission) {
-        try (Connection con = ds.getConnection();
-             PreparedStatement adding = con.prepareStatement("INSERT INTO perms_roles(guildId, roleId, permission) VALUES (?, ?, ?)")) {
-            setPermissionParams(guildId, roleId, permission, adding);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        executeUpdate("INSERT INTO perms_roles(guildId, roleId, permission) VALUES (?, ?, ?)",
+                guildId, roleId, permission);
     }
 
     public void addUserPermission(long guildId, long userId, String permission) {
-        try (Connection con = ds.getConnection();
-             PreparedStatement adding = con.prepareStatement("INSERT INTO perms_users(guildId, userId, permission) VALUES (?, ?, ?)")) {
-            setPermissionParams(guildId, userId, permission, adding);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        executeUpdate("INSERT INTO perms_users(guildId, userId, permission) VALUES (?, ?, ?)",
+                guildId, userId, permission);
     }
 
     public void removeRolePermission(long guildId, long roleId, String permission) {
-        try (Connection con = ds.getConnection();
-             PreparedStatement removing = con.prepareStatement("DELETE FROM perms_roles WHERE guildId= ? AND roleId= ? AND permission= ?")) {
-            setPermissionParams(guildId, roleId, permission, removing);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void setPermissionParams(long guildId, long roleId, String permission, PreparedStatement statement) throws SQLException {
-        statement.setLong(1, guildId);
-        statement.setLong(2, roleId);
-        statement.setString(3, permission);
-        statement.executeUpdate();
-        statement.close();
+        executeUpdate("DELETE FROM perms_roles WHERE guildId= ? AND roleId= ? AND permission= ?",
+                guildId, roleId, permission);
     }
 
     public void removeUserPermission(long guildId, long userId, String permission) {
-        try (Connection con = ds.getConnection();
-             PreparedStatement removing = con.prepareStatement("DELETE FROM perms_users WHERE guildId= ? AND userId= ? AND permission= ?")) {
-            setPermissionParams(guildId, userId, permission, removing);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        executeUpdate("DELETE FROM perms_users WHERE guildId= ? AND userId= ? AND permission= ?",
+                guildId, userId, permission);
     }
 
     public boolean hasPermission(Guild guild, long userId, String permission) {
@@ -311,25 +277,11 @@ public class MySQL {
 
 
     public void clearRolePermissions(long guildId, long roleId) {
-        try (Connection con = ds.getConnection();
-             PreparedStatement clearing = con.prepareStatement("DELETE FROM perms_roles WHERE guildId= ? AND roleId= ?")) {
-            clearing.setLong(1, guildId);
-            clearing.setLong(2, roleId);
-            clearing.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        executeUpdate("DELETE FROM perms_roles WHERE guildId= ? AND roleId= ?", guildId, roleId);
     }
 
     public void clearUserPermissions(long guildId, long userId) {
-        try (Connection con = ds.getConnection();
-             PreparedStatement clearing = con.prepareStatement("DELETE FROM perms_users WHERE guildId= ? AND userId= ?")) {
-            clearing.setLong(1, guildId);
-            clearing.setLong(2, userId);
-            clearing.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        executeUpdate("DELETE FROM perms_users WHERE guildId= ? AND userId= ?", guildId, userId);
     }
 
     public Set<String> getRolePermissions(long guildId, long roleId) {
@@ -590,7 +542,7 @@ public class MySQL {
             return false;
         }
         if (guild.getSelfMember().hasPermission(Permission.BAN_MEMBERS)) {
-            guild.getController().unban(Long.toString(targetId)).queue();
+            guild.getController().unban(Long.toString(targetId)).reason(reason).queue();
         }
         return true;
     }
@@ -1412,7 +1364,7 @@ public class MySQL {
                 hardUnban(victimId, guildId, "Ban expired");
                 return;
             }
-            softUnban(victimId, guild, "Ban expired");
+            jda.retrieveUserById(victimId).queue(user -> unban(user, guild, jda.getSelfUser(), "Ban expired"));
         });
     }
 
@@ -1441,7 +1393,6 @@ public class MySQL {
                 return;
             }
             unmute(member, jda.getSelfUser(), "Mute expired");
-
         });
     }
 
