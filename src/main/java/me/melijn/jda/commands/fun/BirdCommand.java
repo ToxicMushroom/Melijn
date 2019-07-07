@@ -30,7 +30,7 @@ public class BirdCommand extends Command {
                             .setImage(url)
                             .build());
                 else {
-                    event.reply("some-random-api.ml/birbimg is down :/");
+                    event.reply("some-random-api.ml/img/birb is down :/");
                 }
             else
                 event.reply("Enjoy your \uD83D\uDC31 ~meow~\n" + url);
