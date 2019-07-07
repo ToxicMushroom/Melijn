@@ -78,7 +78,7 @@ public class Melijn {
 
         JdaLavalink lavalink = new JdaLavalink(
                 getIdFromToken(config.getValue("token")),
-                Integer.valueOf(config.getValue("shardCount")),
+                Integer.parseInt(config.getValue("shardCount")),
                 shardId -> getShardManager().getShardById(shardId)
         );
         lavalink.addNode(URI.create("ws://" + config.getValue("lavalink-host")), config.getValue("lavalink-pwd"));
