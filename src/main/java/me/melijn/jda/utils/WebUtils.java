@@ -158,7 +158,7 @@ public class WebUtils {
     }
 
     public String getBirdUrl() {
-        String birdPage = run("https://some-random-api.ml/birbimg");
+        String birdPage = run("https://some-random-api.ml/img/birb");
         if (!melijn.getHelpers().isJSONObjectValid(birdPage)) return null;
         if (new JSONObject(birdPage).has("link"))
             return new JSONObject(birdPage).get("link").toString();
