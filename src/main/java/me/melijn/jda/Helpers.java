@@ -464,7 +464,7 @@ public class Helpers {
     }
 
     public void postMusicLog(long guildId, AudioTrack track) {
-        if (melijn.getVariables().musicLogChannelCache.get(guildId) == null) return;
+        if (melijn.getVariables().musicLogChannelCache.get(guildId) == -1) return;
         Guild guild = melijn.getShardManager().getGuildById(guildId);
         TextChannel tc = guild.getTextChannelById(melijn.getVariables().musicLogChannelCache.get(guildId));
         if (tc == null) {
