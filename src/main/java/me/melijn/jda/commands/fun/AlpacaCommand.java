@@ -21,15 +21,21 @@ public class AlpacaCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (event.getGuild() == null || event.hasPerm(event.getMember(), commandName, 0)) {
+            String url = event.getWebUtils().getAlpacaUrl();
+
+            if (url == null) {
+                event.reply("Could not get alpaca url");
+
+                return;
+            }
+
             if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EMBED_LINKS))
                 event.reply(new Embedder(event.getVariables(), event.getGuild())
                         .setDescription("Enjoy your alpaca!")
-                        .setImage(String.format("http://randomalpaca.com/wp-content/uploads/2015/04/alpaca%d.jpg",
-                                event.getMessageHelper().randInt(1, 144)))
+                        .setImage(url)
                         .build());
             else
-                event.reply(String.format("Enjoy your alpaca\nhttp://randomalpaca.com/wp-content/uploads/2015/04/alpaca%d.jpg",
-                        event.getMessageHelper().randInt(1, 144)));
+                event.reply("Enjoy your alpaca\n" + url);
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }

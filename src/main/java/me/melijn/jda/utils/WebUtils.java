@@ -19,6 +19,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.json.JSONObject;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -157,11 +158,21 @@ public class WebUtils {
         weebApi.getRandomImage(Collections.singletonList(tag)).async(callback);
     }
 
+    @Nullable
+    public String getAlpacaUrl() {
+        String alpacaPage = run("https://apis.duncte123.me/alpaca");
+        if (!melijn.getHelpers().isJSONObjectValid(alpacaPage)) return null;
+        JSONObject alpacaJson = new JSONObject(alpacaPage);
+        if (!alpacaJson.getBoolean("success")) return null;
+        return alpacaJson.getJSONObject("data").getString("file");
+    }
+
+    @Nullable
     public String getBirdUrl() {
         String birdPage = run("https://some-random-api.ml/img/birb");
         if (!melijn.getHelpers().isJSONObjectValid(birdPage)) return null;
         if (new JSONObject(birdPage).has("link"))
-            return new JSONObject(birdPage).get("link").toString();
+            return new JSONObject(birdPage).getString("link");
         else return null;
     }
 }
