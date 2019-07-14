@@ -423,7 +423,7 @@ public class MySQL {
                     (success) -> guild.getController().ban(target, 7, reason).queue(),
                     (failed) -> guild.getController().ban(target, 7, reason).queue()
             ), (failed) -> guild.getController().ban(target, 7, reason).queue());
-        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().banLogChannelCache.getUnchecked(guild.getIdLong()));
+        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().banLogChannelCache.get(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
             if (target.isBot() && !target.isFake())
                 logChannel.sendMessage(banned.build()).append("Target is a bot").queue();
@@ -457,7 +457,7 @@ public class MySQL {
                     (success) -> guild.getController().ban(target, 7, reason).queue(),
                     (failed) -> guild.getController().ban(target, 7, reason).queue()
             ), (failed) -> guild.getController().ban(target, 7, reason).queue());
-        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().banLogChannelCache.getUnchecked(guild.getIdLong()));
+        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().banLogChannelCache.get(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
             if (target.isBot() && !target.isFake())
                 logChannel.sendMessage(banned.build()).append("Target is a bot").queue();
@@ -499,7 +499,7 @@ public class MySQL {
             toUnban.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue(message -> {
             }, throwable -> {
             }));
-        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().banLogChannelCache.getUnchecked(guild.getIdLong()));
+        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().banLogChannelCache.get(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
             if (toUnban.isBot())
                 logChannel.sendMessage(eb.build()).append("\nTarget is a bot").queue();
@@ -563,7 +563,7 @@ public class MySQL {
         embedBuilder.setThumbnail(target.getEffectiveAvatarUrl());
         embedBuilder.setColor(Color.yellow);
 
-        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().warnLogChannelCache.getUnchecked(guild.getIdLong()));
+        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().warnLogChannelCache.get(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
             if (target.isBot()) logChannel.sendMessage(embedBuilder.build()).append("Target is a bot.").queue();
             else logChannel.sendMessage(embedBuilder.build()).queue();
@@ -593,7 +593,7 @@ public class MySQL {
         if (!target.isBot()) target.openPrivateChannel().queue(pc -> pc.sendMessage(muted.build()).queue(message -> {
         }, throwable -> {
         }), failed -> {/*Riperino*/});
-        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().muteLogChannelCache.getUnchecked(guild.getIdLong()));
+        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().muteLogChannelCache.get(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
             if (target.isBot()) logChannel.sendMessage(muted.build()).append("Target is a bot").queue();
             else logChannel.sendMessage(muted.build()).queue();
@@ -622,7 +622,7 @@ public class MySQL {
         if (!target.isBot()) target.openPrivateChannel().queue(pc -> pc.sendMessage(muted.build()).queue(message -> {
         }, throwable -> {
         }), failed -> {/*Riperino*/});
-        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().muteLogChannelCache.getUnchecked(guild.getIdLong()));
+        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().muteLogChannelCache.get(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
             if (target.isBot()) logChannel.sendMessage(muted.build()).append("Target is a bot").queue();
             else logChannel.sendMessage(muted.build()).queue();
@@ -661,14 +661,14 @@ public class MySQL {
             toUnmute.openPrivateChannel().queue(s -> s.sendMessage(eb.build()).queue(message -> {
             }, throwable -> {
             }), failed -> {/*Riperino*/});
-        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().muteLogChannelCache.getUnchecked(guild.getIdLong()));
+        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().muteLogChannelCache.get(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
             if (toUnmute.isBot()) logChannel.sendMessage(eb.build()).append("Target is a bot").queue();
             else logChannel.sendMessage(eb.build()).queue();
         }
 
         Member toUnmuteMember = guild.getMember(toUnmute);
-        Role role = guild.getRoleById(melijn.getVariables().muteRoleCache.getUnchecked(guild.getIdLong()));
+        Role role = guild.getRoleById(melijn.getVariables().muteRoleCache.get(guild.getIdLong()));
         if (toUnmuteMember != null && role != null && guild.getSelfMember().canInteract(toUnmuteMember) && guild.getSelfMember().canInteract(role))
             guild.getController().removeSingleRoleFromMember(toUnmuteMember, role).queue();
 
@@ -709,7 +709,7 @@ public class MySQL {
         embedBuilder.setThumbnail(target.getEffectiveAvatarUrl());
         embedBuilder.setColor(Color.ORANGE);
 
-        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().kickLogChannelCache.getUnchecked(guild.getIdLong()));
+        TextChannel logChannel = guild.getTextChannelById(melijn.getVariables().kickLogChannelCache.get(guild.getIdLong()));
         if (logChannel != null && guild.getSelfMember().hasPermission(logChannel, Permission.MESSAGE_WRITE)) {
             if (target.isBot()) logChannel.sendMessage(embedBuilder.build()).append("Target is a bot").queue();
             else logChannel.sendMessage(embedBuilder.build()).queue();
@@ -993,7 +993,7 @@ public class MySQL {
     //streamer stuff------------------------------------------------
     public void setStreamerMode(long guildId, boolean state) {
         if (state) {
-            if (!melijn.getVariables().streamerModeCache.getUnchecked(guildId)) {
+            if (!melijn.getVariables().streamerModeCache.get(guildId)) {
                 executeUpdate("INSERT INTO streamer_modes (guildId) VALUES (?)", guildId);
             }
         } else {
@@ -1797,7 +1797,7 @@ public class MySQL {
     }
 
     public void addPrivatePrefix(long userId, String prefix) {
-        List<String> prefixes = new ArrayList<>(melijn.getVariables().privatePrefixes.getUnchecked(userId));
+        List<String> prefixes = new ArrayList<>(melijn.getVariables().privatePrefixes.get(userId));
         prefixes.add(prefix);
         executeUpdate("INSERT INTO private_prefixes (userId, prefixes) VALUES (?, ?) ON DUPLICATE KEY UPDATE prefixes= ?",
                 userId, String.join("%split%", prefixes), String.join("%split%", prefixes));
@@ -1805,7 +1805,7 @@ public class MySQL {
     }
 
     public void removePrivatePrefix(long userId, String prefix) {
-        List<String> prefixes = new ArrayList<>(melijn.getVariables().privatePrefixes.getUnchecked(userId));
+        List<String> prefixes = new ArrayList<>(melijn.getVariables().privatePrefixes.get(userId));
         prefixes.remove(prefix);
         executeUpdate("INSERT INTO private_prefixes (userId, prefixes) VALUES (?, ?) ON DUPLICATE KEY UPDATE prefixes= ?",
                 userId, String.join("%split%", prefixes), String.join("%split%", prefixes));

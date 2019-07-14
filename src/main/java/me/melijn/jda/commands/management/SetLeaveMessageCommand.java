@@ -22,9 +22,9 @@ public class SetLeaveMessageCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
-            String oldMessage = event.getVariables().leaveMessages.getUnchecked(guild.getIdLong()).isEmpty() ?
+            String oldMessage = event.getVariables().leaveMessages.get(guild.getIdLong()).isEmpty() ?
                     "nothing" :
-                    ("'" + event.getVariables().leaveMessages.getUnchecked(guild.getIdLong()) + "'");
+                    ("'" + event.getVariables().leaveMessages.get(guild.getIdLong()) + "'");
             String newMessage = event.getArgs();
             String[] args = event.getArgs().split("\\s+");
             if (args.length > 0 && !args[0].isEmpty()) {

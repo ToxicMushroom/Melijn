@@ -1,14 +1,12 @@
 package me.melijn.jda.db;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.Sets;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.blub.*;
 import org.discordbots.api.client.DiscordBotListAPI;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -112,295 +110,184 @@ public class Variables {
 
         int frequentSize = 150;
         int frequentDecayMinutes = 4;
-        serverHasCC = CacheBuilder.newBuilder()
+        serverHasCC = Caffeine.newBuilder()
                 .maximumSize(frequentSize)
                 .expireAfterAccess(frequentDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Boolean load(@NotNull Long key) {
-                        return melijn.getMySQL().getCustomCommands(key).length() > 0;
-                    }
-                });
+                .build(key -> melijn.getMySQL().getCustomCommands(key).length() > 0);
         possibleDeletes = new HashMap<>();
         messageUser = new HashMap<>();
 
 
-        cooldowns = CacheBuilder.newBuilder()
+        cooldowns = Caffeine.newBuilder()
                 .maximumSize(frequentSize)
                 .expireAfterAccess(frequentDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Map<Integer, Integer> load(@NotNull Long key) {
-                        return melijn.getMySQL().getCooldowns(key);
-                    }
-                });
+                .build(key -> melijn.getMySQL().getCooldowns(key));
         cooldownManager = new CooldownManager(this);
 
-        selfRoles = CacheBuilder.newBuilder()
+        selfRoles = Caffeine.newBuilder()
                 .maximumSize(frequentSize)
                 .expireAfterAccess(frequentDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Map<Long, String> load(@NotNull Long key) {
-                        return melijn.getMySQL().getSelfRoles(key);
-                    }
-                });
-        selfRolesChannels = CacheBuilder.newBuilder()
+                .build(key -> melijn.getMySQL().getSelfRoles(key));
+
+        selfRolesChannels = Caffeine.newBuilder()
                 .maximumSize(frequentSize)
                 .expireAfterAccess(frequentDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getChannelId(key, SELF_ROLE);
-                    }
-                });
+                .build(key -> melijn.getMySQL().getChannelId(key, SELF_ROLE));
 
         int normalSize = 20;
         int normalDecayMinutes = 2;
-        embedColorCache = CacheBuilder.newBuilder()
+        embedColorCache = Caffeine.newBuilder()
                 .maximumSize(normalSize)
                 .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Integer load(@NotNull Long key) {
-                        return melijn.getMySQL().getEmbedColor(key);
-                    }
-                });
-        streamerModeCache = CacheBuilder.newBuilder()
-                .maximumSize(normalSize)
-                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Boolean load(@NotNull Long key) {
-                        return melijn.getMySQL().getStreamerMode(key);
-                    }
-                });
+                .build(key -> melijn.getMySQL().getEmbedColor(key));
 
-        verificationCodeCache = CacheBuilder.newBuilder()
+        streamerModeCache = Caffeine.newBuilder()
                 .maximumSize(normalSize)
                 .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public String load(@NotNull Long key) {
-                        return melijn.getMySQL().getGuildVerificationCode(key);
-                    }
-                });
-        verificationChannelsCache = CacheBuilder.newBuilder()
-                .maximumSize(normalSize)
-                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getChannelId(key, ChannelType.VERIFICATION);
-                    }
-                });
-        unverifiedRoleCache = CacheBuilder.newBuilder()
-                .maximumSize(normalSize)
-                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getRoleId(key, RoleType.UNVERIFIED);
-                    }
-                });
-        verificationThresholdCache = CacheBuilder.newBuilder()
-                .maximumSize(normalSize)
-                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Integer load(@NotNull Long key) {
-                        return melijn.getMySQL().getGuildVerificationThreshold(key);
-                    }
-                });
-        verificationTypes = CacheBuilder.newBuilder()
-                .maximumSize(normalSize)
-                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public VerificationType load(@NotNull Long key) {
-                        return melijn.getMySQL().getVerificationType(key);
-                    }
-                });
-        unVerifiedGuildMembersCache = CacheBuilder.newBuilder()
-                .maximumSize(normalSize)
-                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Map<Long, Long> load(@NotNull Long key) {
-                        return melijn.getMySQL().getUnverifiedMembers(key);
-                    }
-                });
+                .build(key -> melijn.getMySQL().getStreamerMode(key));
 
-        joinChannelCache = CacheBuilder.newBuilder()
+        verificationCodeCache = Caffeine.newBuilder()
                 .maximumSize(normalSize)
                 .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getChannelId(key, ChannelType.JOIN);
-                    }
-                });
-        leaveChannelCache = CacheBuilder.newBuilder()
-                .maximumSize(normalSize)
-                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getChannelId(key, ChannelType.LEAVE);
-                    }
-                });
+                .build(key -> melijn.getMySQL().getGuildVerificationCode(key));
 
-        muteRoleCache = CacheBuilder.newBuilder()
+        verificationChannelsCache = Caffeine.newBuilder()
                 .maximumSize(normalSize)
                 .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getRoleId(key, RoleType.MUTE);
-                    }
-                });
-        prefixes = CacheBuilder.newBuilder()
+                .build(key -> melijn.getMySQL().getChannelId(key, ChannelType.VERIFICATION));
+
+        unverifiedRoleCache = Caffeine.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(key -> melijn.getMySQL().getRoleId(key, RoleType.UNVERIFIED));
+
+        verificationThresholdCache = Caffeine.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(key -> melijn.getMySQL().getGuildVerificationThreshold(key));
+
+        verificationTypes = Caffeine.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(key -> melijn.getMySQL().getVerificationType(key));
+
+        unVerifiedGuildMembersCache = Caffeine.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(key -> melijn.getMySQL().getUnverifiedMembers(key));
+
+        joinChannelCache = Caffeine.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(key -> melijn.getMySQL().getChannelId(key, ChannelType.JOIN));
+
+        leaveChannelCache = Caffeine.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(key -> melijn.getMySQL().getChannelId(key, ChannelType.LEAVE));
+
+
+        muteRoleCache = Caffeine.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(key -> melijn.getMySQL().getRoleId(key, RoleType.MUTE));
+
+        prefixes = Caffeine.newBuilder()
                 .maximumSize(frequentSize)
                 .expireAfterAccess(frequentDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public String load(@NotNull Long key) {
-                        return melijn.getMySQL().getPrefix(key);
-                    }
-                });
-        privatePrefixes = CacheBuilder.newBuilder()
+                .build(key -> melijn.getMySQL().getPrefix(key));
+
+        privatePrefixes = Caffeine.newBuilder()
                 .maximumSize(frequentSize)
                 .expireAfterAccess(frequentDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public List<String> load(@NotNull Long key) {
-                        return melijn.getMySQL().getPrivatePrefixes(key);
-                    }
-                });
-        joinMessages = CacheBuilder.newBuilder()
+                .build(key -> melijn.getMySQL().getPrivatePrefixes(key));
+
+        joinMessages = Caffeine.newBuilder()
                 .maximumSize(normalSize)
                 .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public String load(@NotNull Long key) {
-                        return melijn.getMySQL().getMessage(key, MessageType.JOIN);
-                    }
-                });
-        joinRoleCache = CacheBuilder.newBuilder()
+                .build(key -> melijn.getMySQL().getMessage(key, MessageType.JOIN));
+
+        joinRoleCache = Caffeine.newBuilder()
                 .maximumSize(normalSize)
                 .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getRoleId(key, RoleType.JOIN);
-                    }
-                });
-        leaveMessages = CacheBuilder.newBuilder()
+                .build(key -> melijn.getMySQL().getRoleId(key, RoleType.JOIN));
+
+        leaveMessages = Caffeine.newBuilder()
                 .maximumSize(normalSize)
                 .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public String load(@NotNull Long key) {
-                        return melijn.getMySQL().getMessage(key, MessageType.LEAVE);
-                    }
-                });
+                .build(key -> melijn.getMySQL().getMessage(key, MessageType.LEAVE));
 
 
+        banLogChannelCache = Caffeine.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(key -> melijn.getMySQL().getChannelId(key, ChannelType.BAN_LOG));
 
-        banLogChannelCache = CacheBuilder.newBuilder()
+        muteLogChannelCache = Caffeine.newBuilder()
                 .maximumSize(normalSize)
                 .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getChannelId(key, ChannelType.BAN_LOG);
-                    }
-                });
-        muteLogChannelCache = CacheBuilder.newBuilder()
-                .maximumSize(normalSize)
-                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getChannelId(key, ChannelType.MUTE_LOG);
-                    }
-                });
-        kickLogChannelCache = CacheBuilder.newBuilder()
-                .maximumSize(normalSize)
-                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getChannelId(key, ChannelType.KICK_LOG);
-                    }
-                });
-        warnLogChannelCache = CacheBuilder.newBuilder()
-                .maximumSize(normalSize)
-                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getChannelId(key, ChannelType.WARN_LOG);
-                    }
-                });
-        musicLogChannelCache = CacheBuilder.newBuilder()
-                .maximumSize(normalSize)
-                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getChannelId(key, ChannelType.MUSIC_LOG);
-                    }
-                });
-        sdmLogChannelCache = CacheBuilder.newBuilder()
-                .maximumSize(normalSize)
-                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getChannelId(key, ChannelType.SDM_LOG);
-                    }
-                });
-        emLogChannelCache = CacheBuilder.newBuilder()
-                .maximumSize(normalSize)
-                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getChannelId(key, ChannelType.EM_LOG);
-                    }
-                });
-        odmLogChannelCache = CacheBuilder.newBuilder()
-                .maximumSize(normalSize)
-                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getChannelId(key, ChannelType.ODM_LOG);
-                    }
-                });
-        pmLogChannelCache = CacheBuilder.newBuilder()
-                .maximumSize(normalSize)
-                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getChannelId(key, ChannelType.PM_LOG);
-                    }
-                });
-        fmLogChannelCache = CacheBuilder.newBuilder()
-                .maximumSize(normalSize)
-                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getChannelId(key, ChannelType.FM_LOG);
-                    }
-                });
-        reactionLogChannelCache = CacheBuilder.newBuilder()
-                .maximumSize(normalSize)
-                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getChannelId(key, ChannelType.REACTION_LOG);
-                    }
-                });
-        attachmentLogChannelCache = CacheBuilder.newBuilder()
-                .maximumSize(normalSize)
-                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getChannelId(key, ChannelType.ATTACHMENT_LOG);
-                    }
-                });
+                .build(key -> melijn.getMySQL().getChannelId(key, ChannelType.MUTE_LOG));
 
-        musicChannelCache = CacheBuilder.newBuilder()
+        kickLogChannelCache = Caffeine.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(key -> melijn.getMySQL().getChannelId(key, ChannelType.KICK_LOG));
+
+        warnLogChannelCache = Caffeine.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(key -> melijn.getMySQL().getChannelId(key, ChannelType.WARN_LOG));
+
+
+        musicLogChannelCache = Caffeine.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(key -> melijn.getMySQL().getChannelId(key, ChannelType.MUSIC_LOG));
+
+        sdmLogChannelCache = Caffeine.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(key -> melijn.getMySQL().getChannelId(key, ChannelType.SDM_LOG));
+
+        emLogChannelCache = Caffeine.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(key -> melijn.getMySQL().getChannelId(key, ChannelType.EM_LOG));
+
+        odmLogChannelCache = Caffeine.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(key -> melijn.getMySQL().getChannelId(key, ChannelType.ODM_LOG));
+
+        pmLogChannelCache = Caffeine.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(key -> melijn.getMySQL().getChannelId(key, ChannelType.PM_LOG));
+
+        fmLogChannelCache = Caffeine.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(key -> melijn.getMySQL().getChannelId(key, ChannelType.FM_LOG));
+
+        reactionLogChannelCache = Caffeine.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(key -> melijn.getMySQL().getChannelId(key, ChannelType.REACTION_LOG));
+
+        attachmentLogChannelCache = Caffeine.newBuilder()
+                .maximumSize(normalSize)
+                .expireAfterAccess(normalDecayMinutes, TimeUnit.MINUTES)
+                .build(key -> melijn.getMySQL().getChannelId(key, ChannelType.ATTACHMENT_LOG));
+
+        musicChannelCache = Caffeine.newBuilder()
                 .maximumSize(normalSize)
                 .expireAfterAccess(normalSize, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getChannelId(key, ChannelType.MUSIC);
-                    }
-                });
+                .build(key -> melijn.getMySQL().getChannelId(key, ChannelType.MUSIC));
 
-        antiRaidThresholdChache = CacheBuilder.newBuilder()
+        antiRaidThresholdChache = Caffeine.newBuilder()
                 .maximumSize(normalSize)
                 .expireAfterAccess(normalSize, TimeUnit.MINUTES)
-                .build(new CacheLoader<>() {
-                    public Long load(@NotNull Long key) {
-                        return melijn.getMySQL().getAntiRaidThreshold(key);
-                    }
-                });
+                .build(key -> melijn.getMySQL().getAntiRaidThreshold(key));
 
         unLoggedThreads.addAll(melijn.getConfig().getSet("unLoggedThreads"));
 

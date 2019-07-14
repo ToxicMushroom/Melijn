@@ -30,7 +30,7 @@ public class PermCommand extends Command {
 
     @Override
     protected void execute(CommandEvent event) {
-        String prefix = event.getVariables().prefixes.getUnchecked(event.getGuild().getIdLong());
+        String prefix = event.getVariables().prefixes.get(event.getGuild().getIdLong());
         String[] args = event.getArgs().split("\\s+");
         MySQL mySQL = event.getMySQL();
 

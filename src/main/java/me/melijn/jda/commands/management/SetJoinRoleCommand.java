@@ -24,7 +24,7 @@ public class SetJoinRoleCommand extends Command {
         if (event.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
             String[] args = event.getArgs().split("\\s+");
-            long role = event.getVariables().joinRoleCache.getUnchecked(guild.getIdLong());
+            long role = event.getVariables().joinRoleCache.get(guild.getIdLong());
             if (args.length == 0 || args[0].isEmpty()) {
                 if (role != -1 && guild.getRoleById(role) != null)
                     event.reply("Current JoinRole: **@" + guild.getRoleById(role).getName() + "**");

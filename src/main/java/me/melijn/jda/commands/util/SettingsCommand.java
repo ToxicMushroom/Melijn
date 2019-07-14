@@ -29,36 +29,36 @@ public class SettingsCommand extends Command {
         if (event.hasPerm(event.getGuild().getMember(event.getAuthor()), commandName, 0)) {
             event.async(() -> {
                 long guildId = event.getGuild().getIdLong();
-                String description = "MusicChannel:** " + idToChannelMention(event.getVariables().musicChannelCache.getUnchecked(guildId)) +
+                String description = "MusicChannel:** " + idToChannelMention(event.getVariables().musicChannelCache.get(guildId)) +
                                 "\n**StreamUrl:** " + stringToString(event.getMySQL().getStreamUrl(guildId), false) +
-                                "\n**StreamerMode:** " + (event.getVariables().streamerModeCache.getUnchecked(guildId) ? "on" : "off") +
+                                "\n**StreamerMode:** " + (event.getVariables().streamerModeCache.get(guildId) ? "on" : "off") +
                                 "\n" +
-                                "\n**MuteRole:** " + idToRoleMention(event.getVariables().muteRoleCache.getUnchecked(guildId)) +
-                                "\n**JoinRole:** " + idToRoleMention(event.getVariables().joinRoleCache.getUnchecked(guildId)) +
-                                "\n**UnverifiedRole:** " + idToRoleMention(event.getVariables().unverifiedRoleCache.getUnchecked(guildId)) +
+                                "\n**MuteRole:** " + idToRoleMention(event.getVariables().muteRoleCache.get(guildId)) +
+                                "\n**JoinRole:** " + idToRoleMention(event.getVariables().joinRoleCache.get(guildId)) +
+                                "\n**UnverifiedRole:** " + idToRoleMention(event.getVariables().unverifiedRoleCache.get(guildId)) +
                                 "\n" +
-                                "\n**VerificationChannel:** " + idToChannelMention(event.getVariables().verificationChannelsCache.getUnchecked(guildId)) +
-                                "\n**JoinChannel:** " + idToChannelMention(event.getVariables().joinChannelCache.getUnchecked(guildId)) +
-                                "\n**LeaveChannel:** " + idToChannelMention(event.getVariables().leaveChannelCache.getUnchecked(guildId)) +
-                                "\n**SelfRoleChannel:** " + idToChannelMention(event.getVariables().selfRolesChannels.getUnchecked(guildId)) +
-                                "\n**BanLogChannel:** " + idToChannelMention(event.getVariables().banLogChannelCache.getUnchecked(guildId)) +
-                                "\n**MuteLogChannel:** " + idToChannelMention(event.getVariables().muteLogChannelCache.getUnchecked(guildId)) +
-                                "\n**KickLogChannel:** " + idToChannelMention(event.getVariables().kickLogChannelCache.getUnchecked(guildId)) +
-                                "\n**WarnLogChannel:** " + idToChannelMention(event.getVariables().warnLogChannelCache.getUnchecked(guildId)) +
-                                "\n**ODMLogChannel:** " + idToChannelMention(event.getVariables().odmLogChannelCache.getUnchecked(guildId)) +
-                                "\n**SDMLogChannel:** " + idToChannelMention(event.getVariables().sdmLogChannelCache.getUnchecked(guildId)) +
-                                "\n**PMLogChannel:** " + idToChannelMention(event.getVariables().pmLogChannelCache.getUnchecked(guildId)) +
-                                "\n**FMLogChannel:** " + idToChannelMention(event.getVariables().fmLogChannelCache.getUnchecked(guildId)) +
-                                "\n**EMLogChannel:** " + idToChannelMention(event.getVariables().emLogChannelCache.getUnchecked(guildId)) +
-                                "\n**ReactionChannel:** " + idToChannelMention(event.getVariables().reactionLogChannelCache.getUnchecked(guildId)) +
-                                "\n**AttachmentChannel:** " + idToChannelMention(event.getVariables().attachmentLogChannelCache.getUnchecked(guildId)) +
+                                "\n**VerificationChannel:** " + idToChannelMention(event.getVariables().verificationChannelsCache.get(guildId)) +
+                                "\n**JoinChannel:** " + idToChannelMention(event.getVariables().joinChannelCache.get(guildId)) +
+                                "\n**LeaveChannel:** " + idToChannelMention(event.getVariables().leaveChannelCache.get(guildId)) +
+                                "\n**SelfRoleChannel:** " + idToChannelMention(event.getVariables().selfRolesChannels.get(guildId)) +
+                                "\n**BanLogChannel:** " + idToChannelMention(event.getVariables().banLogChannelCache.get(guildId)) +
+                                "\n**MuteLogChannel:** " + idToChannelMention(event.getVariables().muteLogChannelCache.get(guildId)) +
+                                "\n**KickLogChannel:** " + idToChannelMention(event.getVariables().kickLogChannelCache.get(guildId)) +
+                                "\n**WarnLogChannel:** " + idToChannelMention(event.getVariables().warnLogChannelCache.get(guildId)) +
+                                "\n**ODMLogChannel:** " + idToChannelMention(event.getVariables().odmLogChannelCache.get(guildId)) +
+                                "\n**SDMLogChannel:** " + idToChannelMention(event.getVariables().sdmLogChannelCache.get(guildId)) +
+                                "\n**PMLogChannel:** " + idToChannelMention(event.getVariables().pmLogChannelCache.get(guildId)) +
+                                "\n**FMLogChannel:** " + idToChannelMention(event.getVariables().fmLogChannelCache.get(guildId)) +
+                                "\n**EMLogChannel:** " + idToChannelMention(event.getVariables().emLogChannelCache.get(guildId)) +
+                                "\n**ReactionChannel:** " + idToChannelMention(event.getVariables().reactionLogChannelCache.get(guildId)) +
+                                "\n**AttachmentChannel:** " + idToChannelMention(event.getVariables().attachmentLogChannelCache.get(guildId)) +
                                 "\n" +
-                                "\n**JoinMessage: " + stringToString(event.getVariables().joinMessages.getUnchecked(guildId).replaceAll("`", "´"), true) +
-                                "\n\nLeaveMessage: " + stringToString(event.getVariables().leaveMessages.getUnchecked(guildId).replaceAll("`", "´"), true) +
-                                "\n\nVerificationCode:** " + stringToString(event.getVariables().verificationCodeCache.getUnchecked(guildId), false) +
-                                "\n**VerificationType:** " + stringToString(event.getVariables().verificationTypes.getUnchecked(guildId).name(), false) +
-                                "\n**VerificationThreshold:** " + event.getVariables().verificationThresholdCache.getUnchecked(guildId) +
-                        "\n**Prefix:** " + event.getVariables().prefixes.getUnchecked(guildId) + "**";
+                                "\n**JoinMessage: " + stringToString(event.getVariables().joinMessages.get(guildId).replaceAll("`", "´"), true) +
+                                "\n\nLeaveMessage: " + stringToString(event.getVariables().leaveMessages.get(guildId).replaceAll("`", "´"), true) +
+                                "\n\nVerificationCode:** " + stringToString(event.getVariables().verificationCodeCache.get(guildId), false) +
+                                "\n**VerificationType:** " + stringToString(event.getVariables().verificationTypes.get(guildId).name(), false) +
+                                "\n**VerificationThreshold:** " + event.getVariables().verificationThresholdCache.get(guildId) +
+                        "\n**Prefix:** " + event.getVariables().prefixes.get(guildId) + "**";
                 if (description.length() > 2048) {
                     List<String> parts = event.getMessageHelper().getSplitMessage(description, 0);
                     int i = 1;

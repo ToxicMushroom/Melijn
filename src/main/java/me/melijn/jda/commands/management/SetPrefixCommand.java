@@ -28,7 +28,7 @@ public class SetPrefixCommand extends Command {
             Guild guild = event.getGuild();
             String[] args = event.getArgs().split("\\s+");
             if (args.length == 0 || args[0].isEmpty())
-                event.reply(event.getVariables().prefixes.getUnchecked(event.getGuild().getIdLong()));
+                event.reply(event.getVariables().prefixes.get(event.getGuild().getIdLong()));
             else if (event.hasPerm(event.getMember(), commandName, 1)) {
                 if (Arrays.toString(args).length() <= 10) {
                     event.async(() -> {

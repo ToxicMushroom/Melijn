@@ -28,8 +28,8 @@ public class SetJoinMessageCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
-            String oldMessage = event.getVariables().joinMessages.getUnchecked(guild.getIdLong()).isEmpty() ?
-                    "nothing" : ("'" + event.getVariables().joinMessages.getUnchecked(guild.getIdLong()) + "'");
+            String oldMessage = event.getVariables().joinMessages.get(guild.getIdLong()).isEmpty() ?
+                    "nothing" : ("'" + event.getVariables().joinMessages.get(guild.getIdLong()) + "'");
             String newMessage = event.getArgs();
             String[] args = event.getArgs().split("\\s+");
             if (args.length > 0 && !args[0].isEmpty()) {

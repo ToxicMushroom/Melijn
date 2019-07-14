@@ -43,9 +43,9 @@ public class SetVerificationThresholdCommand extends Command {
                     event.reply("The VerificationThreshold has been set to **" + i + "** by **" + event.getFullAuthorName() + "**");
                 }
             } else {
-                String value = event.getVariables().verificationThresholdCache.getUnchecked(guild.getIdLong()) == 0 ?
+                String value = event.getVariables().verificationThresholdCache.get(guild.getIdLong()) == 0 ?
                         "disabled" :
-                        String.valueOf(event.getVariables().verificationThresholdCache.getUnchecked(guild.getIdLong()));
+                        String.valueOf(event.getVariables().verificationThresholdCache.get(guild.getIdLong()));
                 event.reply("The VerificationThreshold is **" + value + "**");
             }
         } else {

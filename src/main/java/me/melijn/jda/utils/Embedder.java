@@ -8,11 +8,11 @@ public class Embedder extends EmbedBuilder {
 
     public Embedder(Variables variables, Guild guild) {
         if (guild != null) {
-            setColor(variables.embedColorCache.getUnchecked(guild.getIdLong()));
+            setColor(variables.embedColorCache.get(guild.getIdLong()));
         } else setColor(variables.embedColor);
     }
 
     public Embedder(Variables variables, long guildId) {
-        setColor(variables.embedColorCache.getUnchecked(guildId));
+        setColor(variables.embedColorCache.get(guildId));
     }
 }

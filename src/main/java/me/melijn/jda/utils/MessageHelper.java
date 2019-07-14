@@ -102,7 +102,7 @@ public class MessageHelper {
     }
 
     public void sendUsage(Command cmd, CommandEvent event) {
-        String prefix = event.getGuild() == null ? Melijn.PREFIX : event.getVariables().prefixes.getUnchecked(event.getGuild().getIdLong());
+        String prefix = event.getGuild() == null ? Melijn.PREFIX : event.getVariables().prefixes.get(event.getGuild().getIdLong());
         event.reply(prefixPattern.matcher(cmd.getUsage()).replaceFirst(StringEscapeUtils.escapeJava(prefix)));
     }
 

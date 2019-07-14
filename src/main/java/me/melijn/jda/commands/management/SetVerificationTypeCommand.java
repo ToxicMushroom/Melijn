@@ -21,7 +21,7 @@ public class SetVerificationTypeCommand extends Command {
         if (event.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             if (args.length == 0 || args[0].isEmpty()) {
-                String value = event.getVariables().verificationTypes.getUnchecked(event.getGuildId()).name().toLowerCase();
+                String value = event.getVariables().verificationTypes.get(event.getGuildId()).name().toLowerCase();
                 event.reply("The verification mode is set to **" + value + "**");
                 return;
             }

@@ -69,19 +69,19 @@ public class Chat extends ListenerAdapter {
         String finalContent = content.toString();
 
         melijn.getTaskManager().async(() -> {
-            long attachmentsId = melijn.getVariables().attachmentLogChannelCache.getUnchecked(guildId);
+            long attachmentsId = melijn.getVariables().attachmentLogChannelCache.get(guildId);
             if (attachmentsId != -1)
                 postAttachmentLog(guild, author, event.getChannel(), attachmentsId, event.getMessage().getAttachments());
-            if (melijn.getVariables().sdmLogChannelCache.getUnchecked(guildId) != -1 ||
-                    melijn.getVariables().odmLogChannelCache.getUnchecked(guildId) != -1 ||
-                    melijn.getVariables().pmLogChannelCache.getUnchecked(guildId) != -1 ||
-                    melijn.getVariables().fmLogChannelCache.getUnchecked(guildId) != -1)
+            if (melijn.getVariables().sdmLogChannelCache.get(guildId) != -1 ||
+                    melijn.getVariables().odmLogChannelCache.get(guildId) != -1 ||
+                    melijn.getVariables().pmLogChannelCache.get(guildId) != -1 ||
+                    melijn.getVariables().fmLogChannelCache.get(guildId) != -1)
                 melijn.getMySQL().createMessage(event.getMessageIdLong(), finalContent, author.getIdLong(), guildId, event.getChannel().getIdLong());
         });
         if (event.getMessage().getContentRaw().equalsIgnoreCase(guild.getSelfMember().getAsMention()) &&
                 !event.getAuthor().isBot() &&
                 guild.getSelfMember().hasPermission(event.getChannel(), Permission.MESSAGE_WRITE)) {
-            String prefix = melijn.getVariables().prefixes.getUnchecked(guildId);
+            String prefix = melijn.getVariables().prefixes.get(guildId);
             event.getChannel().sendMessage(String.format(("Hello there my default prefix is %s " + (prefix.equals(PREFIX) ? "" : String.format("\nThis server has configured %s as the prefix\n", prefix)) + "and you can view all commands using **%shelp**"), PREFIX, prefix)).queue();
         }
         if (!event.getAuthor().isBot() && guild.getSelfMember().hasPermission(event.getChannel(), Permission.MESSAGE_MANAGE) &&
@@ -198,25 +198,25 @@ public class Chat extends ListenerAdapter {
             }
         }
 
-        if (melijn.getVariables().verificationChannelsCache.getUnchecked(guildId) == event.getChannel().getIdLong()) {
+        if (melijn.getVariables().verificationChannelsCache.get(guildId) == event.getChannel().getIdLong()) {
             if (!event.getMember().hasPermission(event.getChannel(), Permission.MANAGE_CHANNEL))
                 event.getMessage().delete().reason("Verification Channel").queue(
                         s -> melijn.getVariables().botDeletedMessages.add(event.getMessageIdLong()),
                         failed -> {
                         }
                 );
-            if (melijn.getVariables().verificationCodeCache.getUnchecked(guildId) == null &&
-                    melijn.getVariables().verificationTypes.getUnchecked(guildId) == CODE) {
+            if (melijn.getVariables().verificationCodeCache.get(guildId) == null &&
+                    melijn.getVariables().verificationTypes.get(guildId) == CODE) {
                 return;
             }
-            String code = melijn.getVariables().verificationTypes.getUnchecked(guildId) == CODE ?
-                    melijn.getVariables().verificationCodeCache.getUnchecked(guildId) :
-                    String.valueOf(melijn.getVariables().unVerifiedGuildMembersCache.getUnchecked(guildId).get(event.getAuthor().getIdLong()));
+            String code = melijn.getVariables().verificationTypes.get(guildId) == CODE ?
+                    melijn.getVariables().verificationCodeCache.get(guildId) :
+                    String.valueOf(melijn.getVariables().unVerifiedGuildMembersCache.get(guildId).get(event.getAuthor().getIdLong()));
 
             if (event.getMessage().getContentRaw().equalsIgnoreCase(code)) {
                 melijn.getHelpers().verify(guild, event.getAuthor());
                 removeMemberFromTriesCache(event);
-            } else if (melijn.getVariables().verificationThresholdCache.getUnchecked(guildId) != 0) {
+            } else if (melijn.getVariables().verificationThresholdCache.get(guildId) != 0) {
                 if (guildUserVerifyTries.containsKey(guildId)) {
                     if (guildUserVerifyTries.get(guildId).containsKey(guildId)) {
                         Map<Long, Integer> userTriesBuffer = guildUserVerifyTries.get(guildId);
@@ -232,7 +232,7 @@ public class Chat extends ListenerAdapter {
                     userTriesBuffer.put(event.getAuthor().getIdLong(), 1);
                     guildUserVerifyTries.put(guildId, userTriesBuffer);
                 }
-                if (guildUserVerifyTries.get(guildId).get(event.getAuthor().getIdLong()).equals(melijn.getVariables().verificationThresholdCache.getUnchecked(guildId))) {
+                if (guildUserVerifyTries.get(guildId).get(event.getAuthor().getIdLong()).equals(melijn.getVariables().verificationThresholdCache.get(guildId))) {
                     if (event.getGuild().getSelfMember().canInteract(event.getMember()))
                         event.getGuild().getController().kick(event.getMember()).reason("Failed verification").queue();
                     removeMemberFromTriesCache(event);
@@ -287,7 +287,7 @@ public class Chat extends ListenerAdapter {
         melijn.getMySQL().updateMessage(event.getMessage());
 
         //Logging part
-        TextChannel emChannel = event.getGuild().getTextChannelById(melijn.getVariables().emLogChannelCache.getUnchecked(guild.getIdLong()));
+        TextChannel emChannel = event.getGuild().getTextChannelById(melijn.getVariables().emLogChannelCache.get(guild.getIdLong()));
         if (emChannel == null || oMessage.length() == 0 || !guild.getSelfMember().hasPermission(emChannel, Permission.MESSAGE_WRITE))
             return;
 
@@ -373,10 +373,10 @@ public class Chat extends ListenerAdapter {
             melijn.getHelpers().startTimer(event.getJDA(), 3);
         Guild guild = event.getGuild();
         if (event.getGuild().getSelfMember().hasPermission(Permission.VIEW_AUDIT_LOGS) &&
-                (melijn.getVariables().sdmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
-                        melijn.getVariables().odmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
-                        melijn.getVariables().pmLogChannelCache.getUnchecked(guild.getIdLong()) != -1 ||
-                        melijn.getVariables().fmLogChannelCache.getUnchecked(guild.getIdLong()) != -1)) {
+                (melijn.getVariables().sdmLogChannelCache.get(guild.getIdLong()) != -1 ||
+                        melijn.getVariables().odmLogChannelCache.get(guild.getIdLong()) != -1 ||
+                        melijn.getVariables().pmLogChannelCache.get(guild.getIdLong()) != -1 ||
+                        melijn.getVariables().fmLogChannelCache.get(guild.getIdLong()) != -1)) {
             JSONObject message = melijn.getMySQL().getMessageObject(event.getMessageIdLong());
             if (!message.keySet().contains("authorId"))
                 return;
@@ -432,10 +432,10 @@ public class Chat extends ListenerAdapter {
                         "```");
             }
 
-            if (melijn.getVariables().filteredMessageDeleteCause.keySet().contains(event.getMessageIdLong()) && guild.getTextChannelById(melijn.getVariables().fmLogChannelCache.getUnchecked(guild.getIdLong())) != null) {
+            if (melijn.getVariables().filteredMessageDeleteCause.keySet().contains(event.getMessageIdLong()) && guild.getTextChannelById(melijn.getVariables().fmLogChannelCache.get(guild.getIdLong())) != null) {
                 // FILTERED
                 eb.setColor(Color.ORANGE);
-                TextChannel fmLogChannel = guild.getTextChannelById(melijn.getVariables().fmLogChannelCache.getUnchecked(guild.getIdLong()));
+                TextChannel fmLogChannel = guild.getTextChannelById(melijn.getVariables().fmLogChannelCache.get(guild.getIdLong()));
                 if (!event.getGuild().getSelfMember().hasPermission(fmLogChannel, Permission.MESSAGE_WRITE)) {
                     melijn.getMySQL().removeChannel(guild.getIdLong(), ChannelType.FM_LOG);
                     return;
@@ -446,11 +446,11 @@ public class Chat extends ListenerAdapter {
                 eb.setFooter("Deleted by: " + bot.getName() + "#" + bot.getDiscriminator(), bot.getEffectiveAvatarUrl());
                 fmLogChannel.sendMessage(eb.build()).queue();
                 melijn.getVariables().filteredMessageDeleteCause.remove(event.getMessageIdLong());
-            } else if (melijn.getVariables().purgedMessageDeleter.containsKey(event.getMessageIdLong()) && guild.getTextChannelById(melijn.getVariables().pmLogChannelCache.getUnchecked(guild.getIdLong())) != null) {
+            } else if (melijn.getVariables().purgedMessageDeleter.containsKey(event.getMessageIdLong()) && guild.getTextChannelById(melijn.getVariables().pmLogChannelCache.get(guild.getIdLong())) != null) {
                 // PURGED
                 eb.setColor(Color.decode("#551A8B"));
                 User purger = event.getJDA().asBot().getShardManager().getUserById(melijn.getVariables().purgedMessageDeleter.get(event.getMessageIdLong()));
-                TextChannel pmLogChannel = guild.getTextChannelById(melijn.getVariables().pmLogChannelCache.getUnchecked(guild.getIdLong()));
+                TextChannel pmLogChannel = guild.getTextChannelById(melijn.getVariables().pmLogChannelCache.get(guild.getIdLong()));
                 if (!event.getGuild().getSelfMember().hasPermission(pmLogChannel, Permission.MESSAGE_WRITE)) {
                     melijn.getMySQL().removeChannel(guild.getIdLong(), ChannelType.PM_LOG);
                     return;
@@ -499,8 +499,8 @@ public class Chat extends ListenerAdapter {
 
     private void log(Guild guild, User author, EmbedBuilder eb, User deleter, JSONObject message, boolean split) {
         if (deleter == null) return;
-        TextChannel sdmChannel = guild.getTextChannelById(melijn.getVariables().sdmLogChannelCache.getUnchecked(guild.getIdLong()));
-        TextChannel odmChannel = guild.getTextChannelById(melijn.getVariables().odmLogChannelCache.getUnchecked(guild.getIdLong()));
+        TextChannel sdmChannel = guild.getTextChannelById(melijn.getVariables().sdmLogChannelCache.get(guild.getIdLong()));
+        TextChannel odmChannel = guild.getTextChannelById(melijn.getVariables().odmLogChannelCache.get(guild.getIdLong()));
         if (sdmChannel == null || !guild.getSelfMember().hasPermission(sdmChannel, Permission.MESSAGE_WRITE)) {
             melijn.getMySQL().removeChannel(guild.getIdLong(), ChannelType.SDM_LOG);
             melijn.getVariables().sdmLogChannelCache.invalidate(guild.getIdLong());

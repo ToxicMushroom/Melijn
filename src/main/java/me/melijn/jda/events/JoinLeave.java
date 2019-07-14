@@ -79,7 +79,7 @@ public class JoinLeave extends ListenerAdapter {
         Guild guild = event.getGuild();
         User joinedUser = event.getUser();
 
-        long threshold = melijn.getVariables().antiRaidThresholdChache.getUnchecked(guild.getIdLong());
+        long threshold = melijn.getVariables().antiRaidThresholdChache.get(guild.getIdLong());
         if (threshold >= 0) {
             List<Long> joinedUsers = guildJoinedUsers.getOrDefault(guild.getIdLong(), new ArrayList<>());
             joinedUsers.add(joinedUser.getIdLong());
@@ -107,16 +107,16 @@ public class JoinLeave extends ListenerAdapter {
             guild.leave().queue();
         if (melijn.getVariables().blockedUserIds.contains(guild.getOwnerIdLong())) return;
         if (guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES) &&
-                melijn.getVariables().verificationChannelsCache.getUnchecked(guild.getIdLong()) != -1) {
-            TextChannel verificationChannel = guild.getTextChannelById(melijn.getVariables().verificationChannelsCache.getUnchecked(guild.getIdLong()));
+                melijn.getVariables().verificationChannelsCache.get(guild.getIdLong()) != -1) {
+            TextChannel verificationChannel = guild.getTextChannelById(melijn.getVariables().verificationChannelsCache.get(guild.getIdLong()));
             if (verificationChannel != null) {
-                Map<Long, Long> newList = melijn.getVariables().unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong());
+                Map<Long, Long> newList = melijn.getVariables().unVerifiedGuildMembersCache.get(guild.getIdLong());
                 long nanoTime = System.nanoTime();
                 newList.put(joinedUser.getIdLong(), nanoTime);
                 melijn.getMySQL().addUnverifiedUser(guild.getIdLong(), joinedUser.getIdLong(), nanoTime);
                 melijn.getVariables().unVerifiedGuildMembersCache.put(guild.getIdLong(), newList);
 
-                Role role = guild.getRoleById(melijn.getVariables().unverifiedRoleCache.getUnchecked(guild.getIdLong()));
+                Role role = guild.getRoleById(melijn.getVariables().unverifiedRoleCache.get(guild.getIdLong()));
                 if (role != null && guild.getSelfMember().canInteract(role))
                     guild.getController().addSingleRoleToMember(event.getMember(), role).reason("unverified user").queue();
             } else {
@@ -142,13 +142,13 @@ public class JoinLeave extends ListenerAdapter {
         guildJoinedUsers.put(guild.getIdLong(), joinedUsers);
 
         if (melijn.getVariables().blockedUserIds.contains(guild.getOwnerIdLong())) return;
-        if (melijn.getVariables().unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong()).keySet().contains(leftUser.getIdLong())) {
+        if (melijn.getVariables().unVerifiedGuildMembersCache.get(guild.getIdLong()).keySet().contains(leftUser.getIdLong())) {
             melijn.getHelpers().removeUnverified(guild, leftUser);
         } else {
             melijn.getTaskManager().async(() -> {
-                String message = melijn.getVariables().leaveMessages.getUnchecked(guild.getIdLong());
+                String message = melijn.getVariables().leaveMessages.get(guild.getIdLong());
                 if (message.isEmpty()) return;
-                TextChannel leaveChannel = guild.getTextChannelById(melijn.getVariables().leaveChannelCache.getUnchecked(guild.getIdLong()));
+                TextChannel leaveChannel = guild.getTextChannelById(melijn.getVariables().leaveChannelCache.get(guild.getIdLong()));
                 if (leaveChannel == null || !guild.getSelfMember().hasPermission(leaveChannel, Permission.MESSAGE_WRITE))
                     return;
                 leaveChannel.sendMessage(melijn.getMessageHelper().variableFormat(message, guild, leftUser)).queue();

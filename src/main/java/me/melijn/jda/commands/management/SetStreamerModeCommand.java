@@ -24,15 +24,15 @@ public class SetStreamerModeCommand extends Command {
     protected void execute(CommandEvent event) {
         Guild guild = event.getGuild();
         if (event.hasPerm(event.getMember(), commandName, 1)) {
-            if (event.getVariables().musicChannelCache.getUnchecked(guild.getIdLong()) == -1) {
-                event.reply("You first have to set a MusicChannel.\n" + event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + "smc <channelId>");
+            if (event.getVariables().musicChannelCache.get(guild.getIdLong()) == -1) {
+                event.reply("You first have to set a MusicChannel.\n" + event.getVariables().prefixes.get(guild.getIdLong()) + "smc <channelId>");
                 return;
             }
-            VoiceChannel musicChannel = guild.getVoiceChannelById(event.getVariables().musicChannelCache.getUnchecked(guild.getIdLong()));
+            VoiceChannel musicChannel = guild.getVoiceChannelById(event.getVariables().musicChannelCache.get(guild.getIdLong()));
             if (musicChannel != null) {
                 String[] args = event.getArgs().split("\\s+");
                 if (args.length == 0 || args[0].isEmpty()) {
-                    String state = event.getVariables().streamerModeCache.getUnchecked(guild.getIdLong()) ? "enabled" : "disabled";
+                    String state = event.getVariables().streamerModeCache.get(guild.getIdLong()) ? "enabled" : "disabled";
                     event.reply("StreamerMode: **" + state + "**");
                 } else if (args.length == 1) {
                     switch (args[0]) {

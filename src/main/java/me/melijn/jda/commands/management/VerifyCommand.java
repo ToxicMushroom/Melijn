@@ -36,13 +36,13 @@ public class VerifyCommand extends Command {
                 return;
             }
             if (args[0].equals("all")) {
-                Map<Long, Long> unVerifiedUsers = event.getVariables().unVerifiedGuildMembersCache.getUnchecked(event.getGuild().getIdLong());
+                Map<Long, Long> unVerifiedUsers = event.getVariables().unVerifiedGuildMembersCache.get(event.getGuild().getIdLong());
                 verifyMembers(event, event.getGuild(), unVerifiedUsers);
                 event.reply("Successfully verified all unverified members");
             } else {
                 User user = event.getHelpers().getUserByArgsN(event, args[0]);
                 if (user != null && event.getGuild().getMember(user) != null) {
-                    Map<Long, Long> unVerifiedUsers = event.getVariables().unVerifiedGuildMembersCache.getUnchecked(event.getGuild().getIdLong());
+                    Map<Long, Long> unVerifiedUsers = event.getVariables().unVerifiedGuildMembersCache.get(event.getGuild().getIdLong());
                     if (unVerifiedUsers.keySet().contains(user.getIdLong())) {
                         event.getHelpers().verify(event.getGuild(), user);
                         event.reply("Successfully verified **" + user.getName() + "#" + user.getDiscriminator() + "**");

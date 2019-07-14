@@ -38,7 +38,7 @@ public class CooldownCommand extends Command {
             switch (args[0].toLowerCase()) {
                 case "set":
                     if (args.length != 3) {
-                        event.reply(event.getVariables().prefixes.getUnchecked(event.getGuildId()) + commandName + " set <command | category | all> <1-30000 (milliseconds)>");
+                        event.reply(event.getVariables().prefixes.get(event.getGuildId()) + commandName + " set <command | category | all> <1-30000 (milliseconds)>");
                         return;
                     }
                     List<Command> matches = event.getClient().getCommands().stream()
@@ -58,7 +58,7 @@ public class CooldownCommand extends Command {
                     }
                     event.async(() -> {
                         event.getMySQL().setCooldown(event.getGuildId(), matches, Integer.parseInt(args[2]));
-                        Map<Integer, Integer> map = vars.cooldowns.getUnchecked(event.getGuildId());
+                        Map<Integer, Integer> map = vars.cooldowns.get(event.getGuildId());
                         matches.forEach(command -> map.put(command.getId(), Integer.parseInt(args[2])));
                         vars.cooldowns.put(event.getGuildId(), map);
                     });
@@ -66,7 +66,7 @@ public class CooldownCommand extends Command {
                     break;
                 case "remove":
                     if (args.length != 2) {
-                        event.reply(event.getVariables().prefixes.getUnchecked(event.getGuildId()) + commandName + " remove <command | category | all>");
+                        event.reply(event.getVariables().prefixes.get(event.getGuildId()) + commandName + " remove <command | category | all>");
                         return;
                     }
                     matches = event.getClient().getCommands().stream()
@@ -82,14 +82,14 @@ public class CooldownCommand extends Command {
                     }
                     event.async(() -> {
                         event.getMySQL().removeCooldown(event.getGuildId(), matches);
-                        Map<Integer, Integer> map = vars.cooldowns.getUnchecked(event.getGuildId());
+                        Map<Integer, Integer> map = vars.cooldowns.get(event.getGuildId());
                         matches.forEach(cmd -> map.remove(cmd.getId()));
                         vars.cooldowns.put(event.getGuildId(), map);
                     });
                     event.reply("The cooldown of **" + args[1] + "** has been removed");
                     break;
                 case "list":
-                    Map<Integer, Integer> map = vars.cooldowns.getUnchecked(event.getGuildId());
+                    Map<Integer, Integer> map = vars.cooldowns.get(event.getGuildId());
                     StringBuilder sb = new StringBuilder();
                     AtomicInteger i = new AtomicInteger(1);
                     map.forEach((a, b) -> {

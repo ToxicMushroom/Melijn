@@ -82,13 +82,13 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
 
             String[] parts = null;
             String rawContent = event.getMessage().getContentRaw();
-            String prefix = event.getGuild() != null ? melijn.getVariables().prefixes.getUnchecked(event.getGuild().getIdLong()) : Melijn.PREFIX;
+            String prefix = event.getGuild() != null ? melijn.getVariables().prefixes.get(event.getGuild().getIdLong()) : Melijn.PREFIX;
             if (rawContent.toLowerCase().startsWith(prefix.toLowerCase()))
                 parts = Arrays.copyOf(rawContent.substring(prefix.length()).trim().split("\\s+", 2), 2);
             else if (rawContent.toLowerCase().startsWith(((nickname ? "<@!" : "<@") + event.getJDA().getSelfUser().getId() + ">")))
                 parts = Arrays.copyOf(rawContent.substring(((nickname ? "<@!" : "<@") + event.getJDA().getSelfUser().getId() + ">").length()).trim().split("\\s+", 2), 2);
             else {
-                for (String s : melijn.getVariables().privatePrefixes.getUnchecked(event.getAuthor().getIdLong())) {
+                for (String s : melijn.getVariables().privatePrefixes.get(event.getAuthor().getIdLong())) {
                     if (rawContent.toLowerCase().startsWith(s.toLowerCase()))
                         parts = Arrays.copyOf(rawContent.substring(s.length()).trim().split("\\s+", 2), 2);
                 }
@@ -118,12 +118,12 @@ public class CommandClientImpl extends ListenerAdapter implements CommandClient 
                     });
                 });
             }
-            if (event.getGuild() != null && event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE) && melijn.getVariables().serverHasCC.getUnchecked(event.getGuild().getIdLong())) {
+            if (event.getGuild() != null && event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE) && melijn.getVariables().serverHasCC.get(event.getGuild().getIdLong())) {
                 JSONArray ccs = melijn.getMySQL().getCustomCommands(event.getGuild().getIdLong());
                 String message = event.getMessage().getContentRaw();
                 String regex = "(" +
                         Pattern.quote(event.getJDA().getSelfUser().getAsMention()) + ")|(" +
-                        Pattern.quote(melijn.getVariables().prefixes.getUnchecked(event.getGuild().getIdLong())) + ")(\\s+)?";
+                        Pattern.quote(melijn.getVariables().prefixes.get(event.getGuild().getIdLong())) + ")(\\s+)?";
                 String justName = message.replaceFirst(regex, "");
                 for (int i = 0; i < ccs.length(); i++) {
                     JSONObject command = ccs.getJSONObject(i);

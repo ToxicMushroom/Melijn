@@ -46,7 +46,7 @@ public class TempMuteCommand extends Command {
                 event.reply("`" + args[1] + "` is not the right format.\n**Format:** (number)(*timeunit*) *timeunit* = s, m, h, d, M or y\n**Example:** 1__m__ (1 __minute__)");
                 return;
             }
-            Role muteRole = guild.getRoleById(event.getVariables().muteRoleCache.getUnchecked(guild.getIdLong()));
+            Role muteRole = guild.getRoleById(event.getVariables().muteRoleCache.get(guild.getIdLong()));
             if (muteRole == null) {
                 event.reply("**No mute role set!**\nCreating Role..");
                 createMuteRole(event, guild, role -> {

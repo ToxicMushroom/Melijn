@@ -27,9 +27,9 @@ public class SetSelfRoleChannelCommand extends Command {
         if (event.hasPerm(event.getMember(), commandName, 1)) {
             String[] args = event.getArgs().split("\\s+");
             if (args.length == 0 || args[0].isEmpty()) {
-                String s = event.getVariables().selfRolesChannels.getUnchecked(event.getGuild().getIdLong()) == -1 ?
+                String s = event.getVariables().selfRolesChannels.get(event.getGuild().getIdLong()) == -1 ?
                         "nothing" :
-                        "<#" + event.getVariables().selfRolesChannels.getUnchecked(event.getGuild().getIdLong()) + ">";
+                        "<#" + event.getVariables().selfRolesChannels.get(event.getGuild().getIdLong()) + ">";
                 event.reply("Current SelfRoleChannel: " + s);
             } else {
                 long channel = event.getHelpers().getTextChannelByArgsN(event, args[0]);

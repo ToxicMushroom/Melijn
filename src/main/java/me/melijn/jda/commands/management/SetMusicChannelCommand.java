@@ -24,7 +24,7 @@ public class SetMusicChannelCommand extends Command {
             Guild guild = event.getGuild();
             String[] args = event.getArgs().split("\\s+");
             if (args.length == 0 || args[0].isEmpty()) {
-                event.reply(event.getVariables().musicChannelCache.getUnchecked(guild.getIdLong()) == -1 ? "The MusicChannel is unset" : "MusicChannel: <#" + event.getVariables().musicChannelCache.getUnchecked(guild.getIdLong()) + ">");
+                event.reply(event.getVariables().musicChannelCache.get(guild.getIdLong()) == -1 ? "The MusicChannel is unset" : "MusicChannel: <#" + event.getVariables().musicChannelCache.get(guild.getIdLong()) + ">");
             } else {
                 long channelId = event.getHelpers().getVoiceChannelByArgsN(event, args[0]);
                 if (channelId == -1) {

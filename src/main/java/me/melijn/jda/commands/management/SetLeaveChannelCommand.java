@@ -21,7 +21,7 @@ public class SetLeaveChannelCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
-            long leaveChannelId = event.getVariables().leaveChannelCache.getUnchecked(guild.getIdLong());
+            long leaveChannelId = event.getVariables().leaveChannelCache.get(guild.getIdLong());
             String[] args = event.getArgs().split("\\s+");
             if (args.length > 0 && !args[0].isEmpty()) {
                 long id = event.getHelpers().getTextChannelByArgsN(event, args[0]);
@@ -32,7 +32,7 @@ public class SetLeaveChannelCommand extends Command {
                         event.getMySQL().removeChannel(guild.getIdLong(), ChannelType.LEAVE);
                         event.getVariables().leaveChannelCache.invalidate(guild.getIdLong());
                     });
-                    long oldChannel = event.getVariables().leaveChannelCache.getUnchecked(guild.getIdLong());
+                    long oldChannel = event.getVariables().leaveChannelCache.get(guild.getIdLong());
                     event.reply("The LeaveChannel has been changed from " +
                             (oldChannel == -1L ? "nothing" : "<#" + oldChannel + ">")
                             + " to nothing by **" + event.getFullAuthorName() + "**"
@@ -42,7 +42,7 @@ public class SetLeaveChannelCommand extends Command {
                         event.getMySQL().setChannel(guild.getIdLong(), id, ChannelType.LEAVE);
                         event.getVariables().leaveChannelCache.put(guild.getIdLong(), id);
 
-                        if (event.getVariables().leaveMessages.getUnchecked(guild.getIdLong()).isEmpty()) {
+                        if (event.getVariables().leaveMessages.get(guild.getIdLong()).isEmpty()) {
                             event.getMySQL().setMessage(guild.getIdLong(), "**%USERNAME%** left us :C", MessageType.LEAVE);
                             event.getVariables().leaveMessages.put(guild.getIdLong(), "**%USERNAME%** left us :C");
                             event.reply("I've set the default leave message :beginner:");

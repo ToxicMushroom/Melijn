@@ -47,7 +47,7 @@ public class CustomCommandCommand extends Command {
 
             if (args[0].equalsIgnoreCase("add")) {
                 if (args.length < 3) {
-                    event.reply(event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " add <name> <message>");
+                    event.reply(event.getVariables().prefixes.get(guild.getIdLong()) + commandName + " add <name> <message>");
                     return;
                 }
 
@@ -63,7 +63,7 @@ public class CustomCommandCommand extends Command {
 
             } else if (args[0].equalsIgnoreCase("remove")) {
                 if (args.length < 2) {
-                    event.reply(event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " remove <name> [message]");
+                    event.reply(event.getVariables().prefixes.get(guild.getIdLong()) + commandName + " remove <name> [message]");
                     return;
                 }
 
@@ -90,7 +90,7 @@ public class CustomCommandCommand extends Command {
 
             } else if (args[0].equalsIgnoreCase("update")) {
                 if (args.length < 3) {
-                    event.reply(event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " update <name> <message>");
+                    event.reply(event.getVariables().prefixes.get(guild.getIdLong()) + commandName + " update <name> <message>");
                     return;
                 }
 
@@ -102,7 +102,7 @@ public class CustomCommandCommand extends Command {
 
             } else if (args[0].equalsIgnoreCase("info")) {
                 if (args.length < 2) {
-                    event.reply(event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " info <name>");
+                    event.reply(event.getVariables().prefixes.get(guild.getIdLong()) + commandName + " info <name>");
                     return;
                 }
                 if (cantBeName(event, args[1])) return;
@@ -126,7 +126,7 @@ public class CustomCommandCommand extends Command {
 
             } else if (args[0].equalsIgnoreCase("prefix")) {
                 if (args.length < 2) {
-                    event.reply(event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " prefix <name> [on | off]");
+                    event.reply(event.getVariables().prefixes.get(guild.getIdLong()) + commandName + " prefix <name> [on | off]");
                     return;
                 }
 
@@ -145,7 +145,7 @@ public class CustomCommandCommand extends Command {
 
             } else if (args[0].equalsIgnoreCase("description")) {
                 if (args.length < 2) {
-                    event.reply(event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " description <name> [text]");
+                    event.reply(event.getVariables().prefixes.get(guild.getIdLong()) + commandName + " description <name> [text]");
                     return;
                 }
 
@@ -168,7 +168,7 @@ public class CustomCommandCommand extends Command {
 
             } else if (args[0].equalsIgnoreCase("aliases")) {
                 if (args.length < 3) {
-                    event.reply(event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " aliases <name> <add | remove | list> [alias]");
+                    event.reply(event.getVariables().prefixes.get(guild.getIdLong()) + commandName + " aliases <name> <add | remove | list> [alias]");
                     return;
                 }
 
@@ -200,13 +200,13 @@ public class CustomCommandCommand extends Command {
                     event.getMySQL().updateCustomCommandAliases(guild.getIdLong(), args[1], aliases);
                     event.reply("Successfully removed this alias from the command");
                 } else {
-                    event.reply(event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " aliases <name> <add | remove | list> [alias]");
+                    event.reply(event.getVariables().prefixes.get(guild.getIdLong()) + commandName + " aliases <name> <add | remove | list> [alias]");
                 }
 
 
             } else if (args[0].equalsIgnoreCase("attachment")) {
                 if (args.length < 2) {
-                    event.reply(event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " attachment <name> [file]");
+                    event.reply(event.getVariables().prefixes.get(guild.getIdLong()) + commandName + " attachment <name> [file]");
                     return;
                 }
 

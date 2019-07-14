@@ -28,7 +28,7 @@ public class HelpCommand extends Command {
             if (event.getGuild() == null) {
                 event.reply("https://melijn.com/commands or >help list");
             } else {
-                event.reply("https://melijn.com/server/" + event.getGuildId() + "/commands or " + event.getVariables().prefixes.getUnchecked(event.getGuildId()) + "help list");
+                event.reply("https://melijn.com/server/" + event.getGuildId() + "/commands or " + event.getVariables().prefixes.get(event.getGuildId()) + "help list");
             }
         } else {
             if (args[0].equalsIgnoreCase("list")) {

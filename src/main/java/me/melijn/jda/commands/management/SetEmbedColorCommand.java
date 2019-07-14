@@ -32,7 +32,7 @@ public class SetEmbedColorCommand extends Command {
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
             if (args.length == 0) {
-                event.reply("EmbedColor: " + new Color(event.getVariables().embedColorCache.getUnchecked(guild.getIdLong()), false));
+                event.reply("EmbedColor: " + new Color(event.getVariables().embedColorCache.get(guild.getIdLong()), false));
             } else if (args.length == 1 && args[0].matches("#?([0-9a-fA-F]{3}){1,2}")) {
                 int color = hexToIntColor(args[0].replaceFirst("#", ""));
 

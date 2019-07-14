@@ -24,7 +24,7 @@ public class SetVerificationCodeCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
-            if (guild.getTextChannelById(event.getVariables().verificationChannelsCache.getUnchecked(guild.getIdLong())) == null) {
+            if (guild.getTextChannelById(event.getVariables().verificationChannelsCache.get(guild.getIdLong())) == null) {
                 event.reply("" +
                         "You first have to setup a Verification TextChannel\n" +
                         "You'll probably want to follow this guide: https://melijn.com/guides/guide-7"
@@ -47,9 +47,9 @@ public class SetVerificationCodeCommand extends Command {
                     event.reply("The VerificationCode has been set to " + args[0] + " by **" + event.getFullAuthorName() + "**");
                 }
             } else {
-                String value = (event.getVariables().verificationCodeCache.getUnchecked(guild.getIdLong()) == null ?
+                String value = (event.getVariables().verificationCodeCache.get(guild.getIdLong()) == null ?
                         "unset" :
-                        event.getVariables().verificationCodeCache.getUnchecked(guild.getIdLong()));
+                        event.getVariables().verificationCodeCache.get(guild.getIdLong()));
                 event.reply("The VerificationCode is **" + value + "**");
             }
         } else {

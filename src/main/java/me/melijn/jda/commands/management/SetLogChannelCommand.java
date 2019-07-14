@@ -1,11 +1,12 @@
 package me.melijn.jda.commands.management;
 
-import com.google.common.cache.LoadingCache;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import me.melijn.jda.blub.*;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.TextChannel;
 
 import static me.melijn.jda.Melijn.PREFIX;
+
 
 public class SetLogChannelCommand extends Command {
 
@@ -166,18 +167,18 @@ public class SetLogChannelCommand extends Command {
                 switch (args[0].toLowerCase()) {
                     case "all":
                         StringBuilder builder = new StringBuilder();
-                        TextChannel banChannel = guild.getTextChannelById(event.getVariables().banLogChannelCache.getUnchecked(guild.getIdLong()));
-                        TextChannel muteChannel = guild.getTextChannelById(event.getVariables().muteLogChannelCache.getUnchecked(guild.getIdLong()));
-                        TextChannel kickChannel = guild.getTextChannelById(event.getVariables().kickLogChannelCache.getUnchecked(guild.getIdLong()));
-                        TextChannel warnChannel = guild.getTextChannelById(event.getVariables().warnLogChannelCache.getUnchecked(guild.getIdLong()));
-                        TextChannel sdmChannel = guild.getTextChannelById(event.getVariables().sdmLogChannelCache.getUnchecked(guild.getIdLong()));
-                        TextChannel odmChannel = guild.getTextChannelById(event.getVariables().odmLogChannelCache.getUnchecked(guild.getIdLong()));
-                        TextChannel pmChannel = guild.getTextChannelById(event.getVariables().pmLogChannelCache.getUnchecked(guild.getIdLong()));
-                        TextChannel fmChannel = guild.getTextChannelById(event.getVariables().fmLogChannelCache.getUnchecked(guild.getIdLong()));
-                        TextChannel musicChannel = guild.getTextChannelById(event.getVariables().musicLogChannelCache.getUnchecked(guild.getIdLong()));
-                        TextChannel emChannel = guild.getTextChannelById(event.getVariables().emLogChannelCache.getUnchecked(guild.getIdLong()));
-                        TextChannel reactionChannel = guild.getTextChannelById(event.getVariables().reactionLogChannelCache.getUnchecked(guild.getIdLong()));
-                        TextChannel attachmentChannel = guild.getTextChannelById(event.getVariables().attachmentLogChannelCache.getUnchecked(guild.getIdLong()));
+                        TextChannel banChannel = guild.getTextChannelById(event.getVariables().banLogChannelCache.get(guild.getIdLong()));
+                        TextChannel muteChannel = guild.getTextChannelById(event.getVariables().muteLogChannelCache.get(guild.getIdLong()));
+                        TextChannel kickChannel = guild.getTextChannelById(event.getVariables().kickLogChannelCache.get(guild.getIdLong()));
+                        TextChannel warnChannel = guild.getTextChannelById(event.getVariables().warnLogChannelCache.get(guild.getIdLong()));
+                        TextChannel sdmChannel = guild.getTextChannelById(event.getVariables().sdmLogChannelCache.get(guild.getIdLong()));
+                        TextChannel odmChannel = guild.getTextChannelById(event.getVariables().odmLogChannelCache.get(guild.getIdLong()));
+                        TextChannel pmChannel = guild.getTextChannelById(event.getVariables().pmLogChannelCache.get(guild.getIdLong()));
+                        TextChannel fmChannel = guild.getTextChannelById(event.getVariables().fmLogChannelCache.get(guild.getIdLong()));
+                        TextChannel musicChannel = guild.getTextChannelById(event.getVariables().musicLogChannelCache.get(guild.getIdLong()));
+                        TextChannel emChannel = guild.getTextChannelById(event.getVariables().emLogChannelCache.get(guild.getIdLong()));
+                        TextChannel reactionChannel = guild.getTextChannelById(event.getVariables().reactionLogChannelCache.get(guild.getIdLong()));
+                        TextChannel attachmentChannel = guild.getTextChannelById(event.getVariables().attachmentLogChannelCache.get(guild.getIdLong()));
 
                         builder.append("**Log Channels :clipboard:**\n")
                                 .append("  Bans: ").append(banChannel == null ? "unset" : banChannel.getAsMention()).append("\n")
@@ -197,44 +198,44 @@ public class SetLogChannelCommand extends Command {
 
                     case "ban":
                     case "bans":
-                        banChannel = guild.getTextChannelById(event.getVariables().banLogChannelCache.getUnchecked(guild.getIdLong()));
+                        banChannel = guild.getTextChannelById(event.getVariables().banLogChannelCache.get(guild.getIdLong()));
                         event.reply("**Ban Log \uD83D\uDD28**\n" + (banChannel == null ? "unset" : banChannel.getAsMention()));
                         break;
 
                     case "mute":
                     case "mutes":
-                        muteChannel = guild.getTextChannelById(event.getVariables().muteLogChannelCache.getUnchecked(guild.getIdLong()));
+                        muteChannel = guild.getTextChannelById(event.getVariables().muteLogChannelCache.get(guild.getIdLong()));
                         event.reply("**Mute Log \uD83E\uDD10**\n" + (muteChannel == null ? "unset" : muteChannel.getAsMention()));
                         break;
 
                     case "kick":
                     case "kicks":
-                        kickChannel = guild.getTextChannelById(event.getVariables().kickLogChannelCache.getUnchecked(guild.getIdLong()));
+                        kickChannel = guild.getTextChannelById(event.getVariables().kickLogChannelCache.get(guild.getIdLong()));
                         event.reply("**Kick Log \uD83E\uDD1C\uD83D\uDCA2**\n" + (kickChannel == null ? "unset" : kickChannel.getAsMention()));
                         break;
 
                     case "warn":
                     case "warns":
-                        warnChannel = guild.getTextChannelById(event.getVariables().warnLogChannelCache.getUnchecked(guild.getIdLong()));
+                        warnChannel = guild.getTextChannelById(event.getVariables().warnLogChannelCache.get(guild.getIdLong()));
                         event.reply("**Warn Log \u203C**\n" + (warnChannel == null ? "unset" : warnChannel.getAsMention()));
                         break;
 
                     case "music":
-                        musicChannel = guild.getTextChannelById(event.getVariables().musicLogChannelCache.getUnchecked(guild.getIdLong()));
+                        musicChannel = guild.getTextChannelById(event.getVariables().musicLogChannelCache.get(guild.getIdLong()));
                         event.reply("**Music Log \uD83C\uDFB5**\n" + (musicChannel == null ? "unset" : musicChannel.getAsMention()));
                         break;
 
                     case "sdm":
                     case "s-d-m":
                     case "self-deleted-messages":
-                        sdmChannel = guild.getTextChannelById(event.getVariables().sdmLogChannelCache.getUnchecked(guild.getIdLong()));
+                        sdmChannel = guild.getTextChannelById(event.getVariables().sdmLogChannelCache.get(guild.getIdLong()));
                         event.reply("**Self Deleted Log \uD83D\uDC64**\n" + (sdmChannel == null ? "unset" : sdmChannel.getAsMention()));
                         break;
 
                     case "odm":
                     case "o-d-m":
                     case "other-deleted-messages":
-                        odmChannel = guild.getTextChannelById(event.getVariables().odmLogChannelCache.getUnchecked(guild.getIdLong()));
+                        odmChannel = guild.getTextChannelById(event.getVariables().odmLogChannelCache.get(guild.getIdLong()));
                         event.reply("**Other Deleted Log \uD83D\uDC65**\n" +
                                 (odmChannel == null ? "unset" : odmChannel.getAsMention()));
 
@@ -242,30 +243,30 @@ public class SetLogChannelCommand extends Command {
                     case "pm":
                     case "p-m":
                     case "purged-messages":
-                        pmChannel = guild.getTextChannelById(event.getVariables().pmLogChannelCache.getUnchecked(guild.getIdLong()));
+                        pmChannel = guild.getTextChannelById(event.getVariables().pmLogChannelCache.get(guild.getIdLong()));
                         event.reply("**Purge Log \u267B**\n" + (pmChannel == null ? "unset" : pmChannel.getAsMention()));
 
                         break;
                     case "fm":
                     case "f-m":
                     case "filtered-messages":
-                        fmChannel = guild.getTextChannelById(event.getVariables().fmLogChannelCache.getUnchecked(guild.getIdLong()));
+                        fmChannel = guild.getTextChannelById(event.getVariables().fmLogChannelCache.get(guild.getIdLong()));
                         event.reply("**Filter Log \uD83D\uDEB3**\n" + (fmChannel == null ? "unset" : fmChannel.getAsMention()));
                         break;
                     case "em":
                     case "e-m":
                     case "edited-messages":
-                        emChannel = guild.getTextChannelById(event.getVariables().emLogChannelCache.getUnchecked(guild.getIdLong()));
+                        emChannel = guild.getTextChannelById(event.getVariables().emLogChannelCache.get(guild.getIdLong()));
                         event.reply("**Filter Log \uD83D\uDEB3**\n" + (emChannel == null ? "unset" : emChannel.getAsMention()));
                         break;
                     case "reaction":
                     case "reactions":
-                        reactionChannel = guild.getTextChannelById(event.getVariables().reactionLogChannelCache.getUnchecked(guild.getIdLong()));
+                        reactionChannel = guild.getTextChannelById(event.getVariables().reactionLogChannelCache.get(guild.getIdLong()));
                         event.reply("**Reaction Log \uD83D\uDC4C**\n" + (reactionChannel == null ? "unset" : reactionChannel.getAsMention()));
                         break;
                     case "attachment":
                     case "attachments":
-                        attachmentChannel = guild.getTextChannelById(event.getVariables().attachmentLogChannelCache.getUnchecked(guild.getIdLong()));
+                        attachmentChannel = guild.getTextChannelById(event.getVariables().attachmentLogChannelCache.get(guild.getIdLong()));
                         event.reply("**Reaction Log \uD83D\uDC4C**\n" + (attachmentChannel == null ? "unset" : attachmentChannel.getAsMention()));
                         break;
                     default:
@@ -285,13 +286,13 @@ public class SetLogChannelCommand extends Command {
         if (channelId == -1) {
             event.sendUsage(this, event);
         } else if (channelId == 0L) {
-            event.reply(chosenType.toString() + "_CHANNEL has been changed from " + (toUse.getUnchecked(guild.getIdLong()) != -1 ? "<#" + toUse.getUnchecked(guild.getIdLong()) + ">" : "nothing") + " to nothing by **" + event.getFullAuthorName() + "**");
+            event.reply(chosenType.toString() + "_CHANNEL has been changed from " + (toUse.get(guild.getIdLong()) != -1 ? "<#" + toUse.get(guild.getIdLong()) + ">" : "nothing") + " to nothing by **" + event.getFullAuthorName() + "**");
             event.async(() -> {
                 event.getMySQL().removeChannel(guild.getIdLong(), chosenType);
                 toUse.invalidate(guild.getIdLong());
             });
         } else {
-            event.reply(chosenType.toString() + "_CHANNEL has been changed from " + (toUse.getUnchecked(guild.getIdLong()) != -1 ? "<#" + toUse.getUnchecked(guild.getIdLong()) + ">" : "nothing") + " to <#" + channelId + "> by **" + event.getFullAuthorName() + "**");
+            event.reply(chosenType.toString() + "_CHANNEL has been changed from " + (toUse.get(guild.getIdLong()) != -1 ? "<#" + toUse.get(guild.getIdLong()) + ">" : "nothing") + " to <#" + channelId + "> by **" + event.getFullAuthorName() + "**");
             event.async(() -> {
                 event.getMySQL().setChannel(guild.getIdLong(), channelId, chosenType);
                 toUse.put(guild.getIdLong(), channelId);

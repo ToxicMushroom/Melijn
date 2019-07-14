@@ -24,7 +24,7 @@ public class SetMuteRoleCommand extends Command {
         if (event.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
             String[] args = event.getArgs().split("\\s+");
-            long role = event.getVariables().muteRoleCache.getUnchecked(guild.getIdLong());
+            long role = event.getVariables().muteRoleCache.get(guild.getIdLong());
             if (event.getArgs().isEmpty()) {
                 if (role == -1 || guild.getRoleById(role) == null)
                     event.reply("Current MuteRole is unset");

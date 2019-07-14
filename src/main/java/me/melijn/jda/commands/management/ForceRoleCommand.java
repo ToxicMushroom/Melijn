@@ -46,7 +46,7 @@ public class ForceRoleCommand extends Command {
             }
             if (args[0].equalsIgnoreCase("add")) {
                 if (args.length < 3) {
-                    event.reply(event.getVariables().prefixes.getUnchecked(event.getGuildId()) + " add <user> <roles>");
+                    event.reply(event.getVariables().prefixes.get(event.getGuildId()) + " add <user> <roles>");
                     return;
                 }
                 Role role = event.getHelpers().getRoleByArgs(event, args[2]);
@@ -81,7 +81,7 @@ public class ForceRoleCommand extends Command {
 
             } else if (args[0].equalsIgnoreCase("remove")) {
                 if (args.length < 3) {
-                    event.reply(event.getVariables().prefixes.getUnchecked(event.getGuildId()) + " remove <user> <roles>");
+                    event.reply(event.getVariables().prefixes.get(event.getGuildId()) + " remove <user> <roles>");
                     return;
                 }
 

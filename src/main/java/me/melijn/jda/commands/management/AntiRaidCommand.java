@@ -35,7 +35,7 @@ public class AntiRaidCommand extends Command {
                     event.getVariables().antiRaidThresholdChache.put(event.getGuildId(), threshold);
                     event.reply("The raid detection threshold has been set to **" + threshold + "**");
                 } else {
-                    long threshold = event.getVariables().antiRaidThresholdChache.getUnchecked(event.getGuildId());
+                    long threshold = event.getVariables().antiRaidThresholdChache.get(event.getGuildId());
                     event.reply("Current max users per hour: **" + (threshold == -1 ? "infinite" : threshold) + "**");
                 }
             } else {

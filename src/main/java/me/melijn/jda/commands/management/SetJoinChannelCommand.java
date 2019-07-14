@@ -22,7 +22,7 @@ public class SetJoinChannelCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
-            long joinChannelId = event.getVariables().joinChannelCache.getUnchecked(guild.getIdLong());
+            long joinChannelId = event.getVariables().joinChannelCache.get(guild.getIdLong());
             String[] args = event.getArgs().split("\\s+");
             if (args.length > 0 && !args[0].isEmpty()) {
                 long id = event.getHelpers().getTextChannelByArgsN(event, args[0]);
@@ -33,7 +33,7 @@ public class SetJoinChannelCommand extends Command {
                         event.getMySQL().removeChannel(guild.getIdLong(), ChannelType.JOIN);
                         event.getVariables().joinChannelCache.invalidate(guild.getIdLong());
                     });
-                    long oldChannel = event.getVariables().joinChannelCache.getUnchecked(guild.getIdLong());
+                    long oldChannel = event.getVariables().joinChannelCache.get(guild.getIdLong());
                     event.reply("The JoinChannel has been changed from " +
                             (oldChannel == -1L ? "nothing" : "<#" + oldChannel + ">")
                             + " to nothing by **" + event.getFullAuthorName() + "**"
@@ -43,7 +43,7 @@ public class SetJoinChannelCommand extends Command {
                         event.getMySQL().setChannel(guild.getIdLong(), id, ChannelType.JOIN);
                         event.getVariables().joinChannelCache.put(guild.getIdLong(), id);
 
-                        if (event.getVariables().joinMessages.getUnchecked(guild.getIdLong()).isEmpty()) {
+                        if (event.getVariables().joinMessages.get(guild.getIdLong()).isEmpty()) {
                             event.getMySQL().setMessage(guild.getIdLong(), "Welcome **%USER%** to our awesome discord server :D", MessageType.JOIN);
                             event.getVariables().joinMessages.put(guild.getIdLong(), "Welcome %USER% to the %GUILDNAME% discord server");
                             event.reply("I've set the default join message :beginner:");

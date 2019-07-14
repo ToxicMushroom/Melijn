@@ -40,7 +40,7 @@ public class Channels extends ListenerAdapter {
             long guildId = event.getGuild().getIdLong();
             long channelId = event.getChannel().getIdLong();
 
-            if (channelId == melijn.getVariables().musicChannelCache.getUnchecked(guildId)) {
+            if (channelId == melijn.getVariables().musicChannelCache.get(guildId)) {
                 melijn.getMySQL().removeChannel(guildId, ChannelType.MUSIC);
                 melijn.getVariables().musicChannelCache.invalidate(guildId);
             }
@@ -86,15 +86,15 @@ public class Channels extends ListenerAdapter {
                     melijn.getVariables().toLeaveTimeMap.put(guildId, System.currentTimeMillis() + 60_000);
                 }
             }
-        } else if (melijn.getVariables().streamerModeCache.getUnchecked(guildId) &&
+        } else if (melijn.getVariables().streamerModeCache.get(guildId) &&
                 !lava.isConnected(guildId) &&
-                event.getChannelJoined().getIdLong() == melijn.getVariables().musicChannelCache.getUnchecked(guildId)) {
-            lava.openConnection(guild.getVoiceChannelById(melijn.getVariables().musicChannelCache.getUnchecked(guildId)));
+                event.getChannelJoined().getIdLong() == melijn.getVariables().musicChannelCache.get(guildId)) {
+            lava.openConnection(guild.getVoiceChannelById(melijn.getVariables().musicChannelCache.get(guildId)));
             tryPlayStreamUrl(guild.getIdLong());
             melijn.getTaskManager().async(() -> {
                 //Hacky way to unmute bot in afk channel
                 if (guild.getAfkChannel() != null && (
-                        guild.getSelfMember().hasPermission(guild.getVoiceChannelById(melijn.getVariables().musicChannelCache.getUnchecked(guildId)), Permission.VOICE_MUTE_OTHERS) &&
+                        guild.getSelfMember().hasPermission(guild.getVoiceChannelById(melijn.getVariables().musicChannelCache.get(guildId)), Permission.VOICE_MUTE_OTHERS) &&
                                 guild.getSelfMember().getVoiceState().getChannel() == null ||
                                 guild.getAfkChannel().getIdLong() == guild.getSelfMember().getVoiceState().getChannel().getIdLong())) {
                     guild.getController().setMute(guild.getSelfMember(), true).queue(done ->
@@ -112,14 +112,14 @@ public class Channels extends ListenerAdapter {
         Lava lava = melijn.getLava();
         if (melijn.getVariables().blockedUserIds.contains(guild.getOwnerIdLong())) return;
         long guildId = guild.getIdLong();
-        if (melijn.getVariables().streamerModeCache.getUnchecked(guildId) &&
+        if (melijn.getVariables().streamerModeCache.get(guildId) &&
                 !lava.isConnected(guildId) &&
-                event.getChannelJoined().getIdLong() == (melijn.getVariables().musicChannelCache.getUnchecked(guildId))) {
-            lava.openConnection(guild.getVoiceChannelById(melijn.getVariables().musicChannelCache.getUnchecked(guildId)));
+                event.getChannelJoined().getIdLong() == (melijn.getVariables().musicChannelCache.get(guildId))) {
+            lava.openConnection(guild.getVoiceChannelById(melijn.getVariables().musicChannelCache.get(guildId)));
             tryPlayStreamUrl(guild.getIdLong());
             melijn.getTaskManager().async(() -> {
                 if (guild.getAfkChannel() != null &&
-                        (guild.getSelfMember().hasPermission(guild.getVoiceChannelById(melijn.getVariables().musicChannelCache.getUnchecked(guildId)), Permission.VOICE_MUTE_OTHERS) &&
+                        (guild.getSelfMember().hasPermission(guild.getVoiceChannelById(melijn.getVariables().musicChannelCache.get(guildId)), Permission.VOICE_MUTE_OTHERS) &&
                                 guild.getSelfMember().getVoiceState().inVoiceChannel() && (guild.getAfkChannel().getIdLong() == guild.getSelfMember().getVoiceState().getChannel().getIdLong()))) {
                     guild.getController().setMute(guild.getSelfMember(), true).queue(done -> guild.getController().setMute(guild.getSelfMember(), false).queue());
                 }

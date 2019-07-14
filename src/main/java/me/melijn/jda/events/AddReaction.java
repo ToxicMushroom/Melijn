@@ -160,7 +160,7 @@ public class AddReaction extends ListenerAdapter {
                 }
         }
         if (guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES) &&
-                melijn.getVariables().selfRolesChannels.getUnchecked(guild.getIdLong()) == event.getChannel().getIdLong())
+                melijn.getVariables().selfRolesChannels.get(guild.getIdLong()) == event.getChannel().getIdLong())
             melijn.getTaskManager().async(() -> {
                 Map<Long, String> roles = melijn.getMySQL().getSelfRoles(guild.getIdLong());
                 roles.forEach((key, value) -> {
@@ -173,8 +173,8 @@ public class AddReaction extends ListenerAdapter {
                         guild.getController().addSingleRoleToMember(event.getMember(), role).reason("SelfRole added").queue();
                 });
             });
-        if (melijn.getVariables().reactionLogChannelCache.getUnchecked(guild.getIdLong()) != -1L) {
-            TextChannel textChannel = guild.getTextChannelById(melijn.getVariables().reactionLogChannelCache.getUnchecked(guild.getIdLong()));
+        if (melijn.getVariables().reactionLogChannelCache.get(guild.getIdLong()) != -1L) {
+            TextChannel textChannel = guild.getTextChannelById(melijn.getVariables().reactionLogChannelCache.get(guild.getIdLong()));
             User user = event.getUser();
             MessageReaction.ReactionEmote reactionEmote = event.getReactionEmote();
             if (textChannel != null && guild.getSelfMember().hasPermission(textChannel, Permission.MESSAGE_WRITE)) {
@@ -201,7 +201,7 @@ public class AddReaction extends ListenerAdapter {
     public void onGuildMessageReactionRemove(GuildMessageReactionRemoveEvent event) {
         Guild guild = event.getGuild();
         if (guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES) &&
-                melijn.getVariables().selfRolesChannels.getUnchecked(guild.getIdLong()) == event.getChannel().getIdLong())
+                melijn.getVariables().selfRolesChannels.get(guild.getIdLong()) == event.getChannel().getIdLong())
             melijn.getTaskManager().async(() -> {
                 Map<Long, String> roles = melijn.getMySQL().getSelfRoles(guild.getIdLong());
                 roles.forEach((key, value) -> {

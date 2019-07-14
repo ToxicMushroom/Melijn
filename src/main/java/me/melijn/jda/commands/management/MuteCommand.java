@@ -32,6 +32,7 @@ public class MuteCommand extends Command {
     @Override
     protected void execute(CommandEvent event) {
         if (event.hasPerm(event.getMember(), commandName, 1)) {
+
             String[] args = event.getArgs().split("\\s+");
             Guild guild = event.getGuild();
             if (args.length > 0 && !args[0].isEmpty()) {
@@ -40,7 +41,7 @@ public class MuteCommand extends Command {
                     event.reply("Unknown member");
                     return;
                 }
-                Role muteRole = guild.getRoleById(event.getVariables().muteRoleCache.getUnchecked(guild.getIdLong()));
+                Role muteRole = guild.getRoleById(event.getVariables().muteRoleCache.get(guild.getIdLong()));
                 if (muteRole == null) {
                     event.reply("**No mute role set!**\nCreating Role..");
                     TempMuteCommand.createMuteRole(event, guild, newMuteRole -> {

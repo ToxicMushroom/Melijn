@@ -35,7 +35,7 @@ public class SelfRoleCommand extends Command {
                 event.sendUsage(this, event);
                 return;
             }
-            Map<Long, String> cache = event.getVariables().selfRoles.getUnchecked(guild.getIdLong());
+            Map<Long, String> cache = event.getVariables().selfRoles.get(guild.getIdLong());
             switch (args[0].toLowerCase()) {
                 case "add":
                     StringBuilder builder = new StringBuilder();
@@ -57,12 +57,12 @@ public class SelfRoleCommand extends Command {
                         }
                     });
                     if (args.length < 3 || (event.getMessage().getEmotes().size() < 1 && !builder.toString().matches("\\\\u.*"))) {
-                        event.reply(event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " add <role> <emote | emoji>");
+                        event.reply(event.getVariables().prefixes.get(guild.getIdLong()) + commandName + " add <role> <emote | emoji>");
                         return;
                     }
                     Role roleAdded = event.getHelpers().getRoleByArgs(event, args[1]);
                     if (roleAdded == null || roleAdded.getIdLong() == guild.getIdLong()) {
-                        event.reply(event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " add <role> <emote | emoji>");
+                        event.reply(event.getVariables().prefixes.get(guild.getIdLong()) + commandName + " add <role> <emote | emoji>");
                         return;
                     }
                     String emote = event.getMessage().getEmotes().size() > 0 ? event.getMessage().getEmotes().get(0).getId() : args[2];
@@ -82,12 +82,12 @@ public class SelfRoleCommand extends Command {
                     break;
                 case "remove":
                     if (args.length < 2) {
-                        event.reply(event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " remove <role> [emote | emoji]");
+                        event.reply(event.getVariables().prefixes.get(guild.getIdLong()) + commandName + " remove <role> [emote | emoji]");
                         return;
                     }
                     Role roleRemoved = event.getHelpers().getRoleByArgs(event, args[1]);
                     if (roleRemoved == null || roleRemoved.getIdLong() == guild.getIdLong()) {
-                        event.reply(event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " remove <role> [emote | emoji]");
+                        event.reply(event.getVariables().prefixes.get(guild.getIdLong()) + commandName + " remove <role> [emote | emoji]");
                         return;
                     }
                     String emote2 = event.getMessage().getEmotes().size() > 0 ? event.getMessage().getEmotes().get(0).getId() : (args.length < 3 ? "" : args[2]);
@@ -112,7 +112,7 @@ public class SelfRoleCommand extends Command {
                     break;
                 case "list":
                     StringBuilder sb = new StringBuilder("**SelfRoles**\n```INI");
-                    Map<Long, String> rolesIds = event.getVariables().selfRoles.getUnchecked(guild.getIdLong());
+                    Map<Long, String> rolesIds = event.getVariables().selfRoles.get(guild.getIdLong());
 
                     AtomicInteger i = new AtomicInteger();
                     rolesIds.forEach((id, mEmote) -> {

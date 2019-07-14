@@ -25,14 +25,14 @@ public class SetVerificationChannelCommand extends Command {
     protected void execute(CommandEvent event) {
         if (event.hasPerm(event.getMember(), commandName, 1)) {
             Guild guild = event.getGuild();
-            long verificationChannelId = event.getVariables().verificationChannelsCache.getUnchecked(guild.getIdLong());
+            long verificationChannelId = event.getVariables().verificationChannelsCache.get(guild.getIdLong());
             String[] args = event.getArgs().split("\\s+");
             if (args.length > 0 && !args[0].isEmpty()) {
                 long id = event.getHelpers().getTextChannelByArgsN(event, args[0]);
                 if (id == -1L) {
                     event.reply("Unknown TextChannel");
                 } else if (id == 0L) {
-                    long oldChannel = event.getVariables().verificationChannelsCache.getUnchecked(guild.getIdLong());
+                    long oldChannel = event.getVariables().verificationChannelsCache.get(guild.getIdLong());
                     event.reply("VerificationChannel has been changed from " + (oldChannel == -1L ? "nothing" : "<#" + oldChannel + ">") + " to nothing");
                     event.async(() -> {
                         event.getMySQL().removeChannel(guild.getIdLong(), ChannelType.VERIFICATION);

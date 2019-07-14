@@ -40,11 +40,11 @@ public class CooldownManager {
 
     public void updateCooldown(long guildId, long userId, int commandId) {
         checkOldEntries();
-        if (!variables.cooldowns.getUnchecked(guildId).containsKey(commandId)) return;
+        if (!variables.cooldowns.get(guildId).containsKey(commandId)) return;
         Map<Long, Map<Integer, Long>> users = cooldowns.containsKey(guildId) ? cooldowns.get(guildId) : new HashMap<>();
         if (!users.containsKey(userId)) users.put(userId, new HashMap<>());
         Map<Integer, Long> commands = users.get(userId);
-        commands.put(commandId, System.currentTimeMillis() + variables.cooldowns.getUnchecked(guildId).get(commandId));
+        commands.put(commandId, System.currentTimeMillis() + variables.cooldowns.get(guildId).get(commandId));
         users.put(userId, commands);
         cooldowns.put(guildId, users);
     }

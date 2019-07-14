@@ -31,11 +31,11 @@ public class PrivatePrefixCommand extends Command {
         switch (args[0].toLowerCase()) {
             case "add":
                 if (args.length == 1) {
-                    event.reply(event.getVariables().prefixes.getUnchecked(event.getGuild().getIdLong()) + commandName + " add <prefix>");
+                    event.reply(event.getVariables().prefixes.get(event.getGuild().getIdLong()) + commandName + " add <prefix>");
                     return;
                 }
                 String prefix = event.getArgs().replaceFirst(args[0] + "\\s+", "");
-                List<String> list = new ArrayList<>(event.getVariables().privatePrefixes.getUnchecked(event.getAuthorId()));
+                List<String> list = new ArrayList<>(event.getVariables().privatePrefixes.get(event.getAuthorId()));
                 if (list.contains(prefix)) {
                     event.reply("You can't add the same prefix twice");
                     return;
@@ -51,11 +51,11 @@ public class PrivatePrefixCommand extends Command {
                 break;
             case "remove":
                 if (args.length == 1) {
-                    event.reply(event.getVariables().prefixes.getUnchecked(event.getGuild().getIdLong()) + commandName + " add <prefix>");
+                    event.reply(event.getVariables().prefixes.get(event.getGuild().getIdLong()) + commandName + " add <prefix>");
                     return;
                 }
                 prefix = event.getArgs().replaceFirst(args[0] + "\\s+", "");
-                list = new ArrayList<>(event.getVariables().privatePrefixes.getUnchecked(event.getAuthorId()));
+                list = new ArrayList<>(event.getVariables().privatePrefixes.get(event.getAuthorId()));
                 if (list.contains(prefix)) {
                     event.getMySQL().removePrivatePrefix(event.getAuthorId(), prefix);
                     list.remove(prefix);
@@ -66,7 +66,7 @@ public class PrivatePrefixCommand extends Command {
                 }
                 break;
             case "list":
-                list = event.getVariables().privatePrefixes.getUnchecked(event.getAuthorId());
+                list = event.getVariables().privatePrefixes.get(event.getAuthorId());
                 StringBuilder sb = new StringBuilder("```Markdown\n");
                 list.forEach(string -> sb.append(list.indexOf(string) + 1).append(". ").append(string).append("\n"));
                 sb.append("```");

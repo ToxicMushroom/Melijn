@@ -464,9 +464,9 @@ public class Helpers {
     }
 
     public void postMusicLog(long guildId, AudioTrack track) {
-        if (melijn.getVariables().musicLogChannelCache.getUnchecked(guildId) == -1) return;
+        if (melijn.getVariables().musicLogChannelCache.get(guildId) == null) return;
         Guild guild = melijn.getShardManager().getGuildById(guildId);
-        TextChannel tc = guild.getTextChannelById(melijn.getVariables().musicLogChannelCache.getUnchecked(guildId));
+        TextChannel tc = guild.getTextChannelById(melijn.getVariables().musicLogChannelCache.get(guildId));
         if (tc == null) {
             melijn.getMySQL().removeChannel(guildId, ChannelType.MUSIC_LOG);
             melijn.getVariables().musicLogChannelCache.invalidate(guildId);
@@ -487,17 +487,17 @@ public class Helpers {
     }
 
     public void removeUnverified(Guild guild, User user) {
-        Map<Long, Long> newList = melijn.getVariables().unVerifiedGuildMembersCache.getUnchecked(guild.getIdLong());
+        Map<Long, Long> newList = melijn.getVariables().unVerifiedGuildMembersCache.get(guild.getIdLong());
         newList.remove(user.getIdLong());
         melijn.getTaskManager().async(() -> {
             melijn.getMySQL().removeUnverifiedUser(guild.getIdLong(), user.getIdLong());
             melijn.getVariables().unVerifiedGuildMembersCache.put(guild.getIdLong(), newList);
         });
         Member member = guild.getMember(user);
-        Role unverifiedRole = guild.getRoleById(melijn.getVariables().unverifiedRoleCache.getUnchecked(guild.getIdLong()));
-        if (member != null && guild.getRoleById(melijn.getVariables().unverifiedRoleCache.getUnchecked(guild.getIdLong())) != null) {
+        Role unverifiedRole = guild.getRoleById(melijn.getVariables().unverifiedRoleCache.get(guild.getIdLong()));
+        if (member != null && guild.getRoleById(melijn.getVariables().unverifiedRoleCache.get(guild.getIdLong())) != null) {
             if (guild.getSelfMember().hasPermission(Permission.MANAGE_ROLES) && guild.getSelfMember().canInteract(unverifiedRole) && guild.getSelfMember().canInteract(member)) {
-                guild.getController().removeSingleRoleFromMember(member, guild.getRoleById(melijn.getVariables().unverifiedRoleCache.getUnchecked(guild.getIdLong()))).reason("verified user").queue();
+                guild.getController().removeSingleRoleFromMember(member, guild.getRoleById(melijn.getVariables().unverifiedRoleCache.get(guild.getIdLong()))).reason("verified user").queue();
             } else {
                 user.openPrivateChannel().queue(channel ->
                         channel.sendMessage("" +
@@ -510,13 +510,13 @@ public class Helpers {
     }
 
     public void joinCode(Guild guild, User user) {
-        if (!melijn.getVariables().joinMessages.getUnchecked(guild.getIdLong()).isEmpty()) {
-            TextChannel joinChannel = guild.getTextChannelById(melijn.getVariables().joinChannelCache.getUnchecked(guild.getIdLong()));
+        if (!melijn.getVariables().joinMessages.get(guild.getIdLong()).isEmpty()) {
+            TextChannel joinChannel = guild.getTextChannelById(melijn.getVariables().joinChannelCache.get(guild.getIdLong()));
             if (joinChannel != null && guild.getSelfMember().hasPermission(joinChannel, Permission.MESSAGE_WRITE))
-                joinChannel.sendMessage(melijn.getMessageHelper().variableFormat(melijn.getVariables().joinMessages.getUnchecked(guild.getIdLong()), guild, user)).queue();
+                joinChannel.sendMessage(melijn.getMessageHelper().variableFormat(melijn.getVariables().joinMessages.get(guild.getIdLong()), guild, user)).queue();
         }
         if (guild.getSelfMember().getRoles().size() > 0) {
-            Role joinRole = guild.getRoleById(melijn.getVariables().joinRoleCache.getUnchecked(guild.getIdLong()));
+            Role joinRole = guild.getRoleById(melijn.getVariables().joinRoleCache.get(guild.getIdLong()));
             if (joinRole != null && guild.getSelfMember().canInteract(joinRole))
                 guild.getController().addSingleRoleToMember(guild.getMember(user), joinRole).queue();
             melijn.getTaskManager().async(() -> {

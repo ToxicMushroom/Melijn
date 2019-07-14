@@ -149,7 +149,7 @@ public class HistoryCommand extends Command {
         String[] args = event.getArgs().split("\\s+");
         Guild guild = event.getGuild();
         if (args.length < 4) {
-            event.reply("Usage: " + event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " remove <ban | warn | kick | mute> <user> <moment>");
+            event.reply("Usage: " + event.getVariables().prefixes.get(guild.getIdLong()) + commandName + " remove <ban | warn | kick | mute> <user> <moment>");
             return;
         }
 
@@ -184,7 +184,7 @@ public class HistoryCommand extends Command {
                 event.reply("Successfully removed the kick");
                 break;
             default:
-                event.reply("Usage: " + event.getVariables().prefixes.getUnchecked(guild.getIdLong()) + commandName + " remove <ban | warn | kick | mute> <user> <moment>");
+                event.reply("Usage: " + event.getVariables().prefixes.get(guild.getIdLong()) + commandName + " remove <ban | warn | kick | mute> <user> <moment>");
                 break;
         }
     }
