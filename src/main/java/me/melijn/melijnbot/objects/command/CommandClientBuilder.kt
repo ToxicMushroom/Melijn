@@ -8,6 +8,9 @@ class CommandClientBuilder(private val container: Container) {
 
     private val commands = HashSet<ICommand>()
 
+    init {
+        container.daoManager.commandWrapper.clearCommands()
+    }
 
     fun build(): CommandClient {
         return CommandClient(commands, container)

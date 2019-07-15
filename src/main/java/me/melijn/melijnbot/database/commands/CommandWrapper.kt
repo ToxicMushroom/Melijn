@@ -9,4 +9,10 @@ class CommandWrapper(private val taskManager: TaskManager, private val commandDa
             commandDao.insert(command)
         })
     }
+
+    fun clearCommands() {
+        taskManager.async(Runnable {
+            commandDao.clear()
+        })
+    }
 }
