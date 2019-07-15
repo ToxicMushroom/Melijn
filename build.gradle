@@ -23,7 +23,7 @@ dependencies {
     implementation group: 'com.sedmelluq', name:'lavaplayer', version: '1.3.17'
     implementation group: 'com.github.FredBoat', name: 'Lavalink-Client', version: '1446e25'
 
-    implementation group: 'com.github.duncte123', name: 'botCommons', version: '83c563a'
+    implementation group: 'com.github.ToxicMushroom', name: 'botCommons', version: 'd93e830'
 
     //https://search.maven.org/artifact/com.zaxxer/HikariCP
     //https://mvnrepository.com/artifact/mysql/mysql-connector-java
