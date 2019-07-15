@@ -5,6 +5,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.ICommand
 
+
 class PingCommand() : ICommand() {
 
     init {
@@ -17,15 +18,14 @@ class PingCommand() : ICommand() {
 
     override fun execute(context: CommandContext) {
         val timeStamp1 = System.currentTimeMillis()
-        MessageUtils.sendMsg(context, "\uD83C\uDFD3 Pong! gatewayPing: ${context.jda.gatewayPing}ms") { message ->
+        MessageUtils.sendMsg(context, "\uD83C\uDFD3 Pong!\ngatewayPing: ${context.jda.gatewayPing}ms") { message ->
             val timeStamp2 = System.currentTimeMillis()
             context.jda.restPing.queue { restPing ->
-                message.editMessage("${message.contentRaw}, restPing: ${restPing}ms, sendMessagePing: ${timeStamp2 - timeStamp1}ms").queue() { editedMessage ->
+                message.editMessage("${message.contentRaw}\nrestPing: ${restPing}ms\nsendMessagePing: ${timeStamp2 - timeStamp1}ms").queue() { editedMessage ->
                     val timeStamp3 = System.currentTimeMillis()
-                    editedMessage.editMessage("${message.contentRaw}, editMessagePing: ${timeStamp3 - timeStamp2}ms").queue()
+                    editedMessage.editMessage("${editedMessage.contentRaw}\neditMessagePing: ${timeStamp3 - timeStamp2}ms").queue()
                 }
             }
         }
-
     }
 }
