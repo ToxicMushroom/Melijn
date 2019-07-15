@@ -2,12 +2,13 @@ package me.melijn.melijnbot.objects.command
 
 import net.dv8tion.jda.api.Permission
 
+const val PREFIX_PLACE_HOLDER = "%PREFIX%"
 abstract class ICommand {
 
     var name: String = ""
     var id: Int = 0
     var description: String = ""
-    var syntax: String = ""
+    var syntax: String = "$PREFIX_PLACE_HOLDER$name"
     var help: String = ""
     var commandCategory: CommandCategory = CommandCategory.DEVELOPER
     var aliases: Array<String> = arrayOf()
