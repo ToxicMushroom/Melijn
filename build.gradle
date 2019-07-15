@@ -32,21 +32,22 @@ dependencies {
 
     //https://mvnrepository.com/artifact/org.codehaus.janino/janino
     //Used for java eval
-    implementation 'org.codehaus.janino:janino:3.0.14'
-    implementation 'org.codehaus.janino:commons-compiler:3.0.14'
+    implementation group: 'org.codehaus.janino', name: 'janino', version: '3.0.14'
+    implementation group: 'org.codehaus.janino', name: 'commons-compiler', version: '3.0.14'
     
     //https://bintray.com/duncte123/weeb.java/weeb.java
-    implementation 'me.duncte123:weebJava:2.2.0_27'
+    implementation group: 'me.duncte123', name: 'weebJava', version: '2.2.0_27'
 
     //https://jitpack.io/#DiscordBotList/DBL-Java-Library
-    implementation 'com.github.DiscordBotList:DBL-Java-Library:2.0.1'
+    implementation group: 'com.github.DiscordBotList', name: 'DBL-Java-Library', version: '2.0.1'
 
     //https://mvnrepository.com/artifact/se.michaelthelin.spotify/spotify-web-api-java
-    implementation 'se.michaelthelin.spotify:spotify-web-api-java:2.2.0'
+    implementation group: 'se.michaelthelin.spotify', name: 'spotify-web-api-java', version: '2.2.0'
 
     //https://mvnrepository.com/artifact/com.google.guava/guava
     //Used for loading caches and other utils
-    implementation 'com.google.guava:guava:28.0-jre'
+    //implementation 'com.google.guava:guava:28.0-jre'
+
     //Loading caches
     //https://github.com/ben-manes/caffeine
     implementation 'com.github.ben-manes.caffeine:caffeine:2.7.0'
@@ -58,6 +59,10 @@ dependencies {
     //WebServer
     implementation 'org.jooby:jooby-netty:1.6.2'
     implementation 'org.jooby:jooby-jackson:1.6.2'
+
+    //https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-kotlin
+    implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.9.9'
+
 
     //https://mvnrepository.com/artifact/com.google.apis/google-api-services-youtube
     implementation 'com.google.apis:google-api-services-youtube:v3-rev212-1.25.0'

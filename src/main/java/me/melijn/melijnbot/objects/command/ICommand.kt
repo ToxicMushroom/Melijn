@@ -4,15 +4,15 @@ import net.dv8tion.jda.api.Permission
 
 abstract class ICommand {
 
-    protected abstract var name: String
-    protected abstract var id: Int
-    protected var description: String = ""
-    protected var syntax: String = ""
-    protected var help: String = ""
-    protected var commandCategory: CommandCategory = CommandCategory.DEVELOPER
-    protected var aliases: Array<String> = arrayOf()
-    protected var discordPermissions: Array<Permission> = arrayOf()
-    protected var conditionsToPass: Array<CommandCondition> = arrayOf()
+    var name: String = ""
+    var id: Int = 0
+    var description: String = ""
+    var syntax: String = ""
+    var help: String = ""
+    var commandCategory: CommandCategory = CommandCategory.DEVELOPER
+    var aliases: Array<String> = arrayOf()
+    var discordPermissions: Array<Permission> = arrayOf()
+    var runConditions: Array<CommandCondition> = arrayOf()
 
     protected abstract fun execute(context: CommandContext)
     public final fun run(context: CommandContext) {
