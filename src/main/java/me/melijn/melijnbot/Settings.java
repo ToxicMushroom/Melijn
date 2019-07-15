@@ -4,7 +4,6 @@ import me.melijn.melijnbot.enums.Environment;
 
 public class Settings {
 
-    public String token;
     public String prefix;
     public long[] developerIds;
     public Environment environment;
