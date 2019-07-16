@@ -3,6 +3,7 @@ package me.melijn.melijnbot.database
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import me.melijn.melijnbot.Settings
+import me.melijn.melijnbot.objects.utils.MessageUtils
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -10,7 +11,7 @@ import java.util.function.Consumer
 import javax.sql.DataSource
 
 
-class DriverManager(mysqlSettings: Settings.MySQL) {
+class DriverManager(mysqlSettings: Settings.MySQL, private val messageUtils: MessageUtils) {
 
     private val tableRegistrationQueries = ArrayList<String>()
     val dataSource: DataSource
@@ -43,7 +44,7 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
     fun registerTable(table: String, tableStructure: String, keys: String) {
         val hasKeys = keys != ""
         tableRegistrationQueries.add(
-                "CREATE TABLE IF NOT EXISTS $table ($tableStructure${if (hasKeys) ", $keys" else ""});"
+                "CREATE TABLE IF NOT EXISTS $table ($tableStructure${if (hasKeys) ", $keys" else ""})"
         )
     }
 
@@ -79,6 +80,7 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
             }
         } catch (e: SQLException) {
             logger.error("Something went wrong when executing the query: $query")
+            messageUtils.printException(Thread.currentThread(), e)
             e.printStackTrace()
         }
 
@@ -86,7 +88,7 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
     }
 
 
-    private fun executeQuery(query: String, resultset: Consumer<ResultSet>, vararg objects: Any) {
+    fun executeQuery(query: String, resultset: Consumer<ResultSet>, vararg objects: Any) {
         try {
             dataSource.connection.use { connection ->
                 connection.prepareStatement(query).use { preparedStatement ->

@@ -8,7 +8,7 @@ import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
 
-class TaskManager(private val messageUtils: MessageUtils) {
+class TaskManager(val messageUtils: MessageUtils) {
 
     private val threadFactory = { name: String -> ThreadFactoryBuilder().setNameFormat("[$name-Pool-%d] ").build() }
     private val executorService = Executors.newCachedThreadPool(threadFactory.invoke("Task"))

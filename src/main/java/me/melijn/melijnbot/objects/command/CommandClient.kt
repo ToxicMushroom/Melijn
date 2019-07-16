@@ -1,20 +1,85 @@
 package me.melijn.melijnbot.objects.command
 
+import me.duncte123.botcommons.messaging.MessageUtils
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.objects.utils.toUpperWordCase
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
 class CommandClient(val commandList: Set<ICommand>, val container: Container) : ListenerAdapter() {
 
+    val guildPrefixCache = container.daoManager.guildPrefixWrapper.prefixCache
+    //val userPrefixCache = container.daoManager.userPrefixWrapper.prefixCache
+
     override fun onMessageReceived(event: MessageReceivedEvent) {
         if (event.author.isBot) return
-        if (!event.message.contentRaw.startsWith(container.settings.prefix)) return
-        val messageParts: List<String> = event.message.contentRaw.split("\\s+")
-        val possibleCommandName = messageParts[0].replace(container.settings.prefix, "")
+
+        val author = event.author
+        val message = event.message
+        var prefix = container.settings.prefix
+
+        if (event.isFromGuild) {
+            val guild = event.guild
+            val time1 = System.nanoTime()
+            val prefixes = guildPrefixCache.get(guild.idLong).get()
+            println(System.nanoTime() - time1)
+
+            prefixes.forEach { pr ->
+                if (message.contentRaw.startsWith(pr)) prefix = pr
+            }
+        }
+
+        val messageParts: List<String> = message.contentRaw.replaceFirst(prefix, "").split("\\s+")
+        val possibleCommandName = messageParts[0]
+
         commandList.forEach { command ->
             if (command.isCommandFor(possibleCommandName)) {
+                if (checksFailed(command, event)) return
                 command.run(CommandContext(event, container, commandList))
             }
         }
     }
+
+    fun checksFailed(command: ICommand, event: MessageReceivedEvent): Boolean {
+        command.runConditions.forEach {
+            if (!runConditionCheckPassed(it, event)) return true
+        }
+
+        if (event.isFromGuild) {
+            command.discordPermissions.forEach { permission ->
+                val botMember = event.guild.selfMember
+                var missesPermission = false
+                var missingPermissionMessage = ""
+                if (!botMember.hasPermission(event.textChannel, permission)) {
+                    missingPermissionMessage += "\n ⁎**${permission.toString().toUpperWordCase()}**"
+                    missesPermission = true
+                }
+
+                if (missesPermission) {
+                    missingPermissionMessage = "I'm missing the following permission" +
+                            (if (missingPermissionMessage.count { c -> c == '\n' } > 1) "s" else "") +
+                            missingPermissionMessage
+
+                    MessageUtils.sendMsg(event, missingPermissionMessage)
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
+    /**
+     * [@return] returns true if the check passed
+     *
+     * **/
+    fun runConditionCheckPassed(runCondition: RunCondition, event: MessageReceivedEvent): Boolean {
+        return when (runCondition) {
+            RunCondition.GUILD -> event.isFromGuild
+            RunCondition.VC_BOT_ALONE_OR_USER_DJ -> false
+            else -> false
+        }
+    }
+
+
 }

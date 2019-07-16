@@ -13,7 +13,7 @@ abstract class ICommand {
     var commandCategory: CommandCategory = CommandCategory.DEVELOPER
     var aliases: Array<String> = arrayOf()
     var discordPermissions: Array<Permission> = arrayOf()
-    var runConditions: Array<CommandCondition> = arrayOf()
+    var runConditions: Array<RunCondition> = arrayOf()
 
     protected abstract fun execute(context: CommandContext)
     public final fun run(context: CommandContext) {
