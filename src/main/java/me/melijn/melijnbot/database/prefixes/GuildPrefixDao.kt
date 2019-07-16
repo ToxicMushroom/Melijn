@@ -13,16 +13,16 @@ class GuildPrefixDao(private val driverManager: DriverManager) : Dao(driverManag
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun setPrefixes(key: Long, prefixes: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildIdd, prefixes) VALUES (?, ?) ON DUPLICATE KEY UPDATE prefixes = ?",
-                key, prefixes, prefixes)
+    fun set(guildId: Long, prefixes: String) {
+        driverManager.executeUpdate("INSERT INTO $table (guildId, prefixes) VALUES (?, ?) ON DUPLICATE KEY UPDATE prefixes = ?",
+                guildId, prefixes, prefixes)
     }
 
-    fun getPrefixes(key: Long, prefixes: Consumer<String>) {
+    fun get(guildId: Long, prefixes: Consumer<String>) {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", Consumer { resultSet ->
             if (resultSet.next()) {
                 prefixes.accept(resultSet.getString("prefixes"))
             } else prefixes.accept("")
-        }, key)
+        }, guildId)
     }
 }

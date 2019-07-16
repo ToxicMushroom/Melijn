@@ -18,26 +18,27 @@ class CommandClient(val commandList: Set<ICommand>, val container: Container) : 
         val message = event.message
         var prefix = container.settings.prefix
 
-        if (event.isFromGuild) {
-            val guild = event.guild
-            val time1 = System.nanoTime()
-            val prefixes = guildPrefixCache.get(guild.idLong).get()
-            println(System.nanoTime() - time1)
+        container.taskManager.async(Runnable {
+            if (event.isFromGuild) {
+                val guild = event.guild
+                val prefixesFuture = guildPrefixCache.get(guild.idLong)
+                val prefixes = prefixesFuture.get()
 
-            prefixes.forEach { pr ->
-                if (message.contentRaw.startsWith(pr)) prefix = pr
+                prefixes.forEach { pr ->
+                    if (message.contentRaw.startsWith(pr)) prefix = pr
+                }
             }
-        }
 
-        val messageParts: List<String> = message.contentRaw.replaceFirst(prefix, "").split("\\s+")
-        val possibleCommandName = messageParts[0]
+            val messageParts: List<String> = message.contentRaw.replaceFirst(prefix, "").split("\\s+")
+            val possibleCommandName = messageParts[0]
 
-        commandList.forEach { command ->
-            if (command.isCommandFor(possibleCommandName)) {
-                if (checksFailed(command, event)) return
-                command.run(CommandContext(event, container, commandList))
+            commandList.forEach { command ->
+                if (command.isCommandFor(possibleCommandName)) {
+                    if (checksFailed(command, event)) return@Runnable
+                    command.run(CommandContext(event, container, commandList))
+                }
             }
-        }
+        })
     }
 
     fun checksFailed(command: ICommand, event: MessageReceivedEvent): Boolean {
