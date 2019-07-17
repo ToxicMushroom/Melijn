@@ -4,15 +4,16 @@ import me.duncte123.botcommons.messaging.MessageUtils
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.ICommand
+import me.melijn.melijnbot.objects.translation.Translateable
 
 
 class PingCommand() : ICommand() {
 
     init {
         id = 1
-        name = "ping"
-        aliases = arrayOf("pong")
-        description = "Show network latency to discord servers"
+        name = Translateable("command.ping.name")
+        aliases = arrayOf(Translateable("command.ping.alias1"))
+        description = Translateable("command.ping.description")
         commandCategory = CommandCategory.UTILITY
     }
 

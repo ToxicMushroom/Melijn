@@ -5,8 +5,8 @@ import me.melijn.melijnbot.database.DriverManager
 import java.util.function.Consumer
 
 
-class LanguageDao(private val driverManager: DriverManager) : Dao(driverManager) {
-    override val table: String = "language"
+class GuildLanguageDao(private val driverManager: DriverManager) : Dao(driverManager) {
+    override val table: String = "guildLanguages"
     override val tableStructure: String = "guildId bigint, language varchar(32)"
     override val keys: String = "PRIMARY KEY(guildId)"
 

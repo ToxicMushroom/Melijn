@@ -3,12 +3,14 @@ package me.melijn.melijnbot.database
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.database.commands.CommandDao
 import me.melijn.melijnbot.database.commands.CommandWrapper
+import me.melijn.melijnbot.database.language.GuildLanguageDao
+import me.melijn.melijnbot.database.language.GuildLanguageWrapper
+import me.melijn.melijnbot.database.language.UserLanguageDao
+import me.melijn.melijnbot.database.language.UserLanguageWrapper
 import me.melijn.melijnbot.database.prefixes.GuildPrefixDao
 import me.melijn.melijnbot.database.prefixes.GuildPrefixWrapper
 import me.melijn.melijnbot.database.prefixes.UserPrefixDao
 import me.melijn.melijnbot.database.prefixes.UserPrefixWrapper
-import me.melijn.melijnbot.database.translations.TranslationDao
-import me.melijn.melijnbot.database.translations.TranslationWrapper
 import me.melijn.melijnbot.objects.threading.TaskManager
 
 const val RAPIDLY_USED_CACHE = 1L
@@ -25,7 +27,8 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
     val commandWrapper: CommandWrapper
     val guildPrefixWrapper: GuildPrefixWrapper
     val userPrefixWrapper: UserPrefixWrapper
-    val translationWrapper: TranslationWrapper
+    val guildLanguageWrapper: GuildLanguageWrapper
+    val userLanguageWrapper: UserLanguageWrapper
 
 
     init {
@@ -34,7 +37,8 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
         commandWrapper = CommandWrapper(taskManager, CommandDao(driverManager))
         guildPrefixWrapper = GuildPrefixWrapper(taskManager, GuildPrefixDao(driverManager))
         userPrefixWrapper = UserPrefixWrapper(taskManager, UserPrefixDao(driverManager))
-        translationWrapper = TranslationWrapper(taskManager, TranslationDao(driverManager))
+        guildLanguageWrapper = GuildLanguageWrapper(taskManager, GuildLanguageDao(driverManager))
+        userLanguageWrapper = UserLanguageWrapper(taskManager, UserLanguageDao(driverManager))
 
         //After registering wrappers
         driverManager.executeTableRegistration()

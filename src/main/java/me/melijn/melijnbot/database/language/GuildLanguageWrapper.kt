@@ -8,7 +8,7 @@ import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 
-class LanguageWrapper(private val taskManager: TaskManager, private val languageDao: LanguageDao) {
+class GuildLanguageWrapper(private val taskManager: TaskManager, private val languageDao: GuildLanguageDao) {
 
     val languageCache = Caffeine.newBuilder()
             .executor(taskManager.getExecutorService())
