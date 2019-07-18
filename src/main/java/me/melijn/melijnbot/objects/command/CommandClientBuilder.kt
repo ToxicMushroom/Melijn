@@ -6,7 +6,7 @@ import java.util.*
 
 class CommandClientBuilder(private val container: Container) {
 
-    private val commands = HashSet<ICommand>()
+    private val commands = HashSet<AbstractCommand>()
 
     init {
         container.daoManager.commandWrapper.clearCommands()
@@ -16,7 +16,7 @@ class CommandClientBuilder(private val container: Container) {
         return CommandClient(commands, container)
     }
 
-    fun addCommand(command: ICommand): CommandClientBuilder {
+    fun addCommand(command: AbstractCommand): CommandClientBuilder {
         commands.add(command)
         container.daoManager.commandWrapper.insert(command)
         return this

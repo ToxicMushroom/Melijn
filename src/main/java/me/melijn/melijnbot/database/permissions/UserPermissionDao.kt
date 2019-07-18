@@ -9,7 +9,7 @@ class UserPermissionDao(private val driverManager: DriverManager) : Dao(driverMa
 
     override val table: String = "userPermissions"
     override val tableStructure: String = "guildId bigint, userId bigint, permission varchar(64), state varchar(8)"
-    override val keys: String = "UNIQUE KEY (roleId, permission)"
+    override val keys: String = "UNIQUE KEY (userId, permission)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)

@@ -1,8 +1,0 @@
-language.name=English
-language.region=US
-language.code=en_US
-
-command.ping.name=ping
-command.ping.alias1=pong
-command.ping.description=Shows network latency between bot and discord server
-command.ping.response1.part1=🏓 Pong!%\n%gatewayPing: %gatewayPing%ms

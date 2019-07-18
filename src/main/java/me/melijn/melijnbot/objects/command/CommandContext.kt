@@ -5,7 +5,13 @@ import me.melijn.melijnbot.Container
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
-class CommandContext(private val messageReceivedEvent: MessageReceivedEvent, private val container: Container, private val commandList: Set<ICommand>) : ICommandContext {
+class CommandContext(
+        private val messageReceivedEvent: MessageReceivedEvent,
+        val commandParts: List<String>,
+        private val container: Container,
+        private val commandList: Set<AbstractCommand>
+) : ICommandContext {
+
     override fun getEvent(): MessageReceivedEvent {
         return messageReceivedEvent
     }
@@ -13,6 +19,7 @@ class CommandContext(private val messageReceivedEvent: MessageReceivedEvent, pri
     override fun getGuild(): Guild {
         return messageReceivedEvent.guild
     }
+
 
     val daoManager = container.daoManager
     val taskManager = container.taskManager

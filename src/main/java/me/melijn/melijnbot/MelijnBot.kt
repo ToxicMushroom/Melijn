@@ -1,11 +1,12 @@
 package me.melijn.melijnbot
 
+import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandClientBuilder
-import me.melijn.melijnbot.objects.command.ICommand
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
 import net.dv8tion.jda.api.sharding.ShardManager
 import org.reflections.Reflections
+import java.util.*
 
 
 class MelijnBot {
@@ -17,6 +18,7 @@ class MelijnBot {
     }
 
     init {
+        Locale.setDefault(Locale.ENGLISH)
         val container = Container()
 
         val commandClientBuilder = CommandClientBuilder(container)
@@ -32,6 +34,7 @@ class MelijnBot {
                 .addEventListeners(commandClient)
                 .build()
 
+
     }
 
     fun getInstance(): MelijnBot? {
@@ -41,12 +44,15 @@ class MelijnBot {
     private fun loadCommands(client: CommandClientBuilder) {
         val reflections = Reflections("me.melijn.melijnbot.commands")
 
-        val commands = reflections.getSubTypesOf(ICommand::class.java)
+        val commands = reflections.getSubTypesOf(AbstractCommand::class.java)
         commands.forEach { command ->
             try {
-                val cmd = command.getDeclaredConstructor().newInstance()
-                client.addCommand(cmd)
-            } catch (ignored: Exception) {
+                if (!command.isMemberClass) {
+                    val cmd = command.getDeclaredConstructor().newInstance()
+                    client.addCommand(cmd)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }

@@ -1,20 +1,22 @@
 package me.melijn.melijnbot.commands.utility
 
 import me.duncte123.botcommons.messaging.MessageUtils
+import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.ICommand
 import me.melijn.melijnbot.objects.translation.Translateable
 
 
-class PingCommand() : ICommand() {
+class PingCommand : AbstractCommand() {
 
     init {
         id = 1
-        name = Translateable("command.ping.name")
-        aliases = arrayOf(Translateable("command.ping.alias1"))
+        name = "ping"//Translateable("command.ping.name")
+        syntax = Translateable("command.ping.syntax")
+        aliases = arrayOf("pong")//Translateable("command.ping.alias1"))
         description = Translateable("command.ping.description")
         commandCategory = CommandCategory.UTILITY
+        children = arrayOf(PongCommand())
     }
 
     override fun execute(context: CommandContext) {
@@ -26,6 +28,31 @@ class PingCommand() : ICommand() {
                     val timeStamp3 = System.currentTimeMillis()
                     editedMessage.editMessage("${editedMessage.contentRaw}\neditMessagePing: ${timeStamp3 - timeStamp2}ms").queue()
                 }
+            }
+        }
+    }
+
+    private class PongCommand : AbstractCommand() {
+
+        init {
+            name = "pong"//Translateable("command.ping.pong.name")
+            aliases = arrayOf("ping")//Translateable("command.ping.pong.alias1"))
+            children = arrayOf(DunsteCommand())
+        }
+
+        override fun execute(context: CommandContext) {
+            MessageUtils.sendMsg(context, Translateable("command.ping.pong.response1").string(context))
+        }
+
+        private class DunsteCommand : AbstractCommand() {
+
+            init {
+                name = "dunste"
+                aliases = arrayOf("duncte")
+            }
+
+            override fun execute(context: CommandContext) {
+                MessageUtils.sendMsg(context, Translateable("command.ping.pong.dunste.response1").string(context))
             }
         }
     }
