@@ -3,14 +3,19 @@ package me.melijn.melijnbot.database
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.database.commands.CommandDao
 import me.melijn.melijnbot.database.commands.CommandWrapper
+import me.melijn.melijnbot.database.cooldown.CommandChannelCooldownDao
+import me.melijn.melijnbot.database.cooldown.CommandChannelCooldownWrapper
+import me.melijn.melijnbot.database.cooldown.CommandCooldownDao
+import me.melijn.melijnbot.database.cooldown.CommandCooldownWrapper
+import me.melijn.melijnbot.database.disabled.DisabledChannelCommandDao
+import me.melijn.melijnbot.database.disabled.DisabledChannelCommandWrapper
+import me.melijn.melijnbot.database.disabled.DisabledCommandDao
+import me.melijn.melijnbot.database.disabled.DisabledCommandWrapper
 import me.melijn.melijnbot.database.language.GuildLanguageDao
 import me.melijn.melijnbot.database.language.GuildLanguageWrapper
 import me.melijn.melijnbot.database.language.UserLanguageDao
 import me.melijn.melijnbot.database.language.UserLanguageWrapper
-import me.melijn.melijnbot.database.permissions.RolePermissionDao
-import me.melijn.melijnbot.database.permissions.RolePermissionWrapper
-import me.melijn.melijnbot.database.permissions.UserPermissionDao
-import me.melijn.melijnbot.database.permissions.UserPermissionWrapper
+import me.melijn.melijnbot.database.permissions.*
 import me.melijn.melijnbot.database.prefixes.GuildPrefixDao
 import me.melijn.melijnbot.database.prefixes.GuildPrefixWrapper
 import me.melijn.melijnbot.database.prefixes.UserPrefixDao
@@ -37,6 +42,14 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
 
     val rolePermissionWrapper: RolePermissionWrapper
     val userPermissionWrapper: UserPermissionWrapper
+    val channelRolePermissionWrapper: ChannelRolePermissionWrapper
+    val channelUserPermissionWrapper: ChannelUserPermissionWrapper
+
+    val disabledCommandWrapper: DisabledCommandWrapper
+    val disabledChannelCommandWrapper: DisabledChannelCommandWrapper
+
+    val commandChannelCoolDownWrapper: CommandChannelCooldownWrapper
+    val commandCooldownWrapper: CommandCooldownWrapper
 
     val guildPrefixWrapper: GuildPrefixWrapper
     val userPrefixWrapper: UserPrefixWrapper
@@ -54,6 +67,14 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
 
         rolePermissionWrapper = RolePermissionWrapper(taskManager, RolePermissionDao(driverManager))
         userPermissionWrapper = UserPermissionWrapper(taskManager, UserPermissionDao(driverManager))
+        channelRolePermissionWrapper = ChannelRolePermissionWrapper(taskManager, ChannelRolePermissionDao(driverManager))
+        channelUserPermissionWrapper = ChannelUserPermissionWrapper(taskManager, ChannelUserPermissionDao(driverManager))
+
+        disabledCommandWrapper = DisabledCommandWrapper(taskManager, DisabledCommandDao(driverManager))
+        disabledChannelCommandWrapper = DisabledChannelCommandWrapper(taskManager, DisabledChannelCommandDao(driverManager))
+
+        commandCooldownWrapper = CommandCooldownWrapper(taskManager, CommandCooldownDao(driverManager))
+        commandChannelCoolDownWrapper = CommandChannelCooldownWrapper(taskManager, CommandChannelCooldownDao(driverManager))
 
         guildPrefixWrapper = GuildPrefixWrapper(taskManager, GuildPrefixDao(driverManager))
         userPrefixWrapper = UserPrefixWrapper(taskManager, UserPrefixDao(driverManager))
