@@ -19,7 +19,7 @@ class GuildPrefixWrapper(private val taskManager: TaskManager, private val guild
         val prefixes = CompletableFuture<List<String>>()
         executor.execute {
             guildPrefixDao.get(guildId, Consumer { prefixesString ->
-                val list: List<String> = if (prefixesString == "") listOf() else prefixesString.split("%SPLIT%")
+                val list: List<String> = if (prefixesString == "") emptyList() else prefixesString.split("%SPLIT%")
                 prefixes.complete(list)
             })
         }

@@ -18,7 +18,7 @@ class UserPrefixWrapper(private val taskManager: TaskManager, private val userPr
         val prefixes = CompletableFuture<List<String>>()
         executor.execute {
             userPrefixDao.get(userId, Consumer { prefixesString ->
-                val list: List<String> = if (prefixesString == "") listOf() else prefixesString.split("%SPLIT%")
+                val list: List<String> = if (prefixesString == "") emptyList() else prefixesString.split("%SPLIT%")
                 prefixes.complete(list)
             })
         }
