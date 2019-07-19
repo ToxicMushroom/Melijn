@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
 class CommandContext(
         private val messageReceivedEvent: MessageReceivedEvent,
-        var commandOrder: List<AbstractCommand>,
         val commandParts: List<String>,
         private val container: Container,
         private val commandList: Set<AbstractCommand>
@@ -21,7 +20,8 @@ class CommandContext(
         return messageReceivedEvent.guild
     }
 
-
+    var commandOrder: List<AbstractCommand> = emptyList()
+    val botDevIds: LongArray = container.settings.developerIds
     val daoManager = container.daoManager
     val taskManager = container.taskManager
     val messageUtils = container.messageUtils
