@@ -10,6 +10,10 @@ import java.util.function.Consumer
 
 class CommandChannelCooldownWrapper(val taskManager: TaskManager, val commandChannelCooldownDao: CommandChannelCooldownDao) {
 
+    //guildId, userId, channelId, time
+    val executions: Map<Pair<Long, Long>, Set<Pair<Long, Long>>> = HashMap()
+
+    //chanelId
     val commandChannelCooldownCache = Caffeine.newBuilder()
             .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
             .executor(taskManager.getExecutorService())
