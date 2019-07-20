@@ -6,11 +6,19 @@ import me.melijn.melijnbot.objects.utils.toUpperWordCase
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
-class CommandClient(val commandList: Set<AbstractCommand>, val container: Container) : ListenerAdapter() {
+class CommandClient(private val commandList: Set<AbstractCommand>, private val container: Container) : ListenerAdapter() {
 
-    val guildPrefixCache = container.daoManager.guildPrefixWrapper.prefixCache
-    val userPrefixCache = container.daoManager.userPrefixWrapper.prefixCache
-    val commandMap: HashMap<String, AbstractCommand> = HashMap()
+    private val guildPrefixCache = container.daoManager.guildPrefixWrapper.prefixCache
+    private val userPrefixCache = container.daoManager.userPrefixWrapper.prefixCache
+
+    private val commandCooldownCache = container.daoManager.commandCooldownWrapper.commandCooldownCache
+    private val channelCommandCooldownCache = container.daoManager.commandChannelCoolDownWrapper.commandChannelCooldownCache
+
+    private val disabledCommandCache = container.daoManager.disabledCommandWrapper.disabledCommandsCache
+    private val disabledChannelCommandCache = container.daoManager.disabledChannelCommandWrapper.disabledChanneldCommandsCache
+
+
+    private val commandMap: HashMap<String, AbstractCommand> = HashMap()
 
     init {
         commandList.forEach { command ->
@@ -63,6 +71,7 @@ class CommandClient(val commandList: Set<AbstractCommand>, val container: Contai
         }
 
         if (event.isFromGuild) {
+            val guildId = event.guild.idLong
             command.discordPermissions.forEach { permission ->
                 val botMember = event.guild.selfMember
                 var missingPermissionCount = 0
@@ -82,8 +91,49 @@ class CommandClient(val commandList: Set<AbstractCommand>, val container: Contai
                     return true
                 }
             }
+
+            if (commandIsOnCooldown(command, event)) return true
+
         }
 
+        return false
+    }
+
+    private fun commandIsOnCooldown(command: AbstractCommand, event: MessageReceivedEvent): Boolean {
+        val guildId = event.guild.idLong
+        val userId = event.author.idLong
+        val channelId = event.channel.idLong
+
+        if (!container.daoManager.commandChannelCoolDownWrapper.executions.contains(Pair(guildId, userId))) return false
+
+        var lastExecution = 0L
+        var lastExecutionChannel = 0L
+
+        if (channelCommandCooldownCache.get(channelId).get().containsKey(command.id)) {
+
+            //init lastExecutionChannel
+            container.daoManager.commandChannelCoolDownWrapper.executions[Pair(guildId, userId)]
+                    ?.filter { pair -> pair.first == channelId }
+                    ?.forEach { fPair ->
+                        if (fPair.second > lastExecutionChannel) lastExecutionChannel = fPair.second
+                    }
+
+            val cooldown = channelCommandCooldownCache.get(guildId).get()[command.id] ?: 0L
+
+            if (System.currentTimeMillis() - cooldown < lastExecutionChannel) return true
+        }
+        if (commandCooldownCache.get(guildId).get().containsKey(command.id)) {
+
+            //init lastExecution
+            container.daoManager.commandChannelCoolDownWrapper.executions[Pair(guildId, userId)]
+                    ?.forEach { pair ->
+                        if (pair.second > lastExecution) lastExecution = pair.second
+                    }
+
+            val cooldown = commandCooldownCache.get(guildId).get()[command.id] ?: 0L
+
+            if (System.currentTimeMillis() - cooldown < lastExecutionChannel) return true
+        }
         return false
     }
 
