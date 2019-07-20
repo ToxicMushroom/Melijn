@@ -13,7 +13,7 @@ class CommandChannelCooldownWrapper(val taskManager: TaskManager, val commandCha
     val commandChannelCooldownCache = Caffeine.newBuilder()
             .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
             .executor(taskManager.getExecutorService())
-            .buildAsync<Long, Map<Int, Long>>() { key, executor -> }
+            .buildAsync<Long, Map<Int, Long>>() { key, executor -> getCommancChannelCooldowns(key, executor) }
 
     fun getCommancChannelCooldowns(channelId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<Map<Int, Long>> {
         val map = CompletableFuture<Map<Int, Long>>()

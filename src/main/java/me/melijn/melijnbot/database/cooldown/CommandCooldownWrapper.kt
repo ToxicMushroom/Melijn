@@ -13,7 +13,7 @@ class CommandCooldownWrapper(val taskManager: TaskManager, val commandCooldownDa
     val commandCooldownCache = Caffeine.newBuilder()
             .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
             .executor(taskManager.getExecutorService())
-            .buildAsync<Long, Map<Int, Long>>() { key, executor -> }
+            .buildAsync<Long, Map<Int, Long>>() { key, executor -> getMap(key, executor) }
 
     fun getMap(guildId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<Map<Int, Long>> {
         val future = CompletableFuture<Map<Int, Long>>()
