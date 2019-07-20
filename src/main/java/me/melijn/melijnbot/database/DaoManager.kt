@@ -7,8 +7,8 @@ import me.melijn.melijnbot.database.cooldown.CommandChannelCooldownDao
 import me.melijn.melijnbot.database.cooldown.CommandChannelCooldownWrapper
 import me.melijn.melijnbot.database.cooldown.CommandCooldownDao
 import me.melijn.melijnbot.database.cooldown.CommandCooldownWrapper
-import me.melijn.melijnbot.database.disabled.DisabledChannelCommandDao
-import me.melijn.melijnbot.database.disabled.DisabledChannelCommandWrapper
+import me.melijn.melijnbot.database.disabled.ChannelCommandStateDao
+import me.melijn.melijnbot.database.disabled.ChannelCommandStateWrapper
 import me.melijn.melijnbot.database.disabled.DisabledCommandDao
 import me.melijn.melijnbot.database.disabled.DisabledCommandWrapper
 import me.melijn.melijnbot.database.language.GuildLanguageDao
@@ -46,7 +46,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
     val channelUserPermissionWrapper: ChannelUserPermissionWrapper
 
     val disabledCommandWrapper: DisabledCommandWrapper
-    val disabledChannelCommandWrapper: DisabledChannelCommandWrapper
+    val channelCommandStateWrapper: ChannelCommandStateWrapper
 
     val commandChannelCoolDownWrapper: CommandChannelCooldownWrapper
     val commandCooldownWrapper: CommandCooldownWrapper
@@ -71,7 +71,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
         channelUserPermissionWrapper = ChannelUserPermissionWrapper(taskManager, ChannelUserPermissionDao(driverManager))
 
         disabledCommandWrapper = DisabledCommandWrapper(taskManager, DisabledCommandDao(driverManager))
-        disabledChannelCommandWrapper = DisabledChannelCommandWrapper(taskManager, DisabledChannelCommandDao(driverManager))
+        channelCommandStateWrapper = ChannelCommandStateWrapper(taskManager, ChannelCommandStateDao(driverManager))
 
         commandCooldownWrapper = CommandCooldownWrapper(taskManager, CommandCooldownDao(driverManager))
         commandChannelCoolDownWrapper = CommandChannelCooldownWrapper(taskManager, CommandChannelCooldownDao(driverManager))
