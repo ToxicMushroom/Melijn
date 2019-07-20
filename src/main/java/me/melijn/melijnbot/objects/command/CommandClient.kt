@@ -2,6 +2,7 @@ package me.melijn.melijnbot.objects.command
 
 import me.duncte123.botcommons.messaging.MessageUtils
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.enums.ChannelCommandState
 import me.melijn.melijnbot.objects.utils.toUpperWordCase
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
@@ -15,7 +16,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
     private val channelCommandCooldownCache = container.daoManager.commandChannelCoolDownWrapper.commandChannelCooldownCache
 
     private val disabledCommandCache = container.daoManager.disabledCommandWrapper.disabledCommandsCache
-    private val disabledChannelCommandCache = container.daoManager.disabledChannelCommandWrapper.disabledChanneldCommandsCache
+    private val channelCommandStateCache = container.daoManager.channelCommandStateWrapper.channelCommandsStateCache
 
 
     private val commandMap: HashMap<String, AbstractCommand> = HashMap()
@@ -66,12 +67,15 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
      *
      * **/
     private fun checksFailed(command: AbstractCommand, event: MessageReceivedEvent): Boolean {
+        if (event.isFromGuild) {
+            if (commandIsDisabled(command, event)) return true
+        }
+
         command.runConditions.forEach {
             if (!runConditionCheckPassed(it, event)) return true
         }
 
         if (event.isFromGuild) {
-            val guildId = event.guild.idLong
             command.discordPermissions.forEach { permission ->
                 val botMember = event.guild.selfMember
                 var missingPermissionCount = 0
@@ -95,6 +99,21 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             if (commandIsOnCooldown(command, event)) return true
 
         }
+
+        return false
+    }
+
+    private fun commandIsDisabled(command: AbstractCommand, event: MessageReceivedEvent): Boolean {
+        val disabledChannelCommands = channelCommandStateCache.get(event.channel.idLong).get()
+        if (disabledChannelCommands.contains(command.id)) {
+            when (disabledChannelCommands[command.id]) {
+                ChannelCommandState.ENABLED -> return false
+                ChannelCommandState.DISABLED -> return true
+            }
+        }
+
+        val disabledCommands = disabledCommandCache.get(event.guild.idLong).get()
+        if (disabledCommands.contains(command.id)) return true
 
         return false
     }
