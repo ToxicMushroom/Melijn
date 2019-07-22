@@ -25,6 +25,7 @@ class CommandContext(
     val daoManager = container.daoManager
     val taskManager = container.taskManager
     val jda = messageReceivedEvent.jda
+    val guildId = getGuild().idLong
 
     fun getCommands() = commandList
 }

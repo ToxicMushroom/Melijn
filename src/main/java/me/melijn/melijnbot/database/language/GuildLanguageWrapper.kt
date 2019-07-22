@@ -24,4 +24,12 @@ class GuildLanguageWrapper(private val taskManager: TaskManager, private val lan
         }
         return languageFuture
     }
+
+    fun setLanguage(guildId: Long, language: String) {
+        val future = CompletableFuture<String>()
+        future.complete(language)
+        languageCache.put(guildId, future)
+
+        languageDao.set(guildId, language)
+    }
 }

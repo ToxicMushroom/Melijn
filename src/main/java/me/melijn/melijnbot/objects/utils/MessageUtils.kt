@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.objects.utils
 
+import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
 import net.dv8tion.jda.api.Permission
@@ -10,6 +11,10 @@ import java.util.function.Consumer
 
 fun printException(currentThread: Thread, e: Exception, originGuild: Guild? = null, originChannel: MessageChannel? = null) {
     println("blub")
+}
+
+fun sendSyntax(cmd: AbstractCommand, context: CommandContext, translationPath: String) {
+
 }
 
 fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String) {
