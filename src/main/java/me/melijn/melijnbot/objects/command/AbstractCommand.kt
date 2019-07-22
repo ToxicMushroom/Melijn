@@ -1,8 +1,8 @@
 package me.melijn.melijnbot.objects.command
 
-import me.duncte123.botcommons.messaging.MessageUtils
 import me.melijn.melijnbot.enums.PermState
 import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.utils.sendMsg
 import net.dv8tion.jda.api.Permission
 
 const val PREFIX_PLACE_HOLDER = "%PREFIX%"
@@ -40,19 +40,19 @@ abstract class AbstractCommand {
     }
 
     private fun sendMissingPermissionMessage(context: CommandContext, permission: String) {
-        MessageUtils.sendMsg(context, Translateable("message.botpermission.missing").string(context)
+        sendMsg(context, Translateable("message.botpermission.missing").string(context)
                 .replace("%permission%", permission))
     }
 
     private fun hasPermission(context: CommandContext, permission: String): Boolean {
         if (!context.isFromGuild) return true
-        if (context.member.isOwner || context.member.hasPermission(Permission.ADMINISTRATOR)) return true
-        val authorId = context.author.idLong
+        if (context.getMember()?.isOwner!! || context.getMember()?.hasPermission(Permission.ADMINISTRATOR) == true) return true
+        val authorId = context.getAuthor().idLong
         //Gives me better ability to help
         if (context.botDevIds.contains(authorId)) return true
 
 
-        val channelId = context.textChannel.idLong
+        val channelId = context.getTextChannel().idLong
         val userMap = context.daoManager.userPermissionWrapper.userPermissionCache.get(authorId).get()
         val channelUserMap = context.daoManager.channelUserPermissionWrapper.channelUserPermissionCache.get(Pair(channelId, authorId)).get()
 
@@ -70,7 +70,7 @@ abstract class AbstractCommand {
         var channelRoleResult = PermState.DEFAULT
 
         //Permission checking for roles
-        for (roleId in context.member.roles.map { role -> role.idLong }) {
+        for (roleId in context.getMember()!!.roles.map { role -> role.idLong }) {
             channelRoleResult = when (context.daoManager.channelRolePermissionWrapper.channelRolePermissionCache.get(Pair(channelId, roleId)).get()[permission]) {
                 PermState.ALLOW -> PermState.ALLOW
                 PermState.DENY -> if (channelRoleResult == PermState.DEFAULT) PermState.DENY else channelRoleResult

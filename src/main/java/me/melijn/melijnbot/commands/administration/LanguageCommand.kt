@@ -29,7 +29,6 @@ class LanguageCommand : AbstractCommand() {
         init {
             name = "list"
             description = Translateable("command.language.list.description")
-
         }
 
         override fun execute(context: CommandContext) {
@@ -47,6 +46,20 @@ class LanguageCommand : AbstractCommand() {
                 }
             }
             return string.replace("%languageList%", sb.toString())
+        }
+    }
+
+    class SetCommand : AbstractCommand() {
+
+        init {
+            name = "set"
+            description = Translateable("command.language.set.description")
+        }
+
+        override fun execute(context: CommandContext) {
+            sendMsg(context,
+                    Translateable("command.language.set.response1").string(context)
+            )
         }
     }
 }

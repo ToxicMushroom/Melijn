@@ -1,12 +1,12 @@
 package me.melijn.melijnbot.commands.utility
 
-import me.duncte123.botcommons.messaging.MessageUtils
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.sendMsg
+import java.util.function.Consumer
 
 
 class PingCommand : AbstractCommand() {
@@ -26,7 +26,7 @@ class PingCommand : AbstractCommand() {
         val part1 = replaceGatewayPing(Translateable("command.ping.response1.part1").string(context), context.jda.gatewayPing)
         val part2 = Translateable("command.ping.response1.part2").string(context)
         val part3 = Translateable("command.ping.response1.part3").string(context)
-        sendMsg(context, part1) { message ->
+        sendMsg(context, part1, Consumer { message ->
             val timeStamp2 = System.currentTimeMillis()
             val msgPing = timeStamp2 - timeStamp1
             context.jda.restPing.queue { restPing ->
@@ -36,7 +36,7 @@ class PingCommand : AbstractCommand() {
                     editedMessage.editMessage("${editedMessage.contentRaw}${replacePart3(part3, eMsgPing)}").queue()
                 }
             }
-        }
+        })
     }
 
     fun replaceGatewayPing(string: String, gatewayPing: Long): String {

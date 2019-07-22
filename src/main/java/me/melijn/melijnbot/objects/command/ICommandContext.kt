@@ -98,9 +98,8 @@ interface ICommandContext {
      *
      * @return the [Boolean] for where the message was sent
      */
-    fun isFromGuild(): Boolean {
-        return this.getEvent().isFromType(ChannelType.TEXT)
-    }
+    val isFromGuild: Boolean
+        get() = this.getEvent().isFromType(ChannelType.TEXT)
 
     /**
      * Returns the [textChannel][TextChannel] that the message for this event was

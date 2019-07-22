@@ -7,7 +7,7 @@ import java.util.function.Consumer
 class EmbedDisabledDao(val driverManager: DriverManager) : Dao(driverManager) {
     override val table: String = "embedDisabled"
     override val tableStructure: String = "guildId bigint"
-    override val keys: String = "PRIMARY KEY guildId"
+    override val keys: String = "PRIMARY KEY (guildId)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)

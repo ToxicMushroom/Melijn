@@ -1,8 +1,8 @@
 package me.melijn.melijnbot.objects.command
 
-import me.duncte123.botcommons.messaging.MessageUtils
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.ChannelCommandState
+import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.toUpperWordCase
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
@@ -91,7 +91,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                                     (if (missingPermissionCount > 1) "s" else "") +
                                     missingPermissionMessage
 
-                    MessageUtils.sendMsg(event, missingPermissionMessage)
+                    sendMsg(event.textChannel, missingPermissionMessage)
                     return true
                 }
             }

@@ -12,7 +12,7 @@ class Translateable(val path: String = "") {
     }
 
     fun string(ctx: CommandContext): String {
-        return string(ctx.daoManager, ctx.author.idLong, ctx.guild.idLong)
+        return string(ctx.daoManager, ctx.getAuthor().idLong, ctx.getGuild().idLong)
     }
 
     fun string(daoManager: DaoManager, userId: Long, guildId: Long = -1): String {

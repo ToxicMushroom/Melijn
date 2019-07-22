@@ -24,7 +24,6 @@ class CommandContext(
     val botDevIds: LongArray = container.settings.developerIds
     val daoManager = container.daoManager
     val taskManager = container.taskManager
-    val messageUtils = container.messageUtils
     val jda = messageReceivedEvent.jda
 
     fun getCommands() = commandList
