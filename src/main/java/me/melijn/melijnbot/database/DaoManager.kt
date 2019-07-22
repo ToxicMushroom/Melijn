@@ -11,6 +11,8 @@ import me.melijn.melijnbot.database.disabled.ChannelCommandStateDao
 import me.melijn.melijnbot.database.disabled.ChannelCommandStateWrapper
 import me.melijn.melijnbot.database.disabled.DisabledCommandDao
 import me.melijn.melijnbot.database.disabled.DisabledCommandWrapper
+import me.melijn.melijnbot.database.embed.EmbedDisabledDao
+import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
 import me.melijn.melijnbot.database.language.GuildLanguageDao
 import me.melijn.melijnbot.database.language.GuildLanguageWrapper
 import me.melijn.melijnbot.database.language.UserLanguageDao
@@ -56,9 +58,10 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
 
     val supporterWrapper: SupporterWrapper
 
+    val embedDisabledWrapper: EmbedDisabledWrapper
 
     init {
-        val driverManager = DriverManager(mysqlSettings, taskManager.messageUtils)
+        val driverManager = DriverManager(mysqlSettings)
 
         commandWrapper = CommandWrapper(taskManager, CommandDao(driverManager))
 
@@ -81,6 +84,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
 
         supporterWrapper = SupporterWrapper(taskManager, UserSupporterDao(driverManager))
 
+        embedDisabledWrapper = EmbedDisabledWrapper(taskManager, EmbedDisabledDao(driverManager))
 
         //After registering wrappers
         driverManager.executeTableRegistration()

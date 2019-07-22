@@ -3,7 +3,7 @@ package me.melijn.melijnbot.database
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import me.melijn.melijnbot.Settings
-import me.melijn.melijnbot.objects.utils.MessageUtils
+import me.melijn.melijnbot.objects.utils.printException
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -11,10 +11,10 @@ import java.util.function.Consumer
 import javax.sql.DataSource
 
 
-class DriverManager(mysqlSettings: Settings.MySQL, private val messageUtils: MessageUtils) {
+class DriverManager(mysqlSettings: Settings.MySQL) {
 
     private val tableRegistrationQueries = ArrayList<String>()
-    val dataSource: DataSource
+    private val dataSource: DataSource
     private val logger = LoggerFactory.getLogger(DriverManager::class.java.name)
 
     init {
@@ -80,7 +80,7 @@ class DriverManager(mysqlSettings: Settings.MySQL, private val messageUtils: Mes
             }
         } catch (e: SQLException) {
             logger.error("Something went wrong when executing the query: $query")
-            messageUtils.printException(Thread.currentThread(), e)
+            printException(Thread.currentThread(), e)
             e.printStackTrace()
         }
 
@@ -100,6 +100,7 @@ class DriverManager(mysqlSettings: Settings.MySQL, private val messageUtils: Mes
             }
         } catch (e: SQLException) {
             logger.error("Something went wrong when executing the query: $query")
+            printException(Thread.currentThread(), e)
             e.printStackTrace()
         }
 

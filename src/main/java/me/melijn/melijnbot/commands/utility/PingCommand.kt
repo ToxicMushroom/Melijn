@@ -6,6 +6,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
 import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.utils.sendMsg
 
 
 class PingCommand : AbstractCommand() {
@@ -25,7 +26,7 @@ class PingCommand : AbstractCommand() {
         val part1 = replaceGatewayPing(Translateable("command.ping.response1.part1").string(context), context.jda.gatewayPing)
         val part2 = Translateable("command.ping.response1.part2").string(context)
         val part3 = Translateable("command.ping.response1.part3").string(context)
-        MessageUtils.sendMsg(context, part1) { message ->
+        sendMsg(context, part1) { message ->
             val timeStamp2 = System.currentTimeMillis()
             val msgPing = timeStamp2 - timeStamp1
             context.jda.restPing.queue { restPing ->
@@ -63,7 +64,7 @@ class PingCommand : AbstractCommand() {
         }
 
         override fun execute(context: CommandContext) {
-            MessageUtils.sendMsg(context, Translateable("command.ping.pong.response1").string(context))
+            sendMsg(context, Translateable("command.ping.pong.response1").string(context))
         }
 
         private class DunsteCommand : AbstractCommand() {
@@ -74,7 +75,7 @@ class PingCommand : AbstractCommand() {
             }
 
             override fun execute(context: CommandContext) {
-                MessageUtils.sendMsg(context, Translateable("command.ping.pong.dunste.response1").string(context))
+                sendMsg(context, Translateable("command.ping.pong.dunste.response1").string(context))
             }
         }
     }

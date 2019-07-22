@@ -1,15 +1,16 @@
 package me.melijn.melijnbot.objects.threading
 
-import me.melijn.melijnbot.objects.utils.MessageUtils
+import me.melijn.melijnbot.objects.utils.printException
 
-class Task(private val messageUtils: MessageUtils, private val runnable: Runnable) : Runnable {
+
+class Task(private val runnable: Runnable) : Runnable {
 
     override fun run() {
         try {
             runnable.run()
         } catch (e: Exception) {
             e.printStackTrace()
-            messageUtils.printException(Thread.currentThread(), e, null, null)
+            printException(Thread.currentThread(), e, null, null)
         }
     }
 }

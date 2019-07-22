@@ -20,7 +20,7 @@ class Translateable(val path: String = "") {
         return if (guildId > 0) {
             if (isSupporter)
                 when (daoManager.userLanguageWrapper.languageCache.get(userId).get()) {
-                    "nl_BE" -> dutchBelgianRecourseBundle.getString(path)
+                    "NL_BE" -> dutchBelgianRecourseBundle.getString(path)
                     else -> guildString(daoManager, guildId)
                 }
             else guildString(daoManager, guildId)
@@ -33,14 +33,14 @@ class Translateable(val path: String = "") {
 
     private fun userString(daoManager: DaoManager, userId: Long): String {
         return when (daoManager.userLanguageWrapper.languageCache.get(userId).get()) {
-            "nl_BE" -> dutchBelgianRecourseBundle.getString(path)
+            "NL_BE" -> dutchBelgianRecourseBundle.getString(path)
             else -> defaultRecourseBundle.getString(path)
         }
     }
 
     private fun guildString(daoManager: DaoManager, guildId: Long): String {
         return when (daoManager.guildLanguageWrapper.languageCache.get(guildId).get()) {
-            "nl_BE" -> dutchBelgianRecourseBundle.getString(path)
+            "NL_BE" -> dutchBelgianRecourseBundle.getString(path)
             else -> defaultRecourseBundle.getString(path)
         }
     }
