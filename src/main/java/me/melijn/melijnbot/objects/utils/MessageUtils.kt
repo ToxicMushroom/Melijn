@@ -12,6 +12,39 @@ fun printException(currentThread: Thread, e: Exception, originGuild: Guild? = nu
     println("blub")
 }
 
+fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String) {
+    if (context.isFromGuild) {
+        val channel = context.getTextChannel()
+        if (channel.canTalk()) {
+            if (msg.length <= 2000) {
+                channel.sendMessage(msg).queue()
+            } else {
+                val parts = StringUtils().splitMessage(msg, margin = 8 + lang.length);
+                parts.forEachIndexed { index, msgPart ->
+                    channel.sendMessage(when {
+                        index == 0 -> "$msgPart```"
+                        index + 1 == parts.size -> "```$lang\n$msgPart"
+                        else -> "```$lang\n$msgPart```"
+                    }).queue()
+                }
+            }
+        }
+    } else {
+        val privateChannel = context.getPrivateChannel()
+        if (msg.length <= 2000) {
+            privateChannel.sendMessage(msg).queue()
+        } else {
+            val parts = StringUtils().splitMessage(msg, margin = 8 + lang.length);
+            parts.forEachIndexed { index, msgPart ->
+                privateChannel.sendMessage(when {
+                    index == 0 -> "$msgPart```"
+                    index + 1 == parts.size -> "```$lang\n$msgPart"
+                    else -> "```$lang\n$msgPart```"
+                }).queue()
+            }
+        }
+    }
+}
 
 fun sendEmbed(context: CommandContext, embed: MessageEmbed, success: Consumer<Message>? = null, failed: Consumer<Throwable>? = null) {
     if (context.isFromGuild) {
