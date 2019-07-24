@@ -1,8 +1,8 @@
 package me.melijn.melijnbot.objects.utils
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
+import me.melijn.melijnbot.objects.translation.Translateable
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import java.time.format.DateTimeFormatter
@@ -13,8 +13,10 @@ fun printException(currentThread: Thread, e: Exception, originGuild: Guild? = nu
     println("blub")
 }
 
-fun sendSyntax(cmd: AbstractCommand, context: CommandContext, translationPath: String) {
-
+fun sendSyntax(context: CommandContext, translationPath: String) {
+    var syntax = Translateable(translationPath).default()
+    syntax = syntax.replace(PREFIX_PLACE_HOLDER, context.commandParts[0])
+    sendMsg(context.getTextChannel(), "Correct usage: `$syntax`")
 }
 
 fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String) {
@@ -100,10 +102,10 @@ fun sendMsg(context: CommandContext, msg: String, success: Consumer<Message>? = 
 
 fun sendMsg(privateChannel: PrivateChannel, msg: String, success: Consumer<Message>? = null) {
     if (msg.length <= 2000) {
-        privateChannel.sendMessage(msg).queue()
+        privateChannel.sendMessage(msg).queue(success)
     } else {
         StringUtils().splitMessage(msg).forEach {
-            privateChannel.sendMessage(it).queue()
+            privateChannel.sendMessage(it).queue(success)
         }
     }
 }
@@ -111,10 +113,10 @@ fun sendMsg(privateChannel: PrivateChannel, msg: String, success: Consumer<Messa
 fun sendMsg(channel: TextChannel, msg: String, success: Consumer<Message>? = null) {
     if (channel.canTalk()) {
         if (msg.length <= 2000) {
-            channel.sendMessage(msg).queue()
+            channel.sendMessage(msg).queue(success)
         } else {
             StringUtils().splitMessage(msg).forEach {
-                channel.sendMessage(it).queue()
+                channel.sendMessage(it).queue(success)
             }
         }
     }
