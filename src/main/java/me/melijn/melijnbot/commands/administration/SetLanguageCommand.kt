@@ -16,6 +16,7 @@ class SetLanguageCommand : AbstractCommand() {
     init {
         id = 2
         name = "setLanguage"
+        syntax = Translateable("$root.syntax")
         aliases = arrayOf("setLang", "sl")
         description = Translateable("$root.description")
         commandCategory = CommandCategory.ADMINISTRATION
@@ -31,7 +32,7 @@ class SetLanguageCommand : AbstractCommand() {
             context.commandParts.size == 3 -> {
                 setLang(context)
             }
-            else -> sendSyntax(context, "$root.syntax")
+            else -> sendSyntax(context, syntax)
         }
     }
 

@@ -45,11 +45,12 @@ class SetEmbedStateCommand : AbstractCommand() {
     }
 
     private fun setEmbedStateState(context: CommandContext) {
-        val disabledState: Boolean? = boolFromStateArg(context.commandParts[2].toLowerCase())
+        var disabledState: Boolean? = boolFromStateArg(context.commandParts[2].toLowerCase())
         if (disabledState == null) {
-            sendSyntax(context, syntax.path)
+            sendSyntax(context, syntax)
             return
         }
+        disabledState = !disabledState
 
         val dao = context.daoManager.embedDisabledWrapper
         dao.setDisabled(context.guildId, disabledState)
@@ -61,7 +62,8 @@ class SetEmbedStateCommand : AbstractCommand() {
     }
 
 
+
     private fun replaceState(msg: String, disabledState: Boolean): String {
-        return msg.replace("%disabledState%", if (disabledState) "disabled" else "false")
+        return msg.replace("%disabledState%", if (disabledState) "disabled" else "enabled")
     }
 }

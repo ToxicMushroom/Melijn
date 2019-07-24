@@ -14,10 +14,15 @@ fun printException(currentThread: Thread, e: Exception, originGuild: Guild? = nu
 }
 
 fun sendSyntax(context: CommandContext, translationPath: String) {
-    var syntax = Translateable(translationPath).string(context)
-    syntax = syntax.replace(PREFIX_PLACE_HOLDER, context.commandParts[0])
+    val syntax = Translateable(translationPath)
+    sendSyntax(context, syntax)
+}
+
+fun sendSyntax(context: CommandContext, syntax: Translateable) {
+    var syntaxString = syntax.string(context)
+    syntaxString = syntaxString.replace(PREFIX_PLACE_HOLDER, context.commandParts[0])
     sendMsg(context.getTextChannel(),
-            Translateable("message.command.usage").string(context).replace("%syntax%", syntax)
+            Translateable("message.command.usage").string(context).replace("%syntax%", syntaxString)
     )
 }
 

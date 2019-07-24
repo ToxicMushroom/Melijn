@@ -3,7 +3,6 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.sendMsg
 import java.util.function.Consumer
@@ -14,7 +13,7 @@ class PingCommand : AbstractCommand() {
     init {
         id = 1
         name = "ping"
-        syntax = "$PREFIX_PLACE_HOLDER$name [pong] [dunste]"
+        syntax = Translateable("command.ping.syntax")
         aliases = arrayOf("pong")
         description = Translateable("command.ping.description")
         commandCategory = CommandCategory.UTILITY
