@@ -14,9 +14,11 @@ fun printException(currentThread: Thread, e: Exception, originGuild: Guild? = nu
 }
 
 fun sendSyntax(context: CommandContext, translationPath: String) {
-    var syntax = Translateable(translationPath).default()
+    var syntax = Translateable(translationPath).string(context)
     syntax = syntax.replace(PREFIX_PLACE_HOLDER, context.commandParts[0])
-    sendMsg(context.getTextChannel(), "Correct usage: `$syntax`")
+    sendMsg(context.getTextChannel(),
+            Translateable("message.command.usage").string(context).replace("%syntax%", syntax)
+    )
 }
 
 fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String) {

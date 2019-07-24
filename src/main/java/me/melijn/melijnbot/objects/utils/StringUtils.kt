@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.objects.utils
 
 import java.util.*
+import javax.annotation.Nullable
 
 class StringUtils {
     fun splitMessage(message: String, nextSplitThreshold: Int = 1800, margin: Int = 0): List<String> {
@@ -24,5 +25,17 @@ class StringUtils {
         if (msg.isNotEmpty()) messages.add(msg)
         return messages
     }
+}
 
+/** Returns true if state is positive (yes, enable, enabled...)
+ * Returns false if state is negative (no, disable, disabled...)
+ * Returns null if state is neither (you can handle this with the elvis operator or a null check)
+ * **/
+@Nullable
+fun boolFromStateArg(state: String): Boolean? {
+    return when (state) {
+        "disable", "no", "false", "disabled", "off" -> true
+        "enable", "yes", "true", "enabled", "on" -> true
+        else -> null
+    }
 }

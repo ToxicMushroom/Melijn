@@ -12,7 +12,7 @@ abstract class AbstractCommand {
     var name: String = ""
     var id: Int = 0
     var description: Translateable = Translateable("empty")
-    var syntax: String = PREFIX_PLACE_HOLDER + name
+    var syntax: Translateable = Translateable("empty")
     var help: Translateable = Translateable("empty")
     var commandCategory: CommandCategory = CommandCategory.DEVELOPER
     var aliases: Array<String> = arrayOf()
