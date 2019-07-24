@@ -5,7 +5,7 @@ import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.sendMsg
 import net.dv8tion.jda.api.Permission
 
-const val PREFIX_PLACE_HOLDER = "%PREFIX%"
+const val PREFIX_PLACE_HOLDER = "%prefix%"
 
 abstract class AbstractCommand {
 
