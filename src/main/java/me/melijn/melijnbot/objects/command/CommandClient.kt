@@ -23,9 +23,9 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
     init {
         commandList.forEach { command ->
-            commandMap[command.name] = command
+            commandMap[command.name.toLowerCase()] = command
             for (alias in command.aliases) {
-                commandMap[alias] = command
+                commandMap[alias.toLowerCase()] = command
             }
         }
     }
@@ -52,7 +52,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                                 .split(Regex("\\s+")))
                         commandParts.add(0, prefix)
 
-                        val command = commandMap.getOrElse(commandParts[1], { null }) ?: continue
+                        val command = commandMap.getOrElse(commandParts[1].toLowerCase(), { null }) ?: continue
                         if (checksFailed(command, event)) return@Runnable
                         command.run(CommandContext(event, commandParts, container, commandList))
                         break
