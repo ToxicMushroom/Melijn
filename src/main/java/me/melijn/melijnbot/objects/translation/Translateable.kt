@@ -15,6 +15,13 @@ class Translateable(val path: String = "") {
         return string(ctx.daoManager, ctx.getAuthor().idLong, ctx.getGuild().idLong)
     }
 
+    fun string(lang: String): String {
+        return when (lang) {
+            "NL_BE" -> dutchBelgianRecourseBundle.getString(path)
+            else -> defaultRecourseBundle.getString(path)
+        }
+    }
+
     fun string(daoManager: DaoManager, userId: Long, guildId: Long = -1): String {
         val isSupporter = daoManager.supporterWrapper.supporterIds.contains(userId)
         return if (guildId > 0) {
