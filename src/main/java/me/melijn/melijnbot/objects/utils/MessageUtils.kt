@@ -66,12 +66,13 @@ fun sendEmbed(context: CommandContext, embed: MessageEmbed, success: Consumer<Me
         if (channel.canTalk()) {
             if (channel.guild.selfMember.hasPermission(Permission.MESSAGE_EMBED_LINKS) &&
                     !context.daoManager.embedDisabledWrapper.embedDisabledCache.contains(context.getGuild().idLong)) {
-
+                context.getTextChannel().sendMessage(embed).queue(success, failed)
             } else {
                 sendEmbedAsMessage(context, embed, success, failed)
             }
         }
-    } else context.getPrivateChannel().sendMessage(embed).queue(success, failed)
+    } else
+        context.getPrivateChannel().sendMessage(embed).queue(success, failed)
 }
 
 fun sendEmbedAsMessage(context: CommandContext, embed: MessageEmbed, success: Consumer<Message>?, failed: Consumer<Throwable>?) {
