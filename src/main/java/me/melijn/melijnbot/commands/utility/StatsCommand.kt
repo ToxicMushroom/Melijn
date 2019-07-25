@@ -57,7 +57,6 @@ class StatsCommand : AbstractCommand() {
 
         val value2 = replaceValue2Vars(
                 Translateable("$root.response.field2.value").string(context),
-                DecimalFormat("###.###%").format(bean.systemCpuLoad),
                 bean.availableProcessors,
                 "${usedMem}MB/${totalMem}MB",
                 getDurationString(getSystemUptime())
@@ -86,13 +85,12 @@ class StatsCommand : AbstractCommand() {
                 .replace("%userCount%", userCount.toString())
                 .replace("%guildCount%", guildCount.toString())
                 .replace("%cVCCount%", voiceChannels.toString())
-                .replace("%threadCount%", threadCount.toString())
+                .replace("%botThreadCount%", threadCount.toString())
                 .replace("%botUptime%", uptime)
     }
 
-    private fun replaceValue2Vars(value: String, cpuUsage: String, coreCount: Int, ramUsage: String, uptime: String): String {
+    private fun replaceValue2Vars(value: String, coreCount: Int, ramUsage: String, uptime: String): String {
         return value
-                .replace("%systemCPUUsage%", cpuUsage)
                 .replace("%coreCount%", coreCount.toString())
                 .replace("%ramUsage%", ramUsage)
                 .replace("%systemUptime%", uptime)
