@@ -11,8 +11,7 @@ import me.melijn.melijnbot.database.disabled.ChannelCommandStateDao
 import me.melijn.melijnbot.database.disabled.ChannelCommandStateWrapper
 import me.melijn.melijnbot.database.disabled.DisabledCommandDao
 import me.melijn.melijnbot.database.disabled.DisabledCommandWrapper
-import me.melijn.melijnbot.database.embed.EmbedDisabledDao
-import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
+import me.melijn.melijnbot.database.embed.*
 import me.melijn.melijnbot.database.language.GuildLanguageDao
 import me.melijn.melijnbot.database.language.GuildLanguageWrapper
 import me.melijn.melijnbot.database.language.UserLanguageDao
@@ -59,6 +58,8 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
     val supporterWrapper: SupporterWrapper
 
     val embedDisabledWrapper: EmbedDisabledWrapper
+    val embedColorWrapper: EmbedColorWrapper
+    val userEmbedColorWrapper: UserEmbedColorWrapper
 
     init {
         val driverManager = DriverManager(mysqlSettings)
@@ -85,6 +86,8 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
         supporterWrapper = SupporterWrapper(taskManager, UserSupporterDao(driverManager))
 
         embedDisabledWrapper = EmbedDisabledWrapper(taskManager, EmbedDisabledDao(driverManager))
+        embedColorWrapper = EmbedColorWrapper(taskManager, EmbedColorDao(driverManager))
+        userEmbedColorWrapper = UserEmbedColorWrapper(taskManager, UserEmbedColorDao(driverManager))
 
         //After registering wrappers
         driverManager.executeTableRegistration()
