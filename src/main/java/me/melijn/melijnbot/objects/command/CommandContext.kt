@@ -26,6 +26,7 @@ class CommandContext(
     val taskManager = container.taskManager
     val jda = messageReceivedEvent.jda
     val guildId = getGuild().idLong
+    val authorId = getAuthor().idLong
 
     fun getCommands() = commandList
 }
