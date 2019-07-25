@@ -24,6 +24,7 @@ class UserSupporterDao(val driverManager: DriverManager) : Dao(driverManager) {
                         resultset.getLong("startDate")
                 ))
             }
+            supporters.accept(list)
         })
     }
 
