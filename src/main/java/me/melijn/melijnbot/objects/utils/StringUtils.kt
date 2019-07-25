@@ -43,7 +43,7 @@ fun boolFromStateArg(state: String): Boolean? {
 }
 
 fun getDurationString(milliseconds: Long): String {
-    return getDurationString(java.lang.Double.valueOf(milliseconds.toDouble()))
+    return getDurationString(milliseconds.toDouble())
 }
 
 fun getDurationString(milliseconds: Double): String {
