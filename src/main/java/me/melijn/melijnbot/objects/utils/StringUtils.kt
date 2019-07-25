@@ -1,7 +1,9 @@
 package me.melijn.melijnbot.objects.utils
 
 import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.annotation.Nullable
+
 
 class StringUtils {
     fun splitMessage(message: String, nextSplitThreshold: Int = 1800, margin: Int = 0): List<String> {
@@ -37,5 +39,45 @@ fun boolFromStateArg(state: String): Boolean? {
         "disable", "no", "false", "disabled", "off" -> true
         "enable", "yes", "true", "enabled", "on" -> true
         else -> null
+    }
+}
+
+fun getDurationString(milliseconds: Long): String {
+    return getDurationString(java.lang.Double.valueOf(milliseconds.toDouble()))
+}
+
+fun getDurationString(milliseconds: Double): String {
+    if (milliseconds < 0.0) {
+        return "error"
+    }
+
+    var millis = milliseconds.toLong()
+    val days = TimeUnit.MILLISECONDS.toDays(millis)
+    millis -= TimeUnit.DAYS.toMillis(days)
+    val hours = TimeUnit.MILLISECONDS.toHours(millis)
+    millis -= TimeUnit.HOURS.toMillis(hours)
+    val minutes = TimeUnit.MILLISECONDS.toMinutes(millis)
+    millis -= TimeUnit.MINUTES.toMillis(minutes)
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(millis)
+
+    val sb = StringBuilder(64)
+    if (days != 0L) {
+        sb.append(days)
+        sb.append("d ")
+    }
+    appendTimePart(hours, sb)
+    appendTimePart(minutes, sb)
+    if (seconds < 10) sb.append(0)
+    sb.append(seconds)
+    sb.append("s")
+
+    return sb.toString()
+}
+
+private fun appendTimePart(hours: Long, sb: StringBuilder) {
+    if (hours != 0L) {
+        if (hours < 10) sb.append(0)
+        sb.append(hours)
+        sb.append(":")
     }
 }
