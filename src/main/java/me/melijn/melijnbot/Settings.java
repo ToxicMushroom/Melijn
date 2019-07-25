@@ -9,6 +9,7 @@ public class Settings {
     public Environment environment;
     public int shardCount;
     public int restPort;
+    public int embedColor;
 
     public Spotify spotify;
     public Lavalink lavalink;

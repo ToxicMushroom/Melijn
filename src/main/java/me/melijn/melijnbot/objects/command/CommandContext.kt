@@ -19,6 +19,7 @@ class CommandContext(
         return messageReceivedEvent.guild
     }
 
+    val embedColor: Int = container.settings.embedColor
     val prefix: String = container.settings.prefix
     var commandOrder: List<AbstractCommand> = emptyList()
     val botDevIds: LongArray = container.settings.developerIds
