@@ -19,12 +19,12 @@ fun getSystemUptime(): Long {
             for (line in `in`.readLines()) {
                 if (line.startsWith("Statistieken vanaf")) {
                     val format = SimpleDateFormat("'Statistieken vanaf' dd/MM/yyyy hh:mm:ss") //Dutch windows version
-                    val bootTime = format.parse(line)
+                    val bootTime = format.parse(line.replace("?", ""))
                     uptime = System.currentTimeMillis() - bootTime.time
                     break
                 } else if (line.startsWith("Statistics since")) {
-                    val format = SimpleDateFormat("'Statistics since' MM/dd/yyyy hh:mm:ss a") //English windows version
-                    val bootTime = format.parse(line)
+                    val format = SimpleDateFormat("'Statistics since' MM/dd/yyyy hh:mm:ss") //English windows version
+                    val bootTime = format.parse(line.replace("?", ""))
                     uptime = System.currentTimeMillis() - bootTime.time
                     break
                 }
