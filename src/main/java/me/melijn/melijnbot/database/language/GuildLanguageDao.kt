@@ -27,4 +27,8 @@ class GuildLanguageDao(private val driverManager: DriverManager) : Dao(driverMan
         driverManager.executeUpdate("INSERT INTO $table (guildId, language) VALUES (?, ?) ON DUPLICATE KEY UPDATE language = ?",
                 guildId, language, language)
     }
+
+    fun remove(guildId: Long) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ?", guildId)
+    }
 }

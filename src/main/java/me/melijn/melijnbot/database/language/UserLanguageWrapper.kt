@@ -23,4 +23,15 @@ class UserLanguageWrapper(val taskManager: TaskManager, val userLanguageDao: Use
         }
         return languageFuture
     }
+
+    fun setLanguage(guildId: Long, language: String) {
+        val future = CompletableFuture.completedFuture(language)
+        languageCache.put(guildId, future)
+
+        if ("".equals(language, true))
+            userLanguageDao.remove(guildId)
+        else
+            userLanguageDao.set(guildId, language)
+
+    }
 }

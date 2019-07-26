@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.language
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import me.melijn.melijnbot.database.FREQUENTLY_USED_CACHE
+import me.melijn.melijnbot.enums.Language
 import me.melijn.melijnbot.objects.threading.TaskManager
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
@@ -27,9 +28,14 @@ class GuildLanguageWrapper(private val taskManager: TaskManager, private val lan
 
     fun setLanguage(guildId: Long, language: String) {
         val future = CompletableFuture<String>()
-        future.complete(language)
         languageCache.put(guildId, future)
 
-        languageDao.set(guildId, language)
+        if ("".equals(language, true)) {
+            future.complete(Language.EN.toString())
+            languageDao.remove(guildId)
+        } else {
+            future.complete(language)
+            languageDao.set(guildId, language)
+        }
     }
 }
