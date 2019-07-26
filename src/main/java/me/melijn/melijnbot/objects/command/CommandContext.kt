@@ -19,6 +19,8 @@ class CommandContext(
         return messageReceivedEvent.guild
     }
 
+    val usedPrefix: String = commandParts[0]
+    val args: List<String> = commandParts.drop(2)
     val embedColor: Int = container.settings.embedColor
     val prefix: String = container.settings.prefix
     var commandOrder: List<AbstractCommand> = emptyList()

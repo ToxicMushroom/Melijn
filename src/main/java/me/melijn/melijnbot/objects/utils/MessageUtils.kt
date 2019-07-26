@@ -64,7 +64,7 @@ fun sendEmbed(context: CommandContext, embed: MessageEmbed, success: Consumer<Me
     if (context.isFromGuild) {
         val channel = context.getTextChannel()
         if (channel.canTalk()) {
-            if (channel.guild.selfMember.hasPermission(Permission.MESSAGE_EMBED_LINKS) &&
+            if (channel.guild.selfMember.hasPermission(channel, Permission.MESSAGE_EMBED_LINKS) &&
                     !context.daoManager.embedDisabledWrapper.embedDisabledCache.contains(context.getGuild().idLong)) {
                 context.getTextChannel().sendMessage(embed).queue(success, failed)
             } else {
@@ -78,53 +78,54 @@ fun sendEmbed(context: CommandContext, embed: MessageEmbed, success: Consumer<Me
 fun sendEmbedAsMessage(context: CommandContext, embed: MessageEmbed, success: Consumer<Message>?, failed: Consumer<Throwable>?) {
     val sb = StringBuilder()
     if (embed.author != null) {
-        sb.append("**").append(embed.author!!.name).appendln("**")
+        sb.append("***").append(embed.author?.name).appendln("***")
     }
     if (embed.title != null) {
-        sb.appendln(embed.title)
+        sb.appendln("**__${embed.title}__**\n")
     }
     if (embed.description != null) {
-        sb.append(embed.description!!.replace(Regex("\\[(.+)]\\((.+)\\)"), "$1 (Link: $2)")).append("\n\n")
+        sb.append(embed.description?.replace(Regex("\\[(.+)]\\((.+)\\)"), "$1 (Link: $2)")).append("\n\n")
     }
     if (embed.fields.isNotEmpty()) {
         for (field in embed.fields) {
-            sb.append("__").append(field.name).append("__\n")
-                    .append(field.value!!.replace(Regex("\\[(.+)]\\((.+)\\)"), "$1 (Link: $2)")).append("\n\n")
+            sb.append("**").append(field.name).append("**\n")
+                    .append(field.value?.replace(Regex("\\[(.+)]\\((.+)\\)"), "$1 (Link: $2)")).append("\n\n")
         }
     }
     if (embed.footer != null) {
-        sb.append(embed.footer!!.text)
+        sb.append("*${embed.footer?.text}")
         if (embed.timestamp != null)
             sb.append(" | ")
+        else sb.append("*")
     }
     if (embed.timestamp != null) {
-        sb.append(embed.timestamp!!.format(DateTimeFormatter.ISO_DATE_TIME))
+        sb.append(embed.timestamp?.format(DateTimeFormatter.ISO_DATE_TIME)).append("*")
     }
-    sendMsg(context.getTextChannel(), sb.toString(), success)
+    sendMsg(context.getTextChannel(), sb.toString(), success, failed)
 }
 
-fun sendMsg(context: CommandContext, msg: String, success: Consumer<Message>? = null) {
-    if (context.isFromGuild) sendMsg(context.getTextChannel(), msg, success)
-    else sendMsg(context.getPrivateChannel(), msg, success)
+fun sendMsg(context: CommandContext, msg: String, success: Consumer<Message>? = null, failed: Consumer<Throwable>? = null) {
+    if (context.isFromGuild) sendMsg(context.getTextChannel(), msg, success, failed)
+    else sendMsg(context.getPrivateChannel(), msg, success, failed)
 }
 
-fun sendMsg(privateChannel: PrivateChannel, msg: String, success: Consumer<Message>? = null) {
+fun sendMsg(privateChannel: PrivateChannel, msg: String, success: Consumer<Message>? = null, failed: Consumer<Throwable>? = null) {
     if (msg.length <= 2000) {
-        privateChannel.sendMessage(msg).queue(success)
+        privateChannel.sendMessage(msg).queue(success, failed)
     } else {
         StringUtils().splitMessage(msg).forEach {
-            privateChannel.sendMessage(it).queue(success)
+            privateChannel.sendMessage(it).queue(success, failed)
         }
     }
 }
 
-fun sendMsg(channel: TextChannel, msg: String, success: Consumer<Message>? = null) {
+fun sendMsg(channel: TextChannel, msg: String, success: Consumer<Message>? = null, failed: Consumer<Throwable>? = null) {
     if (channel.canTalk()) {
         if (msg.length <= 2000) {
-            channel.sendMessage(msg).queue(success)
+            channel.sendMessage(msg).queue(success, failed)
         } else {
             StringUtils().splitMessage(msg).forEach {
-                channel.sendMessage(it).queue(success)
+                channel.sendMessage(it).queue(success, failed)
             }
         }
     }
