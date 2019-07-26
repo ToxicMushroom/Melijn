@@ -17,7 +17,7 @@ class UserLanguageDao(private val driverManager: DriverManager) : Dao(driverMana
         driverManager.executeQuery("SELECT * FROM $table WHERE userId = ?", Consumer { resultset ->
             if (resultset.next()) {
                 language.accept(resultset.getString("language"))
-            } else language.accept("EN")
+            } else language.accept("")
 
         }, userId)
     }
@@ -25,5 +25,9 @@ class UserLanguageDao(private val driverManager: DriverManager) : Dao(driverMana
     fun set(userId: Long, language: String) {
         driverManager.executeUpdate("INSERT INTO $table (userId, language) VALUES (?, ?) ON DUPLICATE KEY UPDATE language = ?",
                 userId, language, language)
+    }
+
+    fun remove(userId: Long) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ?", userId)
     }
 }
