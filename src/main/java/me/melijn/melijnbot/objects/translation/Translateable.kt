@@ -28,6 +28,7 @@ class Translateable(val path: String = "") {
             if (isSupporter)
                 when (daoManager.userLanguageWrapper.languageCache.get(userId).get()) {
                     "NL_BE" -> dutchBelgianRecourseBundle.getString(path)
+                    "EN" -> defaultRecourseBundle.getString(path)
                     else -> guildString(daoManager, guildId)
                 }
             else guildString(daoManager, guildId)
