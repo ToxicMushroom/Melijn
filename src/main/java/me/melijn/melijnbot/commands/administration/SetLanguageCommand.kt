@@ -40,6 +40,7 @@ class SetLanguageCommand : AbstractCommand() {
         val dao = context.daoManager.guildLanguageWrapper
         val lang = dao.languageCache.get(context.guildId).get()
 
+
         sendMsg(context, replaceLang(
                 Translateable("$root.currentlangresponse").string(context),
                 lang
@@ -48,8 +49,10 @@ class SetLanguageCommand : AbstractCommand() {
 
     private fun setLang(context: CommandContext) {
         val lang: String
+        val shouldUnset = "null".equals(context.commandParts[2], true)
         try {
-            lang = Language.valueOf(context.commandParts[2].toUpperCase()).toString()
+            lang = if (shouldUnset) ""
+            else Language.valueOf(context.commandParts[2].toUpperCase()).toString()
         } catch (ignored: IllegalArgumentException) {
             sendMsg(context,
                     replaceArg(
@@ -64,8 +67,10 @@ class SetLanguageCommand : AbstractCommand() {
         val dao = context.daoManager.guildLanguageWrapper
         dao.setLanguage(context.guildId, lang)
 
+
+        val possible = if (shouldUnset) "un" else ""
         sendMsg(context, replaceLang(
-                Translateable("$root.set.success").string(context),
+                Translateable("$root.${possible}set.success").string(context),
                 lang
         ))
     }
