@@ -7,6 +7,7 @@ import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.sendSyntax
 import java.util.stream.Collectors
 
 
@@ -79,9 +80,11 @@ class HelpCommand : AbstractCommand() {
                     msg = replaceCmdVars(msg, context, command)
 
                     sendMsg(context, msg)
-                    break
+                    return
                 }
             }
+
+            sendSyntax(context, syntax)
         }
     }
 
@@ -93,6 +96,7 @@ class HelpCommand : AbstractCommand() {
                 .replace("%cmdDescription%", command.description.string(context))
                 .replace("%cmdHelp%", command.help.string(context))
                 .replace("%cmdCategory%", command.commandCategory.toString())
+                .replace("%prefix%", context.usedPrefix)
     }
 
     fun commandListString(list: Set<AbstractCommand>, category: CommandCategory): String {
