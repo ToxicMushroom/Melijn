@@ -14,9 +14,7 @@ import java.text.DecimalFormat
 import java.util.concurrent.ThreadPoolExecutor
 
 
-class StatsCommand : AbstractCommand() {
-
-    val root = "command.stats"
+class StatsCommand : AbstractCommand("command.stats") {
 
     init {
         id = 4

@@ -7,18 +7,22 @@ import net.dv8tion.jda.api.Permission
 
 const val PREFIX_PLACE_HOLDER = "%prefix%"
 
-abstract class AbstractCommand {
+abstract class AbstractCommand(val root: String) {
 
     var name: String = ""
     var id: Int = 0
-    var description: Translateable = Translateable("empty")
-    var syntax: Translateable = Translateable("empty")
-    var help: Translateable = Translateable("empty")
+    var description = Translateable("$root.description")
+    var syntax = Translateable("$root.syntax")
+    var help = Translateable("$root.help")
     var commandCategory: CommandCategory = CommandCategory.DEVELOPER
     var aliases: Array<String> = arrayOf()
     var discordPermissions: Array<Permission> = arrayOf()
     var runConditions: Array<RunCondition> = arrayOf()
     var children: Array<AbstractCommand> = arrayOf()
+
+    init {
+        description = Translateable("$root.description")
+    }
 
     protected abstract fun execute(context: CommandContext)
     public final fun run(context: CommandContext, commandPartInvoke: Int = 1) {

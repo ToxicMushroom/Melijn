@@ -10,8 +10,7 @@ import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendMsgCodeBlock
 import me.melijn.melijnbot.objects.utils.sendSyntax
 
-class SetLanguageCommand : AbstractCommand() {
-    private val root = "command.setlanguage"
+class SetLanguageCommand : AbstractCommand("command.setlanguage") {
 
     init {
         id = 2
@@ -85,11 +84,11 @@ class SetLanguageCommand : AbstractCommand() {
 
 
     /** SUBCOMMAND list **/
-    class ListCommand : AbstractCommand() {
-        private val root = "command.setlanguage.list"
+    class ListCommand : AbstractCommand( "command.setlanguage.list") {
 
         init {
             name = "list"
+
             description = Translateable("$root.description")
         }
 

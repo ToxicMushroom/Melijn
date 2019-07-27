@@ -8,14 +8,14 @@ import me.melijn.melijnbot.objects.utils.sendMsg
 import java.util.function.Consumer
 
 
-class PingCommand : AbstractCommand() {
+class PingCommand : AbstractCommand("command.ping") {
 
     init {
         id = 1
         name = "ping"
-        syntax = Translateable("command.ping.syntax")
+        syntax = Translateable("$root.syntax")
         aliases = arrayOf("pong")
-        description = Translateable("command.ping.description")
+        description = Translateable("$root.description")
         commandCategory = CommandCategory.UTILITY
         children = arrayOf(PongCommand())
     }
@@ -54,19 +54,19 @@ class PingCommand : AbstractCommand() {
                 .replace("%editMessagePing%", "$editMessagePing")
     }
 
-    private class PongCommand : AbstractCommand() {
+    private class PongCommand : AbstractCommand("command.ping.pong") {
 
         init {
-            name = "pong"//Translateable("command.ping.pong.name")
-            aliases = arrayOf("ping")//Translateable("command.ping.pong.alias1"))
+            name = "pong"
+            aliases = arrayOf("ping")
             children = arrayOf(DunsteCommand())
         }
 
         override fun execute(context: CommandContext) {
-            sendMsg(context, Translateable("command.ping.pong.response1").string(context))
+            sendMsg(context, Translateable("$root.response1").string(context))
         }
 
-        private class DunsteCommand : AbstractCommand() {
+        private class DunsteCommand : AbstractCommand("command.ping.pong.dunste") {
 
             init {
                 name = "dunste"
@@ -74,7 +74,7 @@ class PingCommand : AbstractCommand() {
             }
 
             override fun execute(context: CommandContext) {
-                sendMsg(context, Translateable("command.ping.pong.dunste.response1").string(context))
+                sendMsg(context, Translateable("$root.response1").string(context))
             }
         }
     }

@@ -8,9 +8,7 @@ import me.melijn.melijnbot.objects.utils.boolFromStateArg
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
 
-class SetEmbedStateCommand : AbstractCommand() {
-
-    private val root = "command.setembed"
+class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
 
     init {
         id = 3

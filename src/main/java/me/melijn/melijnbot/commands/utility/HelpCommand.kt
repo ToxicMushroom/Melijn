@@ -11,9 +11,7 @@ import me.melijn.melijnbot.objects.utils.sendSyntax
 import java.util.stream.Collectors
 
 
-class HelpCommand : AbstractCommand() {
-
-    val root = "command.help"
+class HelpCommand : AbstractCommand("command.help") {
 
     init {
         id = 6

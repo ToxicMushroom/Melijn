@@ -9,9 +9,7 @@ import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
 
-class SetPrivateLanguageCommand : AbstractCommand() {
-
-    val root = "command.setprivatelanguage"
+class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") {
 
     init {
         id = 5
