@@ -52,6 +52,7 @@ class GuildInfoCommand : AbstractCommand("command.guildinfo") {
         if (value3.isEmpty()) value3 = "/"
 
         val eb = Embedder(context)
+        if (guild.iconUrl != null) eb.setThumbnail(guild.iconUrl)
         eb.addField(title1, value1, false)
         eb.addField(title2, value2, false)
         eb.addField(title3, value3, false)
