@@ -16,26 +16,34 @@ class Translateable(val path: String = "") {
     }
 
     fun string(lang: String): String {
-        return when (lang) {
-            "NL_BE" -> dutchBelgianRecourseBundle.getString(path)
-            else -> defaultRecourseBundle.getString(path)
+        return try {
+            when (lang) {
+                "NL_BE" -> dutchBelgianRecourseBundle.getString(path)
+                else -> defaultRecourseBundle.getString(path)
+            }
+        } catch (ex: MissingResourceException) {
+            path
         }
     }
 
     fun string(daoManager: DaoManager, userId: Long, guildId: Long = -1): String {
-        val isSupporter = daoManager.supporterWrapper.supporterIds.contains(userId)
-        return if (guildId > 0) {
-            if (isSupporter)
-                when (daoManager.userLanguageWrapper.languageCache.get(userId).get()) {
-                    "NL_BE" -> dutchBelgianRecourseBundle.getString(path)
-                    "EN" -> defaultRecourseBundle.getString(path)
-                    else -> guildString(daoManager, guildId)
-                }
-            else guildString(daoManager, guildId)
-        } else {
-            if (!isSupporter)
-                defaultRecourseBundle.getString(path)
-            else userString(daoManager, userId)
+        try {
+            val isSupporter = daoManager.supporterWrapper.supporterIds.contains(userId)
+            return if (guildId > 0) {
+                if (isSupporter)
+                    when (daoManager.userLanguageWrapper.languageCache.get(userId).get()) {
+                        "NL_BE" -> dutchBelgianRecourseBundle.getString(path)
+                        "EN" -> defaultRecourseBundle.getString(path)
+                        else -> guildString(daoManager, guildId)
+                    }
+                else guildString(daoManager, guildId)
+            } else {
+                if (!isSupporter)
+                    defaultRecourseBundle.getString(path)
+                else userString(daoManager, userId)
+            }
+        } catch (ex: MissingResourceException) {
+            return path
         }
     }
 
