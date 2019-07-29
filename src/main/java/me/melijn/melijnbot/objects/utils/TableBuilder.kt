@@ -1,13 +1,8 @@
 package me.melijn.melijnbot.objects.utils
 
 import java.util.*
-import kotlin.collections.Collection
 import kotlin.collections.HashMap
-import kotlin.collections.List
-import kotlin.collections.MutableList
-import kotlin.collections.MutableMap
 import kotlin.collections.set
-import kotlin.collections.withIndex
 
 
 class TableBuilder(private val split: Boolean) {
@@ -100,19 +95,21 @@ class TableBuilder(private val split: Boolean) {
 
     //╔════╦════╗
     private fun addTop(sb: StringBuilder) {
-        sb.append("```prolog\n╔═").append(LINE, 0, columnWidth[0])
+        sb.append("```prolog\n╔═").append(getLine(0))
         for (i in 1 until headerRow.size) {
-            sb.append("═╦═").append(LINE, 0, columnWidth[i])
+            sb.append("═╦═").append(getLine(i))
         }
         sb.append("═╗\n")
     }
 
     //║    ║    ║
     private fun addRow(sb: StringBuilder, list: List<String>) {
-        var nume = 0
         sb.append("║")
-        for (value in list) {
-            sb.append(" ").append(value).append(" ".repeat(50), 0, columnWidth[nume++]?.minus(value.length)).append(" ║")
+        for ((i, value) in list.withIndex()) {
+            sb.append(" ")
+                    .append(value)
+                    .append(getSpaces(i, value))
+                    .append(" ║")
         }
         sb.append("\n")
     }
@@ -120,19 +117,29 @@ class TableBuilder(private val split: Boolean) {
 
     //╠════╬════╣
     private fun addSplicer(sb: StringBuilder) {
-        sb.append("╠═").append(LINE, 0, columnWidth[0])
-        for (i in 1 until footerRow.size) {
-            sb.append("═╬═").append(LINE, 0, columnWidth[i])
+        sb.append("╠═").append(getLine(0))
+        for (i in 1 until headerRow.size) {
+            sb.append("═╬═").append(getLine(i))
         }
         sb.append("═╣\n")
     }
 
     //╚════╩════╝
     private fun addBottom(sb: StringBuilder) {
-        sb.append("╚═").append(LINE, 0, columnWidth[0])
+        sb.append("╚═").append(getLine(0))
         for (i in 1 until headerRow.size) {
-            sb.append("═╩═").append(LINE, 0, columnWidth[i])
+            sb.append("═╩═").append(getLine(i))
         }
         sb.append("═╝")
+    }
+
+    private fun getSpaces(widthIndex: Int, value: String): String {
+        return columnWidth[widthIndex]?.minus(value.length)?.let {
+            " ".repeat(50).substring(0, it)
+        } ?: ""
+    }
+
+    private fun getLine(widthIndex: Int): String {
+        return columnWidth[widthIndex]?.let { LINE.substring(0, it) } ?: ""
     }
 }
