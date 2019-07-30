@@ -28,6 +28,9 @@ class EmoteCommand : AbstractCommand("command.emote") {
             return
         }
 
+        val part1 = Translateable("$root.response1.part1")
+        val part2 = Translateable("$root.response1.part2")
+        val extra = Translateable("$root.response1.extra")
         val id: String
         var emote: Emote? = null
         if (args.matches("<.?:.*:\\d+>".toRegex())) {
@@ -39,7 +42,7 @@ class EmoteCommand : AbstractCommand("command.emote") {
                 val animated = args.replace("<(.?):.*:\\d+>".toRegex(), "$1").isNotEmpty()
                 sendMsg(context,
                         replaceMissingEmoteVars(
-                                Translateable("$root.response2").string(context),
+                                part1.string(context) + part2.string(context),
                                 context,
                                 id,
                                 name,
@@ -61,7 +64,7 @@ class EmoteCommand : AbstractCommand("command.emote") {
         }
 
         sendMsg(context, replaceEmoteVars(
-                Translateable("$root.response1").string(context),
+                part1.string(context) + extra.string(context) + part2.string(context),
                 context,
                 emote
         ))
@@ -78,11 +81,7 @@ class EmoteCommand : AbstractCommand("command.emote") {
     }
 
     fun replaceEmoteVars(string: String, context: CommandContext, emote: Emote): String {
-        return string
-                .replace("%emoteId%", emote.id)
-                .replace("%emoteName%", emote.name)
-                .replace("%isAnimated%", Translateable(if (emote.isAnimated) "yes" else "no").string(context))
-                .replace("%url%", "https://discordapp.com/emoji/${emote.id}." + if (emote.isAnimated) "gif" else "png" + "?size=2048")
+        return replaceMissingEmoteVars(string, context, emote.id, emote.name, emote.isAnimated)
                 .replace("%creationTime%", emote.timeCreated.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL, FormatStyle.LONG).withZone(ZoneId.of("GMT"))))
     }
 }
