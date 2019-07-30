@@ -74,10 +74,10 @@ class EmoteCommand : AbstractCommand("command.emote") {
 
     private fun replaceMissingEmoteVars(string: String, context: CommandContext, id: String, name: String, animated: Boolean): String {
         return string
-                .replace("%emoteId%", id)
-                .replace("%emoteName%", name)
+                .replace("%id%", id)
+                .replace("%name%", name)
                 .replace("%isAnimated%", Translateable(if (animated) "yes" else "no").string(context))
-                .replace("%url%", "https://discordapp.com/emoji/$id." + if (animated) "gif" else "png" + "?size=2048")
+                .replace("%url%", "https://cdn.discordapp.com/emojis/$id." + (if (animated) "gif" else "png") + "?size=2048")
     }
 
     fun replaceEmoteVars(string: String, context: CommandContext, emote: Emote): String {

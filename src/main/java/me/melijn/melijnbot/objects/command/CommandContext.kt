@@ -38,7 +38,7 @@ class CommandContext(
     fun initArgs() {
         args = commandParts.drop(1 + commandOrder.size)
 
-        val regex: Regex = ("${Pattern.compile(usedPrefix)}(\\s+)?" + (".*(\\s+)").repeat(commandOrder.size)).toRegex()
+        val regex: Regex = ("${Pattern.compile(usedPrefix)}(\\s+)?" + (".*(\\s+)?").repeat(commandOrder.size)).toRegex()
         rawArg = messageReceivedEvent.message.contentRaw.replaceFirst(regex, "")
     }
 
