@@ -19,18 +19,18 @@ dependencies {
     implementation('net.dv8tion:JDA:3.8.3_464') {
         exclude module: 'opus-java'
     }
-    implementation 'com.sedmelluq:lavaplayer:1.3.18'
-    implementation 'com.github.FredBoat:Lavalink-Client:1446e25'
+    implementation 'com.sedmelluq:lavaplayer:1.3.19'
+    implementation 'com.github.FredBoat:Lavalink-Client:8c3f0b9'
 
     //https://search.maven.org/artifact/com.zaxxer/HikariCP
     //https://mvnrepository.com/artifact/mysql/mysql-connector-java
     implementation 'com.zaxxer:HikariCP:3.3.1'
-    implementation 'mysql:mysql-connector-java:8.0.16'
+    implementation 'mysql:mysql-connector-java:8.0.17'
 
     //https://mvnrepository.com/artifact/org.codehaus.janino/janino
     //Used for java eval
-    implementation 'org.codehaus.janino:janino:3.0.14'
-    implementation 'org.codehaus.janino:commons-compiler:3.0.14'
+    implementation 'org.codehaus.janino:janino:3.0.15'
+    implementation 'org.codehaus.janino:commons-compiler:3.0.15'
     
     //https://bintray.com/duncte123/weeb.java/weeb.java
     implementation 'me.duncte123:weebJava:2.2.0_27'
