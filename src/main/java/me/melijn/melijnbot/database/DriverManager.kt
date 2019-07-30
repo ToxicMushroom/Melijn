@@ -87,7 +87,15 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
         return 0
     }
 
-
+    /**
+     * [query] the sql query that needs execution
+     * [resultset] The consumer that will contain the resultset after executing the query
+     * [objects] the arguments of the query
+     * example:
+     *   query: "SELECT * FROM apples WHERE id = ?"
+     *   objects: 5
+     *   resultset: Consumer object to handle the resultset
+     * **/
     fun executeQuery(query: String, resultset: Consumer<ResultSet>, vararg objects: Any) {
         try {
             dataSource.connection.use { connection ->
@@ -103,6 +111,26 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
             printException(Thread.currentThread(), e)
             e.printStackTrace()
         }
+    }
+
+    fun getMySQLVersion(): String {
+        try {
+            dataSource.connection.use { con ->
+                return con.metaData.databaseProductVersion.replace("(\\d+\\.\\d+\\.\\d+)-.*".toRegex(), "$1")
+            }
+        } catch (e: SQLException) {
+            return "error"
+        }
+    }
+
+    fun getConnectorVersion(): String {
+        try {
+            dataSource.connection.use { con ->
+                return con.metaData.driverVersion.replace("mysql-connector-java-(\\d+\\.\\d+\\.\\d+).*".toRegex(), "$1")
+            }
+        } catch (e: SQLException) {
+            return "error"
+        }
 
     }
 
@@ -113,5 +141,4 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
             }
         }
     }
-
 }

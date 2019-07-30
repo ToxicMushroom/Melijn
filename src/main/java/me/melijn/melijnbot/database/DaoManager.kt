@@ -61,8 +61,13 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
     val embedColorWrapper: EmbedColorWrapper
     val userEmbedColorWrapper: UserEmbedColorWrapper
 
+    val mySQLVersion: String
+    val connectorVersion: String
+
     init {
         val driverManager = DriverManager(mysqlSettings)
+        mySQLVersion = driverManager.getMySQLVersion()
+        connectorVersion = driverManager.getConnectorVersion()
 
         commandWrapper = CommandWrapper(taskManager, CommandDao(driverManager))
 
