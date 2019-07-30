@@ -20,18 +20,27 @@ class CommandContext(
         return messageReceivedEvent.guild
     }
 
+
     val usedPrefix: String = commandParts[0]
     val offset: Int = retrieveOffset()
-    val args: List<String> = commandParts.drop(2)
     val embedColor: Int = container.settings.embedColor
     val prefix: String = container.settings.prefix
     var commandOrder: List<AbstractCommand> = emptyList()
+    var args: List<String> = emptyList()
     val botDevIds: LongArray = container.settings.developerIds
     val daoManager = container.daoManager
     val taskManager = container.taskManager
     val jda = messageReceivedEvent.jda
     val guildId = getGuild().idLong
     val authorId = getAuthor().idLong
+    var rawArg: String = ""
+
+    fun initArgs() {
+        args = commandParts.drop(1 + commandOrder.size)
+
+        val regex: Regex = ("${Pattern.compile(usedPrefix)}(\\s+)?" + (".*(\\s+)").repeat(commandOrder.size)).toRegex()
+        rawArg = messageReceivedEvent.message.contentRaw.replaceFirst(regex, "")
+    }
 
     fun getCommands() = commandList
     private fun retrieveOffset(): Int {

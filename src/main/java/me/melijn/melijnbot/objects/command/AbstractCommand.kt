@@ -37,10 +37,10 @@ abstract class AbstractCommand(val root: String) {
         }
 
         val permission = context.commandOrder.joinToString(".", transform = { command -> command.name.toLowerCase() })
-        if (hasPermission(context, permission))
+        if (hasPermission(context, permission)) {
+            context.initArgs()
             execute(context)
-        else
-            sendMissingPermissionMessage(context, permission)
+        } else sendMissingPermissionMessage(context, permission)
     }
 
     private fun sendMissingPermissionMessage(context: CommandContext, permission: String) {
