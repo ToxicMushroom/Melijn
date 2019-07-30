@@ -12,7 +12,6 @@ import com.wrapper.spotify.model_objects.specification.PlaylistTrack;
 import com.wrapper.spotify.model_objects.specification.TrackSimplified;
 import me.melijn.jda.Melijn;
 import me.melijn.jda.utils.Embedder;
-import me.melijn.jda.utils.YTSearch;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
@@ -31,7 +30,7 @@ public class AudioLoader {
     private final Melijn melijn;
     private final AudioPlayerManager manager = new DefaultAudioPlayerManager();
     private Map<Long, MusicPlayer> players = new HashMap<>();
-    private final YTSearch ytSearch = new YTSearch();
+    //private final YTSearch ytSearch = new YTSearch();
     private final String youtubeVideoBase = "https://youtu.be/";
 
     public AudioLoader(Melijn melijn) {
@@ -135,20 +134,21 @@ public class AudioLoader {
             }
         };
 
-        if (source.startsWith("ytsearch:")) {
-            ytSearch.search(source.replaceFirst("ytsearch:", ""), (result) -> {
-
-                if (result == null) {
-                    channel.sendMessage("I couldn't find a track named " + source.replaceFirst("ytsearch:", "") + ". Check for spelling mistakes.").queue();
-                    return;
-                }
-
-                manager.loadItemOrdered(player, youtubeVideoBase + result, resultHandler
-                );
-            });
-
-            return;
-        }
+        //Thanks youtube for breaking your own lib
+//        if (source.startsWith("ytsearch:")) {
+//            ytSearch.search(source.replaceFirst("ytsearch:", ""), (result) -> {
+//
+//                if (result == null) {
+//                    channel.sendMessage("I couldn't find a track named " + source.replaceFirst("ytsearch:", "") + ". Check for spelling mistakes.").queue();
+//                    return;
+//                }
+//
+//                manager.loadItemOrdered(player, youtubeVideoBase + result, resultHandler
+//                );
+//            });
+//
+//            return;
+//        }
         manager.loadItemOrdered(player, source, resultHandler);
     }
 
