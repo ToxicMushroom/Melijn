@@ -24,11 +24,11 @@ public class PotatoCommand extends Command {
             if (event.getGuild() == null || event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_EMBED_LINKS))
                 event.reply(new Embedder(event.getVariables(), event.getGuild())
                         .setDescription("Enjoy your delicious \uD83E\uDD54")
-                        .setImage(event.getPrivate().getWeebV1Url("potato"))
+                        .setImage(event.getPrivate().getWeebV1Url(event.getWebUtils(), "potato"))
                         .setFooter("Powered by weeb.sh", null)
                         .build());
             else
-                event.reply("Enjoy your \uD83E\uDD54 \n" + event.getPrivate().getWeebV1Url("potato"));
+                event.reply("Enjoy your \uD83E\uDD54 \n" + event.getPrivate().getWeebV1Url(event.getWebUtils(),"potato"));
         } else {
             event.reply("You need the permission `" + commandName + "` to execute this command.");
         }

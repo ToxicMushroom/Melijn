@@ -66,7 +66,7 @@ public class Melijn {
         lava = new Lava(this);
         messageHelper = new MessageHelper(this);
 
-        _private = new Private(webUtils);
+        _private = new Private();
         taskManager = new TaskManager(messageHelper);
         shardManager = initJDA();
     }
