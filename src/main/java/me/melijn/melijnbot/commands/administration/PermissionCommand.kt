@@ -3,8 +3,11 @@ package me.melijn.melijnbot.commands.administration
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.utils.getUserByArgsN
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
+import java.util.regex.Pattern
 
 class PermissionCommand : AbstractCommand("command.permission") {
 
@@ -19,6 +22,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
     override fun execute(context: CommandContext) {
         sendSyntax(context, syntax)
     }
+
 
     class UserCommand : AbstractCommand("command.permission.user") {
 
@@ -40,11 +44,32 @@ class PermissionCommand : AbstractCommand("command.permission") {
             }
 
             override fun execute(context: CommandContext) {
-                sendMsg(context, "Set User Permissions")
+                val user = getUserByArgsN(context, 0)
+                val arg = context.args[1]
+                if (user == null) {
+                    sendMsg(context, Translateable("message.unknown.user").string(context).replace("%arg%", context.args[0]))
+                    return
+                }
+
+                val permissions: List<String>? = getPermissionsFromArg(context, arg)
+                if (permissions == null) {
+                    sendMsg(context, Translateable("message.unknown.permission").string(context).replace("%arg%", context.args[0]))
+                    return
+                }
+
+//                val dao = context.daoManager.userPermissionWrapper
+//                if (permissions.size > 1) {
+//                    dao.addPermissions(user.idLong, permissions)
+//                } else {
+//                    dao.addPermission(user.idLong, permissions[0])
+//                }
+
+                sendMsg(context, "Set User Permissions " + permissions.joinToString())
             }
 
         }
-        class ViewCommand: AbstractCommand("command.permission.user.view") {
+
+        class ViewCommand : AbstractCommand("command.permission.user.view") {
 
             init {
                 name = "view"
@@ -56,7 +81,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
             }
 
         }
-        class ClearCommand: AbstractCommand("command.permission.user.clear") {
+
+        class ClearCommand : AbstractCommand("command.permission.user.clear") {
 
             init {
                 name = "clear"
@@ -94,7 +120,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
             }
 
         }
-        class ViewCommand: AbstractCommand("command.permission.role.view") {
+
+        class ViewCommand : AbstractCommand("command.permission.role.view") {
 
             init {
                 name = "view"
@@ -106,7 +133,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
             }
 
         }
-        class ClearCommand: AbstractCommand("command.permission.role.clear") {
+
+        class ClearCommand : AbstractCommand("command.permission.role.clear") {
 
             init {
                 name = "clear"
@@ -156,7 +184,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
 
             }
-            class ViewCommand: AbstractCommand("command.permission.channel.role.view") {
+
+            class ViewCommand : AbstractCommand("command.permission.channel.role.view") {
 
                 init {
                     name = "view"
@@ -168,7 +197,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
 
             }
-            class ClearCommand: AbstractCommand("command.permission.channel.role.clear") {
+
+            class ClearCommand : AbstractCommand("command.permission.channel.role.clear") {
 
                 init {
                     name = "clear"
@@ -206,7 +236,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
 
             }
-            class ViewCommand: AbstractCommand("command.permission.channel.user.view") {
+
+            class ViewCommand : AbstractCommand("command.permission.channel.user.view") {
 
                 init {
                     name = "view"
@@ -218,7 +249,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
 
             }
-            class ClearCommand: AbstractCommand("command.permission.channel.user.clear") {
+
+            class ClearCommand : AbstractCommand("command.permission.channel.user.clear") {
 
                 init {
                     name = "clear"
@@ -250,4 +282,47 @@ class PermissionCommand : AbstractCommand("command.permission") {
             sendMsg(context, "Copy $part Permissions")
         }
     }
+}
+
+fun getPermissionsFromArg(context: CommandContext, arg: String): List<String>? {
+    var category: CommandCategory? = null
+    try {
+        category = CommandCategory.valueOf(arg)
+    } catch (e: IllegalArgumentException) {
+    }
+
+    val permParts = arg.split(".")
+
+    val commands = if (category == null) {
+        if (arg == "*") {
+            context.getCommands()
+        } else context.getCommands().filter { command -> command.isCommandFor(permParts[0]) }
+    } else {
+        context.getCommands().filter { command -> command.commandCategory == category }
+    }
+
+    val regex: Regex = when {
+        arg == "*" -> ".*".toRegex()
+        permParts.last() == "*" -> (
+                Pattern.quote(permParts.subList(0, permParts.size - 1)
+                        .joinToString(".")) + "(..*)?"
+                ).toRegex()
+
+        else -> Pattern.quote(arg).toRegex()
+    }
+
+    val perms = getPermissions(commands).filter { perm ->
+        perm.matches(regex)
+    }
+
+    return if (perms.isEmpty()) null else (perms + "```$regex```")
+}
+
+fun getPermissions(commands: Collection<AbstractCommand>, prefix: String = ""): List<String> {
+    val permissionList = ArrayList<String>()
+    commands.forEach { cmd ->
+        permissionList.add(prefix + cmd.name)
+        permissionList.addAll(getPermissions(cmd.children.toList(), prefix + cmd.name + "."))
+    }
+    return permissionList
 }
