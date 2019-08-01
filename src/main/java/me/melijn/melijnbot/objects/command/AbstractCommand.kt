@@ -75,7 +75,7 @@ abstract class AbstractCommand(val root: String) {
         var channelRoleResult = PermState.DEFAULT
 
         //Permission checking for roles
-        for (roleId in context.getMember()!!.roles.map { role -> role.idLong }) {
+        for (roleId in (context.getMember()!!.roles.map { role -> role.idLong } + context.getGuild().publicRole.idLong)) {
             channelRoleResult = when (context.daoManager.channelRolePermissionWrapper.channelRolePermissionCache.get(Pair(channelId, roleId)).get()[permission]) {
                 PermState.ALLOW -> PermState.ALLOW
                 PermState.DENY -> if (channelRoleResult == PermState.DEFAULT) PermState.DENY else channelRoleResult
