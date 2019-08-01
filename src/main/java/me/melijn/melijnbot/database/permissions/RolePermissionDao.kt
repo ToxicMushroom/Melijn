@@ -28,6 +28,14 @@ class RolePermissionDao(private val driverManager: DriverManager) : Dao(driverMa
                 guildId, roleId, permission, permState.toString(), permState.toString())
     }
 
+    fun delete(roleId: Long, permission: String) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE roleId = ? AND permission = ?", roleId, permission)
+    }
+
+    fun delete(roleId: Long) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE roleId = ?", roleId)
+    }
+
     fun getMap(roleId: Long, permStateMap: Consumer<Map<String, PermState>>) {
         driverManager.executeQuery("SELECT * FROM $table WHERE roleId = ?", Consumer { resultset ->
             val map = HashMap<String, PermState>()
@@ -36,5 +44,35 @@ class RolePermissionDao(private val driverManager: DriverManager) : Dao(driverMa
             }
             permStateMap.accept(map)
         }, roleId)
+    }
+
+    fun bulkPut(guildId: Long, roleId: Long, permissions: List<String>, state: PermState) {
+        driverManager.getUsableConnection(Consumer { connection ->
+            connection.prepareStatement("INSERT INTO $table (guildId, roleId, permission, state) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE state = ?").use { statement ->
+                statement.setLong(1, guildId)
+                statement.setLong(2, roleId)
+                statement.setString(4, state.toString())
+                statement.setString(5, state.toString())
+                for (perm in permissions) {
+                    statement.setString(3, perm)
+                    statement.addBatch()
+                }
+                statement.executeLargeBatch()
+            }
+        })
+    }
+
+    fun bulkDelete(guildId: Long, roleId: Long, permissions: List<String>) {
+        driverManager.getUsableConnection(Consumer { connection ->
+            connection.prepareStatement("DELETE FROM $table WHERE guildId = ? AND roleId = ? AND permission = ?").use { statement ->
+                statement.setLong(1, guildId)
+                statement.setLong(2, roleId)
+                for (perm in permissions) {
+                    statement.setString(3, perm)
+                    statement.addBatch()
+                }
+                statement.executeLargeBatch()
+            }
+        })
     }
 }

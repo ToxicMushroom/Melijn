@@ -24,4 +24,33 @@ class RolePermissionWrapper(val taskManager: TaskManager, val rolePermissionDao:
         }
         return languageFuture
     }
+
+    fun setPermissions(guildId: Long, roleId: Long, permissions: List<String>, state: PermState) {
+        val permissionMap = rolePermissionCache.get(roleId).get().toMutableMap()
+        if (state == PermState.DEFAULT) {
+            permissions.forEach { permissionMap.remove(it) }
+            rolePermissionDao.bulkDelete(guildId, roleId, permissions)
+        } else {
+            permissions.forEach { permissionMap[it] = state }
+            rolePermissionDao.bulkPut(guildId, roleId, permissions, state)
+        }
+        rolePermissionCache.put(roleId, CompletableFuture.completedFuture(permissionMap.toMap()))
+    }
+
+    fun setPermission(guildId: Long, roleId: Long, permission: String, state: PermState) {
+        val permissionMap = rolePermissionCache.get(roleId).get().toMutableMap()
+        if (state == PermState.DEFAULT) {
+            permissionMap.remove(permission)
+            rolePermissionDao.delete(roleId, permission)
+        } else {
+            permissionMap[permission] = state
+            rolePermissionDao.set(guildId, roleId, permission, state)
+        }
+        rolePermissionCache.put(roleId, CompletableFuture.completedFuture(permissionMap.toMap()))
+    }
+
+    fun clear(roleId: Long) {
+        rolePermissionCache.put(roleId, CompletableFuture.completedFuture(emptyMap()))
+        rolePermissionDao.delete(roleId)
+    }
 }
