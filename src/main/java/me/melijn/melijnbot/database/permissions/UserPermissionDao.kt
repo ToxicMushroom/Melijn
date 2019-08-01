@@ -75,6 +75,4 @@ class UserPermissionDao(private val driverManager: DriverManager) : Dao(driverMa
             }
         })
     }
-
-
 }
