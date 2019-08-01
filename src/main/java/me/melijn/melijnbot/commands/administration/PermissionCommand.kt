@@ -174,7 +174,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
         }
 
         override fun execute(context: CommandContext) {
-            sendMsg(context, "Role Permissions")
+            sendSyntax(context, syntax)
         }
 
         class SetCommand : AbstractCommand("command.permission.role.set") {
@@ -185,7 +185,48 @@ class PermissionCommand : AbstractCommand("command.permission") {
             }
 
             override fun execute(context: CommandContext) {
-                sendMsg(context, "Set Role Permissions")
+                if (context.args.size < 3) {
+                    sendSyntax(context, syntax)
+                    return
+                }
+
+                val permissionNode = context.args[1]
+
+                val state: PermState? = enumValueOrNull(context.args[2])
+                if (state == null) {
+                    sendMsg(context, Translateable("message.unknown.permstate").string(context)
+                            .replace("%arg%", context.args[2]))
+                    return
+                }
+
+                val role = getRoleByArgsN(context, 0)
+                if (role == null) {
+                    sendMsg(context, Translateable("message.unknown.role").string(context)
+                            .replace("%arg%", context.args[0]))
+                    return
+                }
+
+                val permissions: List<String>? = getPermissionsFromArg(context, permissionNode)
+                if (permissions == null) {
+                    sendMsg(context, Translateable("message.unknown.permissionnode").string(context)
+                            .replace("%arg%", context.args[1]))
+                    return
+                }
+
+                val dao = context.daoManager.rolePermissionWrapper
+                if (permissions.size > 1) {
+                    dao.setPermissions(context.guildId, role.idLong, permissions, state)
+                } else {
+                    dao.setPermission(context.guildId, role.idLong, permissions[0], state)
+                }
+
+                val msg = Translateable("$root.response1").string(context)
+                        .replace("%role%", role.name)
+                        .replace("%permissionNode%", permissionNode)
+                        .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%state%", state.toString())
+
+                sendMsg(context, msg)
             }
 
         }
@@ -198,7 +239,43 @@ class PermissionCommand : AbstractCommand("command.permission") {
             }
 
             override fun execute(context: CommandContext) {
-                sendMsg(context, "View Role Permissions")
+                if (context.args.isEmpty()) {
+                    sendSyntax(context, syntax)
+                    return
+                }
+
+                val permissionNode = if (context.args.size > 1) context.args[1] else "*"
+
+                val role = getRoleByArgsN(context, 0)
+                if (role == null) {
+                    sendMsg(context, Translateable("message.unknown.role").string(context)
+                            .replace("%arg%", context.args[0]))
+                    return
+                }
+
+                val permissions: List<String>? = getPermissionsFromArg(context, permissionNode)
+                if (permissions == null) {
+                    sendMsg(context, Translateable("message.unknown.permissionnode").string(context)
+                            .replace("%arg%", permissionNode))
+                    return
+                }
+
+                val title = Translateable("$root.response1.title").string(context)
+                        .replace("%role%", role.name)
+                        .replace("%permissionNode%", permissionNode)
+
+                var content = "\n```INI"
+                val dao = context.daoManager.rolePermissionWrapper.rolePermissionCache
+                        .get(role.idLong).get()
+                var index = 1
+                for (perm in permissions) {
+                    val state = dao.getOrDefault(perm, PermState.DEFAULT)
+                    if (state != PermState.DEFAULT)
+                        content += "\n${index++} - [$perm] - $state"
+                }
+                content += "```"
+
+                sendMsgCodeBlock(context, title + content, "INI")
             }
 
         }
@@ -211,7 +288,23 @@ class PermissionCommand : AbstractCommand("command.permission") {
             }
 
             override fun execute(context: CommandContext) {
-                sendMsg(context, "Clear Role Permissions")
+                if (context.args.isEmpty()) {
+                    sendSyntax(context, syntax)
+                    return
+                }
+
+                val role = getRoleByArgsN(context, 0)
+                if (role == null) {
+                    sendMsg(context, Translateable("message.unknown.role").string(context)
+                            .replace("%arg%", context.args[0]))
+                    return
+                }
+
+                context.daoManager.rolePermissionWrapper.clear(role.idLong)
+
+                val msg = Translateable("$root.response1").string(context)
+                        .replace("%user%", role.name)
+                sendMsg(context, msg)
             }
 
         }
