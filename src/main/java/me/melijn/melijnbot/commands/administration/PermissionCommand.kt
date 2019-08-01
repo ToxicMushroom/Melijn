@@ -1,12 +1,11 @@
 package me.melijn.melijnbot.commands.administration
 
+import me.melijn.melijnbot.enums.PermState
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.Translateable
-import me.melijn.melijnbot.objects.utils.getUserByArgsN
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.*
 import java.util.regex.Pattern
 
 class PermissionCommand : AbstractCommand("command.permission") {
@@ -33,7 +32,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
         }
 
         override fun execute(context: CommandContext) {
-            sendMsg(context, "User Permissions")
+            sendSyntax(context, syntax)
         }
 
         class SetCommand : AbstractCommand("command.permission.user.set") {
@@ -44,42 +43,97 @@ class PermissionCommand : AbstractCommand("command.permission") {
             }
 
             override fun execute(context: CommandContext) {
+                if (context.args.size < 3) {
+                    sendSyntax(context, syntax)
+                    return
+                }
+
+                val permissionNode = context.args[1]
+
+                val state: PermState? = enumValueOrNull(context.args[2])
+                if (state == null) {
+                    sendMsg(context, Translateable("message.unknown.permstate").string(context)
+                            .replace("%arg%", context.args[2]))
+                    return
+                }
+
                 val user = getUserByArgsN(context, 0)
-                val arg = context.args[1]
                 if (user == null) {
-                    sendMsg(context, Translateable("message.unknown.user").string(context).replace("%arg%", context.args[0]))
+                    sendMsg(context, Translateable("message.unknown.user").string(context)
+                            .replace("%arg%", context.args[0]))
                     return
                 }
 
-                val permissions: List<String>? = getPermissionsFromArg(context, arg)
+                val permissions: List<String>? = getPermissionsFromArg(context, permissionNode)
                 if (permissions == null) {
-                    sendMsg(context, Translateable("message.unknown.permission").string(context).replace("%arg%", context.args[0]))
+                    sendMsg(context, Translateable("message.unknown.permissionnode").string(context)
+                            .replace("%arg%", context.args[1]))
                     return
                 }
 
-//                val dao = context.daoManager.userPermissionWrapper
-//                if (permissions.size > 1) {
-//                    dao.addPermissions(user.idLong, permissions)
-//                } else {
-//                    dao.addPermission(user.idLong, permissions[0])
-//                }
+                val dao = context.daoManager.userPermissionWrapper
+                if (permissions.size > 1) {
+                    dao.setPermissions(context.guildId, user.idLong, permissions, state)
+                } else {
+                    dao.setPermission(context.guildId, user.idLong, permissions[0], state)
+                }
 
-                sendMsg(context, "Set User Permissions " + permissions.joinToString())
+                val msg = Translateable("$root.response1").string(context)
+                        .replace("%user%", user.asTag)
+                        .replace("%permissionNode%", permissionNode)
+                        .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%state%", state.toString())
+
+                sendMsg(context, msg)
             }
-
         }
 
         class ViewCommand : AbstractCommand("command.permission.user.view") {
 
             init {
                 name = "view"
-                aliases = arrayOf("v", "vw")
+                aliases = arrayOf("v", "vw", "info")
             }
 
             override fun execute(context: CommandContext) {
-                sendMsg(context, "View User Permissions")
-            }
+                if (context.args.isEmpty()) {
+                    sendSyntax(context, syntax)
+                    return
+                }
 
+                val permissionNode = if (context.args.size > 1) context.args[1] else "*"
+
+                val user = getUserByArgsN(context, 0)
+                if (user == null) {
+                    sendMsg(context, Translateable("message.unknown.user").string(context)
+                            .replace("%arg%", context.args[0]))
+                    return
+                }
+
+                val permissions: List<String>? = getPermissionsFromArg(context, permissionNode)
+                if (permissions == null) {
+                    sendMsg(context, Translateable("message.unknown.permissionnode").string(context)
+                            .replace("%arg%", permissionNode))
+                    return
+                }
+
+                val title = Translateable("$root.response1.title").string(context)
+                        .replace("%user%", user.asTag)
+                        .replace("%permissionNode%", permissionNode)
+
+                var content = "\n```INI"
+                val dao = context.daoManager.userPermissionWrapper.guildUserPermissionCache
+                        .get(Pair(context.guildId, user.idLong)).get()
+                var index = 1
+                for (perm in permissions) {
+                    val state = dao.getOrDefault(perm, PermState.DEFAULT)
+                    if (state != PermState.DEFAULT)
+                        content += "\n${index++} - [$perm] - $state"
+                }
+                content += "```"
+
+                sendMsgCodeBlock(context, title + content, "INI")
+            }
         }
 
         class ClearCommand : AbstractCommand("command.permission.user.clear") {
@@ -90,9 +144,24 @@ class PermissionCommand : AbstractCommand("command.permission") {
             }
 
             override fun execute(context: CommandContext) {
-                sendMsg(context, "Clear User Permissions")
-            }
+                if (context.args.isEmpty()) {
+                    sendSyntax(context, syntax)
+                    return
+                }
 
+                val user = getUserByArgsN(context, 0)
+                if (user == null) {
+                    sendMsg(context, Translateable("message.unknown.user").string(context)
+                            .replace("%arg%", context.args[0]))
+                    return
+                }
+
+                context.daoManager.userPermissionWrapper.clear(context.guildId, user.idLong)
+
+                val msg = Translateable("$root.response1").string(context)
+                        .replace("%user%", user.asTag)
+                sendMsg(context, msg)
+            }
         }
     }
 
@@ -285,12 +354,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 }
 
 fun getPermissionsFromArg(context: CommandContext, arg: String): List<String>? {
-    var category: CommandCategory? = null
-    try {
-        category = CommandCategory.valueOf(arg)
-    } catch (e: IllegalArgumentException) {
-    }
-
+    val category: CommandCategory? = enumValueOrNull(arg)
     val permParts = arg.split(".")
 
     val commands = if (category == null) {
@@ -302,7 +366,7 @@ fun getPermissionsFromArg(context: CommandContext, arg: String): List<String>? {
     }
 
     val regex: Regex = when {
-        arg == "*" -> ".*".toRegex()
+        arg == "*" || category != null -> ".*".toRegex()
         permParts.last() == "*" -> (
                 Pattern.quote(permParts.subList(0, permParts.size - 1)
                         .joinToString(".")) + "(..*)?"
@@ -315,7 +379,7 @@ fun getPermissionsFromArg(context: CommandContext, arg: String): List<String>? {
         perm.matches(regex)
     }
 
-    return if (perms.isEmpty()) null else (perms + "```$regex```")
+    return if (perms.isEmpty()) null else perms
 }
 
 fun getPermissions(commands: Collection<AbstractCommand>, prefix: String = ""): List<String> {
