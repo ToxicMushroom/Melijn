@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.objects.utils.printException
 import org.slf4j.LoggerFactory
+import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.function.Consumer
@@ -39,6 +40,10 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
         config.addDataSourceProperty("useLocalTransactionState", "true")
 
         this.dataSource = HikariDataSource(config)
+    }
+
+    fun getUsableConnection(connection: Consumer<Connection>){
+        dataSource.connection.use { connection.accept(it) }
     }
 
     fun registerTable(table: String, tableStructure: String, keys: String) {
