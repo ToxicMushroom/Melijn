@@ -53,11 +53,12 @@ class ChannelRolePermissionDao(private val driverManager: DriverManager) : Dao(d
         driverManager.getUsableConnection(Consumer { connection ->
             connection.prepareStatement("INSERT INTO $table (guildId, channelId, roleId, permission, state) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE state = ?").use { statement ->
                 statement.setLong(1, guildId)
-                statement.setLong(2, roleId)
-                statement.setString(4, state.toString())
+                statement.setLong(2, channelId)
+                statement.setLong(3, roleId)
                 statement.setString(5, state.toString())
+                statement.setString(6, state.toString())
                 for (perm in permissions) {
-                    statement.setString(3, perm)
+                    statement.setString(4, perm)
                     statement.addBatch()
                 }
                 statement.executeLargeBatch()
