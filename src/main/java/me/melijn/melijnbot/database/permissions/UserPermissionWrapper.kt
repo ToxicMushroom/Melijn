@@ -10,18 +10,49 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 
 class UserPermissionWrapper(val taskManager: TaskManager, private val userPermissionDao: UserPermissionDao) {
-    val userPermissionCache = Caffeine.newBuilder()
+    val guildUserPermissionCache = Caffeine.newBuilder()
             .executor(taskManager.getExecutorService())
             .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-            .buildAsync<Long, Map<String, PermState>>() { key, executor -> getPermissionList(key, executor) }
+            .buildAsync<Pair<Long, Long>, Map<String, PermState>>() { key, executor -> getPermissionList(key, executor) }
 
-    fun getPermissionList(userId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<Map<String, PermState>> {
+    fun getPermissionList(guildAndUser: Pair<Long, Long>, executor: Executor = taskManager.getExecutorService()): CompletableFuture<Map<String, PermState>> {
         val languageFuture = CompletableFuture<Map<String, PermState>>()
         executor.execute {
-            userPermissionDao.getMap(userId, Consumer { map ->
+            userPermissionDao.getMap(guildAndUser.first, guildAndUser.second, Consumer { map ->
                 languageFuture.complete(map)
             })
         }
         return languageFuture
+    }
+
+    fun setPermissions(guildId: Long, userId: Long, permissions: List<String>, state: PermState) {
+        val pair = Pair(guildId, userId)
+        val permissionMap = guildUserPermissionCache.get(pair).get().toMutableMap()
+        if (state == PermState.DEFAULT) {
+            permissions.forEach { permissionMap.remove(it) }
+            userPermissionDao.bulkDelete(guildId, userId, permissions)
+        } else {
+            permissions.forEach { permissionMap[it] = state }
+            userPermissionDao.bulkPut(guildId, userId, permissions, state)
+        }
+        guildUserPermissionCache.put(pair, CompletableFuture.completedFuture(permissionMap.toMap()))
+    }
+
+    fun setPermission(guildId: Long, userId: Long, permission: String, state: PermState) {
+        val pair = Pair(guildId, userId)
+        val permissionMap = guildUserPermissionCache.get(pair).get().toMutableMap()
+        if (state == PermState.DEFAULT) {
+            permissionMap.remove(permission)
+            userPermissionDao.delete(guildId, userId, permission)
+        } else {
+            permissionMap[permission] = state
+            userPermissionDao.set(guildId, userId, permission, state)
+        }
+        guildUserPermissionCache.put(pair, CompletableFuture.completedFuture(permissionMap.toMap()))
+    }
+
+    fun clear(guildId: Long, userId: Long) {
+        guildUserPermissionCache.put(Pair(guildId, userId), CompletableFuture.completedFuture(emptyMap()))
+        userPermissionDao.delete(guildId, userId)
     }
 }
