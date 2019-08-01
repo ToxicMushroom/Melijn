@@ -51,13 +51,14 @@ abstract class AbstractCommand(val root: String) {
     private fun hasPermission(context: CommandContext, permission: String): Boolean {
         if (!context.isFromGuild) return true
         if (context.getMember()?.isOwner!! || context.getMember()?.hasPermission(Permission.ADMINISTRATOR) == true) return true
+        val guildId = context.guildId
         val authorId = context.getAuthor().idLong
         //Gives me better ability to help
         if (context.botDevIds.contains(authorId)) return true
 
 
         val channelId = context.getTextChannel().idLong
-        val userMap = context.daoManager.userPermissionWrapper.userPermissionCache.get(authorId).get()
+        val userMap = context.daoManager.userPermissionWrapper.guildUserPermissionCache.get(Pair(guildId, authorId)).get()
         val channelUserMap = context.daoManager.channelUserPermissionWrapper.channelUserPermissionCache.get(Pair(channelId, authorId)).get()
 
         //permission checking for user specific channel overrides (these override all)
