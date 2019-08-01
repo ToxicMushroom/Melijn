@@ -23,9 +23,19 @@ class ChannelRolePermissionDao(private val driverManager: DriverManager) : Dao(d
         }, roleId, permission, channelId)
     }
 
-    fun set(guildId: Long, roleId: Long, permission: String, permState: PermState) {
+    fun set(guildId: Long, channelId: Long, roleId: Long, permission: String, permState: PermState) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, roleId, permission, state) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE state = ?",
-                guildId, roleId, permission, permState.toString(), permState.toString())
+                guildId, channelId, roleId, permission, permState.toString(), permState.toString())
+    }
+
+    fun delete(channelId: Long, roleId: Long, permission: String) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE channelId = ? AND roleId = ? AND permission = ?",
+                channelId, roleId, permission)
+    }
+
+    fun delete(channelId: Long, roleId: Long) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE channelId = ? AND roleId = ?",
+                channelId, roleId)
     }
 
     fun getMap(channelId: Long, roleId: Long, permStateMap: Consumer<Map<String, PermState>>) {
@@ -36,5 +46,36 @@ class ChannelRolePermissionDao(private val driverManager: DriverManager) : Dao(d
             }
             permStateMap.accept(map)
         }, roleId, channelId)
+    }
+
+
+    fun bulkPut(guildId: Long, channelId: Long, roleId: Long, permissions: List<String>, state: PermState) {
+        driverManager.getUsableConnection(Consumer { connection ->
+            connection.prepareStatement("INSERT INTO $table (guildId, channelId, roleId, permission, state) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE state = ?").use { statement ->
+                statement.setLong(1, guildId)
+                statement.setLong(2, roleId)
+                statement.setString(4, state.toString())
+                statement.setString(5, state.toString())
+                for (perm in permissions) {
+                    statement.setString(3, perm)
+                    statement.addBatch()
+                }
+                statement.executeLargeBatch()
+            }
+        })
+    }
+
+    fun bulkDelete(channelId: Long, roleId: Long, permissions: List<String>) {
+        driverManager.getUsableConnection(Consumer { connection ->
+            connection.prepareStatement("DELETE FROM $table WHERE channelId = ? AND roleId = ? AND permission = ?").use { statement ->
+                statement.setLong(1, channelId)
+                statement.setLong(2, roleId)
+                for (perm in permissions) {
+                    statement.setString(3, perm)
+                    statement.addBatch()
+                }
+                statement.executeLargeBatch()
+            }
+        })
     }
 }

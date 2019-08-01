@@ -24,4 +24,33 @@ class ChannelRolePermissionWrapper(val taskManager: TaskManager, private val cha
         }
         return languageFuture
     }
+
+    fun setPermissions(guildId: Long, channelId: Long, roleId: Long, permissions: List<String>, state: PermState) {
+        val permissionMap = channelRolePermissionCache.get(Pair(channelId, roleId)).get().toMutableMap()
+        if (state == PermState.DEFAULT) {
+            permissions.forEach { permissionMap.remove(it) }
+            channelRolePermissionDao.bulkDelete(channelId, roleId, permissions)
+        } else {
+            permissions.forEach { permissionMap[it] = state }
+            channelRolePermissionDao.bulkPut(guildId, channelId, roleId, permissions, state)
+        }
+        channelRolePermissionCache.put(Pair(channelId, roleId), CompletableFuture.completedFuture(permissionMap.toMap()))
+    }
+
+    fun setPermission(guildId: Long, channelId: Long, roleId: Long, permission: String, state: PermState) {
+        val permissionMap = channelRolePermissionCache.get(Pair(channelId, roleId)).get().toMutableMap()
+        if (state == PermState.DEFAULT) {
+            permissionMap.remove(permission)
+            channelRolePermissionDao.delete(channelId, roleId, permission)
+        } else {
+            permissionMap[permission] = state
+            channelRolePermissionDao.set(guildId, channelId, roleId, permission, state)
+        }
+        channelRolePermissionCache.put(Pair(channelId, roleId), CompletableFuture.completedFuture(permissionMap.toMap()))
+    }
+
+    fun clear(channelId: Long, roleId: Long) {
+        channelRolePermissionCache.put(Pair(channelId, roleId), CompletableFuture.completedFuture(emptyMap()))
+        channelRolePermissionDao.delete(channelId, roleId)
+    }
 }
