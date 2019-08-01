@@ -29,7 +29,7 @@ class RolePermissionWrapper(val taskManager: TaskManager, val rolePermissionDao:
         val permissionMap = rolePermissionCache.get(roleId).get().toMutableMap()
         if (state == PermState.DEFAULT) {
             permissions.forEach { permissionMap.remove(it) }
-            rolePermissionDao.bulkDelete(guildId, roleId, permissions)
+            rolePermissionDao.bulkDelete(roleId, permissions)
         } else {
             permissions.forEach { permissionMap[it] = state }
             rolePermissionDao.bulkPut(guildId, roleId, permissions, state)

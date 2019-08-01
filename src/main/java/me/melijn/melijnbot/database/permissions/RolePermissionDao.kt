@@ -62,13 +62,12 @@ class RolePermissionDao(private val driverManager: DriverManager) : Dao(driverMa
         })
     }
 
-    fun bulkDelete(guildId: Long, roleId: Long, permissions: List<String>) {
+    fun bulkDelete(roleId: Long, permissions: List<String>) {
         driverManager.getUsableConnection(Consumer { connection ->
-            connection.prepareStatement("DELETE FROM $table WHERE guildId = ? AND roleId = ? AND permission = ?").use { statement ->
-                statement.setLong(1, guildId)
-                statement.setLong(2, roleId)
+            connection.prepareStatement("DELETE FROM $table WHERE roleId = ? AND permission = ?").use { statement ->
+                statement.setLong(1, roleId)
                 for (perm in permissions) {
-                    statement.setString(3, perm)
+                    statement.setString(2, perm)
                     statement.addBatch()
                 }
                 statement.executeLargeBatch()
