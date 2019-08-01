@@ -30,7 +30,7 @@ class RoleInfoCommand : AbstractCommand("command.roleinfo") {
             return
         }
 
-        val role = getRoleByArgsN(context, 0)
+        val role = getRoleByArgsN(context, 0, false)
         if (role == null){
             sendMsg(context, Translateable("$root.rolenotfound").string(context).replace("%arg%", context.args[0]))
             return
