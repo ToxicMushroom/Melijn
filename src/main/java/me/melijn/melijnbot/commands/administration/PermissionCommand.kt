@@ -674,27 +674,20 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
         override fun execute(context: CommandContext) {
             sendSyntax(context, syntax)
-//            val part = when (parent) {
-//                is ChannelCommand.UserChannelCommand -> "User Channel"
-//                is ChannelCommand.RoleChannelCommand -> "Role Channel"
-//                is RoleCommand -> "Role"
-//                is UserCommand -> "User"
-//                else -> "Error"
-//            }
-//            sendMsg(context, "Copy $part Permissions")
         }
 
-        class UserCommand(private val copyParent: AbstractCommand, private val copyRoot: String) : AbstractCommand("$copyRoot.user") {
+        class UserCommand(private val copyParent: AbstractCommand, copyRoot: String) : AbstractCommand("$copyRoot.user") {
             init {
                 name = "user"
                 aliases = arrayOf("u")
             }
+
             override fun execute(context: CommandContext) {
                 val extraArg = if (
                         copyParent is PermissionCommand.ChannelCommand.RoleChannelCommand ||
                         copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
                 ) 1 else 0
-                if (context.args.size < (3 + extraArg)) {
+                if (context.args.size < (2 + extraArg)) {
                     sendSyntax(context, syntax)
                     return
                 }
@@ -728,6 +721,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .replace("%user1%", user1.asTag)
                         .replace("%user2%", user2.asTag)
                         .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%s%", if (permissions.size > 1) "s" else "")
 
                 sendMsg(context, msg)
             }
@@ -747,6 +741,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .replace("%role%", role1.name)
                         .replace("%user%", user2.name)
                         .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%s%", if (permissions.size > 1) "s" else "")
 
                 sendMsg(context, msg)
             }
@@ -768,6 +763,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .replace("%channel%", "#${channel1.name}")
                         .replace("%user2%", user3.asTag)
                         .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%s%", if (permissions.size > 1) "s" else "")
 
                 sendMsg(context, msg)
             }
@@ -789,6 +785,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .replace("%channel%", "#${channel1.name}")
                         .replace("%user%", user3.asTag)
                         .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%s%", if (permissions.size > 1) "s" else "")
 
                 sendMsg(context, msg)
             }
@@ -807,7 +804,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         copyParent is PermissionCommand.ChannelCommand.RoleChannelCommand ||
                         copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
                 ) 1 else 0
-                if (context.args.size < (3 + extraArg)) {
+                if (context.args.size < (2 + extraArg)) {
                     sendSyntax(context, syntax)
                     return
                 }
@@ -842,6 +839,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .replace("%user%", user1.asTag)
                         .replace("%role%", role2.name)
                         .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%s%", if (permissions.size > 1) "s" else "")
 
                 sendMsg(context, msg)
             }
@@ -860,6 +858,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .replace("%role1%", role1.name)
                         .replace("%role2%", role2.name)
                         .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%s%", if (permissions.size > 1) "s" else "")
 
                 sendMsg(context, msg)
             }
@@ -881,6 +880,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .replace("%channel%", "#${channel1.name}")
                         .replace("%role%", role3.name)
                         .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%s%", if (permissions.size > 1) "s" else "")
 
                 sendMsg(context, msg)
             }
@@ -902,6 +902,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .replace("%channel%", "#${channel1.name}")
                         .replace("%role2%", role3.name)
                         .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%s%", if (permissions.size > 1) "s" else "")
 
                 sendMsg(context, msg)
             }
@@ -967,6 +968,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                             .replace("%channel%", "#${channel2.name}")
                             .replace("%role%", role3.name)
                             .replace("%permissionCount%", permissions.size.toString())
+                            .replace("%s%", if (permissions.size > 1) "s" else "")
 
                     sendMsg(context, msg)
                 }
@@ -988,6 +990,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                             .replace("%channel%", "#${channel2.name}")
                             .replace("%role2%", role3.name)
                             .replace("%permissionCount%", permissions.size.toString())
+                            .replace("%s%", if (permissions.size > 1) "s" else "")
 
                     sendMsg(context, msg)
                 }
@@ -1011,6 +1014,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                             .replace("%channel2%", "#${channel3.name}")
                             .replace("%role%", role4.name)
                             .replace("%permissionCount%", permissions.size.toString())
+                            .replace("%s%", if (permissions.size > 1) "s" else "")
 
                     sendMsg(context, msg)
                 }
@@ -1033,6 +1037,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                             .replace("%channel2%", "#${channel3.name}")
                             .replace("%role2%", role4.name)
                             .replace("%permissionCount%", permissions.size.toString())
+                            .replace("%s%", if (permissions.size > 1) "s" else "")
 
                     sendMsg(context, msg)
                 }
@@ -1087,6 +1092,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                             .replace("%channel%", "#${channel2.name}")
                             .replace("%user2%", user3.asTag)
                             .replace("%permissionCount%", permissions.size.toString())
+                            .replace("%s%", if (permissions.size > 1) "s" else "")
 
                     sendMsg(context, msg)
                 }
@@ -1108,6 +1114,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                             .replace("%channel%", "#${channel2.name}")
                             .replace("%user%", user3.asTag)
                             .replace("%permissionCount%", permissions.size.toString())
+                            .replace("%s%", if (permissions.size > 1) "s" else "")
 
                     sendMsg(context, msg)
                 }
@@ -1130,6 +1137,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                             .replace("%channel2%", "#${channel3.name}")
                             .replace("%user2%", user4.asTag)
                             .replace("%permissionCount%", permissions.size.toString())
+                            .replace("%s%", if (permissions.size > 1) "s" else "")
 
                     sendMsg(context, msg)
                 }
@@ -1153,6 +1161,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                             .replace("%channel2%", "#${channel3.name}")
                             .replace("%user%", user4.asTag)
                             .replace("%permissionCount%", permissions.size.toString())
+                            .replace("%s%", if (permissions.size > 1) "s" else "")
 
                     sendMsg(context, msg)
                 }
