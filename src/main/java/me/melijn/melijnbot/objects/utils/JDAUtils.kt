@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.objects.utils
 
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.Translateable
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.User
@@ -27,6 +28,15 @@ fun getUserByArgsN(context: CommandContext, index: Int): User? {//With null
         else if (context.isFromGuild && context.getGuild().getMembersByNickname(arg, true).size > 0)
             context.getGuild().getMembersByNickname(arg, true)[0].user
         else user
+    }
+    return user
+}
+
+fun getUserByArgsNMessage(context: CommandContext, index: Int): User? {
+    val user = getUserByArgsN(context, index)
+    if (user == null) {
+        sendMsg(context, Translateable("message.unknown.user").string(context)
+                .replace("%arg%", context.args[index]))
     }
     return user
 }
@@ -58,6 +68,15 @@ fun getRoleByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Bool
     return role
 }
 
+fun getRoleByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): Role? {
+    val role = getRoleByArgsN(context, index, sameGuildAsContext)
+    if (role == null) {
+        sendMsg(context, Translateable("message.unknown.role").string(context)
+                .replace("%arg%", context.args[index]))
+    }
+    return role
+}
+
 fun getTextChannelByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): TextChannel? {
     var channel: TextChannel? = null
     if (!context.isFromGuild && sameGuildAsContext) return channel
@@ -83,4 +102,13 @@ fun getTextChannelByArgsN(context: CommandContext, index: Int, sameGuildAsContex
     }
     if (sameGuildAsContext && !context.getGuild().textChannels.contains(channel)) return null
     return channel
+}
+
+fun getTextChannelByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): TextChannel? {
+    val textChannel = getTextChannelByArgsN(context, index, sameGuildAsContext)
+    if (textChannel == null) {
+        sendMsg(context, Translateable("message.unknown.textchannel").string(context)
+                .replace("%arg%", context.args[index]))
+    }
+    return textChannel
 }
