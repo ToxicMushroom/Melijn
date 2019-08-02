@@ -55,4 +55,12 @@ class UserPermissionWrapper(val taskManager: TaskManager, private val userPermis
         guildUserPermissionCache.put(Pair(guildId, userId), CompletableFuture.completedFuture(emptyMap()))
         userPermissionDao.delete(guildId, userId)
     }
+
+    fun setPermissions(guildId: Long, userId: Long, permissions: Map<String, PermState>) {
+        for (state in PermState.values()) {
+            setPermissions(guildId, userId, permissions.filter { entry ->
+                entry.value == state
+            }.keys.toList(), state)
+        }
+    }
 }
