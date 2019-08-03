@@ -97,7 +97,6 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             }
 
             if (commandIsOnCooldown(command, event)) return true
-
         }
 
         return false

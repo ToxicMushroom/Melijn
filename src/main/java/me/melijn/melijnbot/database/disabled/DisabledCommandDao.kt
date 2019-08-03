@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.disabled
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
+import me.melijn.melijnbot.objects.command.AbstractCommand
 import java.util.function.Consumer
 
 class DisabledCommandDao(val driverManager: DriverManager) : Dao(driverManager) {
@@ -32,5 +33,31 @@ class DisabledCommandDao(val driverManager: DriverManager) : Dao(driverManager) 
     fun insert(guildId: Long, commandId: Int) {
         driverManager.executeUpdate("INSERT IGNORE INTO $table (guildId, commandId) VALUES (?, ?)",
                 guildId, commandId)
+    }
+
+    fun bulkPut(guildId: Long, commands: Set<AbstractCommand>) {
+        driverManager.getUsableConnection(Consumer { con ->
+            con.prepareStatement("INSERT IGNORE INTO $table (guildId, commandId) VALUES (?, ?)").use { statement ->
+                statement.setLong(1, guildId)
+                for (cmd in commands) {
+                    statement.setInt(2, cmd.id)
+                    statement.addBatch()
+                }
+                statement.executeLargeBatch()
+            }
+        })
+    }
+
+    fun bulkDelete(guildId: Long, commands: Set<AbstractCommand>) {
+        driverManager.getUsableConnection(Consumer { con ->
+            con.prepareStatement("DELETE FROM $table WHERE guildId = ? AND commandId = ?)").use { statement ->
+                statement.setLong(1, guildId)
+                for (cmd in commands) {
+                    statement.setInt(2, cmd.id)
+                    statement.addBatch()
+                }
+                statement.executeLargeBatch()
+            }
+        })
     }
 }
