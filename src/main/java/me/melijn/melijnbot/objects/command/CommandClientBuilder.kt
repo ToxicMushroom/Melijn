@@ -13,7 +13,7 @@ class CommandClientBuilder(private val container: Container) {
     }
 
     fun build(): CommandClient {
-        return CommandClient(commands, container)
+        return CommandClient(commands.toSet(), container)
     }
 
     fun addCommand(command: AbstractCommand): CommandClientBuilder {

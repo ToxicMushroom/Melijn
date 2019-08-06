@@ -6,10 +6,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.Translateable
-import me.melijn.melijnbot.objects.utils.enumValueOrNull
-import me.melijn.melijnbot.objects.utils.getTextChannelByArgsNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.*
 
 class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
 
@@ -43,7 +40,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                 return
             }
 
-            val commands = getCommandsFromArg(context, 0) ?: return
+            val commands = getCommandsFromArgNMessage(context, 0) ?: return
             val commandState = enumValueOrNull<CommandState>(context.args[1])
             if (commandState == null) {
                 sendMsg(context, Translateable("message.unknown.commandstate").string(context)
@@ -79,7 +76,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             }
 
             val channel = getTextChannelByArgsNMessage(context, 0) ?: return
-            val commands = getCommandsFromArg(context, 1) ?: return
+            val commands = getCommandsFromArgNMessage(context, 1) ?: return
             val commandState = enumValueOrNull<ChannelCommandState>(context.args[2])
             if (commandState == null) {
                 sendMsg(context, Translateable("message.unknown.channelcommandstate").string(context)
@@ -141,23 +138,3 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
     }
 }
 
-fun getCommandsFromArg(context: CommandContext, index: Int): Set<AbstractCommand>? {
-    val arg = context.args[index]
-    val category: CommandCategory? = enumValueOrNull(arg)
-
-    val commands = (if (category == null) {
-        if (arg == "*") {
-            context.getCommands()
-        } else context.getCommands().filter { command -> command.isCommandFor(arg)}.toSet()
-    } else {
-        context.getCommands().filter { command -> command.commandCategory == category}.toSet()
-    }).toMutableSet()
-    commands.removeIf { cmd -> cmd.id == 16 }
-
-    if (commands.isEmpty()) {
-        sendMsg(context, Translateable("message.unknown.commandnode").string(context)
-                .replace("%arg%", arg))
-        return null
-    }
-    return commands
-}

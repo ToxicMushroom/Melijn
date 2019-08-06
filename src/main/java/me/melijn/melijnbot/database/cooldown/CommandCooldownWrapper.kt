@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.cooldown
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import me.melijn.melijnbot.database.IMPORTANT_CACHE
+import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.threading.TaskManager
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
@@ -23,5 +24,19 @@ class CommandCooldownWrapper(val taskManager: TaskManager, val commandCooldownDa
             })
         }
         return future
+    }
+
+    fun setCooldowns(guildId: Long, commands: Set<AbstractCommand>, cooldown: Long) {
+        val cooldownMap = commandCooldownCache.get(guildId).get().toMutableMap()
+        for (cmd in commands) {
+            if (cooldown < 1) cooldownMap.remove(cmd.id)
+            else cooldownMap[cmd.id] = cooldown
+        }
+        if (cooldown < 1) {
+            commandCooldownDao.bulkDelete(guildId, commands)
+        } else {
+            commandCooldownDao.bulkPut(guildId, commands, cooldown)
+        }
+        commandCooldownCache.put(guildId, CompletableFuture.completedFuture(cooldownMap.toMap()))
     }
 }

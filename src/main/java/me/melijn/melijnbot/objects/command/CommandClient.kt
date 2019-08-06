@@ -2,6 +2,7 @@ package me.melijn.melijnbot.objects.command
 
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.ChannelCommandState
+import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.toUpperWordCase
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
@@ -126,33 +127,47 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         var lastExecution = 0L
         var lastExecutionChannel = 0L
+        var bool = false
+        var cooldownResult = 0L
 
         if (channelCommandCooldownCache.get(channelId).get().containsKey(command.id)) {
 
             //init lastExecutionChannel
-            container.daoManager.commandChannelCoolDownWrapper.executions[Pair(guildId, userId)]
-                    ?.filter { pair -> pair.first == channelId }
-                    ?.forEach { fPair ->
-                        if (fPair.second > lastExecutionChannel) lastExecutionChannel = fPair.second
+            container.daoManager.commandChannelCoolDownWrapper.executions[Pair(channelId, userId)]
+                    ?.filter { entry -> entry.key == command.id }
+                    ?.forEach { entry ->
+                        if (entry.value > lastExecutionChannel) lastExecutionChannel = entry.value
                     }
 
-            val cooldown = channelCommandCooldownCache.get(guildId).get()[command.id] ?: 0L
+            val cooldown = channelCommandCooldownCache.get(channelId).get()[command.id] ?: 0L
 
-            if (System.currentTimeMillis() - cooldown < lastExecutionChannel) return true
+            if (System.currentTimeMillis() - cooldown < lastExecutionChannel) {
+                cooldownResult = cooldown
+                bool = true
+            }
         }
         if (commandCooldownCache.get(guildId).get().containsKey(command.id)) {
 
             //init lastExecution
             container.daoManager.commandChannelCoolDownWrapper.executions[Pair(guildId, userId)]
-                    ?.forEach { pair ->
-                        if (pair.second > lastExecution) lastExecution = pair.second
+                    ?.filter { entry -> entry.key == command.id }
+                    ?.forEach { entry ->
+                        if (entry.value > lastExecution) lastExecution = entry.value
                     }
 
             val cooldown = commandCooldownCache.get(guildId).get()[command.id] ?: 0L
 
-            if (System.currentTimeMillis() - cooldown < lastExecutionChannel) return true
+            if (System.currentTimeMillis() - cooldown < lastExecutionChannel) {
+                if (cooldownResult < cooldown) cooldownResult = cooldown
+                bool = true
+            }
         }
-        return false
+        if (bool && cooldownResult != 0L) {
+            val msg = Translateable("message.cooldown").string(container.daoManager, userId, guildId)
+                    .replace("%cooldown%", (cooldownResult/1000.0).toString())
+            sendMsg(event.textChannel, msg)
+        }
+        return bool
     }
 
     /**

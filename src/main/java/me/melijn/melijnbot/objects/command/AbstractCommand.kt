@@ -39,6 +39,17 @@ abstract class AbstractCommand(val root: String) {
         val permission = context.commandOrder.joinToString(".", transform = { command -> command.name.toLowerCase() })
         if (hasPermission(context, permission)) {
             context.initArgs()
+            if (context.isFromGuild) {
+                val pair1 = Pair(context.getTextChannel().idLong, context.authorId)
+                val map1 = context.daoManager.commandChannelCoolDownWrapper.executions[pair1]?.toMutableMap() ?: hashMapOf()
+                map1[id] = System.currentTimeMillis()
+                context.daoManager.commandChannelCoolDownWrapper.executions[pair1] = map1
+
+                val pair2 = Pair(context.guildId, context.authorId)
+                val map2 = context.daoManager.commandChannelCoolDownWrapper.executions[pair2]?.toMutableMap() ?: hashMapOf()
+                map2[id] = System.currentTimeMillis()
+                context.daoManager.commandChannelCoolDownWrapper.executions[pair2] = map2
+            }
             execute(context)
         } else sendMissingPermissionMessage(context, permission)
     }
