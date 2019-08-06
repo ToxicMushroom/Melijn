@@ -1,5 +1,9 @@
 package me.melijn.melijnbot.objects.utils
 
+import me.melijn.melijnbot.objects.command.AbstractCommand
+import me.melijn.melijnbot.objects.command.CommandCategory
+import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.Translateable
 import net.dv8tion.jda.api.entities.Member
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -60,3 +64,37 @@ inline fun <reified T : Enum<*>> enumValueOrNull(name: String): T? =
         T::class.java.enumConstants.firstOrNull {
             it.name.equals(name, true)
         }
+
+fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set<AbstractCommand>? {
+    val arg = context.args[index]
+    val category: CommandCategory? = enumValueOrNull(arg)
+
+    val commands = (if (category == null) {
+        if (arg == "*") {
+            context.getCommands()
+        } else context.getCommands().filter { command -> command.isCommandFor(arg)}.toSet()
+    } else {
+        context.getCommands().filter { command -> command.commandCategory == category}.toSet()
+    }).toMutableSet()
+    commands.removeIf { cmd -> cmd.id == 16 }
+
+    if (commands.isEmpty()) {
+        sendMsg(context, Translateable("message.unknown.commandnode").string(context)
+                .replace("%arg%", arg))
+        return null
+    }
+    return commands
+}
+
+fun getLongFromArgNMessage(context: CommandContext, index: Int): Long? {
+    val arg = context.args[index]
+    val long = arg.toLongOrNull()
+    if (!arg.matches("\\d+".toRegex())) {
+        sendMsg(context, Translateable("message.unknown.number").string(context)
+                .replace("%arg%", arg))
+    } else if (long == null) {
+        sendMsg(context, Translateable("message.unknown.long").string(context)
+                .replace("%arg%", arg))
+    }
+    return long
+}
