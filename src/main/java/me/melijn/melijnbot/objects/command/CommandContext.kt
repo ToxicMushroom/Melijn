@@ -37,8 +37,15 @@ class CommandContext(
 
     fun initArgs() {
         args = commandParts.drop(1 + commandOrder.size)
-
-        val regex: Regex = ("${Pattern.compile(usedPrefix)}(\\s+)?" + (".*(\\s+)?").repeat(commandOrder.size)).toRegex()
+        var commandPath = ""
+        for (i in 1 .. commandOrder.size) {
+            commandPath += ".*(\\s+)"
+            if (i == commandOrder.size) {
+                if (args.isEmpty()) commandPath += "?"
+            }
+        }
+        val regex: Regex = ("${Pattern.quote(usedPrefix)}(\\s+)?$commandPath").toRegex()
+        Regex(".(\\s+)?.*(\\s+)?.*(\\s+)?")
         rawArg = messageReceivedEvent.message.contentRaw.replaceFirst(regex, "")
     }
 
