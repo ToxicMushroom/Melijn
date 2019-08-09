@@ -20,7 +20,7 @@ class ChannelUserPermissionDao(private val driverManager: DriverManager) : Dao(d
             if (resultset.next()) {
                 permState.accept(PermState.valueOf(resultset.getString("state")))
             } else permState.accept(PermState.DEFAULT)
-        }, userId, permission)
+        }, userId, permission, channelId)
     }
 
     fun set(guildId: Long, channelId: Long, userId: Long, permission: String, permState: PermState) {
