@@ -25,20 +25,22 @@ class UserPrefixWrapper(private val taskManager: TaskManager, private val userPr
         return prefixes
     }
 
-    fun addPrefix(userId: Long, prefix: String) {
-        taskManager.async(Runnable {
-            val prefixList = prefixCache.get(userId).get()
-            val prefixes = if (prefixList.isNotEmpty())
-                "${prefixList.joinToString("%SPLIT%")}%SPLIT%$prefix"
-            else prefix
-            userPrefixDao.set(userId, prefixes)
-        })
+    fun addPrefix(guildId: Long, prefix: String) {
+        val prefixList = prefixCache.get(guildId).get().toMutableList()
+        if (!prefixList.contains(prefix))
+            prefixList.add(prefix)
+        setPrefixes(guildId, prefixList)
     }
 
-    fun setPrefixes(userId: Long, prefixList: List<String>) {
-        taskManager.async(Runnable {
-            val prefixes = prefixList.joinToString("%SPLIT%")
-            userPrefixDao.set(userId, prefixes)
-        })
+    private fun setPrefixes(guildId: Long, prefixList: List<String>) {
+        val prefixes = prefixList.joinToString("%SPLIT%")
+        userPrefixDao.set(guildId, prefixes)
+        prefixCache.put(guildId, CompletableFuture.completedFuture(prefixList))
+    }
+
+    fun removePrefix(guildId: Long, prefix: String) {
+        val prefixList = prefixCache.get(guildId).get().toMutableList()
+        prefixList.remove(prefix)
+        setPrefixes(guildId, prefixList)
     }
 }

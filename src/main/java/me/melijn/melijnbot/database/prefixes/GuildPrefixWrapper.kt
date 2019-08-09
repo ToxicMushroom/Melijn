@@ -27,19 +27,21 @@ class GuildPrefixWrapper(private val taskManager: TaskManager, private val guild
     }
 
     fun addPrefix(guildId: Long, prefix: String) {
-        taskManager.async(Runnable {
-            val prefixList = prefixCache.get(guildId).get()
-            val prefixes = if (prefixList.isNotEmpty())
-                "${prefixList.joinToString("%SPLIT%")}%SPLIT%$prefix"
-            else prefix
-            guildPrefixDao.set(guildId, prefixes)
-        })
+        val prefixList = prefixCache.get(guildId).get().toMutableList()
+        if (!prefixList.contains(prefix))
+            prefixList.add(prefix)
+        setPrefixes(guildId, prefixList)
     }
 
-    fun setPrefixes(guildId: Long, prefixList: List<String>) {
-        taskManager.async(Runnable {
-            val prefixes = prefixList.joinToString("%SPLIT%")
-            guildPrefixDao.set(guildId, prefixes)
-        })
+    private fun setPrefixes(guildId: Long, prefixList: List<String>) {
+        val prefixes = prefixList.joinToString("%SPLIT%")
+        guildPrefixDao.set(guildId, prefixes)
+        prefixCache.put(guildId, CompletableFuture.completedFuture(prefixList))
+    }
+
+    fun removePrefix(guildId: Long, prefix: String) {
+        val prefixList = prefixCache.get(guildId).get().toMutableList()
+        prefixList.remove(prefix)
+        setPrefixes(guildId, prefixList)
     }
 }
