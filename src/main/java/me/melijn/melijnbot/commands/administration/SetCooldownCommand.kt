@@ -81,7 +81,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
 
         init {
             name = "info"
-            aliases = arrayOf("i")
+            aliases = arrayOf("i", "list", "ls", "l")
         }
 
         override fun execute(context: CommandContext) {
