@@ -7,6 +7,7 @@ import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.toUpperWordCase
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import java.util.regex.Pattern
 
 class CommandClient(private val commandList: Set<AbstractCommand>, private val container: Container) : ListenerAdapter() {
 
@@ -37,30 +38,44 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         val author = event.author
         val message = event.message
 
-        container.taskManager.async(Runnable {
-            if (event.isFromGuild) {
-                val guild = event.guild
-                val prefixesFuture = guildPrefixCache.get(guild.idLong)
-                var prefixes = prefixesFuture.get()
-                if (prefixes.isEmpty()) prefixes = listOf(container.settings.prefix)
-                if (container.daoManager.supporterWrapper.supporterIds.contains(author.idLong))
-                    prefixes = prefixes + userPrefixCache.get(author.idLong).get()
+        container.taskManager.async {
+            val prefixes = getPrefixes(event)
 
-                for (prefix in prefixes) {
-                    if (message.contentRaw.startsWith(prefix)) {
-                        val commandParts: ArrayList<String> = ArrayList(message.contentRaw
-                                .replaceFirst(Regex("$prefix($:\\s+)?"), "")
-                                .split(Regex("\\s+")))
-                        commandParts.add(0, prefix)
+            for (prefix in prefixes) {
+                if (message.contentRaw.startsWith(prefix)) {
+                    val commandParts: ArrayList<String> = ArrayList(message.contentRaw
+                            .replaceFirst(Regex("${Pattern.quote(prefix)}(\\s+)?"), "")
+                            .split(Regex("\\s+")))
+                    commandParts.add(0, prefix)
 
-                        val command = commandMap.getOrElse(commandParts[1].toLowerCase(), { null }) ?: continue
-                        if (checksFailed(command, event)) return@Runnable
-                        command.run(CommandContext(event, commandParts, container, commandList))
-                        break
-                    }
+                    val command = commandMap.getOrElse(commandParts[1].toLowerCase(), { null }) ?: continue
+                    if (checksFailed(command, event)) return@async
+                    command.run(CommandContext(event, commandParts, container, commandList))
+                    break
                 }
             }
-        })
+        }
+    }
+
+    private fun getPrefixes(event: MessageReceivedEvent): List<String> {
+        var prefixes =
+                if (event.isFromGuild)
+                    guildPrefixCache.get(event.guild.idLong).get().toMutableList()
+                else mutableListOf()
+
+        //add default prefix if none are set
+        if (prefixes.isEmpty()) prefixes = mutableListOf(container.settings.prefix)
+
+        //registering private prefixes
+        if (container.daoManager.supporterWrapper.supporterIds.contains(event.author.idLong))
+            prefixes.addAll(userPrefixCache.get(event.author.idLong).get())
+
+        //mentioning the bot will always work
+        prefixes.add(
+                if (event.isFromGuild) event.guild.selfMember.asMention
+                else event.jda.selfUser.asMention
+        )
+        return prefixes.toList()
     }
 
     /**
@@ -162,9 +177,10 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 bool = true
             }
         }
+        val lastExecutionBiggest = if (lastExecution > lastExecutionChannel) lastExecution else lastExecutionChannel
         if (bool && cooldownResult != 0L) {
             val msg = Translateable("message.cooldown").string(container.daoManager, userId, guildId)
-                    .replace("%cooldown%", (cooldownResult/1000.0).toString())
+                    .replace("%cooldown%", ((cooldownResult - (System.currentTimeMillis() - lastExecutionBiggest)) / 1000.0).toString())
             sendMsg(event.textChannel, msg)
         }
         return bool
