@@ -5,7 +5,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.3.41'
 }
 
-mainClassName = 'me.melijn.melijnbot.MelijnBot'
+mainClassName = 'me.melijn.melijnbot.MelijnBotKt'
 version = '2.0.0'
 sourceCompatibility = JavaVersion.VERSION_12
 
@@ -17,7 +17,7 @@ repositories {
 }
 
 dependencies {
-    implementation('net.dv8tion:JDA:4.BETA.0_35') {
+    implementation('net.dv8tion:JDA:4.BETA.0_38') {
         exclude module: 'opus-java'
     }
     implementation group: 'com.sedmelluq', name: 'lavaplayer', version: '1.3.19'
