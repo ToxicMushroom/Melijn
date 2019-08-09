@@ -21,6 +21,10 @@ class TaskManager {
         scheduledExecutorService.scheduleAtFixedRate(Task(runnable), afterMillis, periodMillis, TimeUnit.MILLISECONDS)
     }
 
+    fun async(func: () -> Unit) {
+        executorService.submit(Task(Runnable(func)))
+    }
+
     fun async(runnable: Runnable) {
         executorService.submit(Task(runnable))
     }
