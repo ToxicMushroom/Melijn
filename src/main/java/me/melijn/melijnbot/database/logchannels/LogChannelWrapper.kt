@@ -13,10 +13,10 @@ class LogChannelWrapper(private val taskManager: TaskManager, private val logCha
     val logChannelCache = Caffeine.newBuilder()
             .executor(taskManager.getExecutorService())
             .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-            .buildAsync<Pair<Long, LogChannelType>, Long?>() { key, executor -> getChannelId(key.first, key.second, executor) }
+            .buildAsync<Pair<Long, LogChannelType>, Long>() { key, executor -> getChannelId(key.first, key.second, executor) }
 
-    private fun getChannelId(guildId: Long, logChannelType: LogChannelType, executor: Executor = taskManager.getExecutorService()): CompletableFuture<Long?> {
-        val future = CompletableFuture<Long?>()
+    private fun getChannelId(guildId: Long, logChannelType: LogChannelType, executor: Executor = taskManager.getExecutorService()): CompletableFuture<Long> {
+        val future = CompletableFuture<Long>()
         executor.execute {
             logChannelDao.get(guildId, logChannelType) {
                 future.complete(it)

@@ -15,12 +15,12 @@ class LogChannelDao(val driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun get(guildId: Long, type: LogChannelType, func: (Long?) -> Unit) {
+    fun get(guildId: Long, type: LogChannelType, func: (Long) -> Unit) {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND type = ?", Consumer { resultSet ->
             if (resultSet.next()) {
                 func.invoke(resultSet.getLong("channelId"))
             } else {
-                func.invoke(null)
+                func.invoke(-1)
             }
 
         }, guildId, type.toString())
