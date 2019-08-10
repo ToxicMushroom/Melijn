@@ -16,6 +16,8 @@ import me.melijn.melijnbot.database.language.GuildLanguageDao
 import me.melijn.melijnbot.database.language.GuildLanguageWrapper
 import me.melijn.melijnbot.database.language.UserLanguageDao
 import me.melijn.melijnbot.database.language.UserLanguageWrapper
+import me.melijn.melijnbot.database.logchannels.LogChannelDao
+import me.melijn.melijnbot.database.logchannels.LogChannelWrapper
 import me.melijn.melijnbot.database.permissions.*
 import me.melijn.melijnbot.database.prefixes.GuildPrefixDao
 import me.melijn.melijnbot.database.prefixes.GuildPrefixWrapper
@@ -61,6 +63,8 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
     val embedColorWrapper: EmbedColorWrapper
     val userEmbedColorWrapper: UserEmbedColorWrapper
 
+    val logChannelWrapper: LogChannelWrapper
+
     val mySQLVersion: String
     val connectorVersion: String
 
@@ -93,6 +97,8 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
         embedDisabledWrapper = EmbedDisabledWrapper(taskManager, EmbedDisabledDao(driverManager))
         embedColorWrapper = EmbedColorWrapper(taskManager, EmbedColorDao(driverManager))
         userEmbedColorWrapper = UserEmbedColorWrapper(taskManager, UserEmbedColorDao(driverManager))
+
+        logChannelWrapper = LogChannelWrapper(taskManager, LogChannelDao(driverManager))
 
         //After registering wrappers
         driverManager.executeTableRegistration()
