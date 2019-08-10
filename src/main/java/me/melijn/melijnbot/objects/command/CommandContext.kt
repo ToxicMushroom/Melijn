@@ -22,6 +22,7 @@ class CommandContext(
 
 
     val usedPrefix: String = commandParts[0]
+    val jda = messageReceivedEvent.jda
     val offset: Int = retrieveOffset()
     val embedColor: Int = container.settings.embedColor
     val prefix: String = container.settings.prefix
@@ -30,7 +31,6 @@ class CommandContext(
     val botDevIds: LongArray = container.settings.developerIds
     val daoManager = container.daoManager
     val taskManager = container.taskManager
-    val jda = messageReceivedEvent.jda
     val guildId = getGuild().idLong
     val authorId = getAuthor().idLong
     var rawArg: String = ""
@@ -56,7 +56,8 @@ class CommandContext(
         val matcher = pattern.matcher(commandParts[0])
 
         while (matcher.find()) {
-            if (jda.getUserById(matcher.group(1)) != null) count++
+            val str = matcher.group(1)
+            if (jda.shardManager?.getUserById(str) != null) count++
         }
 
         return count
