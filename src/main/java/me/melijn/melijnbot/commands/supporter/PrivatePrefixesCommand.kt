@@ -11,6 +11,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
     init {
         id = 19
         name = "privatePrefixes"
+        aliases = arrayOf("pp")
         commandCategory = CommandCategory.ADMINISTRATION
         children = arrayOf(ViewCommand(root), AddCommand(root), RemoveCommand(root))
     }
@@ -29,7 +30,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
         override fun execute(context: CommandContext) {
             val title = Translateable("$root.response1.title").string(context)
             var content = "```INI"
-            val prefixes = context.daoManager.userPrefixWrapper.prefixCache.get(context.guildId).get()
+            val prefixes = context.daoManager.userPrefixWrapper.prefixCache.get(context.authorId).get()
             for ((index, prefix) in prefixes.withIndex()) {
                 content += "\n$index - [$prefix]"
             }
@@ -53,7 +54,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             }
 
             val prefix = context.rawArg
-            context.daoManager.userPrefixWrapper.addPrefix(context.guildId, prefix)
+            context.daoManager.userPrefixWrapper.addPrefix(context.authorId, prefix)
             val msg = Translateable("$root.response1").string(context)
                     .replace("%prefix%", prefix)
             sendMsg(context, msg)
@@ -74,7 +75,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             }
 
             val prefix = context.rawArg
-            context.daoManager.userPrefixWrapper.removePrefix(context.guildId, prefix)
+            context.daoManager.userPrefixWrapper.removePrefix(context.authorId, prefix)
             val msg = Translateable("$root.response1").string(context)
                     .replace("%prefix%", prefix)
             sendMsg(context, msg)

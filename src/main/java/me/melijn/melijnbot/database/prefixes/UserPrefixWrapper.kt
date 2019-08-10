@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 
 class UserPrefixWrapper(private val taskManager: TaskManager, private val userPrefixDao: UserPrefixDao) {
+
     val prefixCache = Caffeine.newBuilder()
             .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
             .executor(taskManager.getExecutorService())
@@ -25,22 +26,22 @@ class UserPrefixWrapper(private val taskManager: TaskManager, private val userPr
         return prefixes
     }
 
-    fun addPrefix(guildId: Long, prefix: String) {
-        val prefixList = prefixCache.get(guildId).get().toMutableList()
+    fun addPrefix(userId: Long, prefix: String) {
+        val prefixList = prefixCache.get(userId).get().toMutableList()
         if (!prefixList.contains(prefix))
             prefixList.add(prefix)
-        setPrefixes(guildId, prefixList)
+        setPrefixes(userId, prefixList)
     }
 
-    private fun setPrefixes(guildId: Long, prefixList: List<String>) {
+    private fun setPrefixes(userId: Long, prefixList: List<String>) {
         val prefixes = prefixList.joinToString("%SPLIT%")
-        userPrefixDao.set(guildId, prefixes)
-        prefixCache.put(guildId, CompletableFuture.completedFuture(prefixList))
+        userPrefixDao.set(userId, prefixes)
+        prefixCache.put(userId, CompletableFuture.completedFuture(prefixList))
     }
 
-    fun removePrefix(guildId: Long, prefix: String) {
-        val prefixList = prefixCache.get(guildId).get().toMutableList()
+    fun removePrefix(userId: Long, prefix: String) {
+        val prefixList = prefixCache.get(userId).get().toMutableList()
         prefixList.remove(prefix)
-        setPrefixes(guildId, prefixList)
+        setPrefixes(userId, prefixList)
     }
 }
