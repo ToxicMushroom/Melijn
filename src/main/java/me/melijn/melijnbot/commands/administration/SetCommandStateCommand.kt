@@ -124,7 +124,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                 val channel = getTextChannelByArgsNMessage(context, 0) ?: return
                 val stateMap = context.daoManager.channelCommandStateWrapper.channelCommandsStateCache.get(channel.idLong).get()
                 val commands = context.getCommands().filter { cmd -> stateMap.keys.contains(cmd.id) }
-                val title = Translateable("$root.channeldisabled.response1").string(context)
+                val title = Translateable("$root.channelstate.response1").string(context)
                         .replace("%channel%", "#${channel.name}")
                 var content = "```INI"
                 for ((index, cmd) in commands.withIndex()) {
