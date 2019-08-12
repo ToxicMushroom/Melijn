@@ -8,7 +8,7 @@ class Translateable(val path: String = "") {
 
     companion object {
         val defaultRecourseBundle: ResourceBundle = ResourceBundle.getBundle("strings")
-        val dutchBelgianRecourseBundle: ResourceBundle = ResourceBundle.getBundle("strings", Locale("nl_BE"))
+        //val dutchBelgianRecourseBundle: ResourceBundle = ResourceBundle.getBundle("strings", Locale("nl_BE"))
     }
 
     fun string(ctx: CommandContext): String {
@@ -18,7 +18,7 @@ class Translateable(val path: String = "") {
     fun string(lang: String): String {
         return try {
             when (lang) {
-                "NL_BE" -> dutchBelgianRecourseBundle.getString(path)
+                //"NL_BE" -> dutchBelgianRecourseBundle.getString(path)
                 else -> defaultRecourseBundle.getString(path)
             }
         } catch (ex: MissingResourceException) {
@@ -32,7 +32,7 @@ class Translateable(val path: String = "") {
             return if (guildId > 0) {
                 if (isSupporter)
                     when (daoManager.userLanguageWrapper.languageCache.get(userId).get()) {
-                        "NL_BE" -> dutchBelgianRecourseBundle.getString(path)
+                        //"NL_BE" -> dutchBelgianRecourseBundle.getString(path)
                         "EN" -> defaultRecourseBundle.getString(path)
                         else -> guildString(daoManager, guildId)
                     }
@@ -49,14 +49,14 @@ class Translateable(val path: String = "") {
 
     private fun userString(daoManager: DaoManager, userId: Long): String {
         return when (daoManager.userLanguageWrapper.languageCache.get(userId).get()) {
-            "NL_BE" -> dutchBelgianRecourseBundle.getString(path)
+            //"NL_BE" -> dutchBelgianRecourseBundle.getString(path)
             else -> defaultRecourseBundle.getString(path)
         }
     }
 
     private fun guildString(daoManager: DaoManager, guildId: Long): String {
         return when (daoManager.guildLanguageWrapper.languageCache.get(guildId).get()) {
-            "NL_BE" -> dutchBelgianRecourseBundle.getString(path)
+            //"NL_BE" -> dutchBelgianRecourseBundle.getString(path)
             else -> defaultRecourseBundle.getString(path)
         }
     }
