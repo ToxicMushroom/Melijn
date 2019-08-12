@@ -15,11 +15,11 @@ class ChannelRolePermissionDao(private val driverManager: DriverManager) : Dao(d
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun getPermState(channelId: Long, roleId: Long, permission: String, permState: Consumer<PermState>) {
-        driverManager.executeQuery("SELECT * FROM $table WHERE roleId = ? AND permission = ? AND channelId = ?", Consumer { resultset ->
+    fun getPermState(channelId: Long, roleId: Long, permission: String, permState: (PermState) -> Unit) {
+        driverManager.executeQuery("SELECT * FROM $table WHERE roleId = ? AND permission = ? AND channelId = ?",  { resultset ->
             if (resultset.next()) {
-                permState.accept(PermState.valueOf(resultset.getString("state")))
-            } else permState.accept(PermState.DEFAULT)
+                permState.invoke(PermState.valueOf(resultset.getString("state")))
+            } else permState.invoke(PermState.DEFAULT)
         }, roleId, permission, channelId)
     }
 
@@ -38,19 +38,19 @@ class ChannelRolePermissionDao(private val driverManager: DriverManager) : Dao(d
                 channelId, roleId)
     }
 
-    fun getMap(channelId: Long, roleId: Long, permStateMap: Consumer<Map<String, PermState>>) {
-        driverManager.executeQuery("SELECT * FROM $table WHERE roleId = ? AND channelId = ?", Consumer { resultset ->
+    fun getMap(channelId: Long, roleId: Long, permStateMap: (Map<String, PermState>) -> Unit) {
+        driverManager.executeQuery("SELECT * FROM $table WHERE roleId = ? AND channelId = ?",  { resultset ->
             val map = HashMap<String, PermState>()
             while (resultset.next()) {
                 map[resultset.getString("permission")] = PermState.valueOf(resultset.getString("state"))
             }
-            permStateMap.accept(map)
+            permStateMap.invoke(map)
         }, roleId, channelId)
     }
 
 
     fun bulkPut(guildId: Long, channelId: Long, roleId: Long, permissions: List<String>, state: PermState) {
-        driverManager.getUsableConnection(Consumer { connection ->
+        driverManager.getUsableConnection { connection ->
             connection.prepareStatement("INSERT INTO $table (guildId, channelId, roleId, permission, state) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE state = ?").use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(2, channelId)
@@ -63,11 +63,11 @@ class ChannelRolePermissionDao(private val driverManager: DriverManager) : Dao(d
                 }
                 statement.executeLargeBatch()
             }
-        })
+        }
     }
 
     fun bulkDelete(channelId: Long, roleId: Long, permissions: List<String>) {
-        driverManager.getUsableConnection(Consumer { connection ->
+        driverManager.getUsableConnection { connection ->
             connection.prepareStatement("DELETE FROM $table WHERE channelId = ? AND roleId = ? AND permission = ?").use { statement ->
                 statement.setLong(1, channelId)
                 statement.setLong(2, roleId)
@@ -77,6 +77,6 @@ class ChannelRolePermissionDao(private val driverManager: DriverManager) : Dao(d
                 }
                 statement.executeLargeBatch()
             }
-        })
+        }
     }
 }

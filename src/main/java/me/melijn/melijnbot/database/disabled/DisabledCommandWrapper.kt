@@ -20,9 +20,9 @@ class DisabledCommandWrapper(val taskManager: TaskManager, val disabledCommandDa
     fun getDisabledCommandSet(guildId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<Set<Int>> {
         val future = CompletableFuture<Set<Int>>()
         executor.execute {
-            disabledCommandDao.get(guildId, Consumer {
+            disabledCommandDao.get(guildId) {
                 future.complete(it)
-            })
+            }
         }
         return future
     }

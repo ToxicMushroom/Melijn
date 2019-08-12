@@ -18,9 +18,9 @@ class UserPermissionWrapper(val taskManager: TaskManager, private val userPermis
     fun getPermissionList(guildAndUser: Pair<Long, Long>, executor: Executor = taskManager.getExecutorService()): CompletableFuture<Map<String, PermState>> {
         val languageFuture = CompletableFuture<Map<String, PermState>>()
         executor.execute {
-            userPermissionDao.getMap(guildAndUser.first, guildAndUser.second, Consumer { map ->
+            userPermissionDao.getMap(guildAndUser.first, guildAndUser.second) { map ->
                 languageFuture.complete(map)
-            })
+            }
         }
         return languageFuture
     }

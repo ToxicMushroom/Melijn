@@ -20,7 +20,6 @@ class CommandContext(
         return messageReceivedEvent.guild
     }
 
-
     val usedPrefix: String = commandParts[0]
     val jda = messageReceivedEvent.jda
     val offset: Int = retrieveOffset()

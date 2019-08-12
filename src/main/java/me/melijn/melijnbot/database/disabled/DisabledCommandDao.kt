@@ -14,19 +14,19 @@ class DisabledCommandDao(val driverManager: DriverManager) : Dao(driverManager) 
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun get(guildId: Long, disabled: Consumer<Set<Int>>) {
+    fun get(guildId: Long, disabled: (Set<Int>) -> Unit) {
         val list = HashSet<Int>()
-        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", Consumer { resultSet ->
+        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", { resultSet ->
             while (resultSet.next()) {
                 list.add(resultSet.getInt("commandId"))
             }
         }, guildId)
-        disabled.accept(list.toSet())
+        disabled.invoke(list.toSet())
     }
 
-    fun contains(guildId: Long, commandId: Int, contains: Consumer<Boolean>) {
-        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND commandId = ?", Consumer {
-            contains.accept(it.next())
+    fun contains(guildId: Long, commandId: Int, contains: (Boolean) -> Unit) {
+        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND commandId = ?", {
+            contains.invoke(it.next())
         }, guildId, commandId)
     }
 
@@ -36,7 +36,7 @@ class DisabledCommandDao(val driverManager: DriverManager) : Dao(driverManager) 
     }
 
     fun bulkPut(guildId: Long, commands: Set<AbstractCommand>) {
-        driverManager.getUsableConnection(Consumer { con ->
+        driverManager.getUsableConnection { con ->
             con.prepareStatement("INSERT IGNORE INTO $table (guildId, commandId) VALUES (?, ?)").use { statement ->
                 statement.setLong(1, guildId)
                 for (cmd in commands) {
@@ -45,11 +45,11 @@ class DisabledCommandDao(val driverManager: DriverManager) : Dao(driverManager) 
                 }
                 statement.executeLargeBatch()
             }
-        })
+        }
     }
 
     fun bulkDelete(guildId: Long, commands: Set<AbstractCommand>) {
-        driverManager.getUsableConnection(Consumer { con ->
+        driverManager.getUsableConnection { con ->
             con.prepareStatement("DELETE FROM $table WHERE guildId = ? AND commandId = ?)").use { statement ->
                 statement.setLong(1, guildId)
                 for (cmd in commands) {
@@ -58,6 +58,6 @@ class DisabledCommandDao(val driverManager: DriverManager) : Dao(driverManager) 
                 }
                 statement.executeLargeBatch()
             }
-        })
+        }
     }
 }

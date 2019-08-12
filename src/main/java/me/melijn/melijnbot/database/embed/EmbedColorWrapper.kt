@@ -18,9 +18,9 @@ class EmbedColorWrapper(val taskManager: TaskManager, val embedColorDao: EmbedCo
     fun getColor(guildId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<Int> {
         val future = CompletableFuture<Int>()
         executor.execute {
-            embedColorDao.get(guildId, Consumer {
+            embedColorDao.get(guildId) {
                 future.complete(it)
-            })
+            }
         }
         return future
     }

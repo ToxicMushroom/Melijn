@@ -14,10 +14,10 @@ class EmbedColorDao(val driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun get(guildId: Long, color: Consumer<Int>) {
-        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", Consumer {
-            if (it.next()) color.accept(it.getInt("color"))
-            else color.accept(-1)
+    fun get(guildId: Long, color: (Int) -> Unit) {
+        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", {
+            if (it.next()) color.invoke(it.getInt("color"))
+            else color.invoke(-1)
         }, guildId)
     }
 

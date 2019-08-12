@@ -15,11 +15,11 @@ class RolePermissionDao(private val driverManager: DriverManager) : Dao(driverMa
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun getPermState(roleId: Long, permission: String, permState: Consumer<PermState>) {
-        driverManager.executeQuery("SELECT * FROM $table WHERE roleId = ? AND permission = ?", Consumer { resultset ->
+    fun getPermState(roleId: Long, permission: String, permState: (PermState) -> Unit) {
+        driverManager.executeQuery("SELECT * FROM $table WHERE roleId = ? AND permission = ?", { resultset ->
             if (resultset.next()) {
-                permState.accept(PermState.valueOf(resultset.getString("state")))
-            } else permState.accept(PermState.DEFAULT)
+                permState.invoke(PermState.valueOf(resultset.getString("state")))
+            } else permState.invoke(PermState.DEFAULT)
         }, roleId, permission)
     }
 
@@ -36,18 +36,18 @@ class RolePermissionDao(private val driverManager: DriverManager) : Dao(driverMa
         driverManager.executeUpdate("DELETE FROM $table WHERE roleId = ?", roleId)
     }
 
-    fun getMap(roleId: Long, permStateMap: Consumer<Map<String, PermState>>) {
-        driverManager.executeQuery("SELECT * FROM $table WHERE roleId = ?", Consumer { resultset ->
+    fun getMap(roleId: Long, permStateMap: (Map<String, PermState>) -> Unit) {
+        driverManager.executeQuery("SELECT * FROM $table WHERE roleId = ?", { resultset ->
             val map = HashMap<String, PermState>()
             while (resultset.next()) {
                 map[resultset.getString("permission")] = PermState.valueOf(resultset.getString("state"))
             }
-            permStateMap.accept(map)
+            permStateMap.invoke(map)
         }, roleId)
     }
 
     fun bulkPut(guildId: Long, roleId: Long, permissions: List<String>, state: PermState) {
-        driverManager.getUsableConnection(Consumer { connection ->
+        driverManager.getUsableConnection { connection ->
             connection.prepareStatement("INSERT INTO $table (guildId, roleId, permission, state) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE state = ?").use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(2, roleId)
@@ -59,11 +59,11 @@ class RolePermissionDao(private val driverManager: DriverManager) : Dao(driverMa
                 }
                 statement.executeLargeBatch()
             }
-        })
+        }
     }
 
     fun bulkDelete(roleId: Long, permissions: List<String>) {
-        driverManager.getUsableConnection(Consumer { connection ->
+        driverManager.getUsableConnection { connection ->
             connection.prepareStatement("DELETE FROM $table WHERE roleId = ? AND permission = ?").use { statement ->
                 statement.setLong(1, roleId)
                 for (perm in permissions) {
@@ -72,6 +72,6 @@ class RolePermissionDao(private val driverManager: DriverManager) : Dao(driverMa
                 }
                 statement.executeLargeBatch()
             }
-        })
+        }
     }
 }

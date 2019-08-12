@@ -13,11 +13,11 @@ class UserLanguageDao(private val driverManager: DriverManager) : Dao(driverMana
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun get(userId: Long, language: Consumer<String>) {
-        driverManager.executeQuery("SELECT * FROM $table WHERE userId = ?", Consumer { resultset ->
+    fun get(userId: Long, language: (String) -> Unit) {
+        driverManager.executeQuery("SELECT * FROM $table WHERE userId = ?", { resultset ->
             if (resultset.next()) {
-                language.accept(resultset.getString("language"))
-            } else language.accept("")
+                language.invoke(resultset.getString("language"))
+            } else language.invoke("")
 
         }, userId)
     }

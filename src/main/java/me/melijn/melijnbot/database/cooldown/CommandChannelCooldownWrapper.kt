@@ -23,9 +23,9 @@ class CommandChannelCooldownWrapper(val taskManager: TaskManager, val commandCha
     fun getCommandChannelCooldowns(channelId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<Map<Int, Long>> {
         val map = CompletableFuture<Map<Int, Long>>()
         executor.execute {
-            commandChannelCooldownDao.getCooldownMapForChannel(channelId, Consumer {
+            commandChannelCooldownDao.getCooldownMapForChannel(channelId) {
                 map.complete(it)
-            })
+            }
         }
         return map
     }

@@ -14,11 +14,11 @@ class GuildLanguageDao(private val driverManager: DriverManager) : Dao(driverMan
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun get(guildId: Long, language: Consumer<String>) {
-        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", Consumer { resultset ->
+    fun get(guildId: Long, language: (String) -> Unit) {
+        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", { resultset ->
             if (resultset.next()) {
-                language.accept(resultset.getString("language"))
-            } else language.accept("EN")
+                language.invoke(resultset.getString("language"))
+            } else language.invoke("EN")
 
         }, guildId)
     }

@@ -16,21 +16,21 @@ class CommandCooldownDao(private val driverManager: DriverManager) : Dao(driverM
     }
 
     fun getCooldown(guildId: Long, commandId: Int, cooldown: Consumer<Long>) {
-        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND commandId = ?", Consumer { resultSet ->
+        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND commandId = ?", { resultSet ->
             if (resultSet.next()) {
                 cooldown.accept(resultSet.getLong("cooldown"))
             }
         }, guildId, commandId)
     }
 
-    fun getCooldowns(guildId: Long, cooldownMap: Consumer<Map<Int, Long>>) {
+    fun getCooldowns(guildId: Long, cooldownMap: (Map<Int, Long>) -> Unit) {
         val hashMap = HashMap<Int, Long>()
-        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", Consumer { resultSet ->
+        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", { resultSet ->
             while (resultSet.next()) {
                 hashMap[resultSet.getInt("commandId")] = resultSet.getLong("cooldown")
             }
         }, guildId)
-        cooldownMap.accept(hashMap.toMap())
+        cooldownMap.invoke(hashMap.toMap())
     }
 
     fun insert(guildId: Long, commandId: Int, cooldown: Long) {
@@ -39,7 +39,7 @@ class CommandCooldownDao(private val driverManager: DriverManager) : Dao(driverM
     }
 
     fun bulkPut(guildId: Long, commands: Set<AbstractCommand>, cooldownMillis: Long) {
-        driverManager.getUsableConnection(Consumer { con ->
+        driverManager.getUsableConnection { con ->
             con.prepareStatement("INSERT INTO $table (guildId, commandId, cooldownMillis) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldownMillis = ?").use {
                 preparedStatement ->
                 preparedStatement.setLong(1, guildId)
@@ -51,11 +51,11 @@ class CommandCooldownDao(private val driverManager: DriverManager) : Dao(driverM
                 }
                 preparedStatement.executeLargeBatch()
             }
-        })
+        }
     }
 
     fun bulkDelete(guildId: Long, commands: Set<AbstractCommand>) {
-        driverManager.getUsableConnection(Consumer { con ->
+        driverManager.getUsableConnection { con ->
             con.prepareStatement("DELETE FROM $table WHERE guildId = ? AND commandId = ?").use {
                 preparedStatement ->
                 preparedStatement.setLong(1, guildId)
@@ -65,6 +65,6 @@ class CommandCooldownDao(private val driverManager: DriverManager) : Dao(driverM
                 }
                 preparedStatement.executeLargeBatch()
             }
-        })
+        }
     }
 }

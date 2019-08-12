@@ -15,9 +15,9 @@ class ChannelCommandStateDao(val driverManager: DriverManager) : Dao(driverManag
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun get(channelId: Long, disabled: Consumer<Map<Int, ChannelCommandState>>) {
+    fun get(channelId: Long, disabled: (Map<Int, ChannelCommandState>) -> Unit) {
         val map = HashMap<Int, ChannelCommandState>()
-        driverManager.executeQuery("SELECT * FROM $table WHERE channelId = ?", Consumer { resultSet ->
+        driverManager.executeQuery("SELECT * FROM $table WHERE channelId = ?", { resultSet ->
             while (resultSet.next()) {
                 map[resultSet.getInt("commandId")] = ChannelCommandState.valueOf(resultSet.getString("state"))
             }
@@ -25,9 +25,9 @@ class ChannelCommandStateDao(val driverManager: DriverManager) : Dao(driverManag
         disabled.accept(map)
     }
 
-    fun contains(channelId: Long, commandId: Int, contains: Consumer<Boolean>) {
-        driverManager.executeQuery("SELECT * FROM $table WHERE channelId = ? AND commandId = ?", Consumer {
-            contains.accept(it.next())
+    fun contains(channelId: Long, commandId: Int, contains: (Boolean) -> Unit) {
+        driverManager.executeQuery("SELECT * FROM $table WHERE channelId = ? AND commandId = ?", {
+            contains.invoke(it.next())
         }, channelId, commandId)
     }
 
@@ -37,9 +37,8 @@ class ChannelCommandStateDao(val driverManager: DriverManager) : Dao(driverManag
     }
 
     fun bulkPut(guildId: Long, channelId: Long, commands: Set<AbstractCommand>, channelCommandState: ChannelCommandState) {
-        driverManager.getUsableConnection(Consumer { con ->
-            con.prepareStatement("INSERT INTO $table (guildId, channelId, commandId, state) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE state = ?").use {
-                statement ->
+        driverManager.getUsableConnection { con ->
+            con.prepareStatement("INSERT INTO $table (guildId, channelId, commandId, state) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE state = ?").use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(2, channelId)
                 statement.setString(4, channelCommandState.toString())
@@ -50,13 +49,12 @@ class ChannelCommandStateDao(val driverManager: DriverManager) : Dao(driverManag
                 }
                 statement.executeLargeBatch()
             }
-        })
+        }
     }
 
-    fun bulkRemove(channelId: Long, commands: Set<AbstractCommand>)  {
-        driverManager.getUsableConnection(Consumer { con ->
-            con.prepareStatement("DELETE FROM $table WHERE channelId = ? AND commandId = ?").use {
-                statement ->
+    fun bulkRemove(channelId: Long, commands: Set<AbstractCommand>) {
+        driverManager.getUsableConnection { con ->
+            con.prepareStatement("DELETE FROM $table WHERE channelId = ? AND commandId = ?").use { statement ->
                 statement.setLong(1, channelId)
                 for (cmd in commands) {
                     statement.setInt(2, cmd.id)
@@ -64,6 +62,6 @@ class ChannelCommandStateDao(val driverManager: DriverManager) : Dao(driverManag
                 }
                 statement.executeLargeBatch()
             }
-        })
+        }
     }
 }

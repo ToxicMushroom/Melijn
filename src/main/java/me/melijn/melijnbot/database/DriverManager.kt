@@ -42,8 +42,8 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
         this.dataSource = HikariDataSource(config)
     }
 
-    fun getUsableConnection(connection: Consumer<Connection>){
-        dataSource.connection.use { connection.accept(it) }
+    fun getUsableConnection(connection: (Connection) -> Unit){
+        dataSource.connection.use { connection.invoke(it) }
     }
 
     fun registerTable(table: String, tableStructure: String, keys: String) {
@@ -54,7 +54,7 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
     }
 
     fun executeTableRegistration() {
-        dataSource.connection.use { connection ->
+        getUsableConnection { connection ->
             connection.createStatement().use { statement ->
                 tableRegistrationQueries.forEach { tableRegistrationQuery ->
                     statement.addBatch(tableRegistrationQuery)
@@ -101,14 +101,14 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
      *   objects: 5
      *   resultset: Consumer object to handle the resultset
      * **/
-    fun executeQuery(query: String, resultset: Consumer<ResultSet>, vararg objects: Any) {
+    fun executeQuery(query: String, resultset: (ResultSet) -> Unit, vararg objects: Any) {
         try {
             dataSource.connection.use { connection ->
                 connection.prepareStatement(query).use { preparedStatement ->
                     for ((index, value) in objects.withIndex()) {
                         preparedStatement.setObject(index + 1, value)
                     }
-                    preparedStatement.executeQuery().use { resultSet -> resultset.accept(resultSet) }
+                    preparedStatement.executeQuery().use { resultSet -> resultset.invoke(resultSet) }
                 }
             }
         } catch (e: SQLException) {

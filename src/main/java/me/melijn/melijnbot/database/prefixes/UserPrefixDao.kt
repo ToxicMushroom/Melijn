@@ -19,11 +19,11 @@ class UserPrefixDao(private val driverManager: DriverManager) : Dao(driverManage
                 userId, prefixes, prefixes)
     }
 
-    fun get(userId: Long, prefixes: Consumer<String>) {
-        driverManager.executeQuery("SELECT * FROM $table WHERE userId = ?", Consumer { resultSet ->
+    fun get(userId: Long, prefixes: (String) -> Unit) {
+        driverManager.executeQuery("SELECT * FROM $table WHERE userId = ?", { resultSet ->
             if (resultSet.next()) {
-                prefixes.accept(resultSet.getString("prefixes"))
-            } else prefixes.accept("")
+                prefixes.invoke(resultSet.getString("prefixes"))
+            } else prefixes.invoke("")
         }, userId)
     }
 }

@@ -25,12 +25,8 @@ class TaskManager {
         executorService.submit(Task(Runnable(func)))
     }
 
-    fun async(runnable: Runnable) {
-        executorService.submit(Task(runnable))
-    }
-
-    fun asyncAfter(runnable: Runnable, afterMillis: Long) {
-        scheduledExecutorService.schedule(Task(runnable), afterMillis, TimeUnit.MILLISECONDS)
+    fun asyncAfter(afterMillis: Long, func: () -> Unit) {
+        scheduledExecutorService.schedule(Task(Runnable(func)), afterMillis, TimeUnit.MILLISECONDS)
     }
 
     fun getExecutorService(): ExecutorService {

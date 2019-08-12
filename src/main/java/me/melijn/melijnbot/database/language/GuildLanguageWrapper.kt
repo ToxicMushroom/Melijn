@@ -19,9 +19,9 @@ class GuildLanguageWrapper(private val taskManager: TaskManager, private val lan
     fun getLanguage(guildId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<String> {
         val languageFuture = CompletableFuture<String>()
         executor.execute {
-            languageDao.get(guildId, Consumer { language ->
+            languageDao.get(guildId) { language ->
                 languageFuture.complete(language)
-            })
+            }
         }
         return languageFuture
     }

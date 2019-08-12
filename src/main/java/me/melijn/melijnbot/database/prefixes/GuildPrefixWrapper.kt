@@ -18,10 +18,12 @@ class GuildPrefixWrapper(private val taskManager: TaskManager, private val guild
     fun getPrefixes(guildId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<List<String>> {
         val prefixes = CompletableFuture<List<String>>()
         executor.execute {
-            guildPrefixDao.get(guildId, Consumer { prefixesString ->
-                val list: List<String> = if (prefixesString == "") emptyList() else prefixesString.split("%SPLIT%")
+            guildPrefixDao.get(guildId) { prefixesString ->
+                val list: List<String> =
+                        if (prefixesString == "") emptyList()
+                        else prefixesString.split("%SPLIT%")
                 prefixes.complete(list)
-            })
+            }
         }
         return prefixes
     }

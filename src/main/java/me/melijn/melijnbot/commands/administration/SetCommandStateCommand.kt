@@ -104,8 +104,6 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
         init {
             name = "info"
             aliases = arrayOf("i")
-
-
         }
 
         override fun execute(context: CommandContext) {

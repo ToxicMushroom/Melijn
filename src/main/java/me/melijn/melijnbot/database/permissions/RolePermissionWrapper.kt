@@ -18,9 +18,9 @@ class RolePermissionWrapper(val taskManager: TaskManager, val rolePermissionDao:
     fun getPermissionList(roleId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<Map<String, PermState>> {
         val languageFuture = CompletableFuture<Map<String, PermState>>()
         executor.execute {
-            rolePermissionDao.getMap(roleId, Consumer { map ->
+            rolePermissionDao.getMap(roleId) { map ->
                 languageFuture.complete(map)
-            })
+            }
         }
         return languageFuture
     }

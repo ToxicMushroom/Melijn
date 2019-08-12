@@ -24,4 +24,23 @@ class LogChannelWrapper(private val taskManager: TaskManager, private val logCha
         }
         return future
     }
+
+    fun removeChannel(guildId: Long, logChannelType: LogChannelType) {
+        logChannelDao.unset(guildId, logChannelType)
+        logChannelCache.put(Pair(guildId, logChannelType), CompletableFuture.completedFuture(-1))
+    }
+
+    fun removeChannels(guildId: Long, logChannelTypes: List<LogChannelType>) {
+        logChannelDao.bulkRemove(guildId, logChannelTypes)
+        for (type in logChannelTypes) {
+            logChannelCache.put(Pair(guildId, type), CompletableFuture.completedFuture(-1))
+        }
+    }
+
+    fun setChannels(guildId: Long, logChannelTypes: List<LogChannelType>, channelId: Long) {
+        logChannelDao.bulkPut(guildId, logChannelTypes, channelId)
+        for (type in logChannelTypes) {
+            logChannelCache.put(Pair(guildId, type), CompletableFuture.completedFuture(channelId))
+        }
+    }
 }

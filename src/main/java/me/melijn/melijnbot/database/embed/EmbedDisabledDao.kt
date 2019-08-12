@@ -13,13 +13,13 @@ class EmbedDisabledDao(val driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun getSet(set: Consumer<Set<Long>>) {
-        driverManager.executeQuery("SELECT * FROM $table", Consumer {
+    fun getSet(set: (Set<Long>) -> Unit) {
+        driverManager.executeQuery("SELECT * FROM $table", {
             val hashSet = HashSet<Long>()
             while (it.next()) {
                 hashSet.add(it.getLong("guildId"))
             }
-            set.accept(hashSet)
+            set.invoke(hashSet)
         })
     }
 

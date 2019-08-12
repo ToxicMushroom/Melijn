@@ -2,10 +2,20 @@ package me.melijn.melijnbot.objects.utils
 
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.Translateable
+import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.User
 import java.util.regex.Pattern
+
+
+
+val Member.asTag: String
+    get() = this.user.asTag
+
+val TextChannel.asTag: String
+    get() = "#${this.name}"
+
 
 fun getUserByArgs(context: CommandContext, index: Int): User {
     var user = getUserByArgsN(context, index)

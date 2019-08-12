@@ -9,11 +9,11 @@ class SupporterWrapper(val taskManager: TaskManager, private val userSupporterDa
     var supporterIds: Set<Long> = setOf()
 
     init {
-        taskManager.asyncAfter(Runnable {
-            userSupporterDao.getSupporters(Consumer {
+        taskManager.asyncAfter(2000) {
+            userSupporterDao.getSupporters {
                 supporters = it
                 supporterIds = it.map { supporter -> supporter.userId }.toSet()
-            })
-        }, 2000)
+            }
+        }
     }
 }

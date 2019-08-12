@@ -17,9 +17,9 @@ class UserLanguageWrapper(val taskManager: TaskManager, val userLanguageDao: Use
     fun getLanguage(userId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<String> {
         val languageFuture = CompletableFuture<String>()
         executor.execute {
-            userLanguageDao.get(userId, Consumer { language ->
+            userLanguageDao.get(userId) { language ->
                 languageFuture.complete(language)
-            })
+            }
         }
         return languageFuture
     }

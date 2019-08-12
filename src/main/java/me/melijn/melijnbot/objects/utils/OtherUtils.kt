@@ -56,10 +56,6 @@ fun getSystemUptime(): Long {
 }
 
 
-fun Member.getAsTag(): String {
-    return this.user.asTag
-}
-
 inline fun <reified T : Enum<*>> enumValueOrNull(name: String): T? =
         T::class.java.enumConstants.firstOrNull {
             it.name.equals(name, true)

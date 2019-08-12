@@ -18,10 +18,10 @@ class UserPrefixWrapper(private val taskManager: TaskManager, private val userPr
     fun getPrefixes(userId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<List<String>> {
         val prefixes = CompletableFuture<List<String>>()
         executor.execute {
-            userPrefixDao.get(userId, Consumer { prefixesString ->
+            userPrefixDao.get(userId) { prefixesString ->
                 val list: List<String> = if (prefixesString == "") emptyList() else prefixesString.split("%SPLIT%")
                 prefixes.complete(list)
-            })
+            }
         }
         return prefixes
     }

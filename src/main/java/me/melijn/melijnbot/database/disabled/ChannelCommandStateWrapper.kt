@@ -20,9 +20,9 @@ class ChannelCommandStateWrapper(val taskManager: TaskManager, private val chann
     fun getCommandStateMap(channelId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<Map<Int, ChannelCommandState>> {
         val future = CompletableFuture<Map<Int, ChannelCommandState>>()
         executor.execute {
-            channelCommandStateDao.get(channelId, Consumer {
+            channelCommandStateDao.get(channelId) {
                 future.complete(it)
-            })
+            }
         }
         return future
     }

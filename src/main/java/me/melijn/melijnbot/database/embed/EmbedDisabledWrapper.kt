@@ -8,11 +8,11 @@ class EmbedDisabledWrapper(val taskManager: TaskManager, val embedDisabledDao: E
     val embedDisabledCache = HashSet<Long>()
 
     init {
-        taskManager.asyncAfter(Runnable {
-            embedDisabledDao.getSet(Consumer {
+        taskManager.asyncAfter(2000) {
+            embedDisabledDao.getSet {
                 embedDisabledCache.addAll(it)
-            })
-        }, 2000)
+            }
+        }
     }
 
     fun setDisabled(guildId: Long, disabledState: Boolean) {

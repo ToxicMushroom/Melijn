@@ -14,18 +14,18 @@ class CommandChannelCooldownDao(val driverManager: DriverManager) : Dao(driverMa
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun getCooldownMapForChannel(channelId: Long, cooldownMap: Consumer<Map<Int, Long>>) {
-        driverManager.executeQuery("SELECT * FROM $table WHERE channelId = ?", Consumer {
+    fun getCooldownMapForChannel(channelId: Long, cooldownMap: (Map<Int, Long>) -> Unit) {
+        driverManager.executeQuery("SELECT * FROM $table WHERE channelId = ?", {
             val map = HashMap<Int, Long>()
             while (it.next()) {
                 map[it.getInt("commandId")] = it.getLong("cooldownMillis")
             }
-            cooldownMap.accept(map)
+            cooldownMap.invoke(map)
         }, channelId)
     }
 
     fun bulkPut(guildId: Long, channelId: Long, commands: Set<AbstractCommand>, cooldownMillis: Long) {
-        driverManager.getUsableConnection(Consumer { con ->
+        driverManager.getUsableConnection { con ->
             con.prepareStatement("INSERT INTO $table (guildId, channelId, commandId, cooldownMillis) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE cooldownMillis = ?").use {
                 preparedStatement ->
                 preparedStatement.setLong(1, guildId)
@@ -42,7 +42,7 @@ class CommandChannelCooldownDao(val driverManager: DriverManager) : Dao(driverMa
     }
 
     fun bulkDelete(channelId: Long, commands: Set<AbstractCommand>) {
-        driverManager.getUsableConnection(Consumer { con ->
+        driverManager.getUsableConnection { con ->
             con.prepareStatement("DELETE FROM $table WHERE channelId = ? AND commandId = ?").use {
                 preparedStatement ->
                 preparedStatement.setLong(1, channelId)
@@ -52,6 +52,6 @@ class CommandChannelCooldownDao(val driverManager: DriverManager) : Dao(driverMa
                 }
                 preparedStatement.executeLargeBatch()
             }
-        })
+        }
     }
 }

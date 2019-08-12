@@ -20,6 +20,8 @@ class TestCommand : AbstractCommand("command.test") {
         val timeStamp2 = System.currentTimeMillis()
         val channel = future.get()
         val timeStamp3 = System.currentTimeMillis()
-        sendMsg(context, "${timeStamp2 - timeStamp1} , ${timeStamp3 - timeStamp2} , $channel")
+        val channel2 = future.get()
+        val timeStamp4 = System.currentTimeMillis()
+        sendMsg(context, "${timeStamp2 - timeStamp1} , ${timeStamp3 - timeStamp2} , ${timeStamp4 - timeStamp3} , $channel, $channel2")
     }
 }
