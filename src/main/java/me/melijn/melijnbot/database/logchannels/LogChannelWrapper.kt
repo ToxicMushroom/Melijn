@@ -43,4 +43,9 @@ class LogChannelWrapper(private val taskManager: TaskManager, private val logCha
             logChannelCache.put(Pair(guildId, type), CompletableFuture.completedFuture(channelId))
         }
     }
+
+    fun setChannel(guildId: Long, logChannelType: LogChannelType, channelId: Long) {
+        logChannelDao.set(guildId, logChannelType, channelId)
+        logChannelCache.put(Pair(guildId, logChannelType), CompletableFuture.completedFuture(channelId))
+    }
 }
