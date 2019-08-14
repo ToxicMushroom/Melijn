@@ -6,7 +6,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.Translateable
-import me.melijn.melijnbot.objects.utils.getAsTag
+import me.melijn.melijnbot.objects.utils.asTag
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import net.dv8tion.jda.api.entities.Guild
 import java.time.ZoneId
@@ -78,7 +78,7 @@ class GuildInfoCommand : AbstractCommand("command.guildinfo") {
                 .replace("%textChannelCount%", guild.textChannelCache.size().toString())
                 .replace("%voiceChannelCount%", guild.voiceChannelCache.size().toString())
                 .replace("%categoryCount%", guild.categoryCache.size().toString())
-                .replace("%owner%", (if (guild.owner != null) guild.owner?.getAsTag() else "NONE").toString())
+                .replace("%owner%", (if (guild.owner != null) guild.owner?.asTag else "NONE").toString())
                 .replace("%verificationLevel%", guild.verificationLevel.name)
                 .replace("%botCount%", botCount.toString())
                 .replace("%userCount%", (guild.memberCache.size() - botCount).toString())
