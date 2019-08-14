@@ -4,7 +4,6 @@ import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.ChannelCommandState
 import me.melijn.melijnbot.objects.command.AbstractCommand
-import java.util.function.Consumer
 
 class ChannelCommandStateDao(val driverManager: DriverManager) : Dao(driverManager) {
     override val table: String = "channelCommandStates"
@@ -22,7 +21,7 @@ class ChannelCommandStateDao(val driverManager: DriverManager) : Dao(driverManag
                 map[resultSet.getInt("commandId")] = ChannelCommandState.valueOf(resultSet.getString("state"))
             }
         }, channelId)
-        disabled.accept(map)
+        disabled.invoke(map)
     }
 
     fun contains(channelId: Long, commandId: Int, contains: (Boolean) -> Unit) {

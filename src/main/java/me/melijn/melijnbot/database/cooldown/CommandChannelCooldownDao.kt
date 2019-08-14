@@ -3,7 +3,6 @@ package me.melijn.melijnbot.database.cooldown
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.objects.command.AbstractCommand
-import java.util.function.Consumer
 
 class CommandChannelCooldownDao(val driverManager: DriverManager) : Dao(driverManager) {
     override val table: String = "commandChannelCooldowns"
@@ -38,7 +37,7 @@ class CommandChannelCooldownDao(val driverManager: DriverManager) : Dao(driverMa
                 }
                 preparedStatement.executeLargeBatch()
             }
-        })
+        }
     }
 
     fun bulkDelete(channelId: Long, commands: Set<AbstractCommand>) {
