@@ -102,7 +102,7 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
 
     private fun displayChannels(context: CommandContext, logChannelTypes: List<LogChannelType>) {
         val daoWrapper = context.daoManager.logChannelWrapper
-        val title = Translateable("$root.show.multple").string(context)
+        val title = Translateable("$root.show.multiple").string(context)
                 .replace("%channelCount%", logChannelTypes.size.toString())
                 .replace("%logChannelTypeNode%", context.args[0])
 
@@ -135,14 +135,14 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
 
             Translateable("$root.unset.multiple").string(context)
                     .replace("%channelCount%", logChannelTypes.size.toString())
-                    .replace("%logChannelNode%", context.args[0])
+                    .replace("%logChannelTypeNode%", context.args[0])
         } else {
             val channel = getTextChannelByArgsNMessage(context, 1) ?: return
             daoWrapper.setChannels(context.guildId, logChannelTypes, channel.idLong)
 
             Translateable("$root.set.multiple").string(context)
                     .replace("%channelCount%", logChannelTypes.size.toString())
-                    .replace("%logChannelNode%", context.args[0])
+                    .replace("%logChannelTypeNode%", context.args[0])
                     .replace("%channel%", channel.asTag)
 
         }

@@ -3,11 +3,11 @@ package me.melijn.melijnbot.enums
 enum class LogChannelType(val text: String = this.toString(), val parentNodes: Array<String> = emptyArray()) {
 
     //Punishments
-    PERMANENT_BAN("PermanentBanLogChannel", arrayOf("ban", "permBan", "pblc")),
-    TEMP_BAN("TemporaryBanLogChannel", arrayOf("ban", "tempBan", "tblc")),
-    PERMANENT_MUTE("PermanentMuteLogChannel", arrayOf("mute", "permmute", "pmlc")),
-    TEMP_MUTE("TempMuteLogChannel", arrayOf("mute", "tempmute", "tmlc")),
-    KICK("KickLogChannel", arrayOf("kick", "klc"));
+    PERMANENT_BAN("PermanentBan", arrayOf("ban", "permBan", "pblc")),
+    TEMP_BAN("TemporaryBan", arrayOf("ban", "tempBan", "tblc")),
+    PERMANENT_MUTE("PermanentMute", arrayOf("mute", "permmute", "pmlc")),
+    TEMP_MUTE("TempMute", arrayOf("mute", "tempmute", "tmlc")),
+    KICK("Kick", arrayOf("kick", "klc"));
 
     //Messages
 
