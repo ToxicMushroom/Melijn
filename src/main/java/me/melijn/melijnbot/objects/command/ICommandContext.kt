@@ -10,9 +10,9 @@ interface ICommandContext {
     /**
      * Returns the [net.dv8tion.jda.api.entities.Guild] for the current command/event
      *
-     * @return the [net.dv8tion.jda.api.entities.Guild] for this command/event
+     * @return the [net.dv8tion.jda.api.entities.Guild] for this command/event or null
      */
-    fun getGuild(): Guild
+    fun getGuild(): Guild?
 
     /**
      * Returns the [message event][net.dv8tion.jda.api.events.message.MessageReceivedEvent] that was received for this instance
@@ -89,8 +89,8 @@ interface ICommandContext {
      *
      * @return the [member][net.dv8tion.jda.api.entities.Member] in the guild for the currently logged in account
      */
-    fun getSelfMember(): Member {
-        return this.getGuild().selfMember
+    fun getSelfMember(): Member? {
+        return this.getGuild()?.selfMember
     }
 
     /**

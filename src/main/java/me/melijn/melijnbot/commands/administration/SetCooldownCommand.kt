@@ -65,7 +65,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
             val cooldown = getLongFromArgNMessage(context, 1) ?: return
 
             val daoWrapper = context.daoManager.commandCooldownWrapper
-            daoWrapper.setCooldowns(context.guildId, commands, cooldown)
+            daoWrapper.setCooldowns(context.getGuildId(), commands, cooldown)
 
             val msg = Translateable("$root.response1").string(context)
                     .replace("%commandCount%", commands.size.toString())
@@ -93,7 +93,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
                 title = Translateable("$root.response1.title").string(context)
                         .replace("%channel%", "#${channel.name}")
             } else {
-                map = context.daoManager.commandCooldownWrapper.commandCooldownCache.get(context.guildId).get()
+                map = context.daoManager.commandCooldownWrapper.commandCooldownCache.get(context.getGuildId()).get()
                 title = Translateable("$root.response2.title").string(context)
             }
 

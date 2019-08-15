@@ -3,12 +3,11 @@ package me.melijn.melijnbot.database
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import me.melijn.melijnbot.Settings
-import me.melijn.melijnbot.objects.utils.printException
+import me.melijn.melijnbot.objects.utils.sendInGuild
 import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
-import java.util.function.Consumer
 import javax.sql.DataSource
 
 
@@ -42,7 +41,7 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
         this.dataSource = HikariDataSource(config)
     }
 
-    fun getUsableConnection(connection: (Connection) -> Unit){
+    fun getUsableConnection(connection: (Connection) -> Unit) {
         dataSource.connection.use { connection.invoke(it) }
     }
 
@@ -85,7 +84,7 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
             }
         } catch (e: SQLException) {
             logger.error("Something went wrong when executing the query: $query")
-            printException(Thread.currentThread(), e)
+            e.sendInGuild()
             e.printStackTrace()
         }
 
@@ -113,7 +112,7 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
             }
         } catch (e: SQLException) {
             logger.error("Something went wrong when executing the query: $query")
-            printException(Thread.currentThread(), e)
+            e.sendInGuild()
             e.printStackTrace()
         }
     }

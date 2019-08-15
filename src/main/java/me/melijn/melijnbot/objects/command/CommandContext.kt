@@ -17,7 +17,13 @@ class CommandContext(
     }
 
     override fun getGuild(): Guild {
-        return messageReceivedEvent.guild
+        if (isFromGuild)
+            return messageReceivedEvent.guild
+        else throw IllegalArgumentException("Cannot be used if the source of the command is not a guild. Make the command guild only or perform checks")
+    }
+
+    fun getGuildId(): Long {
+        return getGuild().idLong
     }
 
     val usedPrefix: String = commandParts[0]
@@ -30,14 +36,13 @@ class CommandContext(
     val botDevIds: LongArray = container.settings.developerIds
     val daoManager = container.daoManager
     val taskManager = container.taskManager
-    val guildId = getGuild().idLong
     val authorId = getAuthor().idLong
     var rawArg: String = ""
 
     fun initArgs() {
         args = commandParts.drop(1 + commandOrder.size)
         var commandPath = ""
-        for (i in 1 .. commandOrder.size) {
+        for (i in 1..commandOrder.size) {
             commandPath += ".*(\\s+)"
             if (i == commandOrder.size) {
                 if (args.isEmpty()) commandPath += "?"

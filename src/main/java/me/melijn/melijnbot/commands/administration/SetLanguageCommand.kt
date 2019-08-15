@@ -37,7 +37,7 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
 
     private fun sendCurrentLang(context: CommandContext) {
         val dao = context.daoManager.guildLanguageWrapper
-        val lang = dao.languageCache.get(context.guildId).get()
+        val lang = dao.languageCache.get(context.getGuildId()).get()
 
 
         sendMsg(context, replaceLang(
@@ -64,7 +64,7 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
 
 
         val dao = context.daoManager.guildLanguageWrapper
-        dao.setLanguage(context.guildId, lang)
+        dao.setLanguage(context.getGuildId(), lang)
 
 
         val possible = if (shouldUnset) "un" else ""

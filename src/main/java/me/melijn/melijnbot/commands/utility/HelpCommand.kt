@@ -26,9 +26,9 @@ class HelpCommand : AbstractCommand("command.help") {
         val args = context.args
         if (args.isEmpty()) {
             if (context.isFromGuild) {
-                sendMsg(context, replaceArgs(Translateable("$root.response1.server").string(context), context.guildId, context.usedPrefix))
+                sendMsg(context, replaceArgs(Translateable("$root.response1.server").string(context), context.getGuildId(), context.usedPrefix))
             } else {
-                sendMsg(context, replaceArgs(Translateable("$root.response1.pm").string(context), context.guildId, context.usedPrefix))
+                sendMsg(context, replaceArgs(Translateable("$root.response1.pm").string(context), context.getGuildId(), context.usedPrefix))
             }
         } else {
             val commandList = context.getCommands()

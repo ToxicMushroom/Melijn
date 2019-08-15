@@ -3,8 +3,10 @@ package me.melijn.melijnbot.objects.command
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.ChannelCommandState
 import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.utils.sendInGuild
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.toUpperWordCase
+import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import java.util.regex.Pattern
@@ -35,24 +37,36 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
     override fun onMessageReceived(event: MessageReceivedEvent) {
         if (event.author.isBot) return
 
-        val author = event.author
+        container.taskManager.async {
+            try {
+                commandRunner(event)
+            } catch (e: Exception) {
+                e.printStackTrace()
+
+                if (event.isFromType(ChannelType.PRIVATE)) {
+                    e.sendInGuild(channel = event.privateChannel, author = event.author)
+                } else if (event.isFromType(ChannelType.TEXT)) {
+                    e.sendInGuild(event.guild, event.textChannel, event.author)
+                }
+            }
+        }
+    }
+
+    private fun commandRunner(event: MessageReceivedEvent) {
+        val prefixes = getPrefixes(event)
         val message = event.message
 
-        container.taskManager.async {
-            val prefixes = getPrefixes(event)
+        for (prefix in prefixes) {
+            if (message.contentRaw.startsWith(prefix)) {
+                val commandParts: ArrayList<String> = ArrayList(message.contentRaw
+                        .replaceFirst(Regex("${Pattern.quote(prefix)}(\\s+)?"), "")
+                        .split(Regex("\\s+")))
+                commandParts.add(0, prefix)
 
-            for (prefix in prefixes) {
-                if (message.contentRaw.startsWith(prefix)) {
-                    val commandParts: ArrayList<String> = ArrayList(message.contentRaw
-                            .replaceFirst(Regex("${Pattern.quote(prefix)}(\\s+)?"), "")
-                            .split(Regex("\\s+")))
-                    commandParts.add(0, prefix)
-
-                    val command = commandMap.getOrElse(commandParts[1].toLowerCase(), { null }) ?: continue
-                    if (checksFailed(command, event)) return@async
-                    command.run(CommandContext(event, commandParts, container, commandList))
-                    break
-                }
+                val command = commandMap.getOrElse(commandParts[1].toLowerCase(), { null }) ?: continue
+                if (checksFailed(command, event)) return
+                command.run(CommandContext(event, commandParts, container, commandList))
+                break
             }
         }
     }

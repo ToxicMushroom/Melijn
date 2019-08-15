@@ -16,12 +16,13 @@ class TestCommand : AbstractCommand("command.test") {
 
     override fun execute(context: CommandContext) {
         val timeStamp1 = System.currentTimeMillis()
-        val future = context.daoManager.logChannelWrapper.logChannelCache.get(Pair(context.guildId, LogChannelType.PERMANENT_BAN))
+        val future = context.daoManager.logChannelWrapper.logChannelCache.get(Pair(context.getGuildId(), LogChannelType.PERMANENT_BAN))
         val timeStamp2 = System.currentTimeMillis()
         val channel = future.get()
         val timeStamp3 = System.currentTimeMillis()
         val channel2 = future.get()
         val timeStamp4 = System.currentTimeMillis()
+        Integer.parseInt("sas")
         sendMsg(context, "${timeStamp2 - timeStamp1} , ${timeStamp3 - timeStamp2} , ${timeStamp4 - timeStamp3} , $channel, $channel2")
     }
 }

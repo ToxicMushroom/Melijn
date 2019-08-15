@@ -10,6 +10,7 @@ public class Settings {
     public int shardCount;
     public int restPort;
     public int embedColor;
+    public long exceptionChannel;
 
     public Spotify spotify;
     public Lavalink lavalink;

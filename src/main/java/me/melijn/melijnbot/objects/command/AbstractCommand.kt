@@ -45,7 +45,7 @@ abstract class AbstractCommand(val root: String) {
                 map1[id] = System.currentTimeMillis()
                 context.daoManager.commandChannelCoolDownWrapper.executions[pair1] = map1
 
-                val pair2 = Pair(context.guildId, context.authorId)
+                val pair2 = Pair(context.getGuildId(), context.authorId)
                 val map2 = context.daoManager.commandChannelCoolDownWrapper.executions[pair2]?.toMutableMap() ?: hashMapOf()
                 map2[id] = System.currentTimeMillis()
                 context.daoManager.commandChannelCoolDownWrapper.executions[pair2] = map2
@@ -62,7 +62,7 @@ abstract class AbstractCommand(val root: String) {
     private fun hasPermission(context: CommandContext, permission: String): Boolean {
         if (!context.isFromGuild) return true
         if (context.getMember()?.isOwner!! || context.getMember()?.hasPermission(Permission.ADMINISTRATOR) == true) return true
-        val guildId = context.guildId
+        val guildId = context.getGuildId()
         val authorId = context.getAuthor().idLong
         //Gives me better ability to help
         if (context.botDevIds.contains(authorId)) return true

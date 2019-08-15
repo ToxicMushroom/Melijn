@@ -34,7 +34,7 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
 
     private fun sendCurrentEmbedState(context: CommandContext) {
         val dao = context.daoManager.embedDisabledWrapper
-        val state = dao.embedDisabledCache.contains(context.guildId)
+        val state = dao.embedDisabledCache.contains(context.getGuildId())
 
         sendMsg(context, replaceState(
                 Translateable("$root.currentstateresponse").string(context),
@@ -51,7 +51,7 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
         disabledState = !disabledState
 
         val dao = context.daoManager.embedDisabledWrapper
-        dao.setDisabled(context.guildId, disabledState)
+        dao.setDisabled(context.getGuildId(), disabledState)
 
         sendMsg(context, replaceState(
                 Translateable("$root.set.success").string(context),

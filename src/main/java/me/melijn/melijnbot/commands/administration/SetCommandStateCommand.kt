@@ -49,7 +49,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             }
 
             val dao = context.daoManager.disabledCommandWrapper
-            dao.setCommandState(context.guildId, commands, commandState)
+            dao.setCommandState(context.getGuildId(), commands, commandState)
 
             val msg = Translateable("$root.response1").string(context)
                     .replace("%s%", if (commands.size > 1) "s" else "")
@@ -85,7 +85,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             }
 
             val dao = context.daoManager.channelCommandStateWrapper
-            dao.setCommandState(context.guildId, channel.idLong, commands, commandState)
+            dao.setCommandState(context.getGuildId(), channel.idLong, commands, commandState)
 
             val msg = Translateable("$root.response1").string(context)
                     .replace("%s%", if (commands.isNotEmpty()) "s" else "")
@@ -108,7 +108,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
 
         override fun execute(context: CommandContext) {
             if (context.args.isEmpty()) {
-                val ids = context.daoManager.disabledCommandWrapper.disabledCommandsCache.get(context.guildId).get()
+                val ids = context.daoManager.disabledCommandWrapper.disabledCommandsCache.get(context.getGuildId()).get()
                 val commands = context.getCommands().filter { cmd -> ids.contains(cmd.id) }
                 val title = Translateable("$root.globaldisabled.response1").string(context)
                 var content = "```INI"

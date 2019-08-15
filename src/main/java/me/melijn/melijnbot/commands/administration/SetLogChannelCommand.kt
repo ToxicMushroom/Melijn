@@ -46,7 +46,7 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
 
     private fun displayChannel(context: CommandContext, logChannelType: LogChannelType) {
         val daoWrapper = context.daoManager.logChannelWrapper
-        val pair = Pair(context.guildId, logChannelType)
+        val pair = Pair(context.getGuildId(), logChannelType)
         val channelId = daoWrapper.logChannelCache.get(pair).get()
         val channel = context.getGuild().getTextChannelById(channelId)
 
@@ -76,13 +76,13 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
         val daoWrapper = context.daoManager.logChannelWrapper
         val msg = if (context.args[1].equals("null", true)) {
 
-            daoWrapper.removeChannel(context.guildId, logChannelType)
+            daoWrapper.removeChannel(context.getGuildId(), logChannelType)
 
             Translateable("$root.unset.single").string(context)
                     .replace("%logChannelType%", logChannelType.text)
         } else {
             val channel = getTextChannelByArgsNMessage(context, 1) ?: return
-            daoWrapper.setChannel(context.guildId, logChannelType, channel.idLong)
+            daoWrapper.setChannel(context.getGuildId(), logChannelType, channel.idLong)
 
             Translateable("$root.set.single").string(context)
                     .replace("%logChannelType%", logChannelType.text)
@@ -109,7 +109,7 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
         val lines = emptyList<String>().toMutableList()
 
         for (type in logChannelTypes) {
-            val pair = Pair(context.guildId, type)
+            val pair = Pair(context.getGuildId(), type)
             val channelId = daoWrapper.logChannelCache.get(pair).get()
             val channel = context.getGuild().getTextChannelById(channelId)
 
@@ -131,14 +131,14 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
         val daoWrapper = context.daoManager.logChannelWrapper
         val msg = if (context.args[1].equals("null", true)) {
 
-            daoWrapper.removeChannels(context.guildId, logChannelTypes)
+            daoWrapper.removeChannels(context.getGuildId(), logChannelTypes)
 
             Translateable("$root.unset.multiple").string(context)
                     .replace("%channelCount%", logChannelTypes.size.toString())
                     .replace("%logChannelTypeNode%", context.args[0])
         } else {
             val channel = getTextChannelByArgsNMessage(context, 1) ?: return
-            daoWrapper.setChannels(context.guildId, logChannelTypes, channel.idLong)
+            daoWrapper.setChannels(context.getGuildId(), logChannelTypes, channel.idLong)
 
             Translateable("$root.set.multiple").string(context)
                     .replace("%channelCount%", logChannelTypes.size.toString())

@@ -1,16 +1,41 @@
 package me.melijn.melijnbot.objects.utils
 
+import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
 import me.melijn.melijnbot.objects.translation.Translateable
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.time.format.DateTimeFormatter
 import java.util.function.Consumer
 
+fun Exception.sendInGuild(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread()) {
+    if (Container.instance.settings.unLoggedThreads.contains(thread.name)) return
 
-fun printException(currentThread: Thread, e: Exception, originGuild: Guild? = null, originChannel: MessageChannel? = null) {
-    println("blub")
+    val channelId = Container.instance.settings.exceptionChannel
+    val textChannel = MelijnBot.shardManager?.getTextChannelById(channelId) ?: return
+
+    val sb = StringBuilder()
+    if (guild != null) {
+        sb.appendln("**Guild**: " + guild.name + " | " + guild.id)
+    }
+    if (channel != null) {
+        sb.appendln("**" + channel.type.name.toUpperWordCase() + "Channel**: #" + channel.name + " | " + channel.id)
+    }
+    if (author != null) {
+        sb.appendln("**User**: " + author.asTag + " | " + author.id)
+    }
+    sb.appendln("**Thread**: " + thread.name)
+    val writer = StringWriter()
+    val printWriter = PrintWriter(writer)
+    this.printStackTrace(printWriter)
+    val stacktrace = writer.toString()
+            .replace("me.melijn.melijnbot", "**me.melijn.melijnbot**")
+    sb.append(stacktrace)
+    sendMsg(textChannel, sb.toString())
 }
 
 fun sendSyntax(context: CommandContext, translationPath: String) {
@@ -20,7 +45,7 @@ fun sendSyntax(context: CommandContext, translationPath: String) {
 
 fun sendSyntax(context: CommandContext, syntax: Translateable) {
     var syntaxString = syntax.string(context)
-    syntaxString = syntaxString.replace(PREFIX_PLACE_HOLDER, context.commandParts[0])
+    syntaxString = syntaxString.replacePrefix(context)
     sendMsg(context.getTextChannel(),
             Translateable("message.command.usage").string(context).replace("%syntax%", syntaxString)
     )
@@ -65,7 +90,7 @@ fun sendEmbed(context: CommandContext, embed: MessageEmbed, success: Consumer<Me
         val channel = context.getTextChannel()
         if (channel.canTalk()) {
             if (channel.guild.selfMember.hasPermission(channel, Permission.MESSAGE_EMBED_LINKS) &&
-                    !context.daoManager.embedDisabledWrapper.embedDisabledCache.contains(context.getGuild().idLong)) {
+                    !context.daoManager.embedDisabledWrapper.embedDisabledCache.contains(context.getGuildId())) {
                 context.getTextChannel().sendMessage(embed).queue(success, failed)
             } else {
                 sendEmbedAsMessage(context, embed, success, failed)
@@ -132,10 +157,10 @@ fun sendMsg(channel: TextChannel, msg: String, success: Consumer<Message>? = nul
 }
 
 fun String.toUpperWordCase(): String {
-    var previous = 'a'
+    var previous = ' '
     var newString = ""
     this.toCharArray().forEach { c: Char ->
-        newString += if (previous == ' ') c.toUpperCase() else c
+        newString += if (previous == ' ') c.toUpperCase() else c.toLowerCase()
         previous = c
     }
     return newString

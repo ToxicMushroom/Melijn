@@ -30,7 +30,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
         override fun execute(context: CommandContext) {
             val title = Translateable("$root.response1.title").string(context)
             var content = "```INI"
-            val prefixes = context.daoManager.guildPrefixWrapper.prefixCache.get(context.guildId).get()
+            val prefixes = context.daoManager.guildPrefixWrapper.prefixCache.get(context.getGuildId()).get()
             for ((index, prefix) in prefixes.withIndex()) {
                 content += "\n$index - [$prefix]"
             }
@@ -54,7 +54,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             }
 
             val prefix = context.rawArg
-            context.daoManager.guildPrefixWrapper.addPrefix(context.guildId, prefix)
+            context.daoManager.guildPrefixWrapper.addPrefix(context.getGuildId(), prefix)
             val msg = Translateable("$root.response1").string(context)
                     .replace("%prefix%", prefix)
             sendMsg(context, msg)
@@ -75,7 +75,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             }
 
             val prefix = context.rawArg
-            context.daoManager.guildPrefixWrapper.removePrefix(context.guildId, prefix)
+            context.daoManager.guildPrefixWrapper.removePrefix(context.getGuildId(), prefix)
             val msg = Translateable("$root.response1").string(context)
                     .replace("%prefix%", prefix)
             sendMsg(context, msg)

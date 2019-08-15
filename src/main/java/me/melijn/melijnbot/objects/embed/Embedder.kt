@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.EmbedBuilder
 
 class Embedder(daoManager: DaoManager, guildId: Long, userId: Long, embedColor: Int) : EmbedBuilder() {
 
-    constructor(context: CommandContext) : this(context.daoManager, context.guildId, context.authorId, context.embedColor)
+    constructor(context: CommandContext) : this(context.daoManager, context.getGuildId(), context.authorId, context.embedColor)
 
     init {
         val embedColorWrapper = daoManager.embedColorWrapper

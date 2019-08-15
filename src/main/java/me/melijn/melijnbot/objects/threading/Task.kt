@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.objects.threading
 
-import me.melijn.melijnbot.objects.utils.printException
+import me.melijn.melijnbot.objects.utils.sendInGuild
 
 
 class Task(private val runnable: Runnable) : Runnable {
@@ -10,7 +10,7 @@ class Task(private val runnable: Runnable) : Runnable {
             runnable.run()
         } catch (e: Exception) {
             e.printStackTrace()
-            printException(Thread.currentThread(), e, null, null)
+            e.sendInGuild()
         }
     }
 }
