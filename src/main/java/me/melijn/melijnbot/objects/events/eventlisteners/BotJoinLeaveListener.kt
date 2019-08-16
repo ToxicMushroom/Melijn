@@ -18,18 +18,20 @@ class BotJoinLeaveListener(container: Container) : AbstractListener(container) {
     }
 
     private fun onBotLeaveGuild(event: GuildLeaveEvent) {
-        logger.info("{}Joined the '{}' guild, id: {}, shard: {}",
-                ConsoleColor.CYAN,
-                event.guild.name,
-                event.guild.id,
-                event.jda.shardInfo.shardId)
-    }
-
-    private fun onBotJoinGuild(event: GuildJoinEvent) {
-        logger.info("{}Left the '{}' guild, id: {}, shard: {}",
+        logger.info("{}Left the '{}' guild, id: {}, shard: {}{}",
                 ConsoleColor.BLUE,
                 event.guild.name,
                 event.guild.id,
-                event.jda.shardInfo.shardId)
+                event.jda.shardInfo.shardId,
+                ConsoleColor.RESET)
+    }
+
+    private fun onBotJoinGuild(event: GuildJoinEvent) {
+        logger.info("{}Joined the '{}' guild, id: {}, shard: {}{}",
+                ConsoleColor.CYAN,
+                event.guild.name,
+                event.guild.id,
+                event.jda.shardInfo.shardId,
+                ConsoleColor.RESET)
     }
 }

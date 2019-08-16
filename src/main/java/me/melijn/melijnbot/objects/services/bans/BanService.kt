@@ -1,15 +1,17 @@
 package me.melijn.melijnbot.objects.services.bans
 
+import me.melijn.melijnbot.database.ban.BanWrapper
 import me.melijn.melijnbot.objects.services.Service
 import java.util.concurrent.TimeUnit
 
-class BanService() : Service("ban") {
+class BanService(banWrapper: BanWrapper) : Service("ban") {
 
-    val banService = {
-
+    private val banService = Runnable {
+        val bans = banWrapper.getUnbannableBans()
+        bans.forEach { println(it) }
     }
 
-    init {
+    fun start() {
         scheduledExecutor.scheduleWithFixedDelay(banService, 1_000, 1_000, TimeUnit.MILLISECONDS)
     }
 }

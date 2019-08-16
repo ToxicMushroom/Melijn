@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.objects.command
 
 import me.melijn.melijnbot.Container
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import java.util.regex.Pattern
@@ -43,13 +44,13 @@ class CommandContext(
         args = commandParts.drop(1 + commandOrder.size)
         var commandPath = ""
         for (i in 1..commandOrder.size) {
-            commandPath += ".*(\\s+)"
+            commandPath += Pattern.quote(commandParts[i]) + "(\\s+)"
             if (i == commandOrder.size) {
                 if (args.isEmpty()) commandPath += "?"
             }
         }
+
         val regex: Regex = ("${Pattern.quote(usedPrefix)}(\\s+)?$commandPath").toRegex()
-        Regex(".(\\s+)?.*(\\s+)?.*(\\s+)?")
         rawArg = messageReceivedEvent.message.contentRaw.replaceFirst(regex, "")
     }
 
@@ -65,5 +66,11 @@ class CommandContext(
         }
 
         return count
+    }
+
+    fun reply(something: Any) {
+        if (isFromGuild && getSelfMember()?.hasPermission(getTextChannel(), Permission.MESSAGE_WRITE) != true)
+            throw IllegalArgumentException("No MESSAGE_WRITE permission")
+        getMessageChannel().sendMessage(something.toString()).queue()
     }
 }

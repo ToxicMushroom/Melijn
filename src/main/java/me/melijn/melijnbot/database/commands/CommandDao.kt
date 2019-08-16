@@ -5,8 +5,8 @@ import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.objects.command.AbstractCommand
 
 class CommandDao(private val driverManager: DriverManager) : Dao(driverManager) {
-    override val table: String
-        get() = "commands"
+
+    override val table: String = "commands"
     override val tableStructure = "id int, name varchar(64), description varchar(256), syntax varchar(256), help varchar(512), category varchar(64), aliases varchar(256), discordPermissions varchar(512), runConditions varchar(512)"
     override val keys = "PRIMARY KEY(id)"
 

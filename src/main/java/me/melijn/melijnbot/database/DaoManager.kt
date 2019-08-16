@@ -1,6 +1,8 @@
 package me.melijn.melijnbot.database
 
 import me.melijn.melijnbot.Settings
+import me.melijn.melijnbot.database.ban.BanDao
+import me.melijn.melijnbot.database.ban.BanWrapper
 import me.melijn.melijnbot.database.commands.CommandDao
 import me.melijn.melijnbot.database.commands.CommandWrapper
 import me.melijn.melijnbot.database.cooldown.CommandChannelCooldownDao
@@ -68,6 +70,8 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
     val mySQLVersion: String
     val connectorVersion: String
 
+    val banWrapper: BanWrapper
+
     init {
         val driverManager = DriverManager(mysqlSettings)
         mySQLVersion = driverManager.getMySQLVersion()
@@ -99,6 +103,8 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
         userEmbedColorWrapper = UserEmbedColorWrapper(taskManager, UserEmbedColorDao(driverManager))
 
         logChannelWrapper = LogChannelWrapper(taskManager, LogChannelDao(driverManager))
+
+        banWrapper = BanWrapper(taskManager, BanDao(driverManager))
 
         //After registering wrappers
         driverManager.executeTableRegistration()

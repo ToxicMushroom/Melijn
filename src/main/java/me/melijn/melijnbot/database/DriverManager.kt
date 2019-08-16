@@ -72,7 +72,7 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
      *   objects: true, 6
      *   return value: 1
      * **/
-    fun executeUpdate(query: String, vararg objects: Any): Int {
+    fun executeUpdate(query: String, vararg objects: Any?): Int {
         try {
             dataSource.connection.use { connection ->
                 connection.prepareStatement(query).use { preparedStatement ->
