@@ -102,23 +102,23 @@ fun getDurationString(milliseconds: Double): String {
 
 fun getDurationByArgsNMessage(context: CommandContext, timeStamps: List<String>, leftBound: Int, rightBound: Int): Long? {
     val corruptTimeStamps = timeStamps.subList(leftBound, rightBound).toMutableList()
-    val corruptIndexes = mutableSetOf<Int>()
+    val holyTimeStamps = mutableListOf<String>()
     var totalTime = 0L
+    val holyPattern = Pattern.compile("(\\d+)([a-zA-Z]+)")
 
     //merge numbed with their right neighbour so the number type is present along with the number itself
     for ((index, corruptTimeStamp) in corruptTimeStamps.withIndex()) {
         if (corruptTimeStamp.matches("\\d+".toRegex())) {
             val corruptTimeType = corruptTimeStamps[index + 1]
-            corruptIndexes.add(index)
-            corruptTimeStamps.removeAt(index)
-            corruptTimeStamps.removeAt(index + 1)
-            corruptTimeStamps.add(corruptTimeStamp + corruptTimeType)
+            holyTimeStamps.add(corruptTimeStamp + corruptTimeType)
+        } else if (holyPattern.matcher(corruptTimeStamp).matches()) {
+            holyTimeStamps.add(corruptTimeStamp)
         }
     }
 
     //CorruptTimeStamps aren't corrupt anymore
-    for (corruptTimeStamp in corruptTimeStamps) {
-        val matcher = Pattern.compile("(\\d+)([a-zA-Z]+)").matcher(corruptTimeStamp)
+    for (corruptTimeStamp in holyTimeStamps) {
+        val matcher = holyPattern.matcher(corruptTimeStamp)
         if (matcher.find()) {
             val amount = matcher.group(1).toLongOrNull()
             if (amount == null) {
