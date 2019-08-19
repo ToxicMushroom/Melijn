@@ -7,4 +7,8 @@ class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
     fun getUnbannableBans(): List<Ban> {
         return banDao.getUnbannableBans()
     }
+
+    fun setBan(newBan: Ban) {
+        banDao.setBan(newBan)
+    }
 }

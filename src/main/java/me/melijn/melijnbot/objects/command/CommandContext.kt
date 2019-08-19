@@ -39,6 +39,7 @@ class CommandContext(
     val taskManager = container.taskManager
     val authorId = getAuthor().idLong
     var rawArg: String = ""
+    val contextTime = System.currentTimeMillis()
 
     fun initArgs() {
         args = commandParts.drop(1 + commandOrder.size)

@@ -1,7 +1,16 @@
 package me.melijn.melijnbot.objects.utils
 
+import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.Translateable
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.regex.Pattern
 import javax.annotation.Nullable
 
 
@@ -42,6 +51,23 @@ fun boolFromStateArg(state: String): Boolean? {
     }
 }
 
+/** interprets the long as millis duration string **/
+fun Long.getAsDurationString(): String {
+    return getDurationString(this)
+}
+
+fun Long.asEpochMillisToDateTime(): String {
+    val calendar = Calendar.getInstance()
+    calendar.timeZone = TimeZone.getTimeZone(ZoneId.of("GMT"))
+    calendar.timeInMillis = this
+    val offsetDateTime = Instant.ofEpochMilli(this).atOffset(ZoneOffset.UTC)
+    return offsetDateTime.asFullLongGMTString()
+}
+
+fun OffsetDateTime.asFullLongGMTString(): String {
+    return this.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL, FormatStyle.LONG).withZone(ZoneId.of("GMT")))
+}
+
 fun getDurationString(milliseconds: Long): String {
     return getDurationString(milliseconds.toDouble())
 }
@@ -65,19 +91,72 @@ fun getDurationString(milliseconds: Double): String {
         sb.append(days)
         sb.append("d ")
     }
+
     appendTimePart(hours, sb)
     appendTimePart(minutes, sb)
-    if (seconds < 10) sb.append(0)
-    sb.append(seconds)
-    sb.append("s")
+    appendTimePart(seconds, sb, false)
+
 
     return sb.toString()
 }
 
-private fun appendTimePart(hours: Long, sb: StringBuilder) {
-    if (hours != 0L) {
-        if (hours < 10) sb.append(0)
-        sb.append(hours)
-        sb.append(":")
+fun getDurationByArgsNMessage(context: CommandContext, timeStamps: List<String>, leftBound: Int, rightBound: Int): Long? {
+    val corruptTimeStamps = timeStamps.subList(leftBound, rightBound).toMutableList()
+    val corruptIndexes = mutableSetOf<Int>()
+    var totalTime = 0L
+
+    //merge numbed with their right neighbour so the number type is present along with the number itself
+    for ((index, corruptTimeStamp) in corruptTimeStamps.withIndex()) {
+        if (corruptTimeStamp.matches("\\d+".toRegex())) {
+            val corruptTimeType = corruptTimeStamps[index + 1]
+            corruptIndexes.add(index)
+            corruptTimeStamps.removeAt(index)
+            corruptTimeStamps.removeAt(index + 1)
+            corruptTimeStamps.add(corruptTimeStamp + corruptTimeType)
+        }
+    }
+
+    //CorruptTimeStamps aren't corrupt anymore
+    for (corruptTimeStamp in corruptTimeStamps) {
+        val matcher = Pattern.compile("(\\d+)([a-zA-Z]+)").matcher(corruptTimeStamp)
+        if (matcher.find()) {
+            val amount = matcher.group(1).toLongOrNull()
+            if (amount == null) {
+                sendMsg(context, Translateable("message.numbertobig").string(context)
+                        .replace("%args%", matcher.group(1)))
+                return null
+            }
+
+            val typeNorm = matcher.group(2)
+            val type = typeNorm.toLowerCase()
+            val multiplier = when {
+                arrayOf("s", "second", "seconds").contains(type) -> 1
+                arrayOf("m", "minute", "minutes").contains(type) -> 60
+                arrayOf("h", "hour", "hours").contains(type) -> 60 * 60
+                arrayOf("d", "day", "days").contains(type) -> 24 * 60 * 60
+                arrayOf("w", "week", "weeks").contains(type) -> 7 * 24 * 60 * 60
+                "M" == type || arrayOf("month", "months").contains(type) -> 30 * 24 * 60 * 60
+                arrayOf("y", "year", "years").contains(type) -> 52 * 7 * 24 * 60 * 60
+                else -> null
+            }
+
+            if (multiplier == null) {
+                sendMsg(context, Translateable("unknown.timeunit").string(context)
+                        .replace("%args%", matcher.group(2)))
+                return null
+            }
+
+            totalTime += amount * multiplier
+        }
+    }
+
+    return totalTime
+}
+
+private fun appendTimePart(timePart: Long, sb: StringBuilder, colon: Boolean = true) {
+    if (timePart != 0L) {
+        if (timePart < 10) sb.append(0)
+        sb.append(timePart)
+        if (colon) sb.append(":")
     }
 }

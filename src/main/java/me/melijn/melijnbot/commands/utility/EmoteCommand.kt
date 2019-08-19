@@ -4,12 +4,10 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.utils.asFullLongGMTString
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
 import net.dv8tion.jda.api.entities.Emote
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
 class EmoteCommand : AbstractCommand("command.emote") {
 
@@ -82,6 +80,6 @@ class EmoteCommand : AbstractCommand("command.emote") {
 
     fun replaceEmoteVars(string: String, context: CommandContext, emote: Emote): String {
         return replaceMissingEmoteVars(string, context, emote.id, emote.name, emote.isAnimated)
-                .replace("%creationTime%", emote.timeCreated.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL, FormatStyle.LONG).withZone(ZoneId.of("GMT"))))
+                .replace("%creationTime%", emote.timeCreated.asFullLongGMTString())
     }
 }

@@ -6,6 +6,8 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
 import org.codehaus.commons.compiler.CompilerFactoryFactory
+//import org.jetbrains.kotlin.cli.common.environment.setIdeaIoUseFallback
+//import org.jetbrains.kotlin.script.jsr223.KotlinJsr223JvmLocalScriptEngineFactory
 
 
 class EvalCommand : AbstractCommand("command.eval") {
@@ -22,6 +24,18 @@ class EvalCommand : AbstractCommand("command.eval") {
     override fun execute(context: CommandContext) {
         sendSyntax(context, syntax)
     }
+
+//    class KotlinEvalCommand(root: String) : AbstractCommand("$root.kotlin") {
+//        init {
+//            name = "kotlin"
+//            setIdeaIoUseFallback()
+//        }
+//
+//        override fun execute(context: CommandContext) {
+//            val engine = KotlinJsr223JvmLocalScriptEngineFactory().scriptEngine
+//            context.reply(engine.eval("val x = 3"))
+//        }
+//    }
 
     class JavaEvalCommand(root: String) : AbstractCommand("$root.java") {
 

@@ -2,7 +2,6 @@ package me.melijn.melijnbot.objects.events.eventlisteners
 
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.events.AbstractListener
-import me.melijn.melijnbot.objects.services.ServiceManager
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.StatusChangeEvent
@@ -23,8 +22,9 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
             if (!loadedAllShards) return
             logger.info("All shards ready")
             logger.info("Starting services..")
-            val serviceManager = ServiceManager(container)
-            serviceManager.startServices()
+            container.serviceManager.init(shardManager)
+            container.serviceManager.startServices()
+
             logger.info("Services ready")
         }
     }

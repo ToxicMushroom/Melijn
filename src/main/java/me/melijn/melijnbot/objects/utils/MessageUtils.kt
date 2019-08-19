@@ -2,6 +2,7 @@ package me.melijn.melijnbot.objects.utils
 
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
+import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
 import me.melijn.melijnbot.objects.translation.Translateable
@@ -86,21 +87,30 @@ fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String) {
 }
 
 fun sendEmbed(context: CommandContext, embed: MessageEmbed, success: Consumer<Message>? = null, failed: Consumer<Throwable>? = null) {
-    if (context.isFromGuild) {
-        val channel = context.getTextChannel()
-        if (channel.canTalk()) {
-            if (channel.guild.selfMember.hasPermission(channel, Permission.MESSAGE_EMBED_LINKS) &&
-                    !context.daoManager.embedDisabledWrapper.embedDisabledCache.contains(context.getGuildId())) {
-                context.getTextChannel().sendMessage(embed).queue(success, failed)
-            } else {
-                sendEmbedAsMessage(context, embed, success, failed)
-            }
-        }
-    } else
-        context.getPrivateChannel().sendMessage(embed).queue(success, failed)
+    if (context.isFromGuild)
+        sendEmbed(context.daoManager.embedDisabledWrapper, context.getTextChannel(), embed, success, failed)
+    else sendEmbed(context.getPrivateChannel(), embed, success, failed)
 }
 
-fun sendEmbedAsMessage(context: CommandContext, embed: MessageEmbed, success: Consumer<Message>?, failed: Consumer<Throwable>?) {
+fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed, success: Consumer<Message>? = null, failed: Consumer<Throwable>? = null) {
+    privateChannel.sendMessage(embed).queue(success, failed)
+}
+
+fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChannel, embed: MessageEmbed, success: Consumer<Message>? = null, failed: Consumer<Throwable>? = null) {
+    val guild = textChannel.guild
+    if (!textChannel.canTalk()) {
+        failed?.accept(IllegalArgumentException("No permission to talk in this channel"))
+        return
+    }
+    if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
+            !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
+        textChannel.sendMessage(embed).queue(success, failed)
+    } else {
+        sendEmbedAsMessage(textChannel, embed, success, failed)
+    }
+}
+
+fun sendEmbedAsMessage(textChannel: TextChannel, embed: MessageEmbed, success: Consumer<Message>?, failed: Consumer<Throwable>?) {
     val sb = StringBuilder()
     if (embed.author != null) {
         sb.append("***").append(embed.author?.name).appendln("***")
@@ -126,7 +136,7 @@ fun sendEmbedAsMessage(context: CommandContext, embed: MessageEmbed, success: Co
     if (embed.timestamp != null) {
         sb.append(embed.timestamp?.format(DateTimeFormatter.ISO_DATE_TIME)).append("*")
     }
-    sendMsg(context.getTextChannel(), sb.toString(), success, failed)
+    sendMsg(textChannel, sb.toString(), success, failed)
 }
 
 fun sendMsg(context: CommandContext, msg: String, success: Consumer<Message>? = null, failed: Consumer<Throwable>? = null) {

@@ -5,13 +5,11 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.utils.asFullLongGMTString
 import me.melijn.melijnbot.objects.utils.getUserByArgs
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
 class UserInfoCommand : AbstractCommand("command.userinfo") {
 
@@ -46,9 +44,8 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
                 .replace("%nickname%", member.nickname ?: "/")
                 .replace("%roleCount%", member.roles.size.toString())
                 .replace("%isOwner%", if (member.isOwner) "Yes" else "No")
-                .replace("%joinTime%", member.timeJoined.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL, FormatStyle.LONG).withZone(ZoneId.of("GMT"))))
-                .replace("%boostTime%", member.timeBoosted?.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL, FormatStyle.LONG).withZone(ZoneId.of("GMT")))
-                        ?: "/")
+                .replace("%joinTime%", member.timeJoined.asFullLongGMTString())
+                .replace("%boostTime%", member.timeBoosted?.asFullLongGMTString() ?: "/")
                 .replace("%activities%", member.activities.joinToString { activity -> activity.name })
                 .replace("%onlineStatus%", member.onlineStatus.name)
                 .replace("%voiceStatus%", getVoiceStatus(member))
@@ -79,6 +76,6 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
                 .replace("%discrim%", user.discriminator)
                 .replace("%isBot%", if (user.isBot) "Yes" else "No")
                 .replace("%avatarUrl%", user.effectiveAvatarUrl)
-                .replace("%creationTime%", user.timeCreated.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL, FormatStyle.LONG).withZone(ZoneId.of("GMT"))))
+                .replace("%creationTime%", user.timeCreated.asFullLongGMTString())
     }
 }

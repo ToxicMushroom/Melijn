@@ -2,7 +2,6 @@ package me.melijn.melijnbot.database.prefixes
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
-import java.util.function.Consumer
 
 class UserPrefixDao(private val driverManager: DriverManager) : Dao(driverManager) {
 

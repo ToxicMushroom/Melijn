@@ -14,7 +14,7 @@ import net.dv8tion.jda.api.hooks.IEventManager
 import java.util.*
 import kotlin.collections.ArrayList
 
-class EventManager(container: Container) : IEventManager {
+class EventManager(val container: Container) : IEventManager {
 
     private val eventListeners: ArrayList<EventListener> = ArrayList()
 
@@ -32,6 +32,7 @@ class EventManager(container: Container) : IEventManager {
     }
 
     override fun handle(event: GenericEvent) {
+        if (container.shuttingDown) return
         try {
             for (eventListener in eventListeners) {
                 eventListener.onEvent(event)

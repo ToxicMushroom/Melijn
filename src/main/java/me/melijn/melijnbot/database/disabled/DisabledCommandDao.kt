@@ -3,7 +3,6 @@ package me.melijn.melijnbot.database.disabled
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.objects.command.AbstractCommand
-import java.util.function.Consumer
 
 class DisabledCommandDao(val driverManager: DriverManager) : Dao(driverManager) {
     override val table: String = "disabledCommands"

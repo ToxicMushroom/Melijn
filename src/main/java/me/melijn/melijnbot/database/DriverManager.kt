@@ -72,14 +72,15 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
      *   objects: true, 6
      *   return value: 1
      * **/
-    fun executeUpdate(query: String, vararg objects: Any?): Int {
+    fun executeUpdate(query: String, vararg objects: Any?, affectedRows: ((Int) -> Unit)? = null) {
         try {
-            dataSource.connection.use { connection ->
+            getUsableConnection { connection ->
                 connection.prepareStatement(query).use { preparedStatement ->
                     for ((index, value) in objects.withIndex()) {
                         preparedStatement.setObject(index + 1, value)
                     }
-                    return preparedStatement.executeUpdate()
+                    val rows = preparedStatement.executeUpdate()
+                    affectedRows?.invoke(rows)
                 }
             }
         } catch (e: SQLException) {
@@ -87,8 +88,6 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
             e.sendInGuild()
             e.printStackTrace()
         }
-
-        return 0
     }
 
     /**
@@ -102,7 +101,7 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
      * **/
     fun executeQuery(query: String, resultset: (ResultSet) -> Unit, vararg objects: Any) {
         try {
-            dataSource.connection.use { connection ->
+            getUsableConnection { connection ->
                 connection.prepareStatement(query).use { preparedStatement ->
                     for ((index, value) in objects.withIndex()) {
                         preparedStatement.setObject(index + 1, value)

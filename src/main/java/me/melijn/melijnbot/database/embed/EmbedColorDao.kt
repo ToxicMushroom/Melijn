@@ -2,7 +2,6 @@ package me.melijn.melijnbot.database.embed
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
-import java.util.function.Consumer
 
 class EmbedColorDao(val driverManager: DriverManager) : Dao(driverManager) {
 

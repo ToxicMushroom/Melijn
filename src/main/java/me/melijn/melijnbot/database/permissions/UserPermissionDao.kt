@@ -3,7 +3,6 @@ package me.melijn.melijnbot.database.permissions
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.PermState
-import java.util.function.Consumer
 
 class UserPermissionDao(private val driverManager: DriverManager) : Dao(driverManager) {
 
