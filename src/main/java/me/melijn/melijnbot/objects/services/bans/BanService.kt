@@ -24,13 +24,13 @@ class BanService(val shardManager: ShardManager,
 
     private val banService = Runnable {
         val bans = banWrapper.getUnbannableBans()
-        bans.forEach { ban ->
+        for (ban in bans) {
             val selfUser = shardManager.shards[0].selfUser
             val newBan = ban.run {
-                Ban(guildId, bannedId, banAuthorId, selfUser.idLong, reason, "Ban expired", startTime, endTime, false)
+                Ban(guildId, bannedId, banAuthorId, reason, selfUser.idLong, "Ban expired", startTime, endTime, false)
             }
             banWrapper.setBan(newBan)
-            val guild = shardManager.getGuildById(ban.guildId) ?: return@forEach
+            val guild = shardManager.getGuildById(ban.guildId) ?: continue
 
             //If ban exists, unban and send log messages
             guild.retrieveBanById(ban.bannedId).queue({ guildBan ->
