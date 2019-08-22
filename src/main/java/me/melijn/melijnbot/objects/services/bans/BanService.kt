@@ -59,7 +59,9 @@ class BanService(val shardManager: ShardManager,
         sendEmbed(embedDisabledWrapper, channel, msg)
         if (!bannedUser.isBot) {
             if (bannedUser.isFake) return
-            bannedUser.openPrivateChannel().queue({ privateChannel -> sendEmbed(privateChannel, msg) }, null)
+            bannedUser.openPrivateChannel().queue({ privateChannel ->
+                sendEmbed(privateChannel, msg, failed = {})
+            }, {})
         }
     }
 

@@ -40,11 +40,31 @@ class BanDao(val driverManager: DriverManager) : Dao(driverManager) {
         }, true, System.currentTimeMillis())
         return bans
     }
+
+    fun getActiveBan(guildId: Long, bannedId: Long): Ban? {
+        var ban: Ban? = null
+        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND bannedId = ? AND active = ?", { rs ->
+            while (rs.next()) {
+                ban = Ban(
+                        guildId,
+                        bannedId,
+                        rs.getLong("banAuthorId"),
+                        rs.getNString("reason"),
+                        rs.getLong("unbanAuthorId"),
+                        rs.getNString("unbanReason"),
+                        rs.getLong("startTime"),
+                        rs.getLong("endTime"),
+                        true
+                )
+            }
+        }, guildId, bannedId, true)
+        return ban
+    }
 }
 
 data class Ban(var guildId: Long,
                var bannedId: Long,
-               var banAuthorId: Long,
+               var banAuthorId: Long?,
                var reason: String = "/",
                var unbanAuthorId: Long? = null,
                var unbanReason: String? = null,

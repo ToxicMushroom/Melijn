@@ -5,7 +5,6 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.sendMsg
-import java.util.function.Consumer
 
 
 class PingCommand : AbstractCommand("command.ping") {
@@ -25,7 +24,7 @@ class PingCommand : AbstractCommand("command.ping") {
         val part1 = replaceGatewayPing(Translateable("command.ping.response1.part1").string(context), context.jda.gatewayPing)
         val part2 = Translateable("command.ping.response1.part2").string(context)
         val part3 = Translateable("command.ping.response1.part3").string(context)
-        sendMsg(context, part1, Consumer { message ->
+        sendMsg(context, part1, { message ->
             val timeStamp2 = System.currentTimeMillis()
             val msgPing = timeStamp2 - timeStamp1
             context.jda.restPing.queue { restPing ->

@@ -11,4 +11,8 @@ class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
     fun setBan(newBan: Ban) {
         banDao.setBan(newBan)
     }
+
+    fun getActiveBan(guildId: Long, bannedId: Long): Ban? {
+        return banDao.getActiveBan(guildId, bannedId)
+    }
 }

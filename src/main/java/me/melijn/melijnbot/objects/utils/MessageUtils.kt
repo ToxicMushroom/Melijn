@@ -11,7 +11,6 @@ import net.dv8tion.jda.api.entities.*
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.time.format.DateTimeFormatter
-import java.util.function.Consumer
 
 fun Exception.sendInGuild(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread()) {
     if (Container.instance.settings.unLoggedThreads.contains(thread.name)) return
@@ -86,20 +85,20 @@ fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String) {
     }
 }
 
-fun sendEmbed(context: CommandContext, embed: MessageEmbed, success: Consumer<Message>? = null, failed: Consumer<Throwable>? = null) {
+fun sendEmbed(context: CommandContext, embed: MessageEmbed, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
     if (context.isFromGuild)
         sendEmbed(context.daoManager.embedDisabledWrapper, context.getTextChannel(), embed, success, failed)
     else sendEmbed(context.getPrivateChannel(), embed, success, failed)
 }
 
-fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed, success: Consumer<Message>? = null, failed: Consumer<Throwable>? = null) {
+fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
     privateChannel.sendMessage(embed).queue(success, failed)
 }
 
-fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChannel, embed: MessageEmbed, success: Consumer<Message>? = null, failed: Consumer<Throwable>? = null) {
+fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChannel, embed: MessageEmbed, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
     val guild = textChannel.guild
     if (!textChannel.canTalk()) {
-        failed?.accept(IllegalArgumentException("No permission to talk in this channel"))
+        failed?.invoke(IllegalArgumentException("No permission to talk in this channel"))
         return
     }
     if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
@@ -110,7 +109,7 @@ fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChann
     }
 }
 
-fun sendEmbedAsMessage(textChannel: TextChannel, embed: MessageEmbed, success: Consumer<Message>?, failed: Consumer<Throwable>?) {
+fun sendEmbedAsMessage(textChannel: TextChannel, embed: MessageEmbed, success: ((message: Message) -> Unit)? = null,  failed: ((ex: Throwable) -> Unit)? = null) {
     val sb = StringBuilder()
     if (embed.author != null) {
         sb.append("***").append(embed.author?.name).appendln("***")
@@ -139,12 +138,12 @@ fun sendEmbedAsMessage(textChannel: TextChannel, embed: MessageEmbed, success: C
     sendMsg(textChannel, sb.toString(), success, failed)
 }
 
-fun sendMsg(context: CommandContext, msg: String, success: Consumer<Message>? = null, failed: Consumer<Throwable>? = null) {
+fun sendMsg(context: CommandContext, msg: String, success: ((message: Message) -> Unit)? = null,  failed: ((ex: Throwable) -> Unit)? = null) {
     if (context.isFromGuild) sendMsg(context.getTextChannel(), msg, success, failed)
     else sendMsg(context.getPrivateChannel(), msg, success, failed)
 }
 
-fun sendMsg(privateChannel: PrivateChannel, msg: String, success: Consumer<Message>? = null, failed: Consumer<Throwable>? = null) {
+fun sendMsg(privateChannel: PrivateChannel, msg: String, success: ((message: Message) -> Unit)? = null,  failed: ((ex: Throwable) -> Unit)? = null) {
     if (msg.length <= 2000) {
         privateChannel.sendMessage(msg).queue(success, failed)
     } else {
@@ -154,7 +153,7 @@ fun sendMsg(privateChannel: PrivateChannel, msg: String, success: Consumer<Messa
     }
 }
 
-fun sendMsg(channel: TextChannel, msg: String, success: Consumer<Message>? = null, failed: Consumer<Throwable>? = null) {
+fun sendMsg(channel: TextChannel, msg: String, success: ((message: Message) -> Unit)? = null,  failed: ((ex: Throwable) -> Unit)? = null) {
     if (channel.canTalk()) {
         if (msg.length <= 2000) {
             channel.sendMessage(msg).queue(success, failed)
