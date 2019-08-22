@@ -37,7 +37,7 @@ class BanService(val shardManager: ShardManager,
                 shardManager.retrieveUserById(guildBan.user.idLong).queue({ bannedUser ->
                     guild.unban(bannedUser).queue()
 
-                    shardManager.retrieveUserById(ban.banAuthorId).queue({ banAuthor ->
+                    shardManager.retrieveUserById(ban.banAuthorId ?: -1).queue({ banAuthor ->
                         createAndSendUnbanMessage(guild, selfUser, bannedUser, banAuthor, newBan)
                     }, {
                         createAndSendUnbanMessage(guild, selfUser, bannedUser, null, newBan)
