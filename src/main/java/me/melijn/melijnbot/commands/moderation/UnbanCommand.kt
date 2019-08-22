@@ -57,6 +57,8 @@ class UnbanCommand : AbstractCommand("command.unban") {
 
         context.getGuild().retrieveBan(targetUser).queue({ _ ->
             context.getGuild().unban(targetUser).queue({
+                context.daoManager.banWrapper.setBan(ban)
+
                 //Normal success path
                 val msg = getUnbanMessage(context.getGuild(), targetUser, banAuthor, context.getAuthor(), ban)
                 targetUser.openPrivateChannel().queue({ privateChannel ->
@@ -95,7 +97,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
 
 fun getUnbanMessage(guild: Guild, bannedUser: User, banAuthor: User?, unbanAuthor: User, ban: Ban): MessageEmbed {
     val eb = EmbedBuilder()
-    eb.setAuthor("Unbanned by: " + unbanAuthor.asTag + " ".repeat(80).substring(0, 80 - unbanAuthor.name.length) + "\u200B", null, unbanAuthor.effectiveAvatarUrl)
+    eb.setAuthor("Unbanned by: " + unbanAuthor.asTag + " ".repeat(45).substring(0, 45 - unbanAuthor.name.length) + "\u200B", null, unbanAuthor.effectiveAvatarUrl)
     eb.setDescription("```LDIF" +
             "\nGuild: " + guild.name +
             "\nGuildId: " + guild.id +

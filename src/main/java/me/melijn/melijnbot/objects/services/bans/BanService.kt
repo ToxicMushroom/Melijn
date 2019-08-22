@@ -42,8 +42,8 @@ class BanService(val shardManager: ShardManager,
                     }, {
                         createAndSendUnbanMessage(guild, selfUser, bannedUser, null, newBan)
                     })
-                }, null)
-            }, null)
+                }, {})
+            }, {})
         }
     }
 

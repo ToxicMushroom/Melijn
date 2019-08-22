@@ -16,8 +16,9 @@ class BanDao(val driverManager: DriverManager) : Dao(driverManager) {
     fun setBan(ban: Ban) {
         ban.apply {
             driverManager.executeUpdate("INSERT INTO $table (guildId, bannedId, banAuthorId, unbanAuthorId, reason, startTime, endTime, unbanReason, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)" +
-                    " ON DUPLICATE KEY UPDATE endTime = ?, unbanReason = ?, active = ?",
-                    guildId, bannedId, banAuthorId, unbanAuthorId, reason, startTime, endTime, unbanReason, active, endTime, unbanReason, active)
+                    " ON DUPLICATE KEY UPDATE endTime = ?, banAuthorId = ?, reason = ?, unbanAuthorId = ?, unbanReason = ?, active = ?",
+                    guildId, bannedId, banAuthorId, unbanAuthorId, reason, startTime, endTime, unbanReason, active,
+                    endTime, banAuthorId, reason, unbanAuthorId, unbanReason, active)
         }
     }
 

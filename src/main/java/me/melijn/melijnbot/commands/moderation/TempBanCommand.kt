@@ -87,7 +87,9 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         val bannedMessage = getBanMessage(context.getGuild(), targetUser, context.getAuthor(), ban)
         context.daoManager.banWrapper.setBan(ban)
         context.getGuild().ban(targetUser, 7).queue({
-            banningMessage?.editMessage(bannedMessage)?.queue()
+            banningMessage?.editMessage(
+                    bannedMessage
+            )?.override(true)?.queue()
 
             val logChannelWrapper = context.daoManager.logChannelWrapper
             val logChannelId = logChannelWrapper.logChannelCache.get(Pair(context.getGuildId(), LogChannelType.TEMP_BAN)).get()
@@ -115,12 +117,14 @@ fun getBanMessage(guild: Guild, bannedUser: User, banAuthor: User, ban: Ban): Me
     } ?: "infinite"
 
     val eb = EmbedBuilder()
-    eb.setAuthor("Banned by: " + banAuthor.asTag + " ".repeat(80).substring(0, 80 - banAuthor.name.length) + "\u200B", null, banAuthor.effectiveAvatarUrl)
+    eb.setAuthor("Banned by: " + banAuthor.asTag + " ".repeat(45).substring(0, 45 - banAuthor.name.length) + "\u200B", null, banAuthor.effectiveAvatarUrl)
     eb.setDescription("```LDIF" +
             "\nGuild: " + guild.name +
             "\nGuildId: " + guild.id +
             "\nBan Author: " + (banAuthor.asTag) +
             "\nBan Author Id: " + ban.banAuthorId +
+            "\nBanned: " + bannedUser.asTag +
+            "\nBannedId: " + bannedUser.id +
             "\nReason: " + ban.reason +
             "\nDuration: " + banDuration +
             "\nStart of ban: " + (ban.startTime.asEpochMillisToDateTime()) +

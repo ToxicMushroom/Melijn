@@ -75,7 +75,9 @@ class BanCommand : AbstractCommand("command.ban") {
         val bannedMessage = getBanMessage(context.getGuild(), targetUser, context.getAuthor(), ban)
         context.daoManager.banWrapper.setBan(ban)
         context.getGuild().ban(targetUser, 7).queue({
-            banningMessage?.editMessage(bannedMessage)?.queue()
+            banningMessage?.editMessage(
+                   bannedMessage
+            )?.override(true)?.queue()
 
             val logChannelWrapper = context.daoManager.logChannelWrapper
             val logChannelId = logChannelWrapper.logChannelCache.get(Pair(context.getGuildId(), LogChannelType.PERMANENT_BAN)).get()
