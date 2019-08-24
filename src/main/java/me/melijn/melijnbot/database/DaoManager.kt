@@ -20,11 +20,15 @@ import me.melijn.melijnbot.database.language.UserLanguageDao
 import me.melijn.melijnbot.database.language.UserLanguageWrapper
 import me.melijn.melijnbot.database.logchannels.LogChannelDao
 import me.melijn.melijnbot.database.logchannels.LogChannelWrapper
+import me.melijn.melijnbot.database.mute.MuteDao
+import me.melijn.melijnbot.database.mute.MuteWrapper
 import me.melijn.melijnbot.database.permissions.*
 import me.melijn.melijnbot.database.prefixes.GuildPrefixDao
 import me.melijn.melijnbot.database.prefixes.GuildPrefixWrapper
 import me.melijn.melijnbot.database.prefixes.UserPrefixDao
 import me.melijn.melijnbot.database.prefixes.UserPrefixWrapper
+import me.melijn.melijnbot.database.roles.RoleDao
+import me.melijn.melijnbot.database.roles.RoleWrapper
 import me.melijn.melijnbot.database.supporters.SupporterWrapper
 import me.melijn.melijnbot.database.supporters.UserSupporterDao
 import me.melijn.melijnbot.objects.threading.TaskManager
@@ -66,11 +70,13 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
     val userEmbedColorWrapper: UserEmbedColorWrapper
 
     val logChannelWrapper: LogChannelWrapper
+    val roleWrapper: RoleWrapper
 
     val mySQLVersion: String
     val connectorVersion: String
 
     val banWrapper: BanWrapper
+    val muteWrapper: MuteWrapper
 
     init {
         val driverManager = DriverManager(mysqlSettings)
@@ -88,6 +94,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
         channelUserPermissionWrapper = ChannelUserPermissionWrapper(taskManager, ChannelUserPermissionDao(driverManager))
 
         disabledCommandWrapper = DisabledCommandWrapper(taskManager, DisabledCommandDao(driverManager))
+
         channelCommandStateWrapper = ChannelCommandStateWrapper(taskManager, ChannelCommandStateDao(driverManager))
 
         commandCooldownWrapper = CommandCooldownWrapper(taskManager, CommandCooldownDao(driverManager))
@@ -103,8 +110,10 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
         userEmbedColorWrapper = UserEmbedColorWrapper(taskManager, UserEmbedColorDao(driverManager))
 
         logChannelWrapper = LogChannelWrapper(taskManager, LogChannelDao(driverManager))
+        roleWrapper = RoleWrapper(taskManager, RoleDao(driverManager))
 
         banWrapper = BanWrapper(taskManager, BanDao(driverManager))
+        muteWrapper = MuteWrapper(taskManager, MuteDao(driverManager))
 
         //After registering wrappers
         driverManager.executeTableRegistration()

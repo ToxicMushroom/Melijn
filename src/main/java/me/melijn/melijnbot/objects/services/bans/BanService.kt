@@ -50,13 +50,16 @@ class BanService(val shardManager: ShardManager,
     //Sends unban message to tempban logchannel and the unbanned user
     private fun createAndSendUnbanMessage(guild: Guild, unbanAuthor: User, bannedUser: User, banAuthor: User?, ban: Ban) {
         val msg = getUnbanMessage(guild, bannedUser, banAuthor, unbanAuthor, ban)
-        val channelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.TEMP_BAN)).get()
+        val channelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.UNBAN)).get()
         val channel = guild.getTextChannelById(channelId)
-        if (channel == null) {
-            logChannelWrapper.removeChannel(guild.idLong, LogChannelType.TEMP_BAN)
+
+        if (channel == null && channelId != -1L) {
+            logChannelWrapper.removeChannel(guild.idLong, LogChannelType.UNBAN)
             return
-        }
+        } else if (channel == null) return
+
         sendEmbed(embedDisabledWrapper, channel, msg)
+
         if (!bannedUser.isBot) {
             if (bannedUser.isFake) return
             bannedUser.openPrivateChannel().queue({ privateChannel ->

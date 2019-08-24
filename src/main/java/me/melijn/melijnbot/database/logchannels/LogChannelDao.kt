@@ -30,10 +30,11 @@ class LogChannelDao(val driverManager: DriverManager) : Dao(driverManager) {
                 guildId, type.toString(), channelId, channelId)
     }
 
-
     fun unset(guildId: Long, type: LogChannelType) {
-        driverManager.executeUpdate("REMOVE FROM $table WHERE guildId = ? AND type = ?", guildId, type.toString())
+        driverManager.executeUpdate("REMOVE FROM $table WHERE guildId = ? AND type = ?",
+                guildId, type.toString())
     }
+
 
     fun bulkPut(guildId: Long, logChannelTypes: List<LogChannelType>, channelId: Long) {
         driverManager.getUsableConnection {con ->
