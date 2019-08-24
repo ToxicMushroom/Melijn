@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'com.github.johnrengelman.shadow' version '5.1.0'
-    id 'org.jetbrains.kotlin.jvm' version '1.3.41'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.50'
 }
 
 mainClassName = 'me.melijn.melijnbot.MelijnBotKt'
@@ -79,7 +79,7 @@ dependencies {
     implementation group: 'org.reflections', name: 'reflections', version: '0.9.11'
 
     //https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib-jdk8
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.3.41'
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.3.50'
 }
 
 compileJava.options.encoding = 'UTF-8'
