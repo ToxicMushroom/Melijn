@@ -4,9 +4,9 @@ import me.melijn.melijnbot.enums.PermState
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_PERMSTATE
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.*
-import net.dv8tion.jda.api.entities.TextChannel
 import java.util.regex.Pattern
 
 class PermissionCommand : AbstractCommand("command.permission") {
@@ -53,24 +53,13 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val state: PermState? = enumValueOrNull(context.args[2])
                 if (state == null) {
-                    sendMsg(context, Translateable("message.unknown.permstate").string(context)
+                    sendMsg(context, Translateable(MESSAGE_UNKNOWN_PERMSTATE).string(context)
                             .replace("%arg%", context.args[2]))
                     return
                 }
 
-                val user = getUserByArgsN(context, 0)
-                if (user == null) {
-                    sendMsg(context, Translateable("message.unknown.user").string(context)
-                            .replace("%arg%", context.args[0]))
-                    return
-                }
-
-                val permissions: List<String>? = getPermissionsFromArg(context, permissionNode)
-                if (permissions == null) {
-                    sendMsg(context, Translateable("message.unknown.permissionnode").string(context)
-                            .replace("%arg%", context.args[1]))
-                    return
-                }
+                val user = getUserByArgsNMessage(context, 0) ?: return
+                val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
 
                 val dao = context.daoManager.userPermissionWrapper
                 if (permissions.size > 1) {
@@ -103,20 +92,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
 
                 val permissionNode = if (context.args.size > 1) context.args[1] else "*"
-
-                val user = getUserByArgsN(context, 0)
-                if (user == null) {
-                    sendMsg(context, Translateable("message.unknown.user").string(context)
-                            .replace("%arg%", context.args[0]))
-                    return
-                }
-
-                val permissions: List<String>? = getPermissionsFromArg(context, permissionNode)
-                if (permissions == null) {
-                    sendMsg(context, Translateable("message.unknown.permissionnode").string(context)
-                            .replace("%arg%", permissionNode))
-                    return
-                }
+                val user = getUserByArgsNMessage(context, 0) ?: return
+                val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
 
                 val title = Translateable("$root.response1.title").string(context)
                         .replace("%user%", user.asTag)
@@ -150,12 +127,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     return
                 }
 
-                val user = getUserByArgsN(context, 0)
-                if (user == null) {
-                    sendMsg(context, Translateable("message.unknown.user").string(context)
-                            .replace("%arg%", context.args[0]))
-                    return
-                }
+                val user = getUserByArgsNMessage(context, 0) ?: return
 
                 context.daoManager.userPermissionWrapper.clear(context.getGuildId(), user.idLong)
 
@@ -195,24 +167,14 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val state: PermState? = enumValueOrNull(context.args[2])
                 if (state == null) {
-                    sendMsg(context, Translateable("message.unknown.permstate").string(context)
+                    sendMsg(context, Translateable(MESSAGE_UNKNOWN_PERMSTATE).string(context)
                             .replace("%arg%", context.args[2]))
                     return
                 }
 
-                val role = getRoleByArgsN(context, 0)
-                if (role == null) {
-                    sendMsg(context, Translateable("message.unknown.role").string(context)
-                            .replace("%arg%", context.args[0]))
-                    return
-                }
+                val role = getRoleByArgsNMessage(context, 0) ?: return
 
-                val permissions: List<String>? = getPermissionsFromArg(context, permissionNode)
-                if (permissions == null) {
-                    sendMsg(context, Translateable("message.unknown.permissionnode").string(context)
-                            .replace("%arg%", context.args[1]))
-                    return
-                }
+                val permissions = getPermissionsFromArgNMessage(context, permissionNode)?:return
 
                 val dao = context.daoManager.rolePermissionWrapper
                 if (permissions.size > 1) {
@@ -246,20 +208,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
 
                 val permissionNode = if (context.args.size > 1) context.args[1] else "*"
-
-                val role = getRoleByArgsN(context, 0)
-                if (role == null) {
-                    sendMsg(context, Translateable("message.unknown.role").string(context)
-                            .replace("%arg%", context.args[0]))
-                    return
-                }
-
-                val permissions: List<String>? = getPermissionsFromArg(context, permissionNode)
-                if (permissions == null) {
-                    sendMsg(context, Translateable("message.unknown.permissionnode").string(context)
-                            .replace("%arg%", permissionNode))
-                    return
-                }
+                val role = getRoleByArgsNMessage(context, 0) ?: return
+                val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
 
                 val title = Translateable("$root.response1.title").string(context)
                         .replace("%role%", role.name)
@@ -294,12 +244,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     return
                 }
 
-                val role = getRoleByArgsN(context, 0)
-                if (role == null) {
-                    sendMsg(context, Translateable("message.unknown.role").string(context)
-                            .replace("%arg%", context.args[0]))
-                    return
-                }
+                val role = getRoleByArgsNMessage(context, 0) ?: return
 
                 context.daoManager.rolePermissionWrapper.clear(role.idLong)
 
@@ -352,31 +297,14 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val state: PermState? = enumValueOrNull(context.args[3])
                     if (state == null) {
-                        sendMsg(context, Translateable("message.unknown.permstate").string(context)
+                        sendMsg(context, Translateable(MESSAGE_UNKNOWN_PERMSTATE).string(context)
                                 .replace("%arg%", context.args[3]))
                         return
                     }
 
-                    val channel: TextChannel? = getTextChannelByArgsN(context, 0)
-                    if (channel == null) {
-                        sendMsg(context, Translateable("message.unknown.textchannel").string(context)
-                                .replace("%arg%", context.args[0]))
-                        return
-                    }
-
-                    val role = getRoleByArgsN(context, 1)
-                    if (role == null) {
-                        sendMsg(context, Translateable("message.unknown.role").string(context)
-                                .replace("%arg%", context.args[1]))
-                        return
-                    }
-
-                    val permissions: List<String>? = getPermissionsFromArg(context, permissionNode)
-                    if (permissions == null) {
-                        sendMsg(context, Translateable("message.unknown.permissionnode").string(context)
-                                .replace("%arg%", permissionNode))
-                        return
-                    }
+                    val channel = getTextChannelByArgsNMessage(context, 0) ?: return
+                    val role = getRoleByArgsNMessage(context, 1) ?: return
+                    val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
 
                     val dao = context.daoManager.channelRolePermissionWrapper
                     if (permissions.size > 1) {
@@ -412,26 +340,9 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val permissionNode = if (context.args.size > 2) context.args[2] else "*"
 
-                    val channel: TextChannel? = getTextChannelByArgsN(context, 0)
-                    if (channel == null) {
-                        sendMsg(context, Translateable("message.unknown.textchannel").string(context)
-                                .replace("%arg%", context.args[0]))
-                        return
-                    }
-
-                    val role = getRoleByArgsN(context, 1)
-                    if (role == null) {
-                        sendMsg(context, Translateable("message.unknown.role").string(context)
-                                .replace("%arg%", context.args[1]))
-                        return
-                    }
-
-                    val permissions: List<String>? = getPermissionsFromArg(context, permissionNode)
-                    if (permissions == null) {
-                        sendMsg(context, Translateable("message.unknown.permissionnode").string(context)
-                                .replace("%arg%", permissionNode))
-                        return
-                    }
+                    val channel = getTextChannelByArgsNMessage(context, 0) ?: return
+                    val role = getRoleByArgsN(context, 1) ?: return
+                    val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
 
                     val title = Translateable("$root.response1.title").string(context)
                             .replace("%channel%", "#${channel.name}")
@@ -467,19 +378,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         return
                     }
 
-                    val channel: TextChannel? = getTextChannelByArgsN(context, 0)
-                    if (channel == null) {
-                        sendMsg(context, Translateable("message.unknown.textchannel").string(context)
-                                .replace("%arg%", context.args[0]))
-                        return
-                    }
-
-                    val role = getRoleByArgsN(context, 1)
-                    if (role == null) {
-                        sendMsg(context, Translateable("message.unknown.role").string(context)
-                                .replace("%arg%", context.args[1]))
-                        return
-                    }
+                    val channel = getTextChannelByArgsNMessage(context, 0) ?: return
+                    val role = getRoleByArgsNMessage(context, 1) ?: return
 
                     context.daoManager.channelRolePermissionWrapper.clear(channel.idLong, role.idLong)
 
@@ -521,31 +421,14 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val state: PermState? = enumValueOrNull(context.args[3])
                     if (state == null) {
-                        sendMsg(context, Translateable("message.unknown.permstate").string(context)
+                        sendMsg(context, Translateable(MESSAGE_UNKNOWN_PERMSTATE).string(context)
                                 .replace("%arg%", context.args[3]))
                         return
                     }
 
-                    val channel: TextChannel? = getTextChannelByArgsN(context, 0)
-                    if (channel == null) {
-                        sendMsg(context, Translateable("message.unknown.textchannel").string(context)
-                                .replace("%arg%", context.args[0]))
-                        return
-                    }
-
-                    val user = getUserByArgsN(context, 1)
-                    if (user == null) {
-                        sendMsg(context, Translateable("message.unknown.user").string(context)
-                                .replace("%arg%", context.args[1]))
-                        return
-                    }
-
-                    val permissions: List<String>? = getPermissionsFromArg(context, permissionNode)
-                    if (permissions == null) {
-                        sendMsg(context, Translateable("message.unknown.permissionnode").string(context)
-                                .replace("%arg%", permissionNode))
-                        return
-                    }
+                    val channel = getTextChannelByArgsNMessage(context, 0) ?: return
+                    val user = getUserByArgsNMessage(context, 1) ?: return
+                    val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
 
                     val dao = context.daoManager.channelUserPermissionWrapper
                     if (permissions.size > 1) {
@@ -581,27 +464,9 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val permissionNode = if (context.args.size > 2) context.args[2] else "*"
 
-                    val channel: TextChannel? = getTextChannelByArgsN(context, 0)
-                    if (channel == null) {
-                        sendMsg(context, Translateable("message.unknown.textchannel").string(context)
-                                .replace("%arg%", context.args[0]))
-                        return
-                    }
-
-                    val user = getUserByArgsN(context, 1)
-                    if (user == null) {
-                        sendMsg(context, Translateable("message.unknown.user").string(context)
-                                .replace("%arg%", context.args[1]))
-                        return
-                    }
-
-
-                    val permissions: List<String>? = getPermissionsFromArg(context, permissionNode)
-                    if (permissions == null) {
-                        sendMsg(context, Translateable("message.unknown.permissionnode").string(context)
-                                .replace("%arg%", permissionNode))
-                        return
-                    }
+                    val channel = getTextChannelByArgsN(context, 0) ?: return
+                    val user = getUserByArgsN(context, 1) ?: return
+                    val permissions = getPermissionsFromArg(context, permissionNode) ?: return
 
                     val title = Translateable("$root.response1.title").string(context)
                             .replace("%channel%", "#${channel.name}")
@@ -637,20 +502,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         return
                     }
 
-                    val channel: TextChannel? = getTextChannelByArgsN(context, 0)
-                    if (channel == null) {
-                        sendMsg(context, Translateable("message.unknown.textchannel").string(context)
-                                .replace("%arg%", context.args[0]))
-                        return
-                    }
-
-                    val user = getUserByArgsN(context, 1)
-                    if (user == null) {
-                        sendMsg(context, Translateable("message.unknown.user").string(context)
-                                .replace("%arg%", context.args[1]))
-                        return
-                    }
-
+                    val channel = getTextChannelByArgsNMessage(context, 0) ?: return
+                    val user = getUserByArgsNMessage(context, 1) ?: return
 
                     context.daoManager.channelUserPermissionWrapper.clear(channel.idLong, user.idLong)
 
@@ -1168,6 +1021,15 @@ class PermissionCommand : AbstractCommand("command.permission") {
             }
         }
     }
+}
+
+fun getPermissionsFromArgNMessage(context: CommandContext, arg: String): List<String>? {
+    val permissions = getPermissionsFromArg(context, arg)
+    if (permissions == null) {
+        sendMsg(context, Translateable("message.unknown.permissionnode").string(context)
+                .replace("%arg%", arg))
+    }
+    return permissions
 }
 
 fun getPermissionsFromArg(context: CommandContext, arg: String): List<String>? {
