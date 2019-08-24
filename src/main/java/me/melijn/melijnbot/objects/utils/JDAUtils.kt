@@ -1,13 +1,13 @@
 package me.melijn.melijnbot.objects.utils
 
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_USER
 import me.melijn.melijnbot.objects.translation.Translateable
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.User
 import java.util.regex.Pattern
-
 
 
 val Member.asTag: String
@@ -37,15 +37,44 @@ fun getUserByArgsN(context: CommandContext, index: Int): User? {//With null
             context.getGuild().getMembersByName(arg, true)[0].user
         else if (context.isFromGuild && context.getGuild().getMembersByNickname(arg, true).size > 0)
             context.getGuild().getMembersByNickname(arg, true)[0].user
+        else if (arg.matches("<@\\d+>".toRegex()))
+            context.getShardManager()?.getUserById(arg.substring(2, arg.lastIndex - 1).toLong())
         else user
     }
     return user
 }
 
+fun retrieveUserByArgsN(context: CommandContext, index: Int, user: (User?) -> Unit) {//With null
+    val user1: User? = getUserByArgsN(context, index)
+    if (user1 == null && context.args.size > index) {
+        val arg = context.args[index]
+
+        when {
+            arg.matches(Regex("\\d+")) -> context.jda.shardManager?.retrieveUserById(arg)
+            arg.matches(Regex("<@\\d+>")) -> {
+                val id = arg.substring(2, arg.lastIndex - 1).toLong()
+                context.jda.shardManager?.retrieveUserById(id)
+            }
+            else -> null
+        }?.queue({ user.invoke(it) }, { user.invoke(null) })
+    }
+    user.invoke(user1)
+}
+
+fun retrieveUserByArgsNMessage(context: CommandContext, index: Int, user: (User?) -> Unit) {//With null
+    retrieveUserByArgsN(context, index) { possibleUser ->
+        if (possibleUser == null) {
+            sendMsg(context, Translateable(MESSAGE_UNKNOWN_USER).string(context)
+                    .replace("%arg%", context.args[index]))
+        }
+        user.invoke(possibleUser)
+    }
+}
+
 fun getUserByArgsNMessage(context: CommandContext, index: Int): User? {
     val user = getUserByArgsN(context, index)
     if (user == null) {
-        sendMsg(context, Translateable("message.unknown.user").string(context)
+        sendMsg(context, Translateable(MESSAGE_UNKNOWN_USER).string(context)
                 .replace("%arg%", context.args[index]))
     }
     return user
@@ -121,4 +150,19 @@ fun getTextChannelByArgsNMessage(context: CommandContext, index: Int, sameGuildA
                 .replace("%arg%", context.args[index]))
     }
     return textChannel
+}
+
+fun getMemberByArgsNMessage(context: CommandContext, index: Int): Member? {
+    val user = getUserByArgsN(context, index)
+    val member =
+            if (user == null) null
+            else context.getGuild().getMember(user)
+
+    if (member == null) {
+        val msg = Translateable("message.unknown.member").string(context)
+                .replace("%arg%", context.args[index])
+        sendMsg(context, msg)
+    }
+
+    return member
 }
