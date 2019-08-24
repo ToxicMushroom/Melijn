@@ -5,7 +5,10 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.Translateable
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.asFullLongGMTString
+import me.melijn.melijnbot.objects.utils.getRoleByArgsNMessage
+import me.melijn.melijnbot.objects.utils.sendEmbed
+import me.melijn.melijnbot.objects.utils.sendSyntax
 import net.dv8tion.jda.api.entities.Role
 import java.awt.Color
 
@@ -24,12 +27,7 @@ class RoleInfoCommand : AbstractCommand("command.roleinfo") {
             return
         }
 
-        val role = getRoleByArgsN(context, 0, false)
-        if (role == null){
-            sendMsg(context, Translateable("$root.rolenotfound").string(context).replace("%arg%", context.args[0]))
-            return
-        }
-
+        val role = getRoleByArgsNMessage(context, 0, false) ?: return
         val tile1 = Translateable("$root.response1.field1.title").string(context)
         val value1 = replaceRoleVars(Translateable("$root.response1.field1.value").string(context), role)
 

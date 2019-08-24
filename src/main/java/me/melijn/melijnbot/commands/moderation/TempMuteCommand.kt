@@ -6,6 +6,7 @@ import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
@@ -32,7 +33,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         val member = context.getGuild().getMember(targetUser)
         if (member != null && !context.getGuild().selfMember.canInteract(member)) {
             val msg = Translateable("$root.cannotmute").string(context)
-                    .replace("%user%", targetUser.asTag)
+                    .replace(PLACEHOLDER_USER, targetUser.asTag)
             sendMsg(context, msg)
             return
         }
@@ -125,14 +126,14 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
                 logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, mutedMessage) }
 
                 val msg = Translateable("$root.success" + if (activeMute != null) ".updated" else "").string(context)
-                        .replace("%user%", targetUser.asTag)
+                        .replace(PLACEHOLDER_USER, targetUser.asTag)
                         .replace("%endTime%", mute.endTime?.asEpochMillisToDateTime() ?: "none")
                         .replace("%reason%", mute.reason)
                 sendMsg(context, msg)
             }, {
                 mutingMessage?.editMessage("failed to mute")?.queue()
                 val msg = Translateable("$root.failure").string(context)
-                        .replace("%user%", targetUser.asTag)
+                        .replace(PLACEHOLDER_USER, targetUser.asTag)
                         .replace("%cause%", it.message ?: "unknown (contact support for info)")
                 sendMsg(context, msg)
             })

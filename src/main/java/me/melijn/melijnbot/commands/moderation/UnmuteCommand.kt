@@ -6,6 +6,7 @@ import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
@@ -71,7 +72,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
             }, { failure ->
                 //Sum ting wrong
                 val msg = Translateable("$root.failure").string(context)
-                        .replace("%user%", targetUser.asTag)
+                        .replace(PLACEHOLDER_USER, targetUser.asTag)
                         .replace("%cause%", failure.message ?: "unknown (contact support for info)")
                 sendMsg(context, msg)
             })
@@ -80,7 +81,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         } else if (!targetMember.roles.contains(muteRole)) {
             //Not muted anymore
             val msg = Translateable("$root.notmuted").string(context)
-                    .replace("%user%", targetUser.asTag)
+                    .replace(PLACEHOLDER_USER, targetUser.asTag)
             sendMsg(context, msg)
 
             if (activeMute != null) {
@@ -104,7 +105,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, msg) }
 
         val successMsg = Translateable("$root.success").string(context)
-                .replace("%user%", targetUser.asTag)
+                .replace(PLACEHOLDER_USER, targetUser.asTag)
                 .replace("%reason%", unmuteReason)
         sendMsg(context, successMsg)
     }

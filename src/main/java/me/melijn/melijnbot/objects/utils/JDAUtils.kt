@@ -2,6 +2,7 @@ package me.melijn.melijnbot.objects.utils
 
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_USER
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.Translateable
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Role
@@ -65,7 +66,7 @@ fun retrieveUserByArgsNMessage(context: CommandContext, index: Int, user: (User?
     retrieveUserByArgsN(context, index) { possibleUser ->
         if (possibleUser == null) {
             sendMsg(context, Translateable(MESSAGE_UNKNOWN_USER).string(context)
-                    .replace("%arg%", context.args[index]))
+                    .replace(PLACEHOLDER_ARG, context.args[index]))
         }
         user.invoke(possibleUser)
     }
@@ -75,7 +76,7 @@ fun getUserByArgsNMessage(context: CommandContext, index: Int): User? {
     val user = getUserByArgsN(context, index)
     if (user == null) {
         sendMsg(context, Translateable(MESSAGE_UNKNOWN_USER).string(context)
-                .replace("%arg%", context.args[index]))
+                .replace(PLACEHOLDER_ARG, context.args[index]))
     }
     return user
 }
@@ -111,7 +112,7 @@ fun getRoleByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContex
     val role = getRoleByArgsN(context, index, sameGuildAsContext)
     if (role == null) {
         sendMsg(context, Translateable("message.unknown.role").string(context)
-                .replace("%arg%", context.args[index]))
+                .replace(PLACEHOLDER_ARG, context.args[index]))
     }
     return role
 }
@@ -147,7 +148,7 @@ fun getTextChannelByArgsNMessage(context: CommandContext, index: Int, sameGuildA
     val textChannel = getTextChannelByArgsN(context, index, sameGuildAsContext)
     if (textChannel == null) {
         sendMsg(context, Translateable("message.unknown.textchannel").string(context)
-                .replace("%arg%", context.args[index]))
+                .replace(PLACEHOLDER_ARG, context.args[index]))
     }
     return textChannel
 }
@@ -160,7 +161,7 @@ fun getMemberByArgsNMessage(context: CommandContext, index: Int): Member? {
 
     if (member == null) {
         val msg = Translateable("message.unknown.member").string(context)
-                .replace("%arg%", context.args[index])
+                .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg)
     }
 

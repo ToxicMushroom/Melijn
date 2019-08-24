@@ -4,6 +4,7 @@ import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.enumValueOrNull
 import me.melijn.melijnbot.objects.utils.getRoleByArgsNMessage
@@ -55,7 +56,7 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
 
         val msg = (if (role != null) {
             Translateable("$root.show.set").string(context)
-                    .replace("%role%", role.name)
+                    .replace(PLACEHOLDER_ROLE, role.name)
         } else {
             Translateable("$root.show.unset").string(context)
         }).replace("%roleType%", roleType.text)
@@ -84,7 +85,7 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
 
             Translateable("$root.set.single").string(context)
                     .replace("%roleType%", roleType.text)
-                    .replace("%role%", role.name)
+                    .replace(PLACEHOLDER_ROLE, role.name)
 
         }
         sendMsg(context, msg)

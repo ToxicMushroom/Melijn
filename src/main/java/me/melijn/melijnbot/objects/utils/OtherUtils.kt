@@ -3,8 +3,8 @@ package me.melijn.melijnbot.objects.utils
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.Translateable
-import net.dv8tion.jda.api.entities.Member
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.text.SimpleDateFormat
@@ -76,7 +76,7 @@ fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set<Abstrac
 
     if (commands.isEmpty()) {
         sendMsg(context, Translateable("message.unknown.commandnode").string(context)
-                .replace("%arg%", arg))
+                .replace(PLACEHOLDER_ARG, arg))
         return null
     }
     return commands
@@ -87,10 +87,10 @@ fun getLongFromArgNMessage(context: CommandContext, index: Int): Long? {
     val long = arg.toLongOrNull()
     if (!arg.matches("\\d+".toRegex())) {
         sendMsg(context, Translateable("message.unknown.number").string(context)
-                .replace("%arg%", arg))
+                .replace(PLACEHOLDER_ARG, arg))
     } else if (long == null) {
         sendMsg(context, Translateable("message.unknown.long").string(context)
-                .replace("%arg%", arg))
+                .replace(PLACEHOLDER_ARG, arg))
     }
     return long
 }

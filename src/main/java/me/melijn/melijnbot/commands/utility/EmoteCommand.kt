@@ -3,6 +3,7 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.asFullLongGMTString
 import me.melijn.melijnbot.objects.utils.sendMsg
@@ -56,7 +57,7 @@ class EmoteCommand : AbstractCommand("command.emote") {
 
         if (emote == null) {
             sendMsg(context, Translateable("$root.notanemote").string(context)
-                    .replace("%arg%", args)
+                    .replace(PLACEHOLDER_ARG, args)
             )
             return
         }

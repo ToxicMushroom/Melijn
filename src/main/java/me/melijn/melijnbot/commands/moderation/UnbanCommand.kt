@@ -5,6 +5,7 @@ import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
@@ -71,21 +72,21 @@ class UnbanCommand : AbstractCommand("command.unban") {
                 logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, msg) }
 
                 val success = Translateable("$root.success").string(context)
-                        .replace("%user%", targetUser.asTag)
+                        .replace(PLACEHOLDER_USER, targetUser.asTag)
                         .replace("%reason%", unbanReason)
                 sendMsg(context, success)
 
             }, {
                 //Sum ting wrong
                 val msg = Translateable("$root.failure").string(context)
-                        .replace("%user%", targetUser.asTag)
+                        .replace(PLACEHOLDER_USER, targetUser.asTag)
                         .replace("%cause%", it.message ?: "unknown (contact support for info)")
                 sendMsg(context, msg)
             })
         }, {
             //Not banned anymore
             val msg = Translateable("$root.notbanned").string(context)
-                    .replace("%user%", targetUser.asTag)
+                    .replace(PLACEHOLDER_USER, targetUser.asTag)
             sendMsg(context, msg)
 
             if (activeBan != null) {

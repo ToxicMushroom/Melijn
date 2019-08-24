@@ -5,6 +5,7 @@ import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
@@ -35,7 +36,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         if (member != null) {
             if (!context.getGuild().selfMember.canInteract(member)) {
                 val msg = Translateable("$root.cannotban").string(context)
-                        .replace("%user%", targetUser.asTag)
+                        .replace(PLACEHOLDER_USER, targetUser.asTag)
                 sendMsg(context, msg)
                 return
             }
@@ -97,14 +98,14 @@ class TempBanCommand : AbstractCommand("command.tempban") {
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, bannedMessage) }
 
             val msg = Translateable("$root.success" + if (activeBan != null) ".updated" else "").string(context)
-                    .replace("%user%", targetUser.asTag)
+                    .replace(PLACEHOLDER_USER, targetUser.asTag)
                     .replace("%endTime%", ban.endTime?.asEpochMillisToDateTime() ?: "none")
                     .replace("%reason%", ban.reason)
             sendMsg(context, msg)
         }, {
             banningMessage?.editMessage("failed to ban")?.queue()
             val msg = Translateable("$root.failure").string(context)
-                    .replace("%user%", targetUser.asTag)
+                    .replace(PLACEHOLDER_USER, targetUser.asTag)
                     .replace("%cause%", it.message ?: "unknown (contact support for info)")
             sendMsg(context, msg)
         })

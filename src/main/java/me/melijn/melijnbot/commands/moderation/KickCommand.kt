@@ -5,6 +5,7 @@ import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
@@ -27,7 +28,7 @@ class KickCommand : AbstractCommand("command.kick") {
         val targetMember = getMemberByArgsNMessage(context, 0) ?: return
         if (!context.getGuild().selfMember.canInteract(targetMember)) {
             val msg = Translateable("$root.cannotkick").string(context)
-                    .replace("%user%", targetMember.asTag)
+                    .replace(PLACEHOLDER_USER, targetMember.asTag)
             sendMsg(context, msg)
             return
         }
@@ -76,13 +77,13 @@ class KickCommand : AbstractCommand("command.kick") {
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, kickedMessage) }
 
             val msg = Translateable("$root.success").string(context)
-                    .replace("%user%", targetMember.asTag)
+                    .replace(PLACEHOLDER_USER, targetMember.asTag)
                     .replace("%reason%", kick.kickReason)
             sendMsg(context, msg)
         }, {
             kickingMessage?.editMessage("failed to kick")?.queue()
             val msg = Translateable("$root.failure").string(context)
-                    .replace("%user%", targetMember.asTag)
+                    .replace(PLACEHOLDER_USER, targetMember.asTag)
                     .replace("%cause%", it.message ?: "unknown (contact support for info)")
             sendMsg(context, msg)
         })

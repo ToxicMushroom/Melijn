@@ -5,6 +5,7 @@ import me.melijn.melijnbot.enums.CommandState
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.*
 
@@ -44,7 +45,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             val commandState = enumValueOrNull<CommandState>(context.args[1])
             if (commandState == null) {
                 sendMsg(context, Translateable("message.unknown.commandstate").string(context)
-                        .replace("%arg%", context.args[1]))
+                        .replace(PLACEHOLDER_ARG, context.args[1]))
                 return
             }
 
@@ -80,7 +81,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             val commandState = enumValueOrNull<ChannelCommandState>(context.args[2])
             if (commandState == null) {
                 sendMsg(context, Translateable("message.unknown.channelcommandstate").string(context)
-                        .replace("%arg%", context.args[2]))
+                        .replace(PLACEHOLDER_ARG, context.args[2]))
                 return
             }
 
