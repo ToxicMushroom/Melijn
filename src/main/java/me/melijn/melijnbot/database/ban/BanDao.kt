@@ -63,12 +63,14 @@ class BanDao(val driverManager: DriverManager) : Dao(driverManager) {
     }
 }
 
-data class Ban(var guildId: Long,
-               var bannedId: Long,
-               var banAuthorId: Long?,
-               var reason: String = "/",
-               var unbanAuthorId: Long? = null,
-               var unbanReason: String? = null,
-               var startTime: Long = System.currentTimeMillis(),
-               var endTime: Long? = null,
-               var active: Boolean = true)
+data class Ban(
+        var guildId: Long,
+        var bannedId: Long,
+        var banAuthorId: Long?,
+        var reason: String = "/",
+        var unbanAuthorId: Long? = null,
+        var unbanReason: String? = null,
+        var startTime: Long = System.currentTimeMillis(),
+        var endTime: Long? = null,
+        var active: Boolean = true
+)
