@@ -5,7 +5,7 @@ import me.melijn.melijnbot.database.DriverManager
 
 class KickDao(val driverManager: DriverManager) : Dao(driverManager) {
 
-    override val table: String = "kick"
+    override val table: String = "kicks"
     override val tableStructure: String = "guildId bigint, kickedId bigint, kickAuthorId bigint, kickReason varchar(64), kickMoment bigint"
     override val keys: String = "UNIQUE KEY (guildId, kickedId, kickMoment)"
 
@@ -31,6 +31,23 @@ class KickDao(val driverManager: DriverManager) : Dao(driverManager) {
                     rs.getLong("kickMoment")
             ))
         }, guildId, kickedId, kickMoment)
+    }
+
+
+    fun getKicks(guildId: Long, kickedId: Long): List<Kick> {
+        val kicks = ArrayList<Kick>()
+        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND kickedId = ?", { rs ->
+            while (rs.next()) {
+                kicks.add(Kick(
+                        guildId,
+                        kickedId,
+                        rs.getLong("kickAuthorId"),
+                        rs.getString("kickReason"),
+                        rs.getLong("kickMoment")
+                ))
+            }
+        }, true, guildId, kickedId)
+        return kicks
     }
 }
 

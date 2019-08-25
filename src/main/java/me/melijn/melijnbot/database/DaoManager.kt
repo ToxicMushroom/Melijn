@@ -33,6 +33,8 @@ import me.melijn.melijnbot.database.roles.RoleDao
 import me.melijn.melijnbot.database.roles.RoleWrapper
 import me.melijn.melijnbot.database.supporters.SupporterWrapper
 import me.melijn.melijnbot.database.supporters.UserSupporterDao
+import me.melijn.melijnbot.database.warn.WarnDao
+import me.melijn.melijnbot.database.warn.WarnWrapper
 import me.melijn.melijnbot.objects.threading.TaskManager
 
 const val RAPIDLY_USED_CACHE = 1L
@@ -80,6 +82,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
     val banWrapper: BanWrapper
     val muteWrapper: MuteWrapper
     val kickWrapper: KickWrapper
+    val warnWrapper: WarnWrapper
 
     init {
         val driverManager = DriverManager(mysqlSettings)
@@ -118,6 +121,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
         banWrapper = BanWrapper(taskManager, BanDao(driverManager))
         muteWrapper = MuteWrapper(taskManager, MuteDao(driverManager))
         kickWrapper = KickWrapper(taskManager, KickDao(driverManager))
+        warnWrapper = WarnWrapper(taskManager, WarnDao(driverManager))
 
         //After registering wrappers
         driverManager.executeTableRegistration()

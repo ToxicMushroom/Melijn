@@ -61,6 +61,26 @@ class BanDao(val driverManager: DriverManager) : Dao(driverManager) {
         }, guildId, bannedId, true)
         return ban
     }
+
+    fun getBans(guildId: Long, bannedId: Long): List<Ban> {
+        val bans = ArrayList<Ban>()
+        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND bannedId = ?", { rs ->
+            while (rs.next()) {
+                bans.add(Ban(
+                        guildId,
+                        bannedId,
+                        rs.getLong("banAuthorId"),
+                        rs.getNString("reason"),
+                        rs.getLong("unbanAuthorId"),
+                        rs.getNString("unbanReason"),
+                        rs.getLong("startTime"),
+                        rs.getLong("endTime"),
+                        rs.getBoolean("active")
+                ))
+            }
+        }, true, guildId, bannedId)
+        return bans
+    }
 }
 
 data class Ban(

@@ -61,6 +61,26 @@ class MuteDao(val driverManager: DriverManager) : Dao(driverManager) {
         }, guildId, mutedId, true)
         return mute
     }
+
+    fun getMutes(guildId: Long, mutedId: Long): List<Mute> {
+        val mutes = ArrayList<Mute>()
+        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND mutedId = ?", { rs ->
+            while (rs.next()) {
+                mutes.add(Mute(
+                        guildId,
+                        mutedId,
+                        rs.getLong("muteAuthorId"),
+                        rs.getNString("reason"),
+                        rs.getLong("unmuteAuthorId"),
+                        rs.getNString("unmuteReason"),
+                        rs.getLong("startTime"),
+                        rs.getLong("endTime"),
+                        rs.getBoolean("active")
+                ))
+            }
+        }, true, guildId, mutedId)
+        return mutes
+    }
 }
 
 data class Mute(var guildId: Long,
