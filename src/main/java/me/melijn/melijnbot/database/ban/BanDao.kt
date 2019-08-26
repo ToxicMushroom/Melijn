@@ -78,7 +78,7 @@ class BanDao(val driverManager: DriverManager) : Dao(driverManager) {
                         rs.getBoolean("active")
                 ))
             }
-        }, true, guildId, bannedId)
+        }, guildId, bannedId)
         return bans
     }
 }

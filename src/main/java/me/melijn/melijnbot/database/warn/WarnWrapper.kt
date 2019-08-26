@@ -4,6 +4,7 @@ import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.sharding.ShardManager
+import kotlin.math.min
 
 class WarnWrapper(val taskManager: TaskManager, private val warnDao: WarnDao) {
 
@@ -15,6 +16,10 @@ class WarnWrapper(val taskManager: TaskManager, private val warnDao: WarnDao) {
         val map = hashMapOf<Long, String>()
         val warns = warnDao.getWarns(guildId, targetUser.idLong)
         var counter = 0
+        if (warns.isEmpty()) {
+            timeWarns(emptyMap())
+            return
+        }
         warns.forEach { warn ->
             convertKickInfoToMessage(shardManager, warn) { message ->
                 map[warn.warnMoment] = message
@@ -38,8 +43,8 @@ class WarnWrapper(val taskManager: TaskManager, private val warnDao: WarnDao) {
         return "```INI" +
                 "\n[Warn Author] ${warnAuthor?.asTag ?: "deleted user"}" +
                 "\n[Warn Author Id] ${warn.warnAuthorId}" +
-                "\n[Warn Reason] ${warn.warnReason.substring(0, 830)}" +
-                "\n[Moment] ${warn.warnMoment.asEpochMillisToDateTime()}}" +
+                "\n[Warn Reason] ${warn.warnReason.substring(0, min(warn.warnReason.length, 830))}" +
+                "\n[Moment] ${warn.warnMoment.asEpochMillisToDateTime()}" +
                 "```"
 
     }

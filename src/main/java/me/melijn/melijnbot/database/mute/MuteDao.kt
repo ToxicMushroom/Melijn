@@ -78,7 +78,7 @@ class MuteDao(val driverManager: DriverManager) : Dao(driverManager) {
                         rs.getBoolean("active")
                 ))
             }
-        }, true, guildId, mutedId)
+        }, guildId, mutedId)
         return mutes
     }
 }

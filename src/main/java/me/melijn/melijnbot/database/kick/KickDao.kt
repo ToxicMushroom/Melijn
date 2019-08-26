@@ -46,7 +46,7 @@ class KickDao(val driverManager: DriverManager) : Dao(driverManager) {
                         rs.getLong("kickMoment")
                 ))
             }
-        }, true, guildId, kickedId)
+        }, guildId, kickedId)
         return kicks
     }
 }

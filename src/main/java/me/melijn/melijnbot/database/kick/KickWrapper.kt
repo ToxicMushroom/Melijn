@@ -4,6 +4,7 @@ import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.sharding.ShardManager
+import kotlin.math.min
 
 class KickWrapper(val taskManager: TaskManager, private val kickDao: KickDao) {
 
@@ -15,6 +16,10 @@ class KickWrapper(val taskManager: TaskManager, private val kickDao: KickDao) {
         val map = hashMapOf<Long, String>()
         val kicks = kickDao.getKicks(guildId, targetUser.idLong)
         var counter = 0
+        if (kicks.isEmpty()) {
+            timeKicks(emptyMap())
+            return
+        }
         kicks.forEach { kick ->
             convertKickInfoToMessage(shardManager, kick) { message ->
                 map[kick.kickMoment] = message
@@ -38,8 +43,8 @@ class KickWrapper(val taskManager: TaskManager, private val kickDao: KickDao) {
         return "```INI" +
                 "\n[Kick Author] ${kickAuthor?.asTag ?: "deleted user"}" +
                 "\n[Kick Author Id] ${kick.kickAuthorId}" +
-                "\n[Kick Reason] ${kick.kickReason.substring(0, 830)}" +
-                "\n[Moment] ${kick.kickMoment.asEpochMillisToDateTime()}}" +
+                "\n[Kick Reason] ${kick.kickReason.substring(0, min(kick.kickReason.length, 830))}" +
+                "\n[Moment] ${kick.kickMoment.asEpochMillisToDateTime()}" +
                 "```"
 
     }

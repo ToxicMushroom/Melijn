@@ -43,8 +43,11 @@ class HistoryCommand : AbstractCommand("command.history") {
                 unorderedMap.putAll(map)
                 counter++
                 if (counter == types.size) {
+                    val orderedMap = unorderedMap.toSortedMap().toMap()
+
                     //Collected all punishments
-                    sendMsg(context, unorderedMap.keys.toString())
+                    val msg = orderedMap.values.toString()
+                    sendMsg(context, msg)
                 }
             }
             for (type in types) {

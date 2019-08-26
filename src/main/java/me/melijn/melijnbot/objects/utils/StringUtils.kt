@@ -15,17 +15,38 @@ import javax.annotation.Nullable
 
 
 class StringUtils {
+    val backTicks = Pattern.compile(".*```(.*)")
     fun splitMessage(message: String, nextSplitThreshold: Int = 1800, margin: Int = 0): List<String> {
         var msg = message
         val messages = ArrayList<String>()
         while (msg.length > 2000 - margin) {
             val findLastNewline = msg.substring(0, 1999 - margin)
+            val matcher = backTicks.matcher(findLastNewline)
+            val shouldAppendBackTicks = false
+            if (backTicks.matcher(findLastNewline).matches()) {
+                //val index = findLastNewline.indexOf("```", max(0, findLastNewline.length - (2000-nextSplitThreshold)))
+                var amount = 0
+                var lastRightGroup = ""
+                while (matcher.find()) {
+                    amount++
+                    lastRightGroup = matcher.group(1)
+                }
+                val lastIndex = findLastNewline.length - lastRightGroup.length
+                if (amount%2 != 0) {
+                    if (lastIndex > 1800) {
+
+                    }
+                }
+            }
             var index = findLastNewline.lastIndexOf("\n")
             if (index < nextSplitThreshold - margin) {
                 index = findLastNewline.lastIndexOf(". ")
             }
             if (index < nextSplitThreshold - margin) {
                 index = findLastNewline.lastIndexOf(" ")
+            }
+            if (index < nextSplitThreshold - margin) {
+                index = findLastNewline.lastIndexOf(",")
             }
             if (index < nextSplitThreshold - margin) {
                 index = 1999 - margin

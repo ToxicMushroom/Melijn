@@ -46,7 +46,7 @@ class WarnDao(val driverManager: DriverManager) : Dao(driverManager) {
                         rs.getLong("warnMoment")
                 ))
             }
-        }, true, guildId, warnedId)
+        }, guildId, warnedId)
         return kicks
     }
 }
