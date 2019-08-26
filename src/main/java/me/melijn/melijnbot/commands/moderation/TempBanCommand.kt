@@ -8,13 +8,9 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.*
-import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.User
-import java.awt.Color
 
 class TempBanCommand : AbstractCommand("command.tempban") {
 
@@ -85,17 +81,20 @@ class TempBanCommand : AbstractCommand("command.tempban") {
     }
 
     private fun continueBanning(context: CommandContext, targetUser: User, ban: Ban, activeBan: Ban?, banningMessage: Message? = null) {
-        val bannedMessage = getBanMessage(context.getGuild(), targetUser, context.getAuthor(), ban)
+        val guild = context.getGuild()
+        val author = context.getAuthor()
+        val bannedMessageDm = getBanMessage(guild, targetUser, author, ban)
+        val bannedMessageLc = getBanMessage(guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
         context.daoManager.banWrapper.setBan(ban)
         context.getGuild().ban(targetUser, 7).queue({
             banningMessage?.editMessage(
-                    bannedMessage
+                    bannedMessageDm
             )?.override(true)?.queue()
 
             val logChannelWrapper = context.daoManager.logChannelWrapper
-            val logChannelId = logChannelWrapper.logChannelCache.get(Pair(context.getGuildId(), LogChannelType.TEMP_BAN)).get()
-            val logChannel = context.getGuild().getTextChannelById(logChannelId)
-            logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, bannedMessage) }
+            val logChannelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.TEMP_BAN)).get()
+            val logChannel = guild.getTextChannelById(logChannelId)
+            logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
 
             val msg = Translateable("$root.success" + if (activeBan != null) ".updated" else "").string(context)
                     .replace(PLACEHOLDER_USER, targetUser.asTag)
@@ -110,27 +109,4 @@ class TempBanCommand : AbstractCommand("command.tempban") {
             sendMsg(context, msg)
         })
     }
-}
-
-fun getBanMessage(guild: Guild, bannedUser: User, banAuthor: User, ban: Ban): MessageEmbed {
-    val banDuration = ban.endTime?.let { endTime ->
-        getDurationString((endTime - ban.startTime))
-    } ?: "infinite"
-
-    val eb = EmbedBuilder()
-    eb.setAuthor("Banned by: " + banAuthor.asTag + " ".repeat(45).substring(0, 45 - banAuthor.name.length) + "\u200B", null, banAuthor.effectiveAvatarUrl)
-    eb.setDescription("```LDIF" +
-            "\nGuild: " + guild.name +
-            "\nGuildId: " + guild.id +
-            "\nBan Author: " + (banAuthor.asTag) +
-            "\nBan Author Id: " + ban.banAuthorId +
-            "\nBanned: " + bannedUser.asTag +
-            "\nBannedId: " + bannedUser.id +
-            "\nReason: " + ban.reason +
-            "\nDuration: " + banDuration +
-            "\nStart of ban: " + (ban.startTime.asEpochMillisToDateTime()) +
-            "\nEnd of ban: " + (ban.endTime?.asEpochMillisToDateTime() ?: "none") + "```")
-    eb.setThumbnail(bannedUser.effectiveAvatarUrl)
-    eb.setColor(Color.red)
-    return eb.build()
 }

@@ -9,10 +9,11 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.*
-import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.*
-import java.awt.Color
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.MessageEmbed
+import net.dv8tion.jda.api.entities.Role
+import net.dv8tion.jda.api.entities.User
 
 class TempMuteCommand : AbstractCommand("command.tempmute") {
 
@@ -67,7 +68,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
                     .setPermissions(Permission.MESSAGE_READ)
                     .queue(
                             { role ->
-                                muteRoleAquired(context, targetUser, reason, role, muteDuration)
+                                muteRoleAcquired(context, targetUser, reason, role, muteDuration)
                             },
                             { failed ->
                                 val msgFailed = Translateable("$root.failed.creatingmuterole").string(context)
@@ -77,13 +78,13 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
                     )
             return
         } else {
-            muteRoleAquired(context, targetUser, reason, muteRole, muteDuration)
+            muteRoleAcquired(context, targetUser, reason, muteRole, muteDuration)
         }
 
 
     }
 
-    private fun muteRoleAquired(context: CommandContext, targetUser: User, reason: String, muteRole: Role, muteDuration: Long) {
+    private fun muteRoleAcquired(context: CommandContext, targetUser: User, reason: String, muteRole: Role, muteDuration: Long) {
         val activeMute: Mute? = context.daoManager.muteWrapper.getActiveMute(context.getGuildId(), targetUser.idLong)
         val mute = Mute(
                 context.getGuildId(),
@@ -109,27 +110,15 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
     }
 
     private fun continueMuting(context: CommandContext, muteRole: Role, targetUser: User, mute: Mute, activeMute: Mute?, mutingMessage: Message? = null) {
-        val mutedMessage = getMuteMessage(context.getGuild(), targetUser, context.getAuthor(), mute)
+        val guild = context.getGuild()
+        val author = context.getAuthor()
+        val mutedMessageDm = getMuteMessage(guild, targetUser, author, mute)
+        val mutedMessageLc = getMuteMessage(guild, targetUser, author, mute, true, targetUser.isBot, mutingMessage != null)
         context.daoManager.muteWrapper.setMute(mute)
-        val targetMember = context.getGuild().getMember(targetUser)
-        if (targetMember == null) {
-
-        } else {
+        val targetMember = guild.getMember(targetUser)
+        if (targetMember != null) {
             context.getGuild().addRoleToMember(targetMember, muteRole).queue({
-                mutingMessage?.editMessage(
-                        mutedMessage
-                )?.override(true)?.queue()
-
-                val logChannelWrapper = context.daoManager.logChannelWrapper
-                val logChannelId = logChannelWrapper.logChannelCache.get(Pair(context.getGuildId(), LogChannelType.TEMP_MUTE)).get()
-                val logChannel = context.getGuild().getTextChannelById(logChannelId)
-                logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, mutedMessage) }
-
-                val msg = Translateable("$root.success" + if (activeMute != null) ".updated" else "").string(context)
-                        .replace(PLACEHOLDER_USER, targetUser.asTag)
-                        .replace("%endTime%", mute.endTime?.asEpochMillisToDateTime() ?: "none")
-                        .replace("%reason%", mute.reason)
-                sendMsg(context, msg)
+                death(mutingMessage, mutedMessageDm, context, mutedMessageLc, activeMute, mute, targetUser)
             }, {
                 mutingMessage?.editMessage("failed to mute")?.queue()
                 val msg = Translateable("$root.failure").string(context)
@@ -137,29 +126,26 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
                         .replace("%cause%", it.message ?: "unknown (contact support for info)")
                 sendMsg(context, msg)
             })
+        } else {
+            death(mutingMessage, mutedMessageDm, context, mutedMessageLc, activeMute, mute, targetUser)
         }
+    }
+
+    private fun death(mutingMessage: Message?, mutedMessageDm: MessageEmbed, context: CommandContext, mutedMessageLc: MessageEmbed, activeMute: Mute?, mute: Mute, targetUser: User) {
+        mutingMessage?.editMessage(
+                mutedMessageDm
+        )?.override(true)?.queue()
+
+        val logChannelWrapper = context.daoManager.logChannelWrapper
+        val logChannelId = logChannelWrapper.logChannelCache.get(Pair(context.getGuildId(), LogChannelType.TEMP_MUTE)).get()
+        val logChannel = context.getGuild().getTextChannelById(logChannelId)
+        logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, mutedMessageLc) }
+
+        val msg = Translateable("$root.success" + if (activeMute != null) ".updated" else "").string(context)
+                .replace(PLACEHOLDER_USER, targetUser.asTag)
+                .replace("%endTime%", mute.endTime?.asEpochMillisToDateTime() ?: "none")
+                .replace("%reason%", mute.reason)
+        sendMsg(context, msg)
     }
 }
 
-fun getMuteMessage(guild: Guild, mutedUser: User, muteAuthor: User, mute: Mute): MessageEmbed {
-    val banDuration = mute.endTime?.let { endTime ->
-        getDurationString((endTime - mute.startTime))
-    } ?: "infinite"
-
-    val eb = EmbedBuilder()
-    eb.setAuthor("Muted by: " + muteAuthor.asTag + " ".repeat(45).substring(0, 45 - muteAuthor.name.length) + "\u200B", null, muteAuthor.effectiveAvatarUrl)
-    eb.setDescription("```LDIF" +
-            "\nGuild: " + guild.name +
-            "\nGuildId: " + guild.id +
-            "\nMute Author: " + (muteAuthor.asTag) +
-            "\nMute Author Id: " + mute.muteAuthorId +
-            "\nMuted: " + mutedUser.asTag +
-            "\nMutedId: " + mutedUser.id +
-            "\nReason: " + mute.reason +
-            "\nDuration: " + banDuration +
-            "\nStart of mute: " + (mute.startTime.asEpochMillisToDateTime()) +
-            "\nEnd of mute: " + (mute.endTime?.asEpochMillisToDateTime() ?: "none") + "```")
-    eb.setThumbnail(mutedUser.effectiveAvatarUrl)
-    eb.setColor(Color.BLUE)
-    return eb.build()
-}

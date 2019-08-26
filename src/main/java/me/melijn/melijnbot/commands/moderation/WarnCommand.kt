@@ -95,7 +95,8 @@ fun getWarnMessage(guild: Guild,
                    warn: Warn,
                    lc: Boolean = false,
                    isBot: Boolean = false,
-                   received: Boolean = true): MessageEmbed {
+                   received: Boolean = true
+): MessageEmbed {
     val eb = EmbedBuilder()
     eb.setAuthor("Warned by: " + warnAuthor.asTag + " ".repeat(45).substring(0, 45 - warnAuthor.name.length) + "\u200B", null, warnAuthor.effectiveAvatarUrl)
     val description = "```LDIF" +

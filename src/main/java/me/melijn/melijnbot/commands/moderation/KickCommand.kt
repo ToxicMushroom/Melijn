@@ -100,7 +100,8 @@ fun getKickMessage(guild: Guild,
                    kick: Kick,
                    lc: Boolean = false,
                    isBot: Boolean = false,
-                   received: Boolean = true): MessageEmbed {
+                   received: Boolean = true
+): MessageEmbed {
     val eb = EmbedBuilder()
     eb.setAuthor("Kicked by: " + kickAuthor.asTag + " ".repeat(45).substring(0, 45 - kickAuthor.name.length) + "\u200B", null, kickAuthor.effectiveAvatarUrl)
     val description = "```LDIF" +
