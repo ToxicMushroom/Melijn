@@ -11,7 +11,8 @@ enum class LogChannelType(val text: String = this.toString(), val parentNodes: A
     TEMP_MUTE("TempMute", arrayOf("mute", "tempmute", "tmlc")),
     UNMUTE("Unmute", arrayOf("mute", "unmute", "umlc")),
 
-    KICK("Kick", arrayOf("kick", "klc"));
+    KICK("Kick", arrayOf("kick", "klc")),
+    WARN("Warn", arrayOf("warn", "wlc"));
 
 
     //Messages

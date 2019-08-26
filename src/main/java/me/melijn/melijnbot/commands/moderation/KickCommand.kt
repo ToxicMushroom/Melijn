@@ -64,17 +64,21 @@ class KickCommand : AbstractCommand("command.kick") {
     }
 
     private fun continueKicking(context: CommandContext, targetMember: Member, kick: Kick, kickingMessage: Message? = null) {
-        val kickedMessage = getKickMessage(context.getGuild(), targetMember.user, context.getAuthor(), kick)
+        val guild = context.getGuild()
+        val author = context.getAuthor()
+        val kickedMessageDm = getKickMessage(guild, targetMember.user, author, kick)
+        val warnedMessageLc = getKickMessage(guild, targetMember.user, author, kick, true, targetMember.user.isBot, kickingMessage != null)
+
         context.daoManager.kickWrapper.addKick(kick)
         context.getGuild().kick(targetMember, kick.kickReason).queue({
             kickingMessage?.editMessage(
-                    kickedMessage
+                    kickedMessageDm
             )?.override(true)?.queue()
 
             val logChannelWrapper = context.daoManager.logChannelWrapper
             val logChannelId = logChannelWrapper.logChannelCache.get(Pair(context.getGuildId(), LogChannelType.KICK)).get()
             val logChannel = context.getGuild().getTextChannelById(logChannelId)
-            logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, kickedMessage) }
+            logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, warnedMessageLc) }
 
             val msg = Translateable("$root.success").string(context)
                     .replace(PLACEHOLDER_USER, targetMember.asTag)
@@ -90,18 +94,40 @@ class KickCommand : AbstractCommand("command.kick") {
     }
 }
 
-fun getKickMessage(guild: Guild, kickedUser: User, kickAuthor: User, kick: Kick): MessageEmbed {
+fun getKickMessage(guild: Guild,
+                   kickedUser: User,
+                   kickAuthor: User,
+                   kick: Kick,
+                   lc: Boolean = false,
+                   isBot: Boolean = false,
+                   received: Boolean = true): MessageEmbed {
     val eb = EmbedBuilder()
     eb.setAuthor("Kicked by: " + kickAuthor.asTag + " ".repeat(45).substring(0, 45 - kickAuthor.name.length) + "\u200B", null, kickAuthor.effectiveAvatarUrl)
-    eb.setDescription("```LDIF" +
-            "\nGuild: " + guild.name +
-            "\nGuildId: " + guild.id +
+    val description = "```LDIF" +
+            if (!lc) {
+                "" +
+                        "\nGuild: " + guild.name +
+                        "\nGuildId: " + guild.id
+            } else {
+                ""
+            } +
             "\nKick Author: " + (kickAuthor.asTag) +
             "\nKick Author Id: " + kick.kickAuthorId +
             "\nKicked: " + kickedUser.asTag +
             "\nKickedId: " + kickedUser.id +
             "\nReason: " + kick.kickReason +
-            "\nMoment of kick: " + (kick.kickMoment.asEpochMillisToDateTime()) + "```")
+            "\nMoment of kick: " + (kick.kickMoment.asEpochMillisToDateTime()) +
+            if (!received || isBot) {
+                "\nExtra: " +
+                        if (isBot) {
+                            "Target is a bot"
+                        } else {
+                            "Target had dm's disabled"
+                        }
+            } else {
+                ""
+            } + "```"
+    eb.setDescription(description)
     eb.setThumbnail(kickedUser.effectiveAvatarUrl)
     eb.setColor(Color.BLUE)
     return eb.build()
