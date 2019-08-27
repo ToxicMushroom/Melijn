@@ -97,8 +97,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
      *
      * **/
     private fun checksFailed(command: AbstractCommand, event: MessageReceivedEvent): Boolean {
-        if (event.isFromGuild) {
-            if (commandIsDisabled(command, event)) return true
+        if (event.isFromGuild && commandIsDisabled(command, event)) {
+            return true
         }
 
         command.runConditions.forEach {
@@ -126,7 +126,9 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 }
             }
 
-            if (commandIsOnCooldown(command, event)) return true
+            if (commandIsOnCooldown(command, event)) {
+                return true
+            }
         }
 
         return false
