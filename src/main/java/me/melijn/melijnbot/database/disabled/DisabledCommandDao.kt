@@ -49,7 +49,7 @@ class DisabledCommandDao(val driverManager: DriverManager) : Dao(driverManager) 
 
     fun bulkDelete(guildId: Long, commands: Set<AbstractCommand>) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("DELETE FROM $table WHERE guildId = ? AND commandId = ?)").use { statement ->
+            con.prepareStatement("DELETE FROM $table WHERE guildId = ? AND commandId = ?").use { statement ->
                 statement.setLong(1, guildId)
                 for (cmd in commands) {
                     statement.setInt(2, cmd.id)
