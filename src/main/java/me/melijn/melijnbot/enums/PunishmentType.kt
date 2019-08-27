@@ -2,10 +2,10 @@ package me.melijn.melijnbot.enums
 
 enum class PunishmentType(val aliases: Array<String>) {
 
-    BAN(arrayOf("bans")),
-    MUTE(arrayOf("mutes")),
-    KICK(arrayOf("kicks")),
-    WARN(arrayOf("warns"));
+    BAN(arrayOf("ban", "bans")),
+    MUTE(arrayOf("mute", "mutes")),
+    KICK(arrayOf("kick", "kicks")),
+    WARN(arrayOf("warn", "warns"));
 
     companion object {
         fun getMatchingTypesFromNode(node: String): List<PunishmentType> {
