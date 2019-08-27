@@ -4,6 +4,7 @@ import me.melijn.melijnbot.enums.PunishmentType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.retrieveUserByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
@@ -47,8 +48,26 @@ class HistoryCommand : AbstractCommand("command.history") {
                     val orderedMap = unorderedMap.toSortedMap().toMap()
 
                     //Collected all punishments
-                    val msg = orderedMap.values.toString()
-                    sendMsgCodeBlocks(context, msg, "INI")
+                    val msg = orderedMap.values.joinToString("")
+
+                    if (msg.isBlank()) {
+                        val or = Translateable("or").string(context)
+                        var readableList = types.subList(0, types.size - 1).joinToString(", ", transform = { type ->
+                            type.name.toLowerCase()
+                        })
+                        if (readableList.isBlank()) {
+                            readableList = types.last().name.toLowerCase()
+                        } else {
+                            readableList += " $or " + types.last().name.toLowerCase()
+                        }
+
+                        val noHistory = Translateable("$root.nohistory").string(context)
+                                .replace(PLACEHOLDER_USER, targetUser.asTag)
+                                .replace("%typeList%", readableList)
+                        sendMsg(context, noHistory)
+                    } else {
+                        sendMsgCodeBlocks(context, msg, "INI")
+                    }
                 }
             }
             for (type in types) {
