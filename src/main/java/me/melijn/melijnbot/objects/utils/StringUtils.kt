@@ -15,47 +15,111 @@ import javax.annotation.Nullable
 
 
 class StringUtils {
-    val backTicks = Pattern.compile(".*```(.*)")
+    private val backTicks = "```".toRegex()
+    fun splitMessageWithCodeBlocks(message: String, nextSplitThreshold: Int = 1800, margin: Int = 30, lang: String = ""): List<String> {
+        var msg = message
+        val messages = ArrayList<String>()
+        var shouldAppendBackTicks = false
+        var shouldPrependBackTicks = false
+        while (msg.length > 2000 - margin) {
+            var findLastNewline = msg.substring(0, 1999 - margin)
+            if (shouldPrependBackTicks) {
+                findLastNewline = "```$lang\n$findLastNewline"
+                shouldPrependBackTicks = false
+            }
+
+            if (findLastNewline.contains("```")) {
+
+                val triple = getBackTickAmountAndLastTwoIndexes(findLastNewline)
+
+                val amount = triple.first
+                val previousIndex = triple.second
+                val mostRightIndex = triple.third
+
+
+                val lastEvenIndex = if (amount % 2 == 0) {
+                    mostRightIndex
+                } else {
+                    previousIndex
+                }
+
+                if (lastEvenIndex > (nextSplitThreshold - margin)) {
+                    val subMsg = msg.substring(0, lastEvenIndex)
+                    println(subMsg)
+                    messages.add(subMsg)
+                    msg = msg.substring(lastEvenIndex)
+                    println(msg)
+                    continue
+                } else {
+                    shouldAppendBackTicks = true
+                    shouldPrependBackTicks = true
+                }
+            }
+            val index = getSplitIndex(findLastNewline, nextSplitThreshold, margin)
+            messages.add(msg.substring(0, index) +
+                    if (shouldAppendBackTicks) {
+                        "```"
+                    } else {
+                        ""
+                    }
+            )
+
+            msg = msg.substring(index)
+        }
+
+        if (shouldAppendBackTicks) {
+            msg += "```"
+        }
+        if (shouldPrependBackTicks) {
+            msg = "```$lang\n$msg"
+        }
+
+        if (msg.isNotEmpty()) messages.add(msg)
+        return messages
+    }
+
+    private fun getBackTickAmountAndLastTwoIndexes(findLastNewline: String): Triple<Int, Int, Int> {
+        var amount = 0
+        var almostMostRight = 0
+        var mostRight = 0
+        for (result in backTicks.findAll(findLastNewline)) {
+            amount++
+            almostMostRight = mostRight
+            mostRight = result.range.last + 1
+        }
+        return Triple(amount, almostMostRight, mostRight)
+    }
+
     fun splitMessage(message: String, nextSplitThreshold: Int = 1800, margin: Int = 0): List<String> {
         var msg = message
         val messages = ArrayList<String>()
         while (msg.length > 2000 - margin) {
             val findLastNewline = msg.substring(0, 1999 - margin)
-            val matcher = backTicks.matcher(findLastNewline)
-            val shouldAppendBackTicks = false
-            if (backTicks.matcher(findLastNewline).matches()) {
-                //val index = findLastNewline.indexOf("```", max(0, findLastNewline.length - (2000-nextSplitThreshold)))
-                var amount = 0
-                var lastRightGroup = ""
-                while (matcher.find()) {
-                    amount++
-                    lastRightGroup = matcher.group(1)
-                }
-                val lastIndex = findLastNewline.length - lastRightGroup.length
-                if (amount%2 != 0) {
-                    if (lastIndex > 1800) {
+            val index = getSplitIndex(findLastNewline, nextSplitThreshold, margin)
 
-                    }
-                }
-            }
-            var index = findLastNewline.lastIndexOf("\n")
-            if (index < nextSplitThreshold - margin) {
-                index = findLastNewline.lastIndexOf(". ")
-            }
-            if (index < nextSplitThreshold - margin) {
-                index = findLastNewline.lastIndexOf(" ")
-            }
-            if (index < nextSplitThreshold - margin) {
-                index = findLastNewline.lastIndexOf(",")
-            }
-            if (index < nextSplitThreshold - margin) {
-                index = 1999 - margin
-            }
             messages.add(msg.substring(0, index))
             msg = msg.substring(index)
         }
         if (msg.isNotEmpty()) messages.add(msg)
         return messages
+    }
+
+    fun getSplitIndex(findLastNewline: String, nextSplitThreshold: Int, margin: Int): Int {
+        var index = findLastNewline.lastIndexOf("\n")
+        if (index < nextSplitThreshold - margin) {
+            index = findLastNewline.lastIndexOf(". ")
+        }
+        if (index < nextSplitThreshold - margin) {
+            index = findLastNewline.lastIndexOf(" ")
+        }
+        if (index < nextSplitThreshold - margin) {
+            index = findLastNewline.lastIndexOf(",")
+        }
+        if (index < nextSplitThreshold - margin) {
+            index = 1999 - margin
+        }
+
+        return index
     }
 }
 

@@ -85,10 +85,74 @@ fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String) {
     }
 }
 
+fun sendMsgCodeBlocks(
+        context: CommandContext,
+        msg: String,
+        lang: String,
+        success: ((message: Message) -> Unit)? = null,
+        failed: ((ex: Throwable) -> Unit)? = null,
+        multicallback: Boolean = false
+) {
+    if (context.isFromGuild) sendMsgCodeBlocks(context.getTextChannel(), msg, lang, success, failed, multicallback)
+    else sendMsgCodeBlocks(context.getPrivateChannel(), msg, lang, success, failed, multicallback)
+}
+
+fun sendMsgCodeBlocks(
+        channel: PrivateChannel,
+        msg: String,
+        lang: String,
+        success: ((message: Message) -> Unit)? = null,
+        failed: ((ex: Throwable) -> Unit)? = null,
+        multicallback: Boolean = false
+) {
+    if (msg.length <= 2000) {
+        channel.sendMessage(msg).queue(success, failed)
+    } else {
+        var executedOnce = false
+        StringUtils().splitMessageWithCodeBlocks(msg, 1600, 20 + lang.length, lang).forEach {
+            val future = channel.sendMessage(it)
+            if (executedOnce && !multicallback) {
+                future.queue()
+            } else {
+                future.queue(success, failed)
+            }
+            executedOnce = true
+        }
+    }
+}
+
+fun sendMsgCodeBlocks(
+        channel: TextChannel,
+        msg: String,
+        lang: String,
+        success: ((message: Message) -> Unit)? = null,
+        failed: ((ex: Throwable) -> Unit)? = null,
+        multicallback: Boolean = false
+) {
+    if (channel.canTalk()) {
+        if (msg.length <= 2000) {
+            channel.sendMessage(msg).queue(success, failed)
+        } else {
+            var executedOnce = false
+            StringUtils().splitMessageWithCodeBlocks(msg, 1600, 20 + lang.length, lang).forEach {
+                val future = channel.sendMessage(it)
+                if (executedOnce && !multicallback) {
+                    future.queue()
+                } else {
+                    future.queue(success, failed)
+                }
+                executedOnce = true
+            }
+        }
+    }
+}
+
 fun sendEmbed(context: CommandContext, embed: MessageEmbed, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
-    if (context.isFromGuild)
+    if (context.isFromGuild) {
         sendEmbed(context.daoManager.embedDisabledWrapper, context.getTextChannel(), embed, success, failed)
-    else sendEmbed(context.getPrivateChannel(), embed, success, failed)
+    } else {
+        sendEmbed(context.getPrivateChannel(), embed, success, failed)
+    }
 }
 
 fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
@@ -109,7 +173,7 @@ fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChann
     }
 }
 
-fun sendEmbedAsMessage(textChannel: TextChannel, embed: MessageEmbed, success: ((message: Message) -> Unit)? = null,  failed: ((ex: Throwable) -> Unit)? = null) {
+fun sendEmbedAsMessage(textChannel: TextChannel, embed: MessageEmbed, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
     val sb = StringBuilder()
     if (embed.author != null) {
         sb.append("***").append(embed.author?.name).appendln("***")
@@ -138,12 +202,12 @@ fun sendEmbedAsMessage(textChannel: TextChannel, embed: MessageEmbed, success: (
     sendMsg(textChannel, sb.toString(), success, failed)
 }
 
-fun sendMsg(context: CommandContext, msg: String, success: ((message: Message) -> Unit)? = null,  failed: ((ex: Throwable) -> Unit)? = null) {
+fun sendMsg(context: CommandContext, msg: String, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
     if (context.isFromGuild) sendMsg(context.getTextChannel(), msg, success, failed)
     else sendMsg(context.getPrivateChannel(), msg, success, failed)
 }
 
-fun sendMsg(privateChannel: PrivateChannel, msg: String, success: ((message: Message) -> Unit)? = null,  failed: ((ex: Throwable) -> Unit)? = null) {
+fun sendMsg(privateChannel: PrivateChannel, msg: String, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
     if (msg.length <= 2000) {
         privateChannel.sendMessage(msg).queue(success, failed)
     } else {
@@ -153,7 +217,7 @@ fun sendMsg(privateChannel: PrivateChannel, msg: String, success: ((message: Mes
     }
 }
 
-fun sendMsg(channel: TextChannel, msg: String, success: ((message: Message) -> Unit)? = null,  failed: ((ex: Throwable) -> Unit)? = null) {
+fun sendMsg(channel: TextChannel, msg: String, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
     if (channel.canTalk()) {
         if (msg.length <= 2000) {
             channel.sendMessage(msg).queue(success, failed)

@@ -7,6 +7,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.retrieveUserByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.sendMsgCodeBlocks
 import me.melijn.melijnbot.objects.utils.sendSyntax
 
 class HistoryCommand : AbstractCommand("command.history") {
@@ -47,7 +48,7 @@ class HistoryCommand : AbstractCommand("command.history") {
 
                     //Collected all punishments
                     val msg = orderedMap.values.toString()
-                    sendMsg(context, msg)
+                    sendMsgCodeBlocks(context, msg, "INI")
                 }
             }
             for (type in types) {
