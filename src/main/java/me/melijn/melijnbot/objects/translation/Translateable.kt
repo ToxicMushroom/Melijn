@@ -26,6 +26,14 @@ class Translateable(val path: String = "") {
         }
     }
 
+    fun string(daoManager: DaoManager, guildId: Long): String {
+        return try {
+            guildString(daoManager, guildId)
+        } catch (ex: MissingResourceException) {
+            path
+        }
+    }
+
     fun string(daoManager: DaoManager, userId: Long, guildId: Long = -1): String {
         try {
             val isSupporter = daoManager.supporterWrapper.supporterIds.contains(userId)

@@ -22,6 +22,8 @@ import me.melijn.melijnbot.database.language.UserLanguageDao
 import me.melijn.melijnbot.database.language.UserLanguageWrapper
 import me.melijn.melijnbot.database.logchannels.LogChannelDao
 import me.melijn.melijnbot.database.logchannels.LogChannelWrapper
+import me.melijn.melijnbot.database.message.MessageDao
+import me.melijn.melijnbot.database.message.MessageWrapper
 import me.melijn.melijnbot.database.mute.MuteDao
 import me.melijn.melijnbot.database.mute.MuteWrapper
 import me.melijn.melijnbot.database.permissions.*
@@ -84,6 +86,8 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
     val kickWrapper: KickWrapper
     val warnWrapper: WarnWrapper
 
+    val messageWrapper: MessageWrapper
+
     init {
         val driverManager = DriverManager(mysqlSettings)
         mySQLVersion = driverManager.getMySQLVersion()
@@ -122,6 +126,8 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
         muteWrapper = MuteWrapper(taskManager, MuteDao(driverManager))
         kickWrapper = KickWrapper(taskManager, KickDao(driverManager))
         warnWrapper = WarnWrapper(taskManager, WarnDao(driverManager))
+
+        messageWrapper = MessageWrapper(taskManager, MessageDao(driverManager))
 
         //After registering wrappers
         driverManager.executeTableRegistration()

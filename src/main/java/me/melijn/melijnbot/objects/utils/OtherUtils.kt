@@ -68,9 +68,9 @@ fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set<Abstrac
     val commands = (if (category == null) {
         if (arg == "*") {
             context.getCommands()
-        } else context.getCommands().filter { command -> command.isCommandFor(arg)}.toSet()
+        } else context.getCommands().filter { command -> command.isCommandFor(arg) }.toSet()
     } else {
-        context.getCommands().filter { command -> command.commandCategory == category}.toSet()
+        context.getCommands().filter { command -> command.commandCategory == category }.toSet()
     }).toMutableSet()
     commands.removeIf { cmd -> cmd.id == 16 }
 

@@ -173,33 +173,37 @@ fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChann
     }
 }
 
-fun sendEmbedAsMessage(textChannel: TextChannel, embed: MessageEmbed, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
+fun MessageEmbed.toMessage(): String {
     val sb = StringBuilder()
-    if (embed.author != null) {
-        sb.append("***").append(embed.author?.name).appendln("***")
+    if (this.author != null) {
+        sb.append("***").append(this.author?.name).appendln("***")
     }
-    if (embed.title != null) {
-        sb.appendln("**__${embed.title}__**\n")
+    if (this.title != null) {
+        sb.appendln("**__${this.title}__**\n")
     }
-    if (embed.description != null) {
-        sb.append(embed.description?.replace(Regex("\\[(.+)]\\((.+)\\)"), "$1 (Link: $2)")).append("\n\n")
+    if (this.description != null) {
+        sb.append(this.description?.replace(Regex("\\[(.+)]\\((.+)\\)"), "$1 (Link: $2)")).append("\n\n")
     }
-    if (embed.fields.isNotEmpty()) {
-        for (field in embed.fields) {
+    if (this.fields.isNotEmpty()) {
+        for (field in this.fields) {
             sb.append("**").append(field.name).append("**\n")
                     .append(field.value?.replace(Regex("\\[(.+)]\\((.+)\\)"), "$1 (Link: $2)")).append("\n\n")
         }
     }
-    if (embed.footer != null) {
-        sb.append("*${embed.footer?.text}")
-        if (embed.timestamp != null)
+    if (this.footer != null) {
+        sb.append("*${this.footer?.text}")
+        if (this.timestamp != null)
             sb.append(" | ")
         else sb.append("*")
     }
-    if (embed.timestamp != null) {
-        sb.append(embed.timestamp?.format(DateTimeFormatter.ISO_DATE_TIME)).append("*")
+    if (this.timestamp != null) {
+        sb.append(this.timestamp?.format(DateTimeFormatter.ISO_DATE_TIME)).append("*")
     }
-    sendMsg(textChannel, sb.toString(), success, failed)
+    return sb.toString()
+}
+
+fun sendEmbedAsMessage(textChannel: TextChannel, embed: MessageEmbed, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
+    sendMsg(textChannel, embed.toMessage(), success, failed)
 }
 
 fun sendMsg(context: CommandContext, msg: String, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
