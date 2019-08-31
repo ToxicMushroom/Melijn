@@ -10,10 +10,7 @@ import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.events.AbstractListener
 import me.melijn.melijnbot.objects.translation.Translateable
-import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
-import me.melijn.melijnbot.objects.utils.asTag
-import me.melijn.melijnbot.objects.utils.escapeForLog
-import me.melijn.melijnbot.objects.utils.sendEmbed
+import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.events.GenericEvent
@@ -65,7 +62,7 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
                 .replace("%newContent%", escapeForLog(daoMessage.content))
                 .replace("%user%", event.author.asTag)
                 .replace("%userId%", event.author.id)
-                .replace("%sentTime%", event.message.timeCreated.toInstant().toEpochMilli().asEpochMillisToDateTime())
+                .replace("%sentTime%", event.message.timeCreated.asLongLongGMTString())
                 .replace("%editedTime%", System.currentTimeMillis().asEpochMillisToDateTime())
                 .replace("%link%", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.message.id}")
 

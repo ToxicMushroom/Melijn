@@ -7,7 +7,7 @@ import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.events.AbstractListener
 import me.melijn.melijnbot.objects.translation.Translateable
-import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
+import me.melijn.melijnbot.objects.utils.asLongLongGMTString
 import me.melijn.melijnbot.objects.utils.asTag
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.utils.toMessage
@@ -83,10 +83,10 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         val description = Translateable("listener.message.attachment.log.description")
                 .string(container.daoManager, event.guild.idLong)
                 .replace("%userId%", event.author.id)
-                .replace("%messageId%", event.message.contentRaw)
+                .replace("%messageId%", event.messageId)
                 .replace("%messageUrl%", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.message.id}")
                 .replace("%attachmentUrl%", attachment.url)
-                .replace("%moment%", event.message.timeCreated.toInstant().toEpochMilli().asEpochMillisToDateTime())
+                .replace("%moment%", event.message.timeCreated.asLongLongGMTString())
 
         val footer = Translateable("listener.message.attachment.log.footer")
                 .string(container.daoManager, event.guild.idLong)

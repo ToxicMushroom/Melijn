@@ -31,7 +31,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         val embedBuilder = EmbedBuilder()
         val title = Translateable("listener.message.reaction.log.title")
                 .string(container.daoManager, event.guild.idLong)
-                .replace("%logChannel%", event.channel.asTag)
+                .replace("%channel%", event.channel.asTag)
 
         val part = if (event.reactionEmote.isEmote) "emote" else "emoji"
         val description = Translateable("listener.message.reaction.$part.log.description")

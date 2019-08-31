@@ -5,7 +5,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.Translateable
-import me.melijn.melijnbot.objects.utils.asFullLongGMTString
+import me.melijn.melijnbot.objects.utils.asLongLongGMTString
 import me.melijn.melijnbot.objects.utils.getRoleByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.utils.sendSyntax
@@ -40,7 +40,7 @@ class RoleInfoCommand : AbstractCommand("command.roleinfo") {
         return string
                 .replace("%roleName%", role.name)
                 .replace("%roleId%", role.id)
-                .replace("%creationTime%", role.timeCreated.asFullLongGMTString())
+                .replace("%creationTime%", role.timeCreated.asLongLongGMTString())
                 .replace("%position%", role.position.toString() + "/" +  role.guild.roleCache.size())
                 .replace("%members%", role.guild.memberCache.stream().filter { member -> member.roles.contains(role) }.count().toString())
                 .replace("%isMentionable%", if (role.isMentionable) "Yes" else "No")

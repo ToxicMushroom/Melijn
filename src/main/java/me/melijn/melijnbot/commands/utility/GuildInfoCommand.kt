@@ -6,7 +6,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.Translateable
-import me.melijn.melijnbot.objects.utils.asFullLongGMTString
+import me.melijn.melijnbot.objects.utils.asLongLongGMTString
 import me.melijn.melijnbot.objects.utils.asTag
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import net.dv8tion.jda.api.entities.Guild
@@ -66,7 +66,7 @@ class GuildInfoCommand : AbstractCommand("command.guildinfo") {
                 .replace("%bannerUrl%", (if (guild.bannerUrl != null) "${guild.bannerUrl}?size=2048" else "").toString())
                 .replace("%splashUrl%", (if (guild.splashUrl != null) "${guild.splashUrl}?size=2048" else "").toString())
                 .replace("%vanityUrl%", (if (guild.vanityUrl != null) "${guild.vanityUrl}?size=2048" else "").toString())
-                .replace("%creationDate%", guild.timeCreated.asFullLongGMTString())
+                .replace("%creationDate%", guild.timeCreated.asLongLongGMTString())
                 .replace("%region%", guild.region.name)
                 .replace("%isVip%", if (guild.region.isVip) "yes" else "no")
                 .replace("%boostCount%", guild.boostCount.toString())

@@ -146,11 +146,11 @@ fun Long.asEpochMillisToDateTime(): String {
     calendar.timeZone = TimeZone.getTimeZone(ZoneId.of("GMT"))
     calendar.timeInMillis = this
     val offsetDateTime = Instant.ofEpochMilli(this).atOffset(ZoneOffset.UTC)
-    return offsetDateTime.asFullLongGMTString()
+    return offsetDateTime.asLongLongGMTString()
 }
 
-fun OffsetDateTime.asFullLongGMTString(): String {
-    return this.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL, FormatStyle.LONG).withZone(ZoneId.of("GMT")))
+fun OffsetDateTime.asLongLongGMTString(): String {
+    return this.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG, FormatStyle.LONG).withZone(ZoneId.of("GMT")))
 }
 
 fun getDurationString(milliseconds: Long): String {
