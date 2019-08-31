@@ -147,6 +147,11 @@ fun sendMsgCodeBlocks(
     }
 }
 
+fun escapeForLog(string: String): String {
+    return string.replace("`", "´")
+            .replace("\n", " ")
+}
+
 fun sendEmbed(context: CommandContext, embed: MessageEmbed, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
     if (context.isFromGuild) {
         sendEmbed(context.daoManager.embedDisabledWrapper, context.getTextChannel(), embed, success, failed)

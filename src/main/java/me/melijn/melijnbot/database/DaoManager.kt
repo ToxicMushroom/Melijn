@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.database
 
+import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.database.ban.BanDao
 import me.melijn.melijnbot.database.ban.BanWrapper
@@ -78,8 +79,8 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
     val logChannelWrapper: LogChannelWrapper
     val roleWrapper: RoleWrapper
 
-    val mySQLVersion: String
-    val connectorVersion: String
+    lateinit var mySQLVersion: String
+    lateinit var connectorVersion: String
 
     val banWrapper: BanWrapper
     val muteWrapper: MuteWrapper
@@ -90,8 +91,12 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
 
     init {
         val driverManager = DriverManager(mysqlSettings)
-        mySQLVersion = driverManager.getMySQLVersion()
-        connectorVersion = driverManager.getConnectorVersion()
+
+        runBlocking {
+            mySQLVersion = driverManager.getMySQLVersion()
+            connectorVersion = driverManager.getConnectorVersion()
+        }
+
 
         commandWrapper = CommandWrapper(taskManager, CommandDao(driverManager))
 

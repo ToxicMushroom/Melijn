@@ -21,8 +21,9 @@ enum class LogChannelType(val text: String = this.toString(), val parentNodes: A
     FILTERED_MESSAGE("Filtered-Message", arrayOf("deleted-messages", "deleted-message", "fm", "filtered-messages", "filtered-message", "fmlc")),
 
     //Others
-    EDITED_MESSAGE("Edited-Message", arrayOf("emdm", "edited-messages", "edited-message", "emlc")),
-    REACTION("Reaction", arrayOf("r", "reaction", "reactions", "mr", "rlc"));
+    EDITED_MESSAGE("Edited-Message", arrayOf("em", "edited-messages", "edited-message", "emlc")),
+    REACTION("Reaction", arrayOf("r", "reaction", "reactions", "mr", "rlc")),
+    ATTACHMENT("Attachment", arrayOf("a", "alc"));
 
 
     //Messages

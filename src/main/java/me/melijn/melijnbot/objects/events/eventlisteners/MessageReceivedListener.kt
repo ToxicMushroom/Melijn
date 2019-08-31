@@ -1,26 +1,47 @@
 package me.melijn.melijnbot.objects.events.eventlisteners
 
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.events.AbstractListener
+import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
+import me.melijn.melijnbot.objects.utils.asTag
+import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.utils.toMessage
+import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import java.awt.Color
 
 class MessageReceivedListener(container: Container) : AbstractListener(container) {
 
     override fun onEvent(event: GenericEvent) {
         if (event is GuildMessageReceivedEvent) {
-            onGuildMessageReceived(event)
+            handleMessageReceivedStoring(event)
+            handleAttachmentLog(event)
         }
     }
 
-    private fun onGuildMessageReceived(event: GuildMessageReceivedEvent) = runBlocking {
+    private fun handleAttachmentLog(event: GuildMessageReceivedEvent) {
+        if (event.message.attachments.isEmpty()) return
+        val logChannelWrapper = container.daoManager.logChannelWrapper
+        val logChannelCache = logChannelWrapper.logChannelCache
+        CoroutineScope(Dispatchers.Default).launch {
+            val attachmentLogChannelId = logChannelCache.get(Pair(event.guild.idLong, LogChannelType.ATTACHMENT)).await()
+            if (attachmentLogChannelId == -1L) return@launch
+            val logChannel = event.guild.getTextChannelById(attachmentLogChannelId) ?: return@launch
+            for (attachment in event.message.attachments) {
+                postAttachmentLog(event, logChannel, attachment)
+            }
+        }
+    }
+
+    private fun handleMessageReceivedStoring(event: GuildMessageReceivedEvent) = runBlocking {
         val timeOne = System.currentTimeMillis()
         val guildId = event.guild.idLong
         val logChannelWrapper = container.daoManager.logChannelWrapper
@@ -49,6 +70,35 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             ))
         }
 
+
         println("duration: " + (System.currentTimeMillis() - timeOne))
+    }
+
+    private fun postAttachmentLog(event: GuildMessageReceivedEvent, logChannel: TextChannel, attachment: Message.Attachment) {
+        val embedBuilder = EmbedBuilder()
+        val title = Translateable("listener.message.attachment.log.title")
+                .string(container.daoManager, event.guild.idLong)
+                .replace("%channel%", event.channel.asTag)
+
+        val description = Translateable("listener.message.attachment.log.description")
+                .string(container.daoManager, event.guild.idLong)
+                .replace("%userId%", event.author.id)
+                .replace("%messageId%", event.message.contentRaw)
+                .replace("%messageUrl%", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.message.id}")
+                .replace("%attachmentUrl%", attachment.url)
+                .replace("%moment%", event.message.timeCreated.toInstant().toEpochMilli().asEpochMillisToDateTime())
+
+        val footer = Translateable("listener.message.attachment.log.footer")
+                .string(container.daoManager, event.guild.idLong)
+                .replace("%user%", event.author.asTag)
+        embedBuilder.setFooter(footer, event.author.effectiveAvatarUrl)
+
+        embedBuilder.setColor(Color.decode("#DC143C"))
+        embedBuilder.setImage(attachment.url)
+
+        embedBuilder.setTitle(title)
+        embedBuilder.setDescription(description)
+
+        sendEmbed(container.daoManager.embedDisabledWrapper, logChannel, embedBuilder.build())
     }
 }

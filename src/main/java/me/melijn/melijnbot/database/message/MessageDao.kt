@@ -13,6 +13,13 @@ class MessageDao(val driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
+    fun set(daoMessage: DaoMessage) {
+        daoMessage.run {
+            driverManager.executeUpdate("INSERT INTO $table (guildId, textChannelId, authorId, messageId, content, moment) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE content = ?",
+                    guildId, textChannelId, authorId, messageId, content, moment, content)
+        }
+    }
+
     fun add(daoMessage: DaoMessage) {
         daoMessage.run {
             driverManager.executeUpdate("INSERT IGNORE INTO $table (guildId, textChannelId, authorId, messageId, content, moment) VALUES (?, ?, ?, ?, ?, ?)",
@@ -20,22 +27,23 @@ class MessageDao(val driverManager: DriverManager) : Dao(driverManager) {
         }
     }
 
-    fun get(messageId: Long, message: (DaoMessage?) -> Unit) {
-        driverManager.executeQuery("SELECT * FROM $table WHERE messageId = ?", { rs ->
-            if (rs.next()) {
-                message(DaoMessage(
+    suspend fun get(messageId: Long): DaoMessage? {
+        driverManager.executeQuery("SELECT * FROM $table WHERE messageId = ?", messageId).use { rs ->
+            return if (rs.next()) {
+                DaoMessage(
                         rs.getLong("guildId"),
                         rs.getLong("textChannelId"),
                         rs.getLong("authorId"),
                         messageId,
                         rs.getString("content"),
                         rs.getLong("moment")
-                ))
+                )
             } else {
-                message(null)
+                null
             }
-        }, messageId)
+        }
     }
+
 }
 
 data class DaoMessage(
@@ -43,6 +51,6 @@ data class DaoMessage(
         val textChannelId: Long,
         val authorId: Long,
         val messageId: Long,
-        val content: String,
+        var content: String,
         val moment: Long
 )

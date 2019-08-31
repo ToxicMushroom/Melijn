@@ -9,6 +9,8 @@ import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
 import javax.sql.DataSource
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 class DriverManager(mysqlSettings: Settings.MySQL) {
@@ -16,6 +18,8 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
     private val tableRegistrationQueries = ArrayList<String>()
     private val dataSource: DataSource
     private val logger = LoggerFactory.getLogger(DriverManager::class.java.name)
+    private val connectorPattern = "mysql-connector-java-(\\d+\\.\\d+\\.\\d+).*".toRegex()
+    private val mysqlPattern = "(\\d+\\.\\d+\\.\\d+)-.*".toRegex()
 
     init {
         val config = HikariConfig()
@@ -43,6 +47,10 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
 
     fun getUsableConnection(connection: (Connection) -> Unit) {
         dataSource.connection.use { connection.invoke(it) }
+    }
+
+    suspend fun getUsableConnection(): Connection = suspendCoroutine {
+        dataSource.connection.use { conn -> it.resume(conn) }
     }
 
     fun registerTable(table: String, tableStructure: String, keys: String) {
@@ -116,25 +124,60 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
         }
     }
 
-    fun getMySQLVersion(): String {
+    /**
+     * [query] the sql query that needs execution
+     * [ResultSet] The resultset after executing the query
+     * [objects] the arguments of the query
+     * example:
+     *   query: "SELECT * FROM apples WHERE id = ?"
+     *   objects: 5
+     *   resultset: Consumer object to handle the resultset
+     * **/
+    suspend fun executeQuery(
+            query: String,
+            vararg objects: Any
+    ): ResultSet = suspendCoroutine {
         try {
-            dataSource.connection.use { con ->
-                return con.metaData.databaseProductVersion.replace("(\\d+\\.\\d+\\.\\d+)-.*".toRegex(), "$1")
+            getUsableConnection { connection ->
+                connection.prepareStatement(query).use { preparedStatement ->
+                    for ((index, value) in objects.withIndex()) {
+                        preparedStatement.setObject(index + 1, value)
+                    }
+                    it.resume(preparedStatement.executeQuery())
+                }
             }
-        } catch (e: SQLException) {
-            return "error"
+        } catch (t: Exception) {
+            logger.error("Something went wrong when executing the query: $query")
+            t.sendInGuild()
         }
     }
 
-    fun getConnectorVersion(): String {
-        try {
-            dataSource.connection.use { con ->
-                return con.metaData.driverVersion.replace("mysql-connector-java-(\\d+\\.\\d+\\.\\d+).*".toRegex(), "$1")
-            }
-        } catch (e: SQLException) {
-            return "error"
-        }
+    suspend fun awaitQueryExecution(
+            query: String,
+            vararg objects: Any
+    ): ResultSet = suspendCoroutine {
+        executeQuery(query, { result -> it.resume(result) }, objects)
+    }
 
+    suspend fun getMySQLVersion(): String {
+        return try {
+            val connection = getUsableConnection()
+            val version = connection.metaData.databaseProductVersion.replace(mysqlPattern, "$1")
+            version
+        } catch (e: SQLException) {
+            "error"
+        }
+    }
+
+
+    suspend fun getConnectorVersion(): String {
+        return try {
+            val connection = getUsableConnection()
+            val version = connection.metaData.driverVersion.replace(connectorPattern, "$1")
+            version
+        } catch (e: SQLException) {
+            "error"
+        }
     }
 
     fun clear(table: String): Long {

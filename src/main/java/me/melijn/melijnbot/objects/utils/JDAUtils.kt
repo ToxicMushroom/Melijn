@@ -8,7 +8,11 @@ import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.requests.RestAction
 import java.util.regex.Pattern
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 
 val Member.asTag: String
@@ -17,6 +21,12 @@ val Member.asTag: String
 val TextChannel.asTag: String
     get() = "#${this.name}"
 
+suspend fun <T> RestAction<T>.await() = suspendCoroutine<T> {
+    queue(
+            { success -> it.resume(success) },
+            { failure -> it.resumeWithException(failure) }
+    )
+}
 
 fun getUserByArgs(context: CommandContext, index: Int): User {
     var user = getUserByArgsN(context, index)
