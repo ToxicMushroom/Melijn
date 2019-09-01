@@ -18,7 +18,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
         children = arrayOf(UserCommand(), RoleCommand(), ChannelCommand())
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         sendSyntax(context, syntax)
     }
 
@@ -31,7 +31,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
             children = arrayOf(SetCommand(), CopyCommand(this), ViewCommand(), ClearCommand())
         }
 
-        override fun execute(context: CommandContext) {
+        override suspend fun execute(context: CommandContext) {
             sendSyntax(context, syntax)
         }
 
@@ -42,7 +42,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("put", "s")
             }
 
-            override fun execute(context: CommandContext) {
+            override suspend fun execute(context: CommandContext) {
                 if (context.args.size < 3) {
                     sendSyntax(context, syntax)
                     return
@@ -84,7 +84,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("v", "vw", "info")
             }
 
-            override fun execute(context: CommandContext) {
+            override suspend fun execute(context: CommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context, syntax)
                     return
@@ -120,7 +120,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("clr")
             }
 
-            override fun execute(context: CommandContext) {
+            override suspend fun execute(context: CommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context, syntax)
                     return
@@ -145,7 +145,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
             children = arrayOf(SetCommand(), CopyCommand(this), ViewCommand(), ClearCommand())
         }
 
-        override fun execute(context: CommandContext) {
+        override suspend fun execute(context: CommandContext) {
             sendSyntax(context, syntax)
         }
 
@@ -156,7 +156,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("put", "s")
             }
 
-            override fun execute(context: CommandContext) {
+            override suspend fun execute(context: CommandContext) {
                 if (context.args.size < 3) {
                     sendSyntax(context, syntax)
                     return
@@ -200,7 +200,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("v", "vw")
             }
 
-            override fun execute(context: CommandContext) {
+            override suspend fun execute(context: CommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context, syntax)
                     return
@@ -237,7 +237,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("clr")
             }
 
-            override fun execute(context: CommandContext) {
+            override suspend fun execute(context: CommandContext) {
                 if (context.args.isEmpty()) {
                     sendSyntax(context, syntax)
                     return
@@ -263,7 +263,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
             children = arrayOf(UserChannelCommand(), RoleChannelCommand())
         }
 
-        override fun execute(context: CommandContext) {
+        override suspend fun execute(context: CommandContext) {
             sendMsg(context, "Channel Permissions")
         }
 
@@ -275,7 +275,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 children = arrayOf(SetCommand(), CopyCommand(this), ViewCommand(), ClearCommand())
             }
 
-            override fun execute(context: CommandContext) {
+            override suspend fun execute(context: CommandContext) {
                 sendMsg(context, "Role Channel Permissions")
             }
 
@@ -286,7 +286,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("put", "s")
                 }
 
-                override fun execute(context: CommandContext) {
+                override suspend fun execute(context: CommandContext) {
                     if (context.args.size < 4) {
                         sendSyntax(context, syntax)
                         return
@@ -331,7 +331,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("v", "vw")
                 }
 
-                override fun execute(context: CommandContext) {
+                override suspend fun execute(context: CommandContext) {
                     if (context.args.isEmpty()) {
                         sendSyntax(context, syntax)
                         return
@@ -371,7 +371,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("clr")
                 }
 
-                override fun execute(context: CommandContext) {
+                override suspend fun execute(context: CommandContext) {
                     if (context.args.isEmpty()) {
                         sendSyntax(context, syntax)
                         return
@@ -399,7 +399,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 children = arrayOf(SetCommand(), CopyCommand(this), ViewCommand(), ClearCommand())
             }
 
-            override fun execute(context: CommandContext) {
+            override suspend fun execute(context: CommandContext) {
                 sendMsg(context, "User Channel Permissions")
             }
 
@@ -410,7 +410,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("put", "s")
                 }
 
-                override fun execute(context: CommandContext) {
+                override suspend fun execute(context: CommandContext) {
                     if (context.args.size < 4) {
                         sendSyntax(context, syntax)
                         return
@@ -455,7 +455,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("v", "vw")
                 }
 
-                override fun execute(context: CommandContext) {
+                override suspend fun execute(context: CommandContext) {
                     if (context.args.isEmpty()) {
                         sendSyntax(context, syntax)
                         return
@@ -495,7 +495,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("clr")
                 }
 
-                override fun execute(context: CommandContext) {
+                override suspend fun execute(context: CommandContext) {
                     if (context.args.isEmpty()) {
                         sendSyntax(context, syntax)
                         return
@@ -524,7 +524,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
             children = arrayOf(UserCommand(parent, root), RoleCommand(parent, root), ChannelCommand(parent, root))
         }
 
-        override fun execute(context: CommandContext) {
+        override suspend fun execute(context: CommandContext) {
             sendSyntax(context, syntax)
         }
 
@@ -534,7 +534,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("u")
             }
 
-            override fun execute(context: CommandContext) {
+            override suspend fun execute(context: CommandContext) {
                 val extraArg = if (
                         copyParent is PermissionCommand.ChannelCommand.RoleChannelCommand ||
                         copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
@@ -651,7 +651,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 aliases = arrayOf("r")
             }
 
-            override fun execute(context: CommandContext) {
+            override suspend fun execute(context: CommandContext) {
                 val extraArg = if (
                         copyParent is PermissionCommand.ChannelCommand.RoleChannelCommand ||
                         copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
@@ -767,7 +767,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 children = arrayOf(RoleChannelCommand(copyParent, root), UserChannelCommand(copyParent, root))
             }
 
-            override fun execute(context: CommandContext) {
+            override suspend fun execute(context: CommandContext) {
                 sendSyntax(context, syntax)
             }
 
@@ -778,7 +778,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("r")
                 }
 
-                override fun execute(context: CommandContext) {
+                override suspend fun execute(context: CommandContext) {
                     val extraArg = if (
                             copyParent is PermissionCommand.ChannelCommand.RoleChannelCommand ||
                             copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
@@ -902,7 +902,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     aliases = arrayOf("u")
                 }
 
-                override fun execute(context: CommandContext) {
+                override suspend fun execute(context: CommandContext) {
                     val extraArg = if (
                             copyParent is PermissionCommand.ChannelCommand.RoleChannelCommand ||
                             copyParent is PermissionCommand.ChannelCommand.UserChannelCommand

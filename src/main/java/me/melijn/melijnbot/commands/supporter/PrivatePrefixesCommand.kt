@@ -16,7 +16,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
         children = arrayOf(ViewCommand(root), AddCommand(root), RemoveCommand(root))
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         sendSyntax(context, syntax)
     }
 
@@ -27,7 +27,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             aliases = arrayOf("v", "vw", "list")
         }
 
-        override fun execute(context: CommandContext) {
+        override suspend fun execute(context: CommandContext) {
             val title = Translateable("$root.response1.title").string(context)
             var content = "```INI"
             val prefixes = context.daoManager.userPrefixWrapper.prefixCache.get(context.authorId).get()
@@ -47,7 +47,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             aliases = arrayOf("a", "put", "p")
         }
 
-        override fun execute(context: CommandContext) {
+        override suspend fun execute(context: CommandContext) {
             if (context.rawArg.isBlank()) {
                 sendSyntax(context, syntax)
                 return
@@ -68,7 +68,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             aliases = arrayOf("rm", "r", "delete", "d")
         }
 
-        override fun execute(context: CommandContext) {
+        override suspend fun execute(context: CommandContext) {
             if (context.rawArg.isBlank()) {
                 sendSyntax(context, syntax)
                 return

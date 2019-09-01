@@ -24,7 +24,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
     //setCommandState channel channel* commandNode* state*
     //setCommandState info [channel*]
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         sendSyntax(context, syntax)
     }
 
@@ -35,7 +35,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             aliases = arrayOf("g")
         }
 
-        override fun execute(context: CommandContext) {
+        override suspend fun execute(context: CommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context, syntax)
                 return
@@ -70,7 +70,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             aliases = arrayOf("c")
         }
 
-        override fun execute(context: CommandContext) {
+        override suspend fun execute(context: CommandContext) {
             if (context.args.size < 3) {
                 sendSyntax(context, syntax)
                 return
@@ -107,7 +107,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             aliases = arrayOf("i")
         }
 
-        override fun execute(context: CommandContext) {
+        override suspend fun execute(context: CommandContext) {
             if (context.args.isEmpty()) {
                 val ids = context.daoManager.disabledCommandWrapper.disabledCommandsCache.get(context.getGuildId()).get()
                 val commands = context.getCommands().filter { cmd -> ids.contains(cmd.id) }

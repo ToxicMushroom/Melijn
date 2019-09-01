@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.objects.command
 
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.PermState
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.sendMsg
@@ -24,8 +25,8 @@ abstract class AbstractCommand(val root: String) {
         description = Translateable("$root.description")
     }
 
-    protected abstract fun execute(context: CommandContext)
-    public final fun run(context: CommandContext, commandPartInvoke: Int = 1) {
+    protected abstract suspend fun execute(context: CommandContext)
+    suspend fun run(context: CommandContext, commandPartInvoke: Int = 1) {
         context.commandOrder = ArrayList(context.commandOrder + this).toList()
         if (context.commandParts.size > commandPartInvoke + 1 && children.isNotEmpty()) {
             for (child in children) {
@@ -59,7 +60,7 @@ abstract class AbstractCommand(val root: String) {
                 .replace("%permission%", permission))
     }
 
-    private fun hasPermission(context: CommandContext, permission: String): Boolean {
+    private suspend fun hasPermission(context: CommandContext, permission: String): Boolean {
         if (!context.isFromGuild) return true
         if (context.getMember()?.isOwner!! || context.getMember()?.hasPermission(Permission.ADMINISTRATOR) == true) return true
         val guildId = context.getGuildId()
@@ -69,8 +70,8 @@ abstract class AbstractCommand(val root: String) {
 
 
         val channelId = context.getTextChannel().idLong
-        val userMap = context.daoManager.userPermissionWrapper.guildUserPermissionCache.get(Pair(guildId, authorId)).get()
-        val channelUserMap = context.daoManager.channelUserPermissionWrapper.channelUserPermissionCache.get(Pair(channelId, authorId)).get()
+        val userMap = context.daoManager.userPermissionWrapper.guildUserPermissionCache.get(Pair(guildId, authorId)).await()
+        val channelUserMap = context.daoManager.channelUserPermissionWrapper.channelUserPermissionCache.get(Pair(channelId, authorId)).await()
 
         //permission checking for user specific channel overrides (these override all)
         if (channelUserMap.containsKey(permission) && channelUserMap[permission] != PermState.DEFAULT) {
@@ -87,7 +88,7 @@ abstract class AbstractCommand(val root: String) {
 
         //Permission checking for roles
         for (roleId in (context.getMember()!!.roles.map { role -> role.idLong } + context.getGuild().publicRole.idLong)) {
-            channelRoleResult = when (context.daoManager.channelRolePermissionWrapper.channelRolePermissionCache.get(Pair(channelId, roleId)).get()[permission]) {
+            channelRoleResult = when (context.daoManager.channelRolePermissionWrapper.channelRolePermissionCache.get(Pair(channelId, roleId)).await()[permission]) {
                 PermState.ALLOW -> PermState.ALLOW
                 PermState.DENY -> if (channelRoleResult == PermState.DEFAULT) PermState.DENY else channelRoleResult
                 else -> channelRoleResult
@@ -95,7 +96,7 @@ abstract class AbstractCommand(val root: String) {
             if (channelRoleResult == PermState.ALLOW) break
             if (channelRoleResult != PermState.DEFAULT) continue
             if (roleResult != PermState.ALLOW) {
-                roleResult = when (context.daoManager.rolePermissionWrapper.rolePermissionCache.get(roleId).get()[permission]) {
+                roleResult = when (context.daoManager.rolePermissionWrapper.rolePermissionCache.get(roleId).await()[permission]) {
                     PermState.ALLOW -> PermState.ALLOW
                     PermState.DENY -> if (roleResult == PermState.DEFAULT) PermState.DENY else roleResult
                     else -> roleResult

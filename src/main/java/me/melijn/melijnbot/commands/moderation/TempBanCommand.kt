@@ -22,7 +22,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         discordPermissions = arrayOf(Permission.BAN_MEMBERS)
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         if (context.args.size < 2) {
             sendSyntax(context, syntax)
             return

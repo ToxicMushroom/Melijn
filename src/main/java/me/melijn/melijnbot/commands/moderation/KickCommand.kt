@@ -20,7 +20,7 @@ class KickCommand : AbstractCommand("command.kick") {
         commandCategory = CommandCategory.MODERATION
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context, syntax)
             return

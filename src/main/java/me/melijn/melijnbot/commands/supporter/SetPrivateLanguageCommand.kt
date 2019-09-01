@@ -21,7 +21,7 @@ class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") 
         children = arrayOf(SetLanguageCommand.ListCommand())
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         when {
             context.commandParts.size == 2 -> {
                 sendCurrentLang(context)

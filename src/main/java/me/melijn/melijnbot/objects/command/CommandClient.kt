@@ -1,5 +1,9 @@
 package me.melijn.melijnbot.objects.command
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.future.await
+import kotlinx.coroutines.launch
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.ChannelCommandState
 import me.melijn.melijnbot.objects.translation.Translateable
@@ -37,7 +41,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
     override fun onMessageReceived(event: MessageReceivedEvent) {
         if (event.author.isBot) return
 
-        container.taskManager.async {
+        CoroutineScope(Dispatchers.Default).launch {
             try {
                 commandRunner(event)
             } catch (e: Exception) {
@@ -52,29 +56,29 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
     }
 
-    private fun commandRunner(event: MessageReceivedEvent) {
+    private suspend fun commandRunner(event: MessageReceivedEvent) {
         val prefixes = getPrefixes(event)
         val message = event.message
 
         for (prefix in prefixes) {
-            if (message.contentRaw.startsWith(prefix)) {
-                val commandParts: ArrayList<String> = ArrayList(message.contentRaw
-                        .replaceFirst(Regex("${Pattern.quote(prefix)}(\\s+)?"), "")
-                        .split(Regex("\\s+")))
-                commandParts.add(0, prefix)
+            if (!message.contentRaw.startsWith(prefix)) continue
 
-                val command = commandMap.getOrElse(commandParts[1].toLowerCase(), { null }) ?: continue
-                if (checksFailed(command, event)) return
-                command.run(CommandContext(event, commandParts, container, commandList))
-                break
-            }
+            val commandParts: ArrayList<String> = ArrayList(message.contentRaw
+                    .replaceFirst(Regex("${Pattern.quote(prefix)}(\\s+)?"), "")
+                    .split(Regex("\\s+")))
+            commandParts.add(0, prefix)
+
+            val command = commandMap.getOrElse(commandParts[1].toLowerCase(), { null }) ?: continue
+            if (checksFailed(command, event)) return
+            command.run(CommandContext(event, commandParts, container, commandList))
+            break
         }
     }
 
-    private fun getPrefixes(event: MessageReceivedEvent): List<String> {
+    private suspend fun getPrefixes(event: MessageReceivedEvent): List<String> {
         var prefixes =
                 if (event.isFromGuild)
-                    guildPrefixCache.get(event.guild.idLong).get().toMutableList()
+                    guildPrefixCache.get(event.guild.idLong).await().toMutableList()
                 else mutableListOf()
 
         //add default prefix if none are set
@@ -82,7 +86,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         //registering private prefixes
         if (container.daoManager.supporterWrapper.supporterIds.contains(event.author.idLong))
-            prefixes.addAll(userPrefixCache.get(event.author.idLong).get())
+            prefixes.addAll(userPrefixCache.get(event.author.idLong).await())
 
         //mentioning the bot will always work
         prefixes.add(
@@ -96,7 +100,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
      * [@return] returns true if the check failed
      *
      * **/
-    private fun checksFailed(command: AbstractCommand, event: MessageReceivedEvent): Boolean {
+    private suspend fun checksFailed(command: AbstractCommand, event: MessageReceivedEvent): Boolean {
         if (event.isFromGuild && commandIsDisabled(command, event)) {
             return true
         }
@@ -110,6 +114,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 val botMember = event.guild.selfMember
                 var missingPermissionCount = 0
                 var missingPermissionMessage = ""
+
                 if (!botMember.hasPermission(event.textChannel, permission)) {
                     missingPermissionMessage += "\n ⁎**${permission.toString().toUpperWordCase()}**"
                     missingPermissionCount++
@@ -134,8 +139,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         return false
     }
 
-    private fun commandIsDisabled(command: AbstractCommand, event: MessageReceivedEvent): Boolean {
-        val disabledChannelCommands = channelCommandStateCache.get(event.channel.idLong).get()
+    private suspend fun commandIsDisabled(command: AbstractCommand, event: MessageReceivedEvent): Boolean {
+        val disabledChannelCommands = channelCommandStateCache.get(event.channel.idLong).await()
         if (disabledChannelCommands.contains(command.id)) {
             when (disabledChannelCommands[command.id]) {
                 ChannelCommandState.ENABLED -> return false
@@ -143,13 +148,13 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             }
         }
 
-        val disabledCommands = disabledCommandCache.get(event.guild.idLong).get()
+        val disabledCommands = disabledCommandCache.get(event.guild.idLong).await()
         if (disabledCommands.contains(command.id)) return true
 
         return false
     }
 
-    private fun commandIsOnCooldown(command: AbstractCommand, event: MessageReceivedEvent): Boolean {
+    private suspend fun commandIsOnCooldown(command: AbstractCommand, event: MessageReceivedEvent): Boolean {
         val guildId = event.guild.idLong
         val userId = event.author.idLong
         val channelId = event.channel.idLong
@@ -161,7 +166,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         var bool = false
         var cooldownResult = 0L
 
-        if (channelCommandCooldownCache.get(channelId).get().containsKey(command.id)) {
+        if (channelCommandCooldownCache.get(channelId).await().containsKey(command.id)) {
 
             //init lastExecutionChannel
             container.daoManager.commandChannelCoolDownWrapper.executions[Pair(channelId, userId)]
@@ -170,14 +175,14 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                         if (entry.value > lastExecutionChannel) lastExecutionChannel = entry.value
                     }
 
-            val cooldown = channelCommandCooldownCache.get(channelId).get()[command.id] ?: 0L
+            val cooldown = channelCommandCooldownCache.get(channelId).await()[command.id] ?: 0L
 
             if (System.currentTimeMillis() - cooldown < lastExecutionChannel) {
                 cooldownResult = cooldown
                 bool = true
             }
         }
-        if (commandCooldownCache.get(guildId).get().containsKey(command.id)) {
+        if (commandCooldownCache.get(guildId).await().containsKey(command.id)) {
 
             //init lastExecution
             container.daoManager.commandChannelCoolDownWrapper.executions[Pair(guildId, userId)]
@@ -186,7 +191,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                         if (entry.value > lastExecution) lastExecution = entry.value
                     }
 
-            val cooldown = commandCooldownCache.get(guildId).get()[command.id] ?: 0L
+            val cooldown = commandCooldownCache.get(guildId).await()[command.id] ?: 0L
 
             if (System.currentTimeMillis() - cooldown < lastExecutionChannel) {
                 if (cooldownResult < cooldown) cooldownResult = cooldown
@@ -195,7 +200,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
         val lastExecutionBiggest = if (lastExecution > lastExecutionChannel) lastExecution else lastExecutionChannel
         if (bool && cooldownResult != 0L) {
-            val msg = Translateable("message.cooldown").string(container.daoManager, userId, guildId)
+            val msg = Translateable("message.cooldown")
+                    .string(container.daoManager, userId, guildId)
                     .replace("%cooldown%", ((cooldownResult - (System.currentTimeMillis() - lastExecutionBiggest)) / 1000.0).toString())
             sendMsg(event.textChannel, msg)
         }

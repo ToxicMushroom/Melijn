@@ -42,7 +42,6 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
     }
 
     private fun handleMessageReceivedStoring(event: GuildMessageReceivedEvent) = runBlocking {
-        val timeOne = System.currentTimeMillis()
         val guildId = event.guild.idLong
         val logChannelWrapper = container.daoManager.logChannelWrapper
         val logChannelCache = logChannelWrapper.logChannelCache
@@ -69,9 +68,6 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
                     event.message.timeCreated.toInstant().toEpochMilli()
             ))
         }
-
-
-        println("duration: " + (System.currentTimeMillis() - timeOne))
     }
 
     private fun postAttachmentLog(event: GuildMessageReceivedEvent, logChannel: TextChannel, attachment: Message.Attachment) {

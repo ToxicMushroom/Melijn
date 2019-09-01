@@ -26,7 +26,7 @@ class StatsCommand : AbstractCommand("command.stats") {
     }
 
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         val bean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean::class.java)
         val totalMem = bean.totalPhysicalMemorySize shr 20
         val usedMem = totalMem - (bean.freePhysicalMemorySize shr 20)

@@ -20,7 +20,7 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         when {
             context.args.isEmpty() -> {
                 sendCurrentEmbedState(context)

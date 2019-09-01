@@ -16,7 +16,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         sendSyntax(context, syntax)
     }
 
@@ -27,7 +27,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
             aliases = arrayOf("c")
         }
 
-        override fun execute(context: CommandContext) {
+        override suspend fun execute(context: CommandContext) {
             if (context.args.size < 3) {
                 sendSyntax(context, syntax)
                 return
@@ -56,7 +56,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
             aliases = arrayOf("g")
         }
 
-        override fun execute(context: CommandContext) {
+        override suspend fun execute(context: CommandContext) {
             if (context.args.size < 2) {
                 sendSyntax(context, syntax)
                 return
@@ -84,7 +84,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
             aliases = arrayOf("i", "list", "ls", "l")
         }
 
-        override fun execute(context: CommandContext) {
+        override suspend fun execute(context: CommandContext) {
             val map: Map<Int, Long>
             val title: String
             if (context.args.isNotEmpty()) {

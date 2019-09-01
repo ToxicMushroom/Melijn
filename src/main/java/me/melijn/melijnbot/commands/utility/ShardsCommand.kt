@@ -17,7 +17,7 @@ class ShardsCommand : AbstractCommand("command.shards") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         context.jda.shardManager?.let { shardManager ->
             val tableBuilder = TableBuilder(true).setColumns(listOf("Shard ID", "Ping", "Users", "Guilds", "VCs"))
 

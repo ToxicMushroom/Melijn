@@ -19,7 +19,7 @@ class PingCommand : AbstractCommand("command.ping") {
         children = arrayOf(PongCommand())
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         val timeStamp1 = System.currentTimeMillis()
         val part1 = replaceGatewayPing(Translateable("command.ping.response1.part1").string(context), context.jda.gatewayPing)
         val part2 = Translateable("command.ping.response1.part2").string(context)
@@ -61,7 +61,7 @@ class PingCommand : AbstractCommand("command.ping") {
             children = arrayOf(DunsteCommand())
         }
 
-        override fun execute(context: CommandContext) {
+        override suspend fun execute(context: CommandContext) {
             sendMsg(context, Translateable("$root.response1").string(context))
         }
 
@@ -72,7 +72,7 @@ class PingCommand : AbstractCommand("command.ping") {
                 aliases = arrayOf("duncte")
             }
 
-            override fun execute(context: CommandContext) {
+            override suspend fun execute(context: CommandContext) {
                 sendMsg(context, Translateable("$root.response1").string(context))
             }
         }

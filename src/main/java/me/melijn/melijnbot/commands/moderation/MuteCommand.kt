@@ -24,7 +24,7 @@ class MuteCommand : AbstractCommand("command.mute") {
         discordPermissions = arrayOf(Permission.MANAGE_ROLES)
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         if (context.args.size < 2) {
             sendSyntax(context, syntax)
             return

@@ -22,7 +22,7 @@ class HelpCommand : AbstractCommand("command.help") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         val args = context.args
         if (args.isEmpty()) {
             if (context.isFromGuild) {

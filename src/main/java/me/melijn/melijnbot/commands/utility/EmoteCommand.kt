@@ -19,7 +19,7 @@ class EmoteCommand : AbstractCommand("command.emote") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         val args = context.rawArg
 
         if (args.isBlank()) {

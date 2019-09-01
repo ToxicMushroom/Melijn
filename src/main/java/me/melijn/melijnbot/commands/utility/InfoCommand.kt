@@ -19,7 +19,7 @@ class InfoCommand : AbstractCommand("command.info") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         val title1 = Translateable("$root.field1.title").string(context)
         val value1 = replaceValueOneVars(Translateable("$root.field1.value").string(context), context)
         val title2 = Translateable("$root.field2.title").string(context)

@@ -21,7 +21,7 @@ class EvalCommand : AbstractCommand("command.eval") {
 
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         sendSyntax(context, syntax)
     }
 
@@ -31,7 +31,7 @@ class EvalCommand : AbstractCommand("command.eval") {
 //            setIdeaIoUseFallback()
 //        }
 //
-//        override fun execute(context: CommandContext) {
+//        override suspend fun execute(context: CommandContext) {
 //            val engine = KotlinJsr223JvmLocalScriptEngineFactory().scriptEngine
 //            context.reply(engine.eval("val x = 3"))
 //        }
@@ -45,7 +45,7 @@ class EvalCommand : AbstractCommand("command.eval") {
             name = "java"
         }
 
-        override fun execute(context: CommandContext) {
+        override suspend fun execute(context: CommandContext) {
             try {
                 evaluate(context.rawArg, context)
             } catch (e: Exception) {

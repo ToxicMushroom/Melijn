@@ -23,7 +23,7 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
     }
 
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         when {
             context.commandParts.size == 2 -> {
                 sendCurrentLang(context)
@@ -92,7 +92,7 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
             description = Translateable("$root.description")
         }
 
-        override fun execute(context: CommandContext) {
+        override suspend fun execute(context: CommandContext) {
             sendMsgCodeBlock(context, replaceLangList(
                     Translateable("$root.response1").string(context)
             ), "INI")

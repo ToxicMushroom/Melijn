@@ -25,7 +25,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         discordPermissions = arrayOf(Permission.MANAGE_ROLES)
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context, syntax)
             return

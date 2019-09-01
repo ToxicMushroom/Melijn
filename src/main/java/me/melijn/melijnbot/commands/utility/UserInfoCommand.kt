@@ -20,7 +20,7 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         val user: User = getUserByArgs(context, 0)
         val member: Member? = context.getGuild().getMember(user)
 

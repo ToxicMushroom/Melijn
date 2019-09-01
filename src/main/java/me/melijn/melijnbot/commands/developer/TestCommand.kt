@@ -14,7 +14,7 @@ class TestCommand : AbstractCommand("command.test") {
         commandCategory = CommandCategory.DEVELOPER
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         val timeStamp1 = System.currentTimeMillis()
         val future = context.daoManager.logChannelWrapper.logChannelCache.get(Pair(context.getGuildId(), LogChannelType.PERMANENT_BAN))
         val timeStamp2 = System.currentTimeMillis()

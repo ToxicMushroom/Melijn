@@ -26,20 +26,19 @@ class BanCommand : AbstractCommand("command.ban") {
         discordPermissions = arrayOf(Permission.BAN_MEMBERS)
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context, syntax)
             return
         }
         val targetUser = getUserByArgsNMessage(context, 0) ?: return
         val member = context.getGuild().getMember(targetUser)
-        if (member != null) {
-            if (!context.getGuild().selfMember.canInteract(member)) {
+        if (member != null&&!context.getGuild().selfMember.canInteract(member)) {
                 val msg = Translateable("$root.cannotban").string(context)
                         .replace(PLACEHOLDER_USER, targetUser.asTag)
                 sendMsg(context, msg)
                 return
-            }
+
         }
 
         var reason = context.rawArg.replaceFirst((context.args[0] + "($:\\s+)?").toRegex(), "")
@@ -62,15 +61,13 @@ class BanCommand : AbstractCommand("command.ban") {
         if (activeBan != null) ban.startTime = activeBan.startTime
 
         val banning = Translateable("message.banning").string(context)
-        targetUser.openPrivateChannel().queue({ privateChannel ->
-            privateChannel.sendMessage(banning).queue({ message ->
-                continueBanning(context, targetUser, ban, activeBan, message)
-            }, {
-                continueBanning(context, targetUser, ban, activeBan)
-            })
-        }, {
+        try {
+            val privateChannel = targetUser.openPrivateChannel().await()
+            val message = privateChannel.sendMessage(banning).await()
+            continueBanning(context, targetUser, ban, activeBan, message)
+        } catch (t: Throwable) {
             continueBanning(context, targetUser, ban, activeBan)
-        })
+        }
     }
 
     private fun continueBanning(context: CommandContext, targetUser: User, ban: Ban, activeBan: Ban?, banningMessage: Message? = null) {
@@ -134,16 +131,16 @@ fun getBanMessage(guild: Guild,
             "\nDuration: " + banDuration +
             "\nStart of ban: " + (ban.startTime.asEpochMillisToDateTime()) +
             "\nEnd of ban: " + (ban.endTime?.asEpochMillisToDateTime() ?: "none")
-            if (!received || isBot) {
-                "\nExtra: " +
-                        if (isBot) {
-                            "Target is a bot"
-                        } else {
-                            "Target had dm's disabled"
-                        }
-            } else {
-                ""
-            } + "```"
+    if (!received || isBot) {
+        "\nExtra: " +
+                if (isBot) {
+                    "Target is a bot"
+                } else {
+                    "Target had dm's disabled"
+                }
+    } else {
+        ""
+    } + "```"
 
     eb.setAuthor("Banned by: " + banAuthor.asTag + " ".repeat(45).substring(0, 45 - banAuthor.name.length) + "\u200B", null, banAuthor.effectiveAvatarUrl)
     eb.setDescription(description)

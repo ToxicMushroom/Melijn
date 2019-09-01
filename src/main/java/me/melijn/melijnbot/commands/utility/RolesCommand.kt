@@ -17,7 +17,7 @@ class RolesCommand : AbstractCommand("command.roles") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty() && !context.isFromGuild) {
             sendSyntax(context, syntax)
             return

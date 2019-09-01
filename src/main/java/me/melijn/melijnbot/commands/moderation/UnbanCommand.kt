@@ -25,7 +25,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
         discordPermissions = arrayOf(Permission.BAN_MEMBERS)
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context, syntax)
             return

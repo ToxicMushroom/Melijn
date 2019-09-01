@@ -22,7 +22,7 @@ class GuildInfoCommand : AbstractCommand("command.guildinfo") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         var guild = context.getGuild()
         if (context.args.isNotEmpty()) {
             if (context.args[0].matches(Regex("\\d+"))) {

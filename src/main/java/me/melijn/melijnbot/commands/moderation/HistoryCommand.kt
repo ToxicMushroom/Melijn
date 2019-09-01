@@ -19,7 +19,7 @@ class HistoryCommand : AbstractCommand("command.history") {
         commandCategory = CommandCategory.MODERATION
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         if (context.args.size < 2) {
             sendSyntax(context, syntax)
             return

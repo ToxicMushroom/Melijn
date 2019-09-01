@@ -66,7 +66,7 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
                 .replace("%editedTime%", System.currentTimeMillis().asEpochMillisToDateTime())
                 .replace("%link%", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.message.id}")
 
-        embedBuilder.setColor(Color.decode("#000001"))
+        embedBuilder.setColor(Color.decode("#A1DAC3"))
         embedBuilder.setThumbnail(event.author.effectiveAvatarUrl)
 
         embedBuilder.setTitle(title)

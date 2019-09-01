@@ -21,7 +21,7 @@ class RoleInfoCommand : AbstractCommand("command.roleinfo") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    override fun execute(context: CommandContext) {
+    override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context, syntax)
             return
