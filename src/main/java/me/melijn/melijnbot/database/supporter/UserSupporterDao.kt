@@ -1,8 +1,7 @@
-package me.melijn.melijnbot.database.supporters
+package me.melijn.melijnbot.database.supporter
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
-import java.util.function.Consumer
 
 
 class UserSupporterDao(val driverManager: DriverManager) : Dao(driverManager) {

@@ -2,7 +2,7 @@ package me.melijn.melijnbot.objects.services.mutes
 
 import me.melijn.melijnbot.commands.moderation.getUnmuteMessage
 import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
-import me.melijn.melijnbot.database.logchannels.LogChannelWrapper
+import me.melijn.melijnbot.database.logchannel.LogChannelWrapper
 import me.melijn.melijnbot.database.mute.Mute
 import me.melijn.melijnbot.database.mute.MuteWrapper
 import me.melijn.melijnbot.enums.LogChannelType

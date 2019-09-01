@@ -1,4 +1,4 @@
-package me.melijn.melijnbot.database.logchannels
+package me.melijn.melijnbot.database.logchannel
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager

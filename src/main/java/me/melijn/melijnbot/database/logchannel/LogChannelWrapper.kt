@@ -1,4 +1,4 @@
-package me.melijn.melijnbot.database.logchannels
+package me.melijn.melijnbot.database.logchannel
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import me.melijn.melijnbot.database.IMPORTANT_CACHE

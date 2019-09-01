@@ -1,4 +1,4 @@
-package me.melijn.melijnbot.database.roles
+package me.melijn.melijnbot.database.role
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import me.melijn.melijnbot.database.IMPORTANT_CACHE

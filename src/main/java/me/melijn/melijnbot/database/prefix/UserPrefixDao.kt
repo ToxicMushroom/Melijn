@@ -1,4 +1,4 @@
-package me.melijn.melijnbot.database.prefixes
+package me.melijn.melijnbot.database.prefix
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager

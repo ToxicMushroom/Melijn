@@ -1,7 +1,6 @@
-package me.melijn.melijnbot.database.supporters
+package me.melijn.melijnbot.database.supporter
 
 import me.melijn.melijnbot.objects.threading.TaskManager
-import java.util.function.Consumer
 
 class SupporterWrapper(val taskManager: TaskManager, private val userSupporterDao: UserSupporterDao) {
 

@@ -1,4 +1,4 @@
-package me.melijn.melijnbot.database.prefixes
+package me.melijn.melijnbot.database.prefix
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import me.melijn.melijnbot.database.FREQUENTLY_USED_CACHE
@@ -6,7 +6,6 @@ import me.melijn.melijnbot.objects.threading.TaskManager
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
-import java.util.function.Consumer
 
 class GuildPrefixWrapper(private val taskManager: TaskManager, private val guildPrefixDao: GuildPrefixDao) {
 

@@ -1,4 +1,4 @@
-package me.melijn.melijnbot.database.permissions
+package me.melijn.melijnbot.database.permission
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager

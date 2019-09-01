@@ -1,4 +1,4 @@
-package me.melijn.melijnbot.database.roles
+package me.melijn.melijnbot.database.role
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager

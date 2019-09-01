@@ -6,7 +6,7 @@ import me.melijn.melijnbot.commands.moderation.getUnbanMessage
 import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.database.ban.BanWrapper
 import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
-import me.melijn.melijnbot.database.logchannels.LogChannelWrapper
+import me.melijn.melijnbot.database.logchannel.LogChannelWrapper
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.services.Service
 import me.melijn.melijnbot.objects.utils.await
