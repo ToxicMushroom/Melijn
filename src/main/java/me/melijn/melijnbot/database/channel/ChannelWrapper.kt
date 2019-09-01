@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 
 class ChannelWrapper(private val taskManager: TaskManager, private val channelDao: ChannelDao) {
 
-    val logChannelCache = Caffeine.newBuilder()
+    val channelCache = Caffeine.newBuilder()
             .executor(taskManager.executorService)
             .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
             .buildAsync<Pair<Long, ChannelType>, Long>() { key, executor -> getChannelId(key.first, key.second, executor) }
@@ -31,11 +31,11 @@ class ChannelWrapper(private val taskManager: TaskManager, private val channelDa
 
     fun removeChannel(guildId: Long, channelType: ChannelType) {
         channelDao.remove(guildId, channelType)
-        logChannelCache.put(Pair(guildId, channelType), CompletableFuture.completedFuture(-1))
+        channelCache.put(Pair(guildId, channelType), CompletableFuture.completedFuture(-1))
     }
 
     fun setChannel(guildId: Long, channelType: ChannelType, channelId: Long) {
         channelDao.set(guildId, channelType, channelId)
-        logChannelCache.put(Pair(guildId, channelType), CompletableFuture.completedFuture(channelId))
+        channelCache.put(Pair(guildId, channelType), CompletableFuture.completedFuture(channelId))
     }
 }
