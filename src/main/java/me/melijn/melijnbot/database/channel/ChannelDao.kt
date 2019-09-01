@@ -9,7 +9,7 @@ import kotlin.coroutines.suspendCoroutine
 class ChannelDao(driverManager: DriverManager) : Dao(driverManager) {
     override val table: String = "channels"
     override val tableStructure: String = "guildId bigint, channelType varchar(32), channelId bigint"
-    override val keys: String = "UNIQUE KEY(guildId, channelType"
+    override val keys: String = "UNIQUE KEY(guildId, channelType)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)
