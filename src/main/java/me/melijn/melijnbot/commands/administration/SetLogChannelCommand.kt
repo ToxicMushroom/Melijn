@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.administration
 
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
@@ -36,7 +37,7 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
 
     }
 
-    private fun handleEnum(context: CommandContext, logChannelType: LogChannelType) {
+    private suspend fun handleEnum(context: CommandContext, logChannelType: LogChannelType) {
         if (context.args.size > 1) {
             setChannel(context, logChannelType)
         } else {
@@ -44,10 +45,10 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
         }
     }
 
-    private fun displayChannel(context: CommandContext, logChannelType: LogChannelType) {
+    private suspend fun displayChannel(context: CommandContext, logChannelType: LogChannelType) {
         val daoWrapper = context.daoManager.logChannelWrapper
         val pair = Pair(context.getGuildId(), logChannelType)
-        val channelId = daoWrapper.logChannelCache.get(pair).get()
+        val channelId = daoWrapper.logChannelCache.get(pair).await()
         val channel = context.getGuild().getTextChannelById(channelId)
 
         if (channelId != -1L && channel == null) {
@@ -67,7 +68,7 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
 
 
 
-    private fun setChannel(context: CommandContext, logChannelType: LogChannelType) {
+    private suspend fun setChannel(context: CommandContext, logChannelType: LogChannelType) {
         if (context.args.size < 2) {
             sendSyntax(context, syntax)
             return
@@ -92,7 +93,7 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
         sendMsg(context, msg)
     }
 
-    private fun handleEnums(context: CommandContext, logChannelTypes: List<LogChannelType>) {
+    private suspend fun handleEnums(context: CommandContext, logChannelTypes: List<LogChannelType>) {
         if (context.args.size > 1) {
             setChannels(context, logChannelTypes)
         } else {
@@ -100,7 +101,7 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
         }
     }
 
-    private fun displayChannels(context: CommandContext, logChannelTypes: List<LogChannelType>) {
+    private suspend fun displayChannels(context: CommandContext, logChannelTypes: List<LogChannelType>) {
         val daoWrapper = context.daoManager.logChannelWrapper
         val title = Translateable("$root.show.multiple").string(context)
                 .replace("%channelCount%", logChannelTypes.size.toString())
@@ -122,7 +123,7 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
         sendMsg(context, msg)
     }
 
-    private fun setChannels(context: CommandContext, logChannelTypes: List<LogChannelType>) {
+    private suspend fun setChannels(context: CommandContext, logChannelTypes: List<LogChannelType>) {
         if (context.args.size < 2) {
             sendSyntax(context, syntax)
             return

@@ -55,7 +55,7 @@ abstract class AbstractCommand(val root: String) {
         } else sendMissingPermissionMessage(context, permission)
     }
 
-    private fun sendMissingPermissionMessage(context: CommandContext, permission: String) {
+    private suspend fun sendMissingPermissionMessage(context: CommandContext, permission: String) {
         sendMsg(context, Translateable("message.botpermission.missing").string(context)
                 .replace("%permission%", permission))
     }

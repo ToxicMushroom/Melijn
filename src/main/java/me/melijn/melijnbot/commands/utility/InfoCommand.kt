@@ -28,7 +28,6 @@ class InfoCommand : AbstractCommand("command.info") {
         val value3 = replaceValueThreeVars(Translateable("$root.field3.value").string(context), context)
 
 
-
         val eb = Embedder(context)
 
         eb.setThumbnail(context.getSelfUser().effectiveAvatarUrl)
@@ -39,29 +38,24 @@ class InfoCommand : AbstractCommand("command.info") {
         sendEmbed(context, eb.build())
     }
 
-    private fun replaceValueThreeVars(string: String, context: CommandContext): String {
-        return string
-                .replace("%javaVersion%", System.getProperty("java.version"))
-                .replace("%kotlinVersion%", "${KotlinVersion.CURRENT.major}.${KotlinVersion.CURRENT.minor}.${KotlinVersion.CURRENT.patch}")
-                .replace("%jdaVersion%", JDAInfo.VERSION)
-                .replace("%lavaplayerVersion%", PlayerLibrary.VERSION)
-                .replace("%weebVersion%", WeebInfo.VERSION)
-                .replace("%mysqlVersion%", context.daoManager.mySQLVersion)
-                .replace("%mysqlConnectorVersion%", context.daoManager.connectorVersion)
+    private fun replaceValueThreeVars(string: String, context: CommandContext): String = string
+            .replace("%javaVersion%", System.getProperty("java.version"))
+            .replace("%kotlinVersion%", "${KotlinVersion.CURRENT.major}.${KotlinVersion.CURRENT.minor}.${KotlinVersion.CURRENT.patch}")
+            .replace("%jdaVersion%", JDAInfo.VERSION)
+            .replace("%lavaplayerVersion%", PlayerLibrary.VERSION)
+            .replace("%weebVersion%", WeebInfo.VERSION)
+            .replace("%mysqlVersion%", context.daoManager.mySQLVersion)
+            .replace("%mysqlConnectorVersion%", context.daoManager.connectorVersion)
 
-    }
+    private fun replaceValueTwoVars(string: String, context: CommandContext): String = string
+            .replace("%os%", "${System.getProperty("os.name")} ${System.getProperty("os.arch")} ${System.getProperty("os.version")}")
+            .replace("%commandCount%", context.getCommands().size.toString())
 
-    private fun replaceValueTwoVars(string: String, context: CommandContext): String {
-        return string
-                .replace("%os%", "${System.getProperty("os.name")} ${System.getProperty("os.arch")} ${System.getProperty("os.version")}")
-                .replace("%commandCount%", context.getCommands().size.toString())
-    }
+    private fun replaceValueOneVars(string: String, context: CommandContext): String = string
+            .replace("%ownerTag%", context.jda.shardManager?.getUserById(231459866630291459L)?.asTag
+                    ?: "ToxicMushroom#2610")
+            .replace("%invite%", "https://discord.gg/E2RfZA9")
+            .replace("%botInvite%", "https://melijn.com/invite?perms=true")
+            .replace("%website%", "https://melijn.com")
 
-    private fun replaceValueOneVars(string: String, context: CommandContext): String {
-        return string
-                .replace("%ownerTag%", context.jda.shardManager?.getUserById(231459866630291459L)?.asTag ?: "ToxicMushroom#2610")
-                .replace("%invite%", "https://discord.gg/E2RfZA9")
-                .replace("%botInvite%", "https://melijn.com/invite?perms=true")
-                .replace("%website%", "https://melijn.com")
-    }
 }

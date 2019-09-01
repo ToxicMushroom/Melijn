@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.administration
 
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
@@ -35,7 +36,7 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
         handleEnum(context, roleType)
     }
 
-    private fun handleEnum(context: CommandContext, roleType: RoleType) {
+    private suspend fun handleEnum(context: CommandContext, roleType: RoleType) {
         if (context.args.size > 1) {
             setRole(context, roleType)
         } else {
@@ -43,10 +44,10 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
         }
     }
 
-    private fun displayRole(context: CommandContext, roleType: RoleType) {
+    private suspend fun displayRole(context: CommandContext, roleType: RoleType) {
         val daoWrapper = context.daoManager.roleWrapper
         val pair = Pair(context.getGuildId(), roleType)
-        val roleId = daoWrapper.roleCache.get(pair).get()
+        val roleId = daoWrapper.roleCache.get(pair).await()
         val role = context.getGuild().getRoleById(roleId)
 
         if (roleId != -1L && role == null) {
@@ -66,7 +67,7 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
 
 
 
-    private fun setRole(context: CommandContext, roleType: RoleType) {
+    private suspend fun setRole(context: CommandContext, roleType: RoleType) {
         if (context.args.size < 2) {
             sendSyntax(context, syntax)
             return

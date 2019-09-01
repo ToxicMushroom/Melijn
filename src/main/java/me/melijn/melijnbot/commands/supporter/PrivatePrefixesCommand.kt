@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.supporter
 
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
@@ -30,7 +31,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
         override suspend fun execute(context: CommandContext) {
             val title = Translateable("$root.response1.title").string(context)
             var content = "```INI"
-            val prefixes = context.daoManager.userPrefixWrapper.prefixCache.get(context.authorId).get()
+            val prefixes = context.daoManager.userPrefixWrapper.prefixCache.get(context.authorId).await()
             for ((index, prefix) in prefixes.withIndex()) {
                 content += "\n$index - [$prefix]"
             }
@@ -55,7 +56,8 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
 
             val prefix = context.rawArg
             context.daoManager.userPrefixWrapper.addPrefix(context.authorId, prefix)
-            val msg = Translateable("$root.response1").string(context)
+            val msg = Translateable("$root.response1")
+                    .string(context)
                     .replace("%prefix%", prefix)
             sendMsg(context, msg)
         }

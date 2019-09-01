@@ -22,9 +22,12 @@ class BanDao(val driverManager: DriverManager) : Dao(driverManager) {
         }
     }
 
-    fun getUnbannableBans(): List<Ban> {
+    suspend fun getUnbannableBans(): List<Ban> {
         val bans = ArrayList<Ban>()
-        driverManager.executeQuery("SELECT * FROM $table WHERE active = ? AND endTime < ?", { rs ->
+        driverManager.awaitQueryExecution(
+                "SELECT * FROM $table WHERE active = ? AND endTime < ?",
+                true, System.currentTimeMillis()
+        ).use { rs ->
             while (rs.next()) {
                 bans.add(Ban(
                         rs.getLong("guildId"),
@@ -38,13 +41,16 @@ class BanDao(val driverManager: DriverManager) : Dao(driverManager) {
                         true
                 ))
             }
-        }, true, System.currentTimeMillis())
+        }
         return bans
     }
 
-    fun getActiveBan(guildId: Long, bannedId: Long): Ban? {
+    suspend fun getActiveBan(guildId: Long, bannedId: Long): Ban? {
         var ban: Ban? = null
-        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND bannedId = ? AND active = ?", { rs ->
+        driverManager.awaitQueryExecution(
+                "SELECT * FROM $table WHERE guildId = ? AND bannedId = ? AND active = ?",
+                guildId, bannedId, true
+        ).use { rs ->
             while (rs.next()) {
                 ban = Ban(
                         guildId,
@@ -58,13 +64,16 @@ class BanDao(val driverManager: DriverManager) : Dao(driverManager) {
                         true
                 )
             }
-        }, guildId, bannedId, true)
+        }
         return ban
     }
 
-    fun getBans(guildId: Long, bannedId: Long): List<Ban> {
+    suspend fun getBans(guildId: Long, bannedId: Long): List<Ban> {
         val bans = ArrayList<Ban>()
-        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND bannedId = ?", { rs ->
+        driverManager.awaitQueryExecution(
+                "SELECT * FROM $table WHERE guildId = ? AND bannedId = ?",
+                guildId, bannedId
+        ).use { rs ->
             while (rs.next()) {
                 bans.add(Ban(
                         guildId,
@@ -78,7 +87,7 @@ class BanDao(val driverManager: DriverManager) : Dao(driverManager) {
                         rs.getBoolean("active")
                 ))
             }
-        }, guildId, bannedId)
+        }
         return bans
     }
 }

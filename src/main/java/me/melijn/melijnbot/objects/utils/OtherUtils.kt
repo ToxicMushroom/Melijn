@@ -15,44 +15,53 @@ val linuxUptimePattern: Pattern = Pattern.compile(
 )
 
 fun getSystemUptime(): Long {
-    try {
+    return try {
         var uptime: Long = -1
         val os = System.getProperty("os.name").toLowerCase()
         if (os.contains("win")) {
-            val uptimeProc = Runtime.getRuntime().exec("net stats workstation")
-            val `in` = BufferedReader(InputStreamReader(uptimeProc.inputStream))
-            for (line in `in`.readLines()) {
-                if (line.startsWith("Statistieken vanaf")) {
-                    val format = SimpleDateFormat("'Statistieken vanaf' dd/MM/yyyy hh:mm:ss") //Dutch windows version
-                    val bootTime = format.parse(line.replace("?", ""))
-                    uptime = System.currentTimeMillis() - bootTime.time
-                    break
-                } else if (line.startsWith("Statistics since")) {
-                    val format = SimpleDateFormat("'Statistics since' MM/dd/yyyy hh:mm:ss") //English windows version
-                    val bootTime = format.parse(line.replace("?", ""))
-                    uptime = System.currentTimeMillis() - bootTime.time
-                    break
-                }
-            }
+            uptime = getWindowsUptime()
         } else if (os.contains("mac") || os.contains("nix") || os.contains("nux") || os.contains("aix")) {
-            val uptimeProc = Runtime.getRuntime().exec("uptime") //Parse time to groups if possible
-            val `in` = BufferedReader(InputStreamReader(uptimeProc.inputStream))
-            val line = `in`.readLine() ?: return uptime
-            val matcher = linuxUptimePattern.matcher(line)
-
-            if (!matcher.find()) return uptime //Extract ints out of groups
-            val days2 = matcher.group(1)
-            val hours2 = matcher.group(2)
-            val minutes2 = if (matcher.group(3) == null) matcher.group(4) else matcher.group(3)
-            val days = if (days2 != null) Integer.parseInt(days2) else 0
-            val hours = if (hours2 != null) Integer.parseInt(hours2) else 0
-            val minutes = if (minutes2 != null) Integer.parseInt(minutes2) else 0
-            uptime = (minutes * 60000 + hours * 60000 * 60 + days * 60000 * 60 * 24).toLong()
+            uptime = getUnixUptime()
         }
-        return uptime
+        uptime
     } catch (e: Exception) {
-        return -1
+        -1
     }
+}
+
+fun getUnixUptime(): Long {
+    val uptimeProc = Runtime.getRuntime().exec("uptime") //Parse time to groups if possible
+    val `in` = BufferedReader(InputStreamReader(uptimeProc.inputStream))
+    val line = `in`.readLine() ?: return -1
+    val matcher = linuxUptimePattern.matcher(line)
+
+    if (!matcher.find()) return -1 //Extract ints out of groups
+    val days2 = matcher.group(1)
+    val hours2 = matcher.group(2)
+    val minutes2 = if (matcher.group(3) == null) matcher.group(4) else matcher.group(3)
+    val days = if (days2 != null) Integer.parseInt(days2) else 0
+    val hours = if (hours2 != null) Integer.parseInt(hours2) else 0
+    val minutes = if (minutes2 != null) Integer.parseInt(minutes2) else 0
+    return (minutes * 60000 + hours * 60000 * 60 + days * 60000 * 60 * 24).toLong()
+}
+
+fun getWindowsUptime(): Long {
+    val uptimeProc = Runtime.getRuntime().exec("net stats workstation")
+    val `in` = BufferedReader(InputStreamReader(uptimeProc.inputStream))
+    for (line in `in`.readLines()) {
+        if (line.startsWith("Statistieken vanaf")) {
+            val format = SimpleDateFormat("'Statistieken vanaf' dd/MM/yyyy hh:mm:ss") //Dutch windows version
+            val bootTime = format.parse(line.replace("?", ""))
+            return System.currentTimeMillis() - bootTime.time
+
+        } else if (line.startsWith("Statistics since")) {
+            val format = SimpleDateFormat("'Statistics since' MM/dd/yyyy hh:mm:ss") //English windows version
+            val bootTime = format.parse(line.replace("?", ""))
+            return System.currentTimeMillis() - bootTime.time
+
+        }
+    }
+    return -1
 }
 
 
@@ -76,7 +85,7 @@ fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set<Abstrac
 
     if (commands.isEmpty()) {
         sendMsg(context, Translateable("message.unknown.commandnode").string(context)
-                .replace(PLACEHOLDER_ARG, arg))
+                .replace(PLACEHOLDER_ARG, arg), null)
         return null
     }
     return commands
@@ -87,10 +96,10 @@ fun getLongFromArgNMessage(context: CommandContext, index: Int): Long? {
     val long = arg.toLongOrNull()
     if (!arg.matches("\\d+".toRegex())) {
         sendMsg(context, Translateable("message.unknown.number").string(context)
-                .replace(PLACEHOLDER_ARG, arg))
+                .replace(PLACEHOLDER_ARG, arg), null)
     } else if (long == null) {
         sendMsg(context, Translateable("message.unknown.long").string(context)
-                .replace(PLACEHOLDER_ARG, arg))
+                .replace(PLACEHOLDER_ARG, arg), null)
     }
     return long
 }

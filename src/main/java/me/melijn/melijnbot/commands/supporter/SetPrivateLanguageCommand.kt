@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.supporter
 
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.commands.administration.SetLanguageCommand
 import me.melijn.melijnbot.enums.Language
 import me.melijn.melijnbot.objects.command.AbstractCommand
@@ -33,9 +34,9 @@ class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") 
         }
     }
 
-    private fun sendCurrentLang(context: CommandContext) {
+    private suspend fun sendCurrentLang(context: CommandContext) {
         val dao = context.daoManager.userLanguageWrapper
-        val lang = dao.languageCache.get(context.authorId).get()
+        val lang = dao.languageCache.get(context.authorId).await()
 
         if (lang.isBlank()) {
             sendMsg(context, Translateable("$root.unset.currentlangresponse").string(context))
@@ -46,19 +47,18 @@ class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") 
             ))
     }
 
-    private fun setLang(context: CommandContext) {
+    private suspend fun setLang(context: CommandContext) {
         val lang: String
         val shouldUnset = "null".equals(context.commandParts[2], true)
         try {
             lang = if (shouldUnset) ""
             else Language.valueOf(context.commandParts[2].toUpperCase()).toString()
         } catch (ignored: IllegalArgumentException) {
-            sendMsg(context,
-                    replaceArg(
-                            Translateable("$root.set.invalidarg").string(context),
-                            context.commandParts
-                    )
-            )
+            val msg = replaceArg(
+                    Translateable("$root.set.invalidarg").string(context),
+                    context.commandParts)
+
+            sendMsg(context, msg)
             return
         }
 
@@ -74,12 +74,11 @@ class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") 
         ))
     }
 
-    private fun replaceArg(msg: String, commandParts: List<String>): String {
-        return msg.replace("%argument%", commandParts[2]).replace("%prefix%", commandParts[0])
-    }
+    private fun replaceArg(msg: String, commandParts: List<String>): String = msg
+            .replace("%argument%", commandParts[2])
+            .replace("%prefix%", commandParts[0])
 
-    private fun replaceLang(msg: String, lang: String): String {
-        return msg.replace("%language%", lang)
-    }
+    private fun replaceLang(msg: String, lang: String): String = msg
+            .replace("%language%", lang)
 
 }

@@ -32,7 +32,7 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
         }
     }
 
-    private fun sendCurrentEmbedState(context: CommandContext) {
+    private suspend fun sendCurrentEmbedState(context: CommandContext) {
         val dao = context.daoManager.embedDisabledWrapper
         val state = dao.embedDisabledCache.contains(context.getGuildId())
 
@@ -42,7 +42,7 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
         ))
     }
 
-    private fun setEmbedStateState(context: CommandContext) {
+    private suspend fun setEmbedStateState(context: CommandContext) {
         var disabledState: Boolean? = boolFromStateArg(context.args[0].toLowerCase())
         if (disabledState == null) {
             sendSyntax(context, syntax)

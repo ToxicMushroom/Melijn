@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.kick
 
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
+import me.melijn.melijnbot.objects.utils.await
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.sharding.ShardManager
 import kotlin.math.min
@@ -12,31 +13,27 @@ class KickWrapper(val taskManager: TaskManager, private val kickDao: KickDao) {
         kickDao.add(kick)
     }
 
-    fun getKickMap(shardManager: ShardManager, guildId: Long, targetUser: User, timeKicks: (Map<Long, String>) -> Unit) {
+    suspend fun getKickMap(shardManager: ShardManager, guildId: Long, targetUser: User): Map<Long, String> {
         val map = hashMapOf<Long, String>()
         val kicks = kickDao.getKicks(guildId, targetUser.idLong)
-        var counter = 0
+
         if (kicks.isEmpty()) {
-            timeKicks(emptyMap())
-            return
+            return emptyMap()
         }
         kicks.forEach { kick ->
-            convertKickInfoToMessage(shardManager, kick) { message ->
-                map[kick.kickMoment] = message
-                if (++counter == kicks.size) {
-                    timeKicks(map)
-                }
-            }
+            val message = convertKickInfoToMessage(shardManager, kick)
+            map[kick.kickMoment] = message
         }
+        return map
     }
 
-    private fun convertKickInfoToMessage(shardManager: ShardManager, kick: Kick, message: (String) -> Unit) {
-        shardManager.retrieveUserById(kick.kickAuthorId).queue({ kickAuthor ->
-            message(getKickMessage(kickAuthor, kick))
-        }, {
-            message(getKickMessage(null, kick))
-        })
-
+    private suspend fun convertKickInfoToMessage(shardManager: ShardManager, kick: Kick): String {
+        return try {
+            val kickAuthor = shardManager.retrieveUserById(kick.kickAuthorId).await()
+            getKickMessage(kickAuthor, kick)
+        } catch (t: Throwable) {
+            getKickMessage(null, kick)
+        }
     }
 
     private fun getKickMessage(kickAuthor: User?, kick: Kick): String {

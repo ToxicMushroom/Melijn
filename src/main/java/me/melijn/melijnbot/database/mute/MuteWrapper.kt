@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.mute
 
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
+import me.melijn.melijnbot.objects.utils.await
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.sharding.ShardManager
 import kotlin.math.min
@@ -20,48 +21,37 @@ class MuteWrapper(val taskManager: TaskManager, private val muteDao: MuteDao) {
         return muteDao.getActiveMute(guildId, mutedId)
     }
 
-    fun getMuteMap(shardManager: ShardManager, guildId: Long, targetUser: User, timeMutes: (Map<Long, String>) -> Unit) {
+    suspend fun getMuteMap(shardManager: ShardManager, guildId: Long, targetUser: User): Map<Long, String> {
         val map = hashMapOf<Long, String>()
         val mutes = muteDao.getMutes(guildId, targetUser.idLong)
-        var counter = 0
         if (mutes.isEmpty()) {
-            timeMutes(emptyMap())
-            return
+            return emptyMap()
+
         }
         mutes.forEach { ban ->
-            convertMuteInfoToMessage(shardManager, ban) { message ->
-                map[ban.startTime] = message
-                if (++counter == mutes.size) {
-                    timeMutes(map)
-                }
-            }
+            val message = convertMuteInfoToMessage(shardManager, ban)
+            map[ban.startTime] = message
+        }
+        return map
+    }
+
+    private suspend fun convertMuteInfoToMessage(shardManager: ShardManager, mute: Mute): String {
+        val muteAuthorId = mute.muteAuthorId ?: return continueConvertingInfoToMessage(shardManager, null, mute)
+        return try {
+            val muteAuthor = shardManager.retrieveUserById(muteAuthorId).await()
+            continueConvertingInfoToMessage(shardManager, muteAuthor, mute)
+        } catch (t: Throwable) {
+            continueConvertingInfoToMessage(shardManager, null, mute)
         }
     }
 
-    private fun convertMuteInfoToMessage(shardManager: ShardManager, mute: Mute, message: (String) -> Unit) {
-        val muteAuthorId = mute.muteAuthorId
-        if (muteAuthorId == null) {
-            continueConvertingInfoToMessage(shardManager, null, mute, message)
-        } else {
-            shardManager.retrieveUserById(muteAuthorId).queue({ muteAuthor ->
-                continueConvertingInfoToMessage(shardManager, muteAuthor, mute, message)
-            }, {
-                continueConvertingInfoToMessage(shardManager, null, mute, message)
-            })
-        }
-
-    }
-
-    private fun continueConvertingInfoToMessage(shardManager: ShardManager, muteAuthor: User?, mute: Mute, message: (String) -> Unit) {
-        val unbanAuthorId = mute.unmuteAuthorId
-        if (unbanAuthorId == null) {
-            message(getMuteMessage(muteAuthor, null, mute))
-        } else {
-            shardManager.retrieveUserById(unbanAuthorId).queue({ unmuteAuthor ->
-                message(getMuteMessage(muteAuthor, unmuteAuthor, mute))
-            }, {
-                message(getMuteMessage(muteAuthor, null, mute))
-            })
+    private suspend fun continueConvertingInfoToMessage(shardManager: ShardManager, muteAuthor: User?, mute: Mute): String {
+        val unbanAuthorId = mute.unmuteAuthorId ?: return getMuteMessage(muteAuthor, null, mute)
+        return try {
+            val unmuteAuthor = shardManager.retrieveUserById(unbanAuthorId).await()
+            getMuteMessage(muteAuthor, unmuteAuthor, mute)
+        } catch (t: Throwable) {
+            getMuteMessage(muteAuthor, null, mute)
         }
     }
 

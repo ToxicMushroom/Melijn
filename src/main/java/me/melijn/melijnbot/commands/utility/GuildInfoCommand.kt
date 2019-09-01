@@ -58,7 +58,11 @@ class GuildInfoCommand : AbstractCommand("command.guildinfo") {
     }
 
     private fun replaceFieldVar(string: String, guild: Guild): String {
-        val botCount = guild.memberCache.stream().filter { member -> member.user.isBot }.count()
+        val botCount = guild.memberCache
+                .stream()
+                .filter { member -> member.user.isBot }
+                .count()
+
         return string
                 .replace("%guildName%", guild.name)
                 .replace("%guildId%", guild.id)

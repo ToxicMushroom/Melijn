@@ -55,9 +55,12 @@ fun getUserByArgsN(context: CommandContext, index: Int): User? {//With null
     return user
 }
 
-fun retrieveUserByArgsN(context: CommandContext, index: Int, user: (User?) -> Unit) {//With null
+
+suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? = suspendCoroutine {
     val user1: User? = getUserByArgsN(context, index)
-    if (user1 == null && context.args.size > index) {
+    if (user1 != null) {
+        it.resume(user1)
+    } else if (context.args.size > index) {
         val arg = context.args[index]
 
         when {
@@ -67,26 +70,32 @@ fun retrieveUserByArgsN(context: CommandContext, index: Int, user: (User?) -> Un
                 context.jda.shardManager?.retrieveUserById(id)
             }
             else -> null
-        }?.queue({ user.invoke(it) }, { user.invoke(null) })
+        }?.queue({ user ->
+            it.resume(user)
+        }, { _ ->
+            it.resume(null)
+        })
     }
-    user.invoke(user1)
 }
 
-fun retrieveUserByArgsNMessage(context: CommandContext, index: Int, user: (User?) -> Unit) {//With null
-    retrieveUserByArgsN(context, index) { possibleUser ->
-        if (possibleUser == null) {
-            sendMsg(context, Translateable(MESSAGE_UNKNOWN_USER).string(context)
-                    .replace(PLACEHOLDER_ARG, context.args[index]))
-        }
-        user.invoke(possibleUser)
+suspend fun retrieveUserByArgsNMessage(context: CommandContext, index: Int): User? {
+    val possibleUser = retrieveUserByArgsN(context, index)
+    if (possibleUser == null) {
+        val msg = Translateable(MESSAGE_UNKNOWN_USER)
+                .string(context)
+                .replace(PLACEHOLDER_ARG, context.args[index])
+        sendMsg(context, msg)
     }
+    return possibleUser
 }
 
 fun getUserByArgsNMessage(context: CommandContext, index: Int): User? {
     val user = getUserByArgsN(context, index)
     if (user == null) {
-        sendMsg(context, Translateable(MESSAGE_UNKNOWN_USER).string(context)
-                .replace(PLACEHOLDER_ARG, context.args[index]))
+        val msg = Translateable(MESSAGE_UNKNOWN_USER)
+                .string(context)
+                .replace(PLACEHOLDER_ARG, context.args[index])
+        sendMsg(context, msg, null)
     }
     return user
 }
@@ -121,8 +130,10 @@ fun getRoleByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Bool
 fun getRoleByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): Role? {
     val role = getRoleByArgsN(context, index, sameGuildAsContext)
     if (role == null) {
-        sendMsg(context, Translateable("message.unknown.role").string(context)
-                .replace(PLACEHOLDER_ARG, context.args[index]))
+        val msg = Translateable("message.unknown.role")
+                .string(context)
+                .replace(PLACEHOLDER_ARG, context.args[index])
+        sendMsg(context, msg, null)
     }
     return role
 }
@@ -157,8 +168,10 @@ fun getTextChannelByArgsN(context: CommandContext, index: Int, sameGuildAsContex
 fun getTextChannelByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): TextChannel? {
     val textChannel = getTextChannelByArgsN(context, index, sameGuildAsContext)
     if (textChannel == null) {
-        sendMsg(context, Translateable("message.unknown.textchannel").string(context)
-                .replace(PLACEHOLDER_ARG, context.args[index]))
+        val msg =  Translateable("message.unknown.textchannel")
+                .string(context)
+                .replace(PLACEHOLDER_ARG, context.args[index])
+        sendMsg(context, msg, null)
     }
     return textChannel
 }
@@ -170,9 +183,10 @@ fun getMemberByArgsNMessage(context: CommandContext, index: Int): Member? {
             else context.getGuild().getMember(user)
 
     if (member == null) {
-        val msg = Translateable("message.unknown.member").string(context)
+        val msg = Translateable("message.unknown.member")
+                .string(context)
                 .replace(PLACEHOLDER_ARG, context.args[index])
-        sendMsg(context, msg)
+        sendMsg(context, msg, null)
     }
 
     return member

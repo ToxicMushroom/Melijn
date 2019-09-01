@@ -2,13 +2,14 @@ package me.melijn.melijnbot.database.ban
 
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
+import me.melijn.melijnbot.objects.utils.await
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.sharding.ShardManager
 import kotlin.math.min
 
 class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
 
-    fun getUnbannableBans(): List<Ban> {
+    suspend fun getUnbannableBans(): List<Ban> {
         return banDao.getUnbannableBans()
     }
 
@@ -16,52 +17,44 @@ class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
         banDao.setBan(newBan)
     }
 
-    fun getActiveBan(guildId: Long, bannedId: Long): Ban? {
+    suspend fun getActiveBan(guildId: Long, bannedId: Long): Ban? {
         return banDao.getActiveBan(guildId, bannedId)
     }
 
-    fun getBanMap(shardManager: ShardManager, guildId: Long, targetUser: User, timeBans: (Map<Long, String>) -> Unit) {
+    suspend fun getBanMap(shardManager: ShardManager, guildId: Long, targetUser: User): Map<Long, String> {
         val map = hashMapOf<Long, String>()
         val bans = banDao.getBans(guildId, targetUser.idLong)
-        var counter = 0
         if (bans.isEmpty()) {
-            timeBans(emptyMap())
-            return
+            return emptyMap()
         }
+
         bans.forEach { ban ->
-            convertBanInfoToMessage(shardManager, ban) { message ->
-                map[ban.startTime] = message
-                if (++counter == bans.size) {
-                    timeBans(map)
-                }
-            }
+            val message = convertBanInfoToMessage(shardManager, ban)
+            map[ban.startTime] = message
+        }
+
+        return map
+    }
+
+    private suspend fun convertBanInfoToMessage(shardManager: ShardManager, ban: Ban): String {
+        val banAuthorId = ban.banAuthorId ?: return continueConvertingInfoToMessage(shardManager, null, ban)
+
+        return try {
+            val banAuthor = shardManager.retrieveUserById(banAuthorId).await()
+            continueConvertingInfoToMessage(shardManager, banAuthor, ban)
+        } catch (t: Throwable) {
+            continueConvertingInfoToMessage(shardManager, null, ban)
         }
     }
 
-    private fun convertBanInfoToMessage(shardManager: ShardManager, ban: Ban, message: (String) -> Unit) {
-        val banAuthorId = ban.banAuthorId
-        if (banAuthorId == null) {
-            continueConvertingInfoToMessage(shardManager, null, ban, message)
-        } else {
-            shardManager.retrieveUserById(banAuthorId).queue({ banAuthor ->
-                continueConvertingInfoToMessage(shardManager, banAuthor, ban, message)
-            }, {
-                continueConvertingInfoToMessage(shardManager, null, ban, message)
-            })
-        }
+    private suspend fun continueConvertingInfoToMessage(shardManager: ShardManager, banAuthor: User?, ban: Ban): String {
+        val unbanAuthorId = ban.unbanAuthorId ?: return getBanMessage(banAuthor, null, ban)
 
-    }
-
-    private fun continueConvertingInfoToMessage(shardManager: ShardManager, banAuthor: User?, ban: Ban, message: (String) -> Unit) {
-        val unbanAuthorId = ban.unbanAuthorId
-        if (unbanAuthorId == null) {
-            message(getBanMessage(banAuthor, null, ban))
-        } else {
-            shardManager.retrieveUserById(unbanAuthorId).queue({ unbanAuthor ->
-                message(getBanMessage(banAuthor, unbanAuthor, ban))
-            }, {
-                message(getBanMessage(banAuthor, null, ban))
-            })
+        return try {
+            val unbanAuthor = shardManager.retrieveUserById(unbanAuthorId).await()
+            getBanMessage(banAuthor, unbanAuthor, ban)
+        } catch (t: Throwable) {
+            getBanMessage(banAuthor, null, ban)
         }
     }
 

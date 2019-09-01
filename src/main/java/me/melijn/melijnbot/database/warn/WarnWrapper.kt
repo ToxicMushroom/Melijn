@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.warn
 
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
+import me.melijn.melijnbot.objects.utils.await
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.sharding.ShardManager
 import kotlin.math.min
@@ -12,31 +13,27 @@ class WarnWrapper(val taskManager: TaskManager, private val warnDao: WarnDao) {
         warnDao.add(warn)
     }
 
-    fun getWarnMap(shardManager: ShardManager, guildId: Long, targetUser: User, timeWarns: (Map<Long, String>) -> Unit) {
+    suspend fun getWarnMap(shardManager: ShardManager, guildId: Long, targetUser: User): Map<Long, String> {
         val map = hashMapOf<Long, String>()
         val warns = warnDao.getWarns(guildId, targetUser.idLong)
-        var counter = 0
         if (warns.isEmpty()) {
-            timeWarns(emptyMap())
-            return
+            return emptyMap()
         }
+
         warns.forEach { warn ->
-            convertKickInfoToMessage(shardManager, warn) { message ->
-                map[warn.warnMoment] = message
-                if (++counter == warns.size) {
-                    timeWarns(map)
-                }
-            }
+            val message = convertKickInfoToMessage(shardManager, warn)
+            map[warn.warnMoment] = message
         }
+        return map
     }
 
-    private fun convertKickInfoToMessage(shardManager: ShardManager, warn: Warn, message: (String) -> Unit) {
-        shardManager.retrieveUserById(warn.warnAuthorId).queue({ warnAuthor ->
-            message(getWarnMessage(warnAuthor, warn))
-        }, {
-            message(getWarnMessage(null, warn))
-        })
-
+    private suspend fun convertKickInfoToMessage(shardManager: ShardManager, warn: Warn): String {
+        return try {
+            val warnAuthor = shardManager.retrieveUserById(warn.warnAuthorId).await()
+            getWarnMessage(warnAuthor, warn)
+        } catch (t: Throwable) {
+            getWarnMessage(null, warn)
+        }
     }
 
     private fun getWarnMessage(warnAuthor: User?, warn: Warn): String {

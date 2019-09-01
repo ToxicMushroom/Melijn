@@ -11,6 +11,9 @@ import net.dv8tion.jda.api.entities.*
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.time.format.DateTimeFormatter
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 fun Exception.sendInGuild(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread()) {
     if (Container.instance.settings.unLoggedThreads.contains(thread.name)) return
@@ -214,6 +217,16 @@ fun sendEmbedAsMessage(textChannel: TextChannel, embed: MessageEmbed, success: (
 fun sendMsg(context: CommandContext, msg: String, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
     if (context.isFromGuild) sendMsg(context.getTextChannel(), msg, success, failed)
     else sendMsg(context.getPrivateChannel(), msg, success, failed)
+}
+
+suspend fun sendMsg(context: CommandContext, msg: String): Message = suspendCoroutine {
+    val success = { success: Message -> it.resume(success) }
+    val failed = { failed: Throwable -> it.resumeWithException(failed) }
+    if (context.isFromGuild) {
+        sendMsg(context.getTextChannel(), msg, success, failed)
+    } else {
+        sendMsg(context.getPrivateChannel(), msg, success, failed)
+    }
 }
 
 fun sendMsg(privateChannel: PrivateChannel, msg: String, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {

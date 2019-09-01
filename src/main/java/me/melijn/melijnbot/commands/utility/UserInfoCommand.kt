@@ -6,7 +6,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.asLongLongGMTString
-import me.melijn.melijnbot.objects.utils.getUserByArgs
+import me.melijn.melijnbot.objects.utils.retrieveUserByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
@@ -21,11 +21,13 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val user: User = getUserByArgs(context, 0)
+        val user: User = retrieveUserByArgsNMessage(context, 0) ?: return
         val member: Member? = context.getGuild().getMember(user)
 
         val title1 = Translateable("$root.response1.field1.title").string(context)
-        val value1 = replaceUserVar(Translateable("$root.response1.field1.value").string(context), user)
+        val yes = Translateable("yes").string(context)
+        val no = Translateable("no").string(context)
+        val value1 = replaceUserVar(Translateable("$root.response1.field1.value").string(context), user, yes, no)
 
         val eb = Embedder(context)
         eb.setThumbnail(user.effectiveAvatarUrl)
@@ -33,24 +35,22 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
 
         if (context.isFromGuild && member != null) {
             val title2 = Translateable("$root.response1.field2.title").string(context)
-            val value2 = replaceMemberVar(Translateable("$root.response1.field2.value").string(context), member)
+            val value2 = replaceMemberVar(Translateable("$root.response1.field2.value").string(context), member, yes, no)
             eb.addField(title2, value2, false)
         }
         sendEmbed(context, eb.build())
     }
 
-    private fun replaceMemberVar(string: String, member: Member): String {
-        return string
-                .replace("%nickname%", member.nickname ?: "/")
-                .replace("%roleCount%", member.roles.size.toString())
-                .replace("%isOwner%", if (member.isOwner) "Yes" else "No")
-                .replace("%joinTime%", member.timeJoined.asLongLongGMTString())
-                .replace("%boostTime%", member.timeBoosted?.asLongLongGMTString() ?: "/")
-                .replace("%activities%", member.activities.joinToString { activity -> activity.name })
-                .replace("%onlineStatus%", member.onlineStatus.name)
-                .replace("%voiceStatus%", getVoiceStatus(member))
+    private fun replaceMemberVar(string: String, member: Member, yes: String, no: String): String = string
+            .replace("%nickname%", member.nickname ?: "/")
+            .replace("%roleCount%", member.roles.size.toString())
+            .replace("%isOwner%", if (member.isOwner) yes else no)
+            .replace("%joinTime%", member.timeJoined.asLongLongGMTString())
+            .replace("%boostTime%", member.timeBoosted?.asLongLongGMTString() ?: "/")
+            .replace("%activities%", member.activities.joinToString { activity -> activity.name })
+            .replace("%onlineStatus%", member.onlineStatus.name)
+            .replace("%voiceStatus%", getVoiceStatus(member))
 
-    }
 
     private fun getVoiceStatus(member: Member): String {
         if (member.voiceState == null) return "disconnected"
@@ -70,12 +70,10 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
 
     }
 
-    private fun replaceUserVar(string: String, user: User): String {
-        return string
-                .replace("%name%", user.name)
-                .replace("%discrim%", user.discriminator)
-                .replace("%isBot%", if (user.isBot) "Yes" else "No")
-                .replace("%avatarUrl%", user.effectiveAvatarUrl)
-                .replace("%creationTime%", user.timeCreated.asLongLongGMTString())
-    }
+    private fun replaceUserVar(string: String, user: User, yes: String, no: String): String = string
+            .replace("%name%", user.name)
+            .replace("%discrim%", user.discriminator)
+            .replace("%isBot%", if (user.isBot) yes else no)
+            .replace("%avatarUrl%", user.effectiveAvatarUrl)
+            .replace("%creationTime%", user.timeCreated.asLongLongGMTString())
 }

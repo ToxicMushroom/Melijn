@@ -29,32 +29,32 @@ class RoleInfoCommand : AbstractCommand("command.roleinfo") {
 
         val role = getRoleByArgsNMessage(context, 0, false) ?: return
         val tile1 = Translateable("$root.response1.field1.title").string(context)
-        val value1 = replaceRoleVars(Translateable("$root.response1.field1.value").string(context), role)
+        val yes = Translateable("yes").string(context)
+        val no = Translateable("no").string(context)
+        val value1 = replaceRoleVars(Translateable("$root.response1.field1.value").string(context), role, yes, no)
 
         val eb = Embedder(context)
         eb.addField(tile1, value1, false)
         sendEmbed(context, eb.build())
     }
 
-    private fun replaceRoleVars(string: String, role: Role): String {
-        return string
-                .replace("%roleName%", role.name)
-                .replace("%roleId%", role.id)
-                .replace("%creationTime%", role.timeCreated.asLongLongGMTString())
-                .replace("%position%", role.position.toString() + "/" +  role.guild.roleCache.size())
-                .replace("%members%", role.guild.memberCache.stream().filter { member -> member.roles.contains(role) }.count().toString())
-                .replace("%isMentionable%", if (role.isMentionable) "Yes" else "No")
-                .replace("%isHoisted%", if (role.isHoisted) "Yes" else "No")
-                .replace("%isManaged%", if (role.isManaged) "Yes" else "No")
-                .replace("%color%", getColorString(role))
-    }
+    private fun replaceRoleVars(string: String, role: Role, yes: String, no: String): String = string
+            .replace("%roleName%", role.name)
+            .replace("%roleId%", role.id)
+            .replace("%creationTime%", role.timeCreated.asLongLongGMTString())
+            .replace("%position%", role.position.toString() + "/" + role.guild.roleCache.size())
+            .replace("%members%", role.guild.memberCache.stream().filter { member -> member.roles.contains(role) }.count().toString())
+            .replace("%isMentionable%", if (role.isMentionable) yes else no)
+            .replace("%isHoisted%", if (role.isHoisted) yes else no)
+            .replace("%isManaged%", if (role.isManaged) yes else no)
+            .replace("%color%", getColorString(role))
 
-    fun getColorString(role: Role): String {
+    private fun getColorString(role: Role): String {
         if (role.color == null) return "none"
         return "${role.colorRaw} | #${getHex(role.color)} | RGB(${role.color?.red}, ${role.color?.green}, ${role.color?.blue})"
     }
 
-    fun getHex(color: Color?): String {
+    private fun getHex(color: Color?): String {
         return String.format("%02X%02X%02X", color?.red, color?.green, color?.blue)
     }
 }

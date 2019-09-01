@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.moderation
 
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.command.AbstractCommand
@@ -33,11 +34,11 @@ class BanCommand : AbstractCommand("command.ban") {
         }
         val targetUser = getUserByArgsNMessage(context, 0) ?: return
         val member = context.getGuild().getMember(targetUser)
-        if (member != null&&!context.getGuild().selfMember.canInteract(member)) {
-                val msg = Translateable("$root.cannotban").string(context)
-                        .replace(PLACEHOLDER_USER, targetUser.asTag)
-                sendMsg(context, msg)
-                return
+        if (member != null && !context.getGuild().selfMember.canInteract(member)) {
+            val msg = Translateable("$root.cannotban").string(context)
+                    .replace(PLACEHOLDER_USER, targetUser.asTag)
+            sendMsg(context, msg)
+            return
 
         }
 
@@ -70,34 +71,38 @@ class BanCommand : AbstractCommand("command.ban") {
         }
     }
 
-    private fun continueBanning(context: CommandContext, targetUser: User, ban: Ban, activeBan: Ban?, banningMessage: Message? = null) {
+    private suspend fun continueBanning(context: CommandContext, targetUser: User, ban: Ban, activeBan: Ban?, banningMessage: Message? = null) {
         val guild = context.getGuild()
         val author = context.getAuthor()
         val bannedMessageDm = getBanMessage(guild, targetUser, author, ban)
         val bannedMessageLc = getBanMessage(guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
 
         context.daoManager.banWrapper.setBan(ban)
-        context.getGuild().ban(targetUser, 7).queue({
+
+        try {
+            context.getGuild().ban(targetUser, 7).await()
             banningMessage?.editMessage(
                     bannedMessageDm
             )?.override(true)?.queue()
 
             val logChannelWrapper = context.daoManager.logChannelWrapper
-            val logChannelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.PERMANENT_BAN)).get()
+            val logChannelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.PERMANENT_BAN)).await()
             val logChannel = guild.getTextChannelById(logChannelId)
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
 
-            val msg = Translateable("$root.success" + if (activeBan != null) ".updated" else "").string(context)
+            val msg = Translateable("$root.success" + if (activeBan != null) ".updated" else "")
+                    .string(context)
                     .replace(PLACEHOLDER_USER, targetUser.asTag)
                     .replace("%reason%", ban.reason)
             sendMsg(context, msg)
-        }, {
+        } catch (t: Throwable) {
             banningMessage?.editMessage("failed to ban")?.queue()
-            val msg = Translateable("$root.failure").string(context)
+            val msg = Translateable("$root.failure")
+                    .string(context)
                     .replace(PLACEHOLDER_USER, targetUser.asTag)
-                    .replace("%cause%", it.message ?: "unknown (contact support for info)")
+                    .replace("%cause%", t.message ?: "unknown (contact support for info)")
             sendMsg(context, msg)
-        })
+        }
     }
 }
 

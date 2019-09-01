@@ -77,27 +77,33 @@ class StatsCommand : AbstractCommand("command.stats") {
         sendEmbed(context, embed)
     }
 
-    private fun replaceValue1Vars(value: String, shardCount: Int, userCount: Long, guildCount: Long, voiceChannels: Long, threadCount: Int, uptime: String): String {
-        return value
-                .replace("%shardCount%", shardCount.toString())
-                .replace("%userCount%", userCount.toString())
-                .replace("%guildCount%", guildCount.toString())
-                .replace("%cVCCount%", voiceChannels.toString())
-                .replace("%botThreadCount%", threadCount.toString())
-                .replace("%botUptime%", uptime)
-    }
 
-    private fun replaceValue2Vars(value: String, coreCount: Int, ramUsage: String, uptime: String): String {
-        return value
-                .replace("%coreCount%", coreCount.toString())
-                .replace("%ramUsage%", ramUsage)
-                .replace("%systemUptime%", uptime)
-    }
+    private fun replaceValue1Vars(
+            value: String,
+            shardCount: Int,
+            userCount: Long,
+            guildCount: Long,
+            voiceChannels: Long,
+            threadCount: Int,
+            uptime: String
+    ): String = value
+            .replace("%shardCount%", shardCount.toString())
+            .replace("%userCount%", userCount.toString())
+            .replace("%guildCount%", guildCount.toString())
+            .replace("%cVCCount%", voiceChannels.toString())
+            .replace("%botThreadCount%", threadCount.toString())
+            .replace("%botUptime%", uptime)
 
-    private fun replaceValue3Vars(value: String, cpuUsage: String, ramUsage: String, threadCount: String): String {
-        return value
-                .replace("%jvmCPUUsage%", cpuUsage)
-                .replace("%ramUsage%", ramUsage)
-                .replace("%threadCount%", threadCount)
-    }
+
+    private fun replaceValue2Vars(value: String, coreCount: Int, ramUsage: String, uptime: String): String = value
+            .replace("%coreCount%", coreCount.toString())
+            .replace("%ramUsage%", ramUsage)
+            .replace("%systemUptime%", uptime)
+
+
+    private fun replaceValue3Vars(value: String, cpuUsage: String, ramUsage: String, threadCount: String): String = value
+            .replace("%jvmCPUUsage%", cpuUsage)
+            .replace("%ramUsage%", ramUsage)
+            .replace("%threadCount%", threadCount)
+
 }

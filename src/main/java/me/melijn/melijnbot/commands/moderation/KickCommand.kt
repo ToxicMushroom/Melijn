@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.moderation
 
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.kick.Kick
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.command.AbstractCommand
@@ -52,45 +53,45 @@ class KickCommand : AbstractCommand("command.kick") {
 
 
         val kicking = Translateable("message.kicking").string(context)
-        targetMember.user.openPrivateChannel().queue({ privateChannel ->
-            privateChannel.sendMessage(kicking).queue({ message ->
-                continueKicking(context, targetMember, kick, message)
-            }, {
-                continueKicking(context, targetMember, kick)
-            })
-        }, {
+        try {
+            val privateChannel = targetMember.user.openPrivateChannel().await()
+            val message = privateChannel.sendMessage(kicking).await()
+
+            continueKicking(context, targetMember, kick, message)
+        } catch (t: Throwable) {
             continueKicking(context, targetMember, kick)
-        })
+        }
     }
 
-    private fun continueKicking(context: CommandContext, targetMember: Member, kick: Kick, kickingMessage: Message? = null) {
+    private suspend fun continueKicking(context: CommandContext, targetMember: Member, kick: Kick, kickingMessage: Message? = null) {
         val guild = context.getGuild()
         val author = context.getAuthor()
         val kickedMessageDm = getKickMessage(guild, targetMember.user, author, kick)
         val warnedMessageLc = getKickMessage(guild, targetMember.user, author, kick, true, targetMember.user.isBot, kickingMessage != null)
 
         context.daoManager.kickWrapper.addKick(kick)
-        context.getGuild().kick(targetMember, kick.kickReason).queue({
+        try {
+            context.getGuild().kick(targetMember, kick.kickReason).await()
             kickingMessage?.editMessage(
                     kickedMessageDm
             )?.override(true)?.queue()
 
             val logChannelWrapper = context.daoManager.logChannelWrapper
-            val logChannelId = logChannelWrapper.logChannelCache.get(Pair(context.getGuildId(), LogChannelType.KICK)).get()
-            val logChannel = context.getGuild().getTextChannelById(logChannelId)
+            val logChannelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.KICK)).await()
+            val logChannel = guild.getTextChannelById(logChannelId)
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, warnedMessageLc) }
 
             val msg = Translateable("$root.success").string(context)
                     .replace(PLACEHOLDER_USER, targetMember.asTag)
                     .replace("%reason%", kick.kickReason)
             sendMsg(context, msg)
-        }, {
+        } catch (t: Throwable) {
             kickingMessage?.editMessage("failed to kick")?.queue()
             val msg = Translateable("$root.failure").string(context)
                     .replace(PLACEHOLDER_USER, targetMember.asTag)
-                    .replace("%cause%", it.message ?: "unknown (contact support for info)")
+                    .replace("%cause%", t.message ?: "unknown (contact support for info)")
             sendMsg(context, msg)
-        })
+        }
     }
 }
 

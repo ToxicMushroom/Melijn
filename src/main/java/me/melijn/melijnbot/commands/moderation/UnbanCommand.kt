@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.moderation
 
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.command.AbstractCommand
@@ -26,11 +27,12 @@ class UnbanCommand : AbstractCommand("command.unban") {
     }
 
     override suspend fun execute(context: CommandContext) {
+        val guild = context.getGuild()
         if (context.args.isEmpty()) {
             sendSyntax(context, syntax)
             return
         }
-        val targetUser = getUserByArgsNMessage(context, 0) ?: return
+        val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
 
         var unbanReason = context.rawArg.replaceFirst((context.args[0] + "($:\\s+)?").toRegex(), "")
         if (unbanReason.isBlank()) unbanReason = "/"
@@ -56,8 +58,10 @@ class UnbanCommand : AbstractCommand("command.unban") {
 
         val banAuthor = ban.banAuthorId?.let { context.getShardManager()?.getUserById(it) }
 
-        context.getGuild().retrieveBan(targetUser).queue({ _ ->
-            context.getGuild().unban(targetUser).queue({
+        try {
+            guild.retrieveBan(targetUser).await()
+            try {
+                guild.unban(targetUser).await()
                 context.daoManager.banWrapper.setBan(ban)
 
                 //Normal success path
@@ -67,8 +71,8 @@ class UnbanCommand : AbstractCommand("command.unban") {
                 }, null)
 
                 val logChannelWrapper = context.daoManager.logChannelWrapper
-                val logChannelId = logChannelWrapper.logChannelCache.get(Pair(context.getGuildId(), LogChannelType.UNBAN)).get()
-                val logChannel = context.getGuild().getTextChannelById(logChannelId)
+                val logChannelId = logChannelWrapper.logChannelCache.get(Pair(context.getGuildId(), LogChannelType.UNBAN)).await()
+                val logChannel = guild.getTextChannelById(logChannelId)
                 logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, msg) }
 
                 val success = Translateable("$root.success").string(context)
@@ -76,14 +80,14 @@ class UnbanCommand : AbstractCommand("command.unban") {
                         .replace("%reason%", unbanReason)
                 sendMsg(context, success)
 
-            }, {
+            } catch (t: Throwable) {
                 //Sum ting wrong
                 val msg = Translateable("$root.failure").string(context)
                         .replace(PLACEHOLDER_USER, targetUser.asTag)
-                        .replace("%cause%", it.message ?: "unknown (contact support for info)")
+                        .replace("%cause%", t.message ?: "unknown (contact support for info)")
                 sendMsg(context, msg)
-            })
-        }, {
+            }
+        } catch (t: Throwable) {
             //Not banned anymore
             val msg = Translateable("$root.notbanned").string(context)
                     .replace(PLACEHOLDER_USER, targetUser.asTag)
@@ -92,7 +96,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
             if (activeBan != null) {
                 context.daoManager.banWrapper.setBan(ban)
             }
-        })
+        }
     }
 }
 

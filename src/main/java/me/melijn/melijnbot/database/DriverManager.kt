@@ -156,7 +156,20 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
             query: String,
             vararg objects: Any
     ): ResultSet = suspendCoroutine {
-        executeQuery(query, { result -> it.resume(result) }, objects)
+        try {
+            getUsableConnection { connection ->
+                connection.prepareStatement(query).use { preparedStatement ->
+                    for ((index, value) in objects.withIndex()) {
+                        preparedStatement.setObject(index + 1, value)
+                    }
+                    it.resume(preparedStatement.executeQuery())
+                }
+            }
+        } catch (e: SQLException) {
+            logger.error("Something went wrong when executing the query: $query")
+            e.sendInGuild()
+            e.printStackTrace()
+        }
     }
 
     suspend fun getMySQLVersion(): String {

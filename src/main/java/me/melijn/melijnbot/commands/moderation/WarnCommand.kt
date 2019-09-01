@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.moderation
 
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.warn.Warn
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.command.AbstractCommand
@@ -27,7 +28,8 @@ class WarnCommand : AbstractCommand("command.warn") {
         }
         val targetMember = getMemberByArgsNMessage(context, 0) ?: return
         if (!context.getGuild().selfMember.canInteract(targetMember)) {
-            val msg = Translateable("$root.cannotwarn").string(context)
+            val msg = Translateable("$root.cannotwarn")
+                    .string(context)
                     .replace(PLACEHOLDER_USER, targetMember.asTag)
             sendMsg(context, msg)
             return
@@ -50,20 +52,19 @@ class WarnCommand : AbstractCommand("command.warn") {
                 reason
         )
 
-
         val warning = Translateable("message.warning..").string(context)
-        targetMember.user.openPrivateChannel().queue({ privateChannel ->
-            privateChannel.sendMessage(warning).queue({ message ->
-                continueWarning(context, targetMember, warn, message)
-            }, {
-                continueWarning(context, targetMember, warn)
-            })
-        }, {
+
+        try {
+            val privateChannel = targetMember.user.openPrivateChannel().await()
+            val message = privateChannel.sendMessage(warning).await()
+
+            continueWarning(context, targetMember, warn, message)
+        } catch (t: Throwable) {
             continueWarning(context, targetMember, warn)
-        })
+        }
     }
 
-    private fun continueWarning(context: CommandContext, targetMember: Member, warn: Warn, warningMessage: Message? = null) {
+    private suspend fun continueWarning(context: CommandContext, targetMember: Member, warn: Warn, warningMessage: Message? = null) {
         val guild = context.getGuild()
         val author = context.getAuthor()
         val warnedMessageDm = getWarnMessage(guild, targetMember.user, author, warn)
@@ -76,7 +77,7 @@ class WarnCommand : AbstractCommand("command.warn") {
         )?.override(true)?.queue()
 
         val logChannelWrapper = context.daoManager.logChannelWrapper
-        val logChannelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.WARN)).get()
+        val logChannelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.WARN)).await()
         val logChannel = guild.getTextChannelById(logChannelId)
         logChannel?.let { it1 ->
             sendEmbed(context.daoManager.embedDisabledWrapper, it1, warnedMessageLc)

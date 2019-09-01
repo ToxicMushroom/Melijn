@@ -23,20 +23,21 @@ class RolesCommand : AbstractCommand("command.roles") {
             return
         }
 
-        val guild: Guild = if (context.args.isNotEmpty())
-            (context.jda.shardManager?.getGuildById(context.args[0]) ?: context.getGuild())
-        else context.getGuild()
+        val guild: Guild = if (context.args.isNotEmpty() && context.args[0].matches("\\d+".toRegex())) {
+            context.jda.shardManager?.getGuildById(context.args[0]) ?: context.getGuild()
+        } else {
+            context.getGuild()
+        }
 
         val title = Translateable("$root.response1.title").string(context)
                 .replace("%guildName%", guild.name)
+
         var msg = "$title```INI"
-        var count = 1
-        for (role in guild.roleCache) {
-            msg += "\n${count++} - [${role.name}] - ${role.id}"
+        for ((index, role) in guild.roleCache.withIndex()) {
+            msg += "\n${index+1} - [${role.name}] - ${role.id}"
         }
         msg += "```"
 
         sendMsgCodeBlock(context, msg, "INI")
-
     }
 }

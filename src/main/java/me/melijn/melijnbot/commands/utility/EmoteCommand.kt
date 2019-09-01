@@ -21,7 +21,6 @@ class EmoteCommand : AbstractCommand("command.emote") {
 
     override suspend fun execute(context: CommandContext) {
         val args = context.rawArg
-
         if (args.isBlank()) {
             sendSyntax(context, syntax)
             return
@@ -71,16 +70,17 @@ class EmoteCommand : AbstractCommand("command.emote") {
 
     }
 
-    private fun replaceMissingEmoteVars(string: String, context: CommandContext, id: String, name: String, animated: Boolean): String {
-        return string
-                .replace("%id%", id)
-                .replace("%name%", name)
-                .replace("%isAnimated%", Translateable(if (animated) "yes" else "no").string(context))
-                .replace("%url%", "https://cdn.discordapp.com/emojis/$id." + (if (animated) "gif" else "png") + "?size=2048")
-    }
 
-    fun replaceEmoteVars(string: String, context: CommandContext, emote: Emote): String {
-        return replaceMissingEmoteVars(string, context, emote.id, emote.name, emote.isAnimated)
-                .replace("%creationTime%", emote.timeCreated.asLongLongGMTString())
-    }
+    private fun replaceMissingEmoteVars(string: String, context: CommandContext, id: String, name: String, animated: Boolean): String = string
+            .replace("%id%", id)
+            .replace("%name%", name)
+            .replace("%isAnimated%", Translateable(if (animated) "yes" else "no").string(context))
+            .replace("%url%", "https://cdn.discordapp.com/emojis/$id." + (if (animated) "gif" else "png") + "?size=2048")
+
+
+    private fun replaceEmoteVars(string: String, context: CommandContext, emote: Emote): String =
+            replaceMissingEmoteVars(string, context, emote.id, emote.name, emote.isAnimated)
+                    .replace("%creationTime%", emote.timeCreated.asLongLongGMTString())
+
+
 }

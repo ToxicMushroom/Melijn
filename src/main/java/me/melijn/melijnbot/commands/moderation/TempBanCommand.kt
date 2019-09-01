@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.moderation
 
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.command.AbstractCommand
@@ -27,15 +28,16 @@ class TempBanCommand : AbstractCommand("command.tempban") {
             sendSyntax(context, syntax)
             return
         }
-        val targetUser = getUserByArgsNMessage(context, 0) ?: return
-        val member = context.getGuild().getMember(targetUser)
-        if (member != null) {
-            if (!context.getGuild().selfMember.canInteract(member)) {
-                val msg = Translateable("$root.cannotban").string(context)
-                        .replace(PLACEHOLDER_USER, targetUser.asTag)
-                sendMsg(context, msg)
-                return
-            }
+
+        val guild = context.getGuild()
+        val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
+        val member = guild.getMember(targetUser)
+        if (member != null && !guild.selfMember.canInteract(member)) {
+            val msg = Translateable("$root.cannotban")
+                    .string(context)
+                    .replace(PLACEHOLDER_USER, targetUser.asTag)
+            sendMsg(context, msg)
+            return
         }
 
         val noUserArg = context.rawArg.replaceFirst((context.args[0] + "($:\\s+)?").toRegex(), "")
@@ -65,34 +67,30 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         )
         if (activeBan != null) ban.startTime = activeBan.startTime
 
-        //open user channel -> send "banning.." to user -> ban -> log to logchannel, edit "banning.." message to banmessage, reply with ban success
-
-
         val banning = Translateable("message.banning").string(context)
-        targetUser.openPrivateChannel().queue({ privateChannel ->
-            privateChannel.sendMessage(banning).queue({ message ->
-                continueBanning(context, targetUser, ban, activeBan, message)
-            }, {
-                continueBanning(context, targetUser, ban, activeBan)
-            })
-        }, {
+        try {
+            val privateChannel = targetUser.openPrivateChannel().await()
+            val message = privateChannel.sendMessage(banning).await()
+            continueBanning(context, targetUser, ban, activeBan, message)
+        } catch (t: Throwable) {
             continueBanning(context, targetUser, ban, activeBan)
-        })
+        }
     }
 
-    private fun continueBanning(context: CommandContext, targetUser: User, ban: Ban, activeBan: Ban?, banningMessage: Message? = null) {
+    private suspend fun continueBanning(context: CommandContext, targetUser: User, ban: Ban, activeBan: Ban?, banningMessage: Message? = null) {
         val guild = context.getGuild()
         val author = context.getAuthor()
         val bannedMessageDm = getBanMessage(guild, targetUser, author, ban)
         val bannedMessageLc = getBanMessage(guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
         context.daoManager.banWrapper.setBan(ban)
-        context.getGuild().ban(targetUser, 7).queue({
+        try {
+            context.getGuild().ban(targetUser, 7).await()
             banningMessage?.editMessage(
                     bannedMessageDm
             )?.override(true)?.queue()
 
             val logChannelWrapper = context.daoManager.logChannelWrapper
-            val logChannelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.TEMP_BAN)).get()
+            val logChannelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.TEMP_BAN)).await()
             val logChannel = guild.getTextChannelById(logChannelId)
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
 
@@ -101,12 +99,12 @@ class TempBanCommand : AbstractCommand("command.tempban") {
                     .replace("%endTime%", ban.endTime?.asEpochMillisToDateTime() ?: "none")
                     .replace("%reason%", ban.reason)
             sendMsg(context, msg)
-        }, {
+        } catch (t: Throwable) {
             banningMessage?.editMessage("failed to ban")?.queue()
             val msg = Translateable("$root.failure").string(context)
                     .replace(PLACEHOLDER_USER, targetUser.asTag)
-                    .replace("%cause%", it.message ?: "unknown (contact support for info)")
+                    .replace("%cause%", t.message ?: "unknown (contact support for info)")
             sendMsg(context, msg)
-        })
+        }
     }
 }

@@ -32,60 +32,57 @@ class HistoryCommand : AbstractCommand("command.history") {
             return
         }
 
-        retrieveUserByArgsNMessage(context, 1) { targetUser ->
-            if (targetUser == null) return@retrieveUserByArgsNMessage
-            val unorderedMap: MutableMap<Long, String> = hashMapOf()
-            val shardManager = context.getShardManager() ?: return@retrieveUserByArgsNMessage
-            val dao = context.daoManager
-            val guildId = context.getGuildId()
+        val targetUser = retrieveUserByArgsNMessage(context, 1) ?: return
+        val unorderedMap: MutableMap<Long, String> = hashMapOf()
+        val shardManager = context.getShardManager() ?: return
+        val dao = context.daoManager
+        val guildId = context.getGuildId()
 
-
-            var counter = 0
-            val mapHandler: (Map<Long, String>) -> Unit = { map ->
-                unorderedMap.putAll(map)
-                counter++
-                if (counter == types.size) {
-                    val orderedMap = unorderedMap.toSortedMap().toMap()
-
-                    //Collected all punishments
-                    val msg = orderedMap.values.joinToString("")
-
-                    if (msg.isBlank()) {
-                        val or = Translateable("or").string(context)
-                        var readableList = types.subList(0, types.size - 1).joinToString(", ", transform = { type ->
-                            type.name.toLowerCase()
-                        })
-                        if (readableList.isBlank()) {
-                            readableList = types.last().name.toLowerCase()
-                        } else {
-                            readableList += " $or " + types.last().name.toLowerCase()
-                        }
-
-                        val noHistory = Translateable("$root.nohistory").string(context)
-                                .replace(PLACEHOLDER_USER, targetUser.asTag)
-                                .replace("%typeList%", readableList)
-                        sendMsg(context, noHistory)
-                    } else {
-                        sendMsgCodeBlocks(context, msg, "INI")
-                    }
+        //put info inside maps
+        for (type in types) {
+            when (type) {
+                PunishmentType.BAN -> {
+                    val banMap = dao.banWrapper.getBanMap(shardManager, guildId, targetUser)
+                    unorderedMap.putAll(banMap)
+                }
+                PunishmentType.KICK -> {
+                    val kickMap = dao.kickWrapper.getKickMap(shardManager, guildId, targetUser)
+                    unorderedMap.putAll(kickMap)
+                }
+                PunishmentType.WARN -> {
+                    val warnMap = dao.warnWrapper.getWarnMap(shardManager, guildId, targetUser)
+                    unorderedMap.putAll(warnMap)
+                }
+                PunishmentType.MUTE -> {
+                    val muteMap = dao.muteWrapper.getMuteMap(shardManager, guildId, targetUser)
+                    unorderedMap.putAll(muteMap)
                 }
             }
-            for (type in types) {
-                when (type) {
-                    PunishmentType.BAN -> {
-                        dao.banWrapper.getBanMap(shardManager, guildId, targetUser, mapHandler)
-                    }
-                    PunishmentType.KICK -> {
-                        dao.kickWrapper.getKickMap(shardManager, guildId, targetUser, mapHandler)
-                    }
-                    PunishmentType.WARN -> {
-                        dao.warnWrapper.getWarnMap(shardManager, guildId, targetUser, mapHandler)
-                    }
-                    PunishmentType.MUTE -> {
-                        dao.muteWrapper.getMuteMap(shardManager, guildId, targetUser, mapHandler)
-                    }
-                }
+        }
+
+        val orderedMap = unorderedMap.toSortedMap().toMap()
+
+        //Collected all punishments
+        val msg = orderedMap.values.joinToString("")
+
+        if (msg.isBlank()) {
+            val or = Translateable("or").string(context)
+            var readableList = types.subList(0, types.size - 1).joinToString(", ", transform = { type ->
+                type.name.toLowerCase()
+            })
+            if (readableList.isBlank()) {
+                readableList = types.last().name.toLowerCase()
+            } else {
+                readableList += " $or " + types.last().name.toLowerCase()
             }
+
+            val noHistory = Translateable("$root.nohistory")
+                    .string(context)
+                    .replace(PLACEHOLDER_USER, targetUser.asTag)
+                    .replace("%typeList%", readableList)
+            sendMsg(context, noHistory)
+        } else {
+            sendMsgCodeBlocks(context, msg, "INI")
         }
     }
 }

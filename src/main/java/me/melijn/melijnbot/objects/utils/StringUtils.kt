@@ -195,6 +195,8 @@ fun getDurationByArgsNMessage(context: CommandContext, timeStamps: List<String>,
     for ((index, corruptTimeStamp) in corruptTimeStamps.withIndex()) {
         if (corruptTimeStamp.matches("\\d+".toRegex())) {
             val corruptTimeType = corruptTimeStamps[index + 1]
+            if (!corruptTimeType.matches("[a-zA-Z]+".toRegex())) continue
+
             holyTimeStamps.add(corruptTimeStamp + corruptTimeType)
         } else if (holyPattern.matcher(corruptTimeStamp).matches()) {
             holyTimeStamps.add(corruptTimeStamp)
@@ -204,35 +206,37 @@ fun getDurationByArgsNMessage(context: CommandContext, timeStamps: List<String>,
     //CorruptTimeStamps aren't corrupt anymore
     for (corruptTimeStamp in holyTimeStamps) {
         val matcher = holyPattern.matcher(corruptTimeStamp)
-        if (matcher.find()) {
-            val amount = matcher.group(1).toLongOrNull()
-            if (amount == null) {
-                sendMsg(context, Translateable("message.numbertobig").string(context)
-                        .replace("%args%", matcher.group(1)))
-                return null
-            }
+        require(matcher.find()) { "should always find a match" }
 
-            val typeNorm = matcher.group(2)
-            val type = typeNorm.toLowerCase()
-            val multiplier = when {
-                arrayOf("s", "second", "seconds").contains(type) -> 1
-                arrayOf("m", "minute", "minutes").contains(type) -> 60
-                arrayOf("h", "hour", "hours").contains(type) -> 60 * 60
-                arrayOf("d", "day", "days").contains(type) -> 24 * 60 * 60
-                arrayOf("w", "week", "weeks").contains(type) -> 7 * 24 * 60 * 60
-                "M" == type || arrayOf("month", "months").contains(type) -> 30 * 24 * 60 * 60
-                arrayOf("y", "year", "years").contains(type) -> 52 * 7 * 24 * 60 * 60
-                else -> null
-            }
-
-            if (multiplier == null) {
-                sendMsg(context, Translateable("unknown.timeunit").string(context)
-                        .replace("%args%", matcher.group(2)))
-                return null
-            }
-
-            totalTime += amount * multiplier
+        val amount = matcher.group(1).toLongOrNull()
+        if (amount == null) {
+            sendMsg(context, Translateable("message.numbertobig")
+                    .string(context)
+                    .replace("%args%", matcher.group(1)), null)
+            return null
         }
+
+        val typeNorm = matcher.group(2)
+        val type = typeNorm.toLowerCase()
+        val multiplier = when {
+            arrayOf("s", "second", "seconds").contains(type) -> 1
+            arrayOf("m", "minute", "minutes").contains(type) -> 60
+            arrayOf("h", "hour", "hours").contains(type) -> 60 * 60
+            arrayOf("d", "day", "days").contains(type) -> 24 * 60 * 60
+            arrayOf("w", "week", "weeks").contains(type) -> 7 * 24 * 60 * 60
+            "M" == type || arrayOf("month", "months").contains(type) -> 30 * 24 * 60 * 60
+            arrayOf("y", "year", "years").contains(type) -> 52 * 7 * 24 * 60 * 60
+            else -> null
+        }
+
+        if (multiplier == null) {
+            sendMsg(context, Translateable("unknown.timeunit")
+                    .string(context)
+                    .replace("%args%", matcher.group(2)), null)
+            return null
+        }
+
+        totalTime += amount * multiplier
     }
 
     return totalTime
