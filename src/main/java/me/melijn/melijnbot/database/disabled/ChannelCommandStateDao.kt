@@ -5,7 +5,7 @@ import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.ChannelCommandState
 import me.melijn.melijnbot.objects.command.AbstractCommand
 
-class ChannelCommandStateDao(val driverManager: DriverManager) : Dao(driverManager) {
+class ChannelCommandStateDao(driverManager: DriverManager) : Dao(driverManager) {
     override val table: String = "channelCommandStates"
     override val tableStructure: String = "guildId bigint, channelId bigint, commandId int, state varchar(32)"
     override val keys: String = "UNIQUE KEY (channelId, commandId)"

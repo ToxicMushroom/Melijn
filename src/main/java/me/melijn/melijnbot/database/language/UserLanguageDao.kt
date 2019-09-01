@@ -3,7 +3,7 @@ package me.melijn.melijnbot.database.language
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 
-class UserLanguageDao(private val driverManager: DriverManager) : Dao(driverManager) {
+class UserLanguageDao(driverManager: DriverManager) : Dao(driverManager) {
     override val table: String = "userLanguages"
     override val tableStructure: String = "userId bigint, language varchar(32)"
     override val keys: String = "PRIMARY KEY (userId)"

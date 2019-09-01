@@ -7,16 +7,15 @@ import me.melijn.melijnbot.objects.threading.TaskManager
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
-import java.util.function.Consumer
 
 class GuildLanguageWrapper(private val taskManager: TaskManager, private val languageDao: GuildLanguageDao) {
 
     val languageCache = Caffeine.newBuilder()
-            .executor(taskManager.getExecutorService())
+            .executor(taskManager.executorService)
             .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
             .buildAsync<Long, String>() { key, executor -> getLanguage(key, executor) }
 
-    fun getLanguage(guildId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<String> {
+    private fun getLanguage(guildId: Long, executor: Executor = taskManager.executorService): CompletableFuture<String> {
         val languageFuture = CompletableFuture<String>()
         executor.execute {
             languageDao.get(guildId) { language ->

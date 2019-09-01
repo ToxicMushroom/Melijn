@@ -3,7 +3,7 @@ package me.melijn.melijnbot.database.mute
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 
-class MuteDao(val driverManager: DriverManager) : Dao(driverManager) {
+class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "mutes"
     override val tableStructure: String = "guildId bigint, mutedId bigint, muteAuthorId bigint, unmuteAuthorId bigint, reason varchar(2048), startTime bigint, endTime bigint, unmuteReason varchar(2048), active boolean"

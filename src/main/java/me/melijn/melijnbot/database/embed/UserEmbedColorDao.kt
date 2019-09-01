@@ -3,7 +3,7 @@ package me.melijn.melijnbot.database.embed
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 
-class UserEmbedColorDao(val driverManager: DriverManager) : Dao(driverManager) {
+class UserEmbedColorDao(driverManager: DriverManager) : Dao(driverManager) {
     override val table: String = "userEmbedColors"
     override val tableStructure: String = "userId bigint, color int"
     override val keys: String = "PRIMARY KEY (userId)"

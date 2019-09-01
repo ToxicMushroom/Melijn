@@ -7,9 +7,8 @@ import me.melijn.melijnbot.objects.threading.TaskManager
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
-import java.util.function.Consumer
 
-class CommandChannelCooldownWrapper(val taskManager: TaskManager, val commandChannelCooldownDao: CommandChannelCooldownDao) {
+class CommandChannelCooldownWrapper(val taskManager: TaskManager, private val commandChannelCooldownDao: CommandChannelCooldownDao) {
 
     //channelId/guildId, userId, commandId, execTime
     val executions: MutableMap<Pair<Long, Long>, Map<Int, Long>> = HashMap()
@@ -17,10 +16,10 @@ class CommandChannelCooldownWrapper(val taskManager: TaskManager, val commandCha
     //chanelId
     val commandChannelCooldownCache = Caffeine.newBuilder()
             .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-            .executor(taskManager.getExecutorService())
+            .executor(taskManager.executorService)
             .buildAsync<Long, Map<Int, Long>>() { key, executor -> getCommandChannelCooldowns(key, executor) }
 
-    fun getCommandChannelCooldowns(channelId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<Map<Int, Long>> {
+    private fun getCommandChannelCooldowns(channelId: Long, executor: Executor = taskManager.executorService): CompletableFuture<Map<Int, Long>> {
         val map = CompletableFuture<Map<Int, Long>>()
         executor.execute {
             commandChannelCooldownDao.getCooldownMapForChannel(channelId) {

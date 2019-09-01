@@ -4,7 +4,7 @@ import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.objects.command.AbstractCommand
 
-class DisabledCommandDao(val driverManager: DriverManager) : Dao(driverManager) {
+class DisabledCommandDao(driverManager: DriverManager) : Dao(driverManager) {
     override val table: String = "disabledCommands"
     override val tableStructure: String = "guildId bigint, commandId int"
     override val keys: String = "UNIQUE KEY (guildId, commandId)"

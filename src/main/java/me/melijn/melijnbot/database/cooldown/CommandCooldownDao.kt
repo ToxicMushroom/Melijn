@@ -6,7 +6,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import java.util.function.Consumer
 
 
-class CommandCooldownDao(private val driverManager: DriverManager) : Dao(driverManager) {
+class CommandCooldownDao(driverManager: DriverManager) : Dao(driverManager) {
     override val table: String = "commandCooldowns"
     override val tableStructure: String = "guildId bigint, commandId int, cooldown bigint"
     override val keys: String = "UNIQUE KEY (guildId, commandId)"

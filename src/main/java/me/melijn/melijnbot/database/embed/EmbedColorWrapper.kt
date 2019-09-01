@@ -6,16 +6,15 @@ import me.melijn.melijnbot.objects.threading.TaskManager
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
-import java.util.function.Consumer
 
-class EmbedColorWrapper(val taskManager: TaskManager, val embedColorDao: EmbedColorDao) {
+class EmbedColorWrapper(val taskManager: TaskManager, private val embedColorDao: EmbedColorDao) {
 
     val embedColorCache = Caffeine.newBuilder()
             .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
-            .executor(taskManager.getExecutorService())
+            .executor(taskManager.executorService)
             .buildAsync<Long, Int>() { key, executor -> getColor(key, executor) }
 
-    fun getColor(guildId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<Int> {
+    private fun getColor(guildId: Long, executor: Executor = taskManager.executorService): CompletableFuture<Int> {
         val future = CompletableFuture<Int>()
         executor.execute {
             embedColorDao.get(guildId) {

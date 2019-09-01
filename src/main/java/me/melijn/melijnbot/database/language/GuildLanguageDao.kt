@@ -4,7 +4,7 @@ import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 
 
-class GuildLanguageDao(private val driverManager: DriverManager) : Dao(driverManager) {
+class GuildLanguageDao(driverManager: DriverManager) : Dao(driverManager) {
     override val table: String = "guildLanguages"
     override val tableStructure: String = "guildId bigint, language varchar(32)"
     override val keys: String = "PRIMARY KEY(guildId)"

@@ -3,7 +3,7 @@ package me.melijn.melijnbot.database.embed
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 
-class EmbedDisabledDao(val driverManager: DriverManager) : Dao(driverManager) {
+class EmbedDisabledDao(driverManager: DriverManager) : Dao(driverManager) {
     override val table: String = "embedDisabled"
     override val tableStructure: String = "guildId bigint"
     override val keys: String = "PRIMARY KEY (guildId)"

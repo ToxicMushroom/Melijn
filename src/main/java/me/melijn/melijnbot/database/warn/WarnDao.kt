@@ -3,7 +3,7 @@ package me.melijn.melijnbot.database.warn
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 
-class WarnDao(val driverManager: DriverManager) : Dao(driverManager) {
+class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "warns"
     override val tableStructure: String = "guildId bigint, warnedId bigint, warnAuthorId bigint, warnReason varchar(64), warnMoment bigint"

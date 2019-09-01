@@ -8,16 +8,15 @@ import me.melijn.melijnbot.objects.threading.TaskManager
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
-import java.util.function.Consumer
 
 class ChannelCommandStateWrapper(val taskManager: TaskManager, private val channelCommandStateDao: ChannelCommandStateDao) {
 
     val channelCommandsStateCache = Caffeine.newBuilder()
             .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-            .executor(taskManager.getExecutorService())
+            .executor(taskManager.executorService)
             .buildAsync<Long, Map<Int, ChannelCommandState>>() { key, executor -> getCommandStateMap(key, executor) }
 
-    fun getCommandStateMap(channelId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<Map<Int, ChannelCommandState>> {
+    private fun getCommandStateMap(channelId: Long, executor: Executor = taskManager.executorService): CompletableFuture<Map<Int, ChannelCommandState>> {
         val future = CompletableFuture<Map<Int, ChannelCommandState>>()
         executor.execute {
             channelCommandStateDao.get(channelId) {

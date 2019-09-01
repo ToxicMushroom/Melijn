@@ -3,7 +3,7 @@ package me.melijn.melijnbot.database.ban
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 
-class BanDao(val driverManager: DriverManager) : Dao(driverManager) {
+class BanDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "bans"
     override val tableStructure: String = "guildId bigint, bannedId bigint, banAuthorId bigint, unbanAuthorId bigint, reason varchar(2048), startTime bigint, endTime bigint, unbanReason varchar(2048), active boolean"

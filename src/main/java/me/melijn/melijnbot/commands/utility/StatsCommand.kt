@@ -36,8 +36,8 @@ class StatsCommand : AbstractCommand("command.stats") {
         val voiceChannels = shardManager?.shards?.stream()?.mapToLong { shard ->
             shard.voiceChannels.stream().filter { vc -> vc.members.contains(vc.guild.selfMember) }.count()
         }?.sum()
-        val threadPoolExecutor = context.taskManager.getExecutorService() as ThreadPoolExecutor
-        val scheduledExecutorService = context.taskManager.getScheduledExecutorService() as ThreadPoolExecutor
+        val threadPoolExecutor = context.taskManager.executorService as ThreadPoolExecutor
+        val scheduledExecutorService = context.taskManager.scheduledExecutorService as ThreadPoolExecutor
 
         val title1 = Translateable("$root.response.field1.title").string(context)
         val title2 = Translateable("$root.response.field2.title").string(context)

@@ -3,7 +3,7 @@ package me.melijn.melijnbot.database.message
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 
-class MessageDao(val driverManager: DriverManager) : Dao(driverManager) {
+class MessageDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "messages"
     override val tableStructure: String = "guildId bigint, textChannelId bigint, authorId bigint, messageId bigint, content varchar(2048), moment bigint"

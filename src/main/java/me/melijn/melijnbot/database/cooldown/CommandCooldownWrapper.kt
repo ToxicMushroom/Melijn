@@ -7,16 +7,15 @@ import me.melijn.melijnbot.objects.threading.TaskManager
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
-import java.util.function.Consumer
 
-class CommandCooldownWrapper(val taskManager: TaskManager, val commandCooldownDao: CommandCooldownDao) {
+class CommandCooldownWrapper(val taskManager: TaskManager, private val commandCooldownDao: CommandCooldownDao) {
 
     val commandCooldownCache = Caffeine.newBuilder()
             .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-            .executor(taskManager.getExecutorService())
+            .executor(taskManager.executorService)
             .buildAsync<Long, Map<Int, Long>>() { key, executor -> getMap(key, executor) }
 
-    fun getMap(guildId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<Map<Int, Long>> {
+    private fun getMap(guildId: Long, executor: Executor = taskManager.executorService): CompletableFuture<Map<Int, Long>> {
         val future = CompletableFuture<Map<Int, Long>>()
         executor.execute {
             commandCooldownDao.getCooldowns(guildId) {

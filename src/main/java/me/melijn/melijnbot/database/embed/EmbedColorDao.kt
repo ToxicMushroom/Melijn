@@ -3,7 +3,7 @@ package me.melijn.melijnbot.database.embed
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 
-class EmbedColorDao(val driverManager: DriverManager) : Dao(driverManager) {
+class EmbedColorDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "embedColors"
     override val tableStructure: String = "guildId bigint, color int"
