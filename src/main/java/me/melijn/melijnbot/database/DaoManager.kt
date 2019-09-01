@@ -4,6 +4,8 @@ import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.database.ban.BanDao
 import me.melijn.melijnbot.database.ban.BanWrapper
+import me.melijn.melijnbot.database.channel.ChannelDao
+import me.melijn.melijnbot.database.channel.ChannelWrapper
 import me.melijn.melijnbot.database.command.CommandDao
 import me.melijn.melijnbot.database.command.CommandWrapper
 import me.melijn.melijnbot.database.cooldown.CommandChannelCooldownDao
@@ -77,6 +79,8 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
     val userEmbedColorWrapper: UserEmbedColorWrapper
 
     val logChannelWrapper: LogChannelWrapper
+    val channelWrapper: ChannelWrapper
+
     val roleWrapper: RoleWrapper
 
     lateinit var mySQLVersion: String
@@ -125,6 +129,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
         userEmbedColorWrapper = UserEmbedColorWrapper(taskManager, UserEmbedColorDao(driverManager))
 
         logChannelWrapper = LogChannelWrapper(taskManager, LogChannelDao(driverManager))
+        channelWrapper = ChannelWrapper(taskManager, ChannelDao(driverManager))
         roleWrapper = RoleWrapper(taskManager, RoleDao(driverManager))
 
         banWrapper = BanWrapper(taskManager, BanDao(driverManager))
