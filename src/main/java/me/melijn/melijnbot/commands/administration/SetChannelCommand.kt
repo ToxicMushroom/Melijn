@@ -60,13 +60,25 @@ class SetChannelCommand : AbstractCommand("command.setchannel") {
     }
 
     private suspend fun setChannel(context: CommandContext, type: ChannelType) {
-        val channel = getTextChannelByArgsNMessage(context, 1) ?: return
-        val channelWrapper = context.daoManager.channelWrapper
-        channelWrapper.setChannel(context.getGuildId(), type, channel.idLong)
+        val channel = if (context.args[1].equals("null", true)) {
+            null
+        } else {
+            getTextChannelByArgsNMessage(context, 1) ?: return
+        }
 
-        val msg = Translateable("$root.set")
-                .string(context)
-                .replace("%channel%", channel.asTag)
+        val channelWrapper = context.daoManager.channelWrapper
+
+
+        val msg = if (channel == null) {
+            channelWrapper.removeChannel(context.getGuildId(), type)
+            Translateable("$root.unset").string(context)
+        } else {
+            channelWrapper.setChannel(context.getGuildId(), type, channel.idLong)
+            Translateable("$root.set")
+                    .string(context)
+                    .replace("%channel%", channel.asTag)
+        }.replace("%channelType%", type.toString().toUpperWordCase())
+
         sendMsg(context, msg)
     }
 }
