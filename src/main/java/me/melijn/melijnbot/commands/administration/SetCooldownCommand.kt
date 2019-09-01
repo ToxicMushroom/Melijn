@@ -11,7 +11,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
     init {
         id = 17
         name = "setCooldown"
-        aliases = arrayOf("sc")
+        aliases = arrayOf("scd", "sccd", "setCommandCooldown")
         children = arrayOf(ChannelArg(root), GlobalArg(root), InfoArg(root))
         commandCategory = CommandCategory.ADMINISTRATION
     }

@@ -41,26 +41,26 @@ class SetChannelCommand : AbstractCommand("command.setchannel") {
 
     private suspend fun showChannel(context: CommandContext, type: ChannelType) {
         val channelWrapper = context.daoManager.channelWrapper
-        val channelId = channelWrapper.logChannelCache.get(Pair(context.getGuildId(), type)).await()
+        val channelId = channelWrapper.channelCache.get(Pair(context.getGuildId(), type)).await()
         val channel = if (channelId == -1L) null else context.getGuild().getTextChannelById(channelId)
         if (channel == null) {
             val msg = Translateable("$root.show.unset")
                     .string(context)
-                    .replace("%channelType%", type.toString())
+                    .replace("%channelType%", type.toString().toUpperWordCase())
 
             sendMsg(context, msg)
             return
         }
         val msg = Translateable("$root.show.set")
                 .string(context)
-                .replace("%channelType%", type.toString())
+                .replace("%channelType%", type.toString().toUpperWordCase())
                 .replace("%channel%", channel.asTag)
 
         sendMsg(context, msg)
     }
 
     private suspend fun setChannel(context: CommandContext, type: ChannelType) {
-        val channel = getTextChannelByArgsNMessage(context, 2) ?: return
+        val channel = getTextChannelByArgsNMessage(context, 1) ?: return
         val channelWrapper = context.daoManager.channelWrapper
         channelWrapper.setChannel(context.getGuildId(), type, channel.idLong)
 
