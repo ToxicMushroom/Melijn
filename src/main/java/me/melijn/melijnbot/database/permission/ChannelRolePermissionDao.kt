@@ -4,7 +4,7 @@ import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.PermState
 
-class ChannelRolePermissionDao(private val driverManager: DriverManager) : Dao(driverManager) {
+class ChannelRolePermissionDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "channelRolePermissions"
     override val tableStructure: String = "guildId bigint, channelId bigint, roleId bigint, permission varchar(64), state varchar(8)"

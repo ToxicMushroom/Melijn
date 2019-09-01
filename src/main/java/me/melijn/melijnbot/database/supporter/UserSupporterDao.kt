@@ -4,7 +4,7 @@ import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 
 
-class UserSupporterDao(val driverManager: DriverManager) : Dao(driverManager) {
+class UserSupporterDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "supporters"
     override val tableStructure: String = "userId bigint, guildId bigint, startDate bigint"

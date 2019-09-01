@@ -11,10 +11,10 @@ class GuildPrefixWrapper(private val taskManager: TaskManager, private val guild
 
     val prefixCache = Caffeine.newBuilder()
             .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
-            .executor(taskManager.getExecutorService())
+            .executor(taskManager.executorService)
             .buildAsync<Long, List<String>>() { key, executor -> getPrefixes(key, executor) }
 
-    fun getPrefixes(guildId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<List<String>> {
+    fun getPrefixes(guildId: Long, executor: Executor = taskManager.executorService): CompletableFuture<List<String>> {
         val prefixes = CompletableFuture<List<String>>()
         executor.execute {
             guildPrefixDao.get(guildId) { prefixesString ->

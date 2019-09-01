@@ -3,7 +3,7 @@ package me.melijn.melijnbot.database.prefix
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 
-class UserPrefixDao(private val driverManager: DriverManager) : Dao(driverManager) {
+class UserPrefixDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "userPrefixes"
     override val tableStructure: String = "userId bigint, prefixes varchar(256)"

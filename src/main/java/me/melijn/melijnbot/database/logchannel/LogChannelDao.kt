@@ -4,7 +4,7 @@ import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.LogChannelType
 
-class LogChannelDao(val driverManager: DriverManager) : Dao(driverManager) {
+class LogChannelDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "logChannels"
     override val tableStructure: String = "guildId bigInt, type varchar(64), channelId bigInt"

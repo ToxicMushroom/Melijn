@@ -4,7 +4,7 @@ import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.RoleType
 
-class RoleDao(val driverManager: DriverManager) : Dao(driverManager) {
+class RoleDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "roles"
     override val tableStructure: String = "guildId bigInt, roleType varchar(32), roleId bigint"

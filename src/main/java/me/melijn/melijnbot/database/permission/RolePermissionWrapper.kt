@@ -8,13 +8,13 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
-class RolePermissionWrapper(val taskManager: TaskManager, val rolePermissionDao: RolePermissionDao) {
+class RolePermissionWrapper(val taskManager: TaskManager, private val rolePermissionDao: RolePermissionDao) {
     val rolePermissionCache = Caffeine.newBuilder()
-            .executor(taskManager.getExecutorService())
+            .executor(taskManager.executorService)
             .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
             .buildAsync<Long, Map<String, PermState>>() { key, executor -> getPermissionList(key, executor) }
 
-    fun getPermissionList(roleId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<Map<String, PermState>> {
+    private fun getPermissionList(roleId: Long, executor: Executor = taskManager.executorService): CompletableFuture<Map<String, PermState>> {
         val languageFuture = CompletableFuture<Map<String, PermState>>()
         executor.execute {
             rolePermissionDao.getMap(roleId) { map ->

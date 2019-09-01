@@ -11,11 +11,11 @@ import java.util.concurrent.TimeUnit
 class RoleWrapper(private val taskManager: TaskManager, private val roleDao: RoleDao) {
 
     val roleCache = Caffeine.newBuilder()
-            .executor(taskManager.getExecutorService())
+            .executor(taskManager.executorService)
             .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
             .buildAsync<Pair<Long, RoleType>, Long>() { key, executor -> getRoleId(key.first, key.second, executor) }
 
-    private fun getRoleId(guildId: Long, roleType: RoleType, executor: Executor = taskManager.getExecutorService()): CompletableFuture<Long> {
+    private fun getRoleId(guildId: Long, roleType: RoleType, executor: Executor = taskManager.executorService): CompletableFuture<Long> {
         val future = CompletableFuture<Long>()
         executor.execute {
             roleDao.get(guildId, roleType) {

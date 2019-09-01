@@ -11,10 +11,10 @@ class UserPrefixWrapper(private val taskManager: TaskManager, private val userPr
 
     val prefixCache = Caffeine.newBuilder()
             .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
-            .executor(taskManager.getExecutorService())
+            .executor(taskManager.executorService)
             .buildAsync<Long, List<String>>() { key, executor -> getPrefixes(key, executor) }
 
-    fun getPrefixes(userId: Long, executor: Executor = taskManager.getExecutorService()): CompletableFuture<List<String>> {
+    private fun getPrefixes(userId: Long, executor: Executor = taskManager.executorService): CompletableFuture<List<String>> {
         val prefixes = CompletableFuture<List<String>>()
         executor.execute {
             userPrefixDao.get(userId) { prefixesString ->
