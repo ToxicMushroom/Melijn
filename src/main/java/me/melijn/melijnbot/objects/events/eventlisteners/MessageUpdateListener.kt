@@ -26,7 +26,7 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
     private fun onMessageUpdate(event: GuildMessageUpdateEvent) = runBlocking {
         val message = event.message
         val newContent = event.message.contentRaw
-        val messageWrapper = container.daoManager.messageWrapper
+        val messageWrapper = container.daoManager.messageHistoryWrapper
         val deferredMessage = async { messageWrapper.getMessageById(event.messageIdLong) }
         val daoMessage = deferredMessage.await()
                 ?: DaoMessage(

@@ -52,7 +52,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         val fmId = logChannelCache.get(Pair(guildId, LogChannelType.FILTERED_MESSAGE))
         if (odmId.await() == -1L && sdmId.await() == -1L && pmId.await() == -1L && fmId.await() == -1L) return@runBlocking
 
-        val messageWrapper = container.daoManager.messageWrapper
+        val messageWrapper = container.daoManager.messageHistoryWrapper
         var content = event.message.contentRaw
         event.message.embeds.forEach { embed ->
             content += "\n${embed.toMessage()}"

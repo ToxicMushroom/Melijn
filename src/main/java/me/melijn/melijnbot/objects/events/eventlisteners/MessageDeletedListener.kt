@@ -89,7 +89,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
             fmLogChannel: TextChannel?
     ) {
         val guild = event.guild
-        val msg = container.daoManager.messageWrapper.getMessageById(event.messageIdLong) ?: return
+        val msg = container.daoManager.messageHistoryWrapper.getMessageById(event.messageIdLong) ?: return
         val msgDeleteTime = OffsetDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis()), ZoneId.of("GMT"))
 
         when {
