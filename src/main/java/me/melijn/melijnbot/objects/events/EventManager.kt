@@ -24,6 +24,7 @@ class EventManager(val container: Container) : IEventManager {
         val messageReceivedListener = MessageReceivedListener(container)
         val messageUpdateListener = MessageUpdateListener(container)
         val messageReactionAddedListener = MessageReactionAddedListener(container)
+        val joinLeaveListener = JoinLeaveListener(container)
 
 
         val commandListener = CommandClientBuilder(container)
@@ -37,6 +38,7 @@ class EventManager(val container: Container) : IEventManager {
         eventListeners.add(messageReceivedListener)
         eventListeners.add(messageUpdateListener)
         eventListeners.add(messageReactionAddedListener)
+        eventListeners.add(joinLeaveListener)
     }
 
     override fun handle(event: GenericEvent) {

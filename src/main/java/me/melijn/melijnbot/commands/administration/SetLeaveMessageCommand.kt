@@ -9,7 +9,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 class SetLeaveMessageCommand  : AbstractCommand("command.leave") {
 
     init {
-        id = 34
+        id = 35
         name = "setLeaveMessage"
         aliases = arrayOf("slm")
         commandCategory = CommandCategory.ADMINISTRATION
