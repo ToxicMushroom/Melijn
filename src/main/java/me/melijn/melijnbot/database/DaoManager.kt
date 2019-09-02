@@ -26,6 +26,8 @@ import me.melijn.melijnbot.database.language.UserLanguageWrapper
 import me.melijn.melijnbot.database.logchannel.LogChannelDao
 import me.melijn.melijnbot.database.logchannel.LogChannelWrapper
 import me.melijn.melijnbot.database.message.MessageDao
+import me.melijn.melijnbot.database.message.MessageHistoryDao
+import me.melijn.melijnbot.database.message.MessageHistoryWrapper
 import me.melijn.melijnbot.database.message.MessageWrapper
 import me.melijn.melijnbot.database.mute.MuteDao
 import me.melijn.melijnbot.database.mute.MuteWrapper
@@ -91,6 +93,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
     val kickWrapper: KickWrapper
     val warnWrapper: WarnWrapper
 
+    val messageHistoryWrapper: MessageHistoryWrapper
     val messageWrapper: MessageWrapper
 
     init {
@@ -137,6 +140,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
         kickWrapper = KickWrapper(taskManager, KickDao(driverManager))
         warnWrapper = WarnWrapper(taskManager, WarnDao(driverManager))
 
+        messageHistoryWrapper = MessageHistoryWrapper(taskManager, MessageHistoryDao(driverManager))
         messageWrapper = MessageWrapper(taskManager, MessageDao(driverManager))
 
         //After registering wrappers
