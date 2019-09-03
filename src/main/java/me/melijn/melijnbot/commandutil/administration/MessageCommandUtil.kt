@@ -9,10 +9,11 @@ import me.melijn.melijnbot.objects.utils.sendMsg
 
 class MessageCommandUtil{
     companion object {
-        suspend fun setMessage(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+        suspend fun setMessageContent(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
             val messageWrapper = context.daoManager.messageWrapper
-            val oldContent = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+            val oldMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
             val newContent = context.rawArg
+
 
             val msg = if (newContent.equals("null", true)) {
                 messageWrapper.removeMessage(context.getGuildId(), type)
@@ -28,7 +29,7 @@ class MessageCommandUtil{
             sendMsg(context, msg)
         }
 
-        suspend fun showMessage(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+        suspend fun showMessageContent(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
             val messageWrapper = context.daoManager.messageWrapper
             val content = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
             val msg = if (content.isBlank()) {

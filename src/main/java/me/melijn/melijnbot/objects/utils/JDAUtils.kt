@@ -4,11 +4,11 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_USER
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.Translateable
-import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.entities.Role
-import net.dv8tion.jda.api.entities.TextChannel
-import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.requests.RestAction
+import net.dv8tion.jda.api.utils.data.DataObject
+import net.dv8tion.jda.internal.JDAImpl
 import java.util.regex.Pattern
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -138,6 +138,19 @@ fun getRoleByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContex
     return role
 }
 
+fun JDA.messageByJSONNMessage(context: CommandContext, json: String): MessageEmbed? {
+    val jdaImpl = (this as JDAImpl)
+
+    return try {
+        jdaImpl.entityBuilder.createMessageEmbed(DataObject.fromJson(json))
+    } catch (e: Exception) {
+        val msg = Translateable("message.invalidJSONStruct").string(context)
+                .replace("%cause%", e.message ?: "unknown")
+        sendMsg(context, msg, null)
+        null
+    }
+}
+
 fun getTextChannelByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): TextChannel? {
     var channel: TextChannel? = null
     if (!context.isFromGuild && sameGuildAsContext) return channel
@@ -168,7 +181,7 @@ fun getTextChannelByArgsN(context: CommandContext, index: Int, sameGuildAsContex
 fun getTextChannelByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): TextChannel? {
     val textChannel = getTextChannelByArgsN(context, index, sameGuildAsContext)
     if (textChannel == null) {
-        val msg =  Translateable("message.unknown.textchannel")
+        val msg = Translateable("message.unknown.textchannel")
                 .string(context)
                 .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg, null)

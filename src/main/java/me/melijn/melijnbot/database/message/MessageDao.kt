@@ -3,6 +3,8 @@ package me.melijn.melijnbot.database.message
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.MessageType
+import net.dv8tion.jda.api.entities.MessageEmbed
+import org.json.JSONObject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -32,5 +34,24 @@ class MessageDao(driverManager: DriverManager) : Dao(driverManager) {
     fun remove(guildId: Long, type: MessageType) {
         driverManager.executeUpdate("REMOVE FROM $table WHERE guildId = ? AND type = ?",
                 guildId, type.toString())
+    }
+}
+
+data class ModularMessage(val messageContent: String? = null,
+                          val embed: MessageEmbed? = null,
+                          val attachments: List<String> = emptyList()) {
+    fun toJSON(): String {
+        val json = JSONObject()
+        messageContent?.let { json.put("content", it) }
+        embed?.let {
+            val embedJson = JSONObject()
+            embedJson.put("title", )
+
+            json.put("embed", embedJson)
+        }
+        attachments.let {
+            json.put("attachments", it.joinToString("%SPLIT%"))
+        }
+        return json.toString(4)
     }
 }
