@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.commandutil.administration
 
 import kotlinx.coroutines.future.await
+import me.melijn.melijnbot.database.message.MessageWrapper
 import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.objects.command.AbstractCommand
@@ -10,9 +11,17 @@ import me.melijn.melijnbot.objects.utils.sendMsg
 
 class MessageCommandUtil {
     companion object {
+        fun removeMessageIfEmpty(guildId: Long, type: MessageType, message: ModularMessage, messageWrapper: MessageWrapper): Boolean {
+            return if (messageWrapper.shouldRemove(message)) {
+                messageWrapper.removeMessage(guildId, type)
+                true
+            } else false
+        }
+
         suspend fun setMessageContent(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
             val messageWrapper = context.daoManager.messageWrapper
             val oldMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+                    ?: ModularMessage()
             val newContent = context.rawArg
 
 
@@ -23,7 +32,7 @@ class MessageCommandUtil {
                 messageWrapper.setMessageContent(oldMessage, context.getGuildId(), type, newContent)
                 Translateable("${cmd.root}.set").string(context)
                         .replace("%newContent%", newContent)
-            }.replace("%oldContent%", oldMessage?.messageContent ?: "/")
+            }.replace("%oldContent%", oldMessage.messageContent ?: "/")
 
             sendMsg(context, msg)
         }
@@ -101,23 +110,52 @@ class MessageCommandUtil {
             } else {
                 val title = Translateable("${cmd.root}.title").string(context)
                 var content = "\n```INI"
-                for ((index, attachment) in modularMessage.attachments.withIndex()) {
-                    content += "\n$index - [$attachment]"
+                for ((index, attachment) in modularMessage.attachments.entries.withIndex()) {
+                    content += "\n$index - [${attachment.key}] - ${attachment.value}"
                 }
                 content += "```"
                 (title + content)
             }
             sendMsg(context, msg)
-
-
         }
 
-        fun addAttachment(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        suspend fun addAttachment(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+                    ?: ModularMessage()
+
+            val newMap = modularMessage.attachments.toMutableMap()
+            newMap[context.args[0]] = context.args[1]
+
+            messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
+            val msg = Translateable("${cmd.root}.success").string(context)
+                    .replace("%attachment%", context.args[0])
+                    .replace("%file%", context.args[1])
+
+            sendMsg(context, msg)
         }
 
-        fun removeAttachment(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        suspend fun removeAttachment(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+                    ?: ModularMessage()
+
+            val attachments = modularMessage.attachments.toMutableMap()
+            val file = if (attachments.containsKey(context.args[0])) attachments[context.args[0]] else null
+            attachments.remove(context.args[0])
+
+            val msg =
+                    if (file == null) {
+                        Translateable("${cmd.root}.notanattachment").string(context)
+                                .replace("%attachment%", context.args[0])
+                    } else {
+                        messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
+                        Translateable("${cmd.root}.success").string(context)
+                                .replace("%attachment%", context.args[0])
+                                .replace("%file%", file)
+                    }
+
+            sendMsg(context, msg)
         }
 
         fun showEmbedColor(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
@@ -125,7 +163,7 @@ class MessageCommandUtil {
         }
 
         fun setEmbedColor(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
         }
     }
 }

@@ -46,7 +46,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
         init {
             name = "embed"
             aliases = arrayOf("e")
-            children = arrayOf(ClearArg(root, type), SetDescriptionArg(root, type))
+            children = arrayOf(ClearArg(root, type), SetDescriptionArg(root, type), SetColorArg(root, type))
         }
 
         override suspend fun execute(context: CommandContext) {
@@ -109,12 +109,20 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
         }
 
         class ListArg(root: String, val type: MessageType) : AbstractCommand("$root.list") {
+
+            init {
+                name = "list"
+            }
             override suspend fun execute(context: CommandContext) {
                 MessageCommandUtil.listAttachments(this, context, type)
             }
         }
 
         class AddArg(root: String, val type: MessageType) : AbstractCommand("$root.add") {
+
+            init {
+                name = "add"
+            }
             override suspend fun execute(context: CommandContext) {
                 MessageCommandUtil.addAttachment(this, context, type)
             }
@@ -122,6 +130,10 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
         }
 
         class RemoveArg(root: String, val type: MessageType) : AbstractCommand("$root.remove") {
+
+            init {
+                name = "remove"
+            }
             override suspend fun execute(context: CommandContext) {
                 MessageCommandUtil.removeAttachment(this, context, type)
             }

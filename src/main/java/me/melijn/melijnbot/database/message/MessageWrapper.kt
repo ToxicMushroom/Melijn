@@ -8,12 +8,11 @@ import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.objects.threading.TaskManager
 import net.dv8tion.jda.api.AccountType
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.MessageEmbed
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class MessageWrapper(val taskManager: TaskManager, private val jda: JDA, private val messageDao: MessageDao) {
+class MessageWrapper(val taskManager: TaskManager, private val messageDao: MessageDao) {
 
     val messageCache = Caffeine.newBuilder()
             .executor(taskManager.executorService)
@@ -31,7 +30,7 @@ class MessageWrapper(val taskManager: TaskManager, private val jda: JDA, private
                 return@launch
             }
             try {
-                future.complete(ModularMessage.fromJSON(jda, json))
+                future.complete(ModularMessage.fromJSON(json))
             } catch (e: Exception) {
                 e.printStackTrace()
                 future.complete(null)
@@ -47,17 +46,17 @@ class MessageWrapper(val taskManager: TaskManager, private val jda: JDA, private
     }
 
 
-    private fun removeMessage(guildId: Long, type: MessageType) {
+    fun removeMessage(guildId: Long, type: MessageType) {
         messageDao.remove(guildId, type)
         messageCache.put(Pair(guildId, type), CompletableFuture.completedFuture(null))
     }
 
-    private fun setMessage(guildId: Long, type: MessageType, message: ModularMessage) {
+    fun setMessage(guildId: Long, type: MessageType, message: ModularMessage) {
         messageDao.set(guildId, type, message.toJSON())
         messageCache.put(Pair(guildId, type), CompletableFuture.completedFuture(message))
     }
 
-    private fun shouldRemove(message: ModularMessage): Boolean {
+    fun shouldRemove(message: ModularMessage): Boolean {
         val content = message.messageContent
         val embed = message.embed
         val attachments = message.attachments

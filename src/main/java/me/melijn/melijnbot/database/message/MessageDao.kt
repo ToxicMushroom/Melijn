@@ -1,12 +1,16 @@
 package me.melijn.melijnbot.database.message
 
+import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.MessageType
-import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.AccountType
+import net.dv8tion.jda.api.MessageBuilder
+import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
+import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -42,7 +46,7 @@ class MessageDao(driverManager: DriverManager) : Dao(driverManager) {
 
 data class ModularMessage(var messageContent: String? = null,
                           var embed: MessageEmbed? = null,
-                          var attachments: List<String> = emptyList()) {
+                          var attachments: Map<String, String> = emptyMap()) {
     fun toJSON(): String {
         val json = JSONObject()
         messageContent?.let { json.put("content", it) }
@@ -50,12 +54,31 @@ data class ModularMessage(var messageContent: String? = null,
             json.put("embed", membed.toData().toString())
         }
 
-        json.put("attachments", attachments.joinToString("%SPLIT%"))
+        val attachmentsJson = JSONArray()
+        for (attachment in attachments) {
+            attachmentsJson.put(
+                    JSONObject()
+                            .put("url", attachment.key)
+                            .put("file", attachment.value)
+            )
+        }
+        json.put("attachments", attachmentsJson)
         return json.toString(4)
     }
 
+    fun toMessage(): Message? {
+        val embed = embed
+        if (messageContent == null && (embed == null || embed.isEmpty || !embed.isSendable(AccountType.BOT)) && attachments.isEmpty()) return null
+
+        val mb = MessageBuilder()
+                .setEmbed(embed)
+                .setContent(messageContent)
+
+        return mb.build()
+    }
+
     companion object {
-        fun fromJSON(jda: JDA, json: String): ModularMessage {
+        fun fromJSON(json: String): ModularMessage {
             try {
                 val jsonObj = JSONObject(json)
                 var content: String? = null
@@ -64,19 +87,23 @@ data class ModularMessage(var messageContent: String? = null,
                 }
                 var embed: MessageEmbed? = null
                 if (jsonObj.has("embed")) {
-                    val jdaImpl = (jda as JDAImpl)
+                    val jdaImpl = (MelijnBot.shardManager?.shards?.get(0) as JDAImpl)
                     val embedString = jsonObj.getString("embed")
                     val dataObject = DataObject.fromJson(embedString)
                     embed = jdaImpl.entityBuilder.createMessageEmbed(dataObject)
                 }
-                val attachments = mutableListOf<String>()
+                val attachments = mutableMapOf<String, String>()
                 if (jsonObj.has("attachments")) {
-                    val attachmentsString = jsonObj.getString("attachments")
-                    val attachmentStrings = attachmentsString.split("%SPLIT%")
-                    attachments.addAll(attachmentStrings)
+                    val attachmentsJson = jsonObj.getJSONArray("attachments")
+
+                    for (i in 0 until attachmentsJson.length()) {
+                        val attachmentObj = attachmentsJson.getJSONObject(i)
+                        attachments[attachmentObj.getString("url")] = attachmentObj.getString("file")
+                    }
                 }
                 return ModularMessage(content, embed, attachments)
             } catch (e: Exception) {
+                e.printStackTrace()
                 throw IllegalArgumentException("Invalid JSON structure")
             }
         }
