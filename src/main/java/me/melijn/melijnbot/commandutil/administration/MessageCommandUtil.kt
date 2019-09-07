@@ -127,6 +127,8 @@ class MessageCommandUtil {
             val newMap = modularMessage.attachments.toMutableMap()
             newMap[context.args[0]] = context.args[1]
 
+            modularMessage.attachments = newMap.toMap()
+
             messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
             val msg = Translateable("${cmd.root}.success").string(context)
                     .replace("%attachment%", context.args[0])
@@ -143,6 +145,8 @@ class MessageCommandUtil {
             val attachments = modularMessage.attachments.toMutableMap()
             val file = if (attachments.containsKey(context.args[0])) attachments[context.args[0]] else null
             attachments.remove(context.args[0])
+
+            modularMessage.attachments = attachments.toMap()
 
             val msg =
                     if (file == null) {

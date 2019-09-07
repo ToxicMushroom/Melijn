@@ -6,18 +6,25 @@ import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
+import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.objects.events.AbstractListener
+import me.melijn.melijnbot.objects.translation.MISSING_IMAGE_URL
+import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelById
 import me.melijn.melijnbot.objects.utils.sendAttachments
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendMsgWithAttachments
+import net.dv8tion.jda.api.entities.EmbedType
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
 import net.dv8tion.jda.api.events.guild.member.GuildMemberLeaveEvent
+import net.dv8tion.jda.api.utils.data.DataObject
+import net.dv8tion.jda.internal.JDAImpl
 
 class JoinLeaveListener(container: Container) : AbstractListener(container) {
 
@@ -27,21 +34,23 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
     }
 
     private fun onGuildMemberJoin(event: GuildMemberJoinEvent) = CoroutineScope(Dispatchers.Default).launch {
-        postWelcomeMessage(event.guild, container, ChannelType.JOIN, MessageType.JOIN)
+        postWelcomeMessage(event.guild, event.user, container, ChannelType.JOIN, MessageType.JOIN)
     }
 
     private fun onGuildMemberLeave(event: GuildMemberLeaveEvent) = CoroutineScope(Dispatchers.Default).launch {
-        postWelcomeMessage(event.guild, container, ChannelType.LEAVE, MessageType.LEAVE)
+        postWelcomeMessage(event.guild, event.user, container, ChannelType.LEAVE, MessageType.LEAVE)
     }
 
-    private suspend fun postWelcomeMessage(guild: Guild, container: Container, channelType: ChannelType, messageType: MessageType) {
+    private suspend fun postWelcomeMessage(guild: Guild, user: User, container: Container, channelType: ChannelType, messageType: MessageType) {
         val channelWrapper = container.daoManager.channelWrapper
         val channelId = channelWrapper.channelCache.get(Pair(guild.idLong, channelType)).await()
         val channel = guild.getAndVerifyChannelById(channelType, channelId, channelWrapper) ?: return
 
         val messageWrapper = container.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(guild.idLong, messageType)).await() ?: return
-        MessageCommandUtil.removeMessageIfEmpty(guild.idLong, messageType, modularMessage, messageWrapper)
+        var modularMessage = messageWrapper.messageCache.get(Pair(guild.idLong, messageType)).await() ?: return
+        if (MessageCommandUtil.removeMessageIfEmpty(guild.idLong, messageType, modularMessage, messageWrapper)) return
+
+        modularMessage = replaceVariablesInWelcomeMessage(guild, user, modularMessage)
 
         val message: Message? = modularMessage.toMessage()
         when {
@@ -50,4 +59,48 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
             else -> sendMsg(channel, message)
         }
     }
+
+    private fun replaceVariablesInWelcomeMessage(guild: Guild, user: User, modularMessage: ModularMessage): ModularMessage {
+        val newMessage = ModularMessage()
+        newMessage.messageContent = modularMessage.messageContent?.let {
+            replaceWelcomeVariables(it, guild, user)
+        }
+
+        val oldEmbedData = modularMessage.embed?.toData()
+                ?.put("type", EmbedType.RICH)
+        if (oldEmbedData != null) {
+            val newEmbedJSON = replaceWelcomeVariables(oldEmbedData.toString(), guild, user)
+            val newEmbedData = DataObject.fromJson(newEmbedJSON)
+            val newEmbed = (guild.jda as JDAImpl).entityBuilder.createMessageEmbed(newEmbedData)
+            newMessage.embed = newEmbed
+        }
+
+
+        val newAttachments = mutableMapOf<String, String>()
+        modularMessage.attachments.forEach { (t, u) ->
+            val url = replaceWelcomeVariables(t, guild, user)
+            val file = replaceWelcomeVariables(u, guild, user)
+            newAttachments[url] = file
+        }
+        newMessage.attachments = newAttachments
+        return newMessage
+
+    }
+
+    private fun replaceWelcomeVariables(s: String, guild: Guild, user: User): String =
+            s.replace("%userMention%".toRegex(RegexOption.IGNORE_CASE), user.asMention)
+                    .replace("%guildName%".toRegex(RegexOption.IGNORE_CASE), guild.name)
+                    .replace("%memberCount%".toRegex(RegexOption.IGNORE_CASE), guild.members.size.toString())
+                    .replace("%userName%".toRegex(RegexOption.IGNORE_CASE), user.name)
+                    .replace("%userDiscrim%".toRegex(RegexOption.IGNORE_CASE), user.discriminator)
+                    .replace("%timeStamp%".toRegex(RegexOption.IGNORE_CASE), System.currentTimeMillis().asEpochMillisToDateTime())
+                    .replace("%timeMillis%".toRegex(RegexOption.IGNORE_CASE), System.currentTimeMillis().toString())
+                    .replace("%userId%".toRegex(RegexOption.IGNORE_CASE), user.id)
+                    .replace("%guildId%".toRegex(RegexOption.IGNORE_CASE), guild.id)
+                    .replace("%user%".toRegex(RegexOption.IGNORE_CASE), user.asTag)
+                    .replace("%userAvatar%".toRegex(RegexOption.IGNORE_CASE), user.effectiveAvatarUrl)
+                    .replace("%guildIcon%".toRegex(RegexOption.IGNORE_CASE), guild.iconUrl ?: MISSING_IMAGE_URL)
+                    .replace("%bannerUrl%".toRegex(RegexOption.IGNORE_CASE), guild.bannerUrl ?: MISSING_IMAGE_URL)
+                    .replace("%splashUrl%".toRegex(RegexOption.IGNORE_CASE), guild.splashUrl ?: MISSING_IMAGE_URL)
+                    .replace("%vanityUrl%".toRegex(RegexOption.IGNORE_CASE), guild.vanityUrl ?: MISSING_IMAGE_URL)
 }

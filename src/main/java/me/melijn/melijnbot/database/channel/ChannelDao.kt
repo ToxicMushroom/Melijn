@@ -28,6 +28,8 @@ class ChannelDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND channelType = ?", { rs ->
             if (rs.next()) {
                 it.resume(rs.getLong("channelId"))
+            } else {
+                it.resume(-1L)
             }
         }, guildId, channelType.toString())
     }

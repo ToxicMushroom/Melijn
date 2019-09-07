@@ -6,6 +6,7 @@ import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.MessageType
 import net.dv8tion.jda.api.AccountType
 import net.dv8tion.jda.api.MessageBuilder
+import net.dv8tion.jda.api.entities.EmbedType
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.utils.data.DataObject
@@ -51,7 +52,9 @@ data class ModularMessage(var messageContent: String? = null,
         val json = JSONObject()
         messageContent?.let { json.put("content", it) }
         embed?.let { membed ->
-            json.put("embed", membed.toData().toString())
+            json.put("embed", JSONObject(membed.toData()
+                    .put("type", EmbedType.RICH)
+                    .toString()))
         }
 
         val attachmentsJson = JSONArray()
@@ -88,8 +91,8 @@ data class ModularMessage(var messageContent: String? = null,
                 var embed: MessageEmbed? = null
                 if (jsonObj.has("embed")) {
                     val jdaImpl = (MelijnBot.shardManager?.shards?.get(0) as JDAImpl)
-                    val embedString = jsonObj.getString("embed")
-                    val dataObject = DataObject.fromJson(embedString)
+                    val embedString = jsonObj.getJSONObject("embed")
+                    val dataObject = DataObject.fromJson(embedString.toString(4))
                     embed = jdaImpl.entityBuilder.createMessageEmbed(dataObject)
                 }
                 val attachments = mutableMapOf<String, String>()
