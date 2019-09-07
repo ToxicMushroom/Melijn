@@ -23,7 +23,7 @@ fun Guild.getAndVerifyChannelById(type: ChannelType, channelId: Long, channelWra
     val textChannel = getTextChannelById(channelId)
     var shouldRemove = false
     if (channelId != -1L && textChannel == null) shouldRemove = true
-    if (textChannel?.canTalk() == true) shouldRemove = true
+    if (textChannel?.canTalk() == false) shouldRemove = true
 
     if (shouldRemove) {
         channelWrapper.removeChannel(this.idLong, type)
