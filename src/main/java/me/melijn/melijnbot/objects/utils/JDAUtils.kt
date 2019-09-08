@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.requests.RestAction
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
+import java.awt.Color
 import java.util.regex.Pattern
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -136,6 +137,32 @@ fun getRoleByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContex
         sendMsg(context, msg, null)
     }
     return role
+}
+
+fun getColorFromArgNMessage(context: CommandContext, index: Int): Color? {
+    val arg = context.args[index]
+    when {
+        arg.matches("(?i)#([a-f]|\\d){6}".toRegex()) -> {
+
+            var red: Int = Integer.valueOf(arg.substring(1, 3), 16)
+            var green: Int = Integer.valueOf(arg.substring(3, 5), 16)
+            var blue: Int = Integer.valueOf(arg.substring(5, 7), 16)
+            red = red shl 16 and 0xFF0000
+            green = green shl 8 and 0x00FF00
+            blue = blue and 0x0000FF
+            return Color.getColor((red or green or blue).toString())
+        }
+        else -> {
+            val color: Color? = Color.getColor(arg)
+            if (color == null) {
+                val msg = Translateable("message.unknown.color")
+                        .string(context)
+                        .replace(PLACEHOLDER_ARG, arg)
+                sendMsg(context, msg, null)
+            }
+            return color
+        }
+    }
 }
 
 fun JDA.messageByJSONNMessage(context: CommandContext, json: String): MessageEmbed? {

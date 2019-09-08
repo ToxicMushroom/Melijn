@@ -7,7 +7,9 @@ import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.utils.getColorFromArgNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.toHex
 
 class MessageCommandUtil {
     companion object {
@@ -162,12 +164,38 @@ class MessageCommandUtil {
             sendMsg(context, msg)
         }
 
-        fun showEmbedColor(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+        suspend fun showEmbedColor(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val oldMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+            val color = oldMessage?.embed?.color
 
+            val msg = if (color == null) {
+                Translateable("${cmd.root}.set.unset").string(context)
+            } else {
+                Translateable("${cmd.root}.set").string(context)
+                        .replace("%color%", color.toHex())
+            }
+
+            sendMsg(context, msg)
         }
 
-        fun setEmbedColor(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+        suspend fun setEmbedColor(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await() ?: ModularMessage()
 
+            val arg = context.args[0]
+
+            val msg = if (arg.equals("null", true)) {
+                messageWrapper.removeEmbedColor(modularMessage, context.getGuildId(), type)
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                val color = getColorFromArgNMessage(context, 0) ?: return
+                messageWrapper.setEmbedColor(modularMessage, context.getGuildId(), type, color)
+                Translateable("${cmd.root}.show.set").string(context)
+                        .replace("%newColor%", color.toHex())
+            }
+
+            sendMsg(context, msg)
         }
     }
 }

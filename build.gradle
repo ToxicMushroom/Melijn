@@ -21,7 +21,10 @@ dependencies {
         exclude module: 'opus-java'
     }
     implementation group: 'com.sedmelluq', name: 'lavaplayer', version: '1.3.20'
-    implementation group: 'com.github.FredBoat', name: 'Lavalink-Client', version: '8c3f0b9'
+    implementation group: 'com.github.FredBoat', name: 'Lavalink-Client', version: '9bda4ea'
+
+    //https://github.com/ToxicMushroom/JagTag-Kotlin
+    implementation group: 'com.github.ToxicMushroom', name: 'JagTag-Kotlin', version: 'a255e76'
 
     //https://search.maven.org/artifact/com.zaxxer/HikariCP
     //https://mvnrepository.com/artifact/mysql/mysql-connector-java
@@ -30,13 +33,13 @@ dependencies {
 
     //https://mvnrepository.com/artifact/org.codehaus.janino/janino
     //Used for java eval
-    implementation group: 'org.codehaus.janino', name: 'janino', version: '3.0.15'
-    implementation group: 'org.codehaus.janino', name: 'commons-compiler', version: '3.0.15'
+    implementation group: 'org.codehaus.janino', name: 'janino', version: '3.1.0'
+    implementation group: 'org.codehaus.janino', name: 'commons-compiler', version: '3.1.0'
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
-    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.3.0'
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.3.1'
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-jdk8
-    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-jdk8', version: '1.3.0'
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-jdk8', version: '1.3.1'
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-script-util
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-script-runtime
@@ -60,7 +63,7 @@ dependencies {
 
     //Loading caches
     //https://github.com/ben-manes/caffeine
-    implementation(group: 'com.github.ben-manes', name: 'caffeine', version: '2.7.0') {
+    implementation(group: 'com.github.ben-manes', name: 'caffeine', version: '2.8.0') {
         exclude module: 'slf4j-nop'
     }
 
@@ -69,8 +72,8 @@ dependencies {
 
     //https://mvnrepository.com/artifact/org.jooby/jooby
     //WebServer
-    implementation group: 'org.jooby', name: 'jooby-netty', version: '1.6.3'
-    implementation group: 'org.jooby', name: 'jooby-jackson', version: '1.6.3'
+    implementation group: 'org.jooby', name: 'jooby-netty', version: '1.6.4'
+    implementation group: 'org.jooby', name: 'jooby-jackson', version: '1.6.4'
 
     //https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-kotlin
     implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.9.9'

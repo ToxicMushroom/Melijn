@@ -5,6 +5,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.Translateable
+import java.awt.Color
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.text.SimpleDateFormat
@@ -62,6 +63,13 @@ fun getWindowsUptime(): Long {
         }
     }
     return -1
+}
+
+fun Color.toHex(): String {
+    val redHex = Integer.toHexString(red)
+    val greenHex = Integer.toHexString(green)
+    val blueHex = Integer.toHexString(blue)
+    return "#$redHex$greenHex$blueHex"
 }
 
 

@@ -1,0 +1,52 @@
+package me.melijn.melijnbot.objects.jagtag
+
+import com.jagrosh.jagtag.Environment
+import com.jagrosh.jagtag.Method
+import com.jagrosh.jagtag.ParseException
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.User
+
+object DiscordMethods {
+    fun getMethods(): List<Method> = listOf(
+            Method("user", { env ->
+                val user: User = env.getReifiedX("user")
+                user.asTag
+            }),
+            Method("userId", { env ->
+                val user: User = env.getReifiedX("user")
+                user.id
+            }),
+            Method("username", { env ->
+                val user: User = env.getReifiedX("user")
+                user.name
+            }),
+            Method("nickname", { env ->
+                val member: Member = env.getReifiedX("member")
+                member.nickname ?: throw ParseException("no nickname")
+            }, { env: Environment, input: Array<String> ->
+                println(input)
+                "blub"
+            }),
+            Method("effectiveName", { env ->
+                val member: Member = env.getReifiedX("member")
+                member.effectiveName
+            }),
+            Method("effectiveAvatarUrl", { env ->
+                val user: User = env.getReifiedX("user")
+                user.effectiveAvatarUrl
+            }),
+            Method("effectiveAvatarUrl", { env ->
+                val user: User = env.getReifiedX("user")
+                user.effectiveAvatarUrl
+            }),
+            Method("discrim", { env ->
+                val user: User = env.getReifiedX("user")
+                user.discriminator
+            }),
+            Method("guildname", { env ->
+                val guild: Guild = env.getReifiedX("guild")
+                guild.name
+            })
+    )
+}
