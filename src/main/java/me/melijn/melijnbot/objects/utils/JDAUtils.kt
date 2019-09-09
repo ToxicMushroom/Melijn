@@ -7,6 +7,7 @@ import me.melijn.melijnbot.objects.translation.Translateable
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.requests.RestAction
+import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
 import java.awt.Color
@@ -15,6 +16,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
+
+val USER_MENTION_PATTERN: Pattern = Pattern.compile("<@(\\d+)>")
 
 val Member.asTag: String
     get() = this.user.asTag
@@ -37,25 +40,28 @@ fun getUserByArgs(context: CommandContext, index: Int): User {
 
 
 fun getUserByArgsN(context: CommandContext, index: Int): User? {//With null
-    var user: User? = null
-    if (context.args.size > index) {
-        val arg = context.args[index]
-
-        user = if (context.getMessage().mentionedUsers.size > context.offset)
-            context.getMessage().mentionedUsers[context.offset]
-        else if (arg.matches(Regex("\\d+")) && context.jda.shardManager?.getUserById(arg) != null)
-            context.jda.shardManager?.getUserById(arg)
-        else if (context.isFromGuild && context.getGuild().getMembersByName(arg, true).size > 0)
-            context.getGuild().getMembersByName(arg, true)[0].user
-        else if (context.isFromGuild && context.getGuild().getMembersByNickname(arg, true).size > 0)
-            context.getGuild().getMembersByNickname(arg, true)[0].user
-        else if (arg.matches("<@\\d+>".toRegex()))
-            context.getShardManager()?.getUserById(arg.substring(2, arg.lastIndex - 1).toLong())
-        else user
-    }
-    return user
+    val shardManager = context.getShardManager() ?: return null
+    return if (context.args.size > index)
+        getUserByArgsN(shardManager, context.getGuildN(), context.args[index])
+    else null
 }
 
+fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String): User? {
+    var user: User? = null
+    val argMentionMatcher = USER_MENTION_PATTERN.matcher(arg)
+
+    user = if (arg.matches(Regex("\\d+")) && shardManager.getUserById(arg) != null)
+        shardManager.getUserById(arg)
+    else if (guild != null && guild.getMembersByName(arg, true).size > 0)
+        guild.getMembersByName(arg, true)[0].user
+    else if (guild != null && guild.getMembersByNickname(arg, true).size > 0)
+        guild.getMembersByNickname(arg, true)[0].user
+    else if (argMentionMatcher.matches())
+        shardManager.getUserById(argMentionMatcher.group(1))
+    else user
+
+    return user
+}
 
 suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? = suspendCoroutine {
     val user1: User? = getUserByArgsN(context, index)
@@ -230,4 +236,12 @@ fun getMemberByArgsNMessage(context: CommandContext, index: Int): Member? {
     }
 
     return member
+}
+
+fun getMemberByArgsN(guild: Guild, arg: String): Member? {
+    val shardManager = guild.jda.shardManager ?: return null
+    val user = getUserByArgsN(shardManager, guild, arg)
+
+    return if (user == null) null
+    else guild.getMember(user)
 }

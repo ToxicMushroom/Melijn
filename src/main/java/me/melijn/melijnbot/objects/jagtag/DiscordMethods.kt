@@ -13,6 +13,13 @@ object DiscordMethods {
                 val user: User = env.getReifiedX("user")
                 user.asTag
             }),
+
+            //{isMember:userId|userTag}
+            Method("isMember", { "true" }, { env: Environment, input: Array<String> ->
+                val guild: Guild = env.getReifiedX("guild")
+                val arg = input[0]
+                (getMemberByArgsN(guild, arg) != null).toString()
+            }),
             Method("userId", { env ->
                 val user: User = env.getReifiedX("user")
                 user.id
@@ -24,17 +31,14 @@ object DiscordMethods {
             Method("nickname", { env ->
                 val member: Member = env.getReifiedX("member")
                 member.nickname ?: throw ParseException("no nickname")
-            }, { env: Environment, input: Array<String> ->
-                println(input)
-                "blub"
+            }),
+            Method("hasNickname", { env ->
+                val member: Member = env.getReifiedX("member")
+                (member.nickname != null).toString()
             }),
             Method("effectiveName", { env ->
                 val member: Member = env.getReifiedX("member")
                 member.effectiveName
-            }),
-            Method("effectiveAvatarUrl", { env ->
-                val user: User = env.getReifiedX("user")
-                user.effectiveAvatarUrl
             }),
             Method("effectiveAvatarUrl", { env ->
                 val user: User = env.getReifiedX("user")

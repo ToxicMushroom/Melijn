@@ -23,6 +23,10 @@ class CommandContext(
         else throw IllegalArgumentException("Cannot be used if the source of the command is not a guild. Make the command guild only or perform checks")
     }
 
+    fun getGuildN(): Guild? = if (isFromGuild)
+        messageReceivedEvent.guild
+    else null
+
     fun getGuildId(): Long {
         return getGuild().idLong
     }
@@ -70,8 +74,9 @@ class CommandContext(
     }
 
     fun reply(something: Any) {
-        if (isFromGuild && getSelfMember()?.hasPermission(getTextChannel(), Permission.MESSAGE_WRITE) != true)
-            throw IllegalArgumentException("No MESSAGE_WRITE permission")
+        require(!(isFromGuild && getSelfMember()?.hasPermission(getTextChannel(), Permission.MESSAGE_WRITE) != true)) {
+            "No MESSAGE_WRITE permission"
+        }
         getMessageChannel().sendMessage(something.toString()).queue()
     }
 }
