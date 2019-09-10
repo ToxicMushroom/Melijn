@@ -17,7 +17,12 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 
-val USER_MENTION_PATTERN: Pattern = Pattern.compile("<@(\\d+)>")
+val DISCORD_ID: Pattern = Pattern.compile("\\d{17,20}") // ID
+val FULL_USER_REF: Pattern = Pattern.compile("(\\S.{0,30}\\S)\\s*#(\\d{4})") // $1 -> username, $2 -> discriminator
+val USER_MENTION: Pattern = Pattern.compile("<@!?(\\d{17,20})>") // $1 -> ID
+val CHANNEL_MENTION: Pattern = Pattern.compile("<#(\\d{17,20})>") // $1 -> ID
+val ROLE_MENTION: Pattern = Pattern.compile("<@&(\\d{17,20})>") // $1 -> ID
+val EMOTE_MENTION: Pattern = Pattern.compile("<:(.{2,32}):(\\d{17,20})>")
 
 val Member.asTag: String
     get() = this.user.asTag
@@ -47,20 +52,37 @@ fun getUserByArgsN(context: CommandContext, index: Int): User? {//With null
 }
 
 fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String): User? {
-    var user: User? = null
-    val argMentionMatcher = USER_MENTION_PATTERN.matcher(arg)
 
-    user = if (arg.matches(Regex("\\d+")) && shardManager.getUserById(arg) != null)
+    val idMatcher = DISCORD_ID.matcher(arg)
+    val argMentionMatcher = USER_MENTION.matcher(arg)
+    val fullUserRefMatcher = FULL_USER_REF.matcher(arg)
+
+    return if (idMatcher.matches()) {
         shardManager.getUserById(arg)
-    else if (guild != null && guild.getMembersByName(arg, true).size > 0)
-        guild.getMembersByName(arg, true)[0].user
-    else if (guild != null && guild.getMembersByNickname(arg, true).size > 0)
-        guild.getMembersByNickname(arg, true)[0].user
-    else if (argMentionMatcher.matches())
+    } else if (argMentionMatcher.matches()) {
         shardManager.getUserById(argMentionMatcher.group(1))
-    else user
+    } else if (guild != null && fullUserRefMatcher.matches()) {
+        val byName = guild.jda.getUsersByName(arg, true)
+        val matches = byName.filter { user -> user.discriminator == fullUserRefMatcher.group(2) }
+        if (matches.isEmpty()) {
+            null
+        } else if (matches.size == 1) {
+            matches[0]
+        } else {
+            val perfect = matches.filter { user -> user.name.equals(fullUserRefMatcher.group(1)) }
+            if (perfect.isEmpty()) {
+                matches[0]
+            } else {
+                perfect[0]
+            }
+        }
+    } else if (guild != null && guild.getMembersByName(arg, true).isNotEmpty()) {
+        guild.getMembersByName(arg, true)[0].user
+    } else if (guild != null && guild.getMembersByNickname(arg, true).isNotEmpty()) {
+        guild.getMembersByNickname(arg, true)[0].user
+    } else null
 
-    return user
+
 }
 
 suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? = suspendCoroutine {
@@ -69,10 +91,12 @@ suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? = su
         it.resume(user1)
     } else if (context.args.size > index) {
         val arg = context.args[index]
+        val idMatcher = DISCORD_ID.matcher(arg)
+        val mentionMatcher = USER_MENTION.matcher(arg)
 
         when {
-            arg.matches(Regex("\\d+")) -> context.jda.shardManager?.retrieveUserById(arg)
-            arg.matches(Regex("<@\\d+>")) -> {
+            idMatcher.matches() -> context.jda.shardManager?.retrieveUserById(arg)
+            mentionMatcher.matches() -> {
                 val id = arg.substring(2, arg.lastIndex - 1).toLong()
                 context.jda.shardManager?.retrieveUserById(id)
             }
@@ -83,6 +107,38 @@ suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? = su
             it.resume(null)
         })
     }
+}
+
+suspend fun retrieveUserByArgsN(guild: Guild, arg: String): User? = suspendCoroutine {
+    val shardManager = guild.jda.shardManager
+    if (shardManager == null) {
+        it.resume(null)
+        return@suspendCoroutine
+    }
+    val user1: User? = getUserByArgsN(shardManager, guild, arg)
+    if (user1 != null) {
+        it.resume(user1)
+        return@suspendCoroutine
+    }
+
+    val idMatcher = DISCORD_ID.matcher(arg)
+    val mentionMatcher = USER_MENTION.matcher(arg)
+
+    when {
+        idMatcher.matches() -> shardManager.retrieveUserById(arg)
+        mentionMatcher.matches() -> {
+            shardManager.retrieveUserById(mentionMatcher.group(1))
+        }
+
+        else -> {
+            it.resume(null)
+            return@suspendCoroutine
+        }
+    }.queue({ user ->
+        it.resume(user)
+    }, { _ ->
+        it.resume(null)
+    })
 }
 
 suspend fun retrieveUserByArgsNMessage(context: CommandContext, index: Int): User? {

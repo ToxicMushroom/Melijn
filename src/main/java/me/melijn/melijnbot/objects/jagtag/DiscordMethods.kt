@@ -3,6 +3,8 @@ package me.melijn.melijnbot.objects.jagtag
 import com.jagrosh.jagtag.Environment
 import com.jagrosh.jagtag.Method
 import com.jagrosh.jagtag.ParseException
+import me.melijn.melijnbot.objects.utils.getMemberByArgsN
+import me.melijn.melijnbot.objects.utils.retrieveUserByArgsN
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
@@ -12,6 +14,15 @@ object DiscordMethods {
             Method("user", { env ->
                 val user: User = env.getReifiedX("user")
                 user.asTag
+            }),
+
+
+
+            //{isUser:userId|userTag}
+            Method("isUser", { "true" }, { env: Environment, input: Array<String> ->
+                val guild: Guild = env.getReifiedX("guild")
+                val arg = input[0]
+                (retrieveUserByArgsN(guild, arg) != null).toString()
             }),
 
             //{isMember:userId|userTag}
