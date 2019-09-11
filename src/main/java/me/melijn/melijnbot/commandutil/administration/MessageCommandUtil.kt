@@ -6,6 +6,7 @@ import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.Translateable
 import me.melijn.melijnbot.objects.utils.getColorFromArgNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
@@ -23,7 +24,7 @@ class MessageCommandUtil {
         suspend fun setMessageContent(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
             val messageWrapper = context.daoManager.messageWrapper
             val oldMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-                    ?: ModularMessage()
+                ?: ModularMessage()
             val newContent = context.rawArg
 
 
@@ -33,7 +34,7 @@ class MessageCommandUtil {
             } else {
                 messageWrapper.setMessageContent(oldMessage, context.getGuildId(), type, newContent)
                 Translateable("${cmd.root}.set").string(context)
-                        .replace("%newContent%", newContent)
+                    .replace("%newContent%", newContent)
             }.replace("%oldContent%", oldMessage.messageContent ?: "/")
 
             sendMsg(context, msg)
@@ -47,7 +48,7 @@ class MessageCommandUtil {
                 Translateable("${cmd.root}.show.unset").string(context)
             } else {
                 Translateable("${cmd.root}.show.set").string(context)
-                        .replace("%content%", content)
+                    .replace("%content%", content)
             }
 
             sendMsg(context, msg)
@@ -67,7 +68,7 @@ class MessageCommandUtil {
             } else {
                 messageWrapper.setEmbedDescription(oldMessage ?: ModularMessage(), context.getGuildId(), type, arg)
                 Translateable("${cmd.root}.set").string(context)
-                        .replace("%newContent%", arg)
+                    .replace("%newContent%", arg)
             }.replace("%oldContent%", oldMessage?.embed?.description ?: "/")
 
             sendMsg(context, msg)
@@ -81,7 +82,7 @@ class MessageCommandUtil {
                 Translateable("${cmd.root}.show.unset").string(context)
             } else {
                 Translateable("${cmd.root}.show.set").string(context)
-                        .replace("%content%", description)
+                    .replace("%content%", description)
             }
 
             sendMsg(context, msg)
@@ -96,7 +97,7 @@ class MessageCommandUtil {
             }
 
             val msg = Translateable("${cmd.root}.success")
-                    .string(context)
+                .string(context)
 
             sendMsg(context, msg)
 
@@ -124,7 +125,7 @@ class MessageCommandUtil {
         suspend fun addAttachment(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
             val messageWrapper = context.daoManager.messageWrapper
             val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-                    ?: ModularMessage()
+                ?: ModularMessage()
 
             val newMap = modularMessage.attachments.toMutableMap()
             newMap[context.args[0]] = context.args[1]
@@ -133,8 +134,8 @@ class MessageCommandUtil {
 
             messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
             val msg = Translateable("${cmd.root}.success").string(context)
-                    .replace("%attachment%", context.args[0])
-                    .replace("%file%", context.args[1])
+                .replace("%attachment%", context.args[0])
+                .replace("%file%", context.args[1])
 
             sendMsg(context, msg)
         }
@@ -142,7 +143,7 @@ class MessageCommandUtil {
         suspend fun removeAttachment(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
             val messageWrapper = context.daoManager.messageWrapper
             val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-                    ?: ModularMessage()
+                ?: ModularMessage()
 
             val attachments = modularMessage.attachments.toMutableMap()
             val file = if (attachments.containsKey(context.args[0])) attachments[context.args[0]] else null
@@ -151,15 +152,15 @@ class MessageCommandUtil {
             modularMessage.attachments = attachments.toMap()
 
             val msg =
-                    if (file == null) {
-                        Translateable("${cmd.root}.notanattachment").string(context)
-                                .replace("%attachment%", context.args[0])
-                    } else {
-                        messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
-                        Translateable("${cmd.root}.success").string(context)
-                                .replace("%attachment%", context.args[0])
-                                .replace("%file%", file)
-                    }
+                if (file == null) {
+                    Translateable("${cmd.root}.notanattachment").string(context)
+                        .replace("%attachment%", context.args[0])
+                } else {
+                    messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
+                    Translateable("${cmd.root}.success").string(context)
+                        .replace("%attachment%", context.args[0])
+                        .replace("%file%", file)
+                }
 
             sendMsg(context, msg)
         }
@@ -170,10 +171,10 @@ class MessageCommandUtil {
             val color = oldMessage?.embed?.color
 
             val msg = if (color == null) {
-                Translateable("${cmd.root}.set.unset").string(context)
+                Translateable("${cmd.root}.show.unset").string(context)
             } else {
-                Translateable("${cmd.root}.set").string(context)
-                        .replace("%color%", color.toHex())
+                Translateable("${cmd.root}.show.set").string(context)
+                    .replace("%color%", color.toHex())
             }
 
             sendMsg(context, msg)
@@ -181,18 +182,87 @@ class MessageCommandUtil {
 
         suspend fun setEmbedColor(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
             val messageWrapper = context.daoManager.messageWrapper
-            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await() ?: ModularMessage()
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+                ?: ModularMessage()
 
             val arg = context.args[0]
 
             val msg = if (arg.equals("null", true)) {
                 messageWrapper.removeEmbedColor(modularMessage, context.getGuildId(), type)
-                Translateable("${cmd.root}.show.unset").string(context)
+                Translateable("${cmd.root}.unset").string(context)
             } else {
                 val color = getColorFromArgNMessage(context, 0) ?: return
                 messageWrapper.setEmbedColor(modularMessage, context.getGuildId(), type, color)
+                Translateable("${cmd.root}.set").string(context)
+                    .replace("%newColor%", color.toHex())
+            }
+
+            sendMsg(context, msg)
+        }
+
+        suspend fun setEmbedTitle(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+                ?: ModularMessage()
+
+            val arg = context.args[0]
+
+            val msg = if (arg.equals("null", true)) {
+                messageWrapper.removeEmbedTitleContent(modularMessage, context.getGuildId(), type)
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                messageWrapper.setEmbedTitleContent(modularMessage, context.getGuildId(), type, context.rawArg)
                 Translateable("${cmd.root}.show.set").string(context)
-                        .replace("%newColor%", color.toHex())
+                    .replace(PLACEHOLDER_ARG, context.rawArg)
+            }
+
+            sendMsg(context, msg)
+        }
+
+        suspend fun showEmbedTitle(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+            val title = modularMessage?.embed?.title
+
+            val msg = if (title == null) {
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                Translateable("${cmd.root}.show.set").string(context)
+                    .replace("%title%", title)
+            }
+
+            sendMsg(context, msg)
+        }
+
+        suspend fun showEmbedTitleUrl(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+            val url = modularMessage?.embed?.url
+
+            val msg = if (url == null) {
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                Translateable("${cmd.root}.show.set").string(context)
+                    .replace("%url%", url)
+            }
+
+            sendMsg(context, msg)
+        }
+
+        suspend fun setEmbedTitleUrl(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+                ?: ModularMessage()
+
+            val arg = context.args[0]
+
+            val msg = if (arg.equals("null", true)) {
+                messageWrapper.removeEmbedTitleURL(modularMessage, context.getGuildId(), type)
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                messageWrapper.setEmbedTitleURL(modularMessage, context.getGuildId(), type, context.rawArg)
+                Translateable("${cmd.root}.show.set").string(context)
+                    .replace(PLACEHOLDER_ARG, context.rawArg)
             }
 
             sendMsg(context, msg)

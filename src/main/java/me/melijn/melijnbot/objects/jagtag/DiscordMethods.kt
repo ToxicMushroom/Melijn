@@ -3,7 +3,6 @@ package me.melijn.melijnbot.objects.jagtag
 import com.jagrosh.jagtag.Environment
 import com.jagrosh.jagtag.Method
 import com.jagrosh.jagtag.ParseException
-import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.objects.utils.getMemberByArgsN
 import me.melijn.melijnbot.objects.utils.retrieveUserByArgsN
 import net.dv8tion.jda.api.entities.Guild
@@ -64,6 +63,10 @@ object DiscordMethods {
             Method("guildname", { env ->
                 val guild: Guild = env.getReifiedX("guild")
                 guild.name
+            }),
+            Method("membercount", { env ->
+                val guild: Guild = env.getReifiedX("guild")
+                guild.memberCache.size().toString()
             })
     )
 }

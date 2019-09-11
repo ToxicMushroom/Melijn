@@ -15,9 +15,9 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
         aliases = arrayOf("lm")
         commandCategory = CommandCategory.ADMINISTRATION
         children = arrayOf(
-                SetContentArg(root, MessageType.LEAVE),
-                EmbedArg(root, MessageType.LEAVE),
-                AttachmentsArg(root, MessageType.LEAVE)
+            SetContentArg(root, MessageType.LEAVE),
+            EmbedArg(root, MessageType.LEAVE),
+            AttachmentsArg(root, MessageType.LEAVE)
         )
     }
 
@@ -53,6 +53,153 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             sendSyntax(context, syntax)
         }
 
+        class SetTitleArg(root: String, val type: MessageType) : AbstractCommand("$root.settitle") {
+
+            init {
+                name = "setTitle"
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                when {
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedTitle(this, context, type)
+                    else -> MessageCommandUtil.setEmbedTitle(this, context, type)
+                }
+            }
+        }
+
+        class SetTitleUrlArg(root: String, val type: MessageType) : AbstractCommand("$root.settitleurl") {
+
+            init {
+                name = "setTitleUrl"
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                when {
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedTitleUrl(this, context, type)
+                    else -> MessageCommandUtil.setEmbedTitleUrl(this, context, type)
+                }
+            }
+        }
+
+
+        class SetAuthorArg(root: String, val type: MessageType) : AbstractCommand("$root.setauthor") {
+
+            init {
+                name = "setAuthor"
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                when {
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedAuthor(this, context, type)
+                    else -> MessageCommandUtil.setEmbedAuthor(this, context, type)
+                }
+            }
+        }
+
+        class SetAuthorIconArg(root: String, val type: MessageType) : AbstractCommand("$root.setauthoricon") {
+
+            init {
+                name = "setAuthorIcon"
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                when {
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedAuthorIcon(this, context, type)
+                    else -> MessageCommandUtil.setEmbedAuthorIcon(this, context, type)
+                }
+            }
+        }
+
+        class SetAuthorUrlArg(root: String, val type: MessageType) : AbstractCommand("$root.setauthorurl") {
+
+            init {
+                name = "setAuthorUrl"
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                when {
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedAuthorUrl(this, context, type)
+                    else -> MessageCommandUtil.setEmbedAuthorUrl(this, context, type)
+                }
+            }
+        }
+
+
+        class SetThumbnailArg(root: String, val type: MessageType) : AbstractCommand("$root.setthumbnail") {
+
+            init {
+                name = "setThumbnail"
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                when {
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedThumbnail(this, context, type)
+                    else -> MessageCommandUtil.setEmbedThumbnail(this, context, type)
+                }
+            }
+        }
+
+        class SetImageArg(root: String, val type: MessageType) : AbstractCommand("$root.setimage") {
+
+            init {
+                name = "setImage"
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                when {
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedImage(this, context, type)
+                    else -> MessageCommandUtil.setEmbedImage(this, context, type)
+                }
+            }
+        }
+
+
+        class FieldArg(root: String, val type: MessageType) : AbstractCommand("$root.field") {
+
+            init {
+                name = "field"
+                children = arrayOf(AddArg(root, type))
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                sendSyntax(context, syntax)
+            }
+
+            class AddArg(root: String, val type: MessageType) : AbstractCommand("$root.add") {
+
+                init {
+                    name = "add"
+                }
+
+                override suspend fun execute(context: CommandContext) {
+
+                }
+            }
+
+            class RemoveArg(root: String, val type: MessageType) : AbstractCommand("$root.remove") {
+
+                init {
+                    name = "remove"
+                }
+
+                override suspend fun execute(context: CommandContext) {
+
+                }
+            }
+
+            class ListArg(root: String, val type: MessageType) : AbstractCommand("$root.list") {
+
+                init {
+                    name = "list"
+                }
+
+                override suspend fun execute(context: CommandContext) {
+
+                }
+            }
+        }
+
+
         class SetDescriptionArg(root: String, val type: MessageType) : AbstractCommand("$root.setdescription") {
 
             init {
@@ -79,6 +226,34 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
                 when {
                     context.rawArg.isBlank() -> MessageCommandUtil.showEmbedColor(this, context, type)
                     else -> MessageCommandUtil.setEmbedColor(this, context, type)
+                }
+            }
+        }
+
+        class SetFooterArg(root: String, val type: MessageType) : AbstractCommand("$root.setfooter") {
+
+            init {
+                name = "setFooter"
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                when {
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedFooter(this, context, type)
+                    else -> MessageCommandUtil.setEmbedFooter(this, context, type)
+                }
+            }
+        }
+
+        class SetFooterUrlArg(root: String, val type: MessageType) : AbstractCommand("$root.setfooterurl") {
+
+            init {
+                name = "setFooterUrl"
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                when {
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedFooterUrl(this, context, type)
+                    else -> MessageCommandUtil.setEmbedFooterUrl(this, context, type)
                 }
             }
         }
@@ -113,6 +288,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             init {
                 name = "list"
             }
+
             override suspend fun execute(context: CommandContext) {
                 MessageCommandUtil.listAttachments(this, context, type)
             }
@@ -123,6 +299,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             init {
                 name = "add"
             }
+
             override suspend fun execute(context: CommandContext) {
                 MessageCommandUtil.addAttachment(this, context, type)
             }
@@ -134,6 +311,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             init {
                 name = "remove"
             }
+
             override suspend fun execute(context: CommandContext) {
                 MessageCommandUtil.removeAttachment(this, context, type)
             }

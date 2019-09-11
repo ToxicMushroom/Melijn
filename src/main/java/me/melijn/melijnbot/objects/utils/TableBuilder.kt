@@ -13,7 +13,7 @@ class TableBuilder(private val split: Boolean) {
     private var footerRow: MutableList<String> = ArrayList()
 
     companion object {
-        const val LINE = "══════════════════════════════════════════════════════════════════════════════════"
+        const val LINE = "----------------------------------------------------------------------------------"
     }
 
     fun setColumns(headerNames: Collection<String>): TableBuilder {
@@ -43,12 +43,12 @@ class TableBuilder(private val split: Boolean) {
     }
 
     fun build(): List<String> {
-        if (valueRows.values.stream().anyMatch { array -> array.size > headerRow.size }) {
-            throw IllegalArgumentException("A value row cannot have more values then the header (you can make empty header slots)")
+        require(!valueRows.values.stream().anyMatch { array -> array.size > headerRow.size }) {
+            "A value row cannot have more values then the header (you can make empty header slots)"
         }
 
-        if (footerRow.size > headerRow.size) {
-            throw IllegalArgumentException("A footer row cannot have more values then the header (you can make empty header slots)")
+        require(footerRow.size <= headerRow.size) {
+            "A footer row cannot have more values then the header (you can make empty header slots)"
         }
 
 
@@ -65,16 +65,14 @@ class TableBuilder(private val split: Boolean) {
         addSplicer(sb)
 
         //main
-        for (i in 0 until valueRows.size) {
+        for (element in valueRows.values) {
             if (split && sb.length + maxRowWidth > 1997 - (if (footerRow.size > 0) maxRowWidth * 3 else maxRowWidth)) {
                 toReturn.add("$sb```")
                 sb = StringBuilder()
                 sb.append("```prolog\n")
             }
 
-            valueRows[i]?.let {
-                addRow(sb, it)
-            }
+            addRow(sb, element)
         }
 
         if (footerRow.size > 0) {
@@ -95,11 +93,11 @@ class TableBuilder(private val split: Boolean) {
 
     //╔════╦════╗
     private fun addTop(sb: StringBuilder) {
-        sb.append("```prolog\n╔═").append(getLine(0))
+        sb.append("```prolog\n╔").append(getLine(0, 2))
         for (i in 1 until headerRow.size) {
-            sb.append("═╦═").append(getLine(i))
+            sb.append("╦").append(getLine(i, 2))
         }
-        sb.append("═╗\n")
+        sb.append("╗\n")
     }
 
     //║    ║    ║
@@ -117,20 +115,20 @@ class TableBuilder(private val split: Boolean) {
 
     //╠════╬════╣
     private fun addSplicer(sb: StringBuilder) {
-        sb.append("╠═").append(getLine(0))
+        sb.append("╠").append(getLine(0, 2))
         for (i in 1 until headerRow.size) {
-            sb.append("═╬═").append(getLine(i))
+            sb.append("╬").append(getLine(i, 2))
         }
-        sb.append("═╣\n")
+        sb.append("╣\n")
     }
 
     //╚════╩════╝
     private fun addBottom(sb: StringBuilder) {
-        sb.append("╚═").append(getLine(0))
+        sb.append("╚").append(getLine(0, 2))
         for (i in 1 until headerRow.size) {
-            sb.append("═╩═").append(getLine(i))
+            sb.append("╩").append(getLine(i, 2))
         }
-        sb.append("═╝")
+        sb.append("╝")
     }
 
     private fun getSpaces(widthIndex: Int, value: String): String {
@@ -139,7 +137,7 @@ class TableBuilder(private val split: Boolean) {
         } ?: ""
     }
 
-    private fun getLine(widthIndex: Int): String {
-        return columnWidth[widthIndex]?.let { LINE.substring(0, it) } ?: ""
+    private fun getLine(widthIndex: Int, extra: Int = 0): String {
+        return columnWidth[widthIndex]?.let { LINE.substring(0, it + extra) } ?: ""
     }
 }

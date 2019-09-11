@@ -37,18 +37,20 @@ suspend fun <T> RestAction<T>.await() = suspendCoroutine<T> {
     )
 }
 
-fun getUserByArgs(context: CommandContext, index: Int): User {
-    var user = getUserByArgsN(context, index)
-    if (user == null) user = context.getAuthor()
-    return user
-}
+//fun getUserByArgs(context: CommandContext, index: Int): User {
+//    var user = getUserByArgsN(context, index)
+//    if (user == null) user = context.getAuthor()
+//    return user
+//}
 
 
 fun getUserByArgsN(context: CommandContext, index: Int): User? {//With null
     val shardManager = context.getShardManager() ?: return null
-    return if (context.args.size > index)
+    return if (context.args.size > index) {
         getUserByArgsN(shardManager, context.getGuildN(), context.args[index])
-    else null
+    } else {
+        null
+    }
 }
 
 fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String): User? {
@@ -62,14 +64,14 @@ fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String): User
     } else if (argMentionMatcher.matches()) {
         shardManager.getUserById(argMentionMatcher.group(1))
     } else if (guild != null && fullUserRefMatcher.matches()) {
-        val byName = guild.jda.getUsersByName(arg, true)
+        val byName = guild.jda.getUsersByName(fullUserRefMatcher.group(1), true)
         val matches = byName.filter { user -> user.discriminator == fullUserRefMatcher.group(2) }
         if (matches.isEmpty()) {
             null
         } else if (matches.size == 1) {
             matches[0]
         } else {
-            val perfect = matches.filter { user -> user.name.equals(fullUserRefMatcher.group(1)) }
+            val perfect = matches.filter { user -> user.name == fullUserRefMatcher.group(1) }
             if (perfect.isEmpty()) {
                 matches[0]
             } else {
@@ -80,6 +82,14 @@ fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String): User
         guild.getMembersByName(arg, true)[0].user
     } else if (guild != null && guild.getMembersByNickname(arg, true).isNotEmpty()) {
         guild.getMembersByNickname(arg, true)[0].user
+    } else if (guild != null) {
+        val users = guild.jda.users
+        val startsWith = users.filter { user -> user.name.startsWith(arg, true) }
+        if (startsWith.isNotEmpty()) {
+            startsWith[0]
+        } else {
+            null
+        }
     } else null
 
 
