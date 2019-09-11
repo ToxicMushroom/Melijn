@@ -24,7 +24,7 @@ dependencies {
     implementation group: 'com.github.FredBoat', name: 'Lavalink-Client', version: '9bda4ea'
 
     //https://github.com/ToxicMushroom/JagTag-Kotlin
-    implementation group: 'com.github.ToxicMushroom', name: 'JagTag-Kotlin', version: 'a255e76'
+    implementation group: 'com.github.ToxicMushroom', name: 'JagTag-Kotlin', version: '06c2490c63'
 
     //https://search.maven.org/artifact/com.zaxxer/HikariCP
     //https://mvnrepository.com/artifact/mysql/mysql-connector-java
