@@ -58,15 +58,15 @@ public class TableBuilder {
             maxRowWidth += i;
         }
 
-        String lijn = "══════════════════════════════════════════════════════════════════════════════════";
+        String lijn = "----------------------------------------------------------------------------------";
         StringBuilder sb = new StringBuilder();
         List<String> toReturn = new ArrayList<>();
         //firstline
-        sb.append("```prolog\n╔═").append(lijn, 0, columnWidth.get(0));
+        sb.append("```prolog\n╔-").append(lijn, 0, columnWidth.get(0));
         for (int i = 1; i < headerRow.size(); i++) {
-            sb.append("═╦═").append(lijn, 0, columnWidth.get(i));
+            sb.append("-╦-").append(lijn, 0, columnWidth.get(i));
         }
-        sb.append("═╗\n");
+        sb.append("-╗\n");
 
         //second
         int nums = 0;
@@ -77,11 +77,11 @@ public class TableBuilder {
         sb.append("\n");
 
         //third
-        sb.append("╠═").append(lijn, 0, columnWidth.get(0));
+        sb.append("╠-").append(lijn, 0, columnWidth.get(0));
         for (int i = 1; i < headerRow.size(); i++) {
-            sb.append("═╬═").append(lijn, 0, columnWidth.get(i));
+            sb.append("-╬-").append(lijn, 0, columnWidth.get(i));
         }
-        sb.append("═╣\n");
+        sb.append("-╣\n");
 
         //main
         for (int i = 0; i < valueRows.size(); i++) {
@@ -100,11 +100,11 @@ public class TableBuilder {
 
         //possible end
         if (footerRow.size() > 0) {
-            sb.append("╠═").append(lijn, 0, columnWidth.get(0));
+            sb.append("╠-").append(lijn, 0, columnWidth.get(0));
             for (int i = 1; i < footerRow.size(); i++) {
-                sb.append("═╬═").append(lijn, 0, columnWidth.get(i));
+                sb.append("-╬-").append(lijn, 0, columnWidth.get(i));
             }
-            sb.append("═╣\n");
+            sb.append("-╣\n");
 
             int nume = 0;
             sb.append("║");
@@ -114,11 +114,11 @@ public class TableBuilder {
             sb.append("\n");
         }
 
-        sb.append("╚═").append(lijn, 0, columnWidth.get(0));
+        sb.append("╚-").append(lijn, 0, columnWidth.get(0));
         for (int i = 1; i < headerRow.size(); i++) {
-            sb.append("═╩═").append(lijn, 0, columnWidth.get(i));
+            sb.append("-╩-").append(lijn, 0, columnWidth.get(i));
         }
-        sb.append("═╝");
+        sb.append("-╝");
 
         toReturn.add(sb.toString() + "```");
 
