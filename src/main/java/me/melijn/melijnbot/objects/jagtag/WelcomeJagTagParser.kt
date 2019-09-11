@@ -13,9 +13,9 @@ val PARSER_SUPPLIER: Supplier<Parser> = Supplier {
 }
 
 object WelcomeJagTagParser {
-    fun parseJagTag(member: Member, input: String): String = parseJagTag(WelcomeParserArgs(member), input)
+    suspend fun parseJagTag(member: Member, input: String): String = parseJagTag(WelcomeParserArgs(member), input)
 
-    fun parseJagTag(args: WelcomeParserArgs, input: String): String {
+    suspend fun parseJagTag(args: WelcomeParserArgs, input: String): String {
         val parser = PARSER_SUPPLIER.get()
                 .put("user", args.member.user)
                 .put("member", args.member)

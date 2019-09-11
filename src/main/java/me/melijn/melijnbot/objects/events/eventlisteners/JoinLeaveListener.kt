@@ -61,7 +61,7 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
         }
     }
 
-    private fun replaceVariablesInWelcomeMessage(member: Member, modularMessage: ModularMessage): ModularMessage {
+    private suspend fun replaceVariablesInWelcomeMessage(member: Member, modularMessage: ModularMessage): ModularMessage {
         val newMessage = ModularMessage()
 
         newMessage.messageContent = modularMessage.messageContent?.let {
@@ -88,21 +88,4 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
         return newMessage
 
     }
-
-    private fun replaceWelcomeVariables(s: String, guild: Guild, user: User): String =
-            s.replace("%userMention%".toRegex(RegexOption.IGNORE_CASE), user.asMention)
-                    .replace("%guildName%".toRegex(RegexOption.IGNORE_CASE), guild.name)
-                    .replace("%memberCount%".toRegex(RegexOption.IGNORE_CASE), guild.members.size.toString())
-                    .replace("%userName%".toRegex(RegexOption.IGNORE_CASE), user.name)
-                    .replace("%userDiscrim%".toRegex(RegexOption.IGNORE_CASE), user.discriminator)
-                    .replace("%timeStamp%".toRegex(RegexOption.IGNORE_CASE), System.currentTimeMillis().asEpochMillisToDateTime())
-                    .replace("%timeMillis%".toRegex(RegexOption.IGNORE_CASE), System.currentTimeMillis().toString())
-                    .replace("%userId%".toRegex(RegexOption.IGNORE_CASE), user.id)
-                    .replace("%guildId%".toRegex(RegexOption.IGNORE_CASE), guild.id)
-                    .replace("%user%".toRegex(RegexOption.IGNORE_CASE), user.asTag)
-                    .replace("%userAvatar%".toRegex(RegexOption.IGNORE_CASE), user.effectiveAvatarUrl)
-                    .replace("%guildIcon%".toRegex(RegexOption.IGNORE_CASE), guild.iconUrl ?: MISSING_IMAGE_URL)
-                    .replace("%bannerUrl%".toRegex(RegexOption.IGNORE_CASE), guild.bannerUrl ?: MISSING_IMAGE_URL)
-                    .replace("%splashUrl%".toRegex(RegexOption.IGNORE_CASE), guild.splashUrl ?: MISSING_IMAGE_URL)
-                    .replace("%vanityUrl%".toRegex(RegexOption.IGNORE_CASE), guild.vanityUrl ?: MISSING_IMAGE_URL)
 }
