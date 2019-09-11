@@ -48,11 +48,11 @@ public class Melijn {
     private Melijn() throws LoginException {
         config = new Config();
         mySQL = new MySQL(
-                this,
-                config.getValue("ipaddress"),
-                config.getValue("username"),
-                config.getValue("password"),
-                config.getValue("database")
+            this,
+            config.getValue("ipaddress"),
+            config.getValue("username"),
+            config.getValue("password"),
+            config.getValue("database")
         );
         variables = new Variables(this);
 
@@ -77,9 +77,9 @@ public class Melijn {
         loadCommands(commandClientBuilder);
 
         JdaLavalink lavalink = new JdaLavalink(
-                getIdFromToken(config.getValue("token")),
-                Integer.parseInt(config.getValue("shardCount")),
-                shardId -> getShardManager().getShardById(shardId)
+            getIdFromToken(config.getValue("token")),
+            Integer.parseInt(config.getValue("shardCount")),
+            shardId -> getShardManager().getShardById(shardId)
         );
         lavalink.addNode(URI.create("ws://" + config.getValue("lavalink-host")), config.getValue("lavalink-pwd"));
         lavalink.setAutoReconnect(true);
@@ -91,20 +91,20 @@ public class Melijn {
         Thread.setDefaultUncaughtExceptionHandler((thread, exception) -> messageHelper.printException(thread, exception, null, null));
 
         return new DefaultShardManagerBuilder()
-                .setShardsTotal(Integer.parseInt(config.getValue("shardCount")))
-                .setToken(config.getValue("token"))
-                .setGame(Game.playing(PREFIX + "help | melijn.com"))
-                .setAutoReconnect(true)
-                .addEventListeners(commandClientBuilder.build(), lavalink,
-                        new JoinLeave(this),
-                        new AddReaction(this),
-                        new Channels(this),
-                        new Chat(this))
-                .setDisabledCacheFlags(EnumSet.of(CacheFlag.GAME))
-                .setWebsocketFactory(new WebSocketFactory().setVerifyHostname(false))
-                .setHttpClient(new OkHttpClient.Builder().hostnameVerifier(new NoopHostnameVerifier()).build())
-                .setCallbackPool(taskManager.getExecutorService())
-                .build();
+            .setShardsTotal(Integer.parseInt(config.getValue("shardCount")))
+            .setToken(config.getValue("token"))
+            .setGame(Game.playing(PREFIX + "help | melijn.com"))
+            .setAutoReconnect(true)
+            .addEventListeners(commandClientBuilder.build(), lavalink,
+                new JoinLeave(this),
+                new AddReaction(this),
+                new Channels(this),
+                new Chat(this))
+            .setDisabledCacheFlags(EnumSet.of(CacheFlag.GAME))
+            .setWebsocketFactory(new WebSocketFactory().setVerifyHostname(false))
+            .setHttpClient(new OkHttpClient.Builder().hostnameVerifier(new NoopHostnameVerifier()).build())
+            .setCallbackPool(taskManager.getExecutorService())
+            .build();
     }
 
     public static void main(String[] args) {
@@ -121,9 +121,9 @@ public class Melijn {
 
     private String getIdFromToken(String token) {
         return new String(
-                Base64.getDecoder().decode(
-                        token.split("\\.")[0]
-                )
+            Base64.getDecoder().decode(
+                token.split("\\.")[0]
+            )
         );
     }
 
@@ -132,13 +132,13 @@ public class Melijn {
 
         Set<Class<? extends Command>> commands = reflections.getSubTypesOf(Command.class);
         commands.forEach(
-                (command) -> {
-                    try {
-                        Command cmd = command.getDeclaredConstructor().newInstance();
-                        client.addCommand(cmd);
-                    } catch (Exception ignored) {
-                    }
+            (command) -> {
+                try {
+                    Command cmd = command.getDeclaredConstructor().newInstance();
+                    client.addCommand(cmd);
+                } catch (Exception ignored) {
                 }
+            }
         );
     }
 

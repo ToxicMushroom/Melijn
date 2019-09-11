@@ -52,7 +52,8 @@ public class AudioLoader {
     }
 
     public synchronized MusicPlayer getPlayer(long guildId) {
-        if (!players.containsKey(guildId) || players.get(guildId) == null) players.put(guildId, new MusicPlayer(melijn, guildId));
+        if (!players.containsKey(guildId) || players.get(guildId) == null)
+            players.put(guildId, new MusicPlayer(melijn, guildId));
         return players.get(guildId);
     }
 
@@ -88,7 +89,7 @@ public class AudioLoader {
                         channel.sendMessage("You still have a request to answer. (requests are automatically removed after 30 seconds)")
                                 .queue(
                                         (message) -> message.delete().queueAfter(10, TimeUnit.SECONDS, null, (failure) -> {
-                                }));
+                                        }));
                         return;
                     }
 
@@ -117,7 +118,8 @@ public class AudioLoader {
                             melijn.getVariables().userRequestedSongs.remove(requester.getIdLong());
                             melijn.getVariables().userMessageToAnswer.remove(requester.getIdLong());
                         }, 30_000);
-                        message.delete().queueAfter(30, TimeUnit.SECONDS, null, (failure) -> {});
+                        message.delete().queueAfter(30, TimeUnit.SECONDS, null, (failure) -> {
+                        });
                     });
                 } else {
                     trackLoaded(tracks.get(0));
