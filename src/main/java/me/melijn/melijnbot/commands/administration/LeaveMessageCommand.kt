@@ -60,7 +60,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
                 FieldArg(root, type),
                 SetFooterArg(root, type),
                 SetFooterUrlArg(root, type)
-            //What even is optimization
+                //What even is optimization
             )
         }
 
@@ -176,7 +176,10 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
                 children = arrayOf(
                     AddArg(root, type),
                     RemoveArg(root, type),
-                    ListArg(root, type)
+                    ListArg(root, type),
+                    SetTitleArg(root, type),
+                    SetValueArg(root, type),
+                    SetInlineArg(root, type)
                 )
             }
 
@@ -188,10 +191,70 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
 
                 init {
                     name = "add"
+                    aliases = arrayOf("addInline")
                 }
 
                 override suspend fun execute(context: CommandContext) {
+                    val split = context.rawArg.split(">")
+                    if (split.size < 2) {
+                        sendSyntax(context, syntax)
+                    }
+                    val title = split[0]
+                    val value = context.rawArg.replaceFirst("$title>", "")
 
+                    val inline = context.commandParts[1].equals("addInline", true)
+                    MessageCommandUtil.addEmbedField(title, value, inline, context, type)
+                }
+            }
+
+            class SetTitleArg(root: String, val type: MessageType) : AbstractCommand("$root.settitle") {
+
+                init {
+                    name = "setTitle"
+                }
+
+                override suspend fun execute(context: CommandContext) {
+                    if (context.args.size < 2) {
+                        sendSyntax(context, syntax)
+                        return
+                    }
+                    val index = getIntegerFromArgNMessage(context, 0) ?: return
+                    val title = context.rawArg.replaceFirst("$index\\s+?".toRegex(), "")
+                    MessageCommandUtil.setEmbedFieldTitle(index, title, context, type)
+                }
+            }
+
+            class SetValueArg(root: String, val type: MessageType) : AbstractCommand("$root.setvalue") {
+
+                init {
+                    name = "setValue"
+                }
+
+                override suspend fun execute(context: CommandContext) {
+                    if (context.args.size < 2) {
+                        sendSyntax(context, syntax)
+                        return
+                    }
+                    val index = getIntegerFromArgNMessage(context, 0) ?: return
+                    val value = context.rawArg.replaceFirst("$index\\s+?".toRegex(), "")
+                    MessageCommandUtil.setEmbedFieldValue(index, value, context, type)
+                }
+            }
+
+            class SetInlineArg(root: String, val type: MessageType) : AbstractCommand("$root.setinline") {
+
+                init {
+                    name = "setInline"
+                }
+
+                override suspend fun execute(context: CommandContext) {
+                    if (context.args.size < 2) {
+                        sendSyntax(context, syntax)
+                        return
+                    }
+                    val index = getIntegerFromArgNMessage(context, 0) ?: return
+                    val value = getBooleanFromArgNMessage(context, 1) ?: return
+                    MessageCommandUtil.setEmbedFieldInline(index, value, context, type)
                 }
             }
 
@@ -202,7 +265,12 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
                 }
 
                 override suspend fun execute(context: CommandContext) {
-
+                    if (context.args.isEmpty()) {
+                        sendSyntax(context, syntax)
+                        return
+                    }
+                    val index = getIntegerFromArgNMessage(context, 0) ?: return
+                    MessageCommandUtil.removeEmbedField(index, context, type)
                 }
             }
 
@@ -213,7 +281,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
                 }
 
                 override suspend fun execute(context: CommandContext) {
-
+                    MessageCommandUtil.showEmbedFields(context, type)
                 }
             }
         }
