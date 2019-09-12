@@ -267,5 +267,232 @@ class MessageCommandUtil {
 
             sendMsg(context, msg)
         }
+
+        suspend fun showEmbedAuthor(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+            val url = modularMessage?.embed?.author?.name
+
+            val msg = if (url == null) {
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                Translateable("${cmd.root}.show.set").string(context)
+                    .replace("%name%", url)
+            }
+
+            sendMsg(context, msg)
+        }
+
+        suspend fun setEmbedAuthor(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+                ?: ModularMessage()
+
+            val arg = context.args[0]
+
+            val msg = if (arg.equals("null", true)) {
+                messageWrapper.removeEmbedAuthorContent(modularMessage, context.getGuildId(), type)
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                messageWrapper.setEmbedAuthorContent(modularMessage, context.getGuildId(), type, context.rawArg)
+                Translateable("${cmd.root}.show.set").string(context)
+                    .replace(PLACEHOLDER_ARG, context.rawArg)
+            }
+
+            sendMsg(context, msg)
+        }
+
+        suspend fun showEmbedAuthorIcon(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+            val url = modularMessage?.embed?.author?.iconUrl
+
+            val msg = if (url == null) {
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                Translateable("${cmd.root}.show.set").string(context)
+                    .replace("%url", url)
+            }
+
+            sendMsg(context, msg)
+        }
+
+        suspend fun setEmbedAuthorIcon(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+                ?: ModularMessage()
+
+            val arg = context.args[0]
+
+            val msg = if (arg.equals("null", true)) {
+                messageWrapper.removeEmbedAuthorIconURL(modularMessage, context.getGuildId(), type)
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                messageWrapper.setEmbedAuthorIconURL(modularMessage, context.getGuildId(), type, context.rawArg)
+                Translateable("${cmd.root}.show.set").string(context)
+                    .replace(PLACEHOLDER_ARG, context.rawArg)
+            }
+
+            sendMsg(context, msg)
+        }
+
+        suspend fun showEmbedAuthorUrl(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+            val url = modularMessage?.embed?.author?.url
+
+            val msg = if (url == null) {
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                Translateable("${cmd.root}.show.set").string(context)
+                    .replace("%url", url)
+            }
+
+            sendMsg(context, msg)
+        }
+
+        suspend fun setEmbedAuthorUrl(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+                ?: ModularMessage()
+
+            val arg = context.args[0]
+
+            val msg = if (arg.equals("null", true)) {
+                messageWrapper.removeEmbedAuthorURL(modularMessage, context.getGuildId(), type)
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                messageWrapper.setEmbedAuthorURL(modularMessage, context.getGuildId(), type, context.rawArg)
+                Translateable("${cmd.root}.show.set").string(context)
+                    .replace(PLACEHOLDER_ARG, context.rawArg)
+            }
+
+            sendMsg(context, msg)
+        }
+
+        suspend fun showEmbedThumbnail(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+            val url = modularMessage?.embed?.thumbnail?.url
+
+            val msg = if (url == null) {
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                Translateable("${cmd.root}.show.set").string(context)
+                    .replace("%url", url)
+            }
+
+            sendMsg(context, msg)
+        }
+
+        suspend fun setEmbedThumbnail(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+                ?: ModularMessage()
+
+            val arg = context.args[0]
+
+            val msg = if (arg.equals("null", true)) {
+                messageWrapper.removeEmbedThumbnail(modularMessage, context.getGuildId(), type)
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                messageWrapper.setEmbedThumbnail(modularMessage, context.getGuildId(), type, context.rawArg)
+                Translateable("${cmd.root}.show.set").string(context)
+                    .replace(PLACEHOLDER_ARG, context.rawArg)
+            }
+
+            sendMsg(context, msg)
+        }
+
+        suspend fun showEmbedImage(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+            val url = modularMessage?.embed?.image?.url
+
+            val msg = if (url == null) {
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                Translateable("${cmd.root}.show.set").string(context)
+                    .replace("%url", url)
+            }
+
+            sendMsg(context, msg)
+        }
+
+        suspend fun setEmbedImage(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+                ?: ModularMessage()
+
+            val arg = context.args[0]
+
+            val msg = if (arg.equals("null", true)) {
+                messageWrapper.removeEmbedImage(modularMessage, context.getGuildId(), type)
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                messageWrapper.setEmbedImage(modularMessage, context.getGuildId(), type, context.rawArg)
+                Translateable("${cmd.root}.show.set").string(context)
+                    .replace(PLACEHOLDER_ARG, context.rawArg)
+            }
+
+            sendMsg(context, msg)
+        }
+
+        suspend fun showEmbedFooter(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+            val footer = modularMessage?.embed?.footer?.text
+
+            val msg = if (footer == null) {
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                Translateable("${cmd.root}.show.set").string(context)
+                    .replace("%url", footer)
+            }
+
+            sendMsg(context, msg)
+        }
+
+        suspend fun setEmbedFooter(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+                ?: ModularMessage()
+
+            val arg = context.args[0]
+
+            val msg = if (arg.equals("null", true)) {
+                messageWrapper.removeEmbedFooterContent(modularMessage, context.getGuildId(), type)
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                messageWrapper.setEmbedFooterContent(modularMessage, context.getGuildId(), type, context.rawArg)
+                Translateable("${cmd.root}.show.set").string(context)
+                    .replace(PLACEHOLDER_ARG, context.rawArg)
+            }
+
+            sendMsg(context, msg)
+        }
+
+        fun showEmbedFooterUrl(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        }
+
+        suspend fun setEmbedFooterUrl(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+                ?: ModularMessage()
+
+            val arg = context.args[0]
+
+            val msg = if (arg.equals("null", true)) {
+                messageWrapper.removeEmbedFooterURL(modularMessage, context.getGuildId(), type)
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                messageWrapper.setEmbedFooterURL(modularMessage, context.getGuildId(), type, context.rawArg)
+                Translateable("${cmd.root}.show.set").string(context)
+                    .replace(PLACEHOLDER_ARG, context.rawArg)
+            }
+
+            sendMsg(context, msg)
+        }
     }
 }

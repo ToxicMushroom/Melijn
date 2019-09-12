@@ -46,7 +46,22 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
         init {
             name = "embed"
             aliases = arrayOf("e")
-            children = arrayOf(ClearArg(root, type), SetDescriptionArg(root, type), SetColorArg(root, type))
+            children = arrayOf(
+                ClearArg(root, type),
+                SetDescriptionArg(root, type),
+                SetColorArg(root, type),
+                SetTitleArg(root, type),
+                SetTitleUrlArg(root, type),
+                SetAuthorArg(root, type),
+                SetAuthorIconArg(root, type),
+                SetAuthorUrlArg(root, type),
+                SetThumbnailArg(root, type),
+                SetImageArg(root, type),
+                FieldArg(root, type),
+                SetFooterArg(root, type),
+                SetFooterUrlArg(root, type)
+            //What even is optimization
+            )
         }
 
         override suspend fun execute(context: CommandContext) {
@@ -158,7 +173,11 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
 
             init {
                 name = "field"
-                children = arrayOf(AddArg(root, type))
+                children = arrayOf(
+                    AddArg(root, type),
+                    RemoveArg(root, type),
+                    ListArg(root, type)
+                )
             }
 
             override suspend fun execute(context: CommandContext) {
