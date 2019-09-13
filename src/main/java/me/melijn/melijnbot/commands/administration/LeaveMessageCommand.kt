@@ -341,8 +341,8 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
 
             override suspend fun execute(context: CommandContext) {
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedFooterUrl(this, context, type)
-                    else -> MessageCommandUtil.setEmbedFooterUrl(this, context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedFooterIcon(this, context, type)
+                    else -> MessageCommandUtil.setEmbedFooterIcon(this, context, type)
                 }
             }
         }

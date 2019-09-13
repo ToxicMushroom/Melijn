@@ -12,7 +12,7 @@ import java.text.SimpleDateFormat
 import java.util.regex.Pattern
 
 val linuxUptimePattern: Pattern = Pattern.compile(
-        "(?:\\s+)?\\d+:\\d+:\\d+ up(?: (\\d+) days?,)?(?:\\s+(\\d+):(\\d+)|\\s+?(\\d+)\\s+?min).*"
+    "(?:\\s+)?\\d+:\\d+:\\d+ up(?: (\\d+) days?,)?(?:\\s+(\\d+):(\\d+)|\\s+?(\\d+)\\s+?min).*"
 )
 
 fun getSystemUptime(): Long {
@@ -29,6 +29,8 @@ fun getSystemUptime(): Long {
         -1
     }
 }
+
+fun commandFromContext(context: CommandContext): AbstractCommand = context.commandOrder.last()
 
 fun getUnixUptime(): Long {
     val uptimeProc = Runtime.getRuntime().exec("uptime") //Parse time to groups if possible
@@ -74,9 +76,9 @@ fun Color.toHex(): String {
 
 
 inline fun <reified T : Enum<*>> enumValueOrNull(name: String): T? =
-        T::class.java.enumConstants.firstOrNull {
-            it.name.equals(name, true)
-        }
+    T::class.java.enumConstants.firstOrNull {
+        it.name.equals(name, true)
+    }
 
 fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set<AbstractCommand>? {
     val arg = context.args[index]
@@ -93,7 +95,7 @@ fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set<Abstrac
 
     if (commands.isEmpty()) {
         sendMsg(context, Translateable("message.unknown.commandnode").string(context)
-                .replace(PLACEHOLDER_ARG, arg), null)
+            .replace(PLACEHOLDER_ARG, arg), null)
         return null
     }
     return commands
@@ -104,10 +106,10 @@ fun getLongFromArgNMessage(context: CommandContext, index: Int): Long? {
     val long = arg.toLongOrNull()
     if (!arg.matches("\\d+".toRegex())) {
         sendMsg(context, Translateable("message.unknown.number").string(context)
-                .replace(PLACEHOLDER_ARG, arg), null)
+            .replace(PLACEHOLDER_ARG, arg), null)
     } else if (long == null) {
         sendMsg(context, Translateable("message.unknown.long").string(context)
-                .replace(PLACEHOLDER_ARG, arg), null)
+            .replace(PLACEHOLDER_ARG, arg), null)
     }
     return long
 }

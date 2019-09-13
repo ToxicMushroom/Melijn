@@ -8,9 +8,12 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.utils.commandFromContext
 import me.melijn.melijnbot.objects.utils.getColorFromArgNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.toHex
+import net.dv8tion.jda.api.EmbedBuilder
+import org.json.JSONObject
 
 class MessageCommandUtil {
     companion object {
@@ -472,11 +475,22 @@ class MessageCommandUtil {
             sendMsg(context, msg)
         }
 
-        fun showEmbedFooterUrl(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        suspend fun showEmbedFooterIcon(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+            val footerUrl = modularMessage?.embed?.footer?.iconUrl
+
+            val msg = if (footerUrl == null) {
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                Translateable("${cmd.root}.show.set").string(context)
+                    .replace("%url", footerUrl)
+            }
+
+            sendMsg(context, msg)
         }
 
-        suspend fun setEmbedFooterUrl(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
+        suspend fun setEmbedFooterIcon(cmd: AbstractCommand, context: CommandContext, type: MessageType) {
             val messageWrapper = context.daoManager.messageWrapper
             val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
                 ?: ModularMessage()
@@ -490,6 +504,103 @@ class MessageCommandUtil {
                 messageWrapper.setEmbedFooterURL(modularMessage, context.getGuildId(), type, context.rawArg)
                 Translateable("${cmd.root}.show.set").string(context)
                     .replace(PLACEHOLDER_ARG, context.rawArg)
+            }
+
+            sendMsg(context, msg)
+        }
+
+        suspend fun addEmbedField(title: String, value: String, inline: Boolean, context: CommandContext, type: MessageType) {
+            val cmd = commandFromContext(context)
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+                ?: ModularMessage()
+            val embed = modularMessage.embed ?: EmbedBuilder().build()
+            val embedBuilder = EmbedBuilder(embed)
+            embedBuilder.addField(title, value, inline)
+            modularMessage.embed = embedBuilder.build()
+
+            messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
+            val inlineString = Translateable(if (inline) "yes" else "no").string(context)
+            val msg = Translateable("${cmd.root}.show.set").string(context)
+                .replace("%title%", title)
+                .replace("%value%", value)
+                .replace("%inline%", inlineString)
+
+            sendMsg(context, msg)
+        }
+
+        suspend fun setEmbedFieldTitle(index: Int, title: String, context: CommandContext, type: MessageType) {
+            setEmbedFieldPart(index, "title", title, context, type)
+        }
+
+        suspend fun setEmbedFieldValue(index: Int, value: String, context: CommandContext, type: MessageType) {
+            setEmbedFieldPart(index, "value", value, context, type)
+        }
+
+        suspend fun setEmbedFieldInline(index: Int, inline: Boolean, context: CommandContext, type: MessageType) {
+            setEmbedFieldPart(index, "inline", inline, context, type)
+        }
+
+        suspend fun setEmbedFieldPart(index: Int, partName: String, value: Any, context: CommandContext, type: MessageType) {
+            val cmd = commandFromContext(context)
+            val messageWrapper = context.daoManager.messageWrapper
+            var modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+                ?: ModularMessage()
+
+            val json = JSONObject(modularMessage.toJSON())
+            val embedJSON = json.getJSONObject("embed")
+            val fieldsJSON = embedJSON.getJSONArray("fields")
+            val field = fieldsJSON.getJSONObject(index)
+            field.put(partName, value)
+            fieldsJSON.put(index, field)
+            embedJSON.put("fields", fieldsJSON)
+            json.put("embed", json)
+            modularMessage = ModularMessage.fromJSON(json.toString(4))
+
+            messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
+            val msg = Translateable("${cmd.root}.removed").string(context)
+                .replace("%index%", index.toString())
+
+            sendMsg(context, msg)
+        }
+
+        suspend fun removeEmbedField(index: Int, context: CommandContext, type: MessageType) {
+            val cmd = commandFromContext(context)
+            val messageWrapper = context.daoManager.messageWrapper
+            var modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+                ?: ModularMessage()
+
+            val json = JSONObject(modularMessage.toJSON())
+            val embedJSON = json.getJSONObject("embed")
+            val fieldsJSON = embedJSON.getJSONArray("fields")
+            fieldsJSON.remove(index)
+            embedJSON.put("fields", fieldsJSON)
+            json.put("embed", json)
+            modularMessage = ModularMessage.fromJSON(json.toString(4))
+
+            messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
+            val msg = Translateable("${cmd.root}.removed").string(context)
+                .replace("%index%", index.toString())
+
+            sendMsg(context, msg)
+        }
+
+        suspend fun showEmbedFields(context: CommandContext, type: MessageType) {
+            val cmd = commandFromContext(context)
+            val messageWrapper = context.daoManager.messageWrapper
+            val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+            val fields = modularMessage?.embed?.fields
+
+            val msg = if (fields == null || fields.isEmpty()) {
+                Translateable("${cmd.root}.show.unset").string(context)
+            } else {
+                val title = Translateable("${cmd.root}.show.title")
+                var desc = "```INI"
+                for ((index, field) in fields.withIndex()) {
+                    desc += "\n$index - [${field.name}]"
+                }
+                desc += "```"
+                desc
             }
 
             sendMsg(context, msg)
