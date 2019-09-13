@@ -13,7 +13,7 @@ class TableBuilder(private val split: Boolean) {
     private var footerRow: MutableList<String> = ArrayList()
 
     companion object {
-        const val LINE = "----------------------------------------------------------------------------------"
+        const val LINE = "══════════════════════════════════════════════════════════════════════════════════"
     }
 
     fun setColumns(headerNames: Collection<String>): TableBuilder {
