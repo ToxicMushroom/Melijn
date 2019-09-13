@@ -5,6 +5,8 @@ import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.utils.getBooleanFromArgNMessage
+import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.objects.utils.sendSyntax
 
 class LeaveMessageCommand : AbstractCommand("command.leave") {
