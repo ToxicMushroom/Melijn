@@ -36,9 +36,9 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
 
         override suspend fun execute(context: CommandContext) {
             if (context.args.isEmpty()) {
-                MessageCommandUtil.showMessageContent(this, context, type)
+                MessageCommandUtil.showMessageContent(context, type)
             } else {
-                MessageCommandUtil.setMessageContent(this, context, type)
+                MessageCommandUtil.setMessageContent(context, type)
             }
         }
     }
@@ -78,8 +78,8 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
 
             override suspend fun execute(context: CommandContext) {
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedTitle(this, context, type)
-                    else -> MessageCommandUtil.setEmbedTitle(this, context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedTitle(context, type)
+                    else -> MessageCommandUtil.setEmbedTitle(context, type)
                 }
             }
         }
@@ -92,8 +92,8 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
 
             override suspend fun execute(context: CommandContext) {
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedTitleUrl(this, context, type)
-                    else -> MessageCommandUtil.setEmbedTitleUrl(this, context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedTitleUrl(context, type)
+                    else -> MessageCommandUtil.setEmbedTitleUrl(context, type)
                 }
             }
         }
@@ -107,8 +107,8 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
 
             override suspend fun execute(context: CommandContext) {
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedAuthor(this, context, type)
-                    else -> MessageCommandUtil.setEmbedAuthor(this, context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedAuthor(context, type)
+                    else -> MessageCommandUtil.setEmbedAuthor(context, type)
                 }
             }
         }
@@ -121,8 +121,8 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
 
             override suspend fun execute(context: CommandContext) {
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedAuthorIcon(this, context, type)
-                    else -> MessageCommandUtil.setEmbedAuthorIcon(this, context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedAuthorIcon(context, type)
+                    else -> MessageCommandUtil.setEmbedAuthorIcon(context, type)
                 }
             }
         }
@@ -135,8 +135,8 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
 
             override suspend fun execute(context: CommandContext) {
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedAuthorUrl(this, context, type)
-                    else -> MessageCommandUtil.setEmbedAuthorUrl(this, context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedAuthorUrl(context, type)
+                    else -> MessageCommandUtil.setEmbedAuthorUrl(context, type)
                 }
             }
         }
@@ -150,8 +150,8 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
 
             override suspend fun execute(context: CommandContext) {
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedThumbnail(this, context, type)
-                    else -> MessageCommandUtil.setEmbedThumbnail(this, context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedThumbnail(context, type)
+                    else -> MessageCommandUtil.setEmbedThumbnail(context, type)
                 }
             }
         }
@@ -164,8 +164,8 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
 
             override suspend fun execute(context: CommandContext) {
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedImage(this, context, type)
-                    else -> MessageCommandUtil.setEmbedImage(this, context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedImage(context, type)
+                    else -> MessageCommandUtil.setEmbedImage(context, type)
                 }
             }
         }
@@ -298,8 +298,8 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
 
             override suspend fun execute(context: CommandContext) {
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedDescription(this, context, type)
-                    else -> MessageCommandUtil.setEmbedDescription(this, context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedDescription(context, type)
+                    else -> MessageCommandUtil.setEmbedDescription(context, type)
                 }
             }
         }
@@ -313,8 +313,8 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
 
             override suspend fun execute(context: CommandContext) {
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedColor(this, context, type)
-                    else -> MessageCommandUtil.setEmbedColor(this, context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedColor(context, type)
+                    else -> MessageCommandUtil.setEmbedColor(context, type)
                 }
             }
         }
@@ -327,8 +327,8 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
 
             override suspend fun execute(context: CommandContext) {
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedFooter(this, context, type)
-                    else -> MessageCommandUtil.setEmbedFooter(this, context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedFooter(context, type)
+                    else -> MessageCommandUtil.setEmbedFooter(context, type)
                 }
             }
         }
@@ -341,8 +341,8 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
 
             override suspend fun execute(context: CommandContext) {
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedFooterIcon(this, context, type)
-                    else -> MessageCommandUtil.setEmbedFooterIcon(this, context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedFooterIcon(context, type)
+                    else -> MessageCommandUtil.setEmbedFooterIcon(context, type)
                 }
             }
         }
@@ -355,7 +355,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                MessageCommandUtil.clearEmbed(this, context, type)
+                MessageCommandUtil.clearEmbed(context, type)
             }
         }
     }
@@ -379,7 +379,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                MessageCommandUtil.listAttachments(this, context, type)
+                MessageCommandUtil.listAttachments(context, type)
             }
         }
 
@@ -390,7 +390,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                MessageCommandUtil.addAttachment(this, context, type)
+                MessageCommandUtil.addAttachment(context, type)
             }
 
         }
@@ -402,7 +402,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                MessageCommandUtil.removeAttachment(this, context, type)
+                MessageCommandUtil.removeAttachment(context, type)
             }
         }
 
