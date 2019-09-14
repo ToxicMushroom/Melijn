@@ -556,7 +556,7 @@ object MessageCommandUtil {
         field.put(partName, value)
         fieldsJSON.put(index, field)
         embedJSON.put("fields", fieldsJSON)
-        json.put("embed", json)
+        json.put("embed", embedJSON)
         modularMessage = ModularMessage.fromJSON(json.toString(4))
 
         messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
@@ -582,7 +582,7 @@ object MessageCommandUtil {
         val fieldsJSON = embedJSON.getJSONArray("fields")
         fieldsJSON.remove(index)
         embedJSON.put("fields", fieldsJSON)
-        json.put("embed", json)
+        json.put("embed", embedJSON)
         modularMessage = ModularMessage.fromJSON(json.toString(4))
 
         messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
@@ -604,11 +604,11 @@ object MessageCommandUtil {
             val title = Translateable("message.embed.field.list.title").string(context)
             var desc = "```INI"
             for ((index, field) in fields.withIndex()) {
-                desc += "\n$index - [${field.name}]"
+                desc += "\n$index - [${field.name}] - [${field.value}] - ${if (field.isInline) "true" else "\nfalse"}"
             }
             desc += "```"
             (title + desc)
-        }
+        }.replace(PLACEHOLDER_TYPE, type.text)
 
         sendMsg(context, msg)
     }
