@@ -20,7 +20,9 @@ object MessageCommandUtil {
         return if (messageWrapper.shouldRemove(message)) {
             messageWrapper.removeMessage(guildId, type)
             true
-        } else false
+        } else{
+            false
+        }
     }
 
     suspend fun setMessageContent(context: CommandContext, type: MessageType) {
