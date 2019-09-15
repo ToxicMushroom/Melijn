@@ -4,22 +4,22 @@ import com.github.benmanes.caffeine.cache.Caffeine
 import me.melijn.melijnbot.database.IMPORTANT_CACHE
 import me.melijn.melijnbot.enums.PermState
 import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.objects.utils.launch
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class ChannelRolePermissionWrapper(val taskManager: TaskManager, private val channelRolePermissionDao: ChannelRolePermissionDao) {
     val channelRolePermissionCache = Caffeine.newBuilder()
-            .executor(taskManager.executorService)
-            .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-            .buildAsync<Pair<Long, Long>, Map<String, PermState>>() { pair, executor -> getPermissionList(pair.first, pair.second, executor) }
+        .executor(taskManager.executorService)
+        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
+        .buildAsync<Pair<Long, Long>, Map<String, PermState>>() { pair, executor -> getPermissionList(pair.first, pair.second, executor) }
 
-    fun getPermissionList(channelId: Long, roleId: Long, executor: Executor = taskManager.executorService): CompletableFuture<Map<String, PermState>> {
+    private fun getPermissionList(channelId: Long, roleId: Long, executor: Executor = taskManager.executorService): CompletableFuture<Map<String, PermState>> {
         val languageFuture = CompletableFuture<Map<String, PermState>>()
-        executor.execute {
-            channelRolePermissionDao.getMap(channelId, roleId) { map ->
-                languageFuture.complete(map)
-            }
+        executor.launch {
+            val map = channelRolePermissionDao.getMap(channelId, roleId)
+            languageFuture.complete(map)
         }
         return languageFuture
     }
@@ -36,7 +36,7 @@ class ChannelRolePermissionWrapper(val taskManager: TaskManager, private val cha
         channelRolePermissionCache.put(Pair(channelId, roleId), CompletableFuture.completedFuture(permissionMap.toMap()))
     }
 
-    fun setPermission(guildId: Long, channelId: Long, roleId: Long, permission: String, state: PermState) {
+    suspend fun setPermission(guildId: Long, channelId: Long, roleId: Long, permission: String, state: PermState) {
         val permissionMap = channelRolePermissionCache.get(Pair(channelId, roleId)).get().toMutableMap()
         if (state == PermState.DEFAULT) {
             permissionMap.remove(permission)
@@ -48,7 +48,7 @@ class ChannelRolePermissionWrapper(val taskManager: TaskManager, private val cha
         channelRolePermissionCache.put(Pair(channelId, roleId), CompletableFuture.completedFuture(permissionMap.toMap()))
     }
 
-    fun clear(channelId: Long, roleId: Long) {
+    suspend fun clear(channelId: Long, roleId: Long) {
         channelRolePermissionCache.put(Pair(channelId, roleId), CompletableFuture.completedFuture(emptyMap()))
         channelRolePermissionDao.delete(channelId, roleId)
     }

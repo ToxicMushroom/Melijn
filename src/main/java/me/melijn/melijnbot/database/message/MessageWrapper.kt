@@ -17,11 +17,11 @@ import java.util.concurrent.TimeUnit
 class MessageWrapper(val taskManager: TaskManager, private val messageDao: MessageDao) {
 
     val messageCache = Caffeine.newBuilder()
-            .executor(taskManager.executorService)
-            .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-            .buildAsync<Pair<Long, MessageType>, ModularMessage?> { key, _ ->
-                getMessage(key)
-            }
+        .executor(taskManager.executorService)
+        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
+        .buildAsync<Pair<Long, MessageType>, ModularMessage?> { key, _ ->
+            getMessage(key)
+        }
 
     private fun getMessage(pair: Pair<Long, MessageType>): CompletableFuture<ModularMessage?> {
         val future = CompletableFuture<ModularMessage?>()
@@ -42,18 +42,21 @@ class MessageWrapper(val taskManager: TaskManager, private val messageDao: Messa
         return future
     }
 
-    private fun updateMessage(message: ModularMessage, guildId: Long, type: MessageType) {
-        if (shouldRemove(message)) removeMessage(guildId, type)
-        else (setMessage(guildId, type, message))
+    private suspend fun updateMessage(message: ModularMessage, guildId: Long, type: MessageType) {
+        if (shouldRemove(message)) {
+            removeMessage(guildId, type)
+        } else {
+            (setMessage(guildId, type, message))
+        }
     }
 
 
-    fun removeMessage(guildId: Long, type: MessageType) {
+    suspend fun removeMessage(guildId: Long, type: MessageType) {
         messageDao.remove(guildId, type)
         messageCache.put(Pair(guildId, type), CompletableFuture.completedFuture(null))
     }
 
-    fun setMessage(guildId: Long, type: MessageType, message: ModularMessage) {
+    suspend fun setMessage(guildId: Long, type: MessageType, message: ModularMessage) {
         messageDao.set(guildId, type, message.toJSON())
         messageCache.put(Pair(guildId, type), CompletableFuture.completedFuture(message))
     }
@@ -64,36 +67,36 @@ class MessageWrapper(val taskManager: TaskManager, private val messageDao: Messa
         val attachments = message.attachments
 
         return content == null &&
-                attachments.isEmpty() &&
-                (embed == null || embed.isEmpty || !embed.isSendable(AccountType.BOT))
+            attachments.isEmpty() &&
+            (embed == null || embed.isEmpty || !embed.isSendable(AccountType.BOT))
     }
 
     private fun validateEmbedOrNull(embed: MessageEmbed): MessageEmbed? =
-            if (embed.isEmpty || !embed.isSendable(AccountType.BOT)) {
-                null
-            } else {
-                embed
-            }
+        if (embed.isEmpty || !embed.isSendable(AccountType.BOT)) {
+            null
+        } else {
+            embed
+        }
 
 
-    fun setMessageContent(message: ModularMessage, guildId: Long, type: MessageType, content: String?) {
+    suspend fun setMessageContent(message: ModularMessage, guildId: Long, type: MessageType, content: String?) {
         message.messageContent = content
         setMessage(guildId, type, message)
     }
 
 
-    fun removeMessageContent(message: ModularMessage, guildId: Long, type: MessageType) {
+    suspend fun removeMessageContent(message: ModularMessage, guildId: Long, type: MessageType) {
         message.messageContent = null
         updateMessage(message, guildId, type)
     }
 
 
-    fun clearEmbed(message: ModularMessage, guildId: Long, type: MessageType) {
+    suspend fun clearEmbed(message: ModularMessage, guildId: Long, type: MessageType) {
         message.embed = null
         updateMessage(message, guildId, type)
     }
 
-    fun setEmbedTitleContent(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
+    suspend fun setEmbedTitleContent(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
         val eb = EmbedBuilder(message.embed)
         eb.setTitle(arg, message.embed?.url)
         message.embed = eb.build()
@@ -101,7 +104,7 @@ class MessageWrapper(val taskManager: TaskManager, private val messageDao: Messa
     }
 
 
-    fun removeEmbedTitleContent(message: ModularMessage, guildId: Long, type: MessageType) {
+    suspend  fun removeEmbedTitleContent(message: ModularMessage, guildId: Long, type: MessageType) {
         val eb = EmbedBuilder(message.embed)
         eb.setTitle(null)
         message.embed = validateEmbedOrNull(eb.build())
@@ -109,7 +112,7 @@ class MessageWrapper(val taskManager: TaskManager, private val messageDao: Messa
     }
 
 
-    fun setEmbedTitleURL(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
+    suspend fun setEmbedTitleURL(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
         val eb = EmbedBuilder(message.embed)
         eb.setTitle(message.embed?.title, arg)
         message.embed = eb.build()
@@ -117,7 +120,7 @@ class MessageWrapper(val taskManager: TaskManager, private val messageDao: Messa
     }
 
 
-    fun removeEmbedTitleURL(message: ModularMessage, guildId: Long, type: MessageType) {
+    suspend fun removeEmbedTitleURL(message: ModularMessage, guildId: Long, type: MessageType) {
         val eb = EmbedBuilder(message.embed)
         eb.setTitle(null)
         message.embed = validateEmbedOrNull(eb.build())
@@ -125,14 +128,14 @@ class MessageWrapper(val taskManager: TaskManager, private val messageDao: Messa
     }
 
 
-    fun setEmbedThumbnail(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
+    suspend  fun setEmbedThumbnail(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
         val eb = EmbedBuilder(message.embed)
         eb.setThumbnail(arg)
         message.embed = eb.build()
         setMessage(guildId, type, message)
     }
 
-    fun removeEmbedThumbnail(message: ModularMessage, guildId: Long, type: MessageType) {
+    suspend fun removeEmbedThumbnail(message: ModularMessage, guildId: Long, type: MessageType) {
         val eb = EmbedBuilder(message.embed)
         eb.setThumbnail(null)
         message.embed = validateEmbedOrNull(eb.build())
@@ -140,14 +143,14 @@ class MessageWrapper(val taskManager: TaskManager, private val messageDao: Messa
     }
 
 
-    fun setEmbedImage(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
+    suspend fun setEmbedImage(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
         val eb = EmbedBuilder(message.embed)
         eb.setImage(arg)
         message.embed = eb.build()
         setMessage(guildId, type, message)
     }
 
-    fun removeEmbedImage(message: ModularMessage, guildId: Long, type: MessageType) {
+    suspend  fun removeEmbedImage(message: ModularMessage, guildId: Long, type: MessageType) {
         val eb = EmbedBuilder(message.embed)
         eb.setImage(null)
         message.embed = validateEmbedOrNull(eb.build())
@@ -155,14 +158,14 @@ class MessageWrapper(val taskManager: TaskManager, private val messageDao: Messa
     }
 
 
-    fun setEmbedFooterContent(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
+    suspend fun setEmbedFooterContent(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
         val eb = EmbedBuilder(message.embed)
         eb.setFooter(arg, message.embed?.footer?.iconUrl)
         message.embed = eb.build()
         setMessage(guildId, type, message)
     }
 
-    fun removeEmbedFooterContent(message: ModularMessage, guildId: Long, type: MessageType) {
+    suspend  fun removeEmbedFooterContent(message: ModularMessage, guildId: Long, type: MessageType) {
         val eb = EmbedBuilder(message.embed)
         eb.setFooter(null)
         message.embed = validateEmbedOrNull(eb.build())
@@ -170,14 +173,14 @@ class MessageWrapper(val taskManager: TaskManager, private val messageDao: Messa
     }
 
 
-    fun setEmbedFooterURL(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
+    suspend  fun setEmbedFooterURL(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
         val eb = EmbedBuilder(message.embed)
         eb.setFooter(message.embed?.footer?.text, arg)
         message.embed = eb.build()
         setMessage(guildId, type, message)
     }
 
-    fun removeEmbedFooterURL(message: ModularMessage, guildId: Long, type: MessageType) {
+    suspend  fun removeEmbedFooterURL(message: ModularMessage, guildId: Long, type: MessageType) {
         val eb = EmbedBuilder(message.embed)
         eb.setFooter(message.embed?.footer?.text, null)
         message.embed = validateEmbedOrNull(eb.build())
@@ -185,14 +188,14 @@ class MessageWrapper(val taskManager: TaskManager, private val messageDao: Messa
     }
 
 
-    fun setEmbedAuthorContent(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
+    suspend fun setEmbedAuthorContent(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
         val eb = EmbedBuilder(message.embed)
         eb.setAuthor(arg, message.embed?.author?.url, message.embed?.author?.iconUrl)
         message.embed = eb.build()
         setMessage(guildId, type, message)
     }
 
-    fun removeEmbedAuthorContent(message: ModularMessage, guildId: Long, type: MessageType) {
+    suspend  fun removeEmbedAuthorContent(message: ModularMessage, guildId: Long, type: MessageType) {
         val eb = EmbedBuilder(message.embed)
         eb.setAuthor(null)
         message.embed = validateEmbedOrNull(eb.build())
@@ -200,35 +203,35 @@ class MessageWrapper(val taskManager: TaskManager, private val messageDao: Messa
     }
 
 
-    fun setEmbedAuthorURL(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
+    suspend fun setEmbedAuthorURL(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
         val eb = EmbedBuilder(message.embed)
         eb.setAuthor(message.embed?.author?.name, arg, message.embed?.author?.iconUrl)
         message.embed = eb.build()
         setMessage(guildId, type, message)
     }
 
-    fun removeEmbedAuthorURL(message: ModularMessage, guildId: Long, type: MessageType) {
+    suspend  fun removeEmbedAuthorURL(message: ModularMessage, guildId: Long, type: MessageType) {
         val eb = EmbedBuilder(message.embed)
         eb.setAuthor(message.embed?.author?.name, null, message.embed?.author?.iconUrl)
         message.embed = validateEmbedOrNull(eb.build())
         updateMessage(message, guildId, type)
     }
 
-    fun setEmbedAuthorIconURL(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
+    suspend fun setEmbedAuthorIconURL(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
         val eb = EmbedBuilder(message.embed)
         eb.setAuthor(message.embed?.author?.name, message.embed?.author?.url, arg)
         message.embed = eb.build()
         setMessage(guildId, type, message)
     }
 
-    fun removeEmbedAuthorIconURL(message: ModularMessage, guildId: Long, type: MessageType) {
+    suspend fun removeEmbedAuthorIconURL(message: ModularMessage, guildId: Long, type: MessageType) {
         val eb = EmbedBuilder(message.embed)
         eb.setAuthor(message.embed?.author?.name, message.embed?.author?.url, null)
         message.embed = validateEmbedOrNull(eb.build())
         updateMessage(message, guildId, type)
     }
 
-    fun setEmbedTimestamp(message: ModularMessage, guildId: Long, type: MessageType, state: Boolean) {
+    suspend fun setEmbedTimestamp(message: ModularMessage, guildId: Long, type: MessageType, state: Boolean) {
         val eb = EmbedBuilder(message.embed)
         val temporalAccessor = if (state) Instant.ofEpochMilli(1) else null
         //I update the timestamp before sending depending on value
@@ -238,7 +241,7 @@ class MessageWrapper(val taskManager: TaskManager, private val messageDao: Messa
         updateMessage(message, guildId, type)
     }
 
-    fun setEmbedDescription(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
+    suspend fun setEmbedDescription(message: ModularMessage, guildId: Long, type: MessageType, arg: String) {
         val eb = EmbedBuilder(message.embed)
         eb.setDescription(arg)
         message.embed = eb.build()
@@ -246,7 +249,7 @@ class MessageWrapper(val taskManager: TaskManager, private val messageDao: Messa
     }
 
 
-    fun removeEmbedDescription(message: ModularMessage, guildId: Long, type: MessageType) {
+    suspend fun removeEmbedDescription(message: ModularMessage, guildId: Long, type: MessageType) {
         val eb = EmbedBuilder(message.embed)
         eb.setDescription(null)
         message.embed = validateEmbedOrNull(eb.build())
@@ -254,14 +257,14 @@ class MessageWrapper(val taskManager: TaskManager, private val messageDao: Messa
     }
 
 
-    fun setEmbedColor(modularMessage: ModularMessage, guildId: Long, type: MessageType, color: Color) {
+    suspend fun setEmbedColor(modularMessage: ModularMessage, guildId: Long, type: MessageType, color: Color) {
         val eb = EmbedBuilder(modularMessage.embed)
         eb.setColor(color)
         modularMessage.embed = eb.build()
         setMessage(guildId, type, modularMessage)
     }
 
-    fun removeEmbedColor(modularMessage: ModularMessage, guildId: Long, type: MessageType) {
+    suspend fun removeEmbedColor(modularMessage: ModularMessage, guildId: Long, type: MessageType) {
         val eb = EmbedBuilder(modularMessage.embed)
         eb.setColor(null)
         modularMessage.embed = validateEmbedOrNull(eb.build())

@@ -13,7 +13,7 @@ class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
         return banDao.getUnbannableBans()
     }
 
-    fun setBan(newBan: Ban) {
+    suspend fun setBan(newBan: Ban) {
         banDao.setBan(newBan)
     }
 
@@ -61,15 +61,15 @@ class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
     private fun getBanMessage(banAuthor: User?, unbanAuthor: User?, ban: Ban): String {
         val unbanReason = ban.unbanReason
         return "```INI" +
-                "\n[Ban Author] ${banAuthor?.asTag ?: "deleted user"}" +
-                "\n[Ban Author Id] ${ban.banAuthorId}" +
-                "\n[Ban Reason] ${ban.reason.substring(0, min(ban.reason.length, 830))}" +
-                "\n[Unban Reason] ${unbanReason?.substring(0, min(unbanReason.length, 830))}" +
-                "\n[Unban Author] ${unbanAuthor?.asTag ?: "deleted user"}" +
-                "\n[Start Time] ${ban.startTime.asEpochMillisToDateTime()}" +
-                "\n[End Time] ${ban.endTime?.asEpochMillisToDateTime()}" +
-                "\n[Active] ${ban.active}" +
-                "```"
+            "\n[Ban Author] ${banAuthor?.asTag ?: "deleted user"}" +
+            "\n[Ban Author Id] ${ban.banAuthorId}" +
+            "\n[Ban Reason] ${ban.reason.substring(0, min(ban.reason.length, 830))}" +
+            "\n[Unban Reason] ${unbanReason?.substring(0, min(unbanReason.length, 830))}" +
+            "\n[Unban Author] ${unbanAuthor?.asTag ?: "deleted user"}" +
+            "\n[Start Time] ${ban.startTime.asEpochMillisToDateTime()}" +
+            "\n[End Time] ${ban.endTime?.asEpochMillisToDateTime()}" +
+            "\n[Active] ${ban.active}" +
+            "```"
 
     }
 }

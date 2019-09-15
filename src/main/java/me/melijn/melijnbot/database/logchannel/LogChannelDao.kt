@@ -3,6 +3,8 @@ package me.melijn.melijnbot.database.logchannel
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.LogChannelType
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class LogChannelDao(driverManager: DriverManager) : Dao(driverManager) {
 
@@ -14,12 +16,12 @@ class LogChannelDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun get(guildId: Long, type: LogChannelType, channelId: (Long) -> Unit) {
+    suspend fun get(guildId: Long, type: LogChannelType): Long = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND type = ?", { resultSet ->
             if (resultSet.next()) {
-                channelId.invoke(resultSet.getLong("channelId"))
+                it.resume(resultSet.getLong("channelId"))
             } else {
-                channelId.invoke(-1)
+                it.resume(-1)
             }
 
         }, guildId, type.toString())

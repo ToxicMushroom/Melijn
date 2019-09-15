@@ -9,7 +9,7 @@ import kotlin.math.min
 
 class WarnWrapper(val taskManager: TaskManager, private val warnDao: WarnDao) {
 
-    fun addWarn(warn: Warn) {
+    suspend fun addWarn(warn: Warn) {
         warnDao.add(warn)
     }
 

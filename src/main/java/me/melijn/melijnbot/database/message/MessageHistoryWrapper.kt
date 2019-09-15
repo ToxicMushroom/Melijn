@@ -8,11 +8,11 @@ class MessageHistoryWrapper(val taskManager: TaskManager, private val messageHis
         return messageHistoryDao.get(messageId)
     }
 
-    fun addMessage(daoMessage: DaoMessage) {
+    suspend fun addMessage(daoMessage: DaoMessage) {
         messageHistoryDao.add(daoMessage)
     }
 
-    fun setMessage(daoMessage: DaoMessage) {
+    suspend fun setMessage(daoMessage: DaoMessage) {
         messageHistoryDao.set(daoMessage)
     }
 }

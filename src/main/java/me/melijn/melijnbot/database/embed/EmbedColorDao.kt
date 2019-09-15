@@ -2,6 +2,8 @@ package me.melijn.melijnbot.database.embed
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class EmbedColorDao(driverManager: DriverManager) : Dao(driverManager) {
 
@@ -13,10 +15,13 @@ class EmbedColorDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun get(guildId: Long, color: (Int) -> Unit) {
-        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", {
-            if (it.next()) color.invoke(it.getInt("color"))
-            else color.invoke(-1)
+    suspend fun get(guildId: Long): Int = suspendCoroutine {
+        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", { rs ->
+            if (rs.next()) {
+                it.resume(rs.getInt("color"))
+            } else {
+                it.resume(-1)
+            }
         }, guildId)
     }
 

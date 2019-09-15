@@ -1,9 +1,8 @@
 package me.melijn.melijnbot.database.embed
 
 import me.melijn.melijnbot.objects.threading.TaskManager
-import java.util.function.Consumer
 
-class EmbedDisabledWrapper(val taskManager: TaskManager, val embedDisabledDao: EmbedDisabledDao) {
+class EmbedDisabledWrapper(val taskManager: TaskManager, private val embedDisabledDao: EmbedDisabledDao) {
 
     val embedDisabledCache = HashSet<Long>()
 
@@ -15,7 +14,7 @@ class EmbedDisabledWrapper(val taskManager: TaskManager, val embedDisabledDao: E
         }
     }
 
-    fun setDisabled(guildId: Long, disabledState: Boolean) {
+    suspend fun setDisabled(guildId: Long, disabledState: Boolean) {
         if (disabledState && !embedDisabledCache.contains(guildId)) {
             embedDisabledCache.add(guildId)
             embedDisabledDao.add(guildId)

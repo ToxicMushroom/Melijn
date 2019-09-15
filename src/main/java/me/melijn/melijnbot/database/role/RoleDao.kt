@@ -3,6 +3,8 @@ package me.melijn.melijnbot.database.role
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.RoleType
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class RoleDao(driverManager: DriverManager) : Dao(driverManager) {
 
@@ -19,10 +21,10 @@ class RoleDao(driverManager: DriverManager) : Dao(driverManager) {
             guildId, roleType.toString(), roleId, roleId)
     }
 
-    fun get(guildId: Long, roleType: RoleType, roleId: (Long) -> Unit) {
+    suspend fun get(guildId: Long, roleType: RoleType): Long = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND roleType = ?", { rs ->
             if (rs.next()) {
-                roleId.invoke(rs.getLong("roleId"))
+                it.resume(rs.getLong("roleId"))
             }
         }, guildId, roleType.toString())
     }

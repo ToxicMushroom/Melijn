@@ -9,7 +9,7 @@ import kotlin.math.min
 
 class KickWrapper(val taskManager: TaskManager, private val kickDao: KickDao) {
 
-    fun addKick(kick: Kick) {
+    suspend fun addKick(kick: Kick) {
         kickDao.add(kick)
     }
 

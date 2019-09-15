@@ -10,8 +10,6 @@ import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
 
-
-
 class TaskManager {
     val threadFactory = { name: String -> ThreadFactoryBuilder().setNameFormat("[$name-Pool-%d] ").build() }
     val executorService: ExecutorService = Executors.newCachedThreadPool(threadFactory.invoke("Task"))
@@ -26,11 +24,14 @@ class TaskManager {
         scheduledExecutorService.scheduleAtFixedRate(Task(runnable), afterMillis, periodMillis, TimeUnit.MILLISECONDS)
     }
 
-    fun async(func: () -> Unit) {
-        CoroutineScope(dispatcher).launch {
-            val task  = Task(Runnable(func))
-            task.run()
-        }
+    fun async(block: suspend CoroutineScope.() -> Unit) = CoroutineScope(dispatcher).launch {
+        val task = Task(Runnable {
+            CoroutineScope(dispatcher).launch {
+                block.invoke(this)
+            }
+        })
+        task.run()
+
     }
 
 

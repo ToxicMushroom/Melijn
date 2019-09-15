@@ -3,6 +3,8 @@ package me.melijn.melijnbot.database.permission
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.PermState
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class UserPermissionDao(driverManager: DriverManager) : Dao(driverManager) {
 
@@ -18,7 +20,9 @@ class UserPermissionDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeQuery("SELECT * FROM $table WHERE userId = ? AND permission = ?", { resultset ->
             if (resultset.next()) {
                 permState.invoke(PermState.valueOf(resultset.getString("state")))
-            } else permState.invoke(PermState.DEFAULT)
+            } else {
+                permState.invoke(PermState.DEFAULT)
+            }
         }, userId, permission)
     }
 
@@ -35,13 +39,13 @@ class UserPermissionDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND userId = ?", guildId, userId)
     }
 
-    fun getMap(guildId: Long, userId: Long, permStateMap: (Map<String, PermState>) -> Unit) {
+    suspend fun getMap(guildId: Long, userId: Long): Map<String, PermState> = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE userId = ? AND guildId = ?", { resultset ->
             val map = HashMap<String, PermState>()
             while (resultset.next()) {
                 map[resultset.getString("permission")] = PermState.valueOf(resultset.getString("state"))
             }
-            permStateMap.invoke(map)
+            it.resume(map)
         }, userId, guildId)
     }
 

@@ -13,7 +13,7 @@ class MuteWrapper(val taskManager: TaskManager, private val muteDao: MuteDao) {
         return muteDao.getUnmuteableMutes()
     }
 
-    fun setMute(newMute: Mute) {
+    suspend fun setMute(newMute: Mute) {
         muteDao.setMute(newMute)
     }
 

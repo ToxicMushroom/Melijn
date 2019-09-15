@@ -10,9 +10,9 @@ import java.util.concurrent.TimeUnit
 class UserEmbedColorWrapper(val taskManager: TaskManager, private val userEmbedColorDao: UserEmbedColorDao) {
 
     val userEmbedColorCache = Caffeine.newBuilder()
-            .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
-            .executor(taskManager.executorService)
-            .buildAsync<Long, Int>() { key, executor -> getColor(key, executor) }
+        .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
+        .executor(taskManager.executorService)
+        .buildAsync<Long, Int>() { key, executor -> getColor(key, executor) }
 
     private fun getColor(userId: Long, executor: Executor = taskManager.executorService): CompletableFuture<Int> {
         val future = CompletableFuture<Int>()
@@ -24,7 +24,7 @@ class UserEmbedColorWrapper(val taskManager: TaskManager, private val userEmbedC
         return future
     }
 
-    fun setColor(userId: Long, color: Int) {
+    suspend fun setColor(userId: Long, color: Int) {
         userEmbedColorCache.put(userId, CompletableFuture.completedFuture(color))
         userEmbedColorDao.set(userId, color)
     }

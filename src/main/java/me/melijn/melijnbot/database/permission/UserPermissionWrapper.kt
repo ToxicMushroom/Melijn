@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Caffeine
 import me.melijn.melijnbot.database.IMPORTANT_CACHE
 import me.melijn.melijnbot.enums.PermState
 import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.objects.utils.launch
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
@@ -16,10 +17,9 @@ class UserPermissionWrapper(val taskManager: TaskManager, private val userPermis
 
     private fun getPermissionList(guildAndUser: Pair<Long, Long>, executor: Executor = taskManager.executorService): CompletableFuture<Map<String, PermState>> {
         val languageFuture = CompletableFuture<Map<String, PermState>>()
-        executor.execute {
-            userPermissionDao.getMap(guildAndUser.first, guildAndUser.second) { map ->
-                languageFuture.complete(map)
-            }
+        executor.launch {
+            val map = userPermissionDao.getMap(guildAndUser.first, guildAndUser.second)
+            languageFuture.complete(map)
         }
         return languageFuture
     }
@@ -37,7 +37,7 @@ class UserPermissionWrapper(val taskManager: TaskManager, private val userPermis
         guildUserPermissionCache.put(pair, CompletableFuture.completedFuture(permissionMap.toMap()))
     }
 
-    fun setPermission(guildId: Long, userId: Long, permission: String, state: PermState) {
+    suspend fun setPermission(guildId: Long, userId: Long, permission: String, state: PermState) {
         val pair = Pair(guildId, userId)
         val permissionMap = guildUserPermissionCache.get(pair).get().toMutableMap()
         if (state == PermState.DEFAULT) {
@@ -50,7 +50,7 @@ class UserPermissionWrapper(val taskManager: TaskManager, private val userPermis
         guildUserPermissionCache.put(pair, CompletableFuture.completedFuture(permissionMap.toMap()))
     }
 
-    fun clear(guildId: Long, userId: Long) {
+    suspend fun clear(guildId: Long, userId: Long) {
         guildUserPermissionCache.put(Pair(guildId, userId), CompletableFuture.completedFuture(emptyMap()))
         userPermissionDao.delete(guildId, userId)
     }

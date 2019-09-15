@@ -14,9 +14,9 @@ import java.util.concurrent.TimeUnit
 class ChannelWrapper(private val taskManager: TaskManager, private val channelDao: ChannelDao) {
 
     val channelCache = Caffeine.newBuilder()
-            .executor(taskManager.executorService)
-            .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-            .buildAsync<Pair<Long, ChannelType>, Long>() { key, executor -> getChannelId(key.first, key.second, executor) }
+        .executor(taskManager.executorService)
+        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
+        .buildAsync<Pair<Long, ChannelType>, Long>() { key, executor -> getChannelId(key.first, key.second, executor) }
 
     private fun getChannelId(guildId: Long, channelType: ChannelType, executor: Executor = taskManager.executorService): CompletableFuture<Long> {
         val future = CompletableFuture<Long>()
@@ -29,12 +29,12 @@ class ChannelWrapper(private val taskManager: TaskManager, private val channelDa
         return future
     }
 
-    fun removeChannel(guildId: Long, channelType: ChannelType) {
+    suspend fun removeChannel(guildId: Long, channelType: ChannelType) {
         channelDao.remove(guildId, channelType)
         channelCache.put(Pair(guildId, channelType), CompletableFuture.completedFuture(-1))
     }
 
-    fun setChannel(guildId: Long, channelType: ChannelType, channelId: Long) {
+    suspend fun setChannel(guildId: Long, channelType: ChannelType, channelId: Long) {
         channelDao.set(guildId, channelType, channelId)
         channelCache.put(Pair(guildId, channelType), CompletableFuture.completedFuture(channelId))
     }

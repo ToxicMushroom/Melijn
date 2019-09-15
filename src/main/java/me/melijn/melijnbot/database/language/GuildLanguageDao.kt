@@ -2,6 +2,8 @@ package me.melijn.melijnbot.database.language
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 class GuildLanguageDao(driverManager: DriverManager) : Dao(driverManager) {
@@ -13,11 +15,13 @@ class GuildLanguageDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun get(guildId: Long, language: (String) -> Unit) {
+    suspend fun get(guildId: Long): String = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", { resultset ->
             if (resultset.next()) {
-                language.invoke(resultset.getString("language"))
-            } else language.invoke("EN")
+                it.resume(resultset.getString("language"))
+            } else {
+                it.resume("EN")
+            }
 
         }, guildId)
     }

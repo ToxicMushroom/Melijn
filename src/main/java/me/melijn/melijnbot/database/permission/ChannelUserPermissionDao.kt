@@ -3,6 +3,8 @@ package me.melijn.melijnbot.database.permission
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.PermState
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class ChannelUserPermissionDao(driverManager: DriverManager) : Dao(driverManager) {
 
@@ -38,13 +40,13 @@ class ChannelUserPermissionDao(driverManager: DriverManager) : Dao(driverManager
             channelId, userId)
     }
 
-    fun getMap(channelId: Long, userId: Long, permStateMap: (Map<String, PermState>) -> Unit) {
+    suspend fun getMap(channelId: Long, userId: Long): Map<String, PermState> = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE userId = ? AND channelId = ?", { resultset ->
             val map = HashMap<String, PermState>()
             while (resultset.next()) {
                 map[resultset.getString("permission")] = PermState.valueOf(resultset.getString("state"))
             }
-            permStateMap.invoke(map)
+            it.resume(map)
         }, userId, channelId)
     }
 

@@ -1,5 +1,9 @@
 package me.melijn.melijnbot.objects.utils
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
@@ -9,6 +13,7 @@ import java.awt.Color
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.text.SimpleDateFormat
+import java.util.concurrent.Executor
 import java.util.regex.Pattern
 
 val linuxUptimePattern: Pattern = Pattern.compile(
@@ -112,4 +117,10 @@ fun getLongFromArgNMessage(context: CommandContext, index: Int): Long? {
             .replace(PLACEHOLDER_ARG, arg), null)
     }
     return long
+}
+
+fun Executor.launch(block: suspend CoroutineScope.() -> Unit): Job {
+    return CoroutineScope(this.asCoroutineDispatcher()).launch {
+        block.invoke(this)
+    }
 }
