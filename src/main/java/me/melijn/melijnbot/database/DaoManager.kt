@@ -8,6 +8,8 @@ import me.melijn.melijnbot.database.channel.ChannelDao
 import me.melijn.melijnbot.database.channel.ChannelWrapper
 import me.melijn.melijnbot.database.command.CommandDao
 import me.melijn.melijnbot.database.command.CommandWrapper
+import me.melijn.melijnbot.database.command.CustomCommandDao
+import me.melijn.melijnbot.database.command.CustomCommandWrapper
 import me.melijn.melijnbot.database.cooldown.CommandChannelCooldownDao
 import me.melijn.melijnbot.database.cooldown.CommandChannelCooldownWrapper
 import me.melijn.melijnbot.database.cooldown.CommandCooldownDao
@@ -56,6 +58,7 @@ const val SMALL_CACHE = 50L
 class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
 
     val commandWrapper: CommandWrapper
+    val customCommandWrapper: CustomCommandWrapper
 
     val guildLanguageWrapper: GuildLanguageWrapper
     val userLanguageWrapper: UserLanguageWrapper
@@ -106,6 +109,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
 
 
         commandWrapper = CommandWrapper(taskManager, CommandDao(driverManager))
+        customCommandWrapper = CustomCommandWrapper(taskManager, CustomCommandDao((driverManager)))
 
         guildLanguageWrapper = GuildLanguageWrapper(taskManager, GuildLanguageDao(driverManager))
         userLanguageWrapper = UserLanguageWrapper(taskManager, UserLanguageDao(driverManager))
