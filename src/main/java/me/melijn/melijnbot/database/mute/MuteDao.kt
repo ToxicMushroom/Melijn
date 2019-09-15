@@ -13,12 +13,12 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun setMute(mute: Mute) {
+    suspend fun setMute(mute: Mute) {
         mute.apply {
             driverManager.executeUpdate("INSERT INTO $table (guildId, mutedId, muteAuthorId, unmuteAuthorId, reason, startTime, endTime, unmuteReason, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)" +
-                    " ON DUPLICATE KEY UPDATE endTime = ?, muteAuthorId = ?, reason = ?, unmuteAuthorId = ?, unmuteReason = ?, active = ?",
-                    guildId, mutedId, muteAuthorId, unmuteAuthorId, reason, startTime, endTime, unmuteReason, active,
-                    endTime, muteAuthorId, reason, unmuteAuthorId, unmuteReason, active)
+                " ON DUPLICATE KEY UPDATE endTime = ?, muteAuthorId = ?, reason = ?, unmuteAuthorId = ?, unmuteReason = ?, active = ?",
+                guildId, mutedId, muteAuthorId, unmuteAuthorId, reason, startTime, endTime, unmuteReason, active,
+                endTime, muteAuthorId, reason, unmuteAuthorId, unmuteReason, active)
         }
     }
 
@@ -27,15 +27,15 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeQuery("SELECT * FROM $table WHERE active = ? AND endTime < ?", { rs ->
             while (rs.next()) {
                 mutes.add(Mute(
-                        rs.getLong("guildId"),
-                        rs.getLong("mutedId"),
-                        rs.getLong("muteAuthorId"),
-                        rs.getNString("reason"),
-                        rs.getLong("unmuteAuthorId"),
-                        rs.getNString("unmuteReason"),
-                        rs.getLong("startTime"),
-                        rs.getLong("endTime"),
-                        true
+                    rs.getLong("guildId"),
+                    rs.getLong("mutedId"),
+                    rs.getLong("muteAuthorId"),
+                    rs.getNString("reason"),
+                    rs.getLong("unmuteAuthorId"),
+                    rs.getNString("unmuteReason"),
+                    rs.getLong("startTime"),
+                    rs.getLong("endTime"),
+                    true
                 ))
             }
         }, true, System.currentTimeMillis())
@@ -47,15 +47,15 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND mutedId = ? AND active = ?", { rs ->
             while (rs.next()) {
                 mute = Mute(
-                        guildId,
-                        mutedId,
-                        rs.getLong("muteAuthorId"),
-                        rs.getNString("reason"),
-                        rs.getLong("unmuteAuthorId"),
-                        rs.getNString("unmuteReason"),
-                        rs.getLong("startTime"),
-                        rs.getLong("endTime"),
-                        true
+                    guildId,
+                    mutedId,
+                    rs.getLong("muteAuthorId"),
+                    rs.getNString("reason"),
+                    rs.getLong("unmuteAuthorId"),
+                    rs.getNString("unmuteReason"),
+                    rs.getLong("startTime"),
+                    rs.getLong("endTime"),
+                    true
                 )
             }
         }, guildId, mutedId, true)
@@ -67,15 +67,15 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND mutedId = ?", { rs ->
             while (rs.next()) {
                 mutes.add(Mute(
-                        guildId,
-                        mutedId,
-                        rs.getLong("muteAuthorId"),
-                        rs.getNString("reason"),
-                        rs.getLong("unmuteAuthorId"),
-                        rs.getNString("unmuteReason"),
-                        rs.getLong("startTime"),
-                        rs.getLong("endTime"),
-                        rs.getBoolean("active")
+                    guildId,
+                    mutedId,
+                    rs.getLong("muteAuthorId"),
+                    rs.getNString("reason"),
+                    rs.getLong("unmuteAuthorId"),
+                    rs.getNString("unmuteReason"),
+                    rs.getLong("startTime"),
+                    rs.getLong("endTime"),
+                    rs.getBoolean("active")
                 ))
             }
         }, guildId, mutedId)
@@ -84,11 +84,11 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
 }
 
 data class Mute(var guildId: Long,
-               var mutedId: Long,
-               var muteAuthorId: Long?,
-               var reason: String = "/",
-               var unmuteAuthorId: Long? = null,
-               var unmuteReason: String? = null,
-               var startTime: Long = System.currentTimeMillis(),
-               var endTime: Long? = null,
-               var active: Boolean = true)
+                var mutedId: Long,
+                var muteAuthorId: Long?,
+                var reason: String = "/",
+                var unmuteAuthorId: Long? = null,
+                var unmuteReason: String? = null,
+                var startTime: Long = System.currentTimeMillis(),
+                var endTime: Long? = null,
+                var active: Boolean = true)

@@ -21,12 +21,12 @@ class UserLanguageDao(driverManager: DriverManager) : Dao(driverManager) {
         }, userId)
     }
 
-    fun set(userId: Long, language: String) {
+    suspend fun set(userId: Long, language: String) {
         driverManager.executeUpdate("INSERT INTO $table (userId, language) VALUES (?, ?) ON DUPLICATE KEY UPDATE language = ?",
-                userId, language, language)
+            userId, language, language)
     }
 
-    fun remove(userId: Long) {
+    suspend fun remove(userId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE userId = ?", userId)
     }
 }

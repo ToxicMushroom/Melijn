@@ -22,12 +22,12 @@ class GuildLanguageDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId)
     }
 
-    fun set(guildId: Long, language: String) {
+    suspend fun set(guildId: Long, language: String) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, language) VALUES (?, ?) ON DUPLICATE KEY UPDATE language = ?",
-                guildId, language, language)
+            guildId, language, language)
     }
 
-    fun remove(guildId: Long) {
+    suspend fun remove(guildId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ?", guildId)
     }
 }

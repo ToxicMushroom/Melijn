@@ -15,12 +15,12 @@ class ChannelDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun set(guildId: Long, channelType: ChannelType, channelId: Long) {
+    suspend fun set(guildId: Long, channelType: ChannelType, channelId: Long) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, channelType, channelId) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE channelId = ?",
-                guildId, channelType.toString(), channelId, channelId)
+            guildId, channelType.toString(), channelId, channelId)
     }
 
-    fun remove(guildId: Long, channelType: ChannelType) {
+    suspend fun remove(guildId: Long, channelType: ChannelType) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND channelType = ?", guildId, channelType.toString())
     }
 

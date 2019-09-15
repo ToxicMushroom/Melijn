@@ -14,9 +14,9 @@ class CommandDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun insert(command: AbstractCommand) {
+    suspend fun insert(command: AbstractCommand) {
         driverManager.executeUpdate("INSERT INTO $table (id, name, description, syntax, help, category, aliases, discordPermissions, runConditions) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                command.id, command.name, command.description.path, command.syntax.path, command.help.path, command.commandCategory.toString(),
-                command.aliases.joinToString("%S%"), command.discordPermissions.joinToString("%S%"), command.runConditions.joinToString("%S%"))
+            command.id, command.name, command.description.path, command.syntax.path, command.help.path, command.commandCategory.toString(),
+            command.aliases.joinToString("%S%"), command.discordPermissions.joinToString("%S%"), command.runConditions.joinToString("%S%"))
     }
 }

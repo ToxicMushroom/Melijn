@@ -22,11 +22,11 @@ class EmbedDisabledDao(driverManager: DriverManager) : Dao(driverManager) {
         })
     }
 
-    fun add(guildId: Long) {
+    suspend fun add(guildId: Long) {
         driverManager.executeUpdate("INSERT IGNORE INTO $table (guildId) VALUES (?)", guildId)
     }
 
-    fun remove(guildId: Long) {
+    suspend fun remove(guildId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ?", guildId)
     }
 }

@@ -13,10 +13,10 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun add(kick: Kick) {
+    suspend fun add(kick: Kick) {
         kick.apply {
             driverManager.executeUpdate("INSERT IGNORE INTO $table (guildId, kickedId, kickAuthorId, kickReason, kickMoment) VALUES (?, ?, ?, ?, ?)",
-                    guildId, kickedId, kickAuthorId, kickReason, kickMoment)
+                guildId, kickedId, kickAuthorId, kickReason, kickMoment)
         }
 
     }
@@ -24,11 +24,11 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
     fun get(guildId: Long, kickedId: Long, kickMoment: Long, kick: (Kick) -> Unit) {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND kickedId = ? AND kickMoment = ?", { rs ->
             kick.invoke(Kick(
-                    rs.getLong("guildId"),
-                    rs.getLong("kickedId"),
-                    rs.getLong("kickAuthorId"),
-                    rs.getString("kickReason"),
-                    rs.getLong("kickMoment")
+                rs.getLong("guildId"),
+                rs.getLong("kickedId"),
+                rs.getLong("kickAuthorId"),
+                rs.getString("kickReason"),
+                rs.getLong("kickMoment")
             ))
         }, guildId, kickedId, kickMoment)
     }
@@ -39,11 +39,11 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND kickedId = ?", { rs ->
             while (rs.next()) {
                 kicks.add(Kick(
-                        guildId,
-                        kickedId,
-                        rs.getLong("kickAuthorId"),
-                        rs.getString("kickReason"),
-                        rs.getLong("kickMoment")
+                    guildId,
+                    kickedId,
+                    rs.getLong("kickAuthorId"),
+                    rs.getString("kickReason"),
+                    rs.getLong("kickMoment")
                 ))
             }
         }, guildId, kickedId)
@@ -52,9 +52,9 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
 }
 
 data class Kick(
-        val guildId: Long,
-        val kickedId: Long,
-        val kickAuthorId: Long,
-        val kickReason: String,
-        val kickMoment: Long = System.currentTimeMillis()
+    val guildId: Long,
+    val kickedId: Long,
+    val kickAuthorId: Long,
+    val kickReason: String,
+    val kickMoment: Long = System.currentTimeMillis()
 )

@@ -26,9 +26,9 @@ class MessageDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun set(guildId: Long, type: MessageType, message: String) {
+    suspend fun set(guildId: Long, type: MessageType, message: String) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, type, message) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE message = ?",
-                guildId, type.toString(), message, message)
+            guildId, type.toString(), message, message)
     }
 
     suspend fun get(guildId: Long, type: MessageType): String? = suspendCoroutine {
@@ -39,30 +39,31 @@ class MessageDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId, type.toString())
     }
 
-    fun remove(guildId: Long, type: MessageType) {
+    suspend fun remove(guildId: Long, type: MessageType) {
         driverManager.executeUpdate("REMOVE FROM $table WHERE guildId = ? AND type = ?",
-                guildId, type.toString())
+            guildId, type.toString())
     }
 }
 
 data class ModularMessage(var messageContent: String? = null,
                           var embed: MessageEmbed? = null,
                           var attachments: Map<String, String> = emptyMap()) {
+
     fun toJSON(): String {
         val json = JSONObject()
         messageContent?.let { json.put("content", it) }
         embed?.let { membed ->
             json.put("embed", JSONObject(membed.toData()
-                    .put("type", EmbedType.RICH)
-                    .toString()))
+                .put("type", EmbedType.RICH)
+                .toString()))
         }
 
         val attachmentsJson = JSONArray()
         for (attachment in attachments) {
             attachmentsJson.put(
-                    JSONObject()
-                            .put("url", attachment.key)
-                            .put("file", attachment.value)
+                JSONObject()
+                    .put("url", attachment.key)
+                    .put("file", attachment.value)
             )
         }
         json.put("attachments", attachmentsJson)
@@ -74,8 +75,8 @@ data class ModularMessage(var messageContent: String? = null,
         if (messageContent == null && (embed == null || embed.isEmpty || !embed.isSendable(AccountType.BOT)) && attachments.isEmpty()) return null
 
         val mb = MessageBuilder()
-                .setEmbed(embed)
-                .setContent(messageContent)
+            .setEmbed(embed)
+            .setContent(messageContent)
 
         return mb.build()
     }

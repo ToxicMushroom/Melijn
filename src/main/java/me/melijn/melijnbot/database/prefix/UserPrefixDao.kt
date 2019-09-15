@@ -13,9 +13,9 @@ class UserPrefixDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun set(userId: Long, prefixes: String) {
+    suspend fun set(userId: Long, prefixes: String) {
         driverManager.executeUpdate("INSERT INTO $table (userId, prefixes) VALUES (?, ?) ON DUPLICATE KEY UPDATE prefixes = ?",
-                userId, prefixes, prefixes)
+            userId, prefixes, prefixes)
     }
 
     fun get(userId: Long, prefixes: (String) -> Unit) {

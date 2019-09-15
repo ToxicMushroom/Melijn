@@ -33,15 +33,14 @@ class CommandCooldownDao(driverManager: DriverManager) : Dao(driverManager) {
         cooldownMap.invoke(hashMap.toMap())
     }
 
-    fun insert(guildId: Long, commandId: Int, cooldown: Long) {
+    suspend fun insert(guildId: Long, commandId: Int, cooldown: Long) {
         driverManager.executeUpdate("INSERT IGNORE INTO $table (guildId, commandId, cooldown) VALUES (?, ?, ?)",
-                guildId, commandId, cooldown)
+            guildId, commandId, cooldown)
     }
 
     fun bulkPut(guildId: Long, commands: Set<AbstractCommand>, cooldownMillis: Long) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("INSERT INTO $table (guildId, commandId, cooldownMillis) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldownMillis = ?").use {
-                preparedStatement ->
+            con.prepareStatement("INSERT INTO $table (guildId, commandId, cooldownMillis) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldownMillis = ?").use { preparedStatement ->
                 preparedStatement.setLong(1, guildId)
                 preparedStatement.setLong(3, cooldownMillis)
                 preparedStatement.setLong(4, cooldownMillis)
@@ -56,8 +55,7 @@ class CommandCooldownDao(driverManager: DriverManager) : Dao(driverManager) {
 
     fun bulkDelete(guildId: Long, commands: Set<AbstractCommand>) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("DELETE FROM $table WHERE guildId = ? AND commandId = ?").use {
-                preparedStatement ->
+            con.prepareStatement("DELETE FROM $table WHERE guildId = ? AND commandId = ?").use { preparedStatement ->
                 preparedStatement.setLong(1, guildId)
                 for (cmd in commands) {
                     preparedStatement.setInt(2, cmd.id)

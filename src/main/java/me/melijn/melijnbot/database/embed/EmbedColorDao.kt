@@ -20,8 +20,8 @@ class EmbedColorDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId)
     }
 
-    fun set(guildId: Long, color: Int) {
+    suspend fun set(guildId: Long, color: Int) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, color) VALUES (?, ?) ON DUPLICATE KEY UPDATE color = ?",
-                guildId, color, color)
+            guildId, color, color)
     }
 }

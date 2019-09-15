@@ -22,16 +22,16 @@ class UserPermissionDao(driverManager: DriverManager) : Dao(driverManager) {
         }, userId, permission)
     }
 
-    fun set(guildId: Long, userId: Long, permission: String, permState: PermState) {
+    suspend fun set(guildId: Long, userId: Long, permission: String, permState: PermState) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, userId, permission, state) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE state = ?",
-                guildId, userId, permission, permState.toString(), permState.toString())
+            guildId, userId, permission, permState.toString(), permState.toString())
     }
 
-    fun delete(guildId: Long, userId: Long, permission: String) {
+    suspend fun delete(guildId: Long, userId: Long, permission: String) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND userId = ? AND permission = ?", guildId, userId, permission)
     }
 
-    fun delete(guildId: Long, userId: Long) {
+    suspend fun delete(guildId: Long, userId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND userId = ?", guildId, userId)
     }
 

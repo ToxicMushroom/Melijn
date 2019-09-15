@@ -29,9 +29,9 @@ class DisabledCommandDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId, commandId)
     }
 
-    fun insert(guildId: Long, commandId: Int) {
+    suspend fun insert(guildId: Long, commandId: Int) {
         driverManager.executeUpdate("INSERT IGNORE INTO $table (guildId, commandId) VALUES (?, ?)",
-                guildId, commandId)
+            guildId, commandId)
     }
 
     fun bulkPut(guildId: Long, commands: Set<AbstractCommand>) {

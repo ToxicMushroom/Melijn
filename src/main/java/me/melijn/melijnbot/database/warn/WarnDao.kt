@@ -13,10 +13,10 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun add(warn: Warn) {
+    suspend fun add(warn: Warn) {
         warn.apply {
             driverManager.executeUpdate("INSERT IGNORE INTO $table (guildId, warnedId, warnAuthorId, warnReason, warnMoment) VALUES (?, ?, ?, ?, ?)",
-                    guildId, warnedId, warnAuthorId, warnReason, warnMoment)
+                guildId, warnedId, warnAuthorId, warnReason, warnMoment)
         }
 
     }
@@ -24,11 +24,11 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
     fun get(guildId: Long, warnedId: Long, warnMoment: Long, kick: (Warn) -> Unit) {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND warnedId = ? AND warnMoment = ?", { rs ->
             kick.invoke(Warn(
-                    rs.getLong("guildId"),
-                    rs.getLong("warnedId"),
-                    rs.getLong("warnAuthorId"),
-                    rs.getString("warnReason"),
-                    rs.getLong("warnMoment")
+                rs.getLong("guildId"),
+                rs.getLong("warnedId"),
+                rs.getLong("warnAuthorId"),
+                rs.getString("warnReason"),
+                rs.getLong("warnMoment")
             ))
         }, guildId, warnedId, warnMoment)
     }
@@ -39,11 +39,11 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND warnedId = ?", { rs ->
             while (rs.next()) {
                 kicks.add(Warn(
-                        guildId,
-                        warnedId,
-                        rs.getLong("warnAuthorId"),
-                        rs.getString("warnReason"),
-                        rs.getLong("warnMoment")
+                    guildId,
+                    warnedId,
+                    rs.getLong("warnAuthorId"),
+                    rs.getString("warnReason"),
+                    rs.getLong("warnMoment")
                 ))
             }
         }, guildId, warnedId)
@@ -52,9 +52,9 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
 }
 
 data class Warn(
-        val guildId: Long,
-        val warnedId: Long,
-        val warnAuthorId: Long,
-        val warnReason: String,
-        val warnMoment: Long = System.currentTimeMillis()
+    val guildId: Long,
+    val warnedId: Long,
+    val warnAuthorId: Long,
+    val warnReason: String,
+    val warnMoment: Long = System.currentTimeMillis()
 )

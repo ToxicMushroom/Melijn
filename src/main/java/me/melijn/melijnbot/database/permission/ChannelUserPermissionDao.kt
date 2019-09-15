@@ -22,20 +22,20 @@ class ChannelUserPermissionDao(driverManager: DriverManager) : Dao(driverManager
         }, userId, permission, channelId)
     }
 
-    fun set(guildId: Long, channelId: Long, userId: Long, permission: String, permState: PermState) {
+    suspend fun set(guildId: Long, channelId: Long, userId: Long, permission: String, permState: PermState) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, userId, permission, state) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE state = ?",
-                guildId, channelId, userId, permission, permState.toString(), permState.toString())
+            guildId, channelId, userId, permission, permState.toString(), permState.toString())
     }
 
 
-    fun delete(channelId: Long, userId: Long, permission: String) {
+    suspend fun delete(channelId: Long, userId: Long, permission: String) {
         driverManager.executeUpdate("DELETE FROM $table WHERE channelId = ? AND userId = ? AND permission = ?",
-                channelId, userId, permission)
+            channelId, userId, permission)
     }
 
-    fun delete(channelId: Long, userId: Long) {
+    suspend fun delete(channelId: Long, userId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE channelId = ? AND userId = ?",
-                channelId, userId)
+            channelId, userId)
     }
 
     fun getMap(channelId: Long, userId: Long, permStateMap: (Map<String, PermState>) -> Unit) {

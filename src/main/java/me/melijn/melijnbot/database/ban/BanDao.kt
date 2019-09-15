@@ -13,32 +13,32 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun setBan(ban: Ban) {
+    suspend fun setBan(ban: Ban) {
         ban.apply {
             driverManager.executeUpdate("INSERT INTO $table (guildId, bannedId, banAuthorId, unbanAuthorId, reason, startTime, endTime, unbanReason, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)" +
-                    " ON DUPLICATE KEY UPDATE endTime = ?, banAuthorId = ?, reason = ?, unbanAuthorId = ?, unbanReason = ?, active = ?",
-                    guildId, bannedId, banAuthorId, unbanAuthorId, reason, startTime, endTime, unbanReason, active,
-                    endTime, banAuthorId, reason, unbanAuthorId, unbanReason, active)
+                " ON DUPLICATE KEY UPDATE endTime = ?, banAuthorId = ?, reason = ?, unbanAuthorId = ?, unbanReason = ?, active = ?",
+                guildId, bannedId, banAuthorId, unbanAuthorId, reason, startTime, endTime, unbanReason, active,
+                endTime, banAuthorId, reason, unbanAuthorId, unbanReason, active)
         }
     }
 
     suspend fun getUnbannableBans(): List<Ban> {
         val bans = ArrayList<Ban>()
         driverManager.awaitQueryExecution(
-                "SELECT * FROM $table WHERE active = ? AND endTime < ?",
-                true, System.currentTimeMillis()
+            "SELECT * FROM $table WHERE active = ? AND endTime < ?",
+            true, System.currentTimeMillis()
         ).use { rs ->
             while (rs.next()) {
                 bans.add(Ban(
-                        rs.getLong("guildId"),
-                        rs.getLong("bannedId"),
-                        rs.getLong("banAuthorId"),
-                        rs.getNString("reason"),
-                        rs.getLong("unbanAuthorId"),
-                        rs.getNString("unbanReason"),
-                        rs.getLong("startTime"),
-                        rs.getLong("endTime"),
-                        true
+                    rs.getLong("guildId"),
+                    rs.getLong("bannedId"),
+                    rs.getLong("banAuthorId"),
+                    rs.getNString("reason"),
+                    rs.getLong("unbanAuthorId"),
+                    rs.getNString("unbanReason"),
+                    rs.getLong("startTime"),
+                    rs.getLong("endTime"),
+                    true
                 ))
             }
         }
@@ -48,20 +48,20 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
     suspend fun getActiveBan(guildId: Long, bannedId: Long): Ban? {
         var ban: Ban? = null
         driverManager.awaitQueryExecution(
-                "SELECT * FROM $table WHERE guildId = ? AND bannedId = ? AND active = ?",
-                guildId, bannedId, true
+            "SELECT * FROM $table WHERE guildId = ? AND bannedId = ? AND active = ?",
+            guildId, bannedId, true
         ).use { rs ->
             while (rs.next()) {
                 ban = Ban(
-                        guildId,
-                        bannedId,
-                        rs.getLong("banAuthorId"),
-                        rs.getNString("reason"),
-                        rs.getLong("unbanAuthorId"),
-                        rs.getNString("unbanReason"),
-                        rs.getLong("startTime"),
-                        rs.getLong("endTime"),
-                        true
+                    guildId,
+                    bannedId,
+                    rs.getLong("banAuthorId"),
+                    rs.getNString("reason"),
+                    rs.getLong("unbanAuthorId"),
+                    rs.getNString("unbanReason"),
+                    rs.getLong("startTime"),
+                    rs.getLong("endTime"),
+                    true
                 )
             }
         }
@@ -71,20 +71,20 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
     suspend fun getBans(guildId: Long, bannedId: Long): List<Ban> {
         val bans = ArrayList<Ban>()
         driverManager.awaitQueryExecution(
-                "SELECT * FROM $table WHERE guildId = ? AND bannedId = ?",
-                guildId, bannedId
+            "SELECT * FROM $table WHERE guildId = ? AND bannedId = ?",
+            guildId, bannedId
         ).use { rs ->
             while (rs.next()) {
                 bans.add(Ban(
-                        guildId,
-                        bannedId,
-                        rs.getLong("banAuthorId"),
-                        rs.getNString("reason"),
-                        rs.getLong("unbanAuthorId"),
-                        rs.getNString("unbanReason"),
-                        rs.getLong("startTime"),
-                        rs.getLong("endTime"),
-                        rs.getBoolean("active")
+                    guildId,
+                    bannedId,
+                    rs.getLong("banAuthorId"),
+                    rs.getNString("reason"),
+                    rs.getLong("unbanAuthorId"),
+                    rs.getNString("unbanReason"),
+                    rs.getLong("startTime"),
+                    rs.getLong("endTime"),
+                    rs.getBoolean("active")
                 ))
             }
         }
@@ -93,13 +93,13 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
 }
 
 data class Ban(
-        var guildId: Long,
-        var bannedId: Long,
-        var banAuthorId: Long?,
-        var reason: String = "/",
-        var unbanAuthorId: Long? = null,
-        var unbanReason: String? = null,
-        var startTime: Long = System.currentTimeMillis(),
-        var endTime: Long? = null,
-        var active: Boolean = true
+    var guildId: Long,
+    var bannedId: Long,
+    var banAuthorId: Long?,
+    var reason: String = "/",
+    var unbanAuthorId: Long? = null,
+    var unbanReason: String? = null,
+    var startTime: Long = System.currentTimeMillis(),
+    var endTime: Long? = null,
+    var active: Boolean = true
 )

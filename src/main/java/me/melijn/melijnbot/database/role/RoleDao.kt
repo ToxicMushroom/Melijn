@@ -14,9 +14,9 @@ class RoleDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun set(guildId: Long, roleType: RoleType, roleId: Long) {
+    suspend fun set(guildId: Long, roleType: RoleType, roleId: Long) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, roleType, roleId) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE roleId = ?",
-                guildId, roleType.toString(), roleId, roleId)
+            guildId, roleType.toString(), roleId, roleId)
     }
 
     fun get(guildId: Long, roleType: RoleType, roleId: (Long) -> Unit) {
@@ -27,7 +27,7 @@ class RoleDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId, roleType.toString())
     }
 
-    fun unset(guildId: Long, roleType: RoleType) {
+    suspend fun unset(guildId: Long, roleType: RoleType) {
         driverManager.executeUpdate("REMOVE FROM $table WHERE guildId = ? AND roleType = ?", guildId, roleType.toString())
     }
 }

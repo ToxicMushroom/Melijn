@@ -56,7 +56,7 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
     fun registerTable(table: String, tableStructure: String, keys: String) {
         val hasKeys = keys != ""
         tableRegistrationQueries.add(
-                "CREATE TABLE IF NOT EXISTS $table ($tableStructure${if (hasKeys) ", $keys" else ""})"
+            "CREATE TABLE IF NOT EXISTS $table ($tableStructure${if (hasKeys) ", $keys" else ""})"
         )
     }
 
@@ -75,12 +75,13 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
     /** returns the amount of rows affected by the query
      * [query] the sql query that needs execution
      * [objects] the arguments of the query
+     * [Int] returns the amount of affected rows
      * example:
      *   query: "UPDATE apples SET bad = ? WHERE id = ?"
      *   objects: true, 6
      *   return value: 1
      * **/
-    fun executeUpdate(query: String, vararg objects: Any?, affectedRows: ((Int) -> Unit)? = null) {
+    suspend fun executeUpdate(query: String, vararg objects: Any?): Int = suspendCoroutine {
         try {
             getUsableConnection { connection ->
                 connection.prepareStatement(query).use { preparedStatement ->
@@ -88,7 +89,7 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
                         preparedStatement.setObject(index + 1, value)
                     }
                     val rows = preparedStatement.executeUpdate()
-                    affectedRows?.invoke(rows)
+                    (rows)
                 }
             }
         } catch (e: SQLException) {
@@ -97,6 +98,7 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
             e.printStackTrace()
         }
     }
+
 
     /**
      * [query] the sql query that needs execution
@@ -134,8 +136,8 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
      *   resultset: Consumer object to handle the resultset
      * **/
     suspend fun executeQuery(
-            query: String,
-            vararg objects: Any
+        query: String,
+        vararg objects: Any
     ): ResultSet = suspendCoroutine {
         try {
             getUsableConnection { connection ->
@@ -153,8 +155,8 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
     }
 
     suspend fun awaitQueryExecution(
-            query: String,
-            vararg objects: Any
+        query: String,
+        vararg objects: Any
     ): ResultSet = suspendCoroutine {
         try {
             getUsableConnection { connection ->
@@ -198,6 +200,34 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
             connection.prepareStatement("TRUNCATE $table").use { preparedStatement ->
                 return preparedStatement.executeLargeUpdate()
             }
+        }
+    }
+
+    /** returns the amount of rows affected by the query
+     * [query] the sql query that needs execution
+     * [objects] the arguments of the query
+     * example:
+     *   query: "UPDATE apples SET bad = ? WHERE id = ?"
+     *   objects: true, 6
+     *   return value: 1
+     * **/
+
+    suspend fun executeUpdateGetGeneratedKeys(query: String, vararg objects: Any?): Long = suspendCoroutine {
+        try {
+            getUsableConnection { connection ->
+                connection.prepareStatement(query).use { preparedStatement ->
+                    for ((index, value) in objects.withIndex()) {
+                        preparedStatement.setObject(index + 1, value)
+                    }
+
+                    preparedStatement.executeUpdate()
+                    it.resume(preparedStatement.generatedKeys.getLong("id"))
+                }
+            }
+        } catch (e: SQLException) {
+            logger.error("Something went wrong when executing the query: $query")
+            e.sendInGuild()
+            e.printStackTrace()
         }
     }
 }

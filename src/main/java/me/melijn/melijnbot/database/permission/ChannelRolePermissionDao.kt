@@ -15,30 +15,30 @@ class ChannelRolePermissionDao(driverManager: DriverManager) : Dao(driverManager
     }
 
     fun getPermState(channelId: Long, roleId: Long, permission: String, permState: (PermState) -> Unit) {
-        driverManager.executeQuery("SELECT * FROM $table WHERE roleId = ? AND permission = ? AND channelId = ?",  { resultset ->
+        driverManager.executeQuery("SELECT * FROM $table WHERE roleId = ? AND permission = ? AND channelId = ?", { resultset ->
             if (resultset.next()) {
                 permState.invoke(PermState.valueOf(resultset.getString("state")))
             } else permState.invoke(PermState.DEFAULT)
         }, roleId, permission, channelId)
     }
 
-    fun set(guildId: Long, channelId: Long, roleId: Long, permission: String, permState: PermState) {
+    suspend fun set(guildId: Long, channelId: Long, roleId: Long, permission: String, permState: PermState) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, roleId, permission, state) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE state = ?",
-                guildId, channelId, roleId, permission, permState.toString(), permState.toString())
+            guildId, channelId, roleId, permission, permState.toString(), permState.toString())
     }
 
-    fun delete(channelId: Long, roleId: Long, permission: String) {
+    suspend fun delete(channelId: Long, roleId: Long, permission: String) {
         driverManager.executeUpdate("DELETE FROM $table WHERE channelId = ? AND roleId = ? AND permission = ?",
-                channelId, roleId, permission)
+            channelId, roleId, permission)
     }
 
-    fun delete(channelId: Long, roleId: Long) {
+    suspend fun delete(channelId: Long, roleId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE channelId = ? AND roleId = ?",
-                channelId, roleId)
+            channelId, roleId)
     }
 
     fun getMap(channelId: Long, roleId: Long, permStateMap: (Map<String, PermState>) -> Unit) {
-        driverManager.executeQuery("SELECT * FROM $table WHERE roleId = ? AND channelId = ?",  { resultset ->
+        driverManager.executeQuery("SELECT * FROM $table WHERE roleId = ? AND channelId = ?", { resultset ->
             val map = HashMap<String, PermState>()
             while (resultset.next()) {
                 map[resultset.getString("permission")] = PermState.valueOf(resultset.getString("state"))

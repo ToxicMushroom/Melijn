@@ -13,17 +13,17 @@ class MessageHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun set(daoMessage: DaoMessage) {
+    suspend fun set(daoMessage: DaoMessage) {
         daoMessage.run {
             driverManager.executeUpdate("INSERT INTO $table (guildId, textChannelId, authorId, messageId, content, moment) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE content = ?",
-                    guildId, textChannelId, authorId, messageId, content, moment, content)
+                guildId, textChannelId, authorId, messageId, content, moment, content)
         }
     }
 
-    fun add(daoMessage: DaoMessage) {
+    suspend fun add(daoMessage: DaoMessage) {
         daoMessage.run {
             driverManager.executeUpdate("INSERT IGNORE INTO $table (guildId, textChannelId, authorId, messageId, content, moment) VALUES (?, ?, ?, ?, ?, ?)",
-                    guildId, textChannelId, authorId, messageId, content, moment)
+                guildId, textChannelId, authorId, messageId, content, moment)
         }
     }
 
@@ -31,12 +31,12 @@ class MessageHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeQuery("SELECT * FROM $table WHERE messageId = ?", messageId).use { rs ->
             return if (rs.next()) {
                 DaoMessage(
-                        rs.getLong("guildId"),
-                        rs.getLong("textChannelId"),
-                        rs.getLong("authorId"),
-                        messageId,
-                        rs.getString("content"),
-                        rs.getLong("moment")
+                    rs.getLong("guildId"),
+                    rs.getLong("textChannelId"),
+                    rs.getLong("authorId"),
+                    messageId,
+                    rs.getString("content"),
+                    rs.getLong("moment")
                 )
             } else {
                 null
@@ -47,10 +47,10 @@ class MessageHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
 }
 
 data class DaoMessage(
-        val guildId: Long,
-        val textChannelId: Long,
-        val authorId: Long,
-        val messageId: Long,
-        var content: String,
-        val moment: Long
+    val guildId: Long,
+    val textChannelId: Long,
+    val authorId: Long,
+    val messageId: Long,
+    var content: String,
+    val moment: Long
 )

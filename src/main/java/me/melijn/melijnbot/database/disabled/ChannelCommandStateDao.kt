@@ -30,9 +30,9 @@ class ChannelCommandStateDao(driverManager: DriverManager) : Dao(driverManager) 
         }, channelId, commandId)
     }
 
-    fun insert(guildId: Long, channelId: Long, commandId: Int, state: ChannelCommandState) {
+    suspend fun insert(guildId: Long, channelId: Long, commandId: Int, state: ChannelCommandState) {
         driverManager.executeUpdate("INSERT IGNORE INTO $table (guildId, channelId, commandId) VALUES (?, ?, ?)",
-                guildId, channelId, commandId, state.toString())
+            guildId, channelId, commandId, state.toString())
     }
 
     fun bulkPut(guildId: Long, channelId: Long, commands: Set<AbstractCommand>, channelCommandState: ChannelCommandState) {

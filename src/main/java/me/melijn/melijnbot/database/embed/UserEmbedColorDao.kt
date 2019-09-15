@@ -19,8 +19,8 @@ class UserEmbedColorDao(driverManager: DriverManager) : Dao(driverManager) {
         }, userId)
     }
 
-    fun set(userId: Long, color: Int) {
+    suspend fun set(userId: Long, color: Int) {
         driverManager.executeUpdate("INSERT INTO $table (userId, color) VALUES (?, ?) ON DUPLICATE KEY UPDATE color = ?",
-                userId, color, color)
+            userId, color, color)
     }
 }
