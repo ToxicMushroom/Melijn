@@ -18,6 +18,10 @@ class EventManager(val container: Container) : IEventManager {
     private val eventListeners: ArrayList<EventListener> = ArrayList()
 
     init {
+        registerEvents()
+    }
+
+    private fun registerEvents() = container.taskManager.async {
         val botJoinLeaveListener = BotJoinLeaveListener(container)
         val botStartShutdownListener = BotStartShutdownListener(container)
         val messageDeletedListener = MessageDeletedListener(container)
@@ -28,8 +32,8 @@ class EventManager(val container: Container) : IEventManager {
 
 
         val commandListener = CommandClientBuilder(container)
-                .loadCommands()
-                .build()
+            .loadCommands()
+            .build()
 
         eventListeners.add(commandListener)
         eventListeners.add(botJoinLeaveListener)

@@ -16,7 +16,7 @@ import org.json.JSONObject
 
 object MessageCommandUtil {
 
-    fun removeMessageIfEmpty(guildId: Long, type: MessageType, message: ModularMessage, messageWrapper: MessageWrapper): Boolean {
+    suspend fun removeMessageIfEmpty(guildId: Long, type: MessageType, message: ModularMessage, messageWrapper: MessageWrapper): Boolean {
         return if (messageWrapper.shouldRemove(message)) {
             messageWrapper.removeMessage(guildId, type)
             true

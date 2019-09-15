@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.objects.services.mutes
 
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.commands.moderation.getUnmuteMessage
 import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
 import me.melijn.melijnbot.database.logchannel.LogChannelWrapper
@@ -7,6 +8,8 @@ import me.melijn.melijnbot.database.mute.Mute
 import me.melijn.melijnbot.database.mute.MuteWrapper
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.services.Service
+import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.objects.utils.await
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
@@ -15,13 +18,14 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 class MuteService(val shardManager: ShardManager,
+                  private val taskManager: TaskManager,
                   private val muteWrapper: MuteWrapper,
                   private val logChannelWrapper: LogChannelWrapper,
                   private val embedDisabledWrapper: EmbedDisabledWrapper) : Service("mute") {
 
     var scheduledFuture: ScheduledFuture<*>? = null
 
-    private val muteService = Runnable {
+    private fun muteService() = taskManager.async {
         val mutes = muteWrapper.getUnmuteableMutes()
         for (mute in mutes) {
             val selfUser = shardManager.shards[0].selfUser
@@ -31,27 +35,29 @@ class MuteService(val shardManager: ShardManager,
 
             muteWrapper.setMute(newMute)
             val guild = shardManager.getGuildById(mute.guildId) ?: continue
-            shardManager.retrieveUserById(newMute.muteAuthorId ?: -1).queue({ author ->
-                shardManager.retrieveUserById(newMute.mutedId).queue({ muted ->
+            try {
+                val author = shardManager.retrieveUserById(newMute.muteAuthorId ?: -1).await()
+                try {
+                    val muted = shardManager.retrieveUserById(newMute.mutedId).await()
                     createAndSendUnmuteMessage(guild, selfUser, muted, author, newMute)
-                }, {
+                } catch (t: Throwable) {
                     createAndSendUnmuteMessage(guild, selfUser, null, author, newMute)
-                })
-            }, {
-                shardManager.retrieveUserById(newMute.mutedId).queue({ muted ->
+                }
+            } catch (t: Throwable) {
+                try {
+                    val muted = shardManager.retrieveUserById(newMute.mutedId).await()
                     createAndSendUnmuteMessage(guild, selfUser, muted, null, newMute)
-                }, {
+                } catch (t: Throwable) {
                     createAndSendUnmuteMessage(guild, selfUser, null, null, newMute)
-                })
-            })
-
+                }
+            }
         }
     }
 
     //Sends unban message to tempban logchannel and the unbanned user
-    private fun createAndSendUnmuteMessage(guild: Guild, unbanAuthor: User, mutedUser: User?, muteAuthor: User?, mute: Mute) {
+    private suspend fun createAndSendUnmuteMessage(guild: Guild, unbanAuthor: User, mutedUser: User?, muteAuthor: User?, mute: Mute) {
         val msg = getUnmuteMessage(guild, mutedUser, muteAuthor, unbanAuthor, mute)
-        val channelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.UNMUTE)).get()
+        val channelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.UNMUTE)).await()
         val channel = guild.getTextChannelById(channelId)
         if (channel == null && channelId != -1L) {
             logChannelWrapper.removeChannel(guild.idLong, LogChannelType.UNMUTE)
@@ -68,7 +74,7 @@ class MuteService(val shardManager: ShardManager,
     }
 
     fun start() {
-        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(muteService, 1_000, 1_000, TimeUnit.MILLISECONDS)
+        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay({ muteService() }, 1_000, 1_000, TimeUnit.MILLISECONDS)
     }
 
     fun stop() {

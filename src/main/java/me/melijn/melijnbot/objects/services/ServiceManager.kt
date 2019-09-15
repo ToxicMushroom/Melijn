@@ -3,9 +3,10 @@ package me.melijn.melijnbot.objects.services
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.services.bans.BanService
 import me.melijn.melijnbot.objects.services.mutes.MuteService
+import me.melijn.melijnbot.objects.threading.TaskManager
 import net.dv8tion.jda.api.sharding.ShardManager
 
-class ServiceManager(val daoManager: DaoManager) {
+class ServiceManager(val taskManager: TaskManager, val daoManager: DaoManager) {
 
     var started = false
     var shardManager: ShardManager? = null
@@ -16,11 +17,11 @@ class ServiceManager(val daoManager: DaoManager) {
     fun init(shardManager: ShardManager) {
         this.shardManager = shardManager
         banService = BanService(shardManager, daoManager.banWrapper, daoManager.logChannelWrapper, daoManager.embedDisabledWrapper)
-        muteService = MuteService(shardManager, daoManager.muteWrapper, daoManager.logChannelWrapper, daoManager.embedDisabledWrapper)
+        muteService = MuteService(shardManager, taskManager, daoManager.muteWrapper, daoManager.logChannelWrapper, daoManager.embedDisabledWrapper)
     }
 
     fun startServices() {
-        if (shardManager == null) throw IllegalArgumentException("Init first!")
+        requireNotNull(shardManager) { "Init first!" }
         banService?.start()
         muteService?.start()
 
@@ -28,7 +29,7 @@ class ServiceManager(val daoManager: DaoManager) {
     }
 
     fun stopServices() {
-        if (!started) throw IllegalArgumentException("Never started!")
+        require(started) { "Never started!" }
         banService?.stop()
         muteService?.stop()
     }

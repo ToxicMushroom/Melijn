@@ -7,7 +7,7 @@ import me.melijn.melijnbot.enums.LogChannelType
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.TextChannel
 
-fun Guild.getAndVerifyLogChannelById(type: LogChannelType, channelId: Long, logChannelWrapper: LogChannelWrapper): TextChannel? {
+suspend fun Guild.getAndVerifyLogChannelById(type: LogChannelType, channelId: Long, logChannelWrapper: LogChannelWrapper): TextChannel? {
     val textChannel = getTextChannelById(channelId)
     var shouldRemove = false
     if (channelId != -1L && textChannel == null) shouldRemove = true
@@ -19,7 +19,7 @@ fun Guild.getAndVerifyLogChannelById(type: LogChannelType, channelId: Long, logC
     return textChannel
 }
 
-fun Guild.getAndVerifyChannelById(type: ChannelType, channelId: Long, channelWrapper: ChannelWrapper): TextChannel? {
+suspend fun Guild.getAndVerifyChannelById(type: ChannelType, channelId: Long, channelWrapper: ChannelWrapper): TextChannel? {
     val textChannel = getTextChannelById(channelId)
     var shouldRemove = false
     if (channelId != -1L && textChannel == null) shouldRemove = true

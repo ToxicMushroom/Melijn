@@ -23,7 +23,7 @@ class BanService(val shardManager: ShardManager,
                  private val embedDisabledWrapper: EmbedDisabledWrapper
 ) : Service("ban") {
 
-    var scheduledFuture: ScheduledFuture<*>? = null
+    private var scheduledFuture: ScheduledFuture<*>? = null
 
     private val banService = Runnable {
         runBlocking {
@@ -46,7 +46,7 @@ class BanService(val shardManager: ShardManager,
                     val banAuthor = if (banAuthorId == null) {
                         null
                     } else {
-                        shardManager.retrieveUserById(banAuthorId ?: -1).await()
+                        shardManager.retrieveUserById(banAuthorId).await()
                     }
                     createAndSendUnbanMessage(guild, selfUser, bannedUser, banAuthor, newBan)
                 } catch (t: Throwable) {

@@ -25,7 +25,7 @@ class Container {
 
     val taskManager = TaskManager()
     val daoManager = DaoManager(taskManager, settings.mySQL)
-    val serviceManager = ServiceManager(daoManager)
+    val serviceManager = ServiceManager(taskManager, daoManager)
 
     //messageId, reason
     val filteredMap = mutableMapOf<Long, String>()

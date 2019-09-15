@@ -61,7 +61,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         selectCorrectLogType(event, odmLogChannel, sdmLogChannel, pmLogChannel, fmLogChannel)
     }
 
-    private fun getNLogChannel(
+    private suspend fun getNLogChannel(
             event: GuildMessageDeleteEvent,
             logChannelId: Long?,
             logChannelType: LogChannelType,

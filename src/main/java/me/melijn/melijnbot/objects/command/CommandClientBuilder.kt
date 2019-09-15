@@ -17,13 +17,13 @@ class CommandClientBuilder(private val container: Container) {
         return CommandClient(commands.toSet(), container)
     }
 
-    private fun addCommand(command: AbstractCommand): CommandClientBuilder {
+    private suspend fun addCommand(command: AbstractCommand): CommandClientBuilder {
         commands.add(command)
         container.daoManager.commandWrapper.insert(command)
         return this
     }
 
-    fun loadCommands(): CommandClientBuilder {
+    suspend fun loadCommands(): CommandClientBuilder {
         val reflections = Reflections("me.melijn.melijnbot.commands")
 
         val commands = reflections.getSubTypesOf(AbstractCommand::class.java)
