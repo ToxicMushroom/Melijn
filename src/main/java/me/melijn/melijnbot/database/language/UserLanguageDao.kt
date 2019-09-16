@@ -2,6 +2,8 @@ package me.melijn.melijnbot.database.language
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class UserLanguageDao(driverManager: DriverManager) : Dao(driverManager) {
     override val table: String = "userLanguages"
@@ -12,11 +14,13 @@ class UserLanguageDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun get(userId: Long, language: (String) -> Unit) {
+    suspend fun get(userId: Long): String = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE userId = ?", { resultset ->
             if (resultset.next()) {
-                language.invoke(resultset.getString("language"))
-            } else language.invoke("")
+                it.resume(resultset.getString("language"))
+            } else {
+                it.resume("")
+            }
 
         }, userId)
     }

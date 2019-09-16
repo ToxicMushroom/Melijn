@@ -53,8 +53,11 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val state: PermState? = enumValueOrNull(context.args[2])
                 if (state == null) {
-                    sendMsg(context, Translateable(MESSAGE_UNKNOWN_PERMSTATE).string(context)
-                            .replace(PLACEHOLDER_ARG, context.args[2]))
+                    val language = context.getLanguage()
+                    val msg = i18n.getTranslation(language, MESSAGE_UNKNOWN_PERMSTATE)
+                        .replace(PLACEHOLDER_ARG, context.args[2])
+
+                    sendMsg(context, msg)
                     return
                 }
 
@@ -68,11 +71,12 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     dao.setPermission(context.getGuildId(), user.idLong, permissions[0], state)
                 }
 
-                val msg = Translateable("$root.response1").string(context)
-                        .replace(PLACEHOLDER_USER, user.asTag)
-                        .replace("%permissionNode%", permissionNode)
-                        .replace("%permissionCount%", permissions.size.toString())
-                        .replace("%state%", state.toString())
+                val language = context.getLanguage()
+                val msg = i18n.getTranslation(language, "$root.response1")
+                    .replace(PLACEHOLDER_USER, user.asTag)
+                    .replace("%permissionNode%", permissionNode)
+                    .replace("%permissionCount%", permissions.size.toString())
+                    .replace("%state%", state.toString())
 
                 sendMsg(context, msg)
             }
@@ -95,13 +99,14 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 val user = retrieveUserByArgsNMessage(context, 0) ?: return
                 val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
 
-                val title = Translateable("$root.response1.title").string(context)
-                        .replace(PLACEHOLDER_USER, user.asTag)
-                        .replace("%permissionNode%", permissionNode)
+                val language = context.getLanguage()
+                val title = i18n.getTranslation(language, "$root.response1.title")
+                    .replace(PLACEHOLDER_USER, user.asTag)
+                    .replace("%permissionNode%", permissionNode)
 
                 var content = "\n```INI"
                 val dao = context.daoManager.userPermissionWrapper.guildUserPermissionCache
-                        .get(Pair(context.getGuildId(), user.idLong)).await()
+                    .get(Pair(context.getGuildId(), user.idLong)).await()
                 var index = 1
                 for (perm in permissions) {
                     val state = dao.getOrDefault(perm, PermState.DEFAULT)
@@ -131,8 +136,9 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 context.daoManager.userPermissionWrapper.clear(context.getGuildId(), user.idLong)
 
-                val msg = Translateable("$root.response1").string(context)
-                        .replace(PLACEHOLDER_USER, user.asTag)
+                val language = context.getLanguage()
+                val msg = i18n.getTranslation(language, "$root.response1")
+                    .replace(PLACEHOLDER_USER, user.asTag)
                 sendMsg(context, msg)
             }
         }
@@ -167,14 +173,17 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val state: PermState? = enumValueOrNull(context.args[2])
                 if (state == null) {
-                    sendMsg(context, Translateable(MESSAGE_UNKNOWN_PERMSTATE).string(context)
-                            .replace(PLACEHOLDER_ARG, context.args[2]))
+                    val language = context.getLanguage()
+                    val msg = i18n.getTranslation(language, MESSAGE_UNKNOWN_PERMSTATE)
+                        .replace(PLACEHOLDER_ARG, context.args[2])
+                    sendMsg(context, msg)
+
                     return
                 }
 
                 val role = getRoleByArgsNMessage(context, 0) ?: return
 
-                val permissions = getPermissionsFromArgNMessage(context, permissionNode)?:return
+                val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
 
                 val dao = context.daoManager.rolePermissionWrapper
                 if (permissions.size > 1) {
@@ -183,11 +192,12 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     dao.setPermission(context.getGuildId(), role.idLong, permissions[0], state)
                 }
 
-                val msg = Translateable("$root.response1").string(context)
-                        .replace(PLACEHOLDER_ROLE, role.name)
-                        .replace("%permissionNode%", permissionNode)
-                        .replace("%permissionCount%", permissions.size.toString())
-                        .replace("%state%", state.toString())
+                val language = context.getLanguage()
+                val msg = i18n.getTranslation(language, "$root.response1")
+                    .replace(PLACEHOLDER_ROLE, role.name)
+                    .replace("%permissionNode%", permissionNode)
+                    .replace("%permissionCount%", permissions.size.toString())
+                    .replace("%state%", state.toString())
 
                 sendMsg(context, msg)
             }
@@ -211,13 +221,14 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 val role = getRoleByArgsNMessage(context, 0) ?: return
                 val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
 
-                val title = Translateable("$root.response1.title").string(context)
-                        .replace(PLACEHOLDER_ROLE, role.name)
-                        .replace("%permissionNode%", permissionNode)
+                val language = context.getLanguage()
+                val title = i18n.getTranslation(language, "$root.response1.title")
+                    .replace(PLACEHOLDER_ROLE, role.name)
+                    .replace("%permissionNode%", permissionNode)
 
                 var content = "\n```INI"
                 val dao = context.daoManager.rolePermissionWrapper.rolePermissionCache
-                        .get(role.idLong).await()
+                    .get(role.idLong).await()
                 var index = 1
                 for (perm in permissions) {
                     val state = dao.getOrDefault(perm, PermState.DEFAULT)
@@ -248,8 +259,9 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 context.daoManager.rolePermissionWrapper.clear(role.idLong)
 
-                val msg = Translateable("$root.response1").string(context)
-                        .replace(PLACEHOLDER_ROLE, role.name)
+                val language = context.getLanguage()
+                val msg = i18n.getTranslation(language, "$root.response1")
+                    .replace(PLACEHOLDER_ROLE, role.name)
                 sendMsg(context, msg)
             }
 
@@ -297,8 +309,11 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val state: PermState? = enumValueOrNull(context.args[3])
                     if (state == null) {
-                        sendMsg(context, Translateable(MESSAGE_UNKNOWN_PERMSTATE).string(context)
-                                .replace(PLACEHOLDER_ARG, context.args[3]))
+                        val language = context.getLanguage()
+                        val msg = i18n.getTranslation(language, MESSAGE_UNKNOWN_PERMSTATE)
+                            .replace(PLACEHOLDER_ARG, context.args[3])
+                        sendMsg(context, msg)
+
                         return
                     }
 
@@ -313,12 +328,13 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         dao.setPermission(context.getGuildId(), channel.idLong, role.idLong, permissions[0], state)
                     }
 
-                    val msg = Translateable("$root.response1").string(context)
-                            .replace("%textChannel%", "#${channel.name}")
-                            .replace(PLACEHOLDER_ROLE, role.name)
-                            .replace("%permissionNode%", permissionNode)
-                            .replace("%permissionCount%", permissions.size.toString())
-                            .replace("%state%", state.toString())
+                    val language = context.getLanguage()
+                    val msg = i18n.getTranslation(language, "$root.response1")
+                        .replace("%textChannel%", channel.asTag)
+                        .replace(PLACEHOLDER_ROLE, role.name)
+                        .replace("%permissionNode%", permissionNode)
+                        .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%state%", state.toString())
 
                     sendMsg(context, msg)
                 }
@@ -344,23 +360,26 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     val role = getRoleByArgsNMessage(context, 1) ?: return
                     val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
 
-                    val title = Translateable("$root.response1.title").string(context)
-                            .replace("%channel%", "#${channel.name}")
-                            .replace(PLACEHOLDER_ROLE, role.name)
-                            .replace("%permissionNode%", permissionNode)
+                    val language = context.getLanguage()
+                    val title = i18n.getTranslation(language, "$root.response1.title")
+                        .replace(PLACEHOLDER_CHANNEL, channel.asTag)
+                        .replace(PLACEHOLDER_ROLE, role.name)
+                        .replace("%permissionNode%", permissionNode)
 
-                    var content = "\n```INI"
-                    val channelRole = context.daoManager.channelRolePermissionWrapper.channelRolePermissionCache
-                            .get(Pair(channel.idLong, role.idLong)).await()
-                    var index = 1
-                    for (perm in permissions) {
+                    val channelRolePermissionCache = context.daoManager.channelRolePermissionWrapper.channelRolePermissionCache
+                    val channelRole = channelRolePermissionCache.get(Pair(channel.idLong, role.idLong)).await()
+
+                    var content = "```INI"
+                    for ((index, perm) in permissions.withIndex()) {
                         val state = channelRole.getOrDefault(perm, PermState.DEFAULT)
-                        if (state != PermState.DEFAULT)
-                            content += "\n${index++} - [$perm] - $state"
+                        if (state != PermState.DEFAULT) {
+                            content += "\n${index + 1} - [$perm] - $state"
+                        }
                     }
                     content += "```"
 
-                    sendMsgCodeBlock(context, title + content, "INI")
+                    val msg = title + content
+                    sendMsgCodeBlock(context, msg, "INI")
                 }
 
             }
@@ -383,9 +402,10 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     context.daoManager.channelRolePermissionWrapper.clear(channel.idLong, role.idLong)
 
-                    val msg = Translateable("$root.response1").string(context)
-                            .replace(PLACEHOLDER_ROLE, role.name)
-                            .replace("%channel%", "#${channel.name}")
+                    val language = context.getLanguage()
+                    val msg = i18n.getTranslation(language, "$root.response1")
+                        .replace(PLACEHOLDER_ROLE, role.name)
+                        .replace(PLACEHOLDER_CHANNEL, channel.asTag)
                     sendMsg(context, msg)
                 }
 
@@ -421,8 +441,11 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val state: PermState? = enumValueOrNull(context.args[3])
                     if (state == null) {
-                        sendMsg(context, Translateable(MESSAGE_UNKNOWN_PERMSTATE).string(context)
-                                .replace(PLACEHOLDER_ARG, context.args[3]))
+                        val language = context.getLanguage()
+                        val msg = i18n.getTranslation(language, MESSAGE_UNKNOWN_PERMSTATE)
+                            .replace(PLACEHOLDER_ARG, context.args[3])
+                        sendMsg(context, msg)
+
                         return
                     }
 
@@ -437,12 +460,13 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         dao.setPermission(context.getGuildId(), channel.idLong, user.idLong, permissions[0], state)
                     }
 
-                    val msg = Translateable("$root.response1").string(context)
-                            .replace("%textChannel%", "#${channel.name}")
-                            .replace(PLACEHOLDER_USER, user.asTag)
-                            .replace("%permissionNode%", permissionNode)
-                            .replace("%permissionCount%", permissions.size.toString())
-                            .replace("%state%", state.toString())
+                    val language = context.getLanguage()
+                    val msg = i18n.getTranslation(language, "$root.response1")
+                        .replace("%textChannel%", channel.asTag)
+                        .replace(PLACEHOLDER_USER, user.asTag)
+                        .replace("%permissionNode%", permissionNode)
+                        .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%state%", state.toString())
 
                     sendMsg(context, msg)
                 }
@@ -468,19 +492,20 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     val user = retrieveUserByArgsNMessage(context, 1) ?: return
                     val permissions = getPermissionsFromArg(context, permissionNode) ?: return
 
-                    val title = Translateable("$root.response1.title").string(context)
-                            .replace("%channel%", "#${channel.name}")
-                            .replace(PLACEHOLDER_USER, user.asTag)
-                            .replace("%permissionNode%", permissionNode)
+                    val language = context.getLanguage()
+                    val title = i18n.getTranslation(language, "$root.response1.title")
+                        .replace(PLACEHOLDER_CHANNEL, channel.asTag)
+                        .replace(PLACEHOLDER_USER, user.asTag)
+                        .replace("%permissionNode%", permissionNode)
+                    val cache = context.daoManager.channelUserPermissionWrapper.channelUserPermissionCache
+                    val channelUser = cache.get(Pair(channel.idLong, user.idLong)).await()
 
-                    var content = "\n```INI"
-                    val channelUser = context.daoManager.channelUserPermissionWrapper.channelUserPermissionCache
-                            .get(Pair(channel.idLong, user.idLong)).await()
-                    var index = 1
-                    for (perm in permissions) {
+                    var content = "```INI"
+                    for ((index, perm) in permissions.withIndex()) {
                         val state = channelUser.getOrDefault(perm, PermState.DEFAULT)
-                        if (state != PermState.DEFAULT)
-                            content += "\n${index++} - [$perm] - $state"
+                        if (state != PermState.DEFAULT) {
+                            content += "\n${index + 1} - [$perm] - $state"
+                        }
                     }
                     content += "```"
 
@@ -507,9 +532,10 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     context.daoManager.channelUserPermissionWrapper.clear(channel.idLong, user.idLong)
 
-                    val msg = Translateable("$root.response1").string(context)
-                            .replace(PLACEHOLDER_USER, user.asTag)
-                            .replace("%channel%", "#${channel.name}")
+                    val language = context.getLanguage()
+                    val msg = i18n.getTranslation(language, "$root.response1")
+                        .replace(PLACEHOLDER_USER, user.asTag)
+                        .replace(PLACEHOLDER_CHANNEL, channel.asTag)
                     sendMsg(context, msg)
                 }
 
@@ -537,8 +563,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
             override suspend fun execute(context: CommandContext) {
                 val extraArg = if (
-                        copyParent is PermissionCommand.ChannelCommand.RoleChannelCommand ||
-                        copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
+                    copyParent is PermissionCommand.ChannelCommand.RoleChannelCommand ||
+                    copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
                 ) 1 else 0
                 if (context.args.size < (2 + extraArg)) {
                     sendSyntax(context, syntax)
@@ -566,15 +592,16 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val daoWrapper1 = context.daoManager.userPermissionWrapper
                 val permissions = daoWrapper1.guildUserPermissionCache
-                        .get(Pair(context.getGuildId(), user1.idLong)).await()
+                    .get(Pair(context.getGuildId(), user1.idLong)).await()
 
                 daoWrapper1.setPermissions(context.getGuildId(), user2.idLong, permissions)
 
-                val msg = Translateable("$root.response1").string(context)
-                        .replace("%user1%", user1.asTag)
-                        .replace("%user2%", user2.asTag)
-                        .replace("%permissionCount%", permissions.size.toString())
-                        .replace("%s%", if (permissions.size > 1) "s" else "")
+                val language = context.getLanguage()
+                val msg = i18n.getTranslation(language, "$root.response1")
+                    .replace("%user1%", user1.asTag)
+                    .replace("%user2%", user2.asTag)
+                    .replace("%permissionCount%", permissions.size.toString())
+                    .replace("%s%", if (permissions.size > 1) "s" else "")
 
                 sendMsg(context, msg)
             }
@@ -585,16 +612,17 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val daoWrapper1 = context.daoManager.rolePermissionWrapper
                 val permissions = daoWrapper1.rolePermissionCache
-                        .get(role1.idLong).await()
+                    .get(role1.idLong).await()
 
                 val daoWrapper2 = context.daoManager.userPermissionWrapper
                 daoWrapper2.setPermissions(context.getGuildId(), user2.idLong, permissions)
 
-                val msg = Translateable("$root.response1").string(context)
-                        .replace(PLACEHOLDER_ROLE, role1.name)
-                        .replace(PLACEHOLDER_USER, user2.name)
-                        .replace("%permissionCount%", permissions.size.toString())
-                        .replace("%s%", if (permissions.size > 1) "s" else "")
+                val language = context.getLanguage()
+                val msg = i18n.getTranslation(language, "$root.response1")
+                    .replace(PLACEHOLDER_ROLE, role1.name)
+                    .replace(PLACEHOLDER_USER, user2.name)
+                    .replace("%permissionCount%", permissions.size.toString())
+                    .replace("%s%", if (permissions.size > 1) "s" else "")
 
                 sendMsg(context, msg)
             }
@@ -606,17 +634,18 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val daoWrapper1 = context.daoManager.channelUserPermissionWrapper
                 val permissions = daoWrapper1.channelUserPermissionCache
-                        .get(Pair(channel1.idLong, user2.idLong)).await()
+                    .get(Pair(channel1.idLong, user2.idLong)).await()
 
                 val daoWrapper2 = context.daoManager.userPermissionWrapper
                 daoWrapper2.setPermissions(context.getGuildId(), user3.idLong, permissions)
 
-                val msg = Translateable("$root.response1").string(context)
-                        .replace("%user1%", user2.asTag)
-                        .replace("%channel%", "#${channel1.name}")
-                        .replace("%user2%", user3.asTag)
-                        .replace("%permissionCount%", permissions.size.toString())
-                        .replace("%s%", if (permissions.size > 1) "s" else "")
+                val language = context.getLanguage()
+                val msg = i18n.getTranslation(language, "$root.response1")
+                    .replace("%user1%", user2.asTag)
+                    .replace(PLACEHOLDER_CHANNEL, channel1.asTag)
+                    .replace("%user2%", user3.asTag)
+                    .replace("%permissionCount%", permissions.size.toString())
+                    .replace("%s%", if (permissions.size > 1) "s" else "")
 
                 sendMsg(context, msg)
             }
@@ -628,17 +657,18 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val daoWrapper1 = context.daoManager.channelRolePermissionWrapper
                 val permissions = daoWrapper1.channelRolePermissionCache
-                        .get(Pair(channel1.idLong, role2.idLong)).await()
+                    .get(Pair(channel1.idLong, role2.idLong)).await()
 
                 val daoWrapper2 = context.daoManager.userPermissionWrapper
                 daoWrapper2.setPermissions(context.getGuildId(), user3.idLong, permissions)
 
-                val msg = Translateable("$root.response1").string(context)
-                        .replace(PLACEHOLDER_ROLE, role2.name)
-                        .replace("%channel%", "#${channel1.name}")
-                        .replace(PLACEHOLDER_USER, user3.asTag)
-                        .replace("%permissionCount%", permissions.size.toString())
-                        .replace("%s%", if (permissions.size > 1) "s" else "")
+                val language = context.getLanguage()
+                val msg = i18n.getTranslation(language, "$root.response1")
+                    .replace(PLACEHOLDER_ROLE, role2.name)
+                    .replace(PLACEHOLDER_CHANNEL, channel1.asTag)
+                    .replace(PLACEHOLDER_USER, user3.asTag)
+                    .replace("%permissionCount%", permissions.size.toString())
+                    .replace("%s%", if (permissions.size > 1) "s" else "")
 
                 sendMsg(context, msg)
             }
@@ -654,8 +684,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
             override suspend fun execute(context: CommandContext) {
                 val extraArg = if (
-                        copyParent is PermissionCommand.ChannelCommand.RoleChannelCommand ||
-                        copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
+                    copyParent is PermissionCommand.ChannelCommand.RoleChannelCommand ||
+                    copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
                 ) 1 else 0
                 if (context.args.size < (2 + extraArg)) {
                     sendSyntax(context, syntax)
@@ -683,16 +713,17 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val daoWrapper1 = context.daoManager.userPermissionWrapper
                 val permissions = daoWrapper1.guildUserPermissionCache
-                        .get(Pair(context.getGuildId(), user1.idLong)).await()
+                    .get(Pair(context.getGuildId(), user1.idLong)).await()
 
                 val daoWrapper2 = context.daoManager.rolePermissionWrapper
                 daoWrapper2.setPermissions(context.getGuildId(), role2.idLong, permissions)
 
-                val msg = Translateable("$root.response1").string(context)
-                        .replace(PLACEHOLDER_USER, user1.asTag)
-                        .replace(PLACEHOLDER_ROLE, role2.name)
-                        .replace("%permissionCount%", permissions.size.toString())
-                        .replace("%s%", if (permissions.size > 1) "s" else "")
+                val language = context.getLanguage()
+                val msg = i18n.getTranslation(language, "$root.response1")
+                    .replace(PLACEHOLDER_USER, user1.asTag)
+                    .replace(PLACEHOLDER_ROLE, role2.name)
+                    .replace("%permissionCount%", permissions.size.toString())
+                    .replace("%s%", if (permissions.size > 1) "s" else "")
 
                 sendMsg(context, msg)
             }
@@ -703,15 +734,16 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val daoWrapper1 = context.daoManager.rolePermissionWrapper
                 val permissions = daoWrapper1.rolePermissionCache
-                        .get(role1.idLong).await()
+                    .get(role1.idLong).await()
 
                 daoWrapper1.setPermissions(context.getGuildId(), role2.idLong, permissions)
 
-                val msg = Translateable("$root.response1").string(context)
-                        .replace("%role1%", role1.name)
-                        .replace("%role2%", role2.name)
-                        .replace("%permissionCount%", permissions.size.toString())
-                        .replace("%s%", if (permissions.size > 1) "s" else "")
+                val language = context.getLanguage()
+                val msg = i18n.getTranslation(language, "$root.response1")
+                    .replace("%role1%", role1.name)
+                    .replace("%role2%", role2.name)
+                    .replace("%permissionCount%", permissions.size.toString())
+                    .replace("%s%", if (permissions.size > 1) "s" else "")
 
                 sendMsg(context, msg)
             }
@@ -723,17 +755,18 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val daoWrapper1 = context.daoManager.channelUserPermissionWrapper
                 val permissions = daoWrapper1.channelUserPermissionCache
-                        .get(Pair(channel1.idLong, user2.idLong)).await()
+                    .get(Pair(channel1.idLong, user2.idLong)).await()
 
                 val daoWrapper2 = context.daoManager.rolePermissionWrapper
                 daoWrapper2.setPermissions(context.getGuildId(), role3.idLong, permissions)
 
-                val msg = Translateable("$root.response1").string(context)
-                        .replace(PLACEHOLDER_USER, user2.asTag)
-                        .replace("%channel%", "#${channel1.name}")
-                        .replace(PLACEHOLDER_ROLE, role3.name)
-                        .replace("%permissionCount%", permissions.size.toString())
-                        .replace("%s%", if (permissions.size > 1) "s" else "")
+                val language = context.getLanguage()
+                val msg = i18n.getTranslation(language, "$root.response1")
+                    .replace(PLACEHOLDER_USER, user2.asTag)
+                    .replace(PLACEHOLDER_CHANNEL, channel1.asTag)
+                    .replace(PLACEHOLDER_ROLE, role3.name)
+                    .replace("%permissionCount%", permissions.size.toString())
+                    .replace("%s%", if (permissions.size > 1) "s" else "")
 
                 sendMsg(context, msg)
             }
@@ -745,17 +778,18 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val daoWrapper1 = context.daoManager.channelRolePermissionWrapper
                 val permissions = daoWrapper1.channelRolePermissionCache
-                        .get(Pair(channel1.idLong, role2.idLong)).await()
+                    .get(Pair(channel1.idLong, role2.idLong)).await()
 
                 val daoWrapper2 = context.daoManager.rolePermissionWrapper
                 daoWrapper2.setPermissions(context.getGuildId(), role3.idLong, permissions)
 
-                val msg = Translateable("$root.response1").string(context)
-                        .replace("%role1%", role2.name)
-                        .replace("%channel%", "#${channel1.name}")
-                        .replace("%role2%", role3.name)
-                        .replace("%permissionCount%", permissions.size.toString())
-                        .replace("%s%", if (permissions.size > 1) "s" else "")
+                val language = context.getLanguage()
+                val msg = i18n.getTranslation(language, "$root.response1")
+                    .replace("%role1%", role2.name)
+                    .replace(PLACEHOLDER_CHANNEL, channel1.asTag)
+                    .replace("%role2%", role3.name)
+                    .replace("%permissionCount%", permissions.size.toString())
+                    .replace("%s%", if (permissions.size > 1) "s" else "")
 
                 sendMsg(context, msg)
             }
@@ -781,8 +815,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 override suspend fun execute(context: CommandContext) {
                     val extraArg = if (
-                            copyParent is PermissionCommand.ChannelCommand.RoleChannelCommand ||
-                            copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
+                        copyParent is PermissionCommand.ChannelCommand.RoleChannelCommand ||
+                        copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
                     ) 1 else 0
                     if (context.args.size < (3 + extraArg)) {
                         sendSyntax(context, syntax)
@@ -811,17 +845,18 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val daoWrapper1 = context.daoManager.userPermissionWrapper
                     val permissions = daoWrapper1.guildUserPermissionCache
-                            .get(Pair(context.getGuildId(), user1.idLong)).await()
+                        .get(Pair(context.getGuildId(), user1.idLong)).await()
 
                     val daoWrapper2 = context.daoManager.channelRolePermissionWrapper
                     daoWrapper2.setPermissions(context.getGuildId(), channel2.idLong, role3.idLong, permissions)
 
-                    val msg = Translateable("$root.response1").string(context)
-                            .replace(PLACEHOLDER_USER, user1.asTag)
-                            .replace("%channel%", "#${channel2.name}")
-                            .replace(PLACEHOLDER_ROLE, role3.name)
-                            .replace("%permissionCount%", permissions.size.toString())
-                            .replace("%s%", if (permissions.size > 1) "s" else "")
+                    val language = context.getLanguage()
+                    val msg = i18n.getTranslation(language, "$root.response1")
+                        .replace(PLACEHOLDER_USER, user1.asTag)
+                        .replace(PLACEHOLDER_CHANNEL, channel2.asTag)
+                        .replace(PLACEHOLDER_ROLE, role3.name)
+                        .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%s%", if (permissions.size > 1) "s" else "")
 
                     sendMsg(context, msg)
                 }
@@ -833,17 +868,18 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val daoWrapper1 = context.daoManager.rolePermissionWrapper
                     val permissions = daoWrapper1.rolePermissionCache
-                            .get(role1.idLong).await()
+                        .get(role1.idLong).await()
 
                     val daoWrapper2 = context.daoManager.channelRolePermissionWrapper
                     daoWrapper2.setPermissions(context.getGuildId(), channel2.idLong, role3.idLong, permissions)
 
-                    val msg = Translateable("$root.response1").string(context)
-                            .replace("%role1%", role1.name)
-                            .replace("%channel%", "#${channel2.name}")
-                            .replace("%role2%", role3.name)
-                            .replace("%permissionCount%", permissions.size.toString())
-                            .replace("%s%", if (permissions.size > 1) "s" else "")
+                    val language = context.getLanguage()
+                    val msg = i18n.getTranslation(language, "$root.response1")
+                        .replace("%role1%", role1.name)
+                        .replace("%channel%", channel2.asTag)
+                        .replace("%role2%", role3.name)
+                        .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%s%", if (permissions.size > 1) "s" else "")
 
                     sendMsg(context, msg)
                 }
@@ -856,18 +892,19 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val daoWrapper1 = context.daoManager.channelUserPermissionWrapper
                     val permissions = daoWrapper1.channelUserPermissionCache
-                            .get(Pair(channel1.idLong, user2.idLong)).await()
+                        .get(Pair(channel1.idLong, user2.idLong)).await()
 
                     val daoWrapper2 = context.daoManager.channelRolePermissionWrapper
                     daoWrapper2.setPermissions(context.getGuildId(), channel3.idLong, role4.idLong, permissions)
 
-                    val msg = Translateable("$root.response1").string(context)
-                            .replace(PLACEHOLDER_USER, user2.asTag)
-                            .replace("%channel1%", "#${channel1.name}")
-                            .replace("%channel2%", "#${channel3.name}")
-                            .replace(PLACEHOLDER_ROLE, role4.name)
-                            .replace("%permissionCount%", permissions.size.toString())
-                            .replace("%s%", if (permissions.size > 1) "s" else "")
+                    val language = context.getLanguage()
+                    val msg = i18n.getTranslation(language, "$root.response1")
+                        .replace(PLACEHOLDER_USER, user2.asTag)
+                        .replace("%channel1%", channel1.asTag)
+                        .replace("%channel2%", channel3.asTag)
+                        .replace(PLACEHOLDER_ROLE, role4.name)
+                        .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%s%", if (permissions.size > 1) "s" else "")
 
                     sendMsg(context, msg)
                 }
@@ -880,17 +917,18 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val daoWrapper1 = context.daoManager.channelRolePermissionWrapper
                     val permissions = daoWrapper1.channelRolePermissionCache
-                            .get(Pair(channel1.idLong, role2.idLong)).await()
+                        .get(Pair(channel1.idLong, role2.idLong)).await()
 
                     daoWrapper1.setPermissions(context.getGuildId(), channel3.idLong, role4.idLong, permissions)
 
-                    val msg = Translateable("$root.response1").string(context)
-                            .replace("%role1%", role2.name)
-                            .replace("%channel1%", "#${channel1.name}")
-                            .replace("%channel2%", "#${channel3.name}")
-                            .replace("%role2%", role4.name)
-                            .replace("%permissionCount%", permissions.size.toString())
-                            .replace("%s%", if (permissions.size > 1) "s" else "")
+                    val language = context.getLanguage()
+                    val msg = i18n.getTranslation(language, "$root.response1")
+                        .replace("%role1%", role2.name)
+                        .replace("%channel1%", channel1.asTag)
+                        .replace("%channel2%", channel3.asTag)
+                        .replace("%role2%", role4.name)
+                        .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%s%", if (permissions.size > 1) "s" else "")
 
                     sendMsg(context, msg)
                 }
@@ -905,8 +943,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 override suspend fun execute(context: CommandContext) {
                     val extraArg = if (
-                            copyParent is PermissionCommand.ChannelCommand.RoleChannelCommand ||
-                            copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
+                        copyParent is PermissionCommand.ChannelCommand.RoleChannelCommand ||
+                        copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
                     ) 1 else 0
                     if (context.args.size < (3 + extraArg)) {
                         sendSyntax(context, syntax)
@@ -935,17 +973,18 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val daoWrapper1 = context.daoManager.userPermissionWrapper
                     val permissions = daoWrapper1.guildUserPermissionCache
-                            .get(Pair(context.getGuildId(), user1.idLong)).await()
+                        .get(Pair(context.getGuildId(), user1.idLong)).await()
 
                     val daoWrapper2 = context.daoManager.channelUserPermissionWrapper
                     daoWrapper2.setPermissions(context.getGuildId(), channel2.idLong, user3.idLong, permissions)
 
-                    val msg = Translateable("$root.response1").string(context)
-                            .replace("%user1%", user1.asTag)
-                            .replace("%channel%", "#${channel2.name}")
-                            .replace("%user2%", user3.asTag)
-                            .replace("%permissionCount%", permissions.size.toString())
-                            .replace("%s%", if (permissions.size > 1) "s" else "")
+                    val language = context.getLanguage()
+                    val msg = i18n.getTranslation(language, "$root.response1")
+                        .replace("%user1%", user1.asTag)
+                        .replace(PLACEHOLDER_CHANNEL, channel2.asTag)
+                        .replace("%user2%", user3.asTag)
+                        .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%s%", if (permissions.size > 1) "s" else "")
 
                     sendMsg(context, msg)
                 }
@@ -957,17 +996,18 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val daoWrapper1 = context.daoManager.rolePermissionWrapper
                     val permissions = daoWrapper1.rolePermissionCache
-                            .get(role1.idLong).await()
+                        .get(role1.idLong).await()
 
                     val daoWrapper2 = context.daoManager.channelUserPermissionWrapper
                     daoWrapper2.setPermissions(context.getGuildId(), channel2.idLong, user3.idLong, permissions)
 
-                    val msg = Translateable("$root.response1").string(context)
-                            .replace(PLACEHOLDER_ROLE, role1.name)
-                            .replace("%channel%", "#${channel2.name}")
-                            .replace(PLACEHOLDER_USER, user3.asTag)
-                            .replace("%permissionCount%", permissions.size.toString())
-                            .replace("%s%", if (permissions.size > 1) "s" else "")
+                    val language = context.getLanguage()
+                    val msg = i18n.getTranslation(language, "$root.response1")
+                        .replace(PLACEHOLDER_ROLE, role1.name)
+                        .replace(PLACEHOLDER_CHANNEL, channel2.asTag)
+                        .replace(PLACEHOLDER_USER, user3.asTag)
+                        .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%s%", if (permissions.size > 1) "s" else "")
 
                     sendMsg(context, msg)
                 }
@@ -980,17 +1020,18 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val daoWrapper1 = context.daoManager.channelUserPermissionWrapper
                     val permissions = daoWrapper1.channelUserPermissionCache
-                            .get(Pair(channel1.idLong, user2.idLong)).await()
+                        .get(Pair(channel1.idLong, user2.idLong)).await()
 
                     daoWrapper1.setPermissions(context.getGuildId(), channel3.idLong, user4.idLong, permissions)
 
-                    val msg = Translateable("$root.response1").string(context)
-                            .replace("%user1%", user2.asTag)
-                            .replace("%channel1%", "#${channel1.name}")
-                            .replace("%channel2%", "#${channel3.name}")
-                            .replace("%user2%", user4.asTag)
-                            .replace("%permissionCount%", permissions.size.toString())
-                            .replace("%s%", if (permissions.size > 1) "s" else "")
+                    val language = context.getLanguage()
+                    val msg = i18n.getTranslation(language, "$root.response1")
+                        .replace("%user1%", user2.asTag)
+                        .replace("%channel1%", channel1.asTag)
+                        .replace("%channel2%", channel3.asTag)
+                        .replace("%user2%", user4.asTag)
+                        .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%s%", if (permissions.size > 1) "s" else "")
 
                     sendMsg(context, msg)
                 }
@@ -1003,18 +1044,19 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val daoWrapper1 = context.daoManager.channelRolePermissionWrapper
                     val permissions = daoWrapper1.channelRolePermissionCache
-                            .get(Pair(channel1.idLong, role2.idLong)).await()
+                        .get(Pair(channel1.idLong, role2.idLong)).await()
 
                     val daoWrapper2 = context.daoManager.channelUserPermissionWrapper
                     daoWrapper2.setPermissions(context.getGuildId(), channel3.idLong, user4.idLong, permissions)
 
-                    val msg = Translateable("$root.response1").string(context)
-                            .replace(PLACEHOLDER_ROLE, role2.name)
-                            .replace("%channel1%", "#${channel1.name}")
-                            .replace("%channel2%", "#${channel3.name}")
-                            .replace(PLACEHOLDER_USER, user4.asTag)
-                            .replace("%permissionCount%", permissions.size.toString())
-                            .replace("%s%", if (permissions.size > 1) "s" else "")
+                    val language = context.getLanguage()
+                    val msg = i18n.getTranslation(language, "$root.response1")
+                        .replace(PLACEHOLDER_ROLE, role2.name)
+                        .replace("%channel1%", channel1.asTag)
+                        .replace("%channel2%", channel3.asTag)
+                        .replace(PLACEHOLDER_USER, user4.asTag)
+                        .replace("%permissionCount%", permissions.size.toString())
+                        .replace("%s%", if (permissions.size > 1) "s" else "")
 
                     sendMsg(context, msg)
                 }
@@ -1023,12 +1065,13 @@ class PermissionCommand : AbstractCommand("command.permission") {
     }
 }
 
-fun getPermissionsFromArgNMessage(context: CommandContext, arg: String): List<String>? {
+suspend fun getPermissionsFromArgNMessage(context: CommandContext, arg: String): List<String>? {
     val permissions = getPermissionsFromArg(context, arg)
     if (permissions == null) {
-        sendMsg(context, Translateable(MESSAGE_UNKNOWN_PERMISSIONNODE)
-                .string(context)
-                .replace(PLACEHOLDER_ARG, arg), null)
+        val language = context.getLanguage()
+        val msg = i18n.getTranslation(language, MESSAGE_UNKNOWN_PERMISSIONNODE)
+            .replace(PLACEHOLDER_ARG, arg)
+        sendMsg(context, msg)
     }
     return permissions
 }
@@ -1048,9 +1091,9 @@ fun getPermissionsFromArg(context: CommandContext, arg: String): List<String>? {
     val regex: Regex = when {
         arg == "*" || category != null -> ".*".toRegex()
         permParts.last() == "*" -> (
-                Pattern.quote(permParts.subList(0, permParts.size - 1)
-                        .joinToString(".")) + "(..*)?"
-                ).toRegex()
+            Pattern.quote(permParts.subList(0, permParts.size - 1)
+                .joinToString(".")) + "(..*)?"
+            ).toRegex()
 
         else -> Pattern.quote(arg).toRegex()
     }

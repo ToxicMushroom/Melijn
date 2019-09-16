@@ -7,10 +7,10 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import java.util.regex.Pattern
 
 class CommandContext(
-        private val messageReceivedEvent: MessageReceivedEvent,
-        val commandParts: List<String>,
-        private val container: Container,
-        private val commandList: Set<AbstractCommand>
+    private val messageReceivedEvent: MessageReceivedEvent,
+    val commandParts: List<String>,
+    private val container: Container,
+    private val commandList: Set<AbstractCommand>
 ) : ICommandContext {
 
     override fun getEvent(): MessageReceivedEvent {
@@ -79,4 +79,7 @@ class CommandContext(
         }
         getMessageChannel().sendMessage(something.toString()).queue()
     }
+
+    suspend fun getLanguage(): String = me.melijn.melijnbot.objects.translation.getLanguage(this)
+
 }
