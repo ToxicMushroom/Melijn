@@ -1,7 +1,7 @@
 package me.melijn.melijnbot.objects.utils
 
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -14,7 +14,7 @@ import java.util.regex.Pattern
 import javax.annotation.Nullable
 
 
-class StringUtils {
+object StringUtils {
     private val backTicks = "```".toRegex()
     fun splitMessageWithCodeBlocks(message: String, nextSplitThreshold: Int = 1800, margin: Int = 30, lang: String = ""): List<String> {
         var msg = message
@@ -57,11 +57,11 @@ class StringUtils {
             }
             val index = getSplitIndex(findLastNewline, nextSplitThreshold, margin)
             messages.add(msg.substring(0, index) +
-                    if (shouldAppendBackTicks) {
-                        "```"
-                    } else {
-                        ""
-                    }
+                if (shouldAppendBackTicks) {
+                    "```"
+                } else {
+                    ""
+                }
             )
 
             msg = msg.substring(index)
@@ -185,7 +185,7 @@ fun getDurationString(milliseconds: Double): String {
     return sb.toString()
 }
 
-fun getDurationByArgsNMessage(context: CommandContext, timeStamps: List<String>, leftBound: Int, rightBound: Int): Long? {
+suspend fun getDurationByArgsNMessage(context: CommandContext, timeStamps: List<String>, leftBound: Int, rightBound: Int): Long? {
     val corruptTimeStamps = timeStamps.subList(leftBound, rightBound).toMutableList()
     val holyTimeStamps = mutableListOf<String>()
     var totalTime = 0L
@@ -210,9 +210,11 @@ fun getDurationByArgsNMessage(context: CommandContext, timeStamps: List<String>,
 
         val amount = matcher.group(1).toLongOrNull()
         if (amount == null) {
-            sendMsg(context, Translateable("message.numbertobig")
-                    .string(context)
-                    .replace("%args%", matcher.group(1)), null)
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "message.numbertobig")
+                .replace("%args%", matcher.group(1))
+
+            sendMsg(context, msg, null)
             return null
         }
 
@@ -230,9 +232,11 @@ fun getDurationByArgsNMessage(context: CommandContext, timeStamps: List<String>,
         }
 
         if (multiplier == null) {
-            sendMsg(context, Translateable("unknown.timeunit")
-                    .string(context)
-                    .replace("%args%", matcher.group(2)), null)
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "unknown.timeunit")
+                .replace("%args%", matcher.group(2))
+
+            sendMsg(context, msg, null)
             return null
         }
 

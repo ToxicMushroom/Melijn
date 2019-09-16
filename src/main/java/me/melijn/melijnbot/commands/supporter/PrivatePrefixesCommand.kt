@@ -4,7 +4,7 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
 
@@ -29,13 +29,16 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            val title = Translateable("$root.response1.title").string(context)
+            val language = context.getLanguage()
+            val title = i18n.getTranslation(language, "$root.response1.title")
+
             var content = "```INI"
             val prefixes = context.daoManager.userPrefixWrapper.prefixCache.get(context.authorId).await()
             for ((index, prefix) in prefixes.withIndex()) {
                 content += "\n$index - [$prefix]"
             }
             content += "```"
+
             val msg = title + content
             sendMsg(context, msg)
         }
@@ -56,9 +59,10 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
 
             val prefix = context.rawArg
             context.daoManager.userPrefixWrapper.addPrefix(context.authorId, prefix)
-            val msg = Translateable("$root.response1")
-                    .string(context)
-                    .replace("%prefix%", prefix)
+
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.response1")
+                .replace("%prefix%", prefix)
             sendMsg(context, msg)
         }
     }
@@ -78,8 +82,10 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
 
             val prefix = context.rawArg
             context.daoManager.userPrefixWrapper.removePrefix(context.authorId, prefix)
-            val msg = Translateable("$root.response1").string(context)
-                    .replace("%prefix%", prefix)
+
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.response1")
+                .replace("%prefix%", prefix)
             sendMsg(context, msg)
         }
     }

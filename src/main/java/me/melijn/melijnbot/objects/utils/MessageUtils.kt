@@ -5,7 +5,7 @@ import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.requests.restaction.MessageAction
@@ -39,41 +39,35 @@ fun Exception.sendInGuild(guild: Guild? = null, channel: MessageChannel? = null,
     val printWriter = PrintWriter(writer)
     this.printStackTrace(printWriter)
     val stacktrace = writer.toString()
-            .replace("me.melijn.melijnbot", "**me.melijn.melijnbot**")
+        .replace("me.melijn.melijnbot", "**me.melijn.melijnbot**")
     sb.append(stacktrace)
     sendMsg(textChannel, sb.toString())
 }
 
-fun sendSyntax(context: CommandContext, translationPath: String) {
-    val syntax = Translateable(translationPath)
-    sendSyntax(context, syntax)
-}
-
-fun sendSyntax(context: CommandContext, syntax: Translateable) {
-    var syntaxString = syntax.string(context)
-    syntaxString = syntaxString.replacePrefix(context)
-    sendMsg(context.getTextChannel(),
-            Translateable("message.command.usage").string(context).replace("%syntax%", syntaxString)
-    )
+suspend fun sendSyntax(context: CommandContext, translationPath: String) {
+    val language = context.getLanguage()
+    val syntax = i18n.getTranslation(language, "message.command.usage")
+        .replace("%syntax%", i18n.getTranslation(language, translationPath))
+    sendMsg(context.getTextChannel(), syntax)
 }
 
 fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String) {
     if (context.isFromGuild) {
         val channel = context.getTextChannel()
-        if (channel.canTalk()) {
-            if (msg.length <= 2000) {
-                channel.sendMessage(msg).queue()
-            } else {
-                val parts = StringUtils().splitMessage(msg, margin = 8 + lang.length);
-                parts.forEachIndexed { index, msgPart ->
-                    channel.sendMessage(when {
-                        index == 0 -> "$msgPart```"
-                        index + 1 == parts.size -> "```$lang\n$msgPart"
-                        else -> "```$lang\n$msgPart```"
-                    }).queue()
-                }
+        if (!channel.canTalk()) return
+        if (msg.length <= 2000) {
+            channel.sendMessage(msg).queue()
+        } else {
+            val parts = StringUtils().splitMessage(msg, margin = 8 + lang.length);
+            parts.forEachIndexed { index, msgPart ->
+                channel.sendMessage(when {
+                    index == 0 -> "$msgPart```"
+                    index + 1 == parts.size -> "```$lang\n$msgPart"
+                    else -> "```$lang\n$msgPart```"
+                }).queue()
             }
         }
+
     } else {
         val privateChannel = context.getPrivateChannel()
         if (msg.length <= 2000) {
@@ -92,24 +86,24 @@ fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String) {
 }
 
 fun sendMsgCodeBlocks(
-        context: CommandContext,
-        msg: String,
-        lang: String,
-        success: ((message: Message) -> Unit)? = null,
-        failed: ((ex: Throwable) -> Unit)? = null,
-        multicallback: Boolean = false
+    context: CommandContext,
+    msg: String,
+    lang: String,
+    success: ((message: Message) -> Unit)? = null,
+    failed: ((ex: Throwable) -> Unit)? = null,
+    multicallback: Boolean = false
 ) {
     if (context.isFromGuild) sendMsgCodeBlocks(context.getTextChannel(), msg, lang, success, failed, multicallback)
     else sendMsgCodeBlocks(context.getPrivateChannel(), msg, lang, success, failed, multicallback)
 }
 
 fun sendMsgCodeBlocks(
-        channel: PrivateChannel,
-        msg: String,
-        lang: String,
-        success: ((message: Message) -> Unit)? = null,
-        failed: ((ex: Throwable) -> Unit)? = null,
-        multicallback: Boolean = false
+    channel: PrivateChannel,
+    msg: String,
+    lang: String,
+    success: ((message: Message) -> Unit)? = null,
+    failed: ((ex: Throwable) -> Unit)? = null,
+    multicallback: Boolean = false
 ) {
     if (msg.length <= 2000) {
         channel.sendMessage(msg).queue(success, failed)
@@ -128,12 +122,12 @@ fun sendMsgCodeBlocks(
 }
 
 fun sendMsgCodeBlocks(
-        channel: TextChannel,
-        msg: String,
-        lang: String,
-        success: ((message: Message) -> Unit)? = null,
-        failed: ((ex: Throwable) -> Unit)? = null,
-        multicallback: Boolean = false
+    channel: TextChannel,
+    msg: String,
+    lang: String,
+    success: ((message: Message) -> Unit)? = null,
+    failed: ((ex: Throwable) -> Unit)? = null,
+    multicallback: Boolean = false
 ) {
     if (channel.canTalk()) {
         if (msg.length <= 2000) {
@@ -155,7 +149,7 @@ fun sendMsgCodeBlocks(
 
 fun escapeForLog(string: String): String {
     return string.replace("`", "´")
-            .replace("\n", " ")
+        .replace("\n", " ")
 }
 
 suspend fun sendAttachments(textChannel: TextChannel, urls: Map<String, String>): Message = suspendCoroutine {
@@ -182,7 +176,7 @@ suspend fun sendMsgWithAttachments(channel: TextChannel, message: Message, attac
         messageAction = if (index == 0) {
             var action = if (message.contentRaw.isNotBlank()) channel.sendMessage(message.contentRaw) else null
             for (embed in message.embeds) {
-                if (action == null ) action = channel.sendMessage(embed)
+                if (action == null) action = channel.sendMessage(embed)
                 else action.embed(embed)
             }
             action
@@ -212,7 +206,7 @@ fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChann
         return
     }
     if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
-            !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
+        !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
         textChannel.sendMessage(embed).queue(success, failed)
     } else {
         sendEmbedAsMessage(textChannel, embed, success, failed)
@@ -233,7 +227,7 @@ fun MessageEmbed.toMessage(): String {
     if (this.fields.isNotEmpty()) {
         for (field in this.fields) {
             sb.append("**").append(field.name).append("**\n")
-                    .append(field.value?.replace(Regex("\\[(.+)]\\((.+)\\)"), "$1 (Link: $2)")).append("\n\n")
+                .append(field.value?.replace(Regex("\\[(.+)]\\((.+)\\)"), "$1 (Link: $2)")).append("\n\n")
         }
     }
     if (this.footer != null) {
@@ -293,7 +287,7 @@ fun sendMsg(channel: TextChannel, msg: Message, success: ((message: Message) -> 
     if (channel.canTalk()) {
         var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(msg.contentRaw) else null
         for (embed in msg.embeds) {
-            if (action == null ) action = channel.sendMessage(embed)
+            if (action == null) action = channel.sendMessage(embed)
             else action.embed(embed)
         }
         action?.queue(success, failed)

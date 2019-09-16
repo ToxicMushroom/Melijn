@@ -7,7 +7,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.*
@@ -27,10 +27,11 @@ class WarnCommand : AbstractCommand("command.warn") {
             return
         }
         val targetMember = getMemberByArgsNMessage(context, 0) ?: return
+
+        val language = context.getLanguage()
         if (!context.getGuild().selfMember.canInteract(targetMember)) {
-            val msg = Translateable("$root.cannotwarn")
-                    .string(context)
-                    .replace(PLACEHOLDER_USER, targetMember.asTag)
+            val msg = i18n.getTranslation(language, "$root.cannotwarn")
+                .replace(PLACEHOLDER_USER, targetMember.asTag)
             sendMsg(context, msg)
             return
         }
@@ -46,13 +47,13 @@ class WarnCommand : AbstractCommand("command.warn") {
         reason = reason.substring(reasonPreSpaceCount)
 
         val warn = Warn(
-                context.getGuildId(),
-                targetMember.idLong,
-                context.authorId,
-                reason
+            context.getGuildId(),
+            targetMember.idLong,
+            context.authorId,
+            reason
         )
 
-        val warning = Translateable("message.warning..").string(context)
+        val warning = i18n.getTranslation(language, "message.warning..")
 
         try {
             val privateChannel = targetMember.user.openPrivateChannel().await()
@@ -67,13 +68,15 @@ class WarnCommand : AbstractCommand("command.warn") {
     private suspend fun continueWarning(context: CommandContext, targetMember: Member, warn: Warn, warningMessage: Message? = null) {
         val guild = context.getGuild()
         val author = context.getAuthor()
+
+        val language = context.getLanguage()
         val warnedMessageDm = getWarnMessage(guild, targetMember.user, author, warn)
         val warnedMessageLc = getWarnMessage(guild, targetMember.user, author, warn, true, targetMember.user.isBot, warningMessage != null)
 
         context.daoManager.warnWrapper.addWarn(warn)
 
         warningMessage?.editMessage(
-                warnedMessageDm
+            warnedMessageDm
         )?.override(true)?.queue()
 
         val logChannelWrapper = context.daoManager.logChannelWrapper
@@ -83,9 +86,9 @@ class WarnCommand : AbstractCommand("command.warn") {
             sendEmbed(context.daoManager.embedDisabledWrapper, it1, warnedMessageLc)
         }
 
-        val msg = Translateable("$root.success").string(context)
-                .replace(PLACEHOLDER_USER, targetMember.asTag)
-                .replace("%reason%", warn.warnReason)
+        val msg = i18n.getTranslation(language, "$root.success")
+            .replace(PLACEHOLDER_USER, targetMember.asTag)
+            .replace("%reason%", warn.warnReason)
         sendMsg(context, msg)
     }
 }
@@ -101,29 +104,29 @@ fun getWarnMessage(guild: Guild,
     val eb = EmbedBuilder()
     eb.setAuthor("Warned by: " + warnAuthor.asTag + " ".repeat(45).substring(0, 45 - warnAuthor.name.length) + "\u200B", null, warnAuthor.effectiveAvatarUrl)
     val description = "```LDIF" +
-            if (!lc) {
-                "" +
-                        "\nGuild: " + guild.name +
-                        "\nGuildId: " + guild.id
-            } else {
-                ""
-            } +
-            "\nWarn Author: " + (warnAuthor.asTag) +
-            "\nWarn Author Id: " + warn.warnAuthorId +
-            "\nWarned: " + warnedUser.asTag +
-            "\nWarnedId: " + warnedUser.id +
-            "\nReason: " + warn.warnReason +
-            "\nMoment of warn: " + (warn.warnMoment.asEpochMillisToDateTime()) +
-            if (!received || isBot) {
-                "\nExtra: " +
-                        if (isBot) {
-                            "Target is a bot"
-                        } else {
-                            "Target had dm's disabled"
-                        }
-            } else {
-                ""
-            } + "```"
+        if (!lc) {
+            "" +
+                "\nGuild: " + guild.name +
+                "\nGuildId: " + guild.id
+        } else {
+            ""
+        } +
+        "\nWarn Author: " + (warnAuthor.asTag) +
+        "\nWarn Author Id: " + warn.warnAuthorId +
+        "\nWarned: " + warnedUser.asTag +
+        "\nWarnedId: " + warnedUser.id +
+        "\nReason: " + warn.warnReason +
+        "\nMoment of warn: " + (warn.warnMoment.asEpochMillisToDateTime()) +
+        if (!received || isBot) {
+            "\nExtra: " +
+                if (isBot) {
+                    "Target is a bot"
+                } else {
+                    "Target had dm's disabled"
+                }
+        } else {
+            ""
+        } + "```"
     eb.setDescription(description)
     eb.setThumbnail(warnedUser.effectiveAvatarUrl)
     eb.setColor(Color.YELLOW)

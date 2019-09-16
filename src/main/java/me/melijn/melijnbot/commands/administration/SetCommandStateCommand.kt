@@ -1,12 +1,14 @@
 package me.melijn.melijnbot.commands.administration
 
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.ChannelCommandState
 import me.melijn.melijnbot.enums.CommandState
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 
 class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
@@ -44,20 +46,23 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             val commands = getCommandsFromArgNMessage(context, 0) ?: return
             val commandState = enumValueOrNull<CommandState>(context.args[1])
             if (commandState == null) {
-                sendMsg(context, Translateable("message.unknown.commandstate").string(context)
-                        .replace(PLACEHOLDER_ARG, context.args[1]))
+                val language = context.getLanguage()
+                val msg = i18n.getTranslation(language, "message.unknown.commandstate")
+                    .replace(PLACEHOLDER_ARG, context.args[1])
+                sendMsg(context, msg)
                 return
             }
 
             val dao = context.daoManager.disabledCommandWrapper
             dao.setCommandState(context.getGuildId(), commands, commandState)
 
-            val msg = Translateable("$root.response1").string(context)
-                    .replace("%s%", if (commands.size > 1) "s" else "")
-                    .replace("%es%", if (commands.size > 1) "" else "es")
-                    .replace("%commandCount%", commands.size.toString())
-                    .replace("%state%", commandState.toString())
-                    .replace("%commandNode%", context.args[0])
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.response1")
+                .replace("%s%", if (commands.size > 1) "s" else "")
+                .replace("%es%", if (commands.size > 1) "" else "es")
+                .replace("%commandCount%", commands.size.toString())
+                .replace("%state%", commandState.toString())
+                .replace("%commandNode%", context.args[0])
 
             sendMsg(context, msg)
         }
@@ -80,21 +85,24 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             val commands = getCommandsFromArgNMessage(context, 1) ?: return
             val commandState = enumValueOrNull<ChannelCommandState>(context.args[2])
             if (commandState == null) {
-                sendMsg(context, Translateable("message.unknown.channelcommandstate").string(context)
-                        .replace(PLACEHOLDER_ARG, context.args[2]))
+                val language = context.getLanguage()
+                val msg = i18n.getTranslation(language, "message.unknown.channelcommandstate")
+                    .replace(PLACEHOLDER_ARG, context.args[2])
+                sendMsg(context, msg)
                 return
             }
 
             val dao = context.daoManager.channelCommandStateWrapper
             dao.setCommandState(context.getGuildId(), channel.idLong, commands, commandState)
 
-            val msg = Translateable("$root.response1").string(context)
-                    .replace("%s%", if (commands.isNotEmpty()) "s" else "")
-                    .replace("%channel%", "#${channel.name}")
-                    .replace("%commandCount%", commands.size.toString())
-                    .replace("%es%", if (commands.size > 1) "" else "es")
-                    .replace("%state%", commandState.toString())
-                    .replace("%commandNode%", context.args[1])
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.response1")
+                .replace("%s%", if (commands.isNotEmpty()) "s" else "")
+                .replace(PLACEHOLDER_CHANNEL, channel.asTag)
+                .replace("%commandCount%", commands.size.toString())
+                .replace("%es%", if (commands.size > 1) "" else "es")
+                .replace("%state%", commandState.toString())
+                .replace("%commandNode%", context.args[1])
 
             sendMsg(context, msg)
         }
@@ -109,27 +117,36 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
 
         override suspend fun execute(context: CommandContext) {
             if (context.args.isEmpty()) {
-                val ids = context.daoManager.disabledCommandWrapper.disabledCommandsCache.get(context.getGuildId()).get()
+                val daoManager = context.daoManager
+                val ids = daoManager.disabledCommandWrapper.disabledCommandsCache.get(context.getGuildId()).await()
                 val commands = context.getCommands().filter { cmd -> ids.contains(cmd.id) }
-                val title = Translateable("$root.globaldisabled.response1").string(context)
+                val language = context.getLanguage()
+                val title = i18n.getTranslation(language, "$root.globaldisabled.response1")
+
                 var content = "```INI"
                 for ((index, cmd) in commands.withIndex()) {
                     content += "\n$index - [${cmd.name}]"
                 }
-                content+= "```"
+                content += "```"
+
                 val msg = title + content
                 sendMsg(context, msg)
             } else {
+                val daoManager = context.daoManager
                 val channel = getTextChannelByArgsNMessage(context, 0) ?: return
-                val stateMap = context.daoManager.channelCommandStateWrapper.channelCommandsStateCache.get(channel.idLong).get()
+                val stateMap = daoManager.channelCommandStateWrapper.channelCommandsStateCache.get(channel.idLong).await()
                 val commands = context.getCommands().filter { cmd -> stateMap.keys.contains(cmd.id) }
-                val title = Translateable("$root.channelstate.response1").string(context)
-                        .replace("%channel%", "#${channel.name}")
+
+                val language = context.getLanguage()
+                val title = i18n.getTranslation(language, "$root.channelstate.response1")
+                    .replace(PLACEHOLDER_CHANNEL, channel.asTag)
+
                 var content = "```INI"
                 for ((index, cmd) in commands.withIndex()) {
                     content += "\n$index - [${cmd.name}] - ${stateMap[cmd.id]}"
                 }
-                content+= "```"
+                content += "```"
+
                 val msg = title + content
                 sendMsg(context, msg)
             }

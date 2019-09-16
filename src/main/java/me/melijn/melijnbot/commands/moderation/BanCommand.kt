@@ -7,7 +7,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
@@ -35,8 +35,9 @@ class BanCommand : AbstractCommand("command.ban") {
         val targetUser = getUserByArgsNMessage(context, 0) ?: return
         val member = context.getGuild().getMember(targetUser)
         if (member != null && !context.getGuild().selfMember.canInteract(member)) {
-            val msg = Translateable("$root.cannotban").string(context)
-                    .replace(PLACEHOLDER_USER, targetUser.asTag)
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.cannotban")
+                .replace(PLACEHOLDER_USER, targetUser.asTag)
             sendMsg(context, msg)
             return
 
@@ -54,14 +55,15 @@ class BanCommand : AbstractCommand("command.ban") {
 
         val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.getGuildId(), targetUser.idLong)
         val ban = Ban(
-                context.getGuildId(),
-                targetUser.idLong,
-                context.authorId,
-                reason,
-                null)
+            context.getGuildId(),
+            targetUser.idLong,
+            context.authorId,
+            reason,
+            null)
         if (activeBan != null) ban.startTime = activeBan.startTime
 
-        val banning = Translateable("message.banning").string(context)
+        val language = context.getLanguage()
+        val banning = i18n.getTranslation(language, "message.banning")
         try {
             val privateChannel = targetUser.openPrivateChannel().await()
             val message = privateChannel.sendMessage(banning).await()
@@ -82,7 +84,7 @@ class BanCommand : AbstractCommand("command.ban") {
         try {
             context.getGuild().ban(targetUser, 7).await()
             banningMessage?.editMessage(
-                    bannedMessageDm
+                bannedMessageDm
             )?.override(true)?.queue()
 
             val logChannelWrapper = context.daoManager.logChannelWrapper
@@ -90,17 +92,17 @@ class BanCommand : AbstractCommand("command.ban") {
             val logChannel = guild.getTextChannelById(logChannelId)
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
 
-            val msg = Translateable("$root.success" + if (activeBan != null) ".updated" else "")
-                    .string(context)
-                    .replace(PLACEHOLDER_USER, targetUser.asTag)
-                    .replace("%reason%", ban.reason)
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.success" + if (activeBan != null) ".updated" else "")
+                .replace(PLACEHOLDER_USER, targetUser.asTag)
+                .replace("%reason%", ban.reason)
             sendMsg(context, msg)
         } catch (t: Throwable) {
             banningMessage?.editMessage("failed to ban")?.queue()
-            val msg = Translateable("$root.failure")
-                    .string(context)
-                    .replace(PLACEHOLDER_USER, targetUser.asTag)
-                    .replace("%cause%", t.message ?: "unknown (contact support for info)")
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.failure")
+                .replace(PLACEHOLDER_USER, targetUser.asTag)
+                .replace("%cause%", t.message ?: "unknown (contact support for info)")
             sendMsg(context, msg)
         }
     }
@@ -121,28 +123,28 @@ fun getBanMessage(guild: Guild,
     } ?: "infinite"
 
     val description = "```LDIF" +
-            if (!lc) {
-                "" +
-                        "\nGuild: " + guild.name +
-                        "\nGuildId: " + guild.id
-            } else {
-                ""
-            } +
-            "\nBan Author: " + (banAuthor.asTag) +
-            "\nBan Author Id: " + ban.banAuthorId +
-            "\nBanned: " + bannedUser.asTag +
-            "\nBannedId: " + bannedUser.id +
-            "\nReason: " + ban.reason +
-            "\nDuration: " + banDuration +
-            "\nStart of ban: " + (ban.startTime.asEpochMillisToDateTime()) +
-            "\nEnd of ban: " + (ban.endTime?.asEpochMillisToDateTime() ?: "none")
+        if (!lc) {
+            "" +
+                "\nGuild: " + guild.name +
+                "\nGuildId: " + guild.id
+        } else {
+            ""
+        } +
+        "\nBan Author: " + (banAuthor.asTag) +
+        "\nBan Author Id: " + ban.banAuthorId +
+        "\nBanned: " + bannedUser.asTag +
+        "\nBannedId: " + bannedUser.id +
+        "\nReason: " + ban.reason +
+        "\nDuration: " + banDuration +
+        "\nStart of ban: " + (ban.startTime.asEpochMillisToDateTime()) +
+        "\nEnd of ban: " + (ban.endTime?.asEpochMillisToDateTime() ?: "none")
     if (!received || isBot) {
         "\nExtra: " +
-                if (isBot) {
-                    "Target is a bot"
-                } else {
-                    "Target had dm's disabled"
-                }
+            if (isBot) {
+                "Target is a bot"
+            } else {
+                "Target had dm's disabled"
+            }
     } else {
         ""
     } + "```"

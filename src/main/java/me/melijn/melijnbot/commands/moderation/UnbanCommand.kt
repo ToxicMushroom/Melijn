@@ -7,7 +7,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
@@ -32,6 +32,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
             sendSyntax(context, syntax)
             return
         }
+        val language = context.getLanguage()
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
 
         var unbanReason = context.rawArg.replaceFirst((context.args[0] + "($:\\s+)?").toRegex(), "")
@@ -75,21 +76,22 @@ class UnbanCommand : AbstractCommand("command.unban") {
                 val logChannel = guild.getTextChannelById(logChannelId)
                 logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, msg) }
 
-                val success = Translateable("$root.success").string(context)
+                val success = i18n.getTranslation(language,"$root.success")
                         .replace(PLACEHOLDER_USER, targetUser.asTag)
                         .replace("%reason%", unbanReason)
                 sendMsg(context, success)
 
             } catch (t: Throwable) {
                 //Sum ting wrong
-                val msg = Translateable("$root.failure").string(context)
+                val msg = i18n.getTranslation(language,"$root.failure")
                         .replace(PLACEHOLDER_USER, targetUser.asTag)
                         .replace("%cause%", t.message ?: "unknown (contact support for info)")
                 sendMsg(context, msg)
             }
         } catch (t: Throwable) {
             //Not banned anymore
-            val msg = Translateable("$root.notbanned").string(context)
+
+            val msg = i18n.getTranslation(language,"$root.notbanned")
                     .replace(PLACEHOLDER_USER, targetUser.asTag)
             sendMsg(context, msg)
 

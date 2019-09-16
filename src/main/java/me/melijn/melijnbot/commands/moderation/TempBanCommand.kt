@@ -7,7 +7,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
@@ -33,9 +33,9 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
         val member = guild.getMember(targetUser)
         if (member != null && !guild.selfMember.canInteract(member)) {
-            val msg = Translateable("$root.cannotban")
-                    .string(context)
-                    .replace(PLACEHOLDER_USER, targetUser.asTag)
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.cannotban")
+                .replace(PLACEHOLDER_USER, targetUser.asTag)
             sendMsg(context, msg)
             return
         }
@@ -58,16 +58,17 @@ class TempBanCommand : AbstractCommand("command.tempban") {
 
         val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.getGuildId(), targetUser.idLong)
         val ban = Ban(
-                context.getGuildId(),
-                targetUser.idLong,
-                context.authorId,
-                reason,
-                null,
-                endTime = System.currentTimeMillis() + banDuration
+            context.getGuildId(),
+            targetUser.idLong,
+            context.authorId,
+            reason,
+            null,
+            endTime = System.currentTimeMillis() + banDuration
         )
         if (activeBan != null) ban.startTime = activeBan.startTime
 
-        val banning = Translateable("message.banning").string(context)
+        val language = context.getLanguage()
+        val banning = i18n.getTranslation(language, "message.banning")
         try {
             val privateChannel = targetUser.openPrivateChannel().await()
             val message = privateChannel.sendMessage(banning).await()
@@ -83,10 +84,12 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         val bannedMessageDm = getBanMessage(guild, targetUser, author, ban)
         val bannedMessageLc = getBanMessage(guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
         context.daoManager.banWrapper.setBan(ban)
+
+        val language = context.getLanguage()
         try {
             context.getGuild().ban(targetUser, 7).await()
             banningMessage?.editMessage(
-                    bannedMessageDm
+                bannedMessageDm
             )?.override(true)?.queue()
 
             val logChannelWrapper = context.daoManager.logChannelWrapper
@@ -94,16 +97,18 @@ class TempBanCommand : AbstractCommand("command.tempban") {
             val logChannel = guild.getTextChannelById(logChannelId)
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
 
-            val msg = Translateable("$root.success" + if (activeBan != null) ".updated" else "").string(context)
-                    .replace(PLACEHOLDER_USER, targetUser.asTag)
-                    .replace("%endTime%", ban.endTime?.asEpochMillisToDateTime() ?: "none")
-                    .replace("%reason%", ban.reason)
+
+            val msg = i18n.getTranslation(language, "$root.success" + if (activeBan != null) ".updated" else "")
+                .replace(PLACEHOLDER_USER, targetUser.asTag)
+                .replace("%endTime%", ban.endTime?.asEpochMillisToDateTime() ?: "none")
+                .replace("%reason%", ban.reason)
             sendMsg(context, msg)
         } catch (t: Throwable) {
             banningMessage?.editMessage("failed to ban")?.queue()
-            val msg = Translateable("$root.failure").string(context)
-                    .replace(PLACEHOLDER_USER, targetUser.asTag)
-                    .replace("%cause%", t.message ?: "unknown (contact support for info)")
+
+            val msg = i18n.getTranslation(language, "$root.failure")
+                .replace(PLACEHOLDER_USER, targetUser.asTag)
+                .replace("%cause%", t.message ?: "unknown (contact support for info)")
             sendMsg(context, msg)
         }
     }

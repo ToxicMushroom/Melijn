@@ -4,8 +4,9 @@ import me.melijn.melijnbot.enums.PunishmentType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.retrieveUserByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendMsgCodeBlocks
@@ -26,8 +27,9 @@ class HistoryCommand : AbstractCommand("command.history") {
         }
         val types = PunishmentType.getMatchingTypesFromNode(context.args[0])
         if (types.isEmpty()) {
-            val msg = Translateable("message.unknown.punishmenttype").string(context)
-                    .replace("%arg%", context.args[0])
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "message.unknown.punishmenttype")
+                .replace(PLACEHOLDER_ARG, context.args[0])
             sendMsg(context, msg)
             return
         }
@@ -66,7 +68,8 @@ class HistoryCommand : AbstractCommand("command.history") {
         val msg = orderedMap.values.joinToString("")
 
         if (msg.isBlank()) {
-            val or = Translateable("or").string(context)
+            val language = context.getLanguage()
+            val or = i18n.getTranslation(language, "or")
             var readableList = types.subList(0, types.size - 1).joinToString(", ", transform = { type ->
                 type.name.toLowerCase()
             })
@@ -76,10 +79,10 @@ class HistoryCommand : AbstractCommand("command.history") {
                 readableList += " $or " + types.last().name.toLowerCase()
             }
 
-            val noHistory = Translateable("$root.nohistory")
-                    .string(context)
-                    .replace(PLACEHOLDER_USER, targetUser.asTag)
-                    .replace("%typeList%", readableList)
+
+            val noHistory = i18n.getTranslation(language, "$root.nohistory")
+                .replace(PLACEHOLDER_USER, targetUser.asTag)
+                .replace("%typeList%", readableList)
             sendMsg(context, noHistory)
         } else {
             sendMsgCodeBlocks(context, msg, "INI")

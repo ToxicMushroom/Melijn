@@ -7,7 +7,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.*
@@ -28,8 +28,9 @@ class KickCommand : AbstractCommand("command.kick") {
         }
         val targetMember = getMemberByArgsNMessage(context, 0) ?: return
         if (!context.getGuild().selfMember.canInteract(targetMember)) {
-            val msg = Translateable("$root.cannotkick").string(context)
-                    .replace(PLACEHOLDER_USER, targetMember.asTag)
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.cannotkick")
+                .replace(PLACEHOLDER_USER, targetMember.asTag)
             sendMsg(context, msg)
             return
         }
@@ -45,14 +46,15 @@ class KickCommand : AbstractCommand("command.kick") {
         reason = reason.substring(reasonPreSpaceCount)
 
         val kick = Kick(
-                context.getGuildId(),
-                targetMember.idLong,
-                context.authorId,
-                reason
+            context.getGuildId(),
+            targetMember.idLong,
+            context.authorId,
+            reason
         )
 
 
-        val kicking = Translateable("message.kicking").string(context)
+        val language = context.getLanguage()
+        val kicking = i18n.getTranslation(language, "message.kicking")
         try {
             val privateChannel = targetMember.user.openPrivateChannel().await()
             val message = privateChannel.sendMessage(kicking).await()
@@ -73,7 +75,7 @@ class KickCommand : AbstractCommand("command.kick") {
         try {
             context.getGuild().kick(targetMember, kick.kickReason).await()
             kickingMessage?.editMessage(
-                    kickedMessageDm
+                kickedMessageDm
             )?.override(true)?.queue()
 
             val logChannelWrapper = context.daoManager.logChannelWrapper
@@ -81,15 +83,17 @@ class KickCommand : AbstractCommand("command.kick") {
             val logChannel = guild.getTextChannelById(logChannelId)
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, warnedMessageLc) }
 
-            val msg = Translateable("$root.success").string(context)
-                    .replace(PLACEHOLDER_USER, targetMember.asTag)
-                    .replace("%reason%", kick.kickReason)
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.success")
+                .replace(PLACEHOLDER_USER, targetMember.asTag)
+                .replace("%reason%", kick.kickReason)
             sendMsg(context, msg)
         } catch (t: Throwable) {
             kickingMessage?.editMessage("failed to kick")?.queue()
-            val msg = Translateable("$root.failure").string(context)
-                    .replace(PLACEHOLDER_USER, targetMember.asTag)
-                    .replace("%cause%", t.message ?: "unknown (contact support for info)")
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.failure")
+                .replace(PLACEHOLDER_USER, targetMember.asTag)
+                .replace("%cause%", t.message ?: "unknown (contact support for info)")
             sendMsg(context, msg)
         }
     }
@@ -106,29 +110,29 @@ fun getKickMessage(guild: Guild,
     val eb = EmbedBuilder()
     eb.setAuthor("Kicked by: " + kickAuthor.asTag + " ".repeat(45).substring(0, 45 - kickAuthor.name.length) + "\u200B", null, kickAuthor.effectiveAvatarUrl)
     val description = "```LDIF" +
-            if (!lc) {
-                "" +
-                        "\nGuild: " + guild.name +
-                        "\nGuildId: " + guild.id
-            } else {
-                ""
-            } +
-            "\nKick Author: " + (kickAuthor.asTag) +
-            "\nKick Author Id: " + kick.kickAuthorId +
-            "\nKicked: " + kickedUser.asTag +
-            "\nKickedId: " + kickedUser.id +
-            "\nReason: " + kick.kickReason +
-            "\nMoment of kick: " + (kick.kickMoment.asEpochMillisToDateTime()) +
-            if (!received || isBot) {
-                "\nExtra: " +
-                        if (isBot) {
-                            "Target is a bot"
-                        } else {
-                            "Target had dm's disabled"
-                        }
-            } else {
-                ""
-            } + "```"
+        if (!lc) {
+            "" +
+                "\nGuild: " + guild.name +
+                "\nGuildId: " + guild.id
+        } else {
+            ""
+        } +
+        "\nKick Author: " + (kickAuthor.asTag) +
+        "\nKick Author Id: " + kick.kickAuthorId +
+        "\nKicked: " + kickedUser.asTag +
+        "\nKickedId: " + kickedUser.id +
+        "\nReason: " + kick.kickReason +
+        "\nMoment of kick: " + (kick.kickMoment.asEpochMillisToDateTime()) +
+        if (!received || isBot) {
+            "\nExtra: " +
+                if (isBot) {
+                    "Target is a bot"
+                } else {
+                    "Target had dm's disabled"
+                }
+        } else {
+            ""
+        } + "```"
     eb.setDescription(description)
     eb.setThumbnail(kickedUser.effectiveAvatarUrl)
     eb.setColor(Color.BLUE)

@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.administration
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.boolFromStateArg
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
@@ -13,10 +13,8 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
     init {
         id = 3
         name = "setEmbedState"
-        help = Translateable("message.help.state")
-        syntax = Translateable("$root.syntax")
+        help = "message.help.state"
         aliases = arrayOf("ses")
-        description = Translateable("$root.description")
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
@@ -28,7 +26,7 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
             context.args.size == 1 -> {
                 setEmbedStateState(context)
             }
-            else -> sendSyntax(context, "$root.syntax")
+            else -> sendSyntax(context, syntax)
         }
     }
 
@@ -36,10 +34,13 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
         val dao = context.daoManager.embedDisabledWrapper
         val state = dao.embedDisabledCache.contains(context.getGuildId())
 
-        sendMsg(context, replaceState(
-                Translateable("$root.currentstateresponse").string(context),
-                state
-        ))
+        val language = context.getLanguage()
+        val unReplaceMsg = i18n.getTranslation(language, "$root.currentstateresponse")
+        val msg = replaceState(
+            unReplaceMsg,
+            state
+        )
+        sendMsg(context, msg)
     }
 
     private suspend fun setEmbedStateState(context: CommandContext) {
@@ -53,12 +54,14 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
         val dao = context.daoManager.embedDisabledWrapper
         dao.setDisabled(context.getGuildId(), disabledState)
 
-        sendMsg(context, replaceState(
-                Translateable("$root.set.success").string(context),
-                disabledState
-        ))
+        val language = context.getLanguage()
+        val unReplaceMsg = i18n.getTranslation(language, "$root.set.success")
+        val msg = replaceState(
+            unReplaceMsg,
+            disabledState
+        )
+        sendMsg(context, msg)
     }
-
 
 
     private fun replaceState(msg: String, disabledState: Boolean): String {

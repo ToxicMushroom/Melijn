@@ -6,7 +6,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.enumValueOrNull
 import me.melijn.melijnbot.objects.utils.getRoleByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
@@ -55,16 +55,16 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
             return
         }
 
+        val language = context.getLanguage()
         val msg = (if (role != null) {
-            Translateable("$root.show.set").string(context)
-                    .replace(PLACEHOLDER_ROLE, role.name)
+            i18n.getTranslation(language, "$root.show.set")
+                .replace(PLACEHOLDER_ROLE, role.name)
         } else {
-            Translateable("$root.show.unset").string(context)
+            i18n.getTranslation(language, "$root.show.unset")
         }).replace("%roleType%", roleType.text)
 
         sendMsg(context, msg)
     }
-
 
 
     private suspend fun setRole(context: CommandContext, roleType: RoleType) {
@@ -73,20 +73,21 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
             return
         }
 
+        val language = context.getLanguage()
         val daoWrapper = context.daoManager.roleWrapper
         val msg = if (context.args[1].equals("null", true)) {
 
             daoWrapper.removeRole(context.getGuildId(), roleType)
 
-            Translateable("$root.unset").string(context)
-                    .replace("%roleType%", roleType.text)
+            i18n.getTranslation(language, "$root.unset")
+                .replace("%roleType%", roleType.text)
         } else {
             val role = getRoleByArgsNMessage(context, 1) ?: return
             daoWrapper.setRole(context.getGuildId(), roleType, role.idLong)
 
-            Translateable("$root.set.single").string(context)
-                    .replace("%roleType%", roleType.text)
-                    .replace(PLACEHOLDER_ROLE, role.name)
+            i18n.getTranslation(language, "$root.set.single")
+                .replace("%roleType%", roleType.text)
+                .replace(PLACEHOLDER_ROLE, role.name)
 
         }
         sendMsg(context, msg)

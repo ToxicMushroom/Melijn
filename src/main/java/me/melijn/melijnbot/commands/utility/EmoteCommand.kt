@@ -39,13 +39,13 @@ class EmoteCommand : AbstractCommand("command.emote") {
                 val name = args.replace("<.?:(.*):\\d+>".toRegex(), "$1")
                 val animated = args.replace("<(.?):.*:\\d+>".toRegex(), "$1").isNotEmpty()
                 sendMsg(context,
-                        replaceMissingEmoteVars(
-                                part1.string(context) + part2.string(context),
-                                context,
-                                id,
-                                name,
-                                animated
-                        )
+                    replaceMissingEmoteVars(
+                        part1.string(context) + part2.string(context),
+                        context,
+                        id,
+                        name,
+                        animated
+                    )
                 )
                 return
             }
@@ -56,15 +56,15 @@ class EmoteCommand : AbstractCommand("command.emote") {
 
         if (emote == null) {
             sendMsg(context, Translateable("$root.notanemote").string(context)
-                    .replace(PLACEHOLDER_ARG, args)
+                .replace(PLACEHOLDER_ARG, args)
             )
             return
         }
 
         sendMsg(context, replaceEmoteVars(
-                part1.string(context) + extra.string(context) + part2.string(context),
-                context,
-                emote
+            part1.string(context) + extra.string(context) + part2.string(context),
+            context,
+            emote
         ))
         return
 
@@ -72,15 +72,15 @@ class EmoteCommand : AbstractCommand("command.emote") {
 
 
     private fun replaceMissingEmoteVars(string: String, context: CommandContext, id: String, name: String, animated: Boolean): String = string
-            .replace("%id%", id)
-            .replace("%name%", name)
-            .replace("%isAnimated%", Translateable(if (animated) "yes" else "no").string(context))
-            .replace("%url%", "https://cdn.discordapp.com/emojis/$id." + (if (animated) "gif" else "png") + "?size=2048")
+        .replace("%id%", id)
+        .replace("%name%", name)
+        .replace("%isAnimated%", Translateable(if (animated) "yes" else "no").string(context))
+        .replace("%url%", "https://cdn.discordapp.com/emojis/$id." + (if (animated) "gif" else "png") + "?size=2048")
 
 
     private fun replaceEmoteVars(string: String, context: CommandContext, emote: Emote): String =
-            replaceMissingEmoteVars(string, context, emote.id, emote.name, emote.isAnimated)
-                    .replace("%creationTime%", emote.timeCreated.asLongLongGMTString())
+        replaceMissingEmoteVars(string, context, emote.id, emote.name, emote.isAnimated)
+            .replace("%creationTime%", emote.timeCreated.asLongLongGMTString())
 
 
 }

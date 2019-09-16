@@ -2,7 +2,7 @@ package me.melijn.melijnbot.objects.command
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.PermState
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendMsg
 import net.dv8tion.jda.api.Permission
 
@@ -12,9 +12,9 @@ abstract class AbstractCommand(val root: String) {
 
     var name: String = ""
     var id: Int = 0
-    var description = Translateable("$root.description")
-    var syntax = Translateable("$root.syntax")
-    var help = Translateable("$root.help")
+    var description = "$root.description"
+    var syntax = "$root.syntax"
+    var help = "$root.help"
     var commandCategory: CommandCategory = CommandCategory.DEVELOPER
     var aliases: Array<String> = arrayOf()
     var discordPermissions: Array<Permission> = arrayOf()
@@ -22,7 +22,7 @@ abstract class AbstractCommand(val root: String) {
     var children: Array<AbstractCommand> = arrayOf()
 
     init {
-        description = Translateable("$root.description")
+        description = "$root.description"
     }
 
     protected abstract suspend fun execute(context: CommandContext)
@@ -42,12 +42,14 @@ abstract class AbstractCommand(val root: String) {
             context.initArgs()
             if (context.isFromGuild) {
                 val pair1 = Pair(context.getTextChannel().idLong, context.authorId)
-                val map1 = context.daoManager.commandChannelCoolDownWrapper.executions[pair1]?.toMutableMap() ?: hashMapOf()
+                val map1 = context.daoManager.commandChannelCoolDownWrapper.executions[pair1]?.toMutableMap()
+                    ?: hashMapOf()
                 map1[id] = System.currentTimeMillis()
                 context.daoManager.commandChannelCoolDownWrapper.executions[pair1] = map1
 
                 val pair2 = Pair(context.getGuildId(), context.authorId)
-                val map2 = context.daoManager.commandChannelCoolDownWrapper.executions[pair2]?.toMutableMap() ?: hashMapOf()
+                val map2 = context.daoManager.commandChannelCoolDownWrapper.executions[pair2]?.toMutableMap()
+                    ?: hashMapOf()
                 map2[id] = System.currentTimeMillis()
                 context.daoManager.commandChannelCoolDownWrapper.executions[pair2] = map2
             }
@@ -56,8 +58,10 @@ abstract class AbstractCommand(val root: String) {
     }
 
     private suspend fun sendMissingPermissionMessage(context: CommandContext, permission: String) {
-        sendMsg(context, Translateable("message.botpermission.missing").string(context)
-                .replace("%permission%", permission))
+        val language = context.getLanguage()
+        val msg = i18n.getTranslation(language, "message.botpermission.missing")
+            .replace("%permission%", permission)
+        sendMsg(context, msg)
     }
 
     private suspend fun hasPermission(context: CommandContext, permission: String): Boolean {
@@ -106,16 +110,23 @@ abstract class AbstractCommand(val root: String) {
         if (channelRoleResult != PermState.DEFAULT) roleResult = channelRoleResult
 
 
-        return if (commandCategory == CommandCategory.ADMINISTRATION || commandCategory == CommandCategory.MODERATION)
+        return if (commandCategory == CommandCategory.ADMINISTRATION || commandCategory == CommandCategory.MODERATION) {
             roleResult == PermState.ALLOW
-        else roleResult != PermState.DENY
+        } else {
+            roleResult != PermState.DENY
+        }
     }
 
 
     fun isCommandFor(input: String): Boolean {
-        if (name.equals(input, true)) return true
-        for (alias in aliases)
-            if (alias.equals(input, true)) return true
+        if (name.equals(input, true)) {
+            return true
+        }
+        for (alias in aliases) {
+            if (alias.equals(input, true)) {
+                return true
+            }
+        }
         return false
     }
 }

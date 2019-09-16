@@ -6,7 +6,8 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 
 class SetChannelCommand : AbstractCommand("command.setchannel") {
@@ -26,8 +27,9 @@ class SetChannelCommand : AbstractCommand("command.setchannel") {
 
         val type = enumValueOrNull<ChannelType>(context.args[0])
         if (type == null) {
-            val msg = Translateable("message.unknown.channeltype").string(context)
-                    .replace(PLACEHOLDER_ARG, context.args[0])
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "message.unknown.channeltype")
+                .replace(PLACEHOLDER_ARG, context.args[0])
             sendMsg(context, msg)
             return
         }
@@ -44,17 +46,17 @@ class SetChannelCommand : AbstractCommand("command.setchannel") {
         val channelId = channelWrapper.channelCache.get(Pair(context.getGuildId(), type)).await()
         val channel = if (channelId == -1L) null else context.getGuild().getTextChannelById(channelId)
         if (channel == null) {
-            val msg = Translateable("$root.show.unset")
-                    .string(context)
-                    .replace("%channelType%", type.toString().toUpperWordCase())
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.show.unset")
+                .replace("%channelType%", type.toString().toUpperWordCase())
 
             sendMsg(context, msg)
             return
         }
-        val msg = Translateable("$root.show.set")
-                .string(context)
-                .replace("%channelType%", type.toString().toUpperWordCase())
-                .replace("%channel%", channel.asTag)
+        val language = context.getLanguage()
+        val msg = i18n.getTranslation(language, "$root.show.set")
+            .replace("%channelType%", type.toString().toUpperWordCase())
+            .replace(PLACEHOLDER_CHANNEL, channel.asTag)
 
         sendMsg(context, msg)
     }
@@ -71,12 +73,14 @@ class SetChannelCommand : AbstractCommand("command.setchannel") {
 
         val msg = if (channel == null) {
             channelWrapper.removeChannel(context.getGuildId(), type)
-            Translateable("$root.unset").string(context)
+            val language = context.getLanguage()
+            i18n.getTranslation(language, "$root.unset")
+
         } else {
             channelWrapper.setChannel(context.getGuildId(), type, channel.idLong)
-            Translateable("$root.set")
-                    .string(context)
-                    .replace("%channel%", channel.asTag)
+            val language = context.getLanguage()
+            i18n.getTranslation(language, "$root.set")
+                .replace(PLACEHOLDER_CHANNEL, channel.asTag)
         }.replace("%channelType%", type.toString().toUpperWordCase())
 
         sendMsg(context, msg)

@@ -1,9 +1,10 @@
 package me.melijn.melijnbot.commands.administration
 
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
 
@@ -28,13 +29,16 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            val title = Translateable("$root.response1.title").string(context)
+            val language = context.getLanguage()
+            val title = i18n.getTranslation(language, "$root.response1.title")
+            val prefixes = context.daoManager.guildPrefixWrapper.prefixCache.get(context.getGuildId()).await()
+
             var content = "```INI"
-            val prefixes = context.daoManager.guildPrefixWrapper.prefixCache.get(context.getGuildId()).get()
             for ((index, prefix) in prefixes.withIndex()) {
                 content += "\n$index - [$prefix]"
             }
             content += "```"
+
             val msg = title + content
             sendMsg(context, msg)
         }
@@ -55,8 +59,10 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
 
             val prefix = context.rawArg
             context.daoManager.guildPrefixWrapper.addPrefix(context.getGuildId(), prefix)
-            val msg = Translateable("$root.response1").string(context)
-                    .replace("%prefix%", prefix)
+
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.response1")
+                .replace("%prefix%", prefix)
             sendMsg(context, msg)
         }
     }
@@ -76,8 +82,10 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
 
             val prefix = context.rawArg
             context.daoManager.guildPrefixWrapper.removePrefix(context.getGuildId(), prefix)
-            val msg = Translateable("$root.response1").string(context)
-                    .replace("%prefix%", prefix)
+
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.response1")
+                .replace("%prefix%", prefix)
             sendMsg(context, msg)
         }
     }
