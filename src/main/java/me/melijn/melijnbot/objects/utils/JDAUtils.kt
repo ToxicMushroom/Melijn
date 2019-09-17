@@ -3,7 +3,7 @@ package me.melijn.melijnbot.objects.utils
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_USER
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.requests.RestAction
@@ -32,8 +32,8 @@ val TextChannel.asTag: String
 
 suspend fun <T> RestAction<T>.await() = suspendCoroutine<T> {
     queue(
-            { success -> it.resume(success) },
-            { failure -> it.resumeWithException(failure) }
+        { success -> it.resume(success) },
+        { failure -> it.resumeWithException(failure) }
     )
 }
 
@@ -154,20 +154,21 @@ suspend fun retrieveUserByArgsN(guild: Guild, arg: String): User? = suspendCorou
 suspend fun retrieveUserByArgsNMessage(context: CommandContext, index: Int): User? {
     val possibleUser = retrieveUserByArgsN(context, index)
     if (possibleUser == null) {
-        val msg = Translateable(MESSAGE_UNKNOWN_USER)
-                .string(context)
-                .replace(PLACEHOLDER_ARG, context.args[index])
+        val language = context.getLanguage()
+        val msg = i18n.getTranslation(language, MESSAGE_UNKNOWN_USER)
+            .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg)
     }
     return possibleUser
 }
 
-fun getUserByArgsNMessage(context: CommandContext, index: Int): User? {
+suspend fun getUserByArgsNMessage(context: CommandContext, index: Int): User? {
     val user = getUserByArgsN(context, index)
     if (user == null) {
-        val msg = Translateable(MESSAGE_UNKNOWN_USER)
-                .string(context)
-                .replace(PLACEHOLDER_ARG, context.args[index])
+        val language = context.getLanguage()
+        val msg = i18n.getTranslation(language, MESSAGE_UNKNOWN_USER)
+
+            .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg, null)
     }
     return user
@@ -200,18 +201,18 @@ fun getRoleByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Bool
     return role
 }
 
-fun getRoleByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): Role? {
+suspend fun getRoleByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): Role? {
     val role = getRoleByArgsN(context, index, sameGuildAsContext)
     if (role == null) {
-        val msg = Translateable("message.unknown.role")
-                .string(context)
-                .replace(PLACEHOLDER_ARG, context.args[index])
+        val language = context.getLanguage()
+        val msg = i18n.getTranslation(language, "message.unknown.role")
+            .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg, null)
     }
     return role
 }
 
-fun getColorFromArgNMessage(context: CommandContext, index: Int): Color? {
+suspend fun getColorFromArgNMessage(context: CommandContext, index: Int): Color? {
     val arg = context.args[index]
     when {
         arg.matches("(?i)#([a-f]|\\d){6}".toRegex()) -> {
@@ -227,9 +228,9 @@ fun getColorFromArgNMessage(context: CommandContext, index: Int): Color? {
         else -> {
             val color: Color? = Color.getColor(arg)
             if (color == null) {
-                val msg = Translateable("message.unknown.color")
-                        .string(context)
-                        .replace(PLACEHOLDER_ARG, arg)
+                val language = context.getLanguage()
+                val msg = i18n.getTranslation(language, "message.unknown.color")
+                    .replace(PLACEHOLDER_ARG, arg)
                 sendMsg(context, msg, null)
             }
             return color
@@ -237,14 +238,15 @@ fun getColorFromArgNMessage(context: CommandContext, index: Int): Color? {
     }
 }
 
-fun JDA.messageByJSONNMessage(context: CommandContext, json: String): MessageEmbed? {
+suspend fun JDA.messageByJSONNMessage(context: CommandContext, json: String): MessageEmbed? {
     val jdaImpl = (this as JDAImpl)
 
     return try {
         jdaImpl.entityBuilder.createMessageEmbed(DataObject.fromJson(json))
     } catch (e: Exception) {
-        val msg = Translateable("message.invalidJSONStruct").string(context)
-                .replace("%cause%", e.message ?: "unknown")
+        val language = context.getLanguage()
+        val msg = i18n.getTranslation(language, "message.invalidJSONStruct")
+            .replace("%cause%", e.message ?: "unknown")
         sendMsg(context, msg, null)
         null
     }
@@ -277,27 +279,27 @@ fun getTextChannelByArgsN(context: CommandContext, index: Int, sameGuildAsContex
     return channel
 }
 
-fun getTextChannelByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): TextChannel? {
+suspend fun getTextChannelByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): TextChannel? {
     val textChannel = getTextChannelByArgsN(context, index, sameGuildAsContext)
     if (textChannel == null) {
-        val msg = Translateable("message.unknown.textchannel")
-                .string(context)
-                .replace(PLACEHOLDER_ARG, context.args[index])
+        val language = context.getLanguage()
+        val msg = i18n.getTranslation(language, "message.unknown.textchannel")
+            .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg, null)
     }
     return textChannel
 }
 
-fun getMemberByArgsNMessage(context: CommandContext, index: Int): Member? {
+suspend fun getMemberByArgsNMessage(context: CommandContext, index: Int): Member? {
     val user = getUserByArgsN(context, index)
     val member =
-            if (user == null) null
-            else context.getGuild().getMember(user)
+        if (user == null) null
+        else context.getGuild().getMember(user)
 
     if (member == null) {
-        val msg = Translateable("message.unknown.member")
-                .string(context)
-                .replace(PLACEHOLDER_ARG, context.args[index])
+        val language = context.getLanguage()
+        val msg = i18n.getTranslation(language, "message.unknown.member")
+            .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg, null)
     }
 

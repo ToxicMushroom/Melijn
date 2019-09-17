@@ -4,7 +4,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
@@ -16,17 +16,16 @@ class HelpCommand : AbstractCommand("command.help") {
     init {
         id = 6
         name = "help"
-        syntax = Translateable("$root.syntax")
         aliases = arrayOf("commands", "command", "cmds", "cmd")
-        description = Translateable("$root.description")
         commandCategory = CommandCategory.UTILITY
     }
 
     override suspend fun execute(context: CommandContext) {
         val args = context.args
+        val language = context.getLanguage()
         if (args.isEmpty()) {
             val part = if (context.isFromGuild) "server" else "pm"
-            val response = Translateable("$root.response1.$part").string(context)
+            val response = i18n.getTranslation(language, "$root.response1.$part")
             val msg = replaceArgs(response, context.getGuildId(), context.usedPrefix)
             sendMsg(context, msg)
             return
@@ -35,16 +34,16 @@ class HelpCommand : AbstractCommand("command.help") {
         val commandList = context.getCommands()
         if (args[0].equals("list", ignoreCase = true)) {
 
-            val title = Translateable("$root.response2.title").string(context)
-            val util = Translateable("$root.response2.field1.title").string(context)
-            val administration = Translateable("$root.response2.field2.title").string(context)
-            val moderation = Translateable("$root.response2.field3.title").string(context)
-            val music = Translateable("$root.response2.field4.title").string(context)
-            val image = Translateable("$root.response2.field5.title").string(context)
-            val animal = Translateable("$root.response2.field6.title").string(context)
-            val anime = Translateable("$root.response2.field7.title").string(context)
-            val supporter = Translateable("$root.response2.field8.title").string(context)
-            val commandAmount = Translateable("$root.response2.footer").string(context)
+            val title = i18n.getTranslation(language, "$root.response2.title")
+            val util = i18n.getTranslation(language, "$root.response2.field1.title")
+            val administration = i18n.getTranslation(language, "$root.response2.field2.title")
+            val moderation = i18n.getTranslation(language, "$root.response2.field3.title")
+            val music = i18n.getTranslation(language, "$root.response2.field4.title")
+            val image =i18n.getTranslation(language, "$root.response2.field5.title")
+            val animal = i18n.getTranslation(language, "$root.response2.field6.title")
+            val anime = i18n.getTranslation(language, "$root.response2.field7.title")
+            val supporter = i18n.getTranslation(language, "$root.response2.field8.title")
+            val commandAmount = i18n.getTranslation(language, "$root.response2.footer")
                     .replace("%cmdCount%", commandList.size.toString())
 
             val eb = Embedder(context)
@@ -67,14 +66,16 @@ class HelpCommand : AbstractCommand("command.help") {
 
         for (command in commandList) {
             if (!command.isCommandFor(args[0])) continue
-            var msg = Translateable("$root.response3.line1").string(context)
-            msg += Translateable("$root.response3.line2").string(context)
-            if (command.aliases.isNotEmpty())
-                msg += Translateable("$root.response3.line3").string(context)
-            msg += Translateable("$root.response3.line4").string(context)
-            if (command.help.path != "empty")
-                msg += Translateable("$root.response3.line5").string(context)
-            msg += Translateable("$root.response3.line6").string(context)
+            var msg = i18n.getTranslation(language, "$root.response3.line1")
+            msg += i18n.getTranslation(language, "$root.response3.line2")
+            if (command.aliases.isNotEmpty()){
+                msg += i18n.getTranslation(language, "$root.response3.line3")
+            }
+            msg += i18n.getTranslation(language, "$root.response3.line4")
+            if (command.help != "empty") {
+                msg += i18n.getTranslation(language, "$root.response3.line5")
+            }
+            msg += i18n.getTranslation(language, "$root.response3.line6")
 
             msg = replaceCmdVars(msg, context, command)
 
@@ -86,12 +87,12 @@ class HelpCommand : AbstractCommand("command.help") {
     }
 
 
-    private fun replaceCmdVars(msg: String, context: CommandContext, command: AbstractCommand): String = msg
+    private suspend fun replaceCmdVars(msg: String, context: CommandContext, command: AbstractCommand): String = msg
             .replace("%cmdName%", command.name)
-            .replace("%cmdSyntax%", command.syntax.string(context))
+            .replace("%cmdSyntax%", i18n.getTranslation(context.getLanguage(), command.syntax))
             .replace("%cmdAliases%", command.aliases.joinToString())
-            .replace("%cmdDescription%", command.description.string(context))
-            .replace("%cmdHelp%", command.help.string(context))
+            .replace("%cmdDescription%", i18n.getTranslation(context.getLanguage(), command.description))
+            .replace("%cmdHelp%", i18n.getTranslation(context.getLanguage(), command.help))
             .replace("%cmdCategory%", command.commandCategory.toString())
             .replace("%prefix%", context.usedPrefix)
 

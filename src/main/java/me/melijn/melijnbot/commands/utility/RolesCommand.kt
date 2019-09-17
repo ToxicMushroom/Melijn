@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendMsgCodeBlock
 import me.melijn.melijnbot.objects.utils.sendSyntax
 import net.dv8tion.jda.api.entities.Guild
@@ -29,14 +29,19 @@ class RolesCommand : AbstractCommand("command.roles") {
             context.getGuild()
         }
 
-        val title = Translateable("$root.response1.title").string(context)
-                .replace("%guildName%", guild.name)
+        val language = context.getLanguage()
+        val unReplacedTitle = i18n.getTranslation(language, "$root.response1.title")
+        val title = unReplacedTitle
+            .replace("%guildName%", guild.name)
 
-        var msg = "$title```INI"
+
+        var content = "```INI"
         for ((index, role) in guild.roleCache.withIndex()) {
-            msg += "\n${index+1} - [${role.name}] - ${role.id}"
+            content += "\n${index+1} - [${role.name}] - ${role.id}"
         }
-        msg += "```"
+        content += "```"
+
+        val msg = title + content
 
         sendMsgCodeBlock(context, msg, "INI")
     }

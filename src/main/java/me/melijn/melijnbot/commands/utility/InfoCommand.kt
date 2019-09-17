@@ -6,7 +6,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import net.dv8tion.jda.api.JDAInfo
 
@@ -20,12 +20,12 @@ class InfoCommand : AbstractCommand("command.info") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val title1 = Translateable("$root.field1.title").string(context)
-        val value1 = replaceValueOneVars(Translateable("$root.field1.value").string(context), context)
-        val title2 = Translateable("$root.field2.title").string(context)
-        val value2 = replaceValueTwoVars(Translateable("$root.field2.value").string(context), context)
-        val title3 = Translateable("$root.field3.title").string(context)
-        val value3 = replaceValueThreeVars(Translateable("$root.field3.value").string(context), context)
+        val title1 = i18n.getTranslation(context.getLanguage(), "$root.field1.title")
+        val value1 = replaceValueOneVars(i18n.getTranslation(context.getLanguage(), "$root.field1.value"), context)
+        val title2 = i18n.getTranslation(context.getLanguage(), "$root.field2.title")
+        val value2 = replaceValueTwoVars(i18n.getTranslation(context.getLanguage(), "$root.field2.value"), context)
+        val title3 = i18n.getTranslation(context.getLanguage(), "$root.field3.title")
+        val value3 = replaceValueThreeVars(i18n.getTranslation(context.getLanguage(), "$root.field3.value"), context)
 
 
         val eb = Embedder(context)

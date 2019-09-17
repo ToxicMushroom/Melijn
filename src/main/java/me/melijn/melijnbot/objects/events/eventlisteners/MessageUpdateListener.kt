@@ -9,7 +9,8 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.events.AbstractListener
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.getLanguage
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.TextChannel
@@ -50,14 +51,13 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
         postMessageUpdateLog(event, channel, daoMessage, oldContent)
     }
 
-    private fun postMessageUpdateLog(event: GuildMessageUpdateEvent, logChannel: TextChannel, daoMessage: DaoMessage, oldContent: String) {
+    private suspend fun postMessageUpdateLog(event: GuildMessageUpdateEvent, logChannel: TextChannel, daoMessage: DaoMessage, oldContent: String) {
         val embedBuilder = EmbedBuilder()
-        val title = Translateable("listener.message.update.log.title")
-                .string(container.daoManager, event.guild.idLong)
+        val language = getLanguage(container.daoManager, -1, event.guild.idLong)
+        val title =  i18n.getTranslation(language, "listener.message.update.log.title")
                 .replace("%channel%", event.channel.asTag)
 
-        val description = Translateable("listener.message.update.log.description")
-                .string(container.daoManager, event.guild.idLong)
+        val description =  i18n.getTranslation(language, "listener.message.update.log.description")
                 .replace("%oldContent%", escapeForLog(oldContent))
                 .replace("%newContent%", escapeForLog(daoMessage.content))
                 .replace("%user%", event.author.asTag)

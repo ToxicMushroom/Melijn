@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.TableBuilder
 import me.melijn.melijnbot.objects.utils.sendMsg
 
@@ -63,7 +63,9 @@ class ShardsCommand : AbstractCommand("command.shards") {
         }
 
         if (context.jda.shardManager == null) {
-            sendMsg(context, Translateable("$root.noshardmanager").string(context))
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.noshardmanager")
+            sendMsg(context, msg)
         }
     }
 }

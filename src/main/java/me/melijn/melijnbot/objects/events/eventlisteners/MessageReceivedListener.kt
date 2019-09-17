@@ -6,7 +6,8 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.events.AbstractListener
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.getLanguage
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asLongLongGMTString
 import me.melijn.melijnbot.objects.utils.asTag
 import me.melijn.melijnbot.objects.utils.sendEmbed
@@ -60,33 +61,32 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
 
         GlobalScope.launch {
             messageWrapper.addMessage(DaoMessage(
-                    guildId,
-                    event.channel.idLong,
-                    event.author.idLong,
-                    event.messageIdLong,
-                    event.message.contentRaw,
-                    event.message.timeCreated.toInstant().toEpochMilli()
+                guildId,
+                event.channel.idLong,
+                event.author.idLong,
+                event.messageIdLong,
+                event.message.contentRaw,
+                event.message.timeCreated.toInstant().toEpochMilli()
             ))
         }
     }
 
-    private fun postAttachmentLog(event: GuildMessageReceivedEvent, logChannel: TextChannel, attachment: Message.Attachment) {
+    private suspend fun postAttachmentLog(event: GuildMessageReceivedEvent, logChannel: TextChannel, attachment: Message.Attachment) {
         val embedBuilder = EmbedBuilder()
-        val title = Translateable("listener.message.attachment.log.title")
-                .string(container.daoManager, event.guild.idLong)
-                .replace("%channel%", event.channel.asTag)
+        val language = getLanguage(container.daoManager, -1, event.guild.idLong)
+        val title = i18n.getTranslation(language, "listener.message.attachment.log.title")
+            .replace("%channel%", event.channel.asTag)
 
-        val description = Translateable("listener.message.attachment.log.description")
-                .string(container.daoManager, event.guild.idLong)
-                .replace("%userId%", event.author.id)
-                .replace("%messageId%", event.messageId)
-                .replace("%messageUrl%", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.message.id}")
-                .replace("%attachmentUrl%", attachment.url)
-                .replace("%moment%", event.message.timeCreated.asLongLongGMTString())
+        val description = i18n.getTranslation(language, "listener.message.attachment.log.description")
+            .replace("%userId%", event.author.id)
+            .replace("%messageId%", event.messageId)
+            .replace("%messageUrl%", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.message.id}")
+            .replace("%attachmentUrl%", attachment.url)
+            .replace("%moment%", event.message.timeCreated.asLongLongGMTString())
 
-        val footer = Translateable("listener.message.attachment.log.footer")
-                .string(container.daoManager, event.guild.idLong)
-                .replace("%user%", event.author.asTag)
+        val footer = i18n.getTranslation(language, "listener.message.attachment.log.footer")
+            .replace("%user%", event.author.asTag)
+
         embedBuilder.setFooter(footer, event.author.effectiveAvatarUrl)
 
         embedBuilder.setColor(Color.decode("#DC143C"))

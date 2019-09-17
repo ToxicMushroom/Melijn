@@ -6,7 +6,8 @@ import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.ChannelCommandState
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.getLanguage
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendInGuild
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.toUpperWordCase
@@ -64,8 +65,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             if (!message.contentRaw.startsWith(prefix)) continue
 
             val commandParts: ArrayList<String> = ArrayList(message.contentRaw
-                    .replaceFirst(Regex("${Pattern.quote(prefix)}(\\s+)?"), "")
-                    .split(Regex("\\s+")))
+                .replaceFirst(Regex("${Pattern.quote(prefix)}(\\s+)?"), "")
+                .split(Regex("\\s+")))
             commandParts.add(0, prefix)
 
             val command = commandMap.getOrElse(commandParts[1].toLowerCase(), { null }) ?: continue
@@ -77,9 +78,9 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
     private suspend fun getPrefixes(event: MessageReceivedEvent): List<String> {
         var prefixes =
-                if (event.isFromGuild)
-                    guildPrefixCache.get(event.guild.idLong).await().toMutableList()
-                else mutableListOf()
+            if (event.isFromGuild)
+                guildPrefixCache.get(event.guild.idLong).await().toMutableList()
+            else mutableListOf()
 
         //add default prefix if none are set
         if (prefixes.isEmpty()) prefixes = mutableListOf(container.settings.prefix)
@@ -90,8 +91,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         //mentioning the bot will always work
         prefixes.add(
-                if (event.isFromGuild) event.guild.selfMember.asMention
-                else event.jda.selfUser.asMention
+            if (event.isFromGuild) event.guild.selfMember.asMention
+            else event.jda.selfUser.asMention
         )
         return prefixes.toList()
     }
@@ -122,9 +123,9 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
                 if (missingPermissionCount > 0) {
                     missingPermissionMessage =
-                            "I'm missing the following permission" +
-                                    (if (missingPermissionCount > 1) "s" else "") +
-                                    missingPermissionMessage
+                        "I'm missing the following permission" +
+                            (if (missingPermissionCount > 1) "s" else "") +
+                            missingPermissionMessage
 
                     sendMsg(event.textChannel, missingPermissionMessage)
                     return true
@@ -170,10 +171,10 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
             //init lastExecutionChannel
             container.daoManager.commandChannelCoolDownWrapper.executions[Pair(channelId, userId)]
-                    ?.filter { entry -> entry.key == command.id }
-                    ?.forEach { entry ->
-                        if (entry.value > lastExecutionChannel) lastExecutionChannel = entry.value
-                    }
+                ?.filter { entry -> entry.key == command.id }
+                ?.forEach { entry ->
+                    if (entry.value > lastExecutionChannel) lastExecutionChannel = entry.value
+                }
 
             val cooldown = channelCommandCooldownCache.get(channelId).await()[command.id] ?: 0L
 
@@ -186,10 +187,10 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
             //init lastExecution
             container.daoManager.commandChannelCoolDownWrapper.executions[Pair(guildId, userId)]
-                    ?.filter { entry -> entry.key == command.id }
-                    ?.forEach { entry ->
-                        if (entry.value > lastExecution) lastExecution = entry.value
-                    }
+                ?.filter { entry -> entry.key == command.id }
+                ?.forEach { entry ->
+                    if (entry.value > lastExecution) lastExecution = entry.value
+                }
 
             val cooldown = commandCooldownCache.get(guildId).await()[command.id] ?: 0L
 
@@ -200,9 +201,11 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
         val lastExecutionBiggest = if (lastExecution > lastExecutionChannel) lastExecution else lastExecutionChannel
         if (bool && cooldownResult != 0L) {
-            val msg = Translateable("message.cooldown")
-                    .string(container.daoManager, userId, guildId)
-                    .replace("%cooldown%", ((cooldownResult - (System.currentTimeMillis() - lastExecutionBiggest)) / 1000.0).toString())
+
+            val language = getLanguage(container.daoManager, userId, guildId)
+            val unReplacedCooldown = i18n.getTranslation(language, "message.cooldown")
+            val msg = unReplacedCooldown
+                .replace("%cooldown%", ((cooldownResult - (System.currentTimeMillis() - lastExecutionBiggest)) / 1000.0).toString())
             sendMsg(event.textChannel, msg)
         }
         return bool

@@ -2,22 +2,23 @@ package me.melijn.melijnbot.objects.utils
 
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 
 suspend fun getIntegerFromArgNMessage(context: CommandContext, index: Int): Int? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
 
     val int = arg.toIntOrNull()
+    val language = context.getLanguage()
     if (int == null) {
-        val msg = Translateable("message.unknown.integer")
-            .string(context)
+        val msg = i18n.getTranslation(language, "message.unknown.integer")
             .replace(PLACEHOLDER_ARG, arg)
         sendMsg(context, msg)
     }
 
     return int
 }
+
 suspend fun getBooleanFromArgNMessage(context: CommandContext, index: Int): Boolean? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
@@ -28,8 +29,8 @@ suspend fun getBooleanFromArgNMessage(context: CommandContext, index: Int): Bool
         else -> null
     }
     if (bool == null) {
-        val msg = Translateable("message.unknown.boolean")
-            .string(context)
+        val language = context.getLanguage()
+        val msg = i18n.getTranslation(language, "message.unknown.boolean")
             .replace(PLACEHOLDER_ARG, arg)
         sendMsg(context, msg)
     }
@@ -37,7 +38,7 @@ suspend fun getBooleanFromArgNMessage(context: CommandContext, index: Int): Bool
     return bool
 }
 
-fun argSizeCheckFailed(context: CommandContext, index: Int): Boolean {
+suspend fun argSizeCheckFailed(context: CommandContext, index: Int): Boolean {
     return if (context.args.size <= index) {
         sendSyntax(context, context.commandOrder.last().syntax)
         true

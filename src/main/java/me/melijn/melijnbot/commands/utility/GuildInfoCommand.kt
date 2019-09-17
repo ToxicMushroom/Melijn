@@ -5,7 +5,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asLongLongGMTString
 import me.melijn.melijnbot.objects.utils.asTag
 import me.melijn.melijnbot.objects.utils.sendEmbed
@@ -30,17 +30,18 @@ class GuildInfoCommand : AbstractCommand("command.guildinfo") {
             }
         }
 
+        val language = context.getLanguage()
 
-        val title1 = Translateable("$root.response1.field1.title").string(context)
-        val title2 = Translateable("$root.response1.field2.title").string(context)
-        val title3 = Translateable("$root.response1.field3.title").string(context)
+        val title1 = i18n.getTranslation(language, "$root.response1.field1.title")
+        val title2 = i18n.getTranslation(language, "$root.response1.field2.title")
+        val title3 = i18n.getTranslation(language, "$root.response1.field3.title")
 
-        val value1 = replaceFieldVar(Translateable("$root.response1.field1.value").string(context), guild)
-        val value2 = replaceFieldVar(Translateable("$root.response1.field2.value").string(context), guild)
-        val value31 = replaceFieldVar(Translateable("$root.response1.field3.value.part1").string(context), guild)
-        val value32 = replaceFieldVar(Translateable("$root.response1.field3.value.part2").string(context), guild)
-        val value33 = replaceFieldVar(Translateable("$root.response1.field3.value.part3").string(context), guild)
-        val value34 = replaceFieldVar(Translateable("$root.response1.field3.value.part4").string(context), guild)
+        val value1 = replaceFieldVar(i18n.getTranslation(language, "$root.response1.field1.value"), guild)
+        val value2 = replaceFieldVar(i18n.getTranslation(language, "$root.response1.field2.value"), guild)
+        val value31 = replaceFieldVar(i18n.getTranslation(language, "$root.response1.field3.value.part1"), guild)
+        val value32 = replaceFieldVar(i18n.getTranslation(language, "$root.response1.field3.value.part2"), guild)
+        val value33 = replaceFieldVar(i18n.getTranslation(language, "$root.response1.field3.value.part3"), guild)
+        val value34 = replaceFieldVar(i18n.getTranslation(language, "$root.response1.field3.value.part4"), guild)
 
         var value3 = ""
         if (guild.iconUrl != null) value3 += replaceFieldVar(value31, guild)

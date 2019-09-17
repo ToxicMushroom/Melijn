@@ -8,7 +8,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import java.awt.Color
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -85,7 +85,7 @@ inline fun <reified T : Enum<*>> enumValueOrNull(name: String): T? =
         it.name.equals(name, true)
     }
 
-fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set<AbstractCommand>? {
+suspend fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set<AbstractCommand>? {
     val arg = context.args[index]
     val category: CommandCategory? = enumValueOrNull(arg)
 
@@ -99,22 +99,28 @@ fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set<Abstrac
     commands.removeIf { cmd -> cmd.id == 16 }
 
     if (commands.isEmpty()) {
-        sendMsg(context, Translateable("message.unknown.commandnode").string(context)
-            .replace(PLACEHOLDER_ARG, arg), null)
+        val language = context.getLanguage()
+        val msg = i18n.getTranslation(language, "message.unknown.commandnode")
+            .replace(PLACEHOLDER_ARG, arg)
+        sendMsg(context, msg
+            , null)
         return null
     }
     return commands
 }
 
-fun getLongFromArgNMessage(context: CommandContext, index: Int): Long? {
+suspend fun getLongFromArgNMessage(context: CommandContext, index: Int): Long? {
     val arg = context.args[index]
     val long = arg.toLongOrNull()
+    val language = context.getLanguage()
     if (!arg.matches("\\d+".toRegex())) {
-        sendMsg(context, Translateable("message.unknown.number").string(context)
-            .replace(PLACEHOLDER_ARG, arg), null)
+        val msg = i18n.getTranslation(language, "message.unknown.number")
+            .replace(PLACEHOLDER_ARG, arg)
+        sendMsg(context, msg, null)
     } else if (long == null) {
-        sendMsg(context, Translateable("message.unknown.long").string(context)
-            .replace(PLACEHOLDER_ARG, arg), null)
+        val msg = i18n.getTranslation(language, "message.unknown.long")
+            .replace(PLACEHOLDER_ARG, arg)
+        sendMsg(context, msg, null)
     }
     return long
 }

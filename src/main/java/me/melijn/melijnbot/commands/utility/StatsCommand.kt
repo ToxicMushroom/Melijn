@@ -5,7 +5,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.getDurationString
 import me.melijn.melijnbot.objects.utils.getSystemUptime
 import me.melijn.melijnbot.objects.utils.sendEmbed
@@ -19,9 +19,7 @@ class StatsCommand : AbstractCommand("command.stats") {
     init {
         id = 4
         name = "stats"
-        syntax = Translateable("$root.syntax")
         aliases = arrayOf("statistics")
-        description = Translateable("$root.description")
         commandCategory = CommandCategory.UTILITY
     }
 
@@ -39,71 +37,76 @@ class StatsCommand : AbstractCommand("command.stats") {
         val threadPoolExecutor = context.taskManager.executorService as ThreadPoolExecutor
         val scheduledExecutorService = context.taskManager.scheduledExecutorService as ThreadPoolExecutor
 
-        val title1 = Translateable("$root.response.field1.title").string(context)
-        val title2 = Translateable("$root.response.field2.title").string(context)
-        val title3 = Translateable("$root.response.field3.title").string(context)
+        val language = context.getLanguage()
 
+        val title1 = i18n.getTranslation(language, "$root.response.field1.title")
+        val title2 = i18n.getTranslation(language, "$root.response.field2.title")
+        val title3 = i18n.getTranslation(language, "$root.response.field3.title")
+
+        val unReplaceField1 = i18n.getTranslation(language, "$root.response.field1.value")
         val value1 = replaceValue1Vars(
-                Translateable("$root.response.field1.value").string(context),
-                shardManager?.shardsTotal ?: 0,
-                shardManager?.userCache?.size() ?: 0,
-                shardManager?.guildCache?.size() ?: 0,
-                voiceChannels ?: 0,
-                threadPoolExecutor.activeCount + scheduledExecutorService.activeCount + scheduledExecutorService.queue.size,
-                getDurationString(ManagementFactory.getRuntimeMXBean().uptime)
+            unReplaceField1,
+            shardManager?.shardsTotal ?: 0,
+            shardManager?.userCache?.size() ?: 0,
+            shardManager?.guildCache?.size() ?: 0,
+            voiceChannels ?: 0,
+            threadPoolExecutor.activeCount + scheduledExecutorService.activeCount + scheduledExecutorService.queue.size,
+            getDurationString(ManagementFactory.getRuntimeMXBean().uptime)
         )
 
+        val unReplaceField2 = i18n.getTranslation(language, "$root.response.field2.value")
         val value2 = replaceValue2Vars(
-                Translateable("$root.response.field2.value").string(context),
-                bean.availableProcessors,
-                "${usedMem}MB/${totalMem}MB",
-                getDurationString(getSystemUptime())
+            unReplaceField2,
+            bean.availableProcessors,
+            "${usedMem}MB/${totalMem}MB",
+            getDurationString(getSystemUptime())
         )
 
+        val unReplaceField3 = i18n.getTranslation(language, "$root.response.field3.value")
         val value3 = replaceValue3Vars(
-                Translateable("$root.response.field3.value").string(context),
-                DecimalFormat("###.###%").format(bean.processCpuLoad),
-                "${usedJVMMem}MB/${totalJVMMem}MB",
-                "${Thread.activeCount()}/${Thread.getAllStackTraces().size}"
+            unReplaceField3,
+            DecimalFormat("###.###%").format(bean.processCpuLoad),
+            "${usedJVMMem}MB/${totalJVMMem}MB",
+            "${Thread.activeCount()}/${Thread.getAllStackTraces().size}"
         )
 
         val embed = Embedder(context)
-                .setThumbnail(context.getJDA().selfUser.effectiveAvatarUrl)
-                .addField(title1, value1, false)
-                .addField(title2, value2, false)
-                .addField(title3, value3, false)
-                .build()
+            .setThumbnail(context.getJDA().selfUser.effectiveAvatarUrl)
+            .addField(title1, value1, false)
+            .addField(title2, value2, false)
+            .addField(title3, value3, false)
+            .build()
 
         sendEmbed(context, embed)
     }
 
 
     private fun replaceValue1Vars(
-            value: String,
-            shardCount: Int,
-            userCount: Long,
-            guildCount: Long,
-            voiceChannels: Long,
-            threadCount: Int,
-            uptime: String
+        value: String,
+        shardCount: Int,
+        userCount: Long,
+        guildCount: Long,
+        voiceChannels: Long,
+        threadCount: Int,
+        uptime: String
     ): String = value
-            .replace("%shardCount%", shardCount.toString())
-            .replace("%userCount%", userCount.toString())
-            .replace("%guildCount%", guildCount.toString())
-            .replace("%cVCCount%", voiceChannels.toString())
-            .replace("%botThreadCount%", threadCount.toString())
-            .replace("%botUptime%", uptime)
+        .replace("%shardCount%", shardCount.toString())
+        .replace("%userCount%", userCount.toString())
+        .replace("%guildCount%", guildCount.toString())
+        .replace("%cVCCount%", voiceChannels.toString())
+        .replace("%botThreadCount%", threadCount.toString())
+        .replace("%botUptime%", uptime)
 
 
     private fun replaceValue2Vars(value: String, coreCount: Int, ramUsage: String, uptime: String): String = value
-            .replace("%coreCount%", coreCount.toString())
-            .replace("%ramUsage%", ramUsage)
-            .replace("%systemUptime%", uptime)
+        .replace("%coreCount%", coreCount.toString())
+        .replace("%ramUsage%", ramUsage)
+        .replace("%systemUptime%", uptime)
 
 
     private fun replaceValue3Vars(value: String, cpuUsage: String, ramUsage: String, threadCount: String): String = value
-            .replace("%jvmCPUUsage%", cpuUsage)
-            .replace("%ramUsage%", ramUsage)
-            .replace("%threadCount%", threadCount)
+        .replace("%jvmCPUUsage%", cpuUsage)
+        .replace("%ramUsage%", ramUsage)
+        .replace("%threadCount%", threadCount)
 
 }

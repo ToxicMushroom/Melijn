@@ -9,7 +9,8 @@ import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.events.AbstractListener
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.Translateable
+import me.melijn.melijnbot.objects.translation.getLanguage
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.objects.utils.asTag
 import me.melijn.melijnbot.objects.utils.await
@@ -62,10 +63,10 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
     }
 
     private suspend fun getNLogChannel(
-            event: GuildMessageDeleteEvent,
-            logChannelId: Long?,
-            logChannelType: LogChannelType,
-            handleDeletedChannel: Boolean = true
+        event: GuildMessageDeleteEvent,
+        logChannelId: Long?,
+        logChannelType: LogChannelType,
+        handleDeletedChannel: Boolean = true
     ): TextChannel? {
         val channel = if (logChannelId != null) {
             event.guild.getTextChannelById(logChannelId)
@@ -73,8 +74,8 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
             null
         }
         if (handleDeletedChannel &&
-                ((channel == null && logChannelId != -1L) ||
-                        (channel != null && !event.guild.selfMember.hasPermission(channel, Permission.MESSAGE_WRITE)))
+            ((channel == null && logChannelId != -1L) ||
+                (channel != null && !event.guild.selfMember.hasPermission(channel, Permission.MESSAGE_WRITE)))
         ) {
             container.daoManager.logChannelWrapper.removeChannel(event.guild.idLong, logChannelType)
         }
@@ -82,11 +83,11 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
     }
 
     private suspend fun selectCorrectLogType(
-            event: GuildMessageDeleteEvent,
-            odmLogChannel: TextChannel?,
-            sdmLogChannel: TextChannel?,
-            pmLogChannel: TextChannel?,
-            fmLogChannel: TextChannel?
+        event: GuildMessageDeleteEvent,
+        odmLogChannel: TextChannel?,
+        sdmLogChannel: TextChannel?,
+        pmLogChannel: TextChannel?,
+        fmLogChannel: TextChannel?
     ) {
         val guild = event.guild
         val msg = container.daoManager.messageHistoryWrapper.getMessageById(event.messageIdLong) ?: return
@@ -114,12 +115,12 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
             else -> {
                 val list = guild.retrieveAuditLogs().type(ActionType.MESSAGE_DELETE).limit(50).await()
                 val filtered = list.stream()
-                        .filter {
-                            it.getOption<String>(AuditLogOption.CHANNEL)?.toLong() == msg.textChannelId &&
-                                    it.targetIdLong == msg.authorId &&
-                                    it.timeCreated.until(msgDeleteTime, ChronoUnit.MINUTES) <= 5
-                        }
-                        .collect(Collectors.toList())
+                    .filter {
+                        it.getOption<String>(AuditLogOption.CHANNEL)?.toLong() == msg.textChannelId &&
+                            it.targetIdLong == msg.authorId &&
+                            it.timeCreated.until(msgDeleteTime, ChronoUnit.MINUTES) <= 5
+                    }
+                    .collect(Collectors.toList())
 
                 val entry = when {
                     filtered.size > 1 -> {
@@ -151,9 +152,9 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         val eb = getGeneralEmbedBuilder(msg, event, messageAuthor, event.jda.selfUser.idLong)
         eb.setColor(Color.decode("#551A8B"))
 
-        val footer = Translateable("listener.message.deletion.log.purged.footer")
-                .string(container.daoManager, event.guild.idLong)
-                .replace(PLACEHOLDER_USER, messageAuthor.asTag)
+        val language = getLanguage(container.daoManager, -1, event.guild.idLong)
+        val footer = i18n.getTranslation(language, "listener.message.deletion.log.purged.footer")
+            .replace(PLACEHOLDER_USER, messageAuthor.asTag)
         eb.setFooter(footer, messageAuthor.effectiveAvatarUrl)
 
         sendEmbed(container.daoManager.embedDisabledWrapper, pmLogChannel, eb.build())
@@ -165,9 +166,9 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         val eb = getGeneralEmbedBuilder(msg, event, messageAuthor, messageAuthor.idLong)
         eb.setColor(Color.decode("#000001"))
 
-        val footer = Translateable("listener.message.deletion.log.footer")
-                .string(container.daoManager, event.guild.idLong)
-                .replace(PLACEHOLDER_USER, messageAuthor.asTag)
+        val language = getLanguage(container.daoManager, -1, event.guild.idLong)
+        val footer = i18n.getTranslation(language, "listener.message.deletion.log.footer")
+            .replace(PLACEHOLDER_USER, messageAuthor.asTag)
         eb.setFooter(footer, messageAuthor.effectiveAvatarUrl)
 
         sendEmbed(container.daoManager.embedDisabledWrapper, sdmLogChannel, eb.build())
@@ -180,9 +181,9 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         val eb = getGeneralEmbedBuilder(msg, event, messageAuthor, deleterMember.idLong)
         eb.setColor(Color.decode("#000001"))
 
-        val footer = Translateable("listener.message.deletion.log.footer")
-                .string(container.daoManager, event.guild.idLong)
-                .replace(PLACEHOLDER_USER, deleterMember.asTag)
+        val language = getLanguage(container.daoManager, -1, event.guild.idLong)
+        val footer = i18n.getTranslation(language, "listener.message.deletion.log.footer")
+            .replace(PLACEHOLDER_USER, deleterMember.asTag)
         eb.setFooter(footer, deleterMember.user.effectiveAvatarUrl)
 
         sendEmbed(container.daoManager.embedDisabledWrapper, odmLogChannel, eb.build())
@@ -196,39 +197,38 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         val eb = getGeneralEmbedBuilder(msg, event, messageAuthor, event.jda.selfUser.idLong)
         eb.setColor(Color.YELLOW)
 
-        val fieldTitle = Translateable("detected")
-                .string(container.daoManager, event.guild.idLong) + ":"
+        val language = getLanguage(container.daoManager, -1, event.guild.idLong)
+        val fieldTitle = i18n.getTranslation(language, "detected") + ":"
         eb.addField(fieldTitle, cause, false)
 
-        val footer = Translateable("listener.message.deletion.log.footer")
-                .string(container.daoManager, event.guild.idLong)
-                .replace(PLACEHOLDER_USER, event.jda.selfUser.asTag)
+        val footer = i18n.getTranslation(language, "listener.message.deletion.log.footer")
+            .replace(PLACEHOLDER_USER, event.jda.selfUser.asTag)
         eb.setFooter(footer, event.jda.selfUser.effectiveAvatarUrl)
 
         sendEmbed(container.daoManager.embedDisabledWrapper, fmLogChannel, eb.build())
     }
 
-    private fun getGeneralEmbedBuilder(
-            msg: DaoMessage,
-            event: GuildMessageDeleteEvent,
-            messageAuthor: User,
-            messageDeleterId: Long
+    private suspend fun getGeneralEmbedBuilder(
+        msg: DaoMessage,
+        event: GuildMessageDeleteEvent,
+        messageAuthor: User,
+        messageDeleterId: Long
     ): EmbedBuilder {
         val embedBuilder = EmbedBuilder()
         val channel = event.guild.getTextChannelById(msg.textChannelId)
-        val title = Translateable("listener.message.deletion.log.title")
-                .string(container.daoManager, event.guild.idLong)
-                .replace("%channel%", channel?.asTag ?: "<#${msg.textChannelId}>")
+
+        val language = getLanguage(container.daoManager, -1, event.guild.idLong)
+        val title =  i18n.getTranslation(language, "listener.message.deletion.log.title")
+            .replace("%channel%", channel?.asTag ?: "<#${msg.textChannelId}>")
 
         val extra = if (msg.authorId == messageDeleterId) ".self" else ""
-        val description = Translateable("listener.message.deletion.log${extra}.description")
-                .string(container.daoManager, event.guild.idLong)
-                .replace("%messageAuthor%", messageAuthor.asTag)
-                .replace("%messageContent%", msg.content)
-                .replace("%messageAuthorId%", msg.authorId.toString())
-                .replace("%messageDeleterId%", messageDeleterId.toString())
-                .replace("%sentTime%", msg.moment.asEpochMillisToDateTime())
-                .replace("%deletedTime%", System.currentTimeMillis().asEpochMillisToDateTime())
+        val description = i18n.getTranslation(language, "listener.message.deletion.log${extra}.description")
+            .replace("%messageAuthor%", messageAuthor.asTag)
+            .replace("%messageContent%", msg.content)
+            .replace("%messageAuthorId%", msg.authorId.toString())
+            .replace("%messageDeleterId%", messageDeleterId.toString())
+            .replace("%sentTime%", msg.moment.asEpochMillisToDateTime())
+            .replace("%deletedTime%", System.currentTimeMillis().asEpochMillisToDateTime())
 
         embedBuilder.setTitle(title)
         embedBuilder.setDescription(description)

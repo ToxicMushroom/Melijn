@@ -58,7 +58,7 @@ fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String) {
         if (msg.length <= 2000) {
             channel.sendMessage(msg).queue()
         } else {
-            val parts = StringUtils().splitMessage(msg, margin = 8 + lang.length);
+            val parts = StringUtils.splitMessage(msg, margin = 8 + lang.length);
             parts.forEachIndexed { index, msgPart ->
                 channel.sendMessage(when {
                     index == 0 -> "$msgPart```"
@@ -73,7 +73,7 @@ fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String) {
         if (msg.length <= 2000) {
             privateChannel.sendMessage(msg).queue()
         } else {
-            val parts = StringUtils().splitMessage(msg, margin = 8 + lang.length);
+            val parts = StringUtils.splitMessage(msg, margin = 8 + lang.length);
             parts.forEachIndexed { index, msgPart ->
                 privateChannel.sendMessage(when {
                     index == 0 -> "$msgPart```"
@@ -109,7 +109,7 @@ fun sendMsgCodeBlocks(
         channel.sendMessage(msg).queue(success, failed)
     } else {
         var executedOnce = false
-        StringUtils().splitMessageWithCodeBlocks(msg, 1600, 20 + lang.length, lang).forEach {
+        StringUtils.splitMessageWithCodeBlocks(msg, 1600, 20 + lang.length, lang).forEach {
             val future = channel.sendMessage(it)
             if (executedOnce && !multicallback) {
                 future.queue()
@@ -134,7 +134,7 @@ fun sendMsgCodeBlocks(
             channel.sendMessage(msg).queue(success, failed)
         } else {
             var executedOnce = false
-            StringUtils().splitMessageWithCodeBlocks(msg, 1600, 20 + lang.length, lang).forEach {
+            StringUtils.splitMessageWithCodeBlocks(msg, 1600, 20 + lang.length, lang).forEach {
                 val future = channel.sendMessage(it)
                 if (executedOnce && !multicallback) {
                     future.queue()
@@ -265,7 +265,7 @@ fun sendMsg(privateChannel: PrivateChannel, msg: String, success: ((message: Mes
     if (msg.length <= 2000) {
         privateChannel.sendMessage(msg).queue(success, failed)
     } else {
-        StringUtils().splitMessage(msg).forEach {
+        StringUtils.splitMessage(msg).forEach {
             privateChannel.sendMessage(it).queue(success, failed)
         }
     }
@@ -276,7 +276,7 @@ fun sendMsg(channel: TextChannel, msg: String, success: ((message: Message) -> U
         if (msg.length <= 2000) {
             channel.sendMessage(msg).queue(success, failed)
         } else {
-            StringUtils().splitMessage(msg).forEach {
+            StringUtils.splitMessage(msg).forEach {
                 channel.sendMessage(it).queue(success, failed)
             }
         }
