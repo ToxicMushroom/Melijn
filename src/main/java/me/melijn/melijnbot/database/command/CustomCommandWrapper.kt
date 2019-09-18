@@ -32,4 +32,8 @@ class CustomCommandWrapper(private val taskManager: TaskManager, private val cus
         val id = customCommandDao.add(guildId, cc)
        // val map = customCommandCache.(guildId).await()
     }
+
+    fun remove(id: Long) {
+
+    }
 }

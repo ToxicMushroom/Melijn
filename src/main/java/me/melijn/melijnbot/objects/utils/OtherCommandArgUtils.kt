@@ -42,5 +42,7 @@ suspend fun argSizeCheckFailed(context: CommandContext, index: Int): Boolean {
     return if (context.args.size <= index) {
         sendSyntax(context, context.commandOrder.last().syntax)
         true
-    } else false
+    } else {
+        false
+    }
 }

@@ -1,8 +1,16 @@
 package me.melijn.melijnbot.commands.administration
 
+import kotlinx.coroutines.future.await
+import me.melijn.melijnbot.database.command.CustomCommand
+import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.i18n
+import me.melijn.melijnbot.objects.utils.getLongFromArgNMessage
+import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.sendMsgCodeBlock
 import me.melijn.melijnbot.objects.utils.sendSyntax
+import java.util.regex.Pattern
 
 class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
@@ -23,6 +31,9 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         )
     }
 
+    companion object {
+        val selectionMap = HashMap<Pair<Long, Long>, Long>()
+    }
 
     override suspend fun execute(context: CommandContext) {
         sendSyntax(context, syntax)
@@ -35,9 +46,21 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
+            val language = context.getLanguage()
+            val title = i18n.getTranslation(language, "$root.title")
 
+            val ccs = context.daoManager.customCommandWrapper.customCommandCache.get(context.getGuildId()).await()
+            var content = "INI```"
+
+            content += "\nid - name - chance - enabled"
+            for (cc in ccs) {
+                content += "\n[${cc.key}] - ${cc.value.name} - ${cc.value.chance} - ${cc.value.enabled}"
+            }
+            content += "```"
+
+            val msg = title + content
+            sendMsgCodeBlock(context, msg, "INI")
+        }
     }
 
     class AddArg(root: String) : AbstractCommand("$root.add") {
@@ -47,7 +70,22 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            if (context.args.size < 2) {
+                sendSyntax(context, syntax)
+                return
+            }
+
+            val name = context.args[0]
+            val content = context.rawArg.replaceFirst(("${Pattern.quote(name)}\\s+").toRegex(), "")
+            val cc = CustomCommand(name, ModularMessage(content))
+
+            context.daoManager.customCommandWrapper.add(context.getGuildId(), cc)
+
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.success")
+                .replace("%name%", name)
+                .replace("%content%", content)
+            sendMsg(context, msg)
         }
 
     }
@@ -60,7 +98,20 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            if (context.args.isEmpty()) {
+                sendSyntax(context, syntax)
+                return
+            }
+
+            val id = getLongFromArgNMessage(context, 0) ?: return
+
+            context.daoManager.customCommandWrapper.remove(id)
+
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.success")
+                .replace("%id%", id.toString())
+
+            sendMsg(context, msg)
         }
 
     }
@@ -73,7 +124,18 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            if (context.args.isEmpty()) {
+                sendSyntax(context, syntax)
+                return
+            }
+
+            val id = getLongFromArgNMessage(context, 0) ?: return
+            selectionMap[Pair(context.getGuildId(), context.authorId)] = id
+
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.selected")
+                .replace("%id%", id.toString())
+            sendMsg(context, msg)
         }
     }
 
