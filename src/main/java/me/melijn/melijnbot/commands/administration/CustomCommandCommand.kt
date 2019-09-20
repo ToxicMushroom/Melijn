@@ -6,10 +6,7 @@ import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.getLongFromArgNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendMsgCodeBlock
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.*
 import java.util.regex.Pattern
 
 class CustomCommandCommand : AbstractCommand("command.customcommand") {
@@ -219,7 +216,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             cc.description = context.rawArg
 
 
-            context.daoManager.customCommandWrapper.update(id, cc)
+            context.daoManager.customCommandWrapper.update(id, context.getGuildId(), cc)
 
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.success")
@@ -237,7 +234,25 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            if (context.args.isEmpty()) {
+                sendSyntax(context, syntax)
+                return
+            }
+
+            val id = getSelectedCCIdNMessage(context) ?: return
+            val chance = getIntegerFromArgNMessage(context, 0) ?: return
+            val wrapper = context.daoManager.customCommandWrapper
+            val cc = wrapper.customCommandCache.get(context.getGuildId()).await()[id] ?: return
+            cc.chance = chance
+
+
+            context.daoManager.customCommandWrapper.update(id, context.getGuildId(), cc)
+
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.success")
+                .replace("%id%", id.toString())
+
+            sendMsg(context, msg)
         }
 
     }
@@ -250,7 +265,25 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            if (context.args.isEmpty()) {
+                sendSyntax(context, syntax)
+                return
+            }
+
+            val id = getSelectedCCIdNMessage(context) ?: return
+            val state = getBooleanFromArgNMessage(context, 0) ?: return
+            val wrapper = context.daoManager.customCommandWrapper
+            val cc = wrapper.customCommandCache.get(context.getGuildId()).await()[id] ?: return
+            cc.prefix = state
+
+
+            context.daoManager.customCommandWrapper.update(id, context.getGuildId(), cc)
+
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.success")
+                .replace("%id%", id.toString())
+
+            sendMsg(context, msg)
         }
 
     }

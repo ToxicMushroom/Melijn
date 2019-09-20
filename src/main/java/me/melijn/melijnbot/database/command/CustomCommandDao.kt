@@ -24,7 +24,7 @@ class CustomCommandDao(driverManager: DriverManager) : Dao(driverManager) {
         }
     }
 
-    suspend fun set(guildId: Long, id: Int, cc: CustomCommand) {
+    suspend fun set(guildId: Long, id: Long, cc: CustomCommand) {
         cc.apply {
             driverManager.executeUpdate("UPDATE $table SET name = ?, description = ?, content = ?, aliases = ?, chance = ?, prefix = ?, enabled = ? WHERE guildId = ? AND id = ?",
                 name, description, content, aliases?.joinToString("%SPLIT%"), chance, prefix, enabled, guildId, id)
@@ -62,7 +62,7 @@ data class CustomCommand(
     val content: ModularMessage,
     var description: String? = null,
     val aliases: List<String>? = null,
-    val chance: Int = 100,
-    val prefix: Boolean = true,
+    var chance: Int = 100,
+    var prefix: Boolean = true,
     val enabled: Boolean = true
 )

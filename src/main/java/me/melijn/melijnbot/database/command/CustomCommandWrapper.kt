@@ -36,4 +36,8 @@ class CustomCommandWrapper(private val taskManager: TaskManager, private val cus
     fun remove(id: Long) {
 
     }
+
+    suspend fun update(id: Long, guildId: Long, cc: CustomCommand) {
+        customCommandDao.set(guildId, id, cc)
+    }
 }
