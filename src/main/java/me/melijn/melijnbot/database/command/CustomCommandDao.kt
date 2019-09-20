@@ -60,7 +60,7 @@ class CustomCommandDao(driverManager: DriverManager) : Dao(driverManager) {
 data class CustomCommand(
     val name: String,
     val content: ModularMessage,
-    val description: String? = null,
+    var description: String? = null,
     val aliases: List<String>? = null,
     val chance: Int = 100,
     val prefix: Boolean = true,

@@ -33,6 +33,17 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
     companion object {
         val selectionMap = HashMap<Pair<Long, Long>, Long>()
+        suspend fun getSelectedCCIdNMessage(context: CommandContext): Long? {
+            val pair = Pair(context.getGuildId(), context.authorId)
+            return if (selectionMap.containsKey(pair)) {
+                selectionMap[pair]
+            } else {
+                val language = context.getLanguage()
+                val msg = i18n.getTranslation(language, "message.noccselected")
+                sendMsg(context, msg)
+                null
+            }
+        }
     }
 
     override suspend fun execute(context: CommandContext) {
@@ -136,6 +147,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             val msg = i18n.getTranslation(language, "$root.selected")
                 .replace("%id%", id.toString())
             sendMsg(context, msg)
+
         }
     }
 
@@ -192,13 +204,29 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
     class SetDescriptionArg(root: String) : AbstractCommand("$root.setdescription") {
 
         init {
-            name = "setdescription"
+            name = "setDescription"
         }
 
         override suspend fun execute(context: CommandContext) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
+            if (context.args.isEmpty()) {
+                sendSyntax(context, syntax)
+                return
+            }
 
+            val id = getSelectedCCIdNMessage(context) ?: return
+            val wrapper = context.daoManager.customCommandWrapper
+            val cc = wrapper.customCommandCache.get(context.getGuildId()).await()[id] ?: return
+            cc.description = context.rawArg
+
+
+            context.daoManager.customCommandWrapper.update(id, cc)
+
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "$root.success")
+                .replace("%id%", id.toString())
+
+            sendMsg(context, msg)
+        }
     }
 
     class SetChanceArg(root: String) : AbstractCommand("$root.setchance") {
@@ -252,4 +280,6 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
 
     }
+
+
 }
