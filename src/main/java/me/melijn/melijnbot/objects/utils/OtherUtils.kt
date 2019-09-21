@@ -85,25 +85,35 @@ inline fun <reified T : Enum<*>> enumValueOrNull(name: String): T? =
         it.name.equals(name, true)
     }
 
-suspend fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set<AbstractCommand>? {
+val ccTagPattern = Pattern.compile("cc.\\d+")
+suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): Set<String>? {
     val arg = context.args[index]
     val category: CommandCategory? = enumValueOrNull(arg)
+    val matcher = ccTagPattern.matcher(arg)
 
-    val commands = (if (category == null) {
+    val commands = if (category == null) {
         if (arg == "*") {
             context.getCommands()
-        } else context.getCommands().filter { command -> command.isCommandFor(arg) }.toSet()
+        } else {
+            context.getCommands()
+                .filter { command -> command.isCommandFor(arg) }
+        }
     } else {
-        context.getCommands().filter { command -> command.commandCategory == category }.toSet()
-    }).toMutableSet()
-    commands.removeIf { cmd -> cmd.id == 16 }
+        context.getCommands()
+            .filter { command -> command.commandCategory == category }
+    }.map { cmd -> cmd.id.toString() }.toMutableSet()
+
+    commands.removeIf { id -> id == "16" }
+
+    if (matcher.matches()) {
+        commands.add(arg)
+    }
 
     if (commands.isEmpty()) {
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.commandnode")
             .replace(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg
-            , null)
+        sendMsg(context, msg, null)
         return null
     }
     return commands
@@ -124,6 +134,12 @@ suspend fun getLongFromArgNMessage(context: CommandContext, index: Int): Long? {
     }
     return long
 }
+
+fun getLongFromArgN(context: CommandContext, index: Int): Long? =
+    context.args[index].toLongOrNull()
+
+fun getIntegerFromArgN(context: CommandContext, index: Int): Int? =
+    context.args[index].toIntOrNull()
 
 fun Executor.launch(block: suspend CoroutineScope.() -> Unit): Job {
     return CoroutineScope(this.asCoroutineDispatcher()).launch {

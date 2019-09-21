@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.database.command.CustomCommand
 import me.melijn.melijnbot.enums.ChannelCommandState
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
@@ -61,6 +62,23 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         val prefixes = getPrefixes(event)
         val message = event.message
 
+        val ccsWithPrefix = mutableListOf<CustomCommand>()
+        val ccsWithoutPrefix = mutableListOf<CustomCommand>()
+        if (event.isFromGuild) {
+
+            val ccWrapper = container.daoManager.customCommandWrapper
+            val ccs = ccWrapper.customCommandCache.get(event.guild.idLong).await()
+
+            for (cc in ccs) {
+                if (cc.prefix) {
+                    ccsWithPrefix
+                } else {
+                    ccsWithoutPrefix
+                }.add(cc)
+            }
+        }
+
+
         for (prefix in prefixes) {
             if (!message.contentRaw.startsWith(prefix)) continue
 
@@ -72,8 +90,10 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             val command = commandMap.getOrElse(commandParts[1].toLowerCase(), { null }) ?: continue
             if (checksFailed(command, event)) return
             command.run(CommandContext(event, commandParts, container, commandList))
-            break
+            return
         }
+
+
     }
 
     private suspend fun getPrefixes(event: MessageReceivedEvent): List<String> {
@@ -102,7 +122,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
      *
      * **/
     private suspend fun checksFailed(command: AbstractCommand, event: MessageReceivedEvent): Boolean {
-        if (event.isFromGuild && commandIsDisabled(command, event)) {
+        val cmdId = command.id.toString()
+        if (event.isFromGuild && commandIsDisabled(cmdId, event)) {
             return true
         }
 
@@ -132,7 +153,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 }
             }
 
-            if (commandIsOnCooldown(command, event)) {
+            if (commandIsOnCooldown(cmdId, event)) {
                 return true
             }
         }
@@ -140,22 +161,22 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         return false
     }
 
-    private suspend fun commandIsDisabled(command: AbstractCommand, event: MessageReceivedEvent): Boolean {
+    private suspend fun commandIsDisabled(id: String, event: MessageReceivedEvent): Boolean {
         val disabledChannelCommands = channelCommandStateCache.get(event.channel.idLong).await()
-        if (disabledChannelCommands.contains(command.id)) {
-            when (disabledChannelCommands[command.id]) {
+        if (disabledChannelCommands.contains(id)) {
+            when (disabledChannelCommands[id]) {
                 ChannelCommandState.ENABLED -> return false
                 ChannelCommandState.DISABLED -> return true
             }
         }
 
         val disabledCommands = disabledCommandCache.get(event.guild.idLong).await()
-        if (disabledCommands.contains(command.id)) return true
+        if (disabledCommands.contains(id)) return true
 
         return false
     }
 
-    private suspend fun commandIsOnCooldown(command: AbstractCommand, event: MessageReceivedEvent): Boolean {
+    private suspend fun commandIsOnCooldown(id: String, event: MessageReceivedEvent): Boolean {
         val guildId = event.guild.idLong
         val userId = event.author.idLong
         val channelId = event.channel.idLong
@@ -167,32 +188,34 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         var bool = false
         var cooldownResult = 0L
 
-        if (channelCommandCooldownCache.get(channelId).await().containsKey(command.id)) {
+        val commandChannelCooldowns = channelCommandCooldownCache.get(channelId).await()
+        if (commandChannelCooldowns.containsKey(id)) {
 
             //init lastExecutionChannel
             container.daoManager.commandChannelCoolDownWrapper.executions[Pair(channelId, userId)]
-                ?.filter { entry -> entry.key == command.id }
+                ?.filter { entry -> entry.key == id }
                 ?.forEach { entry ->
                     if (entry.value > lastExecutionChannel) lastExecutionChannel = entry.value
                 }
 
-            val cooldown = channelCommandCooldownCache.get(channelId).await()[command.id] ?: 0L
+            val cooldown = commandChannelCooldowns[id] ?: 0L
 
             if (System.currentTimeMillis() - cooldown < lastExecutionChannel) {
                 cooldownResult = cooldown
                 bool = true
             }
         }
-        if (commandCooldownCache.get(guildId).await().containsKey(command.id)) {
+        val commandCooldowns = commandCooldownCache.get(guildId).await()
+        if (commandCooldowns.containsKey(id)) {
 
             //init lastExecution
             container.daoManager.commandChannelCoolDownWrapper.executions[Pair(guildId, userId)]
-                ?.filter { entry -> entry.key == command.id }
+                ?.filter { entry -> entry.key == id }
                 ?.forEach { entry ->
                     if (entry.value > lastExecution) lastExecution = entry.value
                 }
 
-            val cooldown = commandCooldownCache.get(guildId).await()[command.id] ?: 0L
+            val cooldown = commandCooldowns[id] ?: 0L
 
             if (System.currentTimeMillis() - cooldown < lastExecutionChannel) {
                 if (cooldownResult < cooldown) cooldownResult = cooldown

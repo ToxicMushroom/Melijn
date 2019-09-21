@@ -43,7 +43,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                 return
             }
 
-            val commands = getCommandsFromArgNMessage(context, 0) ?: return
+            val commands = getCommandIdsFromArgNMessage(context, 0) ?: return
             val commandState = enumValueOrNull<CommandState>(context.args[1])
             if (commandState == null) {
                 val language = context.getLanguage()
@@ -82,7 +82,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             }
 
             val channel = getTextChannelByArgsNMessage(context, 0) ?: return
-            val commands = getCommandsFromArgNMessage(context, 1) ?: return
+            val commands = getCommandIdsFromArgNMessage(context, 1) ?: return
             val commandState = enumValueOrNull<ChannelCommandState>(context.args[2])
             if (commandState == null) {
                 val language = context.getLanguage()

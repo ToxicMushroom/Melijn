@@ -1,11 +1,10 @@
 package me.melijn.melijnbot.database.command
 
 import com.github.benmanes.caffeine.cache.Caffeine
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.IMPORTANT_CACHE
 import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.objects.utils.launch
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
@@ -15,12 +14,12 @@ class CustomCommandWrapper(private val taskManager: TaskManager, private val cus
     val customCommandCache = Caffeine.newBuilder()
         .executor(taskManager.executorService)
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.HOURS)
-        .buildAsync<Long, Map<Long, CustomCommand>> { key: Long, executor: Executor -> getCustomCommands(key, executor)}
+        .buildAsync<Long, List<CustomCommand>> { key: Long, executor: Executor -> getCustomCommands(key, executor)}
 
-    private fun getCustomCommands(guildId: Long, executor: Executor): CompletableFuture<Map<Long, CustomCommand>> {
-        val future = CompletableFuture<Map<Long, CustomCommand>>()
+    private fun getCustomCommands(guildId: Long, executor: Executor): CompletableFuture<List<CustomCommand>> {
+        val future = CompletableFuture<List<CustomCommand>>()
 
-        CoroutineScope(executor.asCoroutineDispatcher()).launch {
+        executor.launch {
             val customCommands = customCommandDao.getForGuild(guildId)
             future.complete(customCommands)
         }
@@ -30,14 +29,17 @@ class CustomCommandWrapper(private val taskManager: TaskManager, private val cus
 
     suspend fun add(guildId: Long, cc: CustomCommand) {
         val id = customCommandDao.add(guildId, cc)
-       // val map = customCommandCache.(guildId).await()
+        val list = customCommandCache.get(guildId).await().toMutableList()
+        cc.id = id
+        list.add(cc)
+        customCommandCache.put(guildId, CompletableFuture.completedFuture(list))
     }
 
-    fun remove(id: Long) {
-
+    suspend fun remove(guildId: Long, id: Long) {
+        customCommandDao.remove(guildId, id)
     }
 
-    suspend fun update(id: Long, guildId: Long, cc: CustomCommand) {
-        customCommandDao.set(guildId, id, cc)
+    suspend fun update(guildId: Long, cc: CustomCommand) {
+        customCommandDao.update(guildId, cc)
     }
 }

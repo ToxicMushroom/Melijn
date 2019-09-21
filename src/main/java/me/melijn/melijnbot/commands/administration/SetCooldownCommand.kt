@@ -35,7 +35,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
                 return
             }
             val channel = getTextChannelByArgsNMessage(context, 0) ?: return
-            val commands = getCommandsFromArgNMessage(context, 1) ?: return
+            val commands = getCommandIdsFromArgNMessage(context, 1) ?: return
             val cooldown = getLongFromArgNMessage(context, 2) ?: return
 
             val daoWrapper = context.daoManager.commandChannelCoolDownWrapper
@@ -64,7 +64,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
                 sendSyntax(context, syntax)
                 return
             }
-            val commands = getCommandsFromArgNMessage(context, 0) ?: return
+            val commands = getCommandIdsFromArgNMessage(context, 0) ?: return
             val cooldown = getLongFromArgNMessage(context, 1) ?: return
 
             val daoWrapper = context.daoManager.commandCooldownWrapper
@@ -89,25 +89,31 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            val map: Map<Int, Long>
+            val map: Map<String, Long>
 
             val language = context.getLanguage()
+            val daoManager = context.daoManager
             val title: String = if (context.args.isNotEmpty()) {
                 val channel = getTextChannelByArgsNMessage(context, 0) ?: return
-                map = context.daoManager.commandChannelCoolDownWrapper.commandChannelCooldownCache.get(channel.idLong).await()
+                map = daoManager.commandChannelCoolDownWrapper.commandChannelCooldownCache.get(channel.idLong).await()
                 i18n.getTranslation(language, "$root.response1.title")
                     .replace("%channel%", "#${channel.name}")
             } else {
-                map = context.daoManager.commandCooldownWrapper.commandCooldownCache.get(context.getGuildId()).await()
+                map = daoManager.commandCooldownWrapper.commandCooldownCache.get(context.getGuildId()).await()
                 i18n.getTranslation(language, "$root.response2.title")
             }
 
             var content = "```INI"
 
             for ((index, entry) in map.entries.withIndex()) {
-                val cmd = context.getCommands().firstOrNull { cmd -> cmd.id == entry.key }
+                val cmd = context.getCommands().firstOrNull { cmd -> cmd.id.toString() == entry.key }
                 if (cmd != null) {
                     content += "$index - [${cmd.name}]"
+                } else {
+                    val matcher = ccTagPattern.matcher(entry.key)
+                    if (matcher.find()) {
+                        content += "$index - CustomCommand - ${matcher.group(1)}}"
+                    }
                 }
             }
             content += "```"

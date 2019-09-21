@@ -1100,6 +1100,11 @@ fun getPermissionsFromArg(context: CommandContext, arg: String): List<String>? {
 
     val perms = getPermissions(commands).filter { perm ->
         perm.matches(regex)
+    }.toMutableList()
+
+    val matcher = ccTagPattern.matcher(arg)
+    if (perms.isEmpty() && matcher.matches()) {
+        perms.add(arg)
     }
 
     return if (perms.isEmpty()) null else perms

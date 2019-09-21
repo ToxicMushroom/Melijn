@@ -3,47 +3,49 @@ package me.melijn.melijnbot.database.disabled
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.ChannelCommandState
-import me.melijn.melijnbot.objects.command.AbstractCommand
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class ChannelCommandStateDao(driverManager: DriverManager) : Dao(driverManager) {
+
     override val table: String = "channelCommandStates"
-    override val tableStructure: String = "guildId bigint, channelId bigint, commandId int, state varchar(32)"
+    override val tableStructure: String = "guildId bigint, channelId bigint, commandId varchar(16), state varchar(32)"
     override val keys: String = "UNIQUE KEY (channelId, commandId)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
-    fun get(channelId: Long, disabled: (Map<Int, ChannelCommandState>) -> Unit) {
-        val map = HashMap<Int, ChannelCommandState>()
+    suspend fun get(channelId: Long): Map<String, ChannelCommandState> = suspendCoroutine {
+        val map = HashMap<String, ChannelCommandState>()
         driverManager.executeQuery("SELECT * FROM $table WHERE channelId = ?", { resultSet ->
             while (resultSet.next()) {
-                map[resultSet.getInt("commandId")] = ChannelCommandState.valueOf(resultSet.getString("state"))
+                map[resultSet.getString("commandId")] = ChannelCommandState.valueOf(resultSet.getString("state"))
             }
         }, channelId)
-        disabled.invoke(map)
+        it.resume(map)
     }
 
-    fun contains(channelId: Long, commandId: Int, contains: (Boolean) -> Unit) {
-        driverManager.executeQuery("SELECT * FROM $table WHERE channelId = ? AND commandId = ?", {
-            contains.invoke(it.next())
+    suspend fun contains(channelId: Long, commandId: Int): Boolean = suspendCoroutine {
+        driverManager.executeQuery("SELECT * FROM $table WHERE channelId = ? AND commandId = ?", { rs ->
+            it.resume(rs.next())
         }, channelId, commandId)
     }
 
-    suspend fun insert(guildId: Long, channelId: Long, commandId: Int, state: ChannelCommandState) {
+    suspend fun insert(guildId: Long, channelId: Long, commandId: String, state: ChannelCommandState) {
         driverManager.executeUpdate("INSERT IGNORE INTO $table (guildId, channelId, commandId) VALUES (?, ?, ?)",
             guildId, channelId, commandId, state.toString())
     }
 
-    fun bulkPut(guildId: Long, channelId: Long, commands: Set<AbstractCommand>, channelCommandState: ChannelCommandState) {
+    fun bulkPut(guildId: Long, channelId: Long, commands: Set<String>, channelCommandState: ChannelCommandState) {
         driverManager.getUsableConnection { con ->
             con.prepareStatement("INSERT INTO $table (guildId, channelId, commandId, state) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE state = ?").use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(2, channelId)
                 statement.setString(4, channelCommandState.toString())
                 statement.setString(5, channelCommandState.toString())
-                for (cmd in commands) {
-                    statement.setInt(3, cmd.id)
+                for (id in commands) {
+                    statement.setString(3, id)
                     statement.addBatch()
                 }
                 statement.executeLargeBatch()
@@ -51,12 +53,12 @@ class ChannelCommandStateDao(driverManager: DriverManager) : Dao(driverManager) 
         }
     }
 
-    fun bulkRemove(channelId: Long, commands: Set<AbstractCommand>) {
+    fun bulkRemove(channelId: Long, commands: Set<String>) {
         driverManager.getUsableConnection { con ->
             con.prepareStatement("DELETE FROM $table WHERE channelId = ? AND commandId = ?").use { statement ->
                 statement.setLong(1, channelId)
-                for (cmd in commands) {
-                    statement.setInt(2, cmd.id)
+                for (id in commands) {
+                    statement.setString(2, id)
                     statement.addBatch()
                 }
                 statement.executeLargeBatch()
