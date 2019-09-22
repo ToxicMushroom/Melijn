@@ -1,9 +1,11 @@
 package me.melijn.melijnbot.commandutil.administration
 
 import kotlinx.coroutines.future.await
+import me.melijn.melijnbot.database.command.CustomCommand
 import me.melijn.melijnbot.database.message.MessageWrapper
 import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.enums.MessageType
+import me.melijn.melijnbot.enums.ModularMessageProperty
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_TYPE
@@ -11,6 +13,7 @@ import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.getColorFromArgNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.toHex
+import me.melijn.melijnbot.objects.utils.toLCC
 import net.dv8tion.jda.api.EmbedBuilder
 import org.json.JSONObject
 
@@ -20,83 +23,128 @@ object MessageCommandUtil {
         return if (messageWrapper.shouldRemove(message)) {
             messageWrapper.removeMessage(guildId, type)
             true
-        } else{
+        } else {
             false
         }
     }
 
-    suspend fun setMessageContent(context: CommandContext, type: MessageType) {
-        val language = context.getLanguage()
+    suspend fun setMessageJoinLeave(context: CommandContext, property: ModularMessageProperty, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
-        val oldMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-            ?: ModularMessage()
-        val arg = context.rawArg
+        val guildId = context.getGuildId()
+        val message = messageWrapper.messageCache.get(Pair(guildId, type)).await() ?: ModularMessage()
 
-
-        val msg = if (arg.equals("null", true)) {
-            messageWrapper.removeMessageContent(oldMessage, context.getGuildId(), type)
-            i18n.getTranslation(language,"message.content.set.unset")
-        } else {
-            messageWrapper.setMessageContent(oldMessage, context.getGuildId(), type, arg)
-            i18n.getTranslation(language,"message.content.set")
-                .replace("%arg%", arg)
-        }.replace(PLACEHOLDER_TYPE, type.text)
-
-        sendMsg(context, msg)
+        runCorrectSetThing(property, context, message, type)
+        messageWrapper.updateMessage(message, guildId, type)
     }
 
-    suspend fun showMessageContent(context: CommandContext, type: MessageType) {
-        val language = context.getLanguage()
+    suspend fun setMessageCC(context: CommandContext, property: ModularMessageProperty, cc: CustomCommand) {
         val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-        val content = modularMessage?.messageContent
-        val msg = if (content == null) {
-            i18n.getTranslation(language,"message.content.show.unset")
-        } else {
-            i18n.getTranslation(language,"message.content.show.set")
-                .replace("%content%", content)
-        }.replace(PLACEHOLDER_TYPE, type.text)
+        val guildId = context.getGuildId()
+        val message = cc.content
+        val type = MessageType.CUSTOM_COMMAND
 
-        sendMsg(context, msg)
+        runCorrectSetThing(property, context, message, type)
+        cc.content = message
+
+        messageWrapper.updateMessage(message, guildId, type)
     }
 
-    suspend fun setEmbedDescription(context: CommandContext, type: MessageType) {
-        val language = context.getLanguage()
+    private suspend fun runCorrectSetThing(property: ModularMessageProperty, context: CommandContext, message: ModularMessage, type: MessageType) {
+        when (property) {
+            ModularMessageProperty.CONTENT -> setMessageContentAndMessage(context, message, type)
+            ModularMessageProperty.EMBED_DESCRIPTION -> setEmbedDescriptionAndMessage(context, message, type)
+            ModularMessageProperty.EMBED_TITLE -> setEmbedTitleAndMessage(context, message, type)
+            ModularMessageProperty.EMBED_URL -> setEmbedUrlAndMessage(context, message, type)
+            ModularMessageProperty.EMBED_THUMBNAIL -> setEmbedThumbnailAndMessage(context, message, type)
+            ModularMessageProperty.EMBED_IMAGE -> setEmbedImageAndMessage(context, message, type)
+            ModularMessageProperty.EMBED_AUTHOR -> setEmbedAuthorAndMessage(context, message, type)
+            ModularMessageProperty.EMBED_AUTHOR_URL -> setEmbedAuthorUrlAndMessage(context, message, type)
+            ModularMessageProperty.EMBED_AUTHOR_ICON_URL -> setEmbedAuthorIconUrlAndMessage(context, message, type)
+            ModularMessageProperty.EMBED_FOOTER -> setEmbedFooterAndMessage(context, message, type)
+            ModularMessageProperty.EMBED_FOOTER_ICON_URL -> setEmbedFooterIconUrlAndMessage(context, message, type)
+            ModularMessageProperty.EMBED_COLOR -> setEmbedColorAndMessage(context, message, type)
+        }
+    }
+
+
+    suspend fun showMessageJoinLeave(context: CommandContext, property: ModularMessageProperty, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
-        val oldMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-        val arg = context.rawArg
+        val guildId = context.getGuildId()
+        val message = messageWrapper.messageCache.get(Pair(guildId, type)).await()
 
+        showMessage(context, property, message, type)
+    }
 
-        val msg = if (arg.equals("null", true)) {
-            if (oldMessage != null) {
-                messageWrapper.removeEmbedDescription(oldMessage, context.getGuildId(), type)
+    suspend fun showMessageCC(context: CommandContext, property: ModularMessageProperty, cc: CustomCommand) {
+        showMessage(context, property, cc.content, MessageType.CUSTOM_COMMAND)
+    }
+
+    private suspend fun showMessage(context: CommandContext, property: ModularMessageProperty, message: ModularMessage?, type: MessageType) {
+        val language = context.getLanguage()
+        var path = ""
+        val string: String? = when (property) {
+            ModularMessageProperty.CONTENT -> {
+                path = "message.content.show"
+                message?.messageContent
             }
-            i18n.getTranslation(language,"message.embed.description.unset")
+            ModularMessageProperty.EMBED_DESCRIPTION -> {
+                path = "message.embed.description.show"
+                message?.embed?.description
+            }
+            ModularMessageProperty.EMBED_TITLE -> {
+                path = "message.embed.title.show"
+                message?.embed?.title
+            }
+            ModularMessageProperty.EMBED_URL -> {
+                path = "message.embed.url.show"
+                message?.embed?.url
+            }
+            ModularMessageProperty.EMBED_THUMBNAIL -> {
+                path = "message.embed.thumbnail.show"
+                message?.embed?.thumbnail?.url
+            }
+            ModularMessageProperty.EMBED_IMAGE -> {
+                path = "message.embed.image.show"
+                message?.embed?.image?.url
+            }
+            ModularMessageProperty.EMBED_AUTHOR -> {
+                path = "message.embed.author.show"
+                message?.embed?.author?.name
+            }
+            ModularMessageProperty.EMBED_AUTHOR_URL -> {
+                path = "message.embed.authorurl.show"
+                message?.embed?.author?.url
+            }
+            ModularMessageProperty.EMBED_AUTHOR_ICON_URL -> {
+                path = "message.embed.authoriconurl.show"
+                message?.embed?.author?.iconUrl
+            }
+            ModularMessageProperty.EMBED_FOOTER -> {
+                path = "message.embed.footer.show"
+                message?.embed?.footer?.text
+            }
+            ModularMessageProperty.EMBED_FOOTER_ICON_URL -> {
+                path = "message.embed.footericonurl.show"
+                message?.embed?.footer?.iconUrl
+            }
+            ModularMessageProperty.EMBED_COLOR -> {
+                path = "message.embed.color.show"
+                message?.embed?.color?.toHex()
+            }
+        }
+
+        val msg = if (string == null) {
+            i18n.getTranslation(language, "$path.unset")
         } else {
-            messageWrapper.setEmbedDescription(oldMessage ?: ModularMessage(), context.getGuildId(), type, arg)
-            i18n.getTranslation(language,"message.embed.description.set")
-                .replace("%arg%", arg)
+            i18n.getTranslation(language, "$path.set")
+                .replace("%${property.toLCC()}%", string)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         sendMsg(context, msg)
     }
 
-    suspend fun showEmbedDescription(context: CommandContext, type: MessageType) {
-        val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-        val description = modularMessage?.embed?.description
-        val msg = if (description == null) {
-            i18n.getTranslation(language,"message.embed.description.show.unset")
-        } else {
-            i18n.getTranslation(language,"message.embed.description.show.set")
-                .replace("%content%", description)
-        }.replace(PLACEHOLDER_TYPE, type.text)
 
-        sendMsg(context, msg)
-    }
-
-    suspend fun clearEmbed(context: CommandContext, type: MessageType) {
+    suspend fun clearEmbedJoinLeave(context: CommandContext, type: MessageType) {
         val language = context.getLanguage()
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
@@ -105,28 +153,30 @@ object MessageCommandUtil {
             messageWrapper.clearEmbed(modularMessage, context.getGuildId(), type)
         }
 
-        val msg = i18n.getTranslation(language,"message.embed.clear")
-            
+        val msg = i18n.getTranslation(language, "message.embed.clear")
             .replace(PLACEHOLDER_TYPE, type.text)
 
         sendMsg(context, msg)
-
     }
 
-    suspend fun listAttachments(context: CommandContext, type: MessageType) {
-        val language = context.getLanguage()
+    suspend fun listAttachmentsJoinLeave(context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+        listAttachmentsAndMessage(context, modularMessage, type)
+    }
 
-        val msg = if (modularMessage == null || modularMessage.attachments.isEmpty()) {
-            i18n.getTranslation(language,"message.attachments.list.empty")
+    suspend fun listAttachmentsAndMessage(context: CommandContext, message: ModularMessage?, type: MessageType) {
+        val language = context.getLanguage()
+
+        val msg = if (message == null || message.attachments.isEmpty()) {
+            i18n.getTranslation(language, "message.attachments.list.empty")
                 .replace(PLACEHOLDER_TYPE, type.text)
 
         } else {
-            val title = i18n.getTranslation(language,"message.attachments.list.title")
+            val title = i18n.getTranslation(language, "message.attachments.list.title")
                 .replace(PLACEHOLDER_TYPE, type.text)
             var content = "\n```INI"
-            for ((index, attachment) in modularMessage.attachments.entries.withIndex()) {
+            for ((index, attachment) in message.attachments.entries.withIndex()) {
                 content += "\n$index - [${attachment.key}] - ${attachment.value}"
             }
             content += "```"
@@ -135,7 +185,7 @@ object MessageCommandUtil {
         sendMsg(context, msg)
     }
 
-    suspend fun addAttachment(context: CommandContext, type: MessageType) {
+    suspend fun addAttachmentJoinLeave(context: CommandContext, type: MessageType) {
         val language = context.getLanguage()
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
@@ -147,7 +197,7 @@ object MessageCommandUtil {
         modularMessage.attachments = newMap.toMap()
 
         messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
-        val msg = i18n.getTranslation(language,"message.attachments.add")
+        val msg = i18n.getTranslation(language, "message.attachments.add")
             .replace(PLACEHOLDER_TYPE, type.text)
             .replace("%attachment%", context.args[0])
             .replace("%file%", context.args[1])
@@ -155,7 +205,7 @@ object MessageCommandUtil {
         sendMsg(context, msg)
     }
 
-    suspend fun removeAttachment(context: CommandContext, type: MessageType) {
+    suspend fun removeAttachmentJoinLeave(context: CommandContext, type: MessageType) {
         val language = context.getLanguage()
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
@@ -169,11 +219,11 @@ object MessageCommandUtil {
 
         val msg =
             if (file == null) {
-                i18n.getTranslation(language,"message.attachments.remove.notanattachment")
+                i18n.getTranslation(language, "message.attachments.remove.notanattachment")
 
             } else {
                 messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
-                i18n.getTranslation(language,"message.attachments.remove.success")
+                i18n.getTranslation(language, "message.attachments.remove.success")
                     .replace("%file%", file)
             }.replace(PLACEHOLDER_ARG, context.args[0])
                 .replace(PLACEHOLDER_TYPE, type.text)
@@ -181,380 +231,247 @@ object MessageCommandUtil {
         sendMsg(context, msg)
     }
 
-    suspend fun showEmbedColor(context: CommandContext, type: MessageType) {
+    suspend fun setMessageContentAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
         val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val oldMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-        val color = oldMessage?.embed?.color
-
-        val msg = if (color == null) {
-            i18n.getTranslation(language,"message.embed.color.show.unset")
-        } else {
-            i18n.getTranslation(language,"message.embed.color.show.set")
-                .replace("%color%", color.toHex())
-        }.replace(PLACEHOLDER_TYPE, type.text)
-
-        sendMsg(context, msg)
-    }
-
-    suspend fun setEmbedColor(context: CommandContext, type: MessageType) {
-        val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-            ?: ModularMessage()
-
         val arg = context.rawArg
 
         val msg = if (arg.equals("null", true)) {
-            messageWrapper.removeEmbedColor(modularMessage, context.getGuildId(), type)
-            i18n.getTranslation(language,"message.embed.color.unset")
+            message.messageContent = null
+            i18n.getTranslation(language, "message.content.unset")
         } else {
-            val color = getColorFromArgNMessage(context, 0) ?: return
-            messageWrapper.setEmbedColor(modularMessage, context.getGuildId(), type, color)
-            i18n.getTranslation(language,"message.embed.color.set")
-                .replace("%arg%", color.toHex())
+            message.messageContent = arg
+            i18n.getTranslation(language, "message.content.set")
+                .replace("%arg%", arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         sendMsg(context, msg)
     }
 
-    suspend fun setEmbedTitle(context: CommandContext, type: MessageType) {
+    suspend fun setEmbedDescriptionAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
         val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-            ?: ModularMessage()
-
         val arg = context.rawArg
+        val eb = EmbedBuilder(message.embed)
 
         val msg = if (arg.equals("null", true)) {
-            messageWrapper.removeEmbedTitleContent(modularMessage, context.getGuildId(), type)
-            i18n.getTranslation(language,"message.embed.title.unset")
+            eb.setDescription(null)
+            i18n.getTranslation(language, "message.embed.description.unset")
         } else {
-            messageWrapper.setEmbedTitleContent(modularMessage, context.getGuildId(), type, arg)
-            i18n.getTranslation(language,"message.embed.title.set")
-                .replace(PLACEHOLDER_ARG, arg)
+            eb.setDescription(arg)
+            i18n.getTranslation(language, "message.embed.description.set")
+                .replace("%arg%", arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
+        message.embed = eb.build()
         sendMsg(context, msg)
     }
 
-    suspend fun showEmbedTitle(context: CommandContext, type: MessageType) {
+    suspend fun setEmbedColorAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
+        val color = getColorFromArgNMessage(context, 0) ?: return
         val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-        val title = modularMessage?.embed?.title
-
-        val msg = if (title == null) {
-            i18n.getTranslation(language,"message.embed.title.show.unset")
-        } else {
-            i18n.getTranslation(language,"message.embed.title.show.set")
-                .replace("%title%", title)
-        }.replace(PLACEHOLDER_TYPE, type.text)
-
-        sendMsg(context, msg)
-    }
-
-    suspend fun showEmbedTitleUrl(context: CommandContext, type: MessageType) {
-        val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-        val url = modularMessage?.embed?.url
-
-        val msg = if (url == null) {
-            i18n.getTranslation(language,"message.embed.titleurl.show.unset")
-        } else {
-            i18n.getTranslation(language,"message.embed.titleurl.show.set")
-                .replace("%url%", url)
-        }.replace(PLACEHOLDER_TYPE, type.text)
-
-        sendMsg(context, msg)
-    }
-
-    suspend fun setEmbedTitleUrl(context: CommandContext, type: MessageType) {
-        val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-            ?: ModularMessage()
-
         val arg = context.rawArg
+        val eb = EmbedBuilder(message.embed)
 
         val msg = if (arg.equals("null", true)) {
-            messageWrapper.removeEmbedTitleURL(modularMessage, context.getGuildId(), type)
-            i18n.getTranslation(language,"message.embed.titleurl.show.unset")
+            eb.setColor(null)
+            i18n.getTranslation(language, "message.embed.color.unset")
         } else {
-            messageWrapper.setEmbedTitleURL(modularMessage, context.getGuildId(), type, arg)
-            i18n.getTranslation(language,"message.embed.titleurl.show.set")
-                .replace(PLACEHOLDER_ARG, arg)
+            eb.setColor(color)
+            i18n.getTranslation(language, "message.embed.color.set")
+                .replace("%arg%", arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
+        message.embed = eb.build()
         sendMsg(context, msg)
     }
 
-    suspend fun showEmbedAuthor(context: CommandContext, type: MessageType) {
+    suspend fun setEmbedTitleAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
         val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-        val url = modularMessage?.embed?.author?.name
-
-        val msg = if (url == null) {
-            i18n.getTranslation(language,"message.embed.authorname.show.unset")
-        } else {
-            i18n.getTranslation(language,"message.embed.authorname.show.set")
-                .replace("%name%", url)
-        }.replace(PLACEHOLDER_TYPE, type.text)
-
-        sendMsg(context, msg)
-    }
-
-    suspend fun setEmbedAuthor(context: CommandContext, type: MessageType) {
-        val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-            ?: ModularMessage()
-
         val arg = context.rawArg
+        val eb = EmbedBuilder(message.embed)
 
         val msg = if (arg.equals("null", true)) {
-            messageWrapper.removeEmbedAuthorContent(modularMessage, context.getGuildId(), type)
-            i18n.getTranslation(language,"message.embed.authorname.unset")
+            eb.setTitle(null)
+            i18n.getTranslation(language, "message.embed.title.unset")
         } else {
-            messageWrapper.setEmbedAuthorContent(modularMessage, context.getGuildId(), type, arg)
-            i18n.getTranslation(language,"message.embed.authorname.set")
-                .replace(PLACEHOLDER_ARG, arg)
+            eb.setTitle(arg)
+            i18n.getTranslation(language, "message.embed.title.set")
+                .replace("%arg%", arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
+        message.embed = eb.build()
         sendMsg(context, msg)
     }
 
-    suspend fun showEmbedAuthorIcon(context: CommandContext, type: MessageType) {
+    suspend fun setEmbedUrlAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
         val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-        val url = modularMessage?.embed?.author?.iconUrl
-
-        val msg = if (url == null) {
-            i18n.getTranslation(language,"message.embed.authoricon.show.unset")
-        } else {
-            i18n.getTranslation(language,"message.embed.authoricon.show.set")
-                .replace("%url", url)
-        }.replace(PLACEHOLDER_TYPE, type.text)
-
-        sendMsg(context, msg)
-    }
-
-    suspend fun setEmbedAuthorIcon(context: CommandContext, type: MessageType) {
-        val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-            ?: ModularMessage()
-
         val arg = context.rawArg
+        val title = message.embed?.title
+        val eb = EmbedBuilder(message.embed)
 
         val msg = if (arg.equals("null", true)) {
-            messageWrapper.removeEmbedAuthorIconURL(modularMessage, context.getGuildId(), type)
-            i18n.getTranslation(language,"message.embed.authoricon.unset")
+            eb.setTitle(title, null)
+            i18n.getTranslation(language, "message.embed.titleurl.unset")
         } else {
-            messageWrapper.setEmbedAuthorIconURL(modularMessage, context.getGuildId(), type, arg)
-            i18n.getTranslation(language,"message.embed.authoricon.set")
-                .replace(PLACEHOLDER_ARG, arg)
+            eb.setTitle(title, arg)
+            i18n.getTranslation(language, "message.embed.titleurl.set")
+                .replace("%arg%", arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
+        message.embed = eb.build()
         sendMsg(context, msg)
     }
 
-    suspend fun showEmbedAuthorUrl(context: CommandContext, type: MessageType) {
+    suspend fun setEmbedAuthorAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
         val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-        val url = modularMessage?.embed?.author?.url
-
-        val msg = if (url == null) {
-            i18n.getTranslation(language,"message.embed.authorurl.show.unset")
-        } else {
-            i18n.getTranslation(language,"message.embed.authorurl.show.set")
-                .replace("%url", url)
-        }.replace(PLACEHOLDER_TYPE, type.text)
-
-        sendMsg(context, msg)
-    }
-
-    suspend fun setEmbedAuthorUrl(context: CommandContext, type: MessageType) {
-        val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-            ?: ModularMessage()
-
         val arg = context.rawArg
+        val eb = EmbedBuilder(message.embed)
 
         val msg = if (arg.equals("null", true)) {
-            messageWrapper.removeEmbedAuthorURL(modularMessage, context.getGuildId(), type)
-            i18n.getTranslation(language,"message.embed.authorurl.unset")
+            eb.setAuthor(null)
+            i18n.getTranslation(language, "message.embed.author.unset")
         } else {
-            messageWrapper.setEmbedAuthorURL(modularMessage, context.getGuildId(), type, context.rawArg)
-            i18n.getTranslation(language,"message.embed.authorurl.set")
-                .replace(PLACEHOLDER_ARG, context.rawArg)
+            eb.setTitle(arg)
+            i18n.getTranslation(language, "message.embed.author.set")
+                .replace("%arg%", arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
+        message.embed = eb.build()
         sendMsg(context, msg)
     }
 
-    suspend fun showEmbedThumbnail(context: CommandContext, type: MessageType) {
+    suspend fun setEmbedAuthorIconUrlAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
         val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-        val url = modularMessage?.embed?.thumbnail?.url
-
-        val msg = if (url == null) {
-            i18n.getTranslation(language,"message.embed.thumbnail.show.unset")
-        } else {
-            i18n.getTranslation(language,"message.embed.thumbnail.show.set")
-                .replace("%url", url)
-        }.replace(PLACEHOLDER_TYPE, type.text)
-
-        sendMsg(context, msg)
-    }
-
-    suspend fun setEmbedThumbnail(context: CommandContext, type: MessageType) {
-        val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-            ?: ModularMessage()
-
         val arg = context.rawArg
+        val authorName = message.embed?.author?.name
+        val authorUrl = message.embed?.author?.url
+        val eb = EmbedBuilder(message.embed)
 
         val msg = if (arg.equals("null", true)) {
-            messageWrapper.removeEmbedThumbnail(modularMessage, context.getGuildId(), type)
-            i18n.getTranslation(language,"message.embed.thumbnail.unset")
+            eb.setAuthor(authorName, authorUrl, null)
+            i18n.getTranslation(language, "message.embed.authoriconurl.unset")
         } else {
-            messageWrapper.setEmbedThumbnail(modularMessage, context.getGuildId(), type, arg)
-            i18n.getTranslation(language,"message.embed.thumbnail.set")
-                .replace(PLACEHOLDER_ARG, arg)
+            eb.setAuthor(authorName, authorUrl, arg)
+            i18n.getTranslation(language, "message.embed.authoriconurl.set")
+                .replace("%arg%", arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
+        message.embed = eb.build()
         sendMsg(context, msg)
     }
 
-    suspend fun showEmbedImage(context: CommandContext, type: MessageType) {
+    suspend fun setEmbedAuthorUrlAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
         val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-        val url = modularMessage?.embed?.image?.url
-
-        val msg = if (url == null) {
-            i18n.getTranslation(language,"message.embed.image.show.unset")
-        } else {
-            i18n.getTranslation(language,"message.embed.image.show.set")
-                .replace("%url", url)
-        }.replace(PLACEHOLDER_TYPE, type.text)
-
-        sendMsg(context, msg)
-    }
-
-    suspend fun setEmbedImage(context: CommandContext, type: MessageType) {
-        val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-            ?: ModularMessage()
-
         val arg = context.rawArg
+        val authorName = message.embed?.author?.name
+        val iconUrl = message.embed?.author?.iconUrl
+        val eb = EmbedBuilder(message.embed)
 
         val msg = if (arg.equals("null", true)) {
-            messageWrapper.removeEmbedImage(modularMessage, context.getGuildId(), type)
-            i18n.getTranslation(language,"message.embed.image.unset")
+            eb.setAuthor(authorName, null, iconUrl)
+            i18n.getTranslation(language, "message.embed.authorurl.unset")
         } else {
-            messageWrapper.setEmbedImage(modularMessage, context.getGuildId(), type, arg)
-            i18n.getTranslation(language,"message.embed.image.set")
-                .replace(PLACEHOLDER_ARG, arg)
+            eb.setAuthor(authorName, arg, iconUrl)
+            i18n.getTranslation(language, "message.embed.authorurl.set")
+                .replace("%arg%", arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
+        message.embed = eb.build()
         sendMsg(context, msg)
     }
 
-    suspend fun showEmbedFooter(context: CommandContext, type: MessageType) {
+    suspend fun setEmbedThumbnailAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
         val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-        val footer = modularMessage?.embed?.footer?.text
-
-        val msg = if (footer == null) {
-            i18n.getTranslation(language,"message.embed.footer.show.unset")
-        } else {
-            i18n.getTranslation(language,"message.embed.footer.show.set")
-                .replace("%url", footer)
-        }.replace(PLACEHOLDER_TYPE, type.text)
-
-        sendMsg(context, msg)
-    }
-
-    suspend fun setEmbedFooter(context: CommandContext, type: MessageType) {
-        val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-            ?: ModularMessage()
-
         val arg = context.rawArg
+        val eb = EmbedBuilder(message.embed)
 
         val msg = if (arg.equals("null", true)) {
-            messageWrapper.removeEmbedFooterContent(modularMessage, context.getGuildId(), type)
-            i18n.getTranslation(language,"message.embed.footer.unset")
+            eb.setThumbnail(null)
+            i18n.getTranslation(language, "message.embed.thumbnail.unset")
         } else {
-            messageWrapper.setEmbedFooterContent(modularMessage, context.getGuildId(), type, arg)
-            i18n.getTranslation(language,"message.embed.footer.set")
-                .replace(PLACEHOLDER_ARG, arg)
+            eb.setThumbnail(arg)
+            i18n.getTranslation(language, "message.embed.thumbnail.set")
+                .replace("%arg%", arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
+        message.embed = eb.build()
         sendMsg(context, msg)
     }
 
-    suspend fun showEmbedFooterIcon(context: CommandContext, type: MessageType) {
+    suspend fun setEmbedImageAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
         val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-        val footerUrl = modularMessage?.embed?.footer?.iconUrl
-
-        val msg = if (footerUrl == null) {
-            i18n.getTranslation(language,"message.embed.footericon.show.unset")
-        } else {
-            i18n.getTranslation(language,"message.embed.footericon.show.set")
-                .replace("%url", footerUrl)
-        }.replace(PLACEHOLDER_TYPE, type.text)
-
-        sendMsg(context, msg)
-    }
-
-    suspend fun setEmbedFooterIcon(context: CommandContext, type: MessageType) {
-        val language = context.getLanguage()
-        val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
-            ?: ModularMessage()
-
         val arg = context.rawArg
+        val eb = EmbedBuilder(message.embed)
 
         val msg = if (arg.equals("null", true)) {
-            messageWrapper.removeEmbedFooterURL(modularMessage, context.getGuildId(), type)
-            i18n.getTranslation(language,"message.embed.footericon.show.unset")
+            eb.setImage(null)
+            i18n.getTranslation(language, "message.embed.image.unset")
         } else {
-            messageWrapper.setEmbedFooterURL(modularMessage, context.getGuildId(), type, arg)
-            i18n.getTranslation(language,"message.embed.footericon.show.set")
-                .replace(PLACEHOLDER_ARG, arg)
+            eb.setImage(arg)
+            i18n.getTranslation(language, "message.embed.image.set")
+                .replace("%arg%", arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
+        message.embed = eb.build()
         sendMsg(context, msg)
     }
 
-    suspend fun addEmbedField(title: String, value: String, inline: Boolean, context: CommandContext, type: MessageType) {
+    suspend fun setEmbedFooterAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
         val language = context.getLanguage()
+        val arg = context.rawArg
+        val footerIconUrl = message.embed?.footer?.iconUrl
+        val eb = EmbedBuilder(message.embed)
+
+        val msg = if (arg.equals("null", true)) {
+            eb.setFooter(null, footerIconUrl)
+            i18n.getTranslation(language, "message.embed.image.unset")
+        } else {
+            eb.setFooter(arg, footerIconUrl)
+            i18n.getTranslation(language, "message.embed.image.set")
+                .replace("%arg%", arg)
+        }.replace(PLACEHOLDER_TYPE, type.text)
+
+        message.embed = eb.build()
+        sendMsg(context, msg)
+    }
+
+
+    suspend fun setEmbedFooterIconUrlAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
+        val language = context.getLanguage()
+        val arg = context.rawArg
+        val footer = message.embed?.footer?.text
+        val eb = EmbedBuilder(message.embed)
+
+        val msg = if (arg.equals("null", true)) {
+            eb.setFooter(footer, null)
+            i18n.getTranslation(language, "message.embed.image.unset")
+        } else {
+            eb.setFooter(footer, arg)
+            i18n.getTranslation(language, "message.embed.image.set")
+                .replace("%arg%", arg)
+        }.replace(PLACEHOLDER_TYPE, type.text)
+
+        message.embed = eb.build()
+        sendMsg(context, msg)
+    }
+
+
+    suspend fun addEmbedFieldJoinLeave(title: String, value: String, inline: Boolean, context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
             ?: ModularMessage()
-        val embed = modularMessage.embed ?: EmbedBuilder().build()
-        val embedBuilder = EmbedBuilder(embed)
-        embedBuilder.addField(title, value, inline)
-        modularMessage.embed = embedBuilder.build()
 
+        addEmbedFieldAndMessage(title, value, inline, context, modularMessage, type)
         messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
-        val inlineString = i18n.getTranslation(language,if (inline) "yes" else "no")
-        val msg = i18n.getTranslation(language,"message.embed.field.add")
+    }
+
+    suspend fun addEmbedFieldAndMessage(title: String, value: String, inline: Boolean, context: CommandContext, message: ModularMessage, type: MessageType) {
+        val language = context.getLanguage()
+        val embedBuilder = EmbedBuilder(message.embed)
+        embedBuilder.addField(title, value, inline)
+        message.embed = embedBuilder.build()
+
+        val inlineString = i18n.getTranslation(language, if (inline) "yes" else "no")
+        val msg = i18n.getTranslation(language, "message.embed.field.add")
             .replace("%title%", title)
             .replace("%value%", value)
             .replace("%inline%", inlineString)
@@ -563,24 +480,29 @@ object MessageCommandUtil {
         sendMsg(context, msg)
     }
 
-    suspend fun setEmbedFieldTitle(index: Int, title: String, context: CommandContext, type: MessageType) {
+    suspend fun setEmbedFieldTitleJoinLeave(index: Int, title: String, context: CommandContext, type: MessageType) {
         setEmbedFieldPart(index, "title", title, context, type)
     }
 
-    suspend fun setEmbedFieldValue(index: Int, value: String, context: CommandContext, type: MessageType) {
+    suspend fun setEmbedFieldValueJoinLeave(index: Int, value: String, context: CommandContext, type: MessageType) {
         setEmbedFieldPart(index, "value", value, context, type)
     }
 
-    suspend fun setEmbedFieldInline(index: Int, inline: Boolean, context: CommandContext, type: MessageType) {
+    suspend fun setEmbedFieldInlineJoinLeave(index: Int, inline: Boolean, context: CommandContext, type: MessageType) {
         setEmbedFieldPart(index, "inline", inline, context, type)
     }
 
-    suspend fun setEmbedFieldPart(index: Int, partName: String, value: Any, context: CommandContext, type: MessageType) {
-        val language = context.getLanguage()
+    private suspend fun setEmbedFieldPart(index: Int, partName: String, value: Any, context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
-        var modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
+        val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
             ?: ModularMessage()
 
+        setEmbedFieldPartAndMessage(index, partName, value, context, modularMessage, type)
+        messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
+    }
+
+    suspend fun setEmbedFieldPartAndMessage(index: Int, partName: String, value: Any, context: CommandContext, modularMessage: ModularMessage, type: MessageType) {
+        val language = context.getLanguage()
         val json = JSONObject(modularMessage.toJSON())
         val embedJSON = json.getJSONObject("embed")
         val fieldsJSON = embedJSON.getJSONArray("fields")
@@ -589,14 +511,16 @@ object MessageCommandUtil {
         fieldsJSON.put(index, field)
         embedJSON.put("fields", fieldsJSON)
         json.put("embed", embedJSON)
-        modularMessage = ModularMessage.fromJSON(json.toString(4))
+        val modularMessage1 = ModularMessage.fromJSON(json.toString(4))
+        modularMessage.embed = modularMessage1.embed
+        modularMessage.messageContent = modularMessage1.messageContent
+        modularMessage.attachments = modularMessage1.attachments
 
-        messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
         val partValue: String = when (value) {
-            is Boolean -> i18n.getTranslation(language,if (value) "yes" else "no")
+            is Boolean -> i18n.getTranslation(language, if (value) "yes" else "no")
             else -> value.toString()
         }
-        val msg = i18n.getTranslation(language,"message.embed.field$partName.set")
+        val msg = i18n.getTranslation(language, "message.embed.field$partName.set")
             .replace("%index%", index.toString())
             .replace("%$partName%", partValue)
             .replace(PLACEHOLDER_TYPE, type.text)
@@ -604,7 +528,7 @@ object MessageCommandUtil {
         sendMsg(context, msg)
     }
 
-    suspend fun removeEmbedField(index: Int, context: CommandContext, type: MessageType) {
+    suspend fun removeEmbedFieldJoinLeave(index: Int, context: CommandContext, type: MessageType) {
         val language = context.getLanguage()
         val messageWrapper = context.daoManager.messageWrapper
         var modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
@@ -619,23 +543,23 @@ object MessageCommandUtil {
         modularMessage = ModularMessage.fromJSON(json.toString(4))
 
         messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
-        val msg = i18n.getTranslation(language,"message.embed.field.removed")
+        val msg = i18n.getTranslation(language, "message.embed.field.removed")
             .replace("%index%", index.toString())
             .replace(PLACEHOLDER_TYPE, type.text)
 
         sendMsg(context, msg)
     }
 
-    suspend fun showEmbedFields(context: CommandContext, type: MessageType) {
+    suspend fun showEmbedFieldsJoinLeave(context: CommandContext, type: MessageType) {
         val language = context.getLanguage()
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
         val fields = modularMessage?.embed?.fields
 
         val msg = if (fields == null || fields.isEmpty()) {
-            i18n.getTranslation(language,"message.embed.field.list.empty")
+            i18n.getTranslation(language, "message.embed.field.list.empty")
         } else {
-            val title = i18n.getTranslation(language,"message.embed.field.list.title")
+            val title = i18n.getTranslation(language, "message.embed.field.list.title")
             var desc = "```INI"
             for ((index, field) in fields.withIndex()) {
                 desc += "\n$index - [${field.name}] - [${field.value}] - ${if (field.isInline) "true" else "\nfalse"}"

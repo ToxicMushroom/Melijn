@@ -42,7 +42,7 @@ class MessageWrapper(val taskManager: TaskManager, private val messageDao: Messa
         return future
     }
 
-    private suspend fun updateMessage(message: ModularMessage, guildId: Long, type: MessageType) {
+    suspend fun updateMessage(message: ModularMessage, guildId: Long, type: MessageType) {
         if (shouldRemove(message)) {
             removeMessage(guildId, type)
         } else {

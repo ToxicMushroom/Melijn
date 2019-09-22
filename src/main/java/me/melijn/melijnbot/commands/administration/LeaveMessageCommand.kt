@@ -2,6 +2,7 @@ package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
 import me.melijn.melijnbot.enums.MessageType
+import me.melijn.melijnbot.enums.ModularMessageProperty
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
@@ -36,9 +37,9 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
 
         override suspend fun execute(context: CommandContext) {
             if (context.args.isEmpty()) {
-                MessageCommandUtil.showMessageContent(context, type)
+                MessageCommandUtil.showMessageJoinLeave(context, ModularMessageProperty.CONTENT, type)
             } else {
-                MessageCommandUtil.setMessageContent(context, type)
+                MessageCommandUtil.setMessageJoinLeave(context, ModularMessageProperty.CONTENT, type)
             }
         }
     }
@@ -61,7 +62,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
                 SetImageArg(root, type),
                 FieldArg(root, type),
                 SetFooterArg(root, type),
-                SetFooterUrlArg(root, type)
+                SetFooterIconArg(root, type)
                 //What even is optimization
             )
         }
@@ -77,9 +78,10 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             }
 
             override suspend fun execute(context: CommandContext) {
+                val property = ModularMessageProperty.EMBED_TITLE
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedTitle(context, type)
-                    else -> MessageCommandUtil.setEmbedTitle(context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showMessageJoinLeave(context, property, type)
+                    else -> MessageCommandUtil.setMessageJoinLeave(context, property, type)
                 }
             }
         }
@@ -91,9 +93,10 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             }
 
             override suspend fun execute(context: CommandContext) {
+                val property = ModularMessageProperty.EMBED_URL
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedTitleUrl(context, type)
-                    else -> MessageCommandUtil.setEmbedTitleUrl(context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showMessageJoinLeave(context, property, type)
+                    else -> MessageCommandUtil.setMessageJoinLeave(context, property, type)
                 }
             }
         }
@@ -106,9 +109,10 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             }
 
             override suspend fun execute(context: CommandContext) {
+                val property = ModularMessageProperty.EMBED_AUTHOR
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedAuthor(context, type)
-                    else -> MessageCommandUtil.setEmbedAuthor(context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showMessageJoinLeave(context, property, type)
+                    else -> MessageCommandUtil.setMessageJoinLeave(context, property, type)
                 }
             }
         }
@@ -120,9 +124,10 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             }
 
             override suspend fun execute(context: CommandContext) {
+                val property = ModularMessageProperty.EMBED_AUTHOR_ICON_URL
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedAuthorIcon(context, type)
-                    else -> MessageCommandUtil.setEmbedAuthorIcon(context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showMessageJoinLeave(context, property, type)
+                    else -> MessageCommandUtil.setMessageJoinLeave(context, property, type)
                 }
             }
         }
@@ -134,9 +139,10 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             }
 
             override suspend fun execute(context: CommandContext) {
+                val property = ModularMessageProperty.EMBED_AUTHOR_URL
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedAuthorUrl(context, type)
-                    else -> MessageCommandUtil.setEmbedAuthorUrl(context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showMessageJoinLeave(context, property, type)
+                    else -> MessageCommandUtil.setMessageJoinLeave(context, property, type)
                 }
             }
         }
@@ -149,9 +155,10 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             }
 
             override suspend fun execute(context: CommandContext) {
+                val property = ModularMessageProperty.EMBED_THUMBNAIL
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedThumbnail(context, type)
-                    else -> MessageCommandUtil.setEmbedThumbnail(context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showMessageJoinLeave(context, property, type)
+                    else -> MessageCommandUtil.setMessageJoinLeave(context, property, type)
                 }
             }
         }
@@ -163,9 +170,10 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             }
 
             override suspend fun execute(context: CommandContext) {
+                val property = ModularMessageProperty.EMBED_IMAGE
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedImage(context, type)
-                    else -> MessageCommandUtil.setEmbedImage(context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showMessageJoinLeave(context, property, type)
+                    else -> MessageCommandUtil.setMessageJoinLeave(context, property, type)
                 }
             }
         }
@@ -205,7 +213,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
                     val value = context.rawArg.replaceFirst("$title>", "")
 
                     val inline = context.commandParts[1].equals("addInline", true)
-                    MessageCommandUtil.addEmbedField(title, value, inline, context, type)
+                    MessageCommandUtil.addEmbedFieldJoinLeave(title, value, inline, context, type)
                 }
             }
 
@@ -222,7 +230,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
                     }
                     val index = getIntegerFromArgNMessage(context, 0) ?: return
                     val title = context.rawArg.replaceFirst("$index\\s+?".toRegex(), "")
-                    MessageCommandUtil.setEmbedFieldTitle(index, title, context, type)
+                    MessageCommandUtil.setEmbedFieldTitleJoinLeave(index, title, context, type)
                 }
             }
 
@@ -239,7 +247,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
                     }
                     val index = getIntegerFromArgNMessage(context, 0) ?: return
                     val value = context.rawArg.replaceFirst("$index\\s+?".toRegex(), "")
-                    MessageCommandUtil.setEmbedFieldValue(index, value, context, type)
+                    MessageCommandUtil.setEmbedFieldValueJoinLeave(index, value, context, type)
                 }
             }
 
@@ -256,7 +264,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
                     }
                     val index = getIntegerFromArgNMessage(context, 0) ?: return
                     val value = getBooleanFromArgNMessage(context, 1) ?: return
-                    MessageCommandUtil.setEmbedFieldInline(index, value, context, type)
+                    MessageCommandUtil.setEmbedFieldInlineJoinLeave(index, value, context, type)
                 }
             }
 
@@ -272,7 +280,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
                         return
                     }
                     val index = getIntegerFromArgNMessage(context, 0) ?: return
-                    MessageCommandUtil.removeEmbedField(index, context, type)
+                    MessageCommandUtil.removeEmbedFieldJoinLeave(index, context, type)
                 }
             }
 
@@ -283,7 +291,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
                 }
 
                 override suspend fun execute(context: CommandContext) {
-                    MessageCommandUtil.showEmbedFields(context, type)
+                    MessageCommandUtil.showEmbedFieldsJoinLeave(context, type)
                 }
             }
         }
@@ -297,9 +305,10 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             }
 
             override suspend fun execute(context: CommandContext) {
+                val property = ModularMessageProperty.EMBED_DESCRIPTION
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedDescription(context, type)
-                    else -> MessageCommandUtil.setEmbedDescription(context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showMessageJoinLeave(context, property, type)
+                    else -> MessageCommandUtil.setMessageJoinLeave(context, property, type)
                 }
             }
         }
@@ -312,9 +321,10 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             }
 
             override suspend fun execute(context: CommandContext) {
+                val property = ModularMessageProperty.EMBED_COLOR
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedColor(context, type)
-                    else -> MessageCommandUtil.setEmbedColor(context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showMessageJoinLeave(context, property, type)
+                    else -> MessageCommandUtil.setMessageJoinLeave(context, property, type)
                 }
             }
         }
@@ -326,23 +336,25 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             }
 
             override suspend fun execute(context: CommandContext) {
+                val property = ModularMessageProperty.EMBED_FOOTER
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedFooter(context, type)
-                    else -> MessageCommandUtil.setEmbedFooter(context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showMessageJoinLeave(context, property, type)
+                    else -> MessageCommandUtil.setMessageJoinLeave(context, property, type)
                 }
             }
         }
 
-        class SetFooterUrlArg(root: String, val type: MessageType) : AbstractCommand("$root.setfooterurl") {
+        class SetFooterIconArg(root: String, val type: MessageType) : AbstractCommand("$root.setfootericon") {
 
             init {
-                name = "setFooterUrl"
+                name = "setFooterIcon"
             }
 
             override suspend fun execute(context: CommandContext) {
+                val property = ModularMessageProperty.EMBED_FOOTER_ICON_URL
                 when {
-                    context.rawArg.isBlank() -> MessageCommandUtil.showEmbedFooterIcon(context, type)
-                    else -> MessageCommandUtil.setEmbedFooterIcon(context, type)
+                    context.rawArg.isBlank() -> MessageCommandUtil.showMessageJoinLeave(context, property, type)
+                    else -> MessageCommandUtil.setMessageJoinLeave(context, property, type)
                 }
             }
         }
@@ -355,7 +367,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                MessageCommandUtil.clearEmbed(context, type)
+                MessageCommandUtil.clearEmbedJoinLeave(context, type)
             }
         }
     }
@@ -379,7 +391,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                MessageCommandUtil.listAttachments(context, type)
+                MessageCommandUtil.listAttachmentsJoinLeave(context, type)
             }
         }
 
@@ -390,7 +402,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                MessageCommandUtil.addAttachment(context, type)
+                MessageCommandUtil.addAttachmentJoinLeave(context, type)
             }
 
         }
@@ -402,7 +414,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                MessageCommandUtil.removeAttachment(context, type)
+                MessageCommandUtil.removeAttachmentJoinLeave(context, type)
             }
         }
 

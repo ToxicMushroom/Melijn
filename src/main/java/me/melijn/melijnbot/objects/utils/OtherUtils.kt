@@ -146,3 +146,15 @@ fun Executor.launch(block: suspend CoroutineScope.() -> Unit): Job {
         block.invoke(this)
     }
 }
+
+fun Enum<*>.toUCC(): String {
+    return toString()
+        .replace("_", " ")
+        .toUpperWordCase()
+        .replace(" ", "")
+}
+
+fun Enum<*>.toLCC(): String {
+    val uCC = this.toUCC()
+    return uCC[0].toLowerCase() + uCC.substring(1)
+}
