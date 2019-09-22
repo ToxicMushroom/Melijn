@@ -6,16 +6,23 @@ import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.command.CustomCommand
+import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.enums.ChannelCommandState
+import me.melijn.melijnbot.objects.jagtag.CCJagTagParser
+import me.melijn.melijnbot.objects.jagtag.CCJagTagParserArgs
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.sendInGuild
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.toUpperWordCase
+import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.entities.ChannelType
+import net.dv8tion.jda.api.entities.EmbedType
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.dv8tion.jda.api.utils.data.DataObject
+import net.dv8tion.jda.internal.JDAImpl
 import java.util.regex.Pattern
+import kotlin.random.Random
 
 class CommandClient(private val commandList: Set<AbstractCommand>, private val container: Container) : ListenerAdapter() {
 
@@ -45,7 +52,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         CoroutineScope(Dispatchers.Default).launch {
             try {
-                commandRunner(event)
+                commandFinder(event)
             } catch (e: Exception) {
                 e.printStackTrace()
 
@@ -58,7 +65,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
     }
 
-    private suspend fun commandRunner(event: MessageReceivedEvent) {
+    private suspend fun commandFinder(event: MessageReceivedEvent) {
         val prefixes = getPrefixes(event)
         val message = event.message
 
@@ -79,7 +86,11 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
 
 
+        val ccsWithPrefixMatches = mutableListOf<CustomCommand>()
+        val ccsWithoutPrefixMatches = mutableListOf<CustomCommand>()
         for (prefix in prefixes) {
+
+
             if (!message.contentRaw.startsWith(prefix)) continue
 
             val commandParts: ArrayList<String> = ArrayList(message.contentRaw
@@ -87,13 +98,135 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 .split(Regex("\\s+")))
             commandParts.add(0, prefix)
 
+            for (cc in ccsWithPrefix) {
+                val aliases = cc.aliases
+                if (cc.name.equals(commandParts[1], true)) {
+                    ccsWithPrefixMatches.add(cc)
+                } else if (aliases != null) {
+                    for (alias in aliases) {
+                        if (alias.equals(commandParts[1], true)) {
+                            ccsWithPrefixMatches.add(cc)
+                        }
+                    }
+                }
+            }
+
             val command = commandMap.getOrElse(commandParts[1].toLowerCase(), { null }) ?: continue
             if (checksFailed(command, event)) return
             command.run(CommandContext(event, commandParts, container, commandList))
             return
         }
 
+        val commandParts = message.contentRaw.split(Regex("\\s+")).toList()
 
+        if (ccsWithPrefixMatches.isNotEmpty()) {
+            runCustomCommandByChance(event, commandParts, ccsWithPrefixMatches, true)
+            return
+        } else {
+            for (cc in ccsWithoutPrefix) {
+                val aliases = cc.aliases
+                if (commandParts[0].equals(cc.name, true)) {
+                    ccsWithoutPrefixMatches.add(cc)
+                } else if (aliases != null) {
+                    for (alias in aliases) {
+                        if (alias.equals(commandParts[0], true)) {
+                            ccsWithoutPrefixMatches.add(cc)
+                        }
+                    }
+                }
+
+            }
+        }
+        if (ccsWithoutPrefixMatches.isNotEmpty()) {
+            runCustomCommandByChance(event, commandParts, ccsWithoutPrefixMatches, false)
+            return
+        }
+    }
+
+    private suspend fun runCustomCommandByChance(event: MessageReceivedEvent, commandParts: List<String>, ccs: List<CustomCommand>, prefix: Boolean) {
+        val cc = getCustomCommandByChance(ccs)
+        if (checksFailed(cc, event)) return
+        executeCC(cc, event, commandParts, prefix)
+    }
+
+    private suspend fun executeCC(cc: CustomCommand, event: MessageReceivedEvent, commandParts: List<String>, prefix: Boolean) {
+        val member = event.member ?: return
+        val channel = event.textChannel
+        if (!channel.canTalk()) return
+
+        //registering execution
+        val pair1 = Pair(channel.idLong, member.idLong)
+        val map1 = container.daoManager.commandChannelCoolDownWrapper.executions[pair1]?.toMutableMap()
+            ?: mutableMapOf()
+        map1["cc." + cc.id] = System.currentTimeMillis()
+        container.daoManager.commandChannelCoolDownWrapper.executions[pair1] = map1
+
+        val pair2 = Pair(member.guild.idLong, member.idLong)
+        val map2 = container.daoManager.commandChannelCoolDownWrapper.executions[pair2]?.toMutableMap()
+            ?: mutableMapOf()
+        map2["cc." + cc.id] = System.currentTimeMillis()
+        container.daoManager.commandChannelCoolDownWrapper.executions[pair2] = map2
+
+
+        val regex = ("${commandParts[0]}\\s+?" + if (prefix) "${commandParts[1]}\\s+?" else "").toRegex()
+        val rawArg = event.message.contentRaw.replaceFirst(regex, "")
+        val modularMessage = replaceVariablesInCCMessage(member, rawArg, cc)
+
+        val message: Message? = modularMessage.toMessage()
+        when {
+            message == null -> sendAttachments(channel, modularMessage.attachments)
+            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachments(channel, message, modularMessage.attachments)
+            else -> sendMsg(channel, message)
+        }
+    }
+
+
+    private suspend fun replaceVariablesInCCMessage(member: Member, rawArg: String, cc: CustomCommand): ModularMessage {
+        val modularMessage = cc.content
+        val newMessage = ModularMessage()
+        val ccArgs = CCJagTagParserArgs(member, rawArg, cc)
+
+        newMessage.messageContent = modularMessage.messageContent?.let {
+            CCJagTagParser.parseCCJagTag(ccArgs, it)
+        }
+
+        val oldEmbedData = modularMessage.embed?.toData()
+            ?.put("type", EmbedType.RICH)
+        if (oldEmbedData != null) {
+            val newEmbedJSON = CCJagTagParser.parseCCJagTag(ccArgs, oldEmbedData.toString())
+            val newEmbedData = DataObject.fromJson(newEmbedJSON)
+            val newEmbed = (member.jda as JDAImpl).entityBuilder.createMessageEmbed(newEmbedData)
+            newMessage.embed = newEmbed
+        }
+
+
+        val newAttachments = mutableMapOf<String, String>()
+        modularMessage.attachments.forEach { (t, u) ->
+            val url = CCJagTagParser.parseCCJagTag(ccArgs, t)
+            val file = CCJagTagParser.parseCCJagTag(ccArgs, u)
+            newAttachments[url] = file
+        }
+        newMessage.attachments = newAttachments
+        return newMessage
+
+    }
+
+    private fun getCustomCommandByChance(ccs: List<CustomCommand>): CustomCommand {
+        var range = 0
+        for (cc in ccs) {
+            range += cc.chance
+        }
+        val winner = Random.nextInt(range)
+        range = 0
+        for (cc in ccs) {
+            val bool1 = (range < winner)
+            range += cc.chance
+            val bool2 = (range < winner)
+            if (bool1 && !bool2) {
+                return cc
+            }
+        }
+        throw IllegalArgumentException("random int out of range of ccs")
     }
 
     private suspend fun getPrefixes(event: MessageReceivedEvent): List<String> {
@@ -161,6 +294,24 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         return false
     }
 
+    /**
+     * [@return] returns true if the check failed
+     *
+     * **/
+    private suspend fun checksFailed(command: CustomCommand, event: MessageReceivedEvent): Boolean {
+        val cmdId = "cc.${command.id}"
+        if (commandIsDisabled(cmdId, event)) {
+            return true
+        }
+
+        if (commandIsOnCooldown(cmdId, event)) {
+            return true
+        }
+
+        return false
+    }
+
+
     private suspend fun commandIsDisabled(id: String, event: MessageReceivedEvent): Boolean {
         val disabledChannelCommands = channelCommandStateCache.get(event.channel.idLong).await()
         if (disabledChannelCommands.contains(id)) {
@@ -222,7 +373,12 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 bool = true
             }
         }
-        val lastExecutionBiggest = if (lastExecution > lastExecutionChannel) lastExecution else lastExecutionChannel
+        val lastExecutionBiggest = if (lastExecution > lastExecutionChannel) {
+            lastExecution
+        } else {
+            lastExecutionChannel
+        }
+
         if (bool && cooldownResult != 0L) {
 
             val language = getLanguage(container.daoManager, userId, guildId)

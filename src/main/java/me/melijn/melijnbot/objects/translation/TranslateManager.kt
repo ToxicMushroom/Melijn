@@ -15,6 +15,10 @@ class TranslateManager {
             DEFAULT_LANGUAGE -> defaultRecourseBundle
             else -> defaultRecourseBundle
         }
-        return bundle.getString(path)
+        return if (bundle.containsKey(path)) {
+            bundle.getString(path)
+        } else {
+            path
+        }
     }
 }

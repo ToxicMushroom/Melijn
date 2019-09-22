@@ -116,34 +116,64 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
         }
 
         override suspend fun execute(context: CommandContext) {
+            val daoManager = context.daoManager
             if (context.args.isEmpty()) {
-                val daoManager = context.daoManager
                 val ids = daoManager.disabledCommandWrapper.disabledCommandsCache.get(context.getGuildId()).await()
-                val commands = context.getCommands().filter { cmd -> ids.contains(cmd.id) }
+                val commandNames = mutableListOf<String>()
+                val filteredCommands = context.getCommands()
+                    .filter { cmd -> ids.contains(cmd.id.toString()) }
+                    .map { cmd -> cmd.name }
+                    .toList()
+
+                val filteredCCs = daoManager.customCommandWrapper.customCommandCache.get(context.getGuildId()).await()
+                    .filter { cmd -> ids.contains("cc." + cmd.id.toString()) }
+                    .map { cmd -> cmd.name }
+                    .toList()
+
+                commandNames.addAll(filteredCommands)
+                commandNames.addAll(filteredCCs)
+
+
                 val language = context.getLanguage()
                 val title = i18n.getTranslation(language, "$root.globaldisabled.response1")
 
                 var content = "```INI"
-                for ((index, cmd) in commands.withIndex()) {
-                    content += "\n$index - [${cmd.name}]"
+                for ((index, name) in commandNames.withIndex()) {
+                    content += "\n$index - [${name}]"
                 }
                 content += "```"
 
                 val msg = title + content
                 sendMsg(context, msg)
             } else {
-                val daoManager = context.daoManager
                 val channel = getTextChannelByArgsNMessage(context, 0) ?: return
+
+
                 val stateMap = daoManager.channelCommandStateWrapper.channelCommandsStateCache.get(channel.idLong).await()
-                val commands = context.getCommands().filter { cmd -> stateMap.keys.contains(cmd.id) }
+                val ids = stateMap.keys
+                val commandMap = HashMap<String, String>()
+                val filteredCommands = context.getCommands()
+                    .filter { cmd -> ids.contains(cmd.id.toString()) }
+                    .map { cmd -> cmd.id.toString() to cmd.name }
+                    .toMap()
+
+                val filteredCCs = daoManager.customCommandWrapper.customCommandCache.get(context.getGuildId()).await()
+                    .filter { cmd -> ids.contains("cc." + cmd.id) }
+                    .map { cmd -> ("cc." + cmd.id) to cmd.name }
+                    .toMap()
+
+                commandMap.putAll(filteredCommands)
+                commandMap.putAll(filteredCCs)
+
+
 
                 val language = context.getLanguage()
                 val title = i18n.getTranslation(language, "$root.channelstate.response1")
                     .replace(PLACEHOLDER_CHANNEL, channel.asTag)
 
                 var content = "```INI"
-                for ((index, cmd) in commands.withIndex()) {
-                    content += "\n$index - [${cmd.name}] - ${stateMap[cmd.id]}"
+                for ((index, entry) in commandMap.entries.withIndex()) {
+                    content += "\n$index - [${entry.value}] - ${stateMap[entry.key]}"
                 }
                 content += "```"
 

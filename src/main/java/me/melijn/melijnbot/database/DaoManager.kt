@@ -57,6 +57,10 @@ const val SMALL_CACHE = 50L
 
 class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
 
+    companion object {
+        val afterTableFunctions = mutableListOf<() -> Unit>()
+    }
+
     val commandWrapper: CommandWrapper
     val customCommandWrapper: CustomCommandWrapper
 
@@ -149,5 +153,8 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
 
         //After registering wrappers
         driverManager.executeTableRegistration()
+        for (func in afterTableFunctions) {
+            func()
+        }
     }
 }

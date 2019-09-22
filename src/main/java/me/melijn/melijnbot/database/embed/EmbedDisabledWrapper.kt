@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.database.embed
 
+import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.threading.TaskManager
 
 class EmbedDisabledWrapper(val taskManager: TaskManager, private val embedDisabledDao: EmbedDisabledDao) {
@@ -7,7 +8,7 @@ class EmbedDisabledWrapper(val taskManager: TaskManager, private val embedDisabl
     val embedDisabledCache = HashSet<Long>()
 
     init {
-        taskManager.asyncAfter(2000) {
+        DaoManager.afterTableFunctions.add {
             embedDisabledDao.getSet {
                 embedDisabledCache.addAll(it)
             }

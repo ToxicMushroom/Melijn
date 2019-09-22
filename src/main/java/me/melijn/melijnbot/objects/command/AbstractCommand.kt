@@ -44,13 +44,13 @@ abstract class AbstractCommand(val root: String) {
                 val pair1 = Pair(context.getTextChannel().idLong, context.authorId)
                 val map1 = context.daoManager.commandChannelCoolDownWrapper.executions[pair1]?.toMutableMap()
                     ?: hashMapOf()
-                map1[id] = System.currentTimeMillis()
+                map1[id.toString()] = System.currentTimeMillis()
                 context.daoManager.commandChannelCoolDownWrapper.executions[pair1] = map1
 
                 val pair2 = Pair(context.getGuildId(), context.authorId)
                 val map2 = context.daoManager.commandChannelCoolDownWrapper.executions[pair2]?.toMutableMap()
                     ?: hashMapOf()
-                map2[id] = System.currentTimeMillis()
+                map2[id.toString()] = System.currentTimeMillis()
                 context.daoManager.commandChannelCoolDownWrapper.executions[pair2] = map2
             }
             execute(context)

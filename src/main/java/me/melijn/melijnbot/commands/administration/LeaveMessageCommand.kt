@@ -179,7 +179,7 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
                     AddArg(root, type),
                     RemoveArg(root, type),
                     ListArg(root, type),
-                    SetTitleArg(root, ty
+                    SetTitleArg(root, type),
                     SetValueArg(root, type),
                     SetInlineArg(root, type)
                 )

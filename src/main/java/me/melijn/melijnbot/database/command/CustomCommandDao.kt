@@ -19,7 +19,7 @@ class CustomCommandDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun add(guildId: Long, cc: CustomCommand): Long {
         cc.apply {
-            return driverManager.executeUpdateGetGeneratedKeys("INSERT INTO $table (guildId, name, description, content, aliases, chance, prefix) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            return driverManager.executeUpdateGetGeneratedKeys("INSERT INTO $table (guildId, name, description, content, aliases, chance, prefix) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 guildId, name, description, content.toJSON(), aliases?.joinToString("%SPLIT%"), chance, prefix)
         }
     }
