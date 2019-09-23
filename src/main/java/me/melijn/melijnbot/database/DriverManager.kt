@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
+import java.sql.Statement
 import javax.sql.DataSource
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -215,14 +216,16 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
     suspend fun executeUpdateGetGeneratedKeys(query: String, vararg objects: Any?): Long = suspendCoroutine {
         try {
             getUsableConnection { connection ->
-                connection.prepareStatement(query).use { preparedStatement ->
-                    for ((index, value) in objects.withIndex()) {
-                        preparedStatement.setObject(index + 1, value)
-                    }
+                connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)
+                    .use { preparedStatement ->
+                        for ((index, value) in objects.withIndex()) {
+                            preparedStatement.setObject(index + 1, value)
+                        }
 
-                    preparedStatement.executeUpdate()
-                    it.resume(preparedStatement.generatedKeys.getLong("id"))
-                }
+
+                        preparedStatement.executeUpdate()
+                        it.resume(preparedStatement.generatedKeys.getLong("id"))
+                    }
             }
         } catch (e: SQLException) {
             logger.error("Something went wrong when executing the query: $query")

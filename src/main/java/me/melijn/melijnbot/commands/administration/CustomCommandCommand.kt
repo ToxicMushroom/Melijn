@@ -390,7 +390,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 if (context.args.isEmpty()) {
                     MessageCommandUtil.showMessageCC(context, property, cc)
                 } else {
-                    MessageCommandUtil.showMessageCC(context, property, cc)
+                    MessageCommandUtil.setMessageCC(context, property, cc)
                 }
             }
         }

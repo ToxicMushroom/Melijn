@@ -86,7 +86,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
 
 
-        val ccsWithPrefixMatches = mutableListOf<CustomCommand>()
+        val ccsWithPrefixMatches = mutableMapOf<CustomCommand, String>()
         val ccsWithoutPrefixMatches = mutableListOf<CustomCommand>()
         for (prefix in prefixes) {
 
@@ -101,11 +101,11 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             for (cc in ccsWithPrefix) {
                 val aliases = cc.aliases
                 if (cc.name.equals(commandParts[1], true)) {
-                    ccsWithPrefixMatches.add(cc)
+                    ccsWithPrefixMatches[cc] = prefix
                 } else if (aliases != null) {
                     for (alias in aliases) {
                         if (alias.equals(commandParts[1], true)) {
-                            ccsWithPrefixMatches.add(cc)
+                            ccsWithPrefixMatches[cc] = prefix
                         }
                     }
                 }
@@ -120,7 +120,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         val commandParts = message.contentRaw.split(Regex("\\s+")).toList()
 
         if (ccsWithPrefixMatches.isNotEmpty()) {
-            runCustomCommandByChance(event, commandParts, ccsWithPrefixMatches, true)
+            runCustomCommandByChance(event, commandParts, ccsWithPrefixMatches)
             return
         } else {
             for (cc in ccsWithoutPrefix) {
@@ -138,15 +138,23 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             }
         }
         if (ccsWithoutPrefixMatches.isNotEmpty()) {
-            runCustomCommandByChance(event, commandParts, ccsWithoutPrefixMatches, false)
+            val mapje: Map<CustomCommand, String?> = ccsWithoutPrefixMatches.map { cc -> cc to null }.toMap()
+            runCustomCommandByChance(event, commandParts, mapje)
             return
         }
     }
 
-    private suspend fun runCustomCommandByChance(event: MessageReceivedEvent, commandParts: List<String>, ccs: List<CustomCommand>, prefix: Boolean) {
-        val cc = getCustomCommandByChance(ccs)
+    private suspend fun runCustomCommandByChance(event: MessageReceivedEvent, commandParts: List<String>, ccs: Map<CustomCommand, String?>) {
+        val cc = getCustomCommandByChance(ccs.keys.toList())
         if (checksFailed(cc, event)) return
-        executeCC(cc, event, commandParts, prefix)
+
+        val cParts = commandParts.toMutableList()
+        val prefix = ccs[cc]
+        if (prefix != null) {
+            cParts.add(0, prefix)
+        }
+
+        executeCC(cc, event, cParts, prefix != null)
     }
 
     private suspend fun executeCC(cc: CustomCommand, event: MessageReceivedEvent, commandParts: List<String>, prefix: Boolean) {

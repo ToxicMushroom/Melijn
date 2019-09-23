@@ -38,7 +38,7 @@ object MessageCommandUtil {
     }
 
     suspend fun setMessageCC(context: CommandContext, property: ModularMessageProperty, cc: CustomCommand) {
-        val messageWrapper = context.daoManager.messageWrapper
+        val ccWrapper = context.daoManager.customCommandWrapper
         val guildId = context.getGuildId()
         val message = cc.content
         val type = MessageType.CUSTOM_COMMAND
@@ -46,7 +46,7 @@ object MessageCommandUtil {
         runCorrectSetThing(property, context, message, type)
         cc.content = message
 
-        messageWrapper.updateMessage(message, guildId, type)
+        ccWrapper.update(guildId, cc)
     }
 
     private suspend fun runCorrectSetThing(property: ModularMessageProperty, context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -152,10 +152,10 @@ object MessageCommandUtil {
         messageWrapper.updateMessage(modularMessage, context.getGuildId(), type)
     }
 
-    suspend fun clearEmbedCC(context: CommandContext, type: MessageType, cc: CustomCommand) {
+    suspend fun clearEmbedCC(context: CommandContext, cc: CustomCommand) {
         val ccWrapper = context.daoManager.customCommandWrapper
         val modularMessage = cc.content
-        clearEmbedAndMessage(context, type, modularMessage)
+        clearEmbedAndMessage(context, MessageType.CUSTOM_COMMAND, modularMessage)
         cc.content = modularMessage
         ccWrapper.update(context.getGuildId(), cc)
     }
@@ -203,17 +203,30 @@ object MessageCommandUtil {
     }
 
     suspend fun addAttachmentJoinLeave(context: CommandContext, type: MessageType) {
-        val language = context.getLanguage()
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
             ?: ModularMessage()
 
+        addAttachmentAndMessage(context, type, modularMessage)
+        messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
+    }
+
+    suspend fun addAttachmentCC(context: CommandContext, cc: CustomCommand) {
+        val ccWrapper = context.daoManager.customCommandWrapper
+        val modularMessage = cc.content
+        addAttachmentAndMessage(context, MessageType.CUSTOM_COMMAND, modularMessage)
+        cc.content = modularMessage
+        ccWrapper.update(context.getGuildId(), cc)
+    }
+
+
+    private suspend fun addAttachmentAndMessage(context: CommandContext, type: MessageType, modularMessage: ModularMessage) {
+        val language = context.getLanguage()
         val newMap = modularMessage.attachments.toMutableMap()
         newMap[context.args[0]] = context.args[1]
 
         modularMessage.attachments = newMap.toMap()
 
-        messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
         val msg = i18n.getTranslation(language, "message.attachments.add")
             .replace(PLACEHOLDER_TYPE, type.text)
             .replace("%attachment%", context.args[0])
@@ -223,13 +236,30 @@ object MessageCommandUtil {
     }
 
     suspend fun removeAttachmentJoinLeave(context: CommandContext, type: MessageType) {
-        val language = context.getLanguage()
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.messageCache.get(Pair(context.getGuildId(), type)).await()
             ?: ModularMessage()
 
+        removeAttachmentAndMessage(context, type, modularMessage)
+        messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
+    }
+
+    suspend fun removeAttachmentCC(context: CommandContext, cc: CustomCommand) {
+        val ccWrapper = context.daoManager.customCommandWrapper
+        val modularMessage = cc.content
+        removeAttachmentAndMessage(context, MessageType.CUSTOM_COMMAND, modularMessage)
+        cc.content = modularMessage
+        ccWrapper.update(context.getGuildId(), cc)
+    }
+
+    private suspend fun removeAttachmentAndMessage(context: CommandContext, type: MessageType, modularMessage: ModularMessage) {
+        val language = context.getLanguage()
         val attachments = modularMessage.attachments.toMutableMap()
-        val file = if (attachments.containsKey(context.args[0])) attachments[context.args[0]] else null
+        val file = if (attachments.containsKey(context.args[0])) {
+            attachments[context.args[0]]
+        } else {
+            null
+        }
         attachments.remove(context.args[0])
 
         modularMessage.attachments = attachments.toMap()
@@ -237,9 +267,7 @@ object MessageCommandUtil {
         val msg =
             if (file == null) {
                 i18n.getTranslation(language, "message.attachments.remove.notanattachment")
-
             } else {
-                messageWrapper.setMessage(context.getGuildId(), type, modularMessage)
                 i18n.getTranslation(language, "message.attachments.remove.success")
                     .replace("%file%", file)
             }.replace(PLACEHOLDER_ARG, context.args[0])

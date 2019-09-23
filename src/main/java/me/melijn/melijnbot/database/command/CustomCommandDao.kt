@@ -27,7 +27,7 @@ class CustomCommandDao(driverManager: DriverManager) : Dao(driverManager) {
     suspend fun update(guildId: Long, cc: CustomCommand) {
         cc.apply {
             driverManager.executeUpdate("UPDATE $table SET name = ?, description = ?, content = ?, aliases = ?, chance = ?, prefix = ? WHERE guildId = ? AND id = ?",
-                name, description, content, aliases?.joinToString("%SPLIT%"), chance, prefix, guildId, cc.id)
+                name, description, content.toJSON(), aliases?.joinToString("%SPLIT%"), chance, prefix, guildId, cc.id)
         }
     }
 

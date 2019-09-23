@@ -214,28 +214,21 @@ suspend fun getRoleByArgsNMessage(context: CommandContext, index: Int, sameGuild
 
 suspend fun getColorFromArgNMessage(context: CommandContext, index: Int): Color? {
     val arg = context.args[index]
-    when {
+    val color: Color? = when {
         arg.matches("(?i)#([a-f]|\\d){6}".toRegex()) -> {
-
-            var red: Int = Integer.valueOf(arg.substring(1, 3), 16)
-            var green: Int = Integer.valueOf(arg.substring(3, 5), 16)
-            var blue: Int = Integer.valueOf(arg.substring(5, 7), 16)
-            red = red shl 16 and 0xFF0000
-            green = green shl 8 and 0x00FF00
-            blue = blue and 0x0000FF
-            return Color.getColor((red or green or blue).toString())
+            Color.decode(arg)
         }
         else -> {
-            val color: Color? = Color.getColor(arg)
-            if (color == null) {
-                val language = context.getLanguage()
-                val msg = i18n.getTranslation(language, "message.unknown.color")
-                    .replace(PLACEHOLDER_ARG, arg)
-                sendMsg(context, msg, null)
-            }
-            return color
+            Color.getColor(arg)
         }
     }
+    if (color == null) {
+        val language = context.getLanguage()
+        val msg = i18n.getTranslation(language, "message.unknown.color")
+            .replace(PLACEHOLDER_ARG, arg)
+        sendMsg(context, msg, null)
+    }
+    return color
 }
 
 suspend fun JDA.messageByJSONNMessage(context: CommandContext, json: String): MessageEmbed? {
