@@ -224,7 +224,10 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
 
 
                         preparedStatement.executeUpdate()
-                        it.resume(preparedStatement.generatedKeys.getLong("id"))
+                        val rs = preparedStatement.generatedKeys
+                        if (rs.next()) {
+                            it.resume(rs.getLong(1))
+                        }
                     }
             }
         } catch (e: SQLException) {
