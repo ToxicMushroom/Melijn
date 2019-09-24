@@ -12,7 +12,6 @@ import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
-import java.util.regex.Pattern
 
 class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
@@ -96,13 +95,19 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            if (context.args.size < 2) {
+            val args = context.rawArg.split("(\\s+)?>(\\s+)?".toRegex())
+            if (args.size < 2) {
                 sendSyntax(context, syntax)
                 return
             }
 
-            val name = context.args[0]
-            val content = context.rawArg.replaceFirst(("${Pattern.quote(name)}\\s+").toRegex(), "")
+
+            val name = args[0]
+            val content = if (args[1].isBlank()) {
+                "empty"
+            } else {
+                args[1]
+            }
             val cc = CustomCommand(0, name, ModularMessage(content))
 
             val ccId = context.daoManager.customCommandWrapper.add(context.getGuildId(), cc)
@@ -111,7 +116,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.success")
                 .replace("%id%", cc.id.toString())
-                .replace("%ccName", cc.name)
+                .replace("%ccName%", cc.name)
                 .replace("%content%", cc.content.messageContent ?: "error")
             sendMsg(context, msg)
         }
@@ -141,7 +146,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.success")
                 .replace("%id%", cc.id.toString())
-                .replace("%ccName", cc.name)
+                .replace("%ccName%", cc.name)
 
             sendMsg(context, msg)
         }
@@ -170,7 +175,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.selected")
                 .replace("%id%", cc.id.toString())
-                .replace("%ccName", cc.name)
+                .replace("%ccName%", cc.name)
             sendMsg(context, msg)
 
         }
@@ -235,7 +240,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 val s = ccSelected.aliases?.toMutableList() ?: mutableListOf()
                 val possibleLong = getIntegerFromArgN(context, 0) ?: s.indexOf(context.rawArg)
 
-                var alias = ""
+                val alias: String
 
                 if (possibleLong == -1) {
                     sendSyntax(context, syntax)
@@ -279,6 +284,8 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                 val path = if (aliases == null) "$root.empty" else "$root.title"
                 val title = i18n.getTranslation(language, path)
+                    .replace("%id%", ccSelected.id.toString())
+                    .replace("%ccName%", ccSelected.name)
 
                 val content = if (aliases == null) {
                     ""
@@ -347,7 +354,8 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.success")
-                .replace("%id%", id.toString())
+                .replace("%id%", ccSelected.id.toString())
+                .replace("%ccName%", ccSelected.name)
 
             sendMsg(context, msg)
         }
@@ -376,7 +384,8 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.success")
-                .replace("%id%", id.toString())
+                .replace("%id%", ccSelected.id.toString())
+                .replace("%ccName%", ccSelected.name)
 
             sendMsg(context, msg)
         }

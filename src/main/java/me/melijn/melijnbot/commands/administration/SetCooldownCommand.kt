@@ -42,11 +42,15 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
             daoWrapper.setCooldowns(channel.guild.idLong, channel.idLong, commands, cooldown)
 
             val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.response1")
+            val path = "$root.response1" + if (commands.size > 1) {
+                ".multiple"
+            } else {
+                ""
+            }
+            val msg = i18n.getTranslation(language, path)
                 .replace(PLACEHOLDER_CHANNEL, "#${channel.name}")
                 .replace("%commandCount%", commands.size.toString())
                 .replace("%commandNode%", context.args[1])
-                .replace("%s%", if (commands.size > 1) "s" else "")
                 .replace("%cooldown%", cooldown.toString())
             sendMsg(context, msg)
         }
@@ -69,13 +73,16 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
 
             val daoWrapper = context.daoManager.commandCooldownWrapper
             daoWrapper.setCooldowns(context.getGuildId(), commands, cooldown)
-
+            val path = "$root.response1" + if (commands.size > 1) {
+                ".multiple"
+            } else {
+                ""
+            }
             val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.response1")
+            val msg = i18n.getTranslation(language, path)
                 .replace("%commandCount%", commands.size.toString())
                 .replace("%commandNode%", context.args[1])
                 .replace("%cooldown%", cooldown.toString())
-                .replace("%s%", if (commands.size > 1) "s" else "")
 
             sendMsg(context, msg)
         }

@@ -55,11 +55,13 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
 
             val dao = context.daoManager.disabledCommandWrapper
             dao.setCommandState(context.getGuildId(), commands, commandState)
-
+            val path = "$root.response1" + if (commands.size > 1) {
+                ".multiple"
+            } else {
+                ""
+            }
             val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.response1")
-                .replace("%s%", if (commands.size > 1) "s" else "")
-                .replace("%es%", if (commands.size > 1) "" else "es")
+            val msg = i18n.getTranslation(language, path)
                 .replace("%commandCount%", commands.size.toString())
                 .replace("%state%", commandState.toString())
                 .replace("%commandNode%", context.args[0])
@@ -94,14 +96,16 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
 
             val dao = context.daoManager.channelCommandStateWrapper
             dao.setCommandState(context.getGuildId(), channel.idLong, commands, commandState)
-
+            val path = "$root.response1" + if (commands.size > 1) {
+                ".multiple"
+            } else {
+                ""
+            }
             val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.response1")
-                .replace("%s%", if (commands.isNotEmpty()) "s" else "")
+            val msg = i18n.getTranslation(language, path)
                 .replace(PLACEHOLDER_CHANNEL, channel.asTag)
                 .replace("%commandCount%", commands.size.toString())
-                .replace("%es%", if (commands.size > 1) "" else "es")
-                .replace("%state%", commandState.toString())
+                .replace("%tate%", commandState.toString())
                 .replace("%commandNode%", context.args[1])
 
             sendMsg(context, msg)
