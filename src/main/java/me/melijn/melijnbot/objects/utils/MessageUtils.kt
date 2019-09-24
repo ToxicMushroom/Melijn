@@ -47,7 +47,8 @@ fun Exception.sendInGuild(guild: Guild? = null, channel: MessageChannel? = null,
 suspend fun sendSyntax(context: CommandContext, translationPath: String) {
     val language = context.getLanguage()
     val syntax = i18n.getTranslation(language, "message.command.usage")
-        .replace("%syntax%", i18n.getTranslation(language, translationPath))
+        .replace("%syntax%", i18n.getTranslation(language, translationPath)
+            .replace("%prefix%", context.usedPrefix))
     sendMsg(context.getTextChannel(), syntax)
 }
 

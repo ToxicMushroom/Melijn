@@ -27,12 +27,13 @@ class CustomCommandWrapper(private val taskManager: TaskManager, private val cus
         return future
     }
 
-    suspend fun add(guildId: Long, cc: CustomCommand) {
+    suspend fun add(guildId: Long, cc: CustomCommand): Long {
         val id = customCommandDao.add(guildId, cc)
         val list = customCommandCache.get(guildId).await().toMutableList()
         cc.id = id
         list.add(cc)
         customCommandCache.put(guildId, CompletableFuture.completedFuture(list))
+        return id
     }
 
     suspend fun remove(guildId: Long, id: Long) {

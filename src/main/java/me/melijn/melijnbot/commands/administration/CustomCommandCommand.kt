@@ -9,6 +9,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 import java.util.regex.Pattern
@@ -77,7 +78,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             val ccs = context.daoManager.customCommandWrapper.customCommandCache.get(context.getGuildId()).await()
             var content = "```INI"
 
-            content += "\n[id] - name - chance"
+            content += "\n[id] - [name] - [chance]"
             for (cc in ccs) {
                 content += "\n[${cc.id}] - ${cc.name} - ${cc.chance}"
             }
@@ -104,12 +105,14 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             val content = context.rawArg.replaceFirst(("${Pattern.quote(name)}\\s+").toRegex(), "")
             val cc = CustomCommand(0, name, ModularMessage(content))
 
-            context.daoManager.customCommandWrapper.add(context.getGuildId(), cc)
+            val ccId = context.daoManager.customCommandWrapper.add(context.getGuildId(), cc)
+            cc.id = ccId
 
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.success")
-                .replace("%name%", name)
-                .replace("%content%", content)
+                .replace("%id%", cc.id.toString())
+                .replace("%ccName", cc.name)
+                .replace("%content%", cc.content.messageContent ?: "error")
             sendMsg(context, msg)
         }
 
@@ -127,14 +130,18 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 sendSyntax(context, syntax)
                 return
             }
+            val guildId = context.getGuildId()
 
             val id = getLongFromArgNMessage(context, 0) ?: return
+            val cc = context.daoManager.customCommandWrapper.customCommandCache.get(guildId).await()
+                .first { cc -> cc.id == id }
 
-            context.daoManager.customCommandWrapper.remove(context.getGuildId(), id)
+            context.daoManager.customCommandWrapper.remove(guildId, id)
 
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.success")
-                .replace("%id%", id.toString())
+                .replace("%id%", cc.id.toString())
+                .replace("%ccName", cc.name)
 
             sendMsg(context, msg)
         }
@@ -153,13 +160,17 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 sendSyntax(context, syntax)
                 return
             }
+            val guildId = context.getGuildId()
 
             val id = getLongFromArgNMessage(context, 0) ?: return
-            selectionMap[Pair(context.getGuildId(), context.authorId)] = id
+            selectionMap[Pair(guildId, context.authorId)] = id
+            val cc = context.daoManager.customCommandWrapper.customCommandCache.get(guildId).await()
+                .first { cc -> cc.id == id }
 
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.selected")
-                .replace("%id%", id.toString())
+                .replace("%id%", cc.id.toString())
+                .replace("%ccName", cc.name)
             sendMsg(context, msg)
 
         }
@@ -199,7 +210,9 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                 val language = context.getLanguage()
                 val msg = i18n.getTranslation(language, "$root.success")
-                    .replace("%id%", id.toString())
+                    .replace("%id%", ccSelected.id.toString())
+                    .replace("%ccName%", ccSelected.name)
+                    .replace(PLACEHOLDER_ARG, context.rawArg)
 
                 sendMsg(context, msg)
             }
@@ -219,12 +232,16 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 }
 
                 val ccSelected = getSelectedCCNMessage(context) ?: return
-                val possibleLong = getIntegerFromArgN(context, 0)
-
                 val s = ccSelected.aliases?.toMutableList() ?: mutableListOf()
-                if (possibleLong == null) {
-                    s.remove(context.rawArg)
+                val possibleLong = getIntegerFromArgN(context, 0) ?: s.indexOf(context.rawArg)
+
+                var alias = ""
+
+                if (possibleLong == -1) {
+                    sendSyntax(context, syntax)
+                    return
                 } else {
+                    alias = s[possibleLong]
                     s.removeAt(possibleLong)
                 }
                 ccSelected.aliases = s.toList()
@@ -234,7 +251,10 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                 val language = context.getLanguage()
                 val msg = i18n.getTranslation(language, "$root.success")
-                    .replace("%id%", id.toString())
+                    .replace("%id%", ccSelected.id.toString())
+                    .replace("%ccName%", ccSelected.name)
+                    .replace("%position%", possibleLong.toString())
+                    .replace("%alias%", alias)
 
                 sendMsg(context, msg)
             }
@@ -298,7 +318,9 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.success")
-                .replace("%id%", id.toString())
+                .replace("%id%", ccSelected.id.toString())
+                .replace("%ccName%", ccSelected.name)
+                .replace(PLACEHOLDER_ARG, context.rawArg)
 
             sendMsg(context, msg)
         }
