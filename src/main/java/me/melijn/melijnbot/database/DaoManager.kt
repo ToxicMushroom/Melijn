@@ -40,6 +40,8 @@ import me.melijn.melijnbot.database.prefix.UserPrefixDao
 import me.melijn.melijnbot.database.prefix.UserPrefixWrapper
 import me.melijn.melijnbot.database.role.RoleDao
 import me.melijn.melijnbot.database.role.RoleWrapper
+import me.melijn.melijnbot.database.role.SelfRoleDao
+import me.melijn.melijnbot.database.role.SelfRoleWrapper
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.database.supporter.UserSupporterDao
 import me.melijn.melijnbot.database.warn.WarnDao
@@ -47,6 +49,7 @@ import me.melijn.melijnbot.database.warn.WarnWrapper
 import me.melijn.melijnbot.objects.threading.TaskManager
 
 const val RAPIDLY_USED_CACHE = 1L
+const val NOT_IMPORTANT_CACHE = 2L
 const val FREQUENTLY_USED_CACHE = 5L
 const val IMPORTANT_CACHE = 10L
 
@@ -91,6 +94,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
     val channelWrapper: ChannelWrapper
 
     val roleWrapper: RoleWrapper
+    val selfRoleWrapper: SelfRoleWrapper
 
     lateinit var mySQLVersion: String
     lateinit var connectorVersion: String
@@ -142,6 +146,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
         logChannelWrapper = LogChannelWrapper(taskManager, LogChannelDao(driverManager))
         channelWrapper = ChannelWrapper(taskManager, ChannelDao(driverManager))
         roleWrapper = RoleWrapper(taskManager, RoleDao(driverManager))
+        selfRoleWrapper = SelfRoleWrapper(taskManager, SelfRoleDao(driverManager))
 
         banWrapper = BanWrapper(taskManager, BanDao(driverManager))
         muteWrapper = MuteWrapper(taskManager, MuteDao(driverManager))

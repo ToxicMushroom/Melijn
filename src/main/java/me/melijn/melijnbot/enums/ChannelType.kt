@@ -1,5 +1,5 @@
 package me.melijn.melijnbot.enums
 
 enum class ChannelType {
-    JOIN, LEAVE
+    JOIN, LEAVE, SELFROLE
 }

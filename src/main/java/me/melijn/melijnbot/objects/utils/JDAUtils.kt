@@ -22,7 +22,7 @@ val FULL_USER_REF: Pattern = Pattern.compile("(\\S.{0,30}\\S)\\s*#(\\d{4})") // 
 val USER_MENTION: Pattern = Pattern.compile("<@!?(\\d{17,20})>") // $1 -> ID
 val CHANNEL_MENTION: Pattern = Pattern.compile("<#(\\d{17,20})>") // $1 -> ID
 val ROLE_MENTION: Pattern = Pattern.compile("<@&(\\d{17,20})>") // $1 -> ID
-val EMOTE_MENTION: Pattern = Pattern.compile("<:(.{2,32}):(\\d{17,20})>")
+val EMOTE_MENTION: Pattern = Pattern.compile("<a?:(.{2,32}):(\\d{17,20})>") // $1 -> NAME, $2 -> ID
 
 val Member.asTag: String
     get() = this.user.asTag
@@ -210,6 +210,51 @@ suspend fun getRoleByArgsNMessage(context: CommandContext, index: Int, sameGuild
         sendMsg(context, msg, null)
     }
     return role
+}
+
+suspend fun getEmoteByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): Emote? {
+    val emote = getEmoteByArgsN(context, index, sameGuildAsContext)
+    if (emote == null) {
+        val language = context.getLanguage()
+        val msg = i18n.getTranslation(language, "message.unknown.emote")
+            .replace(PLACEHOLDER_ARG, context.args[index])
+        sendMsg(context, msg, null)
+    }
+    return emote
+}
+
+fun getEmoteByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean): Emote? {
+    val arg = context.args[index]
+    val matcher = DISCORD_ID.matcher(arg)
+    val emoteMatcher = EMOTE_MENTION.matcher(arg)
+    var emote: Emote? = null
+    if (matcher.matches()) {
+        emote = context.getShardManager()?.getEmoteById(arg)
+
+    } else if (emoteMatcher.find()) {
+        val id = emoteMatcher.group(2).toLong()
+        emote = context.getShardManager()?.getEmoteById(id)
+
+    } else {
+        var emotes: List<Emote>? = context.getGuild().getEmotesByName(arg, false)
+        if (emotes?.isNotEmpty() == true) emote = emotes[0]
+
+        emotes = context.getGuild().getEmotesByName(arg, true)
+        if (emotes.isNotEmpty() && emote == null) emote = emotes[0]
+
+        emotes = context.getShardManager()?.getEmotesByName(arg, false)
+        if (emotes?.isNotEmpty() == true && emote == null) emote = emotes[0]
+
+        emotes = context.getShardManager()?.getEmotesByName(arg, true)
+        if (emotes?.isNotEmpty() == true && emote == null) emote = emotes[0]
+
+    }
+
+    return if (sameGuildAsContext && emote?.guild?.idLong != context.getGuildId()) {
+        null
+    } else {
+        emote
+    }
 }
 
 suspend fun getColorFromArgNMessage(context: CommandContext, index: Int): Color? {
