@@ -17,10 +17,10 @@ repositories {
 }
 
 dependencies {
-    implementation('net.dv8tion:JDA:4.0.0_46') {
+    implementation('net.dv8tion:JDA:4.0.0_48') {
         exclude module: 'opus-java'
     }
-    implementation group: 'com.sedmelluq', name: 'lavaplayer', version: '1.3.20'
+    implementation group: 'com.sedmelluq', name: 'lavaplayer', version: '1.3.22-pre'
     implementation group: 'com.github.FredBoat', name: 'Lavalink-Client', version: '9bda4ea'
 
     //https://github.com/ToxicMushroom/JagTag-Kotlin
