@@ -36,7 +36,9 @@ class WarnCommand : AbstractCommand("command.warn") {
             return
         }
 
-        var reason = context.rawArg.replaceFirst((context.args[0] + "($:\\s+)?").toRegex(), "")
+        var reason = context.rawArg
+            .replaceFirst(context.args[0], "")
+            .trim()
         if (reason.isBlank()) reason = "/"
 
         var reasonPreSpaceCount = 0

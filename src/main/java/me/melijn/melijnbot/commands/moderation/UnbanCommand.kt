@@ -35,7 +35,9 @@ class UnbanCommand : AbstractCommand("command.unban") {
         val language = context.getLanguage()
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
 
-        var unbanReason = context.rawArg.replaceFirst((context.args[0] + "($:\\s+)?").toRegex(), "")
+        var unbanReason = context.rawArg
+            .replaceFirst(context.args[0], "")
+            .trim()
         if (unbanReason.isBlank()) unbanReason = "/"
 
         var reasonPreSpaceCount = 0

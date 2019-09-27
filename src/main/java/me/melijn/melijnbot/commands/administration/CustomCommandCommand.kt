@@ -95,7 +95,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            val args = context.rawArg.split("(\\s+)?>(\\s+)?".toRegex())
+            val args = context.rawArg.split("\\s*>\\s*".toRegex())
             if (args.size < 2) {
                 sendSyntax(context, syntax)
                 return
@@ -619,7 +619,9 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                             return
                         }
                         val index = getIntegerFromArgNMessage(context, 0) ?: return
-                        val title = context.rawArg.replaceFirst("$index\\s+?".toRegex(), "")
+                        val title = context.rawArg
+                            .replaceFirst("$index", "")
+                            .trim()
                         val cc = getSelectedCCNMessage(context) ?: return
                         MessageCommandUtil.setEmbedFieldTitleCC(index, title, context, cc)
                     }
@@ -637,7 +639,9 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                             return
                         }
                         val index = getIntegerFromArgNMessage(context, 0) ?: return
-                        val value = context.rawArg.replaceFirst("$index\\s+?".toRegex(), "")
+                        val value = context.rawArg
+                            .replaceFirst("$index", "")
+                            .trim()
                         val cc = getSelectedCCNMessage(context) ?: return
                         MessageCommandUtil.setEmbedFieldValueCC(index, value, context, cc)
                     }

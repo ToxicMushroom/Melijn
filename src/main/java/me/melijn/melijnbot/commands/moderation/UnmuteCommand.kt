@@ -33,7 +33,9 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         }
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
 
-        var unmuteReason = context.rawArg.replaceFirst((context.args[0] + "($:\\s+)?").toRegex(), "")
+        var unmuteReason = context.rawArg
+            .replaceFirst(context.args[0], "")
+            .trim()
         if (unmuteReason.isBlank()) unmuteReason = "/"
 
         var reasonPreSpaceCount = 0

@@ -49,13 +49,19 @@ class CommandContext(
         args = commandParts.drop(1 + commandOrder.size)
         var commandPath = ""
         for (i in 1..commandOrder.size) {
-            commandPath += Pattern.quote(commandParts[i]) + "(\\s+)"
-            if (i == commandOrder.size) {
-                if (args.isEmpty()) commandPath += "?"
+            commandPath += Pattern.quote(commandParts[i])
+            commandPath += if (i == commandOrder.size) {
+                if (args.isEmpty()) {
+                    "\\s*"
+                } else {
+                    "\\s+"
+                }
+            } else {
+                "\\s+"
             }
         }
 
-        val regex: Regex = ("${Pattern.quote(usedPrefix)}(\\s+)?$commandPath").toRegex()
+        val regex: Regex = ("${Pattern.quote(usedPrefix)}\\s*$commandPath").toRegex()
         rawArg = messageReceivedEvent.message.contentRaw.replaceFirst(regex, "")
     }
 

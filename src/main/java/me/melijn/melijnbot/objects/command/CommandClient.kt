@@ -21,7 +21,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
-import java.util.regex.Pattern
 import kotlin.random.Random
 
 class CommandClient(private val commandList: Set<AbstractCommand>, private val container: Container) : ListenerAdapter() {
@@ -94,8 +93,10 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             if (!message.contentRaw.startsWith(prefix)) continue
 
             val commandParts: ArrayList<String> = ArrayList(message.contentRaw
-                .replaceFirst(Regex("${Pattern.quote(prefix)}(\\s+)?"), "")
+                .replaceFirst(prefix, "")
+                .trim()
                 .split(Regex("\\s+")))
+
             commandParts.add(0, prefix)
 
             for (cc in ccsWithPrefix) {
@@ -176,7 +177,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         container.daoManager.commandChannelCoolDownWrapper.executions[pair2] = map2
 
 
-        val regex = ("${commandParts[0]}\\s+?" + if (prefix) "${commandParts[1]}\\s+?" else "").toRegex()
+        val regex = ("${commandParts[0]}\\s*" + if (prefix) "${commandParts[1]}\\s*" else "").toRegex()
         val rawArg = event.message.contentRaw.replaceFirst(regex, "")
         val modularMessage = replaceVariablesInCCMessage(member, rawArg, cc)
 

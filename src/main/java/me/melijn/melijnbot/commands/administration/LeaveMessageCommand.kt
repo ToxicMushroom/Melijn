@@ -229,7 +229,9 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
                         return
                     }
                     val index = getIntegerFromArgNMessage(context, 0) ?: return
-                    val title = context.rawArg.replaceFirst("$index\\s+?".toRegex(), "")
+                    val title = context.rawArg
+                        .replaceFirst("$index", "")
+                        .trim()
                     MessageCommandUtil.setEmbedFieldTitleJoinLeave(index, title, context, type)
                 }
             }
@@ -246,7 +248,9 @@ class LeaveMessageCommand : AbstractCommand("command.leave") {
                         return
                     }
                     val index = getIntegerFromArgNMessage(context, 0) ?: return
-                    val value = context.rawArg.replaceFirst("$index\\s+?".toRegex(), "")
+                    val value = context.rawArg
+                        .replaceFirst("$index", "")
+                        .trim()
                     MessageCommandUtil.setEmbedFieldValueJoinLeave(index, value, context, type)
                 }
             }
