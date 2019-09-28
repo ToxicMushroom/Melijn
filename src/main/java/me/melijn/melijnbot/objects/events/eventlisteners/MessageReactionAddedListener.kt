@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.events.AbstractListener
+import me.melijn.melijnbot.objects.events.eventutil.SelfRoleUtil
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
@@ -17,11 +18,13 @@ import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEve
 import java.awt.Color
 
 class MessageReactionAddedListener(container: Container) : AbstractListener(container) {
+
     override fun onEvent(event: GenericEvent) {
         if (event is GuildMessageReactionAddEvent) onGuildMessageReactionAdd(event)
     }
 
     private fun onGuildMessageReactionAdd(event: GuildMessageReactionAddEvent) = runBlocking {
+        selfRoleHandler(event)
         val channelId = container.daoManager.logChannelWrapper.logChannelCache.get(Pair(event.guild.idLong, LogChannelType.REACTION)).await()
         if (channelId == -1L) return@runBlocking
         val channel = event.guild.getTextChannelById(channelId) ?: return@runBlocking
@@ -54,5 +57,15 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         embedBuilder.setColor(Color.WHITE)
 
         sendEmbed(container.daoManager.embedDisabledWrapper, logChannel, embedBuilder.build())
+    }
+
+    private suspend fun selfRoleHandler(event: GuildMessageReactionAddEvent) {
+        val guild = event.guild
+        val member = event.member
+        val role = SelfRoleUtil.getSelectedSelfRoleNByReactionEvent(event, container) ?: return
+
+        if (!member.roles.contains(role)) {
+            guild.addRoleToMember(member, role).queue()
+        }
     }
 }

@@ -28,6 +28,7 @@ class EventManager(val container: Container) : IEventManager {
         val messageReceivedListener = MessageReceivedListener(container)
         val messageUpdateListener = MessageUpdateListener(container)
         val messageReactionAddedListener = MessageReactionAddedListener(container)
+        val messageReactionRemovedListener = MessageReactionRemovedListener(container)
         val joinLeaveListener = JoinLeaveListener(container)
 
 
@@ -42,6 +43,7 @@ class EventManager(val container: Container) : IEventManager {
         eventListeners.add(messageReceivedListener)
         eventListeners.add(messageUpdateListener)
         eventListeners.add(messageReactionAddedListener)
+        eventListeners.add(messageReactionRemovedListener)
         eventListeners.add(joinLeaveListener)
     }
 

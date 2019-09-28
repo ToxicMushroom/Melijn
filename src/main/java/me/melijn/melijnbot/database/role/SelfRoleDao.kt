@@ -9,7 +9,7 @@ class SelfRoleDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "selfRoles"
     override val tableStructure: String = "guildId bigint, roleId bigint, emoteId bigint"
-    override val keys: String = "PRIMARY KEY roleId"
+    override val keys: String = "PRIMARY KEY(roleId)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)

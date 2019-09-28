@@ -46,15 +46,19 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         val noReasonArgs = noUserArg.split(">")[0].split("\\s+".toRegex())
         val banDuration = (getDurationByArgsNMessage(context, noReasonArgs, 1, noReasonArgs.size) ?: return) * 1000
 
-        var reason = if (noUserArg.contains(">"))
+        var reason = if (noUserArg.contains(">")) {
             noUserArg.substring(noUserArg.indexOfFirst { s -> s == '>' } + 1, noUserArg.length)
-        else
+        } else {
             "/"
+        }
 
         var reasonPreSpaceCount = 0
         for (c in reason) {
-            if (c == ' ') reasonPreSpaceCount++
-            else break
+            if (c == ' ') {
+                reasonPreSpaceCount++
+            } else {
+                break
+            }
         }
         reason = reason.substring(reasonPreSpaceCount)
 
@@ -67,7 +71,9 @@ class TempBanCommand : AbstractCommand("command.tempban") {
             null,
             endTime = System.currentTimeMillis() + banDuration
         )
-        if (activeBan != null) ban.startTime = activeBan.startTime
+        if (activeBan != null) {
+            ban.startTime = activeBan.startTime
+        }
 
         val language = context.getLanguage()
         val banning = i18n.getTranslation(language, "message.banning")
