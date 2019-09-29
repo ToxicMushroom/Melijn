@@ -4,6 +4,7 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.getEmoteByArgsNMessage
 import me.melijn.melijnbot.objects.utils.getRoleByArgsNMessage
@@ -15,7 +16,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
     init {
         id = 37
         name = "selfRole"
-        aliases = arrayOf("sr")
+        aliases = arrayOf("selfr")
         children = arrayOf(
             AddArg(root),
             RemoveArg(root),
@@ -31,7 +32,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
     class AddArg(root: String) : AbstractCommand("$root.add") {
 
         init {
-            name = "set"
+            name = "add"
+            aliases = arrayOf("set")
         }
 
         override suspend fun execute(context: CommandContext) {
@@ -39,13 +41,16 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 sendSyntax(context, syntax)
                 return
             }
-            val role = getRoleByArgsNMessage(context, 0) ?: return
-            val emote = getEmoteByArgsNMessage(context, 1) ?: return
+            val emote = getEmoteByArgsNMessage(context, 0) ?: return
+            val role = getRoleByArgsNMessage(context, 1) ?: return
 
-            context.daoManager.selfRoleWrapper.set(context.getGuildId(), role.idLong, emote.idLong)
+            context.daoManager.selfRoleWrapper.set(context.getGuildId(), emote.idLong, role.idLong)
 
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.success")
+                .replace("%emoteName%", emote.name)
+                .replace("%emoteId%", emote.id)
+                .replace(PLACEHOLDER_ROLE, role.name)
             sendMsg(context, msg)
         }
     }

@@ -17,7 +17,7 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
     init {
         id = 29
         name = "setRole"
-        aliases = arrayOf("sr")
+        aliases = arrayOf("setr")
         commandCategory = CommandCategory.ADMINISTRATION
     }
 

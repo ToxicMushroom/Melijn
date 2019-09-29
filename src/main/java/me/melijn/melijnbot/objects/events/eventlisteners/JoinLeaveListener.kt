@@ -11,13 +11,13 @@ import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.objects.events.AbstractListener
 import me.melijn.melijnbot.objects.jagtag.WelcomeJagTagParser
-import me.melijn.melijnbot.objects.translation.MISSING_IMAGE_URL
-import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelById
 import me.melijn.melijnbot.objects.utils.sendAttachments
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendMsgWithAttachments
-import net.dv8tion.jda.api.entities.*
+import net.dv8tion.jda.api.entities.EmbedType
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
 import net.dv8tion.jda.api.events.guild.member.GuildMemberLeaveEvent
@@ -32,17 +32,41 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
     }
 
     private fun onGuildMemberJoin(event: GuildMemberJoinEvent) = CoroutineScope(Dispatchers.Default).launch {
-        postWelcomeMessage(event.member, container, ChannelType.JOIN, MessageType.JOIN)
+        postWelcomeMessage(event.member, ChannelType.JOIN, MessageType.JOIN)
+        forceRole(event)
     }
 
     private fun onGuildMemberLeave(event: GuildMemberLeaveEvent) = CoroutineScope(Dispatchers.Default).launch {
-        postWelcomeMessage(event.member, container, ChannelType.LEAVE, MessageType.LEAVE)
+        postWelcomeMessage(event.member, ChannelType.LEAVE, MessageType.LEAVE)
     }
 
-    private suspend fun postWelcomeMessage(member: Member, container: Container, channelType: ChannelType, messageType: MessageType) {
+
+    private suspend fun forceRole(event: GuildMemberJoinEvent) {
+        val member = event.member
+        val guild = event.guild
+        if (!guild.selfMember.canInteract(member)) return
+        val wrapper = container.daoManager.forceRoleWrapper
+
+        val map = wrapper.forceRoleCache.get(guild.idLong).await()
+        val roleIds = map.getOrDefault(member.idLong, emptyList())
+        for (roleId in roleIds) {
+            val role = guild.getRoleById(roleId)
+            if (role == null) {
+                wrapper.remove(guild.idLong, member.idLong, roleId)
+                continue
+            }
+            if (!member.canInteract(role)) {
+                wrapper.remove(guild.idLong, member.idLong, roleId)
+                continue
+            }
+            guild.addRoleToMember(member, role).queue()
+        }
+    }
+
+
+    private suspend fun postWelcomeMessage(member: Member, channelType: ChannelType, messageType: MessageType) {
         val guild = member.guild
         val guildId = guild.idLong
-        val user = member.user
         val channelWrapper = container.daoManager.channelWrapper
         val channelId = channelWrapper.channelCache.get(Pair(guildId, channelType)).await()
         val channel = guild.getAndVerifyChannelById(channelType, channelId, channelWrapper) ?: return

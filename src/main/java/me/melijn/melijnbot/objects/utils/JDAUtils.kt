@@ -201,15 +201,28 @@ fun getRoleByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Bool
     return role
 }
 
-suspend fun getRoleByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): Role? {
+suspend fun getRoleByArgsNMessage(
+    context: CommandContext,
+    index: Int,
+    sameGuildAsContext: Boolean = true,
+    canInteract: Boolean = false
+): Role? {
     val role = getRoleByArgsN(context, index, sameGuildAsContext)
     if (role == null) {
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.role")
             .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg, null)
+    }else {
+        if (!context.getGuild().selfMember.canInteract(role)) {
+            val language = context.getLanguage()
+            val msg = i18n.getTranslation(language, "message.cantinteract.role")
+                .replace(PLACEHOLDER_ARG, context.args[index])
+            sendMsg(context, msg, null)
+            return null
+        }
     }
-    return role
+        return role
 }
 
 suspend fun getEmoteByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): Emote? {

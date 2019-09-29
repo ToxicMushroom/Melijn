@@ -90,7 +90,7 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
                         preparedStatement.setObject(index + 1, value)
                     }
                     val rows = preparedStatement.executeUpdate()
-                    (rows)
+                    it.resume(rows)
                 }
             }
         } catch (e: SQLException) {

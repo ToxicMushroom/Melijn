@@ -38,10 +38,7 @@ import me.melijn.melijnbot.database.prefix.GuildPrefixDao
 import me.melijn.melijnbot.database.prefix.GuildPrefixWrapper
 import me.melijn.melijnbot.database.prefix.UserPrefixDao
 import me.melijn.melijnbot.database.prefix.UserPrefixWrapper
-import me.melijn.melijnbot.database.role.RoleDao
-import me.melijn.melijnbot.database.role.RoleWrapper
-import me.melijn.melijnbot.database.role.SelfRoleDao
-import me.melijn.melijnbot.database.role.SelfRoleWrapper
+import me.melijn.melijnbot.database.role.*
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.database.supporter.UserSupporterDao
 import me.melijn.melijnbot.database.warn.WarnDao
@@ -106,6 +103,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
 
     val messageHistoryWrapper: MessageHistoryWrapper
     val messageWrapper: MessageWrapper
+    val forceRoleWrapper: ForceRoleWrapper
 
     init {
         val driverManager = DriverManager(mysqlSettings)
@@ -155,6 +153,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
 
         messageHistoryWrapper = MessageHistoryWrapper(taskManager, MessageHistoryDao(driverManager))
         messageWrapper = MessageWrapper(taskManager, MessageDao(driverManager))
+        forceRoleWrapper = ForceRoleWrapper(taskManager, ForceRoleDao(driverManager))
 
         //After registering wrappers
         driverManager.executeTableRegistration()

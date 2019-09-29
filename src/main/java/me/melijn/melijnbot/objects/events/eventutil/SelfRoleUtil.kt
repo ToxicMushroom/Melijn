@@ -20,11 +20,11 @@ object SelfRoleUtil {
         val channelId = daoManager.channelWrapper.channelCache.get(Pair(guildId, ChannelType.SELFROLE)).await()
         if (channelId != channel.idLong) return null
 
-        val removedReactionEmoteId = reaction.reactionEmote.idLong
+        val reactionEmoteId = reaction.reactionEmote.idLong
         val map = daoManager.selfRoleWrapper.selfRoleCache.get(guildId).await()
-        if (!map.containsKey(removedReactionEmoteId)) return null
+        if (!map.containsKey(reactionEmoteId)) return null
 
-        val roleId = map[removedReactionEmoteId] ?: return null
+        val roleId = map[reactionEmoteId] ?: return null
         val role = guild.getRoleById(roleId)
         if (role == null || !selfMember.canInteract(role)) {
             daoManager.selfRoleWrapper.remove(guildId, roleId)
