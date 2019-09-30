@@ -106,16 +106,16 @@ object StringUtils {
 
     fun getSplitIndex(findLastNewline: String, nextSplitThreshold: Int, margin: Int): Int {
         var index = findLastNewline.lastIndexOf("\n")
-        if (index < nextSplitThreshold - margin) {
+        if (index < nextSplitThreshold) {
             index = findLastNewline.lastIndexOf(". ")
         }
-        if (index < nextSplitThreshold - margin) {
+        if (index < nextSplitThreshold) {
             index = findLastNewline.lastIndexOf(" ")
         }
-        if (index < nextSplitThreshold - margin) {
+        if (index < nextSplitThreshold) {
             index = findLastNewline.lastIndexOf(",")
         }
-        if (index < nextSplitThreshold - margin) {
+        if (index < nextSplitThreshold) {
             index = 1999 - margin
         }
 
@@ -252,4 +252,17 @@ private fun appendTimePart(timePart: Long, sb: StringBuilder, colon: Boolean = t
         sb.append(timePart)
         if (colon) sb.append(":")
     }
+}
+
+fun getUnicode(text: String): String {
+    val builder = StringBuilder()
+    text.codePoints().forEachOrdered { code ->
+        val chars = Character.toChars(code)
+        for (char in chars) {
+            val int = Integer.toHexString(char.toInt()).toUpperCase()
+            val unicode = "0$int"
+            builder.append("\\u$unicode")
+        }
+    }
+    return builder.toString()
 }

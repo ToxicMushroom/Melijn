@@ -69,9 +69,9 @@ class UnbanCommand : AbstractCommand("command.unban") {
 
                 //Normal success path
                 val msg = getUnbanMessage(context.getGuild(), targetUser, banAuthor, context.getAuthor(), ban)
-                targetUser.openPrivateChannel().queue({ privateChannel ->
-                    sendEmbed(privateChannel, msg, failed = null)
-                }, null)
+
+                val privateChannel = targetUser.openPrivateChannel().awaitNE()
+                privateChannel?.let { sendEmbed(it, msg, failed = null) }
 
                 val logChannelWrapper = context.daoManager.logChannelWrapper
                 val logChannelId = logChannelWrapper.logChannelCache.get(Pair(context.getGuildId(), LogChannelType.UNBAN)).await()

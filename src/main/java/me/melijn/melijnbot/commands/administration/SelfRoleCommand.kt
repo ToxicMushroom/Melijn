@@ -49,7 +49,6 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.success")
                 .replace("%emoteName%", emote.name)
-                .replace("%emoteId%", emote.id)
                 .replace(PLACEHOLDER_ROLE, role.name)
             sendMsg(context, msg)
         }
@@ -66,15 +65,16 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 sendSyntax(context, syntax)
                 return
             }
-            val role = getRoleByArgsNMessage(context, 0) ?: return
 
-            context.daoManager.selfRoleWrapper.remove(context.getGuildId(), role.idLong)
+
+            //context.daoManager.selfRoleWrapper.remove(context.getGuildId(), pair.first)
 
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.success")
             sendMsg(context, msg)
         }
-    }
+
+            }
 
     class ListArg(root: String) : AbstractCommand("$root.list") {
 

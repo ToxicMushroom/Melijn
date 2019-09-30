@@ -36,6 +36,12 @@ suspend fun <T> RestAction<T>.await() = suspendCoroutine<T> {
         { failure -> it.resumeWithException(failure) }
     )
 }
+suspend fun <T> RestAction<T>.awaitNE() = suspendCoroutine<T?> {
+    queue(
+        { success -> it.resume(success) },
+        { _ -> it.resume(null) }
+    )
+}
 
 //fun getUserByArgs(context: CommandContext, index: Int): User {
 //    var user = getUserByArgsN(context, index)
@@ -235,6 +241,19 @@ suspend fun getEmoteByArgsNMessage(context: CommandContext, index: Int, sameGuil
     }
     return emote
 }
+
+//suspend fun getEmoteOrEmojiByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): Pair<Emote?, String?> {
+//    val pair: Pair<Emote?, String?> = Pair(null, null)
+//    val emote = getEmoteByArgsNMessage(context, index, sameGuildAsContext)
+//
+//    if (emoji == null) {
+//        val language = context.getLanguage()
+//        val msg = i18n.getTranslation(language, "message.unknown.emoji")
+//            .replace(PLACEHOLDER_ARG, context.args[index])
+//        sendMsg(context, msg, null)
+//    }
+//    return emote
+//}
 
 fun getEmoteByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean): Emote? {
     val arg = context.args[index]

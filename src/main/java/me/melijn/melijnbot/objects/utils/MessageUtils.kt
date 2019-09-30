@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.objects.utils
 
+import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
@@ -18,7 +19,11 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 
-fun Exception.sendInGuild(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread()) {
+fun Exception.sendInGuild(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread()) = runBlocking {
+    sendInGuildSuspend(guild, channel, author, thread)
+}
+
+suspend fun Exception.sendInGuildSuspend(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread()) {
     if (Container.instance.settings.unLoggedThreads.contains(thread.name)) return
 
     val channelId = Container.instance.settings.exceptionChannel
@@ -188,7 +193,7 @@ suspend fun sendMsgWithAttachments(channel: TextChannel, message: Message, attac
     messageAction?.queue(success, failed)
 }
 
-fun sendEmbed(context: CommandContext, embed: MessageEmbed, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
+suspend fun sendEmbed(context: CommandContext, embed: MessageEmbed, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
     if (context.isFromGuild) {
         sendEmbed(context.daoManager.embedDisabledWrapper, context.getTextChannel(), embed, success, failed)
     } else {
@@ -196,11 +201,17 @@ fun sendEmbed(context: CommandContext, embed: MessageEmbed, success: ((message: 
     }
 }
 
-fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
-    privateChannel.sendMessage(embed).queue(success, failed)
+suspend fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
+    try {
+        val msg = privateChannel.sendMessage(embed).await()
+        success?.invoke(listOf(msg))
+    } catch (t: Throwable) {
+        t.printStackTrace()
+        failed?.invoke(t)
+    }
 }
 
-fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChannel, embed: MessageEmbed, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
+suspend fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChannel, embed: MessageEmbed, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
     val guild = textChannel.guild
     if (!textChannel.canTalk()) {
         failed?.invoke(IllegalArgumentException("No permission to talk in this channel"))
@@ -208,7 +219,13 @@ fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChann
     }
     if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
         !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
-        textChannel.sendMessage(embed).queue(success, failed)
+        try {
+            val msg = textChannel.sendMessage(embed).await()
+            success?.invoke(listOf(msg))
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            failed?.invoke(t)
+        }
     } else {
         sendEmbedAsMessage(textChannel, embed, success, failed)
     }
@@ -243,56 +260,76 @@ fun MessageEmbed.toMessage(): String {
     return sb.toString()
 }
 
-fun sendEmbedAsMessage(textChannel: TextChannel, embed: MessageEmbed, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
+suspend fun sendEmbedAsMessage(textChannel: TextChannel, embed: MessageEmbed, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
     sendMsg(textChannel, embed.toMessage(), success, failed)
 }
 
-fun sendMsg(context: CommandContext, msg: String, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
+suspend fun sendMsg(context: CommandContext, msg: String, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
     if (context.isFromGuild) sendMsg(context.getTextChannel(), msg, success, failed)
     else sendMsg(context.getPrivateChannel(), msg, success, failed)
 }
 
-suspend fun sendMsg(context: CommandContext, msg: String): Message = suspendCoroutine {
-    val success = { success: Message -> it.resume(success) }
+suspend fun sendMsg(context: CommandContext, msg: String): List<Message> = suspendCoroutine {
+    val success = { success: List<Message> -> it.resume(success) }
     val failed = { failed: Throwable -> it.resumeWithException(failed) }
-    if (context.isFromGuild) {
-        sendMsg(context.getTextChannel(), msg, success, failed)
-    } else {
-        sendMsg(context.getPrivateChannel(), msg, success, failed)
-    }
-}
-
-fun sendMsg(privateChannel: PrivateChannel, msg: String, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
-    if (msg.length <= 2000) {
-        privateChannel.sendMessage(msg).queue(success, failed)
-    } else {
-        StringUtils.splitMessage(msg).forEach {
-            privateChannel.sendMessage(it).queue(success, failed)
-        }
-    }
-}
-
-fun sendMsg(channel: TextChannel, msg: String, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
-    if (channel.canTalk()) {
-        if (msg.length <= 2000) {
-            channel.sendMessage(msg).queue(success, failed)
+    runBlocking {
+        if (context.isFromGuild) {
+            sendMsg(context.getTextChannel(), msg, success, failed)
         } else {
-            StringUtils.splitMessage(msg).forEach {
-                channel.sendMessage(it).queue(success, failed)
-            }
+            sendMsg(context.getPrivateChannel(), msg, success, failed)
         }
     }
 }
 
-fun sendMsg(channel: TextChannel, msg: Message, success: ((message: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
-    if (channel.canTalk()) {
-        var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(msg.contentRaw) else null
-        for (embed in msg.embeds) {
-            if (action == null) action = channel.sendMessage(embed)
-            else action.embed(embed)
+suspend fun sendMsg(privateChannel: PrivateChannel, msg: String, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
+    try {
+        val messageList = mutableListOf<Message>()
+        if (msg.length <= 2000) {
+            messageList.add(privateChannel.sendMessage(msg).await())
+        } else {
+            val msgParts = StringUtils.splitMessage(msg).withIndex()
+            for ((index, text) in msgParts) {
+                messageList.add(index, privateChannel.sendMessage(text).await())
+            }
+
         }
-        action?.queue(success, failed)
+        success?.invoke(messageList)
+    } catch (t: Throwable) {
+        t.printStackTrace()
+        failed?.invoke(t)
+        return
     }
+}
+
+suspend fun sendMsg(channel: TextChannel, msg: String, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
+    require(channel.canTalk()) { "Cannot talk in this channel " + channel.name }
+    try {
+        val messageList = mutableListOf<Message>()
+        if (msg.length <= 2000) {
+            messageList.add(channel.sendMessage(msg).await())
+        } else {
+            val msgParts = StringUtils.splitMessage(msg).withIndex()
+            for ((index, text) in msgParts) {
+                messageList.add(index, channel.sendMessage(text).await())
+            }
+
+        }
+        success?.invoke(messageList)
+    } catch (t: Throwable) {
+        t.printStackTrace()
+        failed?.invoke(t)
+        return
+    }
+}
+
+fun sendMsg(channel: TextChannel, msg: Message, success: ((messages: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
+    require(channel.canTalk()) { "Cannot talk in this channel " + channel.name }
+    var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(msg.contentRaw) else null
+    for (embed in msg.embeds) {
+        if (action == null) action = channel.sendMessage(embed)
+        else action.embed(embed)
+    }
+    action?.queue(success, failed)
 }
 
 fun String.toUpperWordCase(): String {

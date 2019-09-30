@@ -33,7 +33,7 @@ class PingCommand : AbstractCommand("command.ping") {
         val msgPing = timeStamp2 - timeStamp1
         val restPing = context.jda.restPing.await()
 
-        val editedMessage = message.editMessage("${message.contentRaw}${replacePart2(part2, restPing, msgPing)}").await()
+        val editedMessage = message[0].editMessage("${message[0].contentRaw}${replacePart2(part2, restPing, msgPing)}").await()
         val timeStamp3 = System.currentTimeMillis()
         val eMsgPing = timeStamp3 - timeStamp2
         editedMessage.editMessage("${editedMessage.contentRaw}${replacePart3(part3, eMsgPing)}").queue()

@@ -10,6 +10,7 @@ import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.services.Service
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.utils.await
+import me.melijn.melijnbot.objects.utils.awaitNE
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
@@ -68,9 +69,8 @@ class MuteService(val shardManager: ShardManager,
 
         if (mutedUser == null || mutedUser.isBot || mutedUser.isFake) return
 
-        mutedUser.openPrivateChannel().queue({ privateChannel ->
-            sendEmbed(privateChannel, msg, failed = {})
-        }, {})
+        val privateChannel = mutedUser.openPrivateChannel().awaitNE()
+        privateChannel?.let { sendEmbed(it, msg, failed = {}) }
     }
 
     fun start() {
