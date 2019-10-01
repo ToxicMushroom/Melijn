@@ -9,17 +9,17 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
-class SelfRoleWrapper(private val taskManager: TaskManager, private val selfRoleDao: SelfRoleDao) {
+class SelfRoleWrapper(taskManager: TaskManager, private val selfRoleDao: SelfRoleDao) {
 
     val selfRoleCache = Caffeine.newBuilder()
         .executor(taskManager.executorService)
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .buildAsync<Long, Map<Long, Long>> { key, executor ->
+        .buildAsync<Long, Map<String, Long>> { key, executor ->
             getMap(key, executor)
         }
 
-    fun getMap(guildId: Long, executor: Executor): CompletableFuture<Map<Long, Long>> {
-        val future = CompletableFuture<Map<Long, Long>>()
+    fun getMap(guildId: Long, executor: Executor): CompletableFuture<Map<String, Long>> {
+        val future = CompletableFuture<Map<String, Long>>()
         executor.launch {
             val map = selfRoleDao.getMap(guildId)
             future.complete(map)
@@ -27,18 +27,18 @@ class SelfRoleWrapper(private val taskManager: TaskManager, private val selfRole
         return future
     }
 
-    suspend fun set(guildId: Long, emoteId: Long, roleId:  Long) {
+    suspend fun set(guildId: Long, emoteji: String, roleId:  Long) {
         val map = selfRoleCache.get(guildId).await().toMutableMap()
-        map[emoteId] = roleId
+        map[emoteji] = roleId
         selfRoleCache.put(guildId, CompletableFuture.completedFuture(map))
-        selfRoleDao.set(guildId, emoteId, roleId)
+        selfRoleDao.set(guildId, emoteji, roleId)
     }
 
-    suspend fun remove(guildId: Long, emoteId: Long) {
+    suspend fun remove(guildId: Long, emoteji: String) {
         val map = selfRoleCache.get(guildId).await().toMutableMap()
-        map.remove(emoteId)
+        map.remove(emoteji)
         selfRoleCache.put(guildId, CompletableFuture.completedFuture(map))
-        selfRoleDao.remove(guildId, emoteId)
+        selfRoleDao.remove(guildId, emoteji)
     }
 
 

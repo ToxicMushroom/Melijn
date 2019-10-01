@@ -242,18 +242,26 @@ suspend fun getEmoteByArgsNMessage(context: CommandContext, index: Int, sameGuil
     return emote
 }
 
-//suspend fun getEmoteOrEmojiByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): Pair<Emote?, String?> {
-//    val pair: Pair<Emote?, String?> = Pair(null, null)
-//    val emote = getEmoteByArgsNMessage(context, index, sameGuildAsContext)
-//
-//    if (emoji == null) {
-//        val language = context.getLanguage()
-//        val msg = i18n.getTranslation(language, "message.unknown.emoji")
-//            .replace(PLACEHOLDER_ARG, context.args[index])
-//        sendMsg(context, msg, null)
-//    }
-//    return emote
-//}
+suspend fun getEmoteOrEmojiByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): Pair<Emote?, String?> {
+    val arg = context.args[0]
+    val emoji = if (SupportedDiscordEmoji.helpMe.contains(arg)) {
+        arg
+    } else {
+        null
+    }
+
+    val emote = if (emoji == null) {
+        getEmoteByArgsN(context, index, sameGuildAsContext)
+    } else null
+
+    if (emoji == null && emote == null) {
+        val language = context.getLanguage()
+        val msg = i18n.getTranslation(language, "message.unknown.emojioremote")
+            .replace(PLACEHOLDER_ARG, arg)
+        sendMsg(context, msg, null)
+    }
+    return Pair(emote, emoji)
+}
 
 fun getEmoteByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean): Emote? {
     val arg = context.args[index]

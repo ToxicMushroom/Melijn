@@ -6,7 +6,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
 import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.getEmoteByArgsNMessage
+import me.melijn.melijnbot.objects.utils.getEmoteOrEmojiByArgsNMessage
 import me.melijn.melijnbot.objects.utils.getRoleByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
@@ -41,14 +41,25 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 sendSyntax(context, syntax)
                 return
             }
-            val emote = getEmoteByArgsNMessage(context, 0) ?: return
+            val pair = getEmoteOrEmojiByArgsNMessage(context, 0)
+            var rname: String? = null
+            val id = if (pair.first == null) {
+                pair.second?.let { rname = it }
+                pair.second
+            } else {
+                pair.first?.name?.let { rname = it }
+                pair.first?.id
+            } ?: return
+            val name = rname
+            require(name != null) { "what.." }
+
             val role = getRoleByArgsNMessage(context, 1) ?: return
 
-            context.daoManager.selfRoleWrapper.set(context.getGuildId(), emote.idLong, role.idLong)
+            context.daoManager.selfRoleWrapper.set(context.getGuildId(), id, role.idLong)
 
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.success")
-                .replace("%emoteName%", emote.name)
+                .replace("%emoteji%", name)
                 .replace(PLACEHOLDER_ROLE, role.name)
             sendMsg(context, msg)
         }
@@ -66,15 +77,20 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 return
             }
 
-
-            //context.daoManager.selfRoleWrapper.remove(context.getGuildId(), pair.first)
+            val pair = getEmoteOrEmojiByArgsNMessage(context, 0)
+            val id = if (pair.first == null) {
+                pair.second
+            } else {
+                pair.first?.id
+            } ?: return
+            context.daoManager.selfRoleWrapper.remove(context.getGuildId(), id)
 
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.success")
             sendMsg(context, msg)
         }
 
-            }
+    }
 
     class ListArg(root: String) : AbstractCommand("$root.list") {
 
@@ -83,15 +99,22 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            val map = context.daoManager.selfRoleWrapper.selfRoleCache.get(context.getGuildId()).await()
+            val wrapper =  context.daoManager.selfRoleWrapper
+            val map =wrapper.selfRoleCache.get(context.getGuildId()).await()
 
             val language = context.getLanguage()
             val msg = if (map.isNotEmpty()) {
                 val title = i18n.getTranslation(language, "$root.title")
-                var content = "```ini\n[roleId] - emoteId"
+                var content = "```ini\n[emoteji] - roleId - roleName"
 
-                for ((roleId, emoteId) in map) {
-                    content += "\n[$roleId] - $emoteId"
+                for ((emoteji, roleId) in map) {
+                    val role = context.getGuild().getRoleById(roleId)
+                    if (role == null) {
+                        wrapper.remove(context.getGuildId(), emoteji)
+                        continue
+                    }
+
+                    content += "\n[$emoteji] - $roleId - ${role.name}"
                 }
                 content += "```"
                 title + content
