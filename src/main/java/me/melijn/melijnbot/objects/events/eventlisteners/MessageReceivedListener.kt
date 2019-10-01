@@ -25,19 +25,9 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         if (event is GuildMessageReceivedEvent) {
             handleMessageReceivedStoring(event)
             handleAttachmentLog(event)
-            consoleLogMessage(event)
         }
     }
 
-    companion object {
-        var coolString = ""
-    }
-
-    private fun consoleLogMessage(event: GuildMessageReceivedEvent) {
-        if (event.author.idLong != 231459866630291459L) return
-
-        coolString += "\"" + event.message.contentRaw + "\","
-    }
 
     private fun handleAttachmentLog(event: GuildMessageReceivedEvent) {
         if (event.message.attachments.isEmpty()) return
