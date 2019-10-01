@@ -29,6 +29,7 @@ object SelfRoleUtil {
         if (!map.containsKey(emoteji)) return null
 
         val roleId = map[emoteji] ?: return null
+        if (daoManager.forceRoleWrapper.forceRoleCache[guildId].await()[member.idLong]?.contains(roleId) == true) return null
         val role = guild.getRoleById(roleId)
         if (role == null || !selfMember.canInteract(role)) {
             daoManager.selfRoleWrapper.remove(guildId, emoteji)
