@@ -17,7 +17,7 @@ repositories {
 }
 
 dependencies {
-    implementation('net.dv8tion:JDA:4.0.0_48') {
+    implementation('net.dv8tion:JDA:4.0.0_50') {
         exclude module: 'opus-java'
     }
     implementation group: 'com.sedmelluq', name: 'lavaplayer', version: '1.3.22-pre'
@@ -59,7 +59,7 @@ dependencies {
     implementation group: 'com.github.DiscordBotList', name: 'DBL-Java-Library', version: '2.0.1'
 
     //https://mvnrepository.com/artifact/se.michaelthelin.spotify/spotify-web-api-java
-    implementation group: 'se.michaelthelin.spotify', name: 'spotify-web-api-java', version: '4.0.0'
+    implementation group: 'se.michaelthelin.spotify', name: 'spotify-web-api-java', version: '4.0.1'
 
     //Loading caches
     //https://github.com/ben-manes/caffeine
