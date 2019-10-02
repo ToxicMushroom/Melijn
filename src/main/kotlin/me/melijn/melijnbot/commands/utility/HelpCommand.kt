@@ -56,7 +56,12 @@ class HelpCommand : AbstractCommand("command.help") {
     }
 
     //Converts ("ping", "pong", "dunste") into a list of (PingCommand, PongArg, DunsteArg) if the args are matching an existing parent child sequence
-    private fun getCorrectChildElseParent(context: CommandContext, cmdList: MutableList<AbstractCommand>, args: List<String>, argIndex: Int = 1): MutableList<AbstractCommand> {
+    private fun getCorrectChildElseParent(
+        context: CommandContext,
+        cmdList: MutableList<AbstractCommand>,
+        args: List<String>,
+        argIndex: Int = 1
+    ): MutableList<AbstractCommand> {
         if (argIndex >= args.size) return cmdList
         val commandList = cmdList.last().children
         val child = commandList.firstOrNull { child -> child.isCommandFor(args[argIndex]) } ?: cmdList.last()
