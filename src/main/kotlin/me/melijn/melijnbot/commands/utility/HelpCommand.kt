@@ -17,6 +17,7 @@ class HelpCommand : AbstractCommand("command.help") {
         id = 6
         name = "help"
         aliases = arrayOf("commands", "command", "cmds", "cmd")
+        children = arrayOf(ListArg(root))
         commandCategory = CommandCategory.UTILITY
     }
 
@@ -30,21 +31,63 @@ class HelpCommand : AbstractCommand("command.help") {
             sendMsg(context, msg)
             return
         }
-
         val commandList = context.getCommands()
-        if (args[0].equals("list", ignoreCase = true)) {
+        val parent = commandList.firstOrNull() { cmd -> cmd.isCommandFor(args[0]) }
+        if (parent == null) {
+            sendSyntax(context, syntax)
+            return
+        }
+        val parentChildList = getCorrectChildElseParent(context, mutableListOf(parent), args)
+        val command = parentChildList.last()
 
-            val title = i18n.getTranslation(language, "$root.response2.title")
-            val util = i18n.getTranslation(language, "$root.response2.field1.title")
-            val administration = i18n.getTranslation(language, "$root.response2.field2.title")
-            val moderation = i18n.getTranslation(language, "$root.response2.field3.title")
-            val music = i18n.getTranslation(language, "$root.response2.field4.title")
-            val image =i18n.getTranslation(language, "$root.response2.field5.title")
-            val animal = i18n.getTranslation(language, "$root.response2.field6.title")
-            val anime = i18n.getTranslation(language, "$root.response2.field7.title")
-            val supporter = i18n.getTranslation(language, "$root.response2.field8.title")
-            val commandAmount = i18n.getTranslation(language, "$root.response2.footer")
-                    .replace("%cmdCount%", commandList.size.toString())
+        var msg = i18n.getTranslation(language, "$root.response3.line1")
+        msg += i18n.getTranslation(language, "$root.response3.line2")
+        if (command.aliases.isNotEmpty()) {
+            msg += i18n.getTranslation(language, "$root.response3.line3")
+        }
+        msg += i18n.getTranslation(language, "$root.response3.line4")
+        if (command.help != "empty") {
+            msg += i18n.getTranslation(language, "$root.response3.line5")
+        }
+        msg += i18n.getTranslation(language, "$root.response3.line6")
+        msg = replaceCmdVars(msg, context, parentChildList)
+
+        sendMsg(context, msg)
+    }
+
+    //Converts ("ping", "pong", "dunste") into a list of (PingCommand, PongArg, DunsteArg) if the args are matching an existing parent child sequence
+    private fun getCorrectChildElseParent(context: CommandContext, cmdList: MutableList<AbstractCommand>, args: List<String>, argIndex: Int = 1): MutableList<AbstractCommand> {
+        if (argIndex >= args.size) return cmdList
+        val commandList = cmdList.last().children
+        val child = commandList.firstOrNull { child -> child.isCommandFor(args[argIndex]) } ?: cmdList.last()
+        return if (child == cmdList.last()) {
+            cmdList
+        } else {
+            cmdList.add(child)
+            getCorrectChildElseParent(context, cmdList, args, argIndex + 1)
+        }
+    }
+
+    class ListArg(root: String) : AbstractCommand("$root.list") {
+
+        init {
+            name = "list"
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            val commandList = context.getCommands()
+            val language = context.getLanguage()
+            val title = i18n.getTranslation(language, "$root.title")
+            val util = i18n.getTranslation(language, "$root.field1.title")
+            val administration = i18n.getTranslation(language, "$root.field2.title")
+            val moderation = i18n.getTranslation(language, "$root.field3.title")
+            val music = i18n.getTranslation(language, "$root.field4.title")
+            val image = i18n.getTranslation(language, "$root.field5.title")
+            val animal = i18n.getTranslation(language, "$root.field6.title")
+            val anime = i18n.getTranslation(language, "$root.field7.title")
+            val supporter = i18n.getTranslation(language, "$root.field8.title")
+            val commandAmount = i18n.getTranslation(language, "$root.footer")
+                .replace("%cmdCount%", commandList.size.toString())
 
             val eb = Embedder(context)
             eb.setTitle(title, "https://melijn.com/commands")
@@ -61,51 +104,33 @@ class HelpCommand : AbstractCommand("command.help") {
             eb.setFooter(commandAmount, null)
 
             sendEmbed(context, eb.build())
-            return
         }
 
-        for (command in commandList) {
-            if (!command.isCommandFor(args[0])) continue
-            var msg = i18n.getTranslation(language, "$root.response3.line1")
-            msg += i18n.getTranslation(language, "$root.response3.line2")
-            if (command.aliases.isNotEmpty()){
-                msg += i18n.getTranslation(language, "$root.response3.line3")
-            }
-            msg += i18n.getTranslation(language, "$root.response3.line4")
-            if (command.help != "empty") {
-                msg += i18n.getTranslation(language, "$root.response3.line5")
-            }
-            msg += i18n.getTranslation(language, "$root.response3.line6")
-
-            msg = replaceCmdVars(msg, context, command)
-
-            sendMsg(context, msg)
-            return
-        }
-
-        sendSyntax(context, syntax)
     }
 
 
-    private suspend fun replaceCmdVars(msg: String, context: CommandContext, command: AbstractCommand): String = msg
-            .replace("%cmdName%", command.name)
+    private suspend fun replaceCmdVars(msg: String, context: CommandContext, parentChildList: List<AbstractCommand>): String {
+        val command = parentChildList.last()
+        val name = parentChildList.joinToString(" ") { cmd -> cmd.name }
+        return msg
+            .replace("%cmdName%", name)
             .replace("%cmdSyntax%", i18n.getTranslation(context.getLanguage(), command.syntax))
             .replace("%cmdAliases%", command.aliases.joinToString())
             .replace("%cmdDescription%", i18n.getTranslation(context.getLanguage(), command.description))
             .replace("%cmdHelp%", i18n.getTranslation(context.getLanguage(), command.help))
             .replace("%cmdCategory%", command.commandCategory.toString())
             .replace("%prefix%", context.usedPrefix)
-
-
-    private fun commandListString(list: Set<AbstractCommand>, category: CommandCategory): String = list
-            .stream()
-            .filter { command -> command.commandCategory == category }
-            .map { fCommand -> fCommand.name }
-            .collect(Collectors.joining("\n"))
+    }
 
 
     private fun replaceArgs(string: String, guildId: Long, usedPrefix: String): String = string
-            .replace("%guildId%", guildId.toString())
-            .replace("%prefix%", usedPrefix)
+        .replace("%guildId%", guildId.toString())
+        .replace("%prefix%", usedPrefix)
 
 }
+
+private fun commandListString(list: Set<AbstractCommand>, category: CommandCategory): String = list
+    .stream()
+    .filter { command -> command.commandCategory == category }
+    .map { fCommand -> fCommand.name }
+    .collect(Collectors.joining("\n"))
