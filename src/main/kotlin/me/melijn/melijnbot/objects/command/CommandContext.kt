@@ -9,7 +9,7 @@ import java.util.regex.Pattern
 class CommandContext(
     private val messageReceivedEvent: MessageReceivedEvent,
     val commandParts: List<String>,
-    private val container: Container,
+    val container: Container,
     private val commandList: Set<AbstractCommand>
 ) : ICommandContext {
 
