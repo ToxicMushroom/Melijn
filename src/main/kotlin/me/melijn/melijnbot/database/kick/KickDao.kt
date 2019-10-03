@@ -16,7 +16,7 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
     suspend fun add(kick: Kick) {
         kick.apply {
             driverManager.executeUpdate("INSERT IGNORE INTO $table (guildId, kickedId, kickAuthorId, kickReason, kickMoment) VALUES (?, ?, ?, ?, ?)",
-                guildId, kickedId, kickAuthorId, kickReason, kickMoment)
+                guildId, kickedId, kickAuthorId, reason, moment)
         }
 
     }
@@ -55,6 +55,6 @@ data class Kick(
     val guildId: Long,
     val kickedId: Long,
     val kickAuthorId: Long,
-    val kickReason: String,
-    val kickMoment: Long = System.currentTimeMillis()
+    val reason: String,
+    val moment: Long = System.currentTimeMillis()
 )

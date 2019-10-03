@@ -89,11 +89,11 @@ class TempBanCommand : AbstractCommand("command.tempban") {
     private suspend fun continueBanning(context: CommandContext, targetUser: User, ban: Ban, activeBan: Ban?, banningMessage: Message? = null) {
         val guild = context.getGuild()
         val author = context.getAuthor()
-        val bannedMessageDm = getBanMessage(guild, targetUser, author, ban)
-        val bannedMessageLc = getBanMessage(guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
+        val language = context.getLanguage()
+        val bannedMessageDm = getBanMessage(language, guild, targetUser, author, ban)
+        val bannedMessageLc = getBanMessage(language, guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
         context.daoManager.banWrapper.setBan(ban)
 
-        val language = context.getLanguage()
         try {
             context.getGuild().ban(targetUser, 7).await()
             banningMessage?.editMessage(

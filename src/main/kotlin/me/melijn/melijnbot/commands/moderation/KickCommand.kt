@@ -70,12 +70,14 @@ class KickCommand : AbstractCommand("command.kick") {
     private suspend fun continueKicking(context: CommandContext, targetMember: Member, kick: Kick, kickingMessage: Message? = null) {
         val guild = context.getGuild()
         val author = context.getAuthor()
-        val kickedMessageDm = getKickMessage(guild, targetMember.user, author, kick)
-        val warnedMessageLc = getKickMessage(guild, targetMember.user, author, kick, true, targetMember.user.isBot, kickingMessage != null)
+        val language = context.getLanguage()
+
+        val kickedMessageDm = getKickMessage(language, guild, targetMember.user, author, kick)
+        val warnedMessageLc = getKickMessage(language, guild, targetMember.user, author, kick, true, targetMember.user.isBot, kickingMessage != null)
 
         context.daoManager.kickWrapper.addKick(kick)
-        try {
-            context.getGuild().kick(targetMember, kick.kickReason).await()
+        val msg = try {
+            context.getGuild().kick(targetMember, kick.reason).await()
             kickingMessage?.editMessage(
                 kickedMessageDm
             )?.override(true)?.queue()
@@ -85,58 +87,70 @@ class KickCommand : AbstractCommand("command.kick") {
             val logChannel = guild.getTextChannelById(logChannelId)
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, warnedMessageLc) }
 
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.success")
+            i18n.getTranslation(language, "$root.success")
                 .replace(PLACEHOLDER_USER, targetMember.asTag)
-                .replace("%reason%", kick.kickReason)
-            sendMsg(context, msg)
+                .replace("%reason%", kick.reason)
+
         } catch (t: Throwable) {
             kickingMessage?.editMessage("failed to kick")?.queue()
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.failure")
+
+            i18n.getTranslation(language, "$root.failure")
                 .replace(PLACEHOLDER_USER, targetMember.asTag)
                 .replace("%cause%", t.message ?: "unknown (contact support for info)")
-            sendMsg(context, msg)
+
         }
+        sendMsg(context, msg)
     }
 }
 
-fun getKickMessage(guild: Guild,
-                   kickedUser: User,
-                   kickAuthor: User,
-                   kick: Kick,
-                   lc: Boolean = false,
-                   isBot: Boolean = false,
-                   received: Boolean = true
+fun getKickMessage(
+    language: String,
+    guild: Guild,
+    kickedUser: User,
+    kickAuthor: User,
+    kick: Kick,
+    lc: Boolean = false,
+    isBot: Boolean = false,
+    received: Boolean = true
 ): MessageEmbed {
     val eb = EmbedBuilder()
-    eb.setAuthor("Kicked by: " + kickAuthor.asTag + " ".repeat(45).substring(0, 45 - kickAuthor.name.length) + "\u200B", null, kickAuthor.effectiveAvatarUrl)
-    val description = "```LDIF" +
-        if (!lc) {
-            "" +
-                "\nGuild: " + guild.name +
-                "\nGuildId: " + guild.id
-        } else {
-            ""
-        } +
-        "\nKick Author: " + (kickAuthor.asTag) +
-        "\nKick Author Id: " + kick.kickAuthorId +
-        "\nKicked: " + kickedUser.asTag +
-        "\nKickedId: " + kickedUser.id +
-        "\nReason: " + kick.kickReason +
-        "\nMoment of kick: " + (kick.kickMoment.asEpochMillisToDateTime()) +
-        if (!received || isBot) {
-            "\nExtra: " +
-                if (isBot) {
-                    "Target is a bot"
-                } else {
-                    "Target had dm's disabled"
-                }
-        } else {
-            ""
-        } + "```"
+
+    var description = "```LDIF"
+    if (!lc) {
+        description += i18n.getTranslation(language, "message.punishment.kick.nlc")
+            .replace("%guildName%", guild.name)
+            .replace("%guildId%", guild.name)
+    }
+
+    description += i18n.getTranslation(language, "message.punishment.kick.description")
+        .replace("%kickAuthor%", kickAuthor.asTag)
+        .replace("%kickAuthorId%", kickAuthor.id)
+        .replace("%kicked%", kickedUser.asTag)
+        .replace("%kickedId%", kickedUser.id)
+        .replace("%reason%", kick.reason)
+        .replace("%moment%", (kick.moment.asEpochMillisToDateTime()))
+
+    val extraDesc: String = if (!received || isBot) {
+        i18n.getTranslation(language,
+            if (isBot) {
+                "message.punishment.extra.bot"
+            } else {
+                "message.punishment.extra.dm"
+            }
+        )
+    } else {
+        ""
+    }
+    description += extraDesc
+    description += "```"
+
+    val author = i18n.getTranslation(language, "message.punishment.kick.author")
+        .replace(PLACEHOLDER_USER, kickAuthor.asTag)
+        .replace("%spaces%", " ".repeat(45).substring(0, 45 - kickAuthor.name.length) + "\u200B")
+
+    eb.setAuthor(author, null, kickAuthor.effectiveAvatarUrl)
     eb.setDescription(description)
-    eb.setThumbnail(kickedUser.effectiveAvatarUrl)
-    eb.setColor(Color.BLUE)
+    eb.setThumbnail(kickAuthor.effectiveAvatarUrl)
+    eb.setColor(Color.ORANGE)
     return eb.build()
 }

@@ -148,9 +148,9 @@ fun getBanMessage(
     val extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,
             if (isBot) {
-                "message.punishment.ban.extra.bot"
+                "message.punishment.extra.bot"
             } else {
-                "message.punishment.ban.extra.dm"
+                "message.punishment.extra.dm"
             }
         )
     } else {
