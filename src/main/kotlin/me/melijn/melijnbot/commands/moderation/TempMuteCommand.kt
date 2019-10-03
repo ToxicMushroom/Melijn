@@ -118,8 +118,9 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
     private suspend fun continueMuting(context: CommandContext, muteRole: Role, targetUser: User, mute: Mute, activeMute: Mute?, mutingMessage: Message? = null) {
         val guild = context.getGuild()
         val author = context.getAuthor()
-        val mutedMessageDm = getMuteMessage(guild, targetUser, author, mute)
-        val mutedMessageLc = getMuteMessage(guild, targetUser, author, mute, true, targetUser.isBot, mutingMessage != null)
+        val language = context.getLanguage()
+        val mutedMessageDm = getMuteMessage(language, guild, targetUser, author, mute)
+        val mutedMessageLc = getMuteMessage(language, guild, targetUser, author, mute, true, targetUser.isBot, mutingMessage != null)
         context.daoManager.muteWrapper.setMute(mute)
         val targetMember = guild.getMember(targetUser)
 
@@ -134,7 +135,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
             death(mutingMessage, mutedMessageDm, context, mutedMessageLc, activeMute, mute, targetUser)
         } catch (t: Throwable) {
             mutingMessage?.editMessage("failed to mute")?.queue()
-            val language = context.getLanguage()
+
             val msg = i18n.getTranslation(language, "$root.failure")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
                 .replace("%cause%", t.message ?: "unknown (contact support for info)")

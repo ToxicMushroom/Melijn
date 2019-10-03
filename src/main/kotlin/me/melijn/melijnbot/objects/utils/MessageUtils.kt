@@ -211,6 +211,18 @@ suspend fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed, succe
     }
 }
 
+suspend fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed): List<Message> = suspendCoroutine {
+    runBlocking {
+        try {
+            val msg = privateChannel.sendMessage(embed).await()
+            it.resume(listOf(msg))
+        }catch (t: Throwable) {
+            t.printStackTrace()
+            it.resumeWithException(t)
+        }
+    }
+}
+
 suspend fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChannel, embed: MessageEmbed, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
     val guild = textChannel.guild
     if (!textChannel.canTalk()) {

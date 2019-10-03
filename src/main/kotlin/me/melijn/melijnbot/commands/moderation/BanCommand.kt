@@ -129,17 +129,17 @@ fun getBanMessage(
 
     var description = "```LDIF"
     if (!lc) {
-        description += i18n.getTranslation(language, "message.punishment.ban.nlc")
+        description += i18n.getTranslation(language, "message.punishment.nlc")
             .replace("%guildName%", guild.name)
             .replace("%guildId%", guild.name)
     }
 
     description += i18n.getTranslation(language, "message.punishment.ban.description")
 
-        .replace("%banAuthor%", guild.name)
-        .replace("%banAuthorId%", guild.name)
-        .replace("%banned%", guild.name)
-        .replace("%bannedId%", guild.name)
+        .replace("%banAuthor%", banAuthor.asTag)
+        .replace("%banAuthorId%", banAuthor.id)
+        .replace("%banned%", bannedUser.asTag)
+        .replace("%bannedId%", bannedUser.id)
         .replace("%reason%", ban.reason)
         .replace("%duration%", banDuration)
         .replace("%startTime%", (ban.startTime.asEpochMillisToDateTime()))
@@ -166,6 +166,6 @@ fun getBanMessage(
     eb.setAuthor(author, null, banAuthor.effectiveAvatarUrl)
     eb.setDescription(description)
     eb.setThumbnail(bannedUser.effectiveAvatarUrl)
-    eb.setColor(Color.BLUE)
+    eb.setColor(Color.RED)
     return eb.build()
 }
