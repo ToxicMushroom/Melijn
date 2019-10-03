@@ -54,12 +54,8 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         else
             "/"
 
-        var reasonPreSpaceCount = 0
-        for (c in reason) {
-            if (c == ' ') reasonPreSpaceCount++
-            else break
-        }
-        reason = reason.substring(reasonPreSpaceCount)
+
+        reason = reason.trim()
 
         val roleWrapper = context.daoManager.roleWrapper
         val roleId = roleWrapper.roleCache.get(Pair(context.getGuildId(), RoleType.MUTE)).await()

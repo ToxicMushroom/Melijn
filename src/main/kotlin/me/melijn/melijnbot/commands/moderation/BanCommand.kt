@@ -48,13 +48,7 @@ class BanCommand : AbstractCommand("command.ban") {
             .trim()
 
         if (reason.isBlank()) reason = "/"
-
-        var reasonPreSpaceCount = 0
-        for (c in reason) {
-            if (c == ' ') reasonPreSpaceCount++
-            else break
-        }
-        reason = reason.substring(reasonPreSpaceCount)
+        reason = reason.trim()
 
         val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.getGuildId(), targetUser.idLong)
         val ban = Ban(

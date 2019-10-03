@@ -39,13 +39,7 @@ class KickCommand : AbstractCommand("command.kick") {
             .replaceFirst(context.args[0], "")
             .trim()
         if (reason.isBlank()) reason = "/"
-
-        var reasonPreSpaceCount = 0
-        for (c in reason) {
-            if (c == ' ') reasonPreSpaceCount++
-            else break
-        }
-        reason = reason.substring(reasonPreSpaceCount)
+        reason = reason.trim()
 
         val kick = Kick(
             context.getGuildId(),

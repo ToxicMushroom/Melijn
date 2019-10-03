@@ -38,12 +38,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
             .trim()
         if (unmuteReason.isBlank()) unmuteReason = "/"
 
-        var reasonPreSpaceCount = 0
-        for (c in unmuteReason) {
-            if (c == ' ') reasonPreSpaceCount++
-            else break
-        }
-        unmuteReason = unmuteReason.substring(reasonPreSpaceCount)
+        unmuteReason = unmuteReason.trim()
 
         val activeMute: Mute? = context.daoManager.muteWrapper.getActiveMute(context.getGuildId(), targetUser.idLong)
         val mute: Mute = activeMute

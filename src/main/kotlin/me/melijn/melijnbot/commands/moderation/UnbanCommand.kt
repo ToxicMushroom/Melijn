@@ -41,12 +41,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
             .trim()
         if (unbanReason.isBlank()) unbanReason = "/"
 
-        var reasonPreSpaceCount = 0
-        for (c in unbanReason) {
-            if (c == ' ') reasonPreSpaceCount++
-            else break
-        }
-        unbanReason = unbanReason.substring(reasonPreSpaceCount)
+        unbanReason = unbanReason.trim()
 
         val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.getGuildId(), targetUser.idLong)
         val ban: Ban = activeBan

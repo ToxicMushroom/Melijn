@@ -41,12 +41,7 @@ class WarnCommand : AbstractCommand("command.warn") {
             .trim()
         if (reason.isBlank()) reason = "/"
 
-        var reasonPreSpaceCount = 0
-        for (c in reason) {
-            if (c == ' ') reasonPreSpaceCount++
-            else break
-        }
-        reason = reason.substring(reasonPreSpaceCount)
+        reason = reason.trim()
 
         val warn = Warn(
             context.getGuildId(),
