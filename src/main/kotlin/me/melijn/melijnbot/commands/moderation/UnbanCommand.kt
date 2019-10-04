@@ -146,14 +146,15 @@ fun getUnbanMessage(
             .replace("%guildId%", guild.name)
     }
 
+    val deletedAccount = i18n.getTranslation(language, "message.deletedaccount")
     description += i18n.getTranslation(language, "message.punishment.unban.description")
-        .replace("%banAuthor%", banAuthor?.asTag ?: "deleted account")
+        .replace("%banAuthor%", banAuthor?.asTag ?: deletedAccount)
         .replace("%banAuthorId%", ban.banAuthorId.toString())
         .replace("%unBanAuthorId%", ban.unbanAuthorId.toString())
         .replace("%unBanned%", bannedUser.asTag)
-        .replace("%unBannedId%", bannedUser.id)
+        .replace("%unBannedId%", ban.bannedId.toString())
         .replace("%banReason%", ban.reason)
-        .replace("%unbanReason%", ban.reason)
+        .replace("%unbanReason%", ban.unbanReason ?: "/")
         .replace("%duration%", banDuration)
         .replace("%startTime%", (ban.startTime.asEpochMillisToDateTime()))
         .replace("%endTime%", (ban.endTime?.asEpochMillisToDateTime() ?: "none"))

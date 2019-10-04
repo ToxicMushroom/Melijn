@@ -67,8 +67,8 @@ class WarnCommand : AbstractCommand("command.warn") {
         val author = context.getAuthor()
 
         val language = context.getLanguage()
-        val warnedMessageDm = getWarnMessage(guild, targetMember.user, author, warn)
-        val warnedMessageLc = getWarnMessage(guild, targetMember.user, author, warn, true, targetMember.user.isBot, warningMessage != null)
+        val warnedMessageDm = getWarnMessage(language, guild, targetMember.user, author, warn)
+        val warnedMessageLc = getWarnMessage(language, guild, targetMember.user, author, warn, true, targetMember.user.isBot, warningMessage != null)
 
         context.daoManager.warnWrapper.addWarn(warn)
 
@@ -85,45 +85,57 @@ class WarnCommand : AbstractCommand("command.warn") {
 
         val msg = i18n.getTranslation(language, "$root.success")
             .replace(PLACEHOLDER_USER, targetMember.asTag)
-            .replace("%reason%", warn.warnReason)
+            .replace("%reason%", warn.reason)
         sendMsg(context, msg)
     }
 }
 
-fun getWarnMessage(guild: Guild,
-                   warnedUser: User,
-                   warnAuthor: User,
-                   warn: Warn,
-                   lc: Boolean = false,
-                   isBot: Boolean = false,
-                   received: Boolean = true
+fun getWarnMessage(
+    language: String,
+    guild: Guild,
+    warnedUser: User,
+    warnAuthor: User,
+    warn: Warn,
+    lc: Boolean = false,
+    isBot: Boolean = false,
+    received: Boolean = true
 ): MessageEmbed {
     val eb = EmbedBuilder()
-    eb.setAuthor("Warned by: " + warnAuthor.asTag + " ".repeat(45).substring(0, 45 - warnAuthor.name.length) + "\u200B", null, warnAuthor.effectiveAvatarUrl)
-    val description = "```LDIF" +
-        if (!lc) {
-            "" +
-                "\nGuild: " + guild.name +
-                "\nGuildId: " + guild.id
-        } else {
-            ""
-        } +
-        "\nWarn Author: " + (warnAuthor.asTag) +
-        "\nWarn Author Id: " + warn.warnAuthorId +
-        "\nWarned: " + warnedUser.asTag +
-        "\nWarnedId: " + warnedUser.id +
-        "\nReason: " + warn.warnReason +
-        "\nMoment of warn: " + (warn.warnMoment.asEpochMillisToDateTime()) +
-        if (!received || isBot) {
-            "\nExtra: " +
-                if (isBot) {
-                    "Target is a bot"
-                } else {
-                    "Target had dm's disabled"
-                }
-        } else {
-            ""
-        } + "```"
+
+    var description = "```LDIF"
+    if (!lc) {
+        description += i18n.getTranslation(language, "message.punishment.nlc")
+            .replace("%guildName%", guild.name)
+            .replace("%guildId%", guild.name)
+    }
+
+    description += i18n.getTranslation(language, "message.punishment.warn.description")
+        .replace("%warnAuthor%", warnAuthor.asTag)
+        .replace("%warnAuthorId%", warnAuthor.id)
+        .replace("%warned%", warnedUser.asTag)
+        .replace("%warnedId%", warnedUser.id)
+        .replace("%reason%", warn.reason)
+        .replace("%moment%", (warn.moment.asEpochMillisToDateTime()))
+
+    val extraDesc: String = if (!received || isBot) {
+        i18n.getTranslation(language,
+            if (isBot) {
+                "message.punishment.extra.bot"
+            } else {
+                "message.punishment.extra.dm"
+            }
+        )
+    } else {
+        ""
+    }
+    description += extraDesc
+    description += "```"
+
+    val author = i18n.getTranslation(language, "message.punishment.warn.author")
+            .replace(PLACEHOLDER_USER, warnAuthor.asTag)
+        .replace("%spaces%", " ".repeat(45).substring(0, 45 - warnAuthor.name.length) + "\u200B")
+
+    eb.setAuthor(author, null, warnAuthor.effectiveAvatarUrl)
     eb.setDescription(description)
     eb.setThumbnail(warnedUser.effectiveAvatarUrl)
     eb.setColor(Color.YELLOW)

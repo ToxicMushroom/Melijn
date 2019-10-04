@@ -111,7 +111,7 @@ fun getKickMessage(
 
     var description = "```LDIF"
     if (!lc) {
-        description += i18n.getTranslation(language, "message.punishment.kick.nlc")
+        description += i18n.getTranslation(language, "message.punishment.nlc")
             .replace("%guildName%", guild.name)
             .replace("%guildId%", guild.name)
     }
@@ -144,7 +144,7 @@ fun getKickMessage(
 
     eb.setAuthor(author, null, kickAuthor.effectiveAvatarUrl)
     eb.setDescription(description)
-    eb.setThumbnail(kickAuthor.effectiveAvatarUrl)
+    eb.setThumbnail(kickedUser.effectiveAvatarUrl)
     eb.setColor(Color.ORANGE)
     return eb.build()
 }

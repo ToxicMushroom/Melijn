@@ -3,12 +3,14 @@ package me.melijn.melijnbot.objects.services.bans
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.commands.moderation.getUnbanMessage
+import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.database.ban.BanWrapper
 import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
 import me.melijn.melijnbot.database.logchannel.LogChannelWrapper
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.services.Service
+import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.utils.await
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import net.dv8tion.jda.api.entities.Guild
@@ -17,10 +19,12 @@ import net.dv8tion.jda.api.sharding.ShardManager
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
-class BanService(val shardManager: ShardManager,
-                 private val banWrapper: BanWrapper,
-                 private val logChannelWrapper: LogChannelWrapper,
-                 private val embedDisabledWrapper: EmbedDisabledWrapper
+class BanService(
+    val shardManager: ShardManager,
+    private val banWrapper: BanWrapper,
+    private val logChannelWrapper: LogChannelWrapper,
+    private val embedDisabledWrapper: EmbedDisabledWrapper,
+    val daoManager: DaoManager
 ) : Service("ban") {
 
     private var scheduledFuture: ScheduledFuture<*>? = null
@@ -59,26 +63,30 @@ class BanService(val shardManager: ShardManager,
 
     //Sends unban message to tempban logchannel and the unbanned user
     private suspend fun createAndSendUnbanMessage(guild: Guild, unbanAuthor: User, bannedUser: User, banAuthor: User?, ban: Ban) {
-        val msg = getUnbanMessage(guild, bannedUser, banAuthor, unbanAuthor, ban)
+        val language = getLanguage(daoManager, -1, guild.idLong)
+        val msg = getUnbanMessage(language, guild, bannedUser, banAuthor, unbanAuthor, ban)
         val channelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.UNBAN)).await()
         val channel = guild.getTextChannelById(channelId)
+
+        var success = false
+        if (!bannedUser.isBot) {
+            if (bannedUser.isFake) return
+            try {
+                val privateChannel = bannedUser.openPrivateChannel().await()
+                sendEmbed(privateChannel, msg)
+                success = true
+            } catch (t: Throwable) {
+            }
+        }
+
+        val msgLc = getUnbanMessage(language, guild, bannedUser, banAuthor, unbanAuthor, ban, true, bannedUser.isBot, success)
 
         if (channel == null && channelId != -1L) {
             logChannelWrapper.removeChannel(guild.idLong, LogChannelType.UNBAN)
             return
         } else if (channel == null) return
 
-        sendEmbed(embedDisabledWrapper, channel, msg)
-
-        if (!bannedUser.isBot) {
-            if (bannedUser.isFake) return
-
-            try {
-                val privateChannel = bannedUser.openPrivateChannel().await()
-                sendEmbed(privateChannel, msg, failed = {})
-            } catch (t: Throwable) {}
-
-        }
+        sendEmbed(embedDisabledWrapper, channel, msgLc)
     }
 
     fun start() {
