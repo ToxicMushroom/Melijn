@@ -55,8 +55,8 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
         val odmLogChannel = getNLogChannel(event, odmId, LogChannelType.OTHER_DELETED_MESSAGE)
         val sdmLogChannel = getNLogChannel(event, sdmId, LogChannelType.SELF_DELETED_MESSAGE)
-        val pmLogChannel = getNLogChannel(event, odmId, LogChannelType.PURGED_MESSAGE)
-        val fmLogChannel = getNLogChannel(event, sdmId, LogChannelType.FILTERED_MESSAGE)
+        val pmLogChannel = getNLogChannel(event, pmId, LogChannelType.PURGED_MESSAGE)
+        val fmLogChannel = getNLogChannel(event, fmId, LogChannelType.FILTERED_MESSAGE)
         if (odmLogChannel == null && sdmLogChannel == null && pmLogChannel == null && fmLogChannel == null) return@launch
 
         selectCorrectLogType(event, odmLogChannel, sdmLogChannel, pmLogChannel, fmLogChannel)
