@@ -27,7 +27,8 @@ class PurgeCommand : AbstractCommand("command.purge") {
             return
         }
 
-        val amount = getIntegerFromArgNMessage(context, 0, 1, 1000) ?: return
+        // + 1 is to start counting above the .purge command
+        val amount = (getIntegerFromArgNMessage(context, 0, 1, 1000) ?: return) + 1
         val language = context.getLanguage()
 
         val messages = context.getTextChannel().history.retrievePast(amount).await()
