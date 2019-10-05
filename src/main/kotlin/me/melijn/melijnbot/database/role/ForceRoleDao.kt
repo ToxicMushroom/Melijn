@@ -18,11 +18,12 @@ class ForceRoleDao(driverManager: DriverManager) : Dao(driverManager) {
     suspend fun getMap(guildId: Long): Map<Long, List<Long>> = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", { rs ->
             val map = mutableMapOf<Long, List<Long>>()
-            val list = mutableListOf<Long>()
             while (rs.next()) {
+                val userId = rs.getLong("userId")
+                val list = map[userId]?.toMutableList() ?: mutableListOf()
                 list.add(rs.getLong("roleId"))
+                map[userId] = list
             }
-            map[rs.getLong("userId")] = list
             it.resume(map)
         }, guildId)
     }

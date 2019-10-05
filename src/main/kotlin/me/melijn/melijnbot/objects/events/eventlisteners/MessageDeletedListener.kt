@@ -224,7 +224,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         val extra = if (msg.authorId == messageDeleterId) ".self" else ""
         val description = i18n.getTranslation(language, "listener.message.deletion.log${extra}.description")
             .replace("%messageAuthor%", messageAuthor.asTag)
-            .replace("%messageContent%", msg.content)
+            .replace("%messageContent%", msg.content.replace("`", "´"))
             .replace("%messageAuthorId%", msg.authorId.toString())
             .replace("%messageDeleterId%", messageDeleterId.toString())
             .replace("%sentTime%", msg.moment.asEpochMillisToDateTime())

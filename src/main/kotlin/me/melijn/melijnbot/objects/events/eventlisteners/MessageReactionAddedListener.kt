@@ -35,7 +35,6 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         val embedBuilder = EmbedBuilder()
         val language = getLanguage(container.daoManager, -1, event.guild.idLong)
         val title = i18n.getTranslation(language, "listener.message.reaction.log.title")
-
             .replace("%channel%", event.channel.asTag)
 
         val part = if (event.reactionEmote.isEmote) "emote" else "emoji"
@@ -43,10 +42,10 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             .replace("%userId%", event.member.id)
             .replace("%messageId%", event.messageId)
             .replace("%emoteName%", event.reactionEmote.name)
-            .replace("%emoteId%", if (event.reactionEmote.isEmote) event.reactionEmote.id else "no id")
+            .replace("%emoteId%", if (event.reactionEmote.isEmote) event.reactionEmote.id else "/")
             .replace("%moment%", System.currentTimeMillis().asEpochMillisToDateTime())
             .replace("%messageUrl%", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.messageId}")
-            .replace("%emoteUrl%", event.reactionEmote.emote.imageUrl)
+            .replace("%emoteUrl%", if (event.reactionEmote.isEmote) event.reactionEmote.emote.imageUrl else "/")
 
         embedBuilder.setTitle(title)
         embedBuilder.setDescription(description)
