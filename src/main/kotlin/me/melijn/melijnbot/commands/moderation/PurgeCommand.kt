@@ -32,7 +32,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
 
         val messages = context.getTextChannel().history.retrievePast(amount).await()
         for (message in messages) {
-            context.container.purgedIds[context.authorId] = message.idLong
+            context.container.purgedIds[message.idLong] = context.authorId
         }
 
 
