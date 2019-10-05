@@ -149,7 +149,7 @@ fun getMuteMessage(
 ): MessageEmbed {
     val eb = EmbedBuilder()
 
-    val banDuration = mute.endTime?.let { endTime ->
+    val muteDuration = mute.endTime?.let { endTime ->
         getDurationString((endTime - mute.startTime))
     } ?: i18n.getTranslation(language, "infinite")
 
@@ -166,7 +166,7 @@ fun getMuteMessage(
         .replace("%muted%", mutedUser.asTag)
         .replace("%mutedId%", mutedUser.id)
         .replace("%reason%", mute.reason)
-        .replace("%duration%", banDuration)
+        .replace("%duration%", muteDuration)
         .replace("%startTime%", (mute.startTime.asEpochMillisToDateTime()))
         .replace("%endTime%", (mute.endTime?.asEpochMillisToDateTime() ?: "none"))
 

@@ -129,7 +129,6 @@ fun getBanMessage(
     }
 
     description += i18n.getTranslation(language, "message.punishment.ban.description")
-
         .replace("%banAuthor%", banAuthor.asTag)
         .replace("%banAuthorId%", banAuthor.id)
         .replace("%banned%", bannedUser.asTag)

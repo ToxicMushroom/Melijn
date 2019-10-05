@@ -178,8 +178,8 @@ fun getDurationString(milliseconds: Double): String {
     }
 
     appendTimePart(hours, sb)
-    appendTimePart(minutes, sb)
-    appendTimePart(seconds, sb, false)
+    appendTimePart(minutes, sb, true, canAddZeros = (hours != 0L))
+    appendTimePart(seconds, sb, false, canAddZeros = true)
 
 
     return sb.toString()
@@ -246,8 +246,8 @@ suspend fun getDurationByArgsNMessage(context: CommandContext, timeStamps: List<
     return totalTime
 }
 
-private fun appendTimePart(timePart: Long, sb: StringBuilder, colon: Boolean = true) {
-    if (timePart != 0L) {
+private fun appendTimePart(timePart: Long, sb: StringBuilder, colon: Boolean = true, canAddZeros: Boolean = false) {
+    if (timePart != 0L || canAddZeros) {
         if (timePart < 10) sb.append(0)
         sb.append(timePart)
         if (colon) sb.append(":")

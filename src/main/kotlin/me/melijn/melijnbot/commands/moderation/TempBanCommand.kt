@@ -43,8 +43,8 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         val noUserArg = context
             .rawArg.replaceFirst(context.args[0], "")
             .trim()
-        val noReasonArgs = noUserArg.split(">")[0].split("\\s+".toRegex())
-        val banDuration = (getDurationByArgsNMessage(context, noReasonArgs, 1, noReasonArgs.size) ?: return) * 1000
+        val noReasonArgs = noUserArg.split(">")[0].trim().split("\\s+".toRegex())
+        val banDuration = (getDurationByArgsNMessage(context, noReasonArgs, 0, noReasonArgs.size) ?: return) * 1000
 
         var reason = if (noUserArg.contains(">")) {
             noUserArg.substring(noUserArg.indexOfFirst { s -> s == '>' } + 1, noUserArg.length)
