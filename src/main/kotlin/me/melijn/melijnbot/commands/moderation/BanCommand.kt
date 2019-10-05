@@ -48,13 +48,7 @@ class BanCommand : AbstractCommand("command.ban") {
             .trim()
 
         if (reason.isBlank()) reason = "/"
-
-        var reasonPreSpaceCount = 0
-        for (c in reason) {
-            if (c == ' ') reasonPreSpaceCount++
-            else break
-        }
-        reason = reason.substring(reasonPreSpaceCount)
+        reason = reason.trim()
 
         val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.getGuildId(), targetUser.idLong)
         val ban = Ban(
@@ -79,12 +73,13 @@ class BanCommand : AbstractCommand("command.ban") {
     private suspend fun continueBanning(context: CommandContext, targetUser: User, ban: Ban, activeBan: Ban?, banningMessage: Message? = null) {
         val guild = context.getGuild()
         val author = context.getAuthor()
-        val bannedMessageDm = getBanMessage(guild, targetUser, author, ban)
-        val bannedMessageLc = getBanMessage(guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
+        val language = context.getLanguage()
+        val bannedMessageDm = getBanMessage(language, guild, targetUser, author, ban)
+        val bannedMessageLc = getBanMessage(language, guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
 
         context.daoManager.banWrapper.setBan(ban)
 
-        try {
+        val msg = try {
             context.getGuild().ban(targetUser, 7).await()
             banningMessage?.editMessage(
                 bannedMessageDm
@@ -95,66 +90,75 @@ class BanCommand : AbstractCommand("command.ban") {
             val logChannel = guild.getTextChannelById(logChannelId)
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
 
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.success" + if (activeBan != null) ".updated" else "")
+            i18n.getTranslation(language, "$root.success" + if (activeBan != null) ".updated" else "")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
                 .replace("%reason%", ban.reason)
-            sendMsg(context, msg)
+
         } catch (t: Throwable) {
             banningMessage?.editMessage("failed to ban")?.queue()
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.failure")
+
+            i18n.getTranslation(language, "$root.failure")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
                 .replace("%cause%", t.message ?: "unknown (contact support for info)")
-            sendMsg(context, msg)
         }
+        sendMsg(context, msg)
     }
 }
 
-fun getBanMessage(guild: Guild,
-                  bannedUser: User,
-                  banAuthor: User,
-                  ban: Ban,
-                  lc: Boolean = false,
-                  isBot: Boolean = false,
-                  received: Boolean = true
+fun getBanMessage(
+    language: String,
+    guild: Guild,
+    bannedUser: User,
+    banAuthor: User,
+    ban: Ban,
+    lc: Boolean = false,
+    isBot: Boolean = false,
+    received: Boolean = true
 ): MessageEmbed {
     val eb = EmbedBuilder()
 
     val banDuration = ban.endTime?.let { endTime ->
         getDurationString((endTime - ban.startTime))
-    } ?: "infinite"
+    } ?: i18n.getTranslation(language, "infinite")
 
-    val description = "```LDIF" +
-        if (!lc) {
-            "" +
-                "\nGuild: " + guild.name +
-                "\nGuildId: " + guild.id
-        } else {
-            ""
-        } +
-        "\nBan Author: " + (banAuthor.asTag) +
-        "\nBan Author Id: " + ban.banAuthorId +
-        "\nBanned: " + bannedUser.asTag +
-        "\nBannedId: " + bannedUser.id +
-        "\nReason: " + ban.reason +
-        "\nDuration: " + banDuration +
-        "\nStart of ban: " + (ban.startTime.asEpochMillisToDateTime()) +
-        "\nEnd of ban: " + (ban.endTime?.asEpochMillisToDateTime() ?: "none")
-    if (!received || isBot) {
-        "\nExtra: " +
+    var description = "```LDIF\n"
+    if (!lc) {
+        description += i18n.getTranslation(language, "message.punishment.description.nlc")
+            .replace("%guildName%", guild.name)
+            .replace("%guildId%", guild.id)
+    }
+
+    description += i18n.getTranslation(language, "message.punishment.ban.description")
+        .replace("%banAuthor%", banAuthor.asTag)
+        .replace("%banAuthorId%", banAuthor.id)
+        .replace("%banned%", bannedUser.asTag)
+        .replace("%bannedId%", bannedUser.id)
+        .replace("%reason%", ban.reason)
+        .replace("%duration%", banDuration)
+        .replace("%startTime%", (ban.startTime.asEpochMillisToDateTime()))
+        .replace("%endTime%", (ban.endTime?.asEpochMillisToDateTime() ?: "none"))
+
+    val extraDesc: String = if (!received || isBot) {
+        i18n.getTranslation(language,
             if (isBot) {
-                "Target is a bot"
+                "message.punishment.extra.bot"
             } else {
-                "Target had dm's disabled"
+                "message.punishment.extra.dm"
             }
+        )
     } else {
         ""
-    } + "```"
+    }
+    description += extraDesc
+    description += "```"
 
-    eb.setAuthor("Banned by: " + banAuthor.asTag + " ".repeat(45).substring(0, 45 - banAuthor.name.length) + "\u200B", null, banAuthor.effectiveAvatarUrl)
+    val author = i18n.getTranslation(language, "message.punishment.ban.author")
+        .replace(PLACEHOLDER_USER, banAuthor.asTag)
+        .replace("%spaces%", " ".repeat(45).substring(0, 45 - banAuthor.name.length) + "\u200B")
+
+    eb.setAuthor(author, null, banAuthor.effectiveAvatarUrl)
     eb.setDescription(description)
     eb.setThumbnail(bannedUser.effectiveAvatarUrl)
-    eb.setColor(Color.BLUE)
+    eb.setColor(Color.RED)
     return eb.build()
 }

@@ -22,7 +22,7 @@ class KickWrapper(val taskManager: TaskManager, private val kickDao: KickDao) {
         }
         kicks.forEach { kick ->
             val message = convertKickInfoToMessage(shardManager, kick)
-            map[kick.kickMoment] = message
+            map[kick.moment] = message
         }
         return map
     }
@@ -40,8 +40,8 @@ class KickWrapper(val taskManager: TaskManager, private val kickDao: KickDao) {
         return "```INI" +
                 "\n[Kick Author] ${kickAuthor?.asTag ?: "deleted user"}" +
                 "\n[Kick Author Id] ${kick.kickAuthorId}" +
-                "\n[Kick Reason] ${kick.kickReason.substring(0, min(kick.kickReason.length, 830))}" +
-                "\n[Moment] ${kick.kickMoment.asEpochMillisToDateTime()}" +
+                "\n[Kick Reason] ${kick.reason.substring(0, min(kick.reason.length, 830))}" +
+                "\n[Moment] ${kick.moment.asEpochMillisToDateTime()}" +
                 "```"
 
     }

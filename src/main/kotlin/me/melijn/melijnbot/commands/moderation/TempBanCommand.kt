@@ -43,8 +43,8 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         val noUserArg = context
             .rawArg.replaceFirst(context.args[0], "")
             .trim()
-        val noReasonArgs = noUserArg.split(">")[0].split("\\s+".toRegex())
-        val banDuration = (getDurationByArgsNMessage(context, noReasonArgs, 1, noReasonArgs.size) ?: return) * 1000
+        val noReasonArgs = noUserArg.split(">")[0].trim().split("\\s+".toRegex())
+        val banDuration = (getDurationByArgsNMessage(context, noReasonArgs, 0, noReasonArgs.size) ?: return) * 1000
 
         var reason = if (noUserArg.contains(">")) {
             noUserArg.substring(noUserArg.indexOfFirst { s -> s == '>' } + 1, noUserArg.length)
@@ -52,15 +52,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
             "/"
         }
 
-        var reasonPreSpaceCount = 0
-        for (c in reason) {
-            if (c == ' ') {
-                reasonPreSpaceCount++
-            } else {
-                break
-            }
-        }
-        reason = reason.substring(reasonPreSpaceCount)
+        reason = reason.trim()
 
         val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.getGuildId(), targetUser.idLong)
         val ban = Ban(
@@ -89,11 +81,11 @@ class TempBanCommand : AbstractCommand("command.tempban") {
     private suspend fun continueBanning(context: CommandContext, targetUser: User, ban: Ban, activeBan: Ban?, banningMessage: Message? = null) {
         val guild = context.getGuild()
         val author = context.getAuthor()
-        val bannedMessageDm = getBanMessage(guild, targetUser, author, ban)
-        val bannedMessageLc = getBanMessage(guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
+        val language = context.getLanguage()
+        val bannedMessageDm = getBanMessage(language, guild, targetUser, author, ban)
+        val bannedMessageLc = getBanMessage(language, guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
         context.daoManager.banWrapper.setBan(ban)
 
-        val language = context.getLanguage()
         try {
             context.getGuild().ban(targetUser, 7).await()
             banningMessage?.editMessage(

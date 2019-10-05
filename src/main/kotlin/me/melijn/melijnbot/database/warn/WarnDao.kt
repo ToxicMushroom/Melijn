@@ -16,7 +16,7 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
     suspend fun add(warn: Warn) {
         warn.apply {
             driverManager.executeUpdate("INSERT IGNORE INTO $table (guildId, warnedId, warnAuthorId, warnReason, warnMoment) VALUES (?, ?, ?, ?, ?)",
-                guildId, warnedId, warnAuthorId, warnReason, warnMoment)
+                guildId, warnedId, warnAuthorId, reason, moment)
         }
 
     }
@@ -55,6 +55,6 @@ data class Warn(
     val guildId: Long,
     val warnedId: Long,
     val warnAuthorId: Long,
-    val warnReason: String,
-    val warnMoment: Long = System.currentTimeMillis()
+    val reason: String,
+    val moment: Long = System.currentTimeMillis()
 )

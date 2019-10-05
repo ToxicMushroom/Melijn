@@ -85,7 +85,7 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
             val role = getRoleByArgsNMessage(context, 1) ?: return
             daoWrapper.setRole(context.getGuildId(), roleType, role.idLong)
 
-            i18n.getTranslation(language, "$root.set.single")
+            i18n.getTranslation(language, "$root.set")
                 .replace("%roleType%", roleType.text)
                 .replace(PLACEHOLDER_ROLE, role.name)
 

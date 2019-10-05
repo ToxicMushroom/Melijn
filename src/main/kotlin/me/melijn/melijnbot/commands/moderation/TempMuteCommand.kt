@@ -44,22 +44,18 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         }
 
         val noUserArg = context.rawArg
-            .replaceFirst(context.args[0] , "")
+            .replaceFirst(context.args[0], "")
             .trim()
-        val noReasonArgs = noUserArg.split(">")[0].split("\\s+".toRegex())
-        val muteDuration = (getDurationByArgsNMessage(context, noReasonArgs, 1, noReasonArgs.size) ?: return) * 1000
+        val noReasonArgs = noUserArg.split(">")[0].trim().split("\\s+".toRegex())
+        val muteDuration = (getDurationByArgsNMessage(context, noReasonArgs, 0, noReasonArgs.size) ?: return) * 1000
 
         var reason = if (noUserArg.contains(">"))
             noUserArg.substring(noUserArg.indexOfFirst { s -> s == '>' } + 1, noUserArg.length)
         else
             "/"
 
-        var reasonPreSpaceCount = 0
-        for (c in reason) {
-            if (c == ' ') reasonPreSpaceCount++
-            else break
-        }
-        reason = reason.substring(reasonPreSpaceCount)
+
+        reason = reason.trim()
 
         val roleWrapper = context.daoManager.roleWrapper
         val roleId = roleWrapper.roleCache.get(Pair(context.getGuildId(), RoleType.MUTE)).await()
@@ -118,8 +114,9 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
     private suspend fun continueMuting(context: CommandContext, muteRole: Role, targetUser: User, mute: Mute, activeMute: Mute?, mutingMessage: Message? = null) {
         val guild = context.getGuild()
         val author = context.getAuthor()
-        val mutedMessageDm = getMuteMessage(guild, targetUser, author, mute)
-        val mutedMessageLc = getMuteMessage(guild, targetUser, author, mute, true, targetUser.isBot, mutingMessage != null)
+        val language = context.getLanguage()
+        val mutedMessageDm = getMuteMessage(language, guild, targetUser, author, mute)
+        val mutedMessageLc = getMuteMessage(language, guild, targetUser, author, mute, true, targetUser.isBot, mutingMessage != null)
         context.daoManager.muteWrapper.setMute(mute)
         val targetMember = guild.getMember(targetUser)
 
@@ -134,7 +131,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
             death(mutingMessage, mutedMessageDm, context, mutedMessageLc, activeMute, mute, targetUser)
         } catch (t: Throwable) {
             mutingMessage?.editMessage("failed to mute")?.queue()
-            val language = context.getLanguage()
+
             val msg = i18n.getTranslation(language, "$root.failure")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
                 .replace("%cause%", t.message ?: "unknown (contact support for info)")

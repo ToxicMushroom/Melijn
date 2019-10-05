@@ -41,16 +41,11 @@ class MuteCommand : AbstractCommand("command.mute") {
         }
 
         var reason = context.rawArg
-            .replaceFirst(context.args[0] , "")
+            .replaceFirst(context.args[0], "")
             .trim()
         if (reason.isBlank()) reason = "/"
 
-        var reasonPreSpaceCount = 0
-        for (c in reason) {
-            if (c == ' ') reasonPreSpaceCount++
-            else break
-        }
-        reason = reason.substring(reasonPreSpaceCount)
+        reason = reason.trim()
 
         val roleId = context.daoManager.roleWrapper.roleCache.get(Pair(context.getGuildId(), RoleType.MUTE)).await()
         val muteRole: Role? = context.getGuild().getRoleById(roleId)
@@ -109,13 +104,14 @@ class MuteCommand : AbstractCommand("command.mute") {
     private suspend fun continueMuting(context: CommandContext, muteRole: Role, targetUser: User, mute: Mute, activeMute: Mute?, mutingMessage: Message? = null) {
         val guild = context.getGuild()
         val author = context.getAuthor()
-        val mutedMessageDm = getMuteMessage(guild, targetUser, author, mute)
-        val mutedMessageLc = getMuteMessage(guild, targetUser, author, mute, true, targetUser.isBot, mutingMessage != null)
+        val language = context.getLanguage()
+        val mutedMessageDm = getMuteMessage(language, guild, targetUser, author, mute)
+        val mutedMessageLc = getMuteMessage(language, guild, targetUser, author, mute, true, targetUser.isBot, mutingMessage != null)
 
         context.daoManager.muteWrapper.setMute(mute)
         val targetMember = guild.getMember(targetUser) ?: return
 
-        try {
+        val msg = try {
             guild.addRoleToMember(targetMember, muteRole).await()
             mutingMessage?.editMessage(
                 mutedMessageDm
@@ -126,23 +122,23 @@ class MuteCommand : AbstractCommand("command.mute") {
             val logChannel = guild.getTextChannelById(logChannelId)
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, mutedMessageLc) }
 
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.success" + if (activeMute != null) ".updated" else "")
+
+            i18n.getTranslation(language, "$root.success" + if (activeMute != null) ".updated" else "")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
                 .replace("%reason%", mute.reason)
-            sendMsg(context, msg)
         } catch (t: Throwable) {
             mutingMessage?.editMessage("failed to mute")?.queue()
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.failure")
+
+            i18n.getTranslation(language, "$root.failure")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
                 .replace("%cause%", t.message ?: "unknown (contact support for info)")
-            sendMsg(context, msg)
         }
+        sendMsg(context, msg)
     }
 }
 
 fun getMuteMessage(
+    language: String,
     guild: Guild,
     mutedUser: User,
     muteAuthor: User,
@@ -154,37 +150,45 @@ fun getMuteMessage(
     val eb = EmbedBuilder()
 
     val muteDuration = mute.endTime?.let { endTime ->
-        getDurationString(endTime - mute.startTime)
-    } ?: "infinite"
+        getDurationString((endTime - mute.startTime))
+    } ?: i18n.getTranslation(language, "infinite")
 
-    val description = "```LDIF" +
-        if (!lc) {
-            "" +
-                "\nGuild: " + guild.name +
-                "\nGuildId: " + guild.id
-        } else {
-            ""
-        } +
-        "\nMute Author: " + (muteAuthor.asTag) +
-        "\nMute Author Id: " + mute.muteAuthorId +
-        "\nMuted: " + mutedUser.asTag +
-        "\nMutedId: " + mutedUser.id +
-        "\nReason: " + mute.reason +
-        "\nDuration: " + muteDuration +
-        "\nStart of mute: " + (mute.startTime.asEpochMillisToDateTime()) +
-        "\nEnd of mute: " + (mute.endTime?.asEpochMillisToDateTime() ?: "none") + "```"
-    if (!received || isBot) {
-        "\nExtra: " +
+    var description = "```LDIF\n"
+    if (!lc) {
+        description += i18n.getTranslation(language, "message.punishment.description.nlc")
+            .replace("%guildName%", guild.name)
+            .replace("%guildId%", guild.id)
+    }
+
+    description += i18n.getTranslation(language, "message.punishment.mute.description")
+        .replace("%muteAuthor%", muteAuthor.asTag)
+        .replace("%muteAuthorId%", muteAuthor.id)
+        .replace("%muted%", mutedUser.asTag)
+        .replace("%mutedId%", mutedUser.id)
+        .replace("%reason%", mute.reason)
+        .replace("%duration%", muteDuration)
+        .replace("%startTime%", (mute.startTime.asEpochMillisToDateTime()))
+        .replace("%endTime%", (mute.endTime?.asEpochMillisToDateTime() ?: "none"))
+
+    val extraDesc: String = if (!received || isBot) {
+        i18n.getTranslation(language,
             if (isBot) {
-                "Target is a bot"
+                "message.punishment.extra.bot"
             } else {
-                "Target had dm's disabled"
+                "message.punishment.extra.dm"
             }
+        )
     } else {
         ""
-    } + "```"
+    }
+    description += extraDesc
+    description += "```"
 
-    eb.setAuthor("Muted by: " + muteAuthor.asTag + " ".repeat(45).substring(0, 45 - muteAuthor.name.length) + "\u200B", null, muteAuthor.effectiveAvatarUrl)
+    val author = i18n.getTranslation(language, "message.punishment.mute.author")
+        .replace(PLACEHOLDER_USER, muteAuthor.asTag)
+        .replace("%spaces%", " ".repeat(45).substring(0, 45 - muteAuthor.name.length) + "\u200B")
+
+    eb.setAuthor(author, null, muteAuthor.effectiveAvatarUrl)
     eb.setDescription(description)
     eb.setThumbnail(mutedUser.effectiveAvatarUrl)
     eb.setColor(Color.BLUE)

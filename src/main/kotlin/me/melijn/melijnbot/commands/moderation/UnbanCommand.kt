@@ -12,6 +12,7 @@ import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.User
 import java.awt.Color
@@ -40,20 +41,15 @@ class UnbanCommand : AbstractCommand("command.unban") {
             .trim()
         if (unbanReason.isBlank()) unbanReason = "/"
 
-        var reasonPreSpaceCount = 0
-        for (c in unbanReason) {
-            if (c == ' ') reasonPreSpaceCount++
-            else break
-        }
-        unbanReason = unbanReason.substring(reasonPreSpaceCount)
+        unbanReason = unbanReason.trim()
 
         val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.getGuildId(), targetUser.idLong)
         val ban: Ban = activeBan
-                ?: Ban(context.getGuildId(),
-                        targetUser.idLong,
-                        null,
-                        "/"
-                )
+            ?: Ban(context.getGuildId(),
+                targetUser.idLong,
+                null,
+                "/"
+            )
         ban.unbanAuthorId = context.authorId
         ban.unbanReason = unbanReason
         ban.endTime = System.currentTimeMillis()
@@ -68,33 +64,32 @@ class UnbanCommand : AbstractCommand("command.unban") {
                 context.daoManager.banWrapper.setBan(ban)
 
                 //Normal success path
-                val msg = getUnbanMessage(context.getGuild(), targetUser, banAuthor, context.getAuthor(), ban)
+                val msgLc = getUnbanMessage(language, context.getGuild(), targetUser, banAuthor, context.getAuthor(), ban, true)
+
 
                 val privateChannel = targetUser.openPrivateChannel().awaitNE()
-                privateChannel?.let { sendEmbed(it, msg, failed = null) }
+                privateChannel?.let {
+                    try {
+                        val msg = sendEmbed(it, msgLc)
+                        continueUnbanning(context, targetUser, ban, banAuthor, msg[0])
+                    } catch (t: Throwable) {
+                        continueUnbanning(context, targetUser, ban, banAuthor, null)
+                    }
+                } ?: continueUnbanning(context, targetUser, ban, banAuthor, null)
 
-                val logChannelWrapper = context.daoManager.logChannelWrapper
-                val logChannelId = logChannelWrapper.logChannelCache.get(Pair(context.getGuildId(), LogChannelType.UNBAN)).await()
-                val logChannel = guild.getTextChannelById(logChannelId)
-                logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, msg) }
-
-                val success = i18n.getTranslation(language,"$root.success")
-                        .replace(PLACEHOLDER_USER, targetUser.asTag)
-                        .replace("%reason%", unbanReason)
-                sendMsg(context, success)
 
             } catch (t: Throwable) {
                 //Sum ting wrong
-                val msg = i18n.getTranslation(language,"$root.failure")
-                        .replace(PLACEHOLDER_USER, targetUser.asTag)
-                        .replace("%cause%", t.message ?: "unknown (contact support for info)")
+                val msg = i18n.getTranslation(language, "$root.failure")
+                    .replace(PLACEHOLDER_USER, targetUser.asTag)
+                    .replace("%cause%", t.message ?: "unknown (contact support for info)")
                 sendMsg(context, msg)
             }
         } catch (t: Throwable) {
             //Not banned anymore
 
-            val msg = i18n.getTranslation(language,"$root.notbanned")
-                    .replace(PLACEHOLDER_USER, targetUser.asTag)
+            val msg = i18n.getTranslation(language, "$root.notbanned")
+                .replace(PLACEHOLDER_USER, targetUser.asTag)
             sendMsg(context, msg)
 
             if (activeBan != null) {
@@ -102,23 +97,89 @@ class UnbanCommand : AbstractCommand("command.unban") {
             }
         }
     }
+
+    private suspend fun continueUnbanning(context: CommandContext, targetUser: User, ban: Ban, banAuthor: User?, unbanningMessage: Message? = null) {
+        val guild = context.getGuild()
+        val unbanAuthor = context.getAuthor()
+        val language = context.getLanguage()
+        val isBot = targetUser.isBot
+        val received = unbanningMessage != null
+        val lcMsg = getUnbanMessage(
+            language, guild, targetUser, banAuthor, unbanAuthor, ban, true, isBot, received
+        )
+
+
+        val logChannelWrapper = context.daoManager.logChannelWrapper
+        val logChannelId = logChannelWrapper.logChannelCache.get(Pair(context.getGuildId(), LogChannelType.UNBAN)).await()
+        val logChannel = guild.getTextChannelById(logChannelId)
+        logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, lcMsg) }
+
+
+        val success = i18n.getTranslation(language, "$root.success")
+            .replace(PLACEHOLDER_USER, targetUser.asTag)
+            .replace("%reason%", ban.unbanReason ?: "/")
+        sendMsg(context, success)
+    }
 }
 
-fun getUnbanMessage(guild: Guild, bannedUser: User, banAuthor: User?, unbanAuthor: User, ban: Ban): MessageEmbed {
+fun getUnbanMessage(
+    language: String,
+    guild: Guild,
+    bannedUser: User,
+    banAuthor: User?,
+    unbanAuthor: User,
+    ban: Ban,
+    lc: Boolean = false,
+    isBot: Boolean = false,
+    received: Boolean = true
+): MessageEmbed {
     val eb = EmbedBuilder()
-    eb.setAuthor("Unbanned by: " + unbanAuthor.asTag + " ".repeat(45).substring(0, 45 - unbanAuthor.name.length) + "\u200B", null, unbanAuthor.effectiveAvatarUrl)
-    eb.setDescription("```LDIF" +
-            "\nGuild: " + guild.name +
-            "\nGuildId: " + guild.id +
-            "\nBan Author: " + (banAuthor?.asTag ?: "deleted account") +
-            "\nBan Author Id: " + ban.banAuthorId +
-            "\nUnbanned: " + bannedUser.asTag +
-            "\nUnbannedId: " + bannedUser.id +
-            "\nBan Reason: " + ban.reason +
-            "\nUnban Reason: " + ban.unbanReason +
-            "\nStart of ban: " + (ban.startTime.asEpochMillisToDateTime()) +
-            "\nEnd of ban: " + (ban.endTime?.asEpochMillisToDateTime() ?: "none") + "```")
+
+    val banDuration = ban.endTime?.let { endTime ->
+        getDurationString((endTime - ban.startTime))
+    } ?: i18n.getTranslation(language, "infinite")
+
+    var description = "```LDIF\n"
+    if (!lc) {
+        description += i18n.getTranslation(language, "message.punishment.description.nlc")
+            .replace("%guildName%", guild.name)
+            .replace("%guildId%", guild.id)
+    }
+
+    val deletedAccount = i18n.getTranslation(language, "message.deletedaccount")
+    description += i18n.getTranslation(language, "message.punishment.unban.description")
+        .replace("%banAuthor%", banAuthor?.asTag ?: deletedAccount)
+        .replace("%banAuthorId%", ban.banAuthorId.toString())
+        .replace("%unBanAuthorId%", ban.unbanAuthorId.toString())
+        .replace("%unBanned%", bannedUser.asTag)
+        .replace("%unBannedId%", ban.bannedId.toString())
+        .replace("%banReason%", ban.reason)
+        .replace("%unbanReason%", ban.unbanReason ?: "/")
+        .replace("%duration%", banDuration)
+        .replace("%startTime%", (ban.startTime.asEpochMillisToDateTime()))
+        .replace("%endTime%", (ban.endTime?.asEpochMillisToDateTime() ?: "none"))
+
+    val extraDesc: String = if (!received || isBot) {
+        i18n.getTranslation(language,
+            if (isBot) {
+                "message.punishment.extra.bot"
+            } else {
+                "message.punishment.extra.dm"
+            }
+        )
+    } else {
+        ""
+    }
+    description += extraDesc
+    description += "```"
+
+    val author = i18n.getTranslation(language, "message.punishment.unban.author")
+        .replace(PLACEHOLDER_USER, unbanAuthor.asTag)
+        .replace("%spaces%", " ".repeat(45).substring(0, 45 - unbanAuthor.name.length) + "\u200B")
+
+    eb.setAuthor(author, null, unbanAuthor.effectiveAvatarUrl)
+    eb.setDescription(description)
     eb.setThumbnail(bannedUser.effectiveAvatarUrl)
-    eb.setColor(Color.green)
+    eb.setColor(Color.GREEN)
     return eb.build()
 }

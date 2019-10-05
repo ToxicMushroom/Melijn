@@ -103,26 +103,30 @@ fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String): User
 
 suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? = suspendCoroutine {
     val user1: User? = getUserByArgsN(context, index)
-    if (user1 != null) {
-        it.resume(user1)
-    } else if (context.args.size > index) {
-        val arg = context.args[index]
-        val idMatcher = DISCORD_ID.matcher(arg)
-        val mentionMatcher = USER_MENTION.matcher(arg)
+    when {
+        user1 != null -> it.resume(user1)
+        context.args.size > index -> {
+            val arg = context.args[index]
+            val idMatcher = DISCORD_ID.matcher(arg)
+            val mentionMatcher = USER_MENTION.matcher(arg)
 
-        when {
-            idMatcher.matches() -> context.jda.shardManager?.retrieveUserById(arg)
-            mentionMatcher.matches() -> {
-                val id = arg.substring(2, arg.lastIndex - 1).toLong()
-                context.jda.shardManager?.retrieveUserById(id)
-            }
-            else -> null
-        }?.queue({ user ->
-            it.resume(user)
-        }, { _ ->
-            it.resume(null)
-        })
+            when {
+                idMatcher.matches() -> context.jda.shardManager?.retrieveUserById(arg)
+                mentionMatcher.matches() -> {
+                    val id = arg.substring(2, arg.lastIndex - 1).toLong()
+                    context.jda.shardManager?.retrieveUserById(id)
+                }
+                else -> null
+            }?.queue({ user ->
+                it.resume(user)
+            }, { _ ->
+                it.resume(null)
+            })
+
+        }
+        else -> it.resume(null)
     }
+
 }
 
 suspend fun retrieveUserByArgsN(guild: Guild, arg: String): User? = suspendCoroutine {

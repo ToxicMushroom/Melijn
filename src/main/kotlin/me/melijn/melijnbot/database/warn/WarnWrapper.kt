@@ -22,7 +22,7 @@ class WarnWrapper(val taskManager: TaskManager, private val warnDao: WarnDao) {
 
         warns.forEach { warn ->
             val message = convertKickInfoToMessage(shardManager, warn)
-            map[warn.warnMoment] = message
+            map[warn.moment] = message
         }
         return map
     }
@@ -40,8 +40,8 @@ class WarnWrapper(val taskManager: TaskManager, private val warnDao: WarnDao) {
         return "```INI" +
                 "\n[Warn Author] ${warnAuthor?.asTag ?: "deleted user"}" +
                 "\n[Warn Author Id] ${warn.warnAuthorId}" +
-                "\n[Warn Reason] ${warn.warnReason.substring(0, min(warn.warnReason.length, 830))}" +
-                "\n[Moment] ${warn.warnMoment.asEpochMillisToDateTime()}" +
+                "\n[Warn Reason] ${warn.reason.substring(0, min(warn.reason.length, 830))}" +
+                "\n[Moment] ${warn.moment.asEpochMillisToDateTime()}" +
                 "```"
 
     }

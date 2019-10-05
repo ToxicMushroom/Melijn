@@ -25,6 +25,8 @@ class RoleDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND roleType = ?", { rs ->
             if (rs.next()) {
                 it.resume(rs.getLong("roleId"))
+            } else {
+                it.resume(-1)
             }
         }, guildId, roleType.toString())
     }
