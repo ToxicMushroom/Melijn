@@ -34,7 +34,7 @@ class SetMaxUserVerificationFlowRateCommand : AbstractCommand("command.setmaxuse
             wrapper.removeFlowRate(context.getGuildId())
             i18n.getTranslation(language, "$root.unset")
         } else {
-            val rate = getLongFromArgNMessage(context, 0) ?: return
+            val rate = getLongFromArgNMessage(context, 0, 0) ?: return
             wrapper.setUserFlowRate(context.getGuildId(), rate)
             i18n.getTranslation(language, "$root.set")
                 .replace(PLACEHOLDER_ARG, context.rawArg)
