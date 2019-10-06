@@ -41,6 +41,7 @@ import me.melijn.melijnbot.database.prefix.UserPrefixWrapper
 import me.melijn.melijnbot.database.role.*
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.database.supporter.UserSupporterDao
+import me.melijn.melijnbot.database.verification.*
 import me.melijn.melijnbot.database.warn.WarnDao
 import me.melijn.melijnbot.database.warn.WarnWrapper
 import me.melijn.melijnbot.objects.threading.TaskManager
@@ -105,6 +106,11 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
     val messageWrapper: MessageWrapper
     val forceRoleWrapper: ForceRoleWrapper
 
+    val verificationCodeWrapper: VerificationCodeWrapper
+    val verificationEmotejiWrapper: VerificationEmotejiWrapper
+    val verificationTypeWrapper: VerificationTypeWrapper
+    val verificationUserFlowRateWrapper: VerificationUserFlowRateWrapper
+
     init {
         val driverManager = DriverManager(mysqlSettings)
 
@@ -154,6 +160,11 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
         messageHistoryWrapper = MessageHistoryWrapper(taskManager, MessageHistoryDao(driverManager))
         messageWrapper = MessageWrapper(taskManager, MessageDao(driverManager))
         forceRoleWrapper = ForceRoleWrapper(taskManager, ForceRoleDao(driverManager))
+
+        verificationCodeWrapper = VerificationCodeWrapper(taskManager, VerificationCodeDao(driverManager))
+        verificationEmotejiWrapper = VerificationEmotejiWrapper(taskManager, VerificationEmotejiDao(driverManager))
+        verificationTypeWrapper = VerificationTypeWrapper(taskManager, VerificationTypeDao(driverManager))
+        verificationUserFlowRateWrapper = VerificationUserFlowRateWrapper(taskManager, VerificationUserFlowRateDao(driverManager))
 
         //After registering wrappers
         driverManager.executeTableRegistration()
