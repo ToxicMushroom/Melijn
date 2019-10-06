@@ -28,7 +28,7 @@ class VerificationUserFlowRateWrapper(val taskManager: TaskManager, private val 
         verificationUserFlowRateDao.set(guildId, rate)
     }
 
-    suspend fun removeCode(guildId: Long) {
+    suspend fun removeFlowRate(guildId: Long) {
         verificationUserFlowRateCache.put(guildId, CompletableFuture.completedFuture(-1))
         verificationUserFlowRateDao.remove(guildId)
     }

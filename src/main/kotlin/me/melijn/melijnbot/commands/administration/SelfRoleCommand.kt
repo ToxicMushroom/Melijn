@@ -41,7 +41,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 sendSyntax(context, syntax)
                 return
             }
-            val pair = getEmoteOrEmojiByArgsNMessage(context, 0)
+            val pair = getEmoteOrEmojiByArgsNMessage(context, 0) ?: return
             var rname: String? = null
             val id = if (pair.first == null) {
                 pair.second?.let { rname = it }
@@ -77,7 +77,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 return
             }
 
-            val pair = getEmoteOrEmojiByArgsNMessage(context, 0)
+            val pair = getEmoteOrEmojiByArgsNMessage(context, 0)?: return
             val id = if (pair.first == null) {
                 pair.second
             } else {
@@ -99,8 +99,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            val wrapper =  context.daoManager.selfRoleWrapper
-            val map =wrapper.selfRoleCache.get(context.getGuildId()).await()
+            val wrapper = context.daoManager.selfRoleWrapper
+            val map = wrapper.selfRoleCache.get(context.getGuildId()).await()
 
             val language = context.getLanguage()
             val msg = if (map.isNotEmpty()) {

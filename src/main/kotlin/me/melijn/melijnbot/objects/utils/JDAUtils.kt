@@ -246,7 +246,7 @@ suspend fun getEmoteByArgsNMessage(context: CommandContext, index: Int, sameGuil
     return emote
 }
 
-suspend fun getEmoteOrEmojiByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): Pair<Emote?, String?> {
+suspend fun getEmoteOrEmojiByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): Pair<Emote?, String?>? {
     val arg = context.args[0]
     val emoji = if (SupportedDiscordEmoji.helpMe.contains(arg)) {
         arg
@@ -263,6 +263,7 @@ suspend fun getEmoteOrEmojiByArgsNMessage(context: CommandContext, index: Int, s
         val msg = i18n.getTranslation(language, "message.unknown.emojioremote")
             .replace(PLACEHOLDER_ARG, arg)
         sendMsg(context, msg, null)
+        return null
     }
     return Pair(emote, emoji)
 }
