@@ -18,12 +18,16 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
+fun Throwable.sendInGuild(context: CommandContext, thread: Thread = Thread.currentThread()) = runBlocking {
+    sendInGuildSuspend(context.getGuild(), context.getMessageChannel(), context.getAuthor(), thread)
+}
 
-fun Exception.sendInGuild(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread()) = runBlocking {
+
+fun Throwable.sendInGuild(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread()) = runBlocking {
     sendInGuildSuspend(guild, channel, author, thread)
 }
 
-suspend fun Exception.sendInGuildSuspend(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread()) {
+suspend fun Throwable.sendInGuildSuspend(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread()) {
     if (Container.instance.settings.unLoggedThreads.contains(thread.name)) return
 
     val channelId = Container.instance.settings.exceptionChannel
