@@ -11,7 +11,8 @@ import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.objects.events.AbstractListener
 import me.melijn.melijnbot.objects.jagtag.WelcomeJagTagParser
-import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelById
+import me.melijn.melijnbot.objects.utils.VerificationUtils
+import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelByType
 import me.melijn.melijnbot.objects.utils.sendAttachments
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendMsgWithAttachments
@@ -32,8 +33,17 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
     }
 
     private fun onGuildMemberJoin(event: GuildMemberJoinEvent) = CoroutineScope(Dispatchers.Default).launch {
-        postWelcomeMessage(event.member, ChannelType.JOIN, MessageType.JOIN)
-        forceRole(event)
+        if (noVerification(event)) {
+            postWelcomeMessage(event.member, ChannelType.JOIN, MessageType.JOIN)
+            forceRole(event)
+        } else {
+            VerificationUtils.addUnverifiedRole(event.member, container.daoManager.roleWrapper)
+        }
+    }
+
+    private suspend fun noVerification(event: GuildMemberJoinEvent): Boolean {
+        val channel = event.guild.getAndVerifyChannelByType(ChannelType.VERIFICATION, container.daoManager.channelWrapper)
+        return channel == null
     }
 
     private fun onGuildMemberLeave(event: GuildMemberLeaveEvent) = CoroutineScope(Dispatchers.Default).launch {
@@ -68,8 +78,8 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
         val guild = member.guild
         val guildId = guild.idLong
         val channelWrapper = container.daoManager.channelWrapper
-        val channelId = channelWrapper.channelCache.get(Pair(guildId, channelType)).await()
-        val channel = guild.getAndVerifyChannelById(channelType, channelId, channelWrapper) ?: return
+
+        val channel = guild.getAndVerifyChannelByType(channelType, channelWrapper) ?: return
 
         val messageWrapper = container.daoManager.messageWrapper
         var modularMessage = messageWrapper.messageCache.get(Pair(guildId, messageType)).await() ?: return
