@@ -52,7 +52,7 @@ object VerificationUtils {
 
     }
 
-    suspend fun addUnverifiedRoleNLog(member: Member, daoManager: DaoManager) {
+    suspend fun addUnverified(member: Member, daoManager: DaoManager) {
         val guild = member.guild
         val role = guild.getAndVerifyRoleByType(RoleType.UNVERIFIED, daoManager.roleWrapper, true) ?: return
         val result = guild.addRoleToMember(member, role).awaitNE()
@@ -61,8 +61,9 @@ object VerificationUtils {
             if (logChannel != null) {
                 sendMessageFailedToAddRoleToMember(member, role, daoManager)
             }
+        } else {
+            daoManager.unverifiedUsersWrapper.add(member.guild.idLong, member.idLong)
         }
-
     }
 
     private suspend fun sendMessageFailedToAddRoleToMember(member: Member, role: Role, daoManager: DaoManager) {

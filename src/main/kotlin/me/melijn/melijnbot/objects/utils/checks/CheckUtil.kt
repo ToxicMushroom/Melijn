@@ -7,6 +7,8 @@ import me.melijn.melijnbot.database.role.RoleWrapper
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.RoleType
+import me.melijn.melijnbot.objects.utils.toUpperWordCase
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.TextChannel
@@ -24,12 +26,30 @@ suspend fun Guild.getAndVerifyLogChannelByType(type: LogChannelType, logChannelW
     return textChannel
 }
 
-suspend fun Guild.getAndVerifyChannelByType(type: ChannelType, channelWrapper: ChannelWrapper): TextChannel? {
+suspend fun Guild.getAndVerifyChannelByType(
+    type: ChannelType,
+    channelWrapper: ChannelWrapper,
+    logChannelWrapper: LogChannelWrapper,
+    vararg requiredPerms: Permission
+): TextChannel? {
     val channelId = channelWrapper.channelCache.get(Pair(idLong, type)).await()
     val textChannel = getTextChannelById(channelId)
+    val selfMember = textChannel?.guild?.selfMember
+    val logChannel = textChannel?.guild?.getAndVerifyLogChannelByType(LogChannelType.BOT, logChannelWrapper)
+
     var shouldRemove = false
-    if (channelId != -1L && textChannel == null) shouldRemove = true
-    if (textChannel?.canTalk() == false) shouldRemove = true
+    if (channelId != -1L && textChannel == null) {
+        sendRemovedChannelLog(logChannel, "unknownId", channelId.toString())
+        shouldRemove = true
+    }
+
+    for (perm in requiredPerms) {
+        if (shouldRemove || selfMember == null) break
+        if (!selfMember.hasPermission(textChannel, perm)) {
+            shouldRemove = true
+            sendRemovedChannelLog(logChannel, "noPermission", perm.toString().toUpperWordCase())
+        }
+    }
 
     if (shouldRemove) {
         channelWrapper.removeChannel(this.idLong, type)

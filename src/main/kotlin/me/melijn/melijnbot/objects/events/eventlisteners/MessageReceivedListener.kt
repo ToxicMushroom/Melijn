@@ -4,15 +4,15 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.message.DaoMessage
+import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.events.AbstractListener
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.asLongLongGMTString
-import me.melijn.melijnbot.objects.utils.asTag
-import me.melijn.melijnbot.objects.utils.sendEmbed
-import me.melijn.melijnbot.objects.utils.toMessage
+import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelByType
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.events.GenericEvent
@@ -21,11 +21,35 @@ import java.awt.Color
 
 class MessageReceivedListener(container: Container) : AbstractListener(container) {
 
-    override fun onEvent(event: GenericEvent) {
+    override fun onEvent(event: GenericEvent) = runBlocking {
         if (event is GuildMessageReceivedEvent) {
             handleMessageReceivedStoring(event)
             handleAttachmentLog(event)
+            handleVerification(event)
         }
+    }
+
+    private suspend fun handleVerification(event: GuildMessageReceivedEvent) {
+        if (!event.message.isFromGuild) return
+        val textChannel = event.channel
+        val guild = event.guild
+        val member = event.member ?:return
+        val dao = container.daoManager
+
+        val verificationChannel = guild.getAndVerifyChannelByType(ChannelType.VERIFICATION, dao.channelWrapper, Permission.MESSAGE_MANAGE)
+            ?: return
+        if (verificationChannel.idLong != textChannel.idLong) return
+
+        val unverifiedRole = VerificationUtils.getUnverifiedRoleN(event.channel, dao) ?: return
+        if (!dao.unverifiedUsersWrapper.contains(member.idLong) && !member.roles.contains(unverifiedRole)) {
+            if  (!member.hasPermission(Permission.ADMINISTRATOR)) {
+
+            }
+
+            return
+        }
+
+
     }
 
 

@@ -37,7 +37,7 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
             postWelcomeMessage(event.member, ChannelType.JOIN, MessageType.JOIN)
             forceRole(event)
         } else {
-            VerificationUtils.addUnverifiedRole(event.member, container.daoManager.roleWrapper)
+            VerificationUtils.addUnverified(event.member, container.daoManager.roleWrapper)
         }
     }
 

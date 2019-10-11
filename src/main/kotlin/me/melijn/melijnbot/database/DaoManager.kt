@@ -110,6 +110,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
     val verificationEmotejiWrapper: VerificationEmotejiWrapper
     val verificationTypeWrapper: VerificationTypeWrapper
     val verificationUserFlowRateWrapper: VerificationUserFlowRateWrapper
+    val unverifiedUsersWrapper: UnverifiedUsersWrapper
 
     init {
         val driverManager = DriverManager(mysqlSettings)
@@ -165,6 +166,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
         verificationEmotejiWrapper = VerificationEmotejiWrapper(taskManager, VerificationEmotejiDao(driverManager))
         verificationTypeWrapper = VerificationTypeWrapper(taskManager, VerificationTypeDao(driverManager))
         verificationUserFlowRateWrapper = VerificationUserFlowRateWrapper(taskManager, VerificationUserFlowRateDao(driverManager))
+        unverifiedUsersWrapper = UnverifiedUsersWrapper(taskManager, UnverifiedUsersDao(driverManager))
 
         //After registering wrappers
         driverManager.executeTableRegistration()
