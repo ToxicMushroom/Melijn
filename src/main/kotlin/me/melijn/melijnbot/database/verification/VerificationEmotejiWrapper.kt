@@ -9,7 +9,7 @@ import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class VerificationEmotejiWrapper(val taskManager: TaskManager, private val verificationEmotejiDao: VerificationEmotejiDao) {
-    val verificationTypeCache = Caffeine.newBuilder()
+    val verificationEmotejiCache = Caffeine.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
         .executor(taskManager.executorService)
         .buildAsync<Long, String>() { key, executor -> getEmoteji(key, executor) }
@@ -24,12 +24,12 @@ class VerificationEmotejiWrapper(val taskManager: TaskManager, private val verif
     }
 
     suspend fun setEmoteji(guildId: Long, emoteji: String) {
-        verificationTypeCache.put(guildId, CompletableFuture.completedFuture(emoteji))
+        verificationEmotejiCache.put(guildId, CompletableFuture.completedFuture(emoteji))
         verificationEmotejiDao.set(guildId, emoteji)
     }
 
     suspend fun removeEmoteji(guildId: Long) {
-        verificationTypeCache.put(guildId, CompletableFuture.completedFuture(""))
+        verificationEmotejiCache.put(guildId, CompletableFuture.completedFuture(""))
         verificationEmotejiDao.remove(guildId)
     }
 

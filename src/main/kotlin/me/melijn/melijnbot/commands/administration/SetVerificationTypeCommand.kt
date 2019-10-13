@@ -35,12 +35,12 @@ class SetVerificationTypeCommand : AbstractCommand("command.type") {
 
         val type = enumValueOrNull<VerificationType>(context.rawArg)
         val msg = if (context.rawArg == "null" || type == VerificationType.NONE) {
-            wrapper.removeCode(context.getGuildId())
+            wrapper.removeType(context.getGuildId())
             i18n.getTranslation(language, "$root.unset")
         } else if (type == null) {
             i18n.getTranslation(language, "message.unknown.verificationtype")
         } else {
-            wrapper.setCode(context.getGuildId(), type)
+            wrapper.setType(context.getGuildId(), type)
             i18n.getTranslation(language, "$root.set")
                 .replace(PLACEHOLDER_ARG, type.toUCC())
         }

@@ -22,7 +22,7 @@ class SetVerificationEmotejiCommand : AbstractCommand("command.setverificationem
         val wrapper = context.daoManager.verificationEmotejiWrapper
         val language = context.getLanguage()
         if (context.args.isEmpty()) {
-            val code = wrapper.verificationTypeCache.get(context.getGuildId()).await()
+            val code = wrapper.verificationEmotejiCache.get(context.getGuildId()).await()
             val part = if (code.isBlank()) "unset" else "set"
             val msg = i18n.getTranslation(language, "$root.show.$part")
                 .replace("%code%", code)

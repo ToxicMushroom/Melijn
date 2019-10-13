@@ -8,7 +8,7 @@ import kotlin.coroutines.suspendCoroutine
 class UnverifiedUsersDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "unverifiedUsers"
-    override val tableStructure: String = "guildId bigint, userId bigint, code bigint"
+    override val tableStructure: String = "guildId bigint, userId bigint, moment bigint"
     override val keys: String = "UNIQUE KEY(guildId, userId)"
 
     init {
@@ -16,7 +16,7 @@ class UnverifiedUsersDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun add(guildId: Long, userId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, userId, code) VALUES (?, ?, ?)",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, userId, moment) VALUES (?, ?, ?)",
             guildId, userId, 0)
     }
 
@@ -25,13 +25,19 @@ class UnverifiedUsersDao(driverManager: DriverManager) : Dao(driverManager) {
             guildId, userId)
     }
 
-    suspend fun getCode(guildId: Long, userId: Long): Long = suspendCoroutine {
+    suspend fun getMoment(guildId: Long, userId: Long): Long = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND userId = ?", { rs ->
             if (rs.next()) {
-                it.resume(rs.getLong("code"))
+                it.resume(rs.getLong("moment"))
             } else {
                 it.resume(0)
             }
+        }, guildId, userId)
+    }
+
+    suspend fun contains(guildId: Long, userId: Long): Boolean = suspendCoroutine {
+        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND userId = ?", { rs ->
+            it.resume(rs.next())
         }, guildId, userId)
     }
 

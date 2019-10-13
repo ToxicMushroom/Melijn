@@ -7,10 +7,11 @@ import net.dv8tion.jda.api.entities.TextChannel
 import java.awt.Color
 
 object LogUtils {
-    fun sendRemovedChannelLog(language: String, channel: ChannelType,  logChannel: TextChannel, cause: String, causeArg: String) {
+    fun sendRemovedChannelLog(language: String, channel: ChannelType, logChannel: TextChannel?, causePath: String, causeArg: String) {
+        if (logChannel == null) return
         val title = i18n.getTranslation(language, "logging.removed.channel.title")
             .replace("%type%", channel.toUCC())
-        val cause = i18n.getTranslation(language, "logging.removed.channel.cause.$cause")
+        val cause = i18n.getTranslation(language, "logging.removed.channel.causePath.$causePath")
             .replace("%causeArg%", causeArg)
 
 
@@ -18,6 +19,8 @@ object LogUtils {
         eb.setTitle(title)
         eb.setColor(Color.decode("#7289DA"))
         eb.setDescription(cause)
-        eb.setFooter(getTimeStamp)
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+
+        logChannel.sendMessage(eb.build())
     }
 }

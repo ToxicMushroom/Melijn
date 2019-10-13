@@ -10,12 +10,13 @@ import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class VerificationTypeWrapper(val taskManager: TaskManager, private val verificationTypeDao: VerificationTypeDao) {
+
     val verificationTypeCache = Caffeine.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
         .executor(taskManager.executorService)
-        .buildAsync<Long, VerificationType>() { key, executor -> getCode(key, executor) }
+        .buildAsync<Long, VerificationType>() { key, executor -> getType(key, executor) }
 
-    private fun getCode(guildId: Long, executor: Executor): CompletableFuture<VerificationType> {
+    private fun getType(guildId: Long, executor: Executor): CompletableFuture<VerificationType> {
         val future = CompletableFuture<VerificationType>()
         executor.launch {
             val type = verificationTypeDao.get(guildId)
@@ -24,12 +25,12 @@ class VerificationTypeWrapper(val taskManager: TaskManager, private val verifica
         return future
     }
 
-    suspend fun setCode(guildId: Long, type: VerificationType) {
+    suspend fun setType(guildId: Long, type: VerificationType) {
         verificationTypeCache.put(guildId, CompletableFuture.completedFuture(type))
         verificationTypeDao.set(guildId, type)
     }
 
-    suspend fun removeCode(guildId: Long) {
+    suspend fun removeType(guildId: Long) {
         verificationTypeCache.put(guildId, CompletableFuture.completedFuture(VerificationType.NONE))
         verificationTypeDao.remove(guildId)
     }

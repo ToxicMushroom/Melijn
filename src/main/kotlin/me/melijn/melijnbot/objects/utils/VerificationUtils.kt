@@ -43,14 +43,18 @@ object VerificationUtils {
         sendMsg(textChannel, msg)
     }
 
-    fun verify(role: Role, member: Member) {
-        val guild = role.guild
-        guild.removeRoleFromMember(member, role)
+    fun verify(daoManager: DaoManager, unverifiedRole: Role, member: Member) {
+        val guild = unverifiedRole.guild
+        guild.removeRoleFromMember(member, unverifiedRole)
             .reason("verified")
             .queue()
 
-
     }
+
+    fun failedVerification(dao: DaoManager, member: Member) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
 
     suspend fun addUnverified(member: Member, daoManager: DaoManager) {
         val guild = member.guild
@@ -78,4 +82,6 @@ object VerificationUtils {
 
         sendMsg(channel, msg)
     }
+
+
 }
