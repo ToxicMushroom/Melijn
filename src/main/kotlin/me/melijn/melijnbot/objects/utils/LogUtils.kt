@@ -1,8 +1,10 @@
 package me.melijn.melijnbot.objects.utils
 
+import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.objects.translation.i18n
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.TextChannel
 import java.awt.Color
 
@@ -22,5 +24,14 @@ object LogUtils {
         eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
 
         logChannel.sendMessage(eb.build())
+    }
+
+    fun sendHitVerificationTroughputLimitLog(daoManager: DaoManager, member: Member) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    fun sendFailedVerificationLog(dao: DaoManager, member: Member) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
     }
 }

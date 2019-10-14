@@ -16,6 +16,10 @@ import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.User
 
 object VerificationUtils {
+
+    //guildId, userId, time
+    private val memberJoinTimes = HashMap<Long, HashMap<Long, Long>>()
+
     suspend fun getUnverifiedRoleNMessage(user: User?, textChannel: TextChannel, daoManager: DaoManager): Role? {
         val role = getUnverifiedRoleN(textChannel, daoManager)
 
@@ -43,7 +47,11 @@ object VerificationUtils {
         sendMsg(textChannel, msg)
     }
 
-    fun verify(daoManager: DaoManager, unverifiedRole: Role, member: Member) {
+    suspend fun verify(daoManager: DaoManager, unverifiedRole: Role, member: Member) {
+        if (hasHitThroughputLimit(daoManager, member)) {
+            LogUtils.sendHitVerificationTroughputLimitLog(daoManager, member)
+            return
+        }
         val guild = unverifiedRole.guild
         guild.removeRoleFromMember(member, unverifiedRole)
             .reason("verified")
@@ -51,8 +59,19 @@ object VerificationUtils {
 
     }
 
-    fun failedVerification(dao: DaoManager, member: Member) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    suspend fun failedVerification(dao: DaoManager, member: Member) {
+        LogUtils.sendFailedVerificationLog(dao, member)
+    }
+
+
+    private suspend fun hasHitThroughputLimit(daoManager: DaoManager, member: Member): Boolean {
+        val guild = member.guild
+        val max = daoManager.verificationUserFlowRateWrapper.verificationUserFlowRateCache[guild.idLong].await()
+        val lastMembers = memberJoinTimes
+            .getOrDefault(guild.idLong, emptyMap<Long, Long>())
+
+        val lastHourJoinedMembersAmount = lastMembers.filter { (System.currentTimeMillis() - it.value) < 3_600_000 }.count()
+        return lastHourJoinedMembersAmount >= max
     }
 
 
