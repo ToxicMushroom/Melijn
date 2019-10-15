@@ -57,6 +57,7 @@ object VerificationUtils {
             .reason("verified")
             .queue()
 
+        LogUtils.sendVerifiedUserLog(daoManager, member)
     }
 
     suspend fun failedVerification(dao: DaoManager, member: Member) {
