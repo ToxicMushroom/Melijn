@@ -49,7 +49,7 @@ object VerificationUtils {
 
     suspend fun verify(daoManager: DaoManager, unverifiedRole: Role, member: Member) {
         if (hasHitThroughputLimit(daoManager, member)) {
-            LogUtils.sendHitVerificationTroughputLimitLog(daoManager, member)
+            LogUtils.sendHitVerificationThroughputLimitLog(daoManager, member)
             return
         }
         val guild = unverifiedRole.guild
@@ -61,6 +61,9 @@ object VerificationUtils {
     }
 
     suspend fun failedVerification(dao: DaoManager, member: Member) {
+        val guild = member.guild
+        val tries=  dao.unverifiedUsersWrapper.getTries(guild.idLong, member.idLong)
+        dao.unverifiedUsersWrapper.update(guild.idLong, member.idLong, tries + 1)
         LogUtils.sendFailedVerificationLog(dao, member)
     }
 
