@@ -17,11 +17,17 @@ repositories {
 }
 
 dependencies {
-    implementation('net.dv8tion:JDA:4.0.0_50') {
+    //https://bintray.com/dv8fromtheworld/maven/JDA/
+    implementation('net.dv8tion:JDA:4.0.0_52') {
         exclude module: 'opus-java'
     }
-    implementation group: 'com.sedmelluq', name: 'lavaplayer', version: '1.3.22-pre'
-    implementation group: 'com.github.FredBoat', name: 'Lavalink-Client', version: '9bda4ea'
+
+
+    //https://bintray.com/sedmelluq/com.sedmelluq/lavaplayer
+    implementation group: 'com.sedmelluq', name: 'lavaplayer', version: '1.3.22.pbjtest3'
+
+    //https://jitpack.io/#FredBoat/Lavalink-Client
+    implementation group: 'com.github.FredBoat', name: 'Lavalink-Client', version: '5502c9e403'
 
     //https://github.com/ToxicMushroom/JagTag-Kotlin
     implementation group: 'com.github.ToxicMushroom', name: 'JagTag-Kotlin', version: '06c2490c63'
@@ -59,11 +65,11 @@ dependencies {
     implementation group: 'com.github.DiscordBotList', name: 'DBL-Java-Library', version: '19abf19859'
 
     //https://mvnrepository.com/artifact/se.michaelthelin.spotify/spotify-web-api-java
-    implementation group: 'se.michaelthelin.spotify', name: 'spotify-web-api-java', version: '4.0.1'
+    implementation group: 'se.michaelthelin.spotify', name: 'spotify-web-api-java', version: '4.0.2'
 
     //Loading caches
     //https://github.com/ben-manes/caffeine
-    https://search.maven.org/artifact/com.github.ben-manes.caffeine/caffeine/
+    //https://search.maven.org/artifact/com.github.ben-manes.caffeine/caffeine/
     implementation(group: 'com.github.ben-manes', name: 'caffeine', version: '2.8.0') {
         exclude module: 'slf4j-nop'
     }
