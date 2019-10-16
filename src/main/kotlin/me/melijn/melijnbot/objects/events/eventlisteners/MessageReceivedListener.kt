@@ -57,7 +57,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
                 VerificationType.CODE -> {
                     val code = dao.verificationCodeWrapper.verificationCodeCache[guild.idLong].await()
                     if (event.message.contentRaw == code) {
-                        VerificationUtils.verify(dao, unverifiedRole, member)
+                        VerificationUtils.verify(dao, unverifiedRole, guild.selfMember.user, member)
                     } else {
                         VerificationUtils.failedVerification(dao, member)
                     }
@@ -66,7 +66,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
                 VerificationType.GOOGLE_RECAPTCHAV2 -> {
                     val code = dao.unverifiedUsersWrapper.getMoment(guild.idLong, member.idLong)
                     if (event.message.contentRaw == code.toString()) {
-                        VerificationUtils.verify(dao, unverifiedRole, member)
+                        VerificationUtils.verify(dao, unverifiedRole, guild.selfMember.user, member)
                     } else {
                         VerificationUtils.failedVerification(dao, member)
                     }

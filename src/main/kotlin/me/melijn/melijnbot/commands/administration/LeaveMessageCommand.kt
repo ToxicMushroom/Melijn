@@ -10,7 +10,7 @@ import me.melijn.melijnbot.objects.utils.getBooleanFromArgNMessage
 import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.objects.utils.sendSyntax
 
-class LeaveMessageCommand : AbstractCommand("command.leave") {
+class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
 
     init {
         id = 35

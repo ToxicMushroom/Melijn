@@ -63,7 +63,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                         (event.reactionEmote.isEmoji && event.reactionEmote.emoji == code) ||
                         (event.reactionEmote.isEmote && event.reactionEmote.emote.id == code))
                     {
-                        VerificationUtils.verify(dao, unverifiedRole, member)
+                        VerificationUtils.verify(dao, unverifiedRole, guild.selfMember.user, member)
                     } else {
                         VerificationUtils.failedVerification(dao, member)
                     }
@@ -82,23 +82,24 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             ?: return
 
         val embedBuilder = EmbedBuilder()
-        val language = getLanguage(container.daoManager, -1, event.guild.idLong)
+        val language = getLanguage(dao, -1, event.guild.idLong)
         val title = i18n.getTranslation(language, "listener.message.reaction.log.title")
             .replace("%channel%", event.channel.asTag)
 
-        val part = if (event.reactionEmote.isEmote) "emote" else "emoji"
+        val isEmote = event.reactionEmote.isEmote
+        val part = if (isEmote) "emote" else "emoji"
         val description = i18n.getTranslation(language, "listener.message.reaction.$part.log.description")
             .replace("%userId%", event.member.id)
             .replace("%messageId%", event.messageId)
             .replace("%emoteName%", event.reactionEmote.name)
-            .replace("%emoteId%", if (event.reactionEmote.isEmote) event.reactionEmote.id else "/")
+            .replace("%emoteId%", if (isEmote) event.reactionEmote.id else "/")
             .replace("%moment%", System.currentTimeMillis().asEpochMillisToDateTime())
             .replace("%messageUrl%", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.messageId}")
-            .replace("%emoteUrl%", if (event.reactionEmote.isEmote) event.reactionEmote.emote.imageUrl else "/")
+            .replace("%emoteUrl%", if (isEmote) event.reactionEmote.emote.imageUrl else "/")
 
         embedBuilder.setTitle(title)
         embedBuilder.setDescription(description)
-        embedBuilder.setThumbnail(event.reactionEmote.emote.imageUrl)
+        embedBuilder.setThumbnail(if (isEmote) event.reactionEmote.emote.imageUrl else null)
         val footer = i18n.getTranslation(language, "listener.message.reaction.log.footer")
             .replace("%user%", event.member.asTag)
         embedBuilder.setFooter(footer, event.member.user.effectiveAvatarUrl)

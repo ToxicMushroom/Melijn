@@ -40,10 +40,11 @@ object VerificationUtils {
     private suspend fun sendNoUnverifiedRoleIsSetMessage(daoManager: DaoManager, user: User?, textChannel: TextChannel) {
         val language = getLanguage(daoManager, user?.idLong ?: -1L, textChannel.guild.idLong)
         val msg = i18n.getTranslation(language, "message.notset.role.unverified")
+
         sendMsg(textChannel, msg)
     }
 
-    suspend fun verify(daoManager: DaoManager, unverifiedRole: Role, member: Member) {
+    suspend fun verify(daoManager: DaoManager, unverifiedRole: Role, author: User,  member: Member) {
         if (hasHitThroughputLimit(daoManager, member)) {
             LogUtils.sendHitVerificationThroughputLimitLog(daoManager, member)
             return
@@ -53,7 +54,7 @@ object VerificationUtils {
             .reason("verified")
             .queue()
 
-        LogUtils.sendVerifiedUserLog(daoManager, member)
+        LogUtils.sendVerifiedUserLog(daoManager, author, member)
     }
 
     suspend fun failedVerification(dao: DaoManager, member: Member) {
@@ -88,6 +89,11 @@ object VerificationUtils {
         }
     }
 
+    suspend fun isVerified(daoManager: DaoManager, member: Member): Boolean {
+        val guild = member.guild
+        val role = guild.getAndVerifyRoleByType(RoleType.UNVERIFIED, daoManager.roleWrapper, true) ?: return true
+        return !(member.roles.contains(role))
+    }
 
 
 }

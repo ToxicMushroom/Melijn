@@ -37,6 +37,10 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
     }
 
     private fun onGuildMemberLeave(event: GuildMemberLeaveEvent) = CoroutineScope(Dispatchers.Default).launch {
-        JoinLeaveUtil.postWelcomeMessage(container.daoManager, event.member, ChannelType.LEAVE, MessageType.LEAVE)
+        val daoManager = container.daoManager
+
+        if (VerificationUtils.isVerified(daoManager, event.member)) {
+            JoinLeaveUtil.postWelcomeMessage(daoManager, event.member, ChannelType.LEAVE, MessageType.LEAVE)
+        }
     }
 }
