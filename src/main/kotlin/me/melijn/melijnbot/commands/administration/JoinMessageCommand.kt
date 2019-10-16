@@ -6,7 +6,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.sendSyntax
 
-class JoinMessageCommand : AbstractCommand("command.join") {
+class JoinMessageCommand : AbstractCommand("command.joinmessage") {
 
     init {
         id = 34

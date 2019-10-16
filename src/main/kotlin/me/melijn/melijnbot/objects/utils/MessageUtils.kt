@@ -10,6 +10,7 @@ import me.melijn.melijnbot.objects.translation.i18n
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.requests.restaction.MessageAction
+import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.net.URL
@@ -18,12 +19,16 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
+fun Throwable.sendInGuild(context: CommandContext, thread: Thread = Thread.currentThread()) = runBlocking {
+    sendInGuildSuspend(context.getGuild(), context.getMessageChannel(), context.getAuthor(), thread)
+}
 
-fun Exception.sendInGuild(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread()) = runBlocking {
+
+fun Throwable.sendInGuild(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread()) = runBlocking {
     sendInGuildSuspend(guild, channel, author, thread)
 }
 
-suspend fun Exception.sendInGuildSuspend(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread()) {
+suspend fun Throwable.sendInGuildSuspend(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread()) {
     if (Container.instance.settings.unLoggedThreads.contains(thread.name)) return
 
     val channelId = Container.instance.settings.exceptionChannel
@@ -43,8 +48,8 @@ suspend fun Exception.sendInGuildSuspend(guild: Guild? = null, channel: MessageC
     val writer = StringWriter()
     val printWriter = PrintWriter(writer)
     this.printStackTrace(printWriter)
-    val stacktrace = writer.toString()
-        .replace("me.melijn.melijnbot", "**me.melijn.melijnbot**")
+    val stacktrace = MarkdownSanitizer.escape(writer.toString())
+        .replace("at me.melijn.melijnbot", "**at me.melijn.melijnbot**")
     sb.append(stacktrace)
     sendMsg(textChannel, sb.toString())
 }
