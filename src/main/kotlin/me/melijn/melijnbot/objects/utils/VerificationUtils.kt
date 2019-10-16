@@ -2,13 +2,9 @@ package me.melijn.melijnbot.objects.utils
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.RoleType
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyRoleByType
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Role
@@ -83,29 +79,15 @@ object VerificationUtils {
     suspend fun addUnverified(member: Member, daoManager: DaoManager) {
         val guild = member.guild
         val role = guild.getAndVerifyRoleByType(RoleType.UNVERIFIED, daoManager.roleWrapper, true) ?: return
-        val result = guild.addRoleToMember(member, role).awaitNE()
-        if (result == null) {
-            val logChannel = guild.getAndVerifyLogChannelByType(LogChannelType.VERIFICATION, daoManager.logChannelWrapper)
-            if (logChannel != null) {
-                sendMessageFailedToAddRoleToMember(member, role, daoManager)
-            }
-        } else {
+        val result = guild.addRoleToMember(member, role).awaitBool()
+        if (result) {
             daoManager.unverifiedUsersWrapper.add(member.guild.idLong, member.idLong)
+
+        } else {
+            LogUtils.sendMessageFailedToAddRoleToMember(daoManager, member, role)
         }
     }
 
-    private suspend fun sendMessageFailedToAddRoleToMember(member: Member, role: Role, daoManager: DaoManager) {
-        val channel = member.guild.getAndVerifyLogChannelByType(LogChannelType.VERIFICATION, daoManager.logChannelWrapper) ?: return
-
-        val language = getLanguage(daoManager, -1, member.guild.idLong)
-        val msg = i18n.getTranslation(language, "message.logging.verification.failedaddingrole")
-            .replace("%userId%", member.id)
-            .replace(PLACEHOLDER_USER, member.asTag)
-            .replace(PLACEHOLDER_ROLE, role.name)
-            .replace("%roleId%", role.id)
-
-        sendMsg(channel, msg)
-    }
 
 
 }

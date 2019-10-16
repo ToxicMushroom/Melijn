@@ -43,6 +43,13 @@ suspend fun <T> RestAction<T>.awaitNE() = suspendCoroutine<T?> {
     )
 }
 
+suspend fun <T> RestAction<T>.awaitBool() = suspendCoroutine<Boolean> {
+    queue(
+        { success -> it.resume(true) },
+        { _ -> it.resume(false) }
+    )
+}
+
 //fun getUserByArgs(context: CommandContext, index: Int): User {
 //    var user = getUserByArgsN(context, index)
 //    if (user == null) user = context.getAuthor()

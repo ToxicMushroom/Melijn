@@ -16,7 +16,7 @@ class UnverifiedUsersDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun add(guildId: Long, userId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, userId, moment, triesAmount) VALUES (?, ?, ?, ?)",
+        driverManager.executeUpdate("INSERT IGNORE INTO $table (guildId, userId, moment, triesAmount) VALUES (?, ?, ?, ?)",
             guildId, userId, 0, 0)
     }
 

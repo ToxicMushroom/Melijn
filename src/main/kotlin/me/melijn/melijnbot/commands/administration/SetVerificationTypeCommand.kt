@@ -39,6 +39,7 @@ class SetVerificationTypeCommand : AbstractCommand("command.type") {
             i18n.getTranslation(language, "$root.unset")
         } else if (type == null) {
             i18n.getTranslation(language, "message.unknown.verificationtype")
+                .replace(PLACEHOLDER_ARG, context.rawArg)
         } else {
             wrapper.setType(context.getGuildId(), type)
             i18n.getTranslation(language, "$root.set")
