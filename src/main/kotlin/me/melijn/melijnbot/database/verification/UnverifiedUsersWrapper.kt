@@ -24,7 +24,7 @@ class UnverifiedUsersWrapper(val taskManager: TaskManager, private val unverifie
         return unverifiedUsersDao.contains(guildId, userId)
     }
 
-    fun update(guildId: Long, userId: Long, tries: Long) {
+    suspend fun update(guildId: Long, userId: Long, tries: Long) {
         unverifiedUsersDao.update(guildId, userId, tries)
     }
 }

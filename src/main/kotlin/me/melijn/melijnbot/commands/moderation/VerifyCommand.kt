@@ -31,7 +31,7 @@ class VerifyCommand : AbstractCommand("command.verify") {
             val failures = mutableListOf<Member>()
             for (member in members) {
                 try {
-                    VerificationUtils.verify(role, member)
+                    VerificationUtils.verify(context.daoManager, role, member)
                 } catch (t: Throwable) {
                     failures.add(member)
                 }
@@ -51,7 +51,7 @@ class VerifyCommand : AbstractCommand("command.verify") {
         } else {
             val member = getMemberByArgsNMessage(context, 0) ?: return
             try {
-                VerificationUtils.verify(role, member)
+                VerificationUtils.verify(context.daoManager, role, member)
                 i18n.getTranslation(language, "$root.success")
             } catch (t: Throwable) {
                 i18n.getTranslation(language, "$root.failure")
