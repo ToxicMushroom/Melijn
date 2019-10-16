@@ -22,7 +22,8 @@ suspend fun Guild.getAndVerifyLogChannelByType(type: LogChannelType, logChannelW
     if (channelId != -1L && textChannel == null) {
         shouldRemove = true
     }
-    if (textChannel?.canTalk() == true) {
+    if (textChannel == null) return null
+    if (!textChannel.canTalk()) {
         shouldRemove = true
     }
 

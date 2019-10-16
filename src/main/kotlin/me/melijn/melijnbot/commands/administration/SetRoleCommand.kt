@@ -24,6 +24,7 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context, syntax)
+            return
         }
 
 
