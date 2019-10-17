@@ -4,16 +4,17 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendEmbed
-import me.melijn.melijnbot.objects.web.WebManager
+import kotlin.random.Random
 
-class AlpacaCommand : AbstractCommand("command.alpaca") {
+
+class NyancatCommand : AbstractCommand("command.nyancat") {
 
     init {
-        id = 48
-        name = "alpaca"
+        id = 49
+        name = "nyancat"
+        aliases = arrayOf("nyan", "nya")
         commandCategory = CommandCategory.ANIMAL
     }
 
@@ -22,14 +23,13 @@ class AlpacaCommand : AbstractCommand("command.alpaca") {
         val language = context.getLanguage()
         val title = i18n.getTranslation(language, "$root.title")
 
-        val web = context.webManager
         eb.setTitle(title)
-        eb.setImage(getRandomAlpacaUrl(web))
+        eb.setImage(getRandomNyancatUrl())
         sendEmbed(context, eb.build())
     }
 
-    private suspend fun getRandomAlpacaUrl(webManager: WebManager): String {
-        val reply = webManager.getJsonFromUrl("https://apis.duncte123.me/alpaca")
-        return reply?.get("data")?.get("file")?.asText() ?: MISSING_IMAGE_URL
+    private fun getRandomNyancatUrl(): String {
+        val randomInt = Random.nextInt(2, 33)
+        return "https://github.com/ToxicMushroom/nyan-cats/raw/master/cat%20($randomInt).gif"
     }
 }
