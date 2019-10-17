@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.services.ServiceManager
 import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.objects.web.WebManager
 import java.io.File
 
 
@@ -25,6 +26,7 @@ class Container {
 
     val taskManager = TaskManager()
     val daoManager = DaoManager(taskManager, settings.mySQL)
+    val webManager = WebManager(taskManager)
     val serviceManager = ServiceManager(taskManager, daoManager)
 
     //messageId, reason
@@ -32,7 +34,6 @@ class Container {
 
     //messageId, purgerId
     val purgedIds = mutableMapOf<Long, Long>()
-
     //messageId
     val botDeletedMessageIds = mutableSetOf<Long>()
 }
