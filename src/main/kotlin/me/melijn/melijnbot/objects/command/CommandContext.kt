@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.objects.command
 
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.objects.web.WebManager
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
@@ -31,6 +32,7 @@ class CommandContext(
         return getGuild().idLong
     }
 
+    val webManager: WebManager = container.webManager
     val usedPrefix: String = commandParts[0]
     val jda = messageReceivedEvent.jda
     val offset: Int = retrieveOffset()

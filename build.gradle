@@ -82,9 +82,12 @@ dependencies {
     implementation group: 'org.jooby', name: 'jooby-netty', version: '1.6.4'
     implementation group: 'org.jooby', name: 'jooby-jackson', version: '1.6.4'
 
+    // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
+    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.2.2'
+    implementation group: 'ru.gildor.coroutines', name: 'kotlin-coroutines-okhttp', version: '1.0'
+
     //https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-kotlin
     implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.10.0'
-
 
     //https://mvnrepository.com/artifact/com.google.apis/google-api-services-youtube
     implementation group: 'com.google.apis', name: 'google-api-services-youtube', version: 'v3-rev212-1.25.0'
