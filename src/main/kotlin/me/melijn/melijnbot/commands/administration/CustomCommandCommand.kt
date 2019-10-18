@@ -383,7 +383,8 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             context.daoManager.customCommandWrapper.update(context.getGuildId(), ccSelected)
 
             val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.success")
+            val pathPart = if (state) "enabled" else "disabled"
+            val msg = i18n.getTranslation(language, "$root.$pathPart")
                 .replace("%id%", ccSelected.id.toString())
                 .replace("%ccName%", ccSelected.name)
 
