@@ -235,7 +235,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 return cc
             }
         }
-        throw IllegalArgumentException("random int out of range of ccs")
+        throw IllegalArgumentException("random int ($winner) out of range of ccs")
     }
 
     private suspend fun getPrefixes(event: MessageReceivedEvent): List<String> {

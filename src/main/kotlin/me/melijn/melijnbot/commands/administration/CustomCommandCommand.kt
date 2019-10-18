@@ -127,7 +127,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
         init {
             name = "remove"
-            aliases = arrayOf("r", "rm")
+            aliases = arrayOf("delete", "rm")
         }
 
         override suspend fun execute(context: CommandContext) {
@@ -356,6 +356,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             val msg = i18n.getTranslation(language, "$root.success")
                 .replace("%id%", ccSelected.id.toString())
                 .replace("%ccName%", ccSelected.name)
+                .replace(PLACEHOLDER_ARG, chance.toString())
 
             sendMsg(context, msg)
         }
@@ -399,9 +400,9 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             name = "response"
             aliases = arrayOf("r")
             children = arrayOf(
-                SetContentArg(root),
-                EmbedArg(root),
-                AttachmentsArg(root)
+                SetContentArg(this.root),
+                EmbedArg(this.root),
+                AttachmentsArg(this.root)
             )
         }
 
@@ -433,19 +434,19 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 name = "embed"
                 aliases = arrayOf("e")
                 children = arrayOf(
-                    ClearArg(root),
-                    SetDescriptionArg(root),
-                    SetColorArg(root),
-                    SetTitleArg(root),
-                    SetTitleUrlArg(root),
-                    SetAuthorArg(root),
-                    SetAuthorIconArg(root),
-                    SetAuthorUrlArg(root),
-                    SetThumbnailArg(root),
-                    SetImageArg(root),
-                    FieldArg(root),
-                    SetFooterArg(root),
-                    SetFooterIconArg(root)
+                    ClearArg(this.root),
+                    SetDescriptionArg(this.root),
+                    SetColorArg(this.root),
+                    SetTitleArg(this.root),
+                    SetTitleUrlArg(this.root),
+                    SetAuthorArg(this.root),
+                    SetAuthorIconArg(this.root),
+                    SetAuthorUrlArg(this.root),
+                    SetThumbnailArg(this.root),
+                    SetImageArg(this.root),
+                    FieldArg(this.root),
+                    SetFooterArg(this.root),
+                    SetFooterIconArg(this.root)
                     //What even is optimization
                 )
             }
@@ -574,12 +575,12 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 init {
                     name = "field"
                     children = arrayOf(
-                        AddArg(root),
-                        RemoveArg(root),
-                        ListArg(root),
-                        SetTitleArg(root),
-                        SetValueArg(root),
-                        SetInlineArg(root)
+                        AddArg(this.root),
+                        RemoveArg(this.root),
+                        ListArg(this.root),
+                        SetTitleArg(this.root),
+                        SetValueArg(this.root),
+                        SetInlineArg(this.root)
                     )
                 }
 
@@ -783,9 +784,9 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 name = "attachments"
                 aliases = arrayOf("a")
                 children = arrayOf(
-                    ListArg(root),
-                    AddArg(root),
-                    RemoveArg(root)
+                    ListArg(this.root),
+                    AddArg(this.root),
+                    RemoveArg(this.root)
                 )
             }
 
@@ -813,6 +814,10 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                 override suspend fun execute(context: CommandContext) {
                     val cc = getSelectedCCNMessage(context) ?: return
+                    if (context.args.isEmpty()) {
+                        sendSyntax(context, syntax)
+                        return
+                    }
                     MessageCommandUtil.addAttachmentCC(context, cc)
                 }
 
@@ -825,6 +830,10 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 }
 
                 override suspend fun execute(context: CommandContext) {
+                    if (context.args.isEmpty()) {
+                        sendSyntax(context, syntax)
+                        return
+                    }
                     val cc = getSelectedCCNMessage(context) ?: return
                     MessageCommandUtil.removeAttachmentCC(context, cc)
                 }
