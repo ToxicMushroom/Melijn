@@ -23,11 +23,11 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun getUnbannableBans(): List<Ban> {
-        val bans = ArrayList<Ban>()
         driverManager.awaitQueryExecution(
             "SELECT * FROM $table WHERE active = ? AND endTime < ?",
             true, System.currentTimeMillis()
         ).use { rs ->
+            val bans = ArrayList<Ban>()
             while (rs.next()) {
                 bans.add(Ban(
                     rs.getLong("guildId"),
@@ -41,8 +41,8 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
                     true
                 ))
             }
+            return bans
         }
-        return bans
     }
 
     suspend fun getActiveBan(guildId: Long, bannedId: Long): Ban? {
