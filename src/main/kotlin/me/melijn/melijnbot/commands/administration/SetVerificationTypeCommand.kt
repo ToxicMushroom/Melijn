@@ -11,7 +11,7 @@ import me.melijn.melijnbot.objects.utils.enumValueOrNull
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.toUCC
 
-class SetVerificationTypeCommand : AbstractCommand("command.type") {
+class SetVerificationTypeCommand : AbstractCommand("command.setverificationtype") {
 
     init {
         id = 43
