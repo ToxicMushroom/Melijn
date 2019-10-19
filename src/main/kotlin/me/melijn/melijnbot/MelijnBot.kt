@@ -21,12 +21,12 @@ class MelijnBot {
 
         val eventManager = EventManager(container)
         shardManager = DefaultShardManagerBuilder()
-                .setShardsTotal(container.settings.shardCount)
-                .setToken(container.settings.tokens.melijn)
-                .setActivity(Activity.listening("commands | ${container.settings.prefix}help"))
-                .setAutoReconnect(true)
-                .setEventManagerProvider { eventManager }
-                .build()
+            .setShardsTotal(container.settings.shardCount)
+            .setToken(container.settings.tokens.melijn)
+            .setActivity(Activity.listening("commands | ${container.settings.prefix}help"))
+            .setAutoReconnect(true)
+            .setEventManagerProvider { eventManager }
+            .build()
     }
 }
 
