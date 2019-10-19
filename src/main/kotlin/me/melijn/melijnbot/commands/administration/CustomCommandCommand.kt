@@ -68,6 +68,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
         init {
             name = "list"
+            aliases = arrayOf("ls")
         }
 
         override suspend fun execute(context: CommandContext) {
@@ -228,6 +229,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
             init {
                 name = "remove"
+                aliases = arrayOf("rm", "rem", "delete")
             }
 
             override suspend fun execute(context: CommandContext) {
@@ -270,6 +272,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
             init {
                 name = "list"
+                aliases = arrayOf("ls")
             }
 
             override suspend fun execute(context: CommandContext) {
@@ -310,6 +313,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
         init {
             name = "setDescription"
+            aliases = arrayOf("setDesc", "sd")
         }
 
         override suspend fun execute(context: CommandContext) {
@@ -671,6 +675,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                     init {
                         name = "remove"
+                        aliases = arrayOf("rm", "rem", "delete")
                     }
 
                     override suspend fun execute(context: CommandContext) {
@@ -688,6 +693,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                     init {
                         name = "list"
+                        aliases = arrayOf("ls")
                     }
 
                     override suspend fun execute(context: CommandContext) {
@@ -768,7 +774,6 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                 init {
                     name = "clear"
-                    aliases = arrayOf("c")
                 }
 
                 override suspend fun execute(context: CommandContext) {
@@ -798,6 +803,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                 init {
                     name = "list"
+                    arrayOf("ls")
                 }
 
                 override suspend fun execute(context: CommandContext) {
@@ -827,6 +833,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                 init {
                     name = "remove"
+                    aliases = arrayOf("rm", "rem", "delete")
                 }
 
                 override suspend fun execute(context: CommandContext) {
