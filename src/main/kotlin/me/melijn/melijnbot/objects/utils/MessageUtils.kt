@@ -1,6 +1,8 @@
 package me.melijn.melijnbot.objects.utils
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
@@ -11,10 +13,13 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.requests.restaction.MessageAction
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
+import java.awt.image.BufferedImage
+import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.net.URL
 import java.time.format.DateTimeFormatter
+import javax.imageio.ImageIO
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -221,7 +226,7 @@ suspend fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed): List
         try {
             val msg = privateChannel.sendMessage(embed).await()
             it.resume(listOf(msg))
-        }catch (t: Throwable) {
+        } catch (t: Throwable) {
             t.printStackTrace()
             it.resumeWithException(t)
         }
@@ -285,6 +290,150 @@ suspend fun sendMsg(context: CommandContext, msg: String, success: ((messages: L
     if (context.isFromGuild) sendMsg(context.getTextChannel(), msg, success, failed)
     else sendMsg(context.getPrivateChannel(), msg, success, failed)
 }
+
+
+suspend fun sendMsg(context: CommandContext, image: BufferedImage, extension: String): List<Message> = suspendCoroutine {
+    val success = { success: List<Message> -> it.resume(success) }
+    val failed = { failed: Throwable -> it.resumeWithException(failed) }
+    runBlocking {
+        if (context.isFromGuild) {
+            sendMsg(context.getTextChannel(), image, extension, success, failed)
+        } else {
+            sendMsg(context.getPrivateChannel(), image, extension, success, failed)
+        }
+    }
+}
+suspend fun sendMsg(privateChannel: PrivateChannel, image: BufferedImage, extension: String, success: ((List<Message>) -> Unit)? = null, failed: ((Throwable) -> Unit)? = null) {
+    try {
+        val messageList = mutableListOf<Message>()
+
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        withContext(Dispatchers.IO) {
+            ImageIO.write(image, extension, byteArrayOutputStream)
+        }
+        messageList.add(privateChannel.sendFile(byteArrayOutputStream.toByteArray(), "finished.$extension").await())
+
+        success?.invoke(messageList)
+    } catch (t: Throwable) {
+        t.printStackTrace()
+        failed?.invoke(t)
+        return
+    }
+}
+
+suspend fun sendMsg(textChannel: TextChannel, image: BufferedImage, extension: String, success: ((List<Message>) -> Unit)? = null, failed: ((Throwable) -> Unit)? = null) {
+    require(textChannel.canTalk()) { "Cannot talk in this channel " + textChannel.name }
+    try {
+        val messageList = mutableListOf<Message>()
+
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        withContext(Dispatchers.IO) {
+            ImageIO.write(image, extension, byteArrayOutputStream)
+        }
+        messageList.add(textChannel.sendFile(byteArrayOutputStream.toByteArray(), "finished.$extension").await())
+
+        success?.invoke(messageList)
+    } catch (t: Throwable) {
+        t.printStackTrace()
+        failed?.invoke(t)
+        return
+    }
+}
+
+suspend fun sendFile(context: CommandContext, bytes: ByteArray, extension: String): List<Message> = suspendCoroutine {
+    val success = { success: List<Message> -> it.resume(success) }
+    val failed = { failed: Throwable -> it.resumeWithException(failed) }
+    runBlocking {
+        if (context.isFromGuild) {
+            sendFile(context.getTextChannel(), bytes, extension, success, failed)
+        } else {
+            sendFile(context.getPrivateChannel(), bytes, extension, success, failed)
+        }
+    }
+}
+
+
+suspend fun sendFile(privateChannel: PrivateChannel, bytes: ByteArray, extension: String, success: ((List<Message>) -> Unit)? = null, failed: ((Throwable) -> Unit)? = null) {
+    try {
+        val messageList = mutableListOf<Message>()
+        messageList.add(privateChannel.sendFile(bytes, "finished.$extension").await())
+
+        success?.invoke(messageList)
+    } catch (t: Throwable) {
+        t.printStackTrace()
+        failed?.invoke(t)
+        return
+    }
+}
+
+suspend fun sendFile(textChannel: TextChannel, bytes: ByteArray, extension: String, success: ((List<Message>) -> Unit)? = null, failed: ((Throwable) -> Unit)? = null) {
+    require(textChannel.canTalk()) { "Cannot talk in this channel " + textChannel.name }
+    try {
+        val messageList = mutableListOf<Message>()
+        messageList.add(textChannel.sendFile(bytes, "finished.$extension").await())
+
+        success?.invoke(messageList)
+    } catch (t: Throwable) {
+        t.printStackTrace()
+        failed?.invoke(t)
+        return
+    }
+}
+
+
+suspend fun sendMsg(context: CommandContext, listImages: List<BufferedImage>, extension: String): List<Message> = suspendCoroutine {
+    val success = { success: List<Message> -> it.resume(success) }
+    val failed = { failed: Throwable -> it.resumeWithException(failed) }
+    runBlocking {
+        if (context.isFromGuild) {
+            sendMsg(context.getTextChannel(), listImages, extension, success, failed)
+        } else {
+            sendMsg(context.getPrivateChannel(), listImages, extension, success, failed)
+        }
+    }
+}
+
+suspend fun sendMsg(privateChannel: PrivateChannel, listImages: List<BufferedImage>, extension: String, success: ((List<Message>) -> Unit)? = null, failed: ((Throwable) -> Unit)? = null) {
+    try {
+        val messageList = mutableListOf<Message>()
+
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        withContext(Dispatchers.IO) {
+            for (image in listImages) {
+                ImageIO.write(image, extension, byteArrayOutputStream)
+            }
+        }
+        messageList.add(privateChannel.sendFile(byteArrayOutputStream.toByteArray(), "finished.$extension").await())
+
+        success?.invoke(messageList)
+    } catch (t: Throwable) {
+        t.printStackTrace()
+        failed?.invoke(t)
+        return
+    }
+}
+
+suspend fun sendMsg(textChannel: TextChannel, listImages: List<BufferedImage>, extension: String, success: ((List<Message>) -> Unit)? = null, failed: ((Throwable) -> Unit)? = null) {
+    require(textChannel.canTalk()) { "Cannot talk in this channel " + textChannel.name }
+    try {
+        val messageList = mutableListOf<Message>()
+
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        withContext(Dispatchers.IO) {
+            for (image in listImages) {
+                ImageIO.write(image, extension, byteArrayOutputStream)
+            }
+        }
+        messageList.add(textChannel.sendFile(byteArrayOutputStream.toByteArray(), "finished.$extension").await())
+
+        success?.invoke(messageList)
+    } catch (t: Throwable) {
+        t.printStackTrace()
+        failed?.invoke(t)
+        return
+    }
+}
+
 
 suspend fun sendMsg(context: CommandContext, msg: String): List<Message> = suspendCoroutine {
     val success = { success: List<Message> -> it.resume(success) }

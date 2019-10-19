@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.objects.translation
 
+import me.melijn.melijnbot.objects.command.CommandContext
 import java.util.*
 
 val i18n = TranslateManager()
@@ -9,6 +10,10 @@ class TranslateManager {
 
     private val defaultRecourseBundle: ResourceBundle = ResourceBundle.getBundle(BASE_BUNDLE_NAME)
     //val dutchBelgianRecourseBundle: ResourceBundle = ResourceBundle.getBundle(BASE_BUNDLE_NAME, Locale("nl_BE"))
+
+    suspend fun getTranslation(context: CommandContext, path: String = ""): String {
+        return getTranslation(context.getLanguage(), path)
+    }
 
     fun getTranslation(language: String, path: String = ""): String {
         val bundle = when (language.toUpperCase()) {

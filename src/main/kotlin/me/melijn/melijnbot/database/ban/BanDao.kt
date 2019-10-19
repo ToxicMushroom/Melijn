@@ -2,6 +2,8 @@ package me.melijn.melijnbot.database.ban
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class BanDao(driverManager: DriverManager) : Dao(driverManager) {
 
@@ -22,11 +24,9 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
         }
     }
 
-    suspend fun getUnbannableBans(): List<Ban> {
-        driverManager.awaitQueryExecution(
-            "SELECT * FROM $table WHERE active = ? AND endTime < ?",
-            true, System.currentTimeMillis()
-        ).use { rs ->
+    suspend fun getUnbannableBans(): List<Ban> = suspendCoroutine {
+        driverManager.executeQuery(
+            "SELECT * FROM $table WHERE active = ? AND endTime < ?", { rs ->
             val bans = ArrayList<Ban>()
             while (rs.next()) {
                 bans.add(Ban(
@@ -41,8 +41,8 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
                     true
                 ))
             }
-            return bans
-        }
+            it.resume(bans)
+        }, true, System.currentTimeMillis())
     }
 
     suspend fun getActiveBan(guildId: Long, bannedId: Long): Ban? {

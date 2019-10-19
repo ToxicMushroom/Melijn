@@ -119,7 +119,7 @@ suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): S
     return commands
 }
 
-suspend fun getLongFromArgNMessage(context: CommandContext, index: Int, min: Long = Long.MIN_VALUE, max: Long= Long.MAX_VALUE): Long? {
+suspend fun getLongFromArgNMessage(context: CommandContext, index: Int, min: Long = Long.MIN_VALUE, max: Long = Long.MAX_VALUE): Long? {
     val arg = context.args[index]
     val long = arg.toLongOrNull()
     val language = context.getLanguage()
@@ -132,8 +132,8 @@ suspend fun getLongFromArgNMessage(context: CommandContext, index: Int, min: Lon
             .replace(PLACEHOLDER_ARG, arg)
         sendMsg(context, msg, null)
     }
-    if (long != null)  {
-        if (min > long  || long > max) {
+    if (long != null) {
+        if (min > long || long > max) {
             val msg = i18n.getTranslation(language, "message.long.notingrange")
                 .replace("%min%", min.toString())
                 .replace("%max%", max.toString())
@@ -146,10 +146,10 @@ suspend fun getLongFromArgNMessage(context: CommandContext, index: Int, min: Lon
 }
 
 fun getLongFromArgN(context: CommandContext, index: Int): Long? =
-    context.args[index].toLongOrNull()
+    if (context.args.size > index) context.args[index].toLongOrNull() else null
 
 fun getIntegerFromArgN(context: CommandContext, index: Int): Int? =
-    context.args[index].toIntOrNull()
+    if (context.args.size > index) context.args[index].toIntOrNull() else null
 
 fun Executor.launch(block: suspend CoroutineScope.() -> Unit): Job {
     return CoroutineScope(this.asCoroutineDispatcher()).launch {

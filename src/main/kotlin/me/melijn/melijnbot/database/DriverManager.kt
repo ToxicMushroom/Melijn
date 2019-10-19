@@ -113,6 +113,10 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
     fun executeQuery(query: String, resultset: (ResultSet) -> Unit, vararg objects: Any) {
         try {
             getUsableConnection { connection ->
+                if (connection.isClosed) {
+                    executeQuery(query, resultset, objects)
+                    return@getUsableConnection
+                }
                 connection.prepareStatement(query).use { preparedStatement ->
                     for ((index, value) in objects.withIndex()) {
                         preparedStatement.setObject(index + 1, value)

@@ -95,6 +95,7 @@ dependencies {
     //https://mvnrepository.com/artifact/org.reflections/reflections
     //simplifies loading commands
     implementation group: 'org.reflections', name: 'reflections', version: '0.9.11'
+    implementation 'com.github.rtyley:animated-gif-lib-for-java:733d6f6'
 
     //https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib-jdk8
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.3.50'

@@ -20,8 +20,7 @@ class BirdCommand : AbstractCommand("command.bird") {
 
     override suspend fun execute(context: CommandContext) {
         val eb = Embedder(context)
-        val language = context.getLanguage()
-        val title = i18n.getTranslation(language, "$root.title")
+        val title = i18n.getTranslation(context, "$root.title")
 
         val web = context.webManager
         eb.setTitle(title)
