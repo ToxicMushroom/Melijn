@@ -14,6 +14,7 @@ import java.net.URL
 import javax.imageio.ImageIO
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlin.math.absoluteValue
 import kotlin.math.sqrt
 
 
@@ -109,8 +110,8 @@ object ImageUtils {
 
     fun getBlurpleForPixel(r: Int, g: Int, b: Int, offset: Int = 128): IntArray {
         val brightness = getBrightness(r, g, b)
-        val whiteThreshold = 24 + -offset
-        val blurpleThreshold = -43 + -offset
+        val whiteThreshold = 24 + offset.absoluteValue
+        val blurpleThreshold = -43 + offset.absoluteValue
         val invertOffset = offset < 0
         return when {
             brightness >= whiteThreshold -> if (invertOffset) intArrayOf(78, 93, 148) else intArrayOf(255, 255, 255) //wit
@@ -126,7 +127,7 @@ object ImageUtils {
             if (brightness >= offset) intArrayOf(255, 128, 0) //ORANGE #FF8000
             else intArrayOf(50, 50, 50) //DARK #323232
         } else {
-            val i = -offset
+            val i = offset.absoluteValue
             if (brightness >= i) intArrayOf(50, 50, 50) //DARK #323232
             else intArrayOf(255, 128, 0) //ORANGE #FF8000
         }

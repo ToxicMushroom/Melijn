@@ -16,7 +16,7 @@ class ChannelDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(guildId: Long, channelType: ChannelType, channelId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, channelType, channelId) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE channelId = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, channelType, channelId) VALUES (?, ?, ?) ON CONFLICT (guildId, channelType) DO UPDATE channelId = ?",
             guildId, channelType.toString(), channelId, channelId)
     }
 

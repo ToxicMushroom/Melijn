@@ -28,7 +28,7 @@ class LogChannelDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(guildId: Long, type: LogChannelType, channelId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, type, channelId) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE channelId = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, type, channelId) VALUES (?, ?, ?) ON CONFLICT (guildId,  type) DO UPDATE channelId = ?",
             guildId, type.toString(), channelId, channelId)
     }
 
@@ -40,7 +40,7 @@ class LogChannelDao(driverManager: DriverManager) : Dao(driverManager) {
 
     fun bulkPut(guildId: Long, logChannelTypes: List<LogChannelType>, channelId: Long) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("INSERT INTO $table (guildId, type, channelId) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE channelId = ?").use { statement ->
+            con.prepareStatement("INSERT INTO $table (guildId, type, channelId) VALUES (?, ?, ?) ON CONFLICT (guildId, type) DO UPDATE channelId = ?").use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(3, channelId)
                 statement.setLong(4, channelId)

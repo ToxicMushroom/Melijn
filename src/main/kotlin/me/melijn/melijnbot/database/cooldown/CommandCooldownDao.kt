@@ -33,7 +33,7 @@ class CommandCooldownDao(driverManager: DriverManager) : Dao(driverManager) {
 
     fun bulkPut(guildId: Long, commandIds: Set<String>, cooldownMillis: Long) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("INSERT INTO $table (guildId, commandId, cooldownMillis) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE cooldownMillis = ?").use { preparedStatement ->
+            con.prepareStatement("INSERT INTO $table (guildId, commandId, cooldownMillis) VALUES (?, ?, ?) ON CONFLICT (guildId, commandId) DO UPDATE cooldownMillis = ?").use { preparedStatement ->
                 preparedStatement.setLong(1, guildId)
                 preparedStatement.setLong(3, cooldownMillis)
                 preparedStatement.setLong(4, cooldownMillis)

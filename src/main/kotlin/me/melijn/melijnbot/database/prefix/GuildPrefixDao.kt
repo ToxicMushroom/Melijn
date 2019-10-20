@@ -16,7 +16,7 @@ class GuildPrefixDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(guildId: Long, prefixes: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, prefixes) VALUES (?, ?) ON DUPLICATE KEY UPDATE prefixes = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, prefixes) VALUES (?, ?) ON CONFLICT (guildId) DO UPDATE prefixes = ?",
             guildId, prefixes, prefixes)
     }
 

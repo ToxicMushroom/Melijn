@@ -27,7 +27,7 @@ class VerificationTypeDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(guildId: Long, type: VerificationType) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, type) VALUES (?, ?) ON DUPLICATE KEY UPDATE type = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, type) VALUES (?, ?) ON CONFLICT (guildId) DO UPDATE type = ?",
             guildId, type.toString(), type.toString())
     }
 

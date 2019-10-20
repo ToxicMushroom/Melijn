@@ -9,7 +9,7 @@ import kotlin.coroutines.suspendCoroutine
 class RolePermissionDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "rolePermissions"
-    override val tableStructure: String = "guildId bigint UNIQUE, roleId bigint, permission varchar(64) UNIQUE, state varchar(8)"
+    override val tableStructure: String = "guildId bigint, roleId bigint UNIQUE, permission varchar(64) UNIQUE, state varchar(8)"
     override val keys: String = ""
 
     init {
@@ -27,7 +27,7 @@ class RolePermissionDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(guildId: Long, roleId: Long, permission: String, permState: PermState) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, roleId, permission, state) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE state = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, roleId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT (roleId, permission) DO UPDATE state = ?",
             guildId, roleId, permission, permState.toString(), permState.toString())
     }
 
@@ -51,7 +51,7 @@ class RolePermissionDao(driverManager: DriverManager) : Dao(driverManager) {
 
     fun bulkPut(guildId: Long, roleId: Long, permissions: List<String>, state: PermState) {
         driverManager.getUsableConnection { connection ->
-            connection.prepareStatement("INSERT INTO $table (guildId, roleId, permission, state) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE state = ?").use { statement ->
+            connection.prepareStatement("INSERT INTO $table (guildId, roleId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT (roleId, permission) KEY UPDATE state = ?").use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(2, roleId)
                 statement.setString(4, state.toString())

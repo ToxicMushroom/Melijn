@@ -26,7 +26,7 @@ class VerificationCodeDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(guildId: Long, code: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, code) VALUES (?, ?) ON DUPLICATE KEY UPDATE code = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, code) VALUES (?, ?) ON CONFLICT (guildId) DO UPDATE code = ?",
             guildId, code, code)
     }
 

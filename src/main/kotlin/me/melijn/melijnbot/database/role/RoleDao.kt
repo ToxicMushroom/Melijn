@@ -17,7 +17,7 @@ class RoleDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(guildId: Long, roleType: RoleType, roleId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, roleType, roleId) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE roleId = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, roleType, roleId) VALUES (?, ?, ?) ON CONFLICT (guildId, roleType) DO UPDATE roleId = ?",
             guildId, roleType.toString(), roleId, roleId)
     }
 

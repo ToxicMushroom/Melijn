@@ -25,7 +25,7 @@ class ChannelUserPermissionDao(driverManager: DriverManager) : Dao(driverManager
     }
 
     suspend fun set(guildId: Long, channelId: Long, userId: Long, permission: String, permState: PermState) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, userId, permission, state) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE state = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, userId, permission, state) VALUES (?, ?, ?, ?, ?) ON CONFLICT (channelId, userId, permission) DO UPDATE state = ?",
             guildId, channelId, userId, permission, permState.toString(), permState.toString())
     }
 
@@ -53,7 +53,7 @@ class ChannelUserPermissionDao(driverManager: DriverManager) : Dao(driverManager
 
     fun bulkPut(guildId: Long, channelId: Long, userId: Long, permissions: List<String>, state: PermState) {
         driverManager.getUsableConnection { connection ->
-            connection.prepareStatement("INSERT INTO $table (guildId, channelId, userId, permission, state) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE state = ?").use { statement ->
+            connection.prepareStatement("INSERT INTO $table (guildId, channelId, userId, permission, state) VALUES (?, ?, ?, ?, ?) ON CONFLICT (channelId, userId, permission) DO UPDATE state = ?").use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(2, channelId)
                 statement.setLong(3, userId)
