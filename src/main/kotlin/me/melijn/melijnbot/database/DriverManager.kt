@@ -14,7 +14,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 
-class DriverManager(mysqlSettings: Settings.MySQL) {
+class DriverManager(dbSettings: Settings.Database) {
 
     private val tableRegistrationQueries = ArrayList<String>()
     private val dataSource: DataSource
@@ -24,9 +24,9 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
 
     init {
         val config = HikariConfig()
-        config.jdbcUrl = "jdbc:mysql://${mysqlSettings.host}:${mysqlSettings.port}/${mysqlSettings.database}"
-        config.username = mysqlSettings.user
-        config.password = mysqlSettings.password
+        config.jdbcUrl = "jdbc:postgresql://${dbSettings.host}:${dbSettings.port}/${dbSettings.database}"
+        config.username = dbSettings.user
+        config.password = dbSettings.password
         config.maximumPoolSize = 40
 
         config.addDataSourceProperty("autoReconnect", "true")
@@ -114,8 +114,7 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
         try {
             getUsableConnection { connection ->
                 if (connection.isClosed) {
-                    executeQuery(query, resultset, objects)
-                    return@getUsableConnection
+                    logger.warn("Connection closed: $query")
                 }
                 connection.prepareStatement(query).use { preparedStatement ->
                     for ((index, value) in objects.withIndex()) {
@@ -131,59 +130,59 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
         }
     }
 
-    /**
-     * [query] the sql query that needs execution
-     * [ResultSet] The resultset after executing the query
-     * [objects] the arguments of the query
-     * example:
-     *   query: "SELECT * FROM apples WHERE id = ?"
-     *   objects: 5
-     *   resultset: Consumer object to handle the resultset
-     * **/
-    suspend fun executeQuery(
-        query: String,
-        vararg objects: Any
-    ): ResultSet = suspendCoroutine {
-        try {
-            getUsableConnection { connection ->
-                connection.prepareStatement(query).use { preparedStatement ->
-                    for ((index, value) in objects.withIndex()) {
-                        preparedStatement.setObject(index + 1, value)
-                    }
-                    it.resume(preparedStatement.executeQuery())
-                }
-            }
-        } catch (t: Exception) {
-            logger.error("Something went wrong when executing the query: $query")
-            t.sendInGuild()
-        }
-    }
-
-    suspend fun awaitQueryExecution(
-        query: String,
-        vararg objects: Any
-    ): ResultSet = suspendCoroutine {
-        try {
-            getUsableConnection { connection ->
-                connection.prepareStatement(query).use { preparedStatement ->
-                    for ((index, value) in objects.withIndex()) {
-                        preparedStatement.setObject(index + 1, value)
-                    }
-                    it.resume(preparedStatement.executeQuery())
-                }
-            }
-        } catch (e: SQLException) {
-            logger.error("Something went wrong when executing the query: $query")
-            e.sendInGuild()
-            e.printStackTrace()
-        }
-    }
+//    /**
+//     * [query] the sql query that needs execution
+//     * [ResultSet] The resultset after executing the query
+//     * [objects] the arguments of the query
+//     * example:
+//     *   query: "SELECT * FROM apples WHERE id = ?"
+//     *   objects: 5
+//     *   resultset: Consumer object to handle the resultset
+//     * **/
+//    suspend fun executeQuery(
+//        query: String,
+//        vararg objects: Any
+//    ): ResultSet = suspendCoroutine {
+//        try {
+//            getUsableConnection { connection ->
+//                connection.prepareStatement(query).use { preparedStatement ->
+//                    for ((index, value) in objects.withIndex()) {
+//                        preparedStatement.setObject(index + 1, value)
+//                    }
+//                    it.resume(preparedStatement.executeQuery())
+//                }
+//            }
+//        } catch (t: Exception) {
+//            logger.error("Something went wrong when executing the query: $query")
+//            t.sendInGuild()
+//        }
+//    }
+//
+//    suspend fun awaitQueryExecution(
+//        query: String,
+//        vararg objects: Any
+//    ): ResultSet = suspendCoroutine {
+//        try {
+//            getUsableConnection { connection ->
+//                connection.prepareStatement(query).use { preparedStatement ->
+//                    for ((index, value) in objects.withIndex()) {
+//                        preparedStatement.setObject(index + 1, value)
+//                    }
+//                    it.resume(preparedStatement.executeQuery())
+//                }
+//            }
+//        } catch (e: SQLException) {
+//            logger.error("Something went wrong when executing the query: $query")
+//            e.sendInGuild()
+//            e.printStackTrace()
+//        }
+//    }
 
     suspend fun getMySQLVersion(): String {
         return try {
-            val connection = getUsableConnection()
-            val version = connection.metaData.databaseProductVersion.replace(mysqlPattern, "$1")
-            version
+            getUsableConnection().use {
+                it.metaData.databaseProductVersion
+            }//.replace(mysqlPattern, "$1")
         } catch (e: SQLException) {
             "error"
         }
@@ -192,18 +191,18 @@ class DriverManager(mysqlSettings: Settings.MySQL) {
 
     suspend fun getConnectorVersion(): String {
         return try {
-            val connection = getUsableConnection()
-            val version = connection.metaData.driverVersion.replace(connectorPattern, "$1")
-            version
+            getUsableConnection().use {
+                it.metaData.driverVersion
+            }//.replace(connectorPattern, "$1")
         } catch (e: SQLException) {
             "error"
         }
     }
 
-    fun clear(table: String): Long {
+    fun clear(table: String): Int {
         dataSource.connection.use { connection ->
             connection.prepareStatement("TRUNCATE $table").use { preparedStatement ->
-                return preparedStatement.executeLargeUpdate()
+                return preparedStatement.executeUpdate()
             }
         }
     }

@@ -8,8 +8,11 @@ import kotlin.coroutines.suspendCoroutine
 class BanDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "bans"
-    override val tableStructure: String = "guildId bigint, bannedId bigint, banAuthorId bigint, unbanAuthorId bigint, reason varchar(2048), startTime bigint, endTime bigint, unbanReason varchar(2048), active boolean"
-    override val keys: String = "UNIQUE KEY(guildId, bannedId, startTime)"
+    override val tableStructure: String = "" +
+        "guildId bigint UNIQUE, bannedId bigint UNIQUE, banAuthorId bigint, " +
+        "unbanAuthorId bigint, reason varchar(2048), startTime bigint UNIQUE, endTime bigint," +
+        " unbanReason varchar(2048), active boolean"
+    override val keys: String = ""
 
     init {
         driverManager.registerTable(table, tableStructure, keys)
@@ -33,9 +36,9 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
                     rs.getLong("guildId"),
                     rs.getLong("bannedId"),
                     rs.getLong("banAuthorId"),
-                    rs.getNString("reason"),
+                    rs.getString("reason"),
                     rs.getLong("unbanAuthorId"),
-                    rs.getNString("unbanReason"),
+                    rs.getString("unbanReason"),
                     rs.getLong("startTime"),
                     rs.getLong("endTime"),
                     true
@@ -45,50 +48,46 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
         }, true, System.currentTimeMillis())
     }
 
-    suspend fun getActiveBan(guildId: Long, bannedId: Long): Ban? {
-        var ban: Ban? = null
-        driverManager.awaitQueryExecution(
-            "SELECT * FROM $table WHERE guildId = ? AND bannedId = ? AND active = ?",
-            guildId, bannedId, true
-        ).use { rs ->
+    suspend fun getActiveBan(guildId: Long, bannedId: Long): Ban? = suspendCoroutine {
+        driverManager.executeQuery(
+            "SELECT * FROM $table WHERE guildId = ? AND bannedId = ? AND active = ?", { rs ->
+            var ban: Ban? = null
             while (rs.next()) {
                 ban = Ban(
                     guildId,
                     bannedId,
                     rs.getLong("banAuthorId"),
-                    rs.getNString("reason"),
+                    rs.getString("reason"),
                     rs.getLong("unbanAuthorId"),
-                    rs.getNString("unbanReason"),
+                    rs.getString("unbanReason"),
                     rs.getLong("startTime"),
                     rs.getLong("endTime"),
                     true
                 )
             }
-        }
-        return ban
+            it.resume(ban)
+        }, guildId, bannedId, true)
     }
 
-    suspend fun getBans(guildId: Long, bannedId: Long): List<Ban> {
-        val bans = ArrayList<Ban>()
-        driverManager.awaitQueryExecution(
-            "SELECT * FROM $table WHERE guildId = ? AND bannedId = ?",
-            guildId, bannedId
-        ).use { rs ->
+    suspend fun getBans(guildId: Long, bannedId: Long): List<Ban> = suspendCoroutine {
+        driverManager.executeQuery(
+            "SELECT * FROM $table WHERE guildId = ? AND bannedId = ?", { rs ->
+            val bans = ArrayList<Ban>()
             while (rs.next()) {
                 bans.add(Ban(
                     guildId,
                     bannedId,
                     rs.getLong("banAuthorId"),
-                    rs.getNString("reason"),
+                    rs.getString("reason"),
                     rs.getLong("unbanAuthorId"),
-                    rs.getNString("unbanReason"),
+                    rs.getString("unbanReason"),
                     rs.getLong("startTime"),
                     rs.getLong("endTime"),
                     rs.getBoolean("active")
                 ))
             }
-        }
-        return bans
+            it.resume(bans)
+        }, guildId, bannedId)
     }
 }
 

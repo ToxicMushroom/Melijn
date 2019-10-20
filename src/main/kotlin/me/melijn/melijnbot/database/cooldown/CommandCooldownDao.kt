@@ -9,8 +9,8 @@ import kotlin.coroutines.suspendCoroutine
 class CommandCooldownDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "commandCooldowns"
-    override val tableStructure: String = "guildId bigint, commandId varchar(16), cooldown bigint"
-    override val keys: String = "UNIQUE KEY (guildId, commandId)"
+    override val tableStructure: String = "guildId bigint UNIQUE, commandId varchar(16) UNIQUE, cooldown bigint"
+    override val keys: String = ""
 
     init {
         driverManager.registerTable(table, tableStructure, keys)

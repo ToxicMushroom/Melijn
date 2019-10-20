@@ -15,7 +15,7 @@ public class Settings {
     public Spotify spotify;
     public Lavalink lavalink;
     public Tokens tokens;
-    public MySQL mySQL;
+    public Database database;
     public String[] unLoggedThreads;
 
     public static class Spotify {
@@ -40,7 +40,7 @@ public class Settings {
         public String cache;
     }
 
-    public static class MySQL {
+    public static class Database {
         public String database;
         public String password;
         public String user;

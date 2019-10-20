@@ -23,7 +23,7 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
             logger.info("All shards ready")
             logger.info("Starting services..")
             container.serviceManager.init(shardManager)
-//            container.serviceManager.startServices()
+            container.serviceManager.startServices()
 
             logger.info("Services ready")
         }

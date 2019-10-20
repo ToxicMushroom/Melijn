@@ -6,8 +6,11 @@ import me.melijn.melijnbot.database.DriverManager
 class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "mutes"
-    override val tableStructure: String = "guildId bigint, mutedId bigint, muteAuthorId bigint, unmuteAuthorId bigint, reason varchar(2048), startTime bigint, endTime bigint, unmuteReason varchar(2048), active boolean"
-    override val keys: String = "UNIQUE KEY(guildId, mutedId, startTime)"
+    override val tableStructure: String = "" +
+        "guildId bigint UNIQUE, mutedId bigint UNIQUE, muteAuthorId bigint," +
+        " unmuteAuthorId bigint, reason varchar(2048), startTime bigint UNIQUE, endTime bigint," +
+        " unmuteReason varchar(2048), active boolean"
+    override val keys: String = ""
 
     init {
         driverManager.registerTable(table, tableStructure, keys)
@@ -30,9 +33,9 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
                     rs.getLong("guildId"),
                     rs.getLong("mutedId"),
                     rs.getLong("muteAuthorId"),
-                    rs.getNString("reason"),
+                    rs.getString("reason"),
                     rs.getLong("unmuteAuthorId"),
-                    rs.getNString("unmuteReason"),
+                    rs.getString("unmuteReason"),
                     rs.getLong("startTime"),
                     rs.getLong("endTime"),
                     true
@@ -50,9 +53,9 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
                     guildId,
                     mutedId,
                     rs.getLong("muteAuthorId"),
-                    rs.getNString("reason"),
+                    rs.getString("reason"),
                     rs.getLong("unmuteAuthorId"),
-                    rs.getNString("unmuteReason"),
+                    rs.getString("unmuteReason"),
                     rs.getLong("startTime"),
                     rs.getLong("endTime"),
                     true
@@ -70,9 +73,9 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
                     guildId,
                     mutedId,
                     rs.getLong("muteAuthorId"),
-                    rs.getNString("reason"),
+                    rs.getString("reason"),
                     rs.getLong("unmuteAuthorId"),
-                    rs.getNString("unmuteReason"),
+                    rs.getString("unmuteReason"),
                     rs.getLong("startTime"),
                     rs.getLong("endTime"),
                     rs.getBoolean("active")

@@ -43,4 +43,10 @@ class CustomCommandWrapper(private val taskManager: TaskManager, private val cus
     suspend fun update(guildId: Long, cc: CustomCommand) {
         customCommandDao.update(guildId, cc)
     }
+
+    suspend fun getCCById(guildId: Long, id: Long?): CustomCommand? {
+        if (id == null) return null
+        val list = customCommandCache.get(guildId).await()
+        return list.firstOrNull { cc -> cc.id == id }
+    }
 }

@@ -9,8 +9,8 @@ import kotlin.coroutines.suspendCoroutine
 class LogChannelDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "logChannels"
-    override val tableStructure: String = "guildId bigInt, type varchar(64), channelId bigInt"
-    override val keys: String = "UNIQUE KEY (guildId, type)"
+    override val tableStructure: String = "guildId bigInt UNIQUE, type varchar(64) UNIQUE, channelId bigInt"
+    override val keys: String = ""
 
     init {
         driverManager.registerTable(table, tableStructure, keys)

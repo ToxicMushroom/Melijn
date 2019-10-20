@@ -9,6 +9,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
+import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
@@ -28,7 +29,8 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             SetChanceArg(root),
             SetPrefixStateArg(root),
             SetDescriptionArg(root),
-            ResponseArg(root)
+            ResponseArg(root),
+            InfoArg(root)
         )
         commandCategory = CommandCategory.ADMINISTRATION
 
@@ -62,6 +64,36 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
     override suspend fun execute(context: CommandContext) {
         sendSyntax(context, syntax)
+    }
+
+    class InfoArg(root: String) : AbstractCommand("$root.info") {
+
+        init {
+            name = "info"
+            aliases = arrayOf("information")
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            val id = getLongFromArgN(context, 0)
+            var cc = context.daoManager.customCommandWrapper.getCCById(context.getGuildId(), id)
+            if (cc == null && context.args.isNotEmpty()) {
+
+                val msg = i18n.getTranslation(context, "message.unknown.ccid")
+                    .replace(PLACEHOLDER_ARG, id.toString())
+                sendMsg(context, msg)
+                return
+            } else if (cc == null) {
+                cc = getSelectedCCNMessage(context) ?: return
+            }
+
+            val title = i18n.getTranslation(context, "$root.title")
+            val description = i18n.getTranslation(context, "$root.description")
+                .replace("%ccName%", cc.name)
+            val eb = Embedder(context)
+            eb.setTitle(title)
+            eb.setDescription(description)
+            sendEmbed(context, eb.build())
+        }
     }
 
     class ListArg(root: String) : AbstractCommand("$root.list") {
@@ -169,12 +201,18 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             val guildId = context.getGuildId()
 
             val id = getLongFromArgNMessage(context, 0) ?: return
-            selectionMap[Pair(guildId, context.authorId)] = id
-            val cc = context.daoManager.customCommandWrapper.customCommandCache.get(guildId).await()
-                .first { cc -> cc.id == id }
+            val cc = context.daoManager.customCommandWrapper.getCCById(guildId, id)
+            if (cc == null) {
+                val msg = i18n.getTranslation(context, "message.unknown.ccid")
+                    .replace(PLACEHOLDER_ARG, id.toString())
+                sendMsg(context, msg)
+                return
+            }
 
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.selected")
+            selectionMap[Pair(guildId, context.authorId)] = id
+
+
+            val msg = i18n.getTranslation(context, "$root.selected")
                 .replace("%id%", cc.id.toString())
                 .replace("%ccName%", cc.name)
             sendMsg(context, msg)

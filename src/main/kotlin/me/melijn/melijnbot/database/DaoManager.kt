@@ -56,7 +56,7 @@ const val LARGE_CACHE = 200L
 const val NORMAL_CACHE = 100L
 const val SMALL_CACHE = 50L
 
-class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.MySQL) {
+class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.Database) {
 
     companion object {
         val afterTableFunctions = mutableListOf<() -> Unit>()

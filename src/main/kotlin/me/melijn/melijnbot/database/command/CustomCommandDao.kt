@@ -3,12 +3,14 @@ package me.melijn.melijnbot.database.command
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.database.message.ModularMessage
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class CustomCommandDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "customCommands"
     override val tableStructure: String =
-        "guildId bigint, id bigint auto_increment, name varchar(64)," +
+        "guildId bigint, id BIGSERIAL, name varchar(64)," +
             " description varchar(256), content varchar(4096), aliases varchar(128)," +
             " chance int, prefix boolean"
     override val keys: String = "PRIMARY KEY (id)"
@@ -36,8 +38,8 @@ class CustomCommandDao(driverManager: DriverManager) : Dao(driverManager) {
             guildId, id)
     }
 
-    suspend fun getForGuild(guildId: Long): List<CustomCommand> {
-        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", guildId).use { rs ->
+    suspend fun getForGuild(guildId: Long): List<CustomCommand> = suspendCoroutine {
+        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", { rs ->
             val list = ArrayList<CustomCommand>()
 
             while (rs.next()) {
@@ -45,15 +47,15 @@ class CustomCommandDao(driverManager: DriverManager) : Dao(driverManager) {
                     rs.getLong("id"),
                     rs.getString("name"),
                     ModularMessage.fromJSON(rs.getString("content")),
-                    rs.getNString("description"),
-                    rs.getNString("aliases")?.split("%SPLIT%")?.toList(),
+                    rs.getString("description"),
+                    rs.getString("aliases")?.split("%SPLIT%")?.toList(),
                     rs.getInt("chance"),
                     rs.getBoolean("prefix")
                 )
                 list.add(cc)
             }
-            return list
-        }
+            it.resume(list)
+        }, guildId)
     }
 }
 

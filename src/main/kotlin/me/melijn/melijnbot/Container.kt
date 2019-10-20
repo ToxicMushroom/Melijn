@@ -25,7 +25,7 @@ class Container {
     var settings: Settings = ObjectMapper().readValue(File("config.json"), Settings::class.java)
 
     val taskManager = TaskManager()
-    val daoManager = DaoManager(taskManager, settings.mySQL)
+    val daoManager = DaoManager(taskManager, settings.database)
     val webManager = WebManager(taskManager)
     val serviceManager = ServiceManager(taskManager, daoManager)
 

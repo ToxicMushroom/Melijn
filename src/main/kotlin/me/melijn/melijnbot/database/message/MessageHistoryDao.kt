@@ -2,6 +2,8 @@ package me.melijn.melijnbot.database.message
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class MessageHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
 
@@ -27,9 +29,9 @@ class MessageHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
         }
     }
 
-    suspend fun get(messageId: Long): DaoMessage? {
-        driverManager.executeQuery("SELECT * FROM $table WHERE messageId = ?", messageId).use { rs ->
-            return if (rs.next()) {
+    suspend fun get(messageId: Long): DaoMessage? = suspendCoroutine {
+        driverManager.executeQuery("SELECT * FROM $table WHERE messageId = ?", { rs ->
+            val result = if (rs.next()) {
                 DaoMessage(
                     rs.getLong("guildId"),
                     rs.getLong("textChannelId"),
@@ -41,7 +43,8 @@ class MessageHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
             } else {
                 null
             }
-        }
+            it.resume(result)
+        }, messageId)
     }
 
 }

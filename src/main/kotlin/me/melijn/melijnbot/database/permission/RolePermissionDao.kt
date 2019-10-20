@@ -9,8 +9,8 @@ import kotlin.coroutines.suspendCoroutine
 class RolePermissionDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "rolePermissions"
-    override val tableStructure: String = "guildId bigint, roleId bigint, permission varchar(64), state varchar(8)"
-    override val keys: String = "UNIQUE KEY (roleId, permission)"
+    override val tableStructure: String = "guildId bigint UNIQUE, roleId bigint, permission varchar(64) UNIQUE, state varchar(8)"
+    override val keys: String = ""
 
     init {
         driverManager.registerTable(table, tableStructure, keys)

@@ -19,8 +19,8 @@ import kotlin.coroutines.suspendCoroutine
 class MessageDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "messages"
-    override val tableStructure: String = "guildId bigint, type varchar(32), message varchar(4096)"
-    override val keys: String = "UNIQUE KEY(guildId, type)"
+    override val tableStructure: String = "guildId bigint UNIQUE, type varchar(32) UNIQUE, message varchar(4096)"
+    override val keys: String = ""
 
     init {
         driverManager.registerTable(table, tableStructure, keys)

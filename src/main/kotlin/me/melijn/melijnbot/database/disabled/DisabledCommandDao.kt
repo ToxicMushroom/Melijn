@@ -8,8 +8,8 @@ import kotlin.coroutines.suspendCoroutine
 class DisabledCommandDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "disabledCommands"
-    override val tableStructure: String = "guildId bigint, commandId varchar(16)"
-    override val keys: String = "UNIQUE KEY (guildId, commandId)"
+    override val tableStructure: String = "guildId bigint UNIQUE, commandId varchar(16) UNIQUE"
+    override val keys: String = ""
 
     init {
         driverManager.registerTable(table, tableStructure, keys)
