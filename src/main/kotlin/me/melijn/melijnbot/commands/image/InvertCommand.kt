@@ -6,18 +6,18 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.ImageUtils
 
+class InvertCommand : AbstractCommand("command.invert") {
 
-class BlurpleCommand : AbstractCommand("command.blurple") {
 
     init {
-        id = 54
-        name = "blurple"
-        aliases = arrayOf("blurpleGif")
+        id = 56
+        name = "invert"
+        aliases = arrayOf("invertGif")
         commandCategory = CommandCategory.IMAGE
     }
 
     override suspend fun execute(context: CommandContext) {
-        if (context.commandParts[1].equals("blurpleGif", true)) {
+        if (context.commandParts[1].equals("invertGif", true)) {
             executeGif(context)
         } else {
             executeNormal(context)
@@ -26,13 +26,13 @@ class BlurpleCommand : AbstractCommand("command.blurple") {
 
     private suspend fun executeNormal(context: CommandContext) {
         ImageCommandUtil.executeNormalRecolor(context, { ints ->
-            ImageUtils.getBlurpleForPixel(ints[0], ints[1], ints[2], ints[3])
+            ImageUtils.getInvertedPixel(ints[0], ints[1], ints[2])
         }, true)
     }
 
     private suspend fun executeGif(context: CommandContext) {
         ImageCommandUtil.executeGifRecolor(context, { ints ->
-            ImageUtils.getBlurpleForPixel(ints[0], ints[1], ints[2], ints[3])
+            ImageUtils.getInvertedPixel(ints[0], ints[1], ints[2])
         }, true)
     }
 }

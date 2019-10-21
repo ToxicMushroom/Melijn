@@ -200,4 +200,8 @@ object ImageUtils {
         ImageIO.write(image, "png", outputStream)
         return outputStream
     }
+
+    fun getInvertedPixel(r: Int, g: Int, b: Int): IntArray {
+        return intArrayOf(255-r, 255-g, 255-b)
+    }
 }
