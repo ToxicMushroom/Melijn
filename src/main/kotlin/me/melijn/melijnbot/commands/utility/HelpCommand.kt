@@ -27,7 +27,7 @@ class HelpCommand : AbstractCommand("command.help") {
         if (args.isEmpty()) {
             val part = if (context.isFromGuild) "server" else "pm"
             val response = i18n.getTranslation(language, "$root.response1.$part")
-            val msg = replaceArgs(response, context.getGuildId(), context.usedPrefix)
+            val msg = replaceArgs(response, if (context.isFromGuild) context.getGuildId() else -1L, context.usedPrefix)
             sendMsg(context, msg)
             return
         }
