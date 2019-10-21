@@ -62,19 +62,24 @@ object ImageUtils {
         }
     }
 
-    suspend fun getImageBytesNMessage(context: CommandContext): ByteArray? = suspendCoroutine {
+    //ByteArray (imageData)
+    //Boolean (if it is from an argument -> true) (attachment or noArgs(author)) -> false)
+    suspend fun getImageBytesNMessage(context: CommandContext): Pair<ByteArray?, Boolean>? = suspendCoroutine {
         context.taskManager.executorService.launch {
             val args = context.args
             val attachments = context.getMessage().attachments
 
+            var arg = false
             var img: ByteArray? = null
             if (args.isNotEmpty() && args[0].isNotEmpty()) {
                 val user = retrieveUserByArgsN(context, 0)
                 if (user != null) {
+                    arg = true
                     withContext(Dispatchers.IO) {
                         img = URL(user.effectiveAvatarUrl + "?size=2048").readBytes()
                     }
                 } else {
+                    arg = true
                     try {
                         withContext(Dispatchers.IO) {
                             img = URL(args[0]).readBytes()
@@ -87,6 +92,7 @@ object ImageUtils {
                 }
             } else if (attachments.isNotEmpty()) {
                 try {
+                    arg = false
                     withContext(Dispatchers.IO) {
                         img = URL(attachments[0].url + "?size=2048").readBytes()
                     }
@@ -96,11 +102,13 @@ object ImageUtils {
                     sendMsg(context, msg)
                 }
             } else {
+                arg = false
                 withContext(Dispatchers.IO) {
                     img = URL(context.getAuthor().effectiveAvatarUrl + "?size=2048").readBytes()
                 }
             }
-            it.resume(img)
+            val pair = Pair(img, arg)
+            it.resume(if (pair.first == null) null else pair)
         }
     }
 

@@ -26,8 +26,10 @@ class BlurpleCommand : AbstractCommand("command.blurple") {
     }
 
     private suspend fun executeNormal(context: CommandContext) {
-        val imageByteArray = ImageUtils.getImageBytesNMessage(context) ?: return
-        val offset = (getIntegerFromArgN(context, 1) ?: 128)
+        val pair = ImageUtils.getImageBytesNMessage(context) ?: return
+        val imageByteArray = pair.first ?: return
+        val argInt = if (pair.second) 1 else 0
+        val offset = (getIntegerFromArgN(context, argInt + 0) ?: 128)
 
         val outputStream = ImageUtils.addEffectToStaticImage(imageByteArray) { image ->
             ImageUtils.recolorPixel(image,  offset) { ints ->
@@ -38,11 +40,13 @@ class BlurpleCommand : AbstractCommand("command.blurple") {
     }
 
     private suspend fun executeGif(context: CommandContext) {
-        val quality = getIntegerFromArgN(context, 1) ?: 5
-        val offset = (getIntegerFromArgN(context, 2) ?: 128)
-        val fps = (getIntegerFromArgN(context, 3) ?: 20).toFloat()
+        val pair = ImageUtils.getImageBytesNMessage(context) ?: return
+        val imageByteArray = pair.first ?: return
+        val argInt = if (pair.second) 1 else 0
+        val offset = (getIntegerFromArgN(context, argInt + 0) ?: 128)
+        val quality = getIntegerFromArgN(context, argInt + 1) ?: 5
+        val fps = (getIntegerFromArgN(context, argInt + 2) ?: 20).toFloat()
 
-        val imageByteArray = ImageUtils.getImageBytesNMessage(context) ?: return
         val outputStream = ImageUtils.addEffectToGifFrames(imageByteArray, fps, quality) { image ->
             ImageUtils.recolorPixel(image, offset) { ints ->
                 ImageUtils.getBlurpleForPixel(ints[0], ints[1], ints[2], ints[3])
