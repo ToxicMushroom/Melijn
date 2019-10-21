@@ -9,8 +9,8 @@ import kotlin.coroutines.suspendCoroutine
 class LogChannelDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "logChannels"
-    override val tableStructure: String = "guildId bigInt UNIQUE, type varchar(64) UNIQUE, channelId bigInt"
-    override val keys: String = ""
+    override val tableStructure: String = "guildId bigInt, type varchar(64), channelId bigInt"
+    override val keys: String = "UNIQUE (guildId, type)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)
@@ -28,7 +28,7 @@ class LogChannelDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(guildId: Long, type: LogChannelType, channelId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, type, channelId) VALUES (?, ?, ?) ON CONFLICT (guildId,  type) DO UPDATE channelId = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, type, channelId) VALUES (?, ?, ?) ON CONFLICT (guildId,  type) DO UPDATE SET channelId = ?",
             guildId, type.toString(), channelId, channelId)
     }
 
@@ -40,7 +40,7 @@ class LogChannelDao(driverManager: DriverManager) : Dao(driverManager) {
 
     fun bulkPut(guildId: Long, logChannelTypes: List<LogChannelType>, channelId: Long) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("INSERT INTO $table (guildId, type, channelId) VALUES (?, ?, ?) ON CONFLICT (guildId, type) DO UPDATE channelId = ?").use { statement ->
+            con.prepareStatement("INSERT INTO $table (guildId, type, channelId) VALUES (?, ?, ?) ON CONFLICT (guildId, type) DO UPDATE SET channelId = ?").use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(3, channelId)
                 statement.setLong(4, channelId)
@@ -48,7 +48,7 @@ class LogChannelDao(driverManager: DriverManager) : Dao(driverManager) {
                     statement.setString(2, type.toString())
                     statement.addBatch()
                 }
-                statement.executeLargeBatch()
+                statement.executeBatch()
             }
 
         }
@@ -62,7 +62,7 @@ class LogChannelDao(driverManager: DriverManager) : Dao(driverManager) {
                     statement.setString(2, type.toString())
                     statement.addBatch()
                 }
-                statement.executeLargeBatch()
+                statement.executeBatch()
             }
         }
     }

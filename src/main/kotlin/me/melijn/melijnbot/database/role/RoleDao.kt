@@ -9,15 +9,15 @@ import kotlin.coroutines.suspendCoroutine
 class RoleDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "roles"
-    override val tableStructure: String = "guildId bigInt UNIQUE, roleType varchar(32) UNIQUE, roleId bigint"
-    override val keys: String = ""
+    override val tableStructure: String = "guildId bigInt, roleType varchar(32), roleId bigint"
+    override val keys: String = "UNIQUE (guildId, roleType)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
     suspend fun set(guildId: Long, roleType: RoleType, roleId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, roleType, roleId) VALUES (?, ?, ?) ON CONFLICT (guildId, roleType) DO UPDATE roleId = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, roleType, roleId) VALUES (?, ?, ?) ON CONFLICT (guildId, roleType) DO UPDATE SET roleId = ?",
             guildId, roleType.toString(), roleId, roleId)
     }
 

@@ -9,8 +9,8 @@ import kotlin.coroutines.suspendCoroutine
 class ChannelRolePermissionDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "channelRolePermissions"
-    override val tableStructure: String = "guildId bigint, channelId bigint UNIQUE, roleId bigint UNIQUE, permission varchar(64) UNIQUE, state varchar(8)"
-    override val keys: String = ""
+    override val tableStructure: String = "guildId bigint, channelId bigint, roleId bigint, permission varchar(64), state varchar(8)"
+    override val keys: String = "UNIQUE (channelId, roleId, permission)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)
@@ -25,7 +25,7 @@ class ChannelRolePermissionDao(driverManager: DriverManager) : Dao(driverManager
     }
 
     suspend fun set(guildId: Long, channelId: Long, roleId: Long, permission: String, permState: PermState) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, roleId, permission, state) VALUES (?, ?, ?, ?, ?) ON CONFLICT (channelId, roleId, permission) DO UPDATE state = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, roleId, permission, state) VALUES (?, ?, ?, ?, ?) ON CONFLICT (channelId, roleId, permission) DO UPDATE SET state = ?",
             guildId, channelId, roleId, permission, permState.toString(), permState.toString())
     }
 
@@ -52,7 +52,7 @@ class ChannelRolePermissionDao(driverManager: DriverManager) : Dao(driverManager
 
     fun bulkPut(guildId: Long, channelId: Long, roleId: Long, permissions: List<String>, state: PermState) {
         driverManager.getUsableConnection { connection ->
-            connection.prepareStatement("INSERT INTO $table (guildId, channelId, roleId, permission, state) VALUES (?, ?, ?, ?, ?) ON CONFLICT (channelId, roleId, permission) DO UPDATE state = ?").use { statement ->
+            connection.prepareStatement("INSERT INTO $table (guildId, channelId, roleId, permission, state) VALUES (?, ?, ?, ?, ?) ON CONFLICT (channelId, roleId, permission) DO UPDATE SET state = ?").use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(2, channelId)
                 statement.setLong(3, roleId)
@@ -62,7 +62,7 @@ class ChannelRolePermissionDao(driverManager: DriverManager) : Dao(driverManager
                     statement.setString(4, perm)
                     statement.addBatch()
                 }
-                statement.executeLargeBatch()
+                statement.executeBatch()
             }
         }
     }
@@ -76,7 +76,7 @@ class ChannelRolePermissionDao(driverManager: DriverManager) : Dao(driverManager
                     statement.setString(3, perm)
                     statement.addBatch()
                 }
-                statement.executeLargeBatch()
+                statement.executeBatch()
             }
         }
     }

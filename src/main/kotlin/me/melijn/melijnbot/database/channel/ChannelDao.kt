@@ -8,15 +8,15 @@ import kotlin.coroutines.suspendCoroutine
 
 class ChannelDao(driverManager: DriverManager) : Dao(driverManager) {
     override val table: String = "channels"
-    override val tableStructure: String = "guildId bigint UNIQUE, channelType varchar(32) UNIQUE, channelId bigint"
-    override val keys: String = ""
+    override val tableStructure: String = "guildId bigint, channelType varchar(32), channelId bigint"
+    override val keys: String = "UNIQUE (guildId, channelType)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
     suspend fun set(guildId: Long, channelType: ChannelType, channelId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, channelType, channelId) VALUES (?, ?, ?) ON CONFLICT (guildId, channelType) DO UPDATE channelId = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, channelType, channelId) VALUES (?, ?, ?) ON CONFLICT (guildId, channelType) DO UPDATE SET channelId = ?",
             guildId, channelType.toString(), channelId, channelId)
     }
 

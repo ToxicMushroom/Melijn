@@ -9,8 +9,8 @@ import kotlin.coroutines.suspendCoroutine
 class CommandCooldownDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "commandCooldowns"
-    override val tableStructure: String = "guildId bigint UNIQUE, commandId varchar(16) UNIQUE, cooldown bigint"
-    override val keys: String = ""
+    override val tableStructure: String = "guildId bigint, commandId varchar(16), cooldown bigint"
+    override val keys: String = "UNIQUE (guildId, commandId)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)
@@ -33,7 +33,7 @@ class CommandCooldownDao(driverManager: DriverManager) : Dao(driverManager) {
 
     fun bulkPut(guildId: Long, commandIds: Set<String>, cooldownMillis: Long) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("INSERT INTO $table (guildId, commandId, cooldownMillis) VALUES (?, ?, ?) ON CONFLICT (guildId, commandId) DO UPDATE cooldownMillis = ?").use { preparedStatement ->
+            con.prepareStatement("INSERT INTO $table (guildId, commandId, cooldownMillis) VALUES (?, ?, ?) ON CONFLICT (guildId, commandId) DO UPDATE SET cooldownMillis = ?").use { preparedStatement ->
                 preparedStatement.setLong(1, guildId)
                 preparedStatement.setLong(3, cooldownMillis)
                 preparedStatement.setLong(4, cooldownMillis)
@@ -41,7 +41,7 @@ class CommandCooldownDao(driverManager: DriverManager) : Dao(driverManager) {
                     preparedStatement.setString(2, id)
                     preparedStatement.addBatch()
                 }
-                preparedStatement.executeLargeBatch()
+                preparedStatement.executeBatch()
             }
         }
     }
@@ -54,7 +54,7 @@ class CommandCooldownDao(driverManager: DriverManager) : Dao(driverManager) {
                     preparedStatement.setString(2, id)
                     preparedStatement.addBatch()
                 }
-                preparedStatement.executeLargeBatch()
+                preparedStatement.executeBatch()
             }
         }
     }

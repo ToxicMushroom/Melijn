@@ -17,7 +17,7 @@ class MessageHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun set(daoMessage: DaoMessage) {
         daoMessage.run {
-            driverManager.executeUpdate("INSERT INTO $table (guildId, textChannelId, authorId, messageId, content, moment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (messageId) DO UPDATE content = ?",
+            driverManager.executeUpdate("INSERT INTO $table (guildId, textChannelId, authorId, messageId, content, moment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (messageId) DO UPDATE SET content = ?",
                 guildId, textChannelId, authorId, messageId, content, moment, content)
         }
     }

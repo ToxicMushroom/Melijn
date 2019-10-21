@@ -27,7 +27,7 @@ class GuildLanguageDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(guildId: Long, language: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, language) VALUES (?, ?) ON CONFLICT (guildId) DO UPDATE language = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, language) VALUES (?, ?) ON CONFLICT (guildId) DO UPDATE SET language = ?",
             guildId, language, language)
     }
 

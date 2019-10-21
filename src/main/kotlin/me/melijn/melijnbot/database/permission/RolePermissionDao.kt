@@ -9,8 +9,8 @@ import kotlin.coroutines.suspendCoroutine
 class RolePermissionDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "rolePermissions"
-    override val tableStructure: String = "guildId bigint, roleId bigint UNIQUE, permission varchar(64) UNIQUE, state varchar(8)"
-    override val keys: String = ""
+    override val tableStructure: String = "guildId bigint, roleId bigint, permission varchar(64), state varchar(8)"
+    override val keys: String = "UNIQUE (roleId, permission)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)
@@ -27,7 +27,7 @@ class RolePermissionDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(guildId: Long, roleId: Long, permission: String, permState: PermState) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, roleId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT (roleId, permission) DO UPDATE state = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, roleId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT (roleId, permission) DO UPDATE SET state = ?",
             guildId, roleId, permission, permState.toString(), permState.toString())
     }
 
@@ -60,7 +60,7 @@ class RolePermissionDao(driverManager: DriverManager) : Dao(driverManager) {
                     statement.setString(3, perm)
                     statement.addBatch()
                 }
-                statement.executeLargeBatch()
+                statement.executeBatch()
             }
         }
     }
@@ -73,7 +73,7 @@ class RolePermissionDao(driverManager: DriverManager) : Dao(driverManager) {
                     statement.setString(2, perm)
                     statement.addBatch()
                 }
-                statement.executeLargeBatch()
+                statement.executeBatch()
             }
         }
     }

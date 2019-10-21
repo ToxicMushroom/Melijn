@@ -9,8 +9,8 @@ import kotlin.coroutines.suspendCoroutine
 class ChannelCommandStateDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "channelCommandStates"
-    override val tableStructure: String = "guildId bigint, channelId bigint UNIQUE, commandId varchar(16) UNIQUE, state varchar(32)"
-    override val keys: String = ""
+    override val tableStructure: String = "guildId bigint, channelId bigint, commandId varchar(16), state varchar(32)"
+    override val keys: String = "UNIQUE (channelId, commandId)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)
@@ -39,7 +39,7 @@ class ChannelCommandStateDao(driverManager: DriverManager) : Dao(driverManager) 
 
     fun bulkPut(guildId: Long, channelId: Long, commands: Set<String>, channelCommandState: ChannelCommandState) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("INSERT INTO $table (guildId, channelId, commandId, state) VALUES (?, ?, ?, ?) ON CONFLICT (channelId, commandId) DO UPDATE state = ?").use { statement ->
+            con.prepareStatement("INSERT INTO $table (guildId, channelId, commandId, state) VALUES (?, ?, ?, ?) ON CONFLICT (channelId, commandId) DO UPDATE SET state = ?").use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(2, channelId)
                 statement.setString(4, channelCommandState.toString())
@@ -48,7 +48,7 @@ class ChannelCommandStateDao(driverManager: DriverManager) : Dao(driverManager) 
                     statement.setString(3, id)
                     statement.addBatch()
                 }
-                statement.executeLargeBatch()
+                statement.executeBatch()
             }
         }
     }
@@ -61,7 +61,7 @@ class ChannelCommandStateDao(driverManager: DriverManager) : Dao(driverManager) 
                     statement.setString(2, id)
                     statement.addBatch()
                 }
-                statement.executeLargeBatch()
+                statement.executeBatch()
             }
         }
     }

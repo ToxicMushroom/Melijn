@@ -7,10 +7,10 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "mutes"
     override val tableStructure: String = "" +
-        "guildId bigint UNIQUE, mutedId bigint UNIQUE, muteAuthorId bigint," +
-        " unmuteAuthorId bigint, reason varchar(2048), startTime bigint UNIQUE, endTime bigint," +
+        "guildId bigint, mutedId bigint, muteAuthorId bigint," +
+        " unmuteAuthorId bigint, reason varchar(2048), startTime bigint, endTime bigint," +
         " unmuteReason varchar(2048), active boolean"
-    override val keys: String = ""
+    override val keys: String = "UNIQUE (guildId, mutedId, startTime)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)
@@ -19,7 +19,7 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
     suspend fun setMute(mute: Mute) {
         mute.apply {
             driverManager.executeUpdate("INSERT INTO $table (guildId, mutedId, muteAuthorId, unmuteAuthorId, reason, startTime, endTime, unmuteReason, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)" +
-                " ON CONFLICT (guildId, mutedId, startTime) DO UPDATE endTime = ?, muteAuthorId = ?, reason = ?, unmuteAuthorId = ?, unmuteReason = ?, active = ?",
+                " ON CONFLICT (guildId, mutedId, startTime) DO UPDATE SET endTime = ?, muteAuthorId = ?, reason = ?, unmuteAuthorId = ?, unmuteReason = ?, active = ?",
                 guildId, mutedId, muteAuthorId, unmuteAuthorId, reason, startTime, endTime, unmuteReason, active,
                 endTime, muteAuthorId, reason, unmuteAuthorId, unmuteReason, active)
         }

@@ -9,8 +9,8 @@ import kotlin.coroutines.suspendCoroutine
 class UserPermissionDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "userPermissions"
-    override val tableStructure: String = "guildId bigint, userId bigint UNIQUE, permission varchar(64) UNIQUE, state varchar(8)"
-    override val keys: String = ""
+    override val tableStructure: String = "guildId bigint, userId bigint, permission varchar(64), state varchar(8)"
+    override val keys: String = "UNIQUE (userId, permission)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)
@@ -27,7 +27,7 @@ class UserPermissionDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(guildId: Long, userId: Long, permission: String, permState: PermState) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, userId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT (userId, permission) DO UPDATE state = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, userId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT (userId, permission) DO UPDATE SET state = ?",
             guildId, userId, permission, permState.toString(), permState.toString())
     }
 
@@ -51,7 +51,7 @@ class UserPermissionDao(driverManager: DriverManager) : Dao(driverManager) {
 
     fun bulkPut(guildId: Long, userId: Long, permissions: List<String>, state: PermState) {
         driverManager.getUsableConnection { connection ->
-            connection.prepareStatement("INSERT INTO $table (guildId, userId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT (userId, permission) DO UPDATE state = ?").use { statement ->
+            connection.prepareStatement("INSERT INTO $table (guildId, userId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT (userId, permission) DO UPDATE SET state = ?").use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(2, userId)
                 statement.setString(4, state.toString())
@@ -60,7 +60,7 @@ class UserPermissionDao(driverManager: DriverManager) : Dao(driverManager) {
                     statement.setString(3, perm)
                     statement.addBatch()
                 }
-                statement.executeLargeBatch()
+                statement.executeBatch()
             }
         }
     }
@@ -74,7 +74,7 @@ class UserPermissionDao(driverManager: DriverManager) : Dao(driverManager) {
                     statement.setString(3, perm)
                     statement.addBatch()
                 }
-                statement.executeLargeBatch()
+                statement.executeBatch()
             }
         }
     }

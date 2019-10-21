@@ -116,7 +116,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.Database) {
         val driverManager = DriverManager(mysqlSettings)
 
         runBlocking {
-            mySQLVersion = driverManager.getMySQLVersion()
+            mySQLVersion = driverManager.getDBVersion()
             connectorVersion = driverManager.getConnectorVersion()
         }
 

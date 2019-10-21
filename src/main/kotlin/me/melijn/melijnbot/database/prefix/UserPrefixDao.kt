@@ -16,7 +16,7 @@ class UserPrefixDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(userId: Long, prefixes: String) {
-        driverManager.executeUpdate("INSERT INTO $table (userId, prefixes) VALUES (?, ?) ON CONFLICT (userId) DO UPDATE prefixes = ?",
+        driverManager.executeUpdate("INSERT INTO $table (userId, prefixes) VALUES (?, ?) ON CONFLICT (userId) DO UPDATE SET prefixes = ?",
             userId, prefixes, prefixes)
     }
 

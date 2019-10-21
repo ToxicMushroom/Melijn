@@ -9,10 +9,10 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "bans"
     override val tableStructure: String = "" +
-        "guildId bigint UNIQUE, bannedId bigint UNIQUE, banAuthorId bigint, " +
-        "unbanAuthorId bigint, reason varchar(2048), startTime bigint UNIQUE, endTime bigint," +
+        "guildId bigint, bannedId bigint, banAuthorId bigint, " +
+        "unbanAuthorId bigint, reason varchar(2048), startTime bigint, endTime bigint," +
         " unbanReason varchar(2048), active boolean"
-    override val keys: String = ""
+    override val keys: String = "UNIQUE (guildId, bannedId, startTime)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)
@@ -21,7 +21,7 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
     suspend fun setBan(ban: Ban) {
         ban.apply {
             driverManager.executeUpdate("INSERT INTO $table (guildId, bannedId, banAuthorId, unbanAuthorId, reason, startTime, endTime, unbanReason, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)" +
-                " ON CONFLICT (guildId, bannedId, startTime) DO UPDATE endTime = ?, banAuthorId = ?, reason = ?, unbanAuthorId = ?, unbanReason = ?, active = ?",
+                " ON CONFLICT (guildId, bannedId, startTime) DO UPDATE SET endTime = ?, banAuthorId = ?, reason = ?, unbanAuthorId = ?, unbanReason = ?, active = ?",
                 guildId, bannedId, banAuthorId, unbanAuthorId, reason, startTime, endTime, unbanReason, active,
                 endTime, banAuthorId, reason, unbanAuthorId, unbanReason, active)
         }

@@ -19,15 +19,15 @@ import kotlin.coroutines.suspendCoroutine
 class MessageDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "messages"
-    override val tableStructure: String = "guildId bigint UNIQUE, type varchar(32) UNIQUE, message varchar(4096)"
-    override val keys: String = ""
+    override val tableStructure: String = "guildId bigint, type varchar(32), message varchar(4096)"
+    override val keys: String = "UNIQUE (guildId, type)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)
     }
 
     suspend fun set(guildId: Long, type: MessageType, message: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, type, message) VALUES (?, ?, ?) ON CONFLICT (guildId, type) DO UPDATE message = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, type, message) VALUES (?, ?, ?) ON CONFLICT (guildId, type) DO UPDATE SET message = ?",
             guildId, type.toString(), message, message)
     }
 

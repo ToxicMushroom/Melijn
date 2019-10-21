@@ -6,8 +6,8 @@ import me.melijn.melijnbot.database.DriverManager
 class KickDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "kicks"
-    override val tableStructure: String = "guildId bigint UNIQUE, kickedId bigint UNIQUE, kickAuthorId bigint, kickReason varchar(64), kickMoment bigint UNIQUE"
-    override val keys: String = ""
+    override val tableStructure: String = "guildId bigint, kickedId bigint, kickAuthorId bigint, kickReason varchar(64), kickMoment bigint"
+    override val keys: String = "UNIQUE (guildId, kickedId, kickMoment)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)

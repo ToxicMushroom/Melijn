@@ -19,8 +19,7 @@ class DriverManager(dbSettings: Settings.Database) {
     private val tableRegistrationQueries = ArrayList<String>()
     private val dataSource: DataSource
     private val logger = LoggerFactory.getLogger(DriverManager::class.java.name)
-    private val connectorPattern = "mysql-connector-java-(\\d+\\.\\d+\\.\\d+).*".toRegex()
-    private val mysqlPattern = "(\\d+\\.\\d+\\.\\d+)-.*".toRegex()
+    private val postgresqlPattern = "(\\d+\\.\\d+).*".toRegex()
 
     init {
         val config = HikariConfig()
@@ -48,10 +47,6 @@ class DriverManager(dbSettings: Settings.Database) {
 
     fun getUsableConnection(connection: (Connection) -> Unit) {
         dataSource.connection.use { connection.invoke(it) }
-    }
-
-    suspend fun getUsableConnection(): Connection = suspendCoroutine {
-        dataSource.connection.use { conn -> it.resume(conn) }
     }
 
     fun registerTable(table: String, tableStructure: String, keys: String) {
@@ -178,24 +173,31 @@ class DriverManager(dbSettings: Settings.Database) {
 //        }
 //    }
 
-    suspend fun getMySQLVersion(): String {
-        return try {
-            getUsableConnection().use {
-                it.metaData.databaseProductVersion
-            }//.replace(mysqlPattern, "$1")
+    suspend fun getDBVersion(): String = suspendCoroutine {
+        try {
+            getUsableConnection { con ->
+                it.resume(
+                    con.metaData.databaseProductVersion.replace(postgresqlPattern, "$1")
+                )
+            }
         } catch (e: SQLException) {
-            "error"
+            e.printStackTrace()
+            it.resume("error")
         }
     }
 
 
-    suspend fun getConnectorVersion(): String {
-        return try {
-            getUsableConnection().use {
-                it.metaData.driverVersion
-            }//.replace(connectorPattern, "$1")
+    suspend fun getConnectorVersion(): String = suspendCoroutine {
+        try {
+            getUsableConnection { con ->
+                it.resume(
+                    con.metaData.driverVersion
+                )
+            }
+
         } catch (e: SQLException) {
-            "error"
+            e.printStackTrace()
+            it.resume("error")
         }
     }
 
