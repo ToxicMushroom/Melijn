@@ -27,7 +27,7 @@ class CommandCooldownDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun insert(guildId: Long, commandId: String, cooldown: Long) {
-        driverManager.executeUpdate("INSERT IGNORE INTO $table (guildId, commandId, cooldown) VALUES (?, ?, ?)",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, commandId, cooldown) VALUES (?, ?, ?) ON CONFLICT (guildId, commandId) DO NOTHING",
             guildId, commandId, cooldown)
     }
 

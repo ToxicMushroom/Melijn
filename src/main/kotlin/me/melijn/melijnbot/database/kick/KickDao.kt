@@ -15,7 +15,7 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun add(kick: Kick) {
         kick.apply {
-            driverManager.executeUpdate("INSERT IGNORE INTO $table (guildId, kickedId, kickAuthorId, kickReason, kickMoment) VALUES (?, ?, ?, ?, ?)",
+            driverManager.executeUpdate("INSERT INTO $table (guildId, kickedId, kickAuthorId, kickReason, kickMoment) VALUES (?, ?, ?, ?, ?) ON CONFLICT (guildId, kickedId, kickMoment) DO NOTHING",
                 guildId, kickedId, kickAuthorId, reason, moment)
         }
 

@@ -15,7 +15,7 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun add(warn: Warn) {
         warn.apply {
-            driverManager.executeUpdate("INSERT IGNORE INTO $table (guildId, warnedId, warnAuthorId, warnReason, warnMoment) VALUES (?, ?, ?, ?, ?)",
+            driverManager.executeUpdate("INSERT INTO $table (guildId, warnedId, warnAuthorId, warnReason, warnMoment) VALUES (?, ?, ?, ?, ?) ON CONFLICT (guildId, warnedId, warnMoment) DO NOTHING",
                 guildId, warnedId, warnAuthorId, reason, moment)
         }
 

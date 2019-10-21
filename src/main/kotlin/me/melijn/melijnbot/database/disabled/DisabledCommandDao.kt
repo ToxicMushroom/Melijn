@@ -32,13 +32,13 @@ class DisabledCommandDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun insert(guildId: Long, commandId: String) {
-        driverManager.executeUpdate("INSERT IGNORE INTO $table (guildId, commandId) VALUES (?, ?)",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, commandId) VALUES (?, ?) ON CONFLICT (guildId, commandId) DO NOTHING",
             guildId, commandId)
     }
 
     fun bulkPut(guildId: Long, commandIds: Set<String>) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("INSERT IGNORE INTO $table (guildId, commandId) VALUES (?, ?)").use { statement ->
+            con.prepareStatement("INSERT INTO $table (guildId, commandId) VALUES (?, ?) ON CONFLICT (guildId, commandId) DO NOTHING").use { statement ->
                 statement.setLong(1, guildId)
                 for (id in commandIds) {
                     statement.setString(2, id)

@@ -24,7 +24,7 @@ class MessageHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun add(daoMessage: DaoMessage) {
         daoMessage.run {
-            driverManager.executeUpdate("INSERT IGNORE INTO $table (guildId, textChannelId, authorId, messageId, content, moment) VALUES (?, ?, ?, ?, ?, ?)",
+            driverManager.executeUpdate("INSERT INTO $table (guildId, textChannelId, authorId, messageId, content, moment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (messageId) DO NOTHING",
                 guildId, textChannelId, authorId, messageId, content, moment)
         }
     }
