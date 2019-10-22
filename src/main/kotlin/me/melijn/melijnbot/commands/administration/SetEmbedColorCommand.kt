@@ -22,7 +22,7 @@ class SetEmbedColorCommand : AbstractCommand("command.setembedcolor") {
     override suspend fun execute(context: CommandContext) {
         val wrapper = context.daoManager.embedColorWrapper
         val msg = if (context.args.isEmpty()) {
-            val colorInt = wrapper.embedColorCache.get(context.authorId).await()
+            val colorInt = wrapper.embedColorCache.get(context.getGuildId()).await()
 
             if (colorInt == -1) {
                 i18n.getTranslation(context, "$root.show.unset")
