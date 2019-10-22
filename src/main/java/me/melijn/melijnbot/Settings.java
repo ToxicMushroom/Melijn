@@ -5,6 +5,8 @@ import me.melijn.melijnbot.enums.Environment;
 public class Settings {
 
     public String prefix;
+    public String name;
+    public String version;
     public long[] developerIds;
     public Environment environment;
     public int shardCount;

@@ -129,7 +129,7 @@ suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? = su
                 it.resume(user)
             }, { _ ->
                 it.resume(null)
-            })
+            }) ?: it.resume(null)
 
         }
         else -> it.resume(null)

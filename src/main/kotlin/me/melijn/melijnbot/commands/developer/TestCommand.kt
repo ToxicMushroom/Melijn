@@ -14,6 +14,6 @@ class TestCommand : AbstractCommand("command.test") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        sendMsg(context, "test")
+        sendMsg(context, context.webManager.getWeebTypes())
     }
 }

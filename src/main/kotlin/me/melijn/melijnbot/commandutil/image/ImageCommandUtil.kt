@@ -69,7 +69,6 @@ object ImageCommandUtil {
         val fps = (getIntegerFromArgN(context, argInt + 2) ?: 20).toFloat()
 
         val outputStream = transform(imageByteArray, fps, quality, offset)
-
         sendFile(context, outputStream.toByteArray(), "gif")
     }
 

@@ -26,7 +26,7 @@ class Container {
 
     val taskManager = TaskManager()
     val daoManager = DaoManager(taskManager, settings.database)
-    val webManager = WebManager(taskManager)
+    val webManager = WebManager(taskManager, settings)
     val serviceManager = ServiceManager(taskManager, daoManager)
 
     //messageId, reason
