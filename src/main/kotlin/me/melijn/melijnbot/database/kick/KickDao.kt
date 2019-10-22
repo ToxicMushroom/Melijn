@@ -7,7 +7,7 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "kicks"
     override val tableStructure: String = "guildId bigint, kickedId bigint, kickAuthorId bigint, kickReason varchar(64), kickMoment bigint"
-    override val keys: String = "UNIQUE (guildId, kickedId, kickMoment)"
+    override val keys: String = "PRIMARY KEY (guildId, kickedId, kickMoment)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)

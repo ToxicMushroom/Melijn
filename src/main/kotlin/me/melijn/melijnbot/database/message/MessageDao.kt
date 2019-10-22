@@ -20,7 +20,7 @@ class MessageDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "messages"
     override val tableStructure: String = "guildId bigint, type varchar(32), message varchar(4096)"
-    override val keys: String = "UNIQUE (guildId, type)"
+    override val keys: String = "PRIMARY KEY (guildId, type)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)

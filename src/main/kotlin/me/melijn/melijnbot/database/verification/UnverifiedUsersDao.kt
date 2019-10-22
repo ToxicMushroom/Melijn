@@ -9,7 +9,7 @@ class UnverifiedUsersDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "unverifiedUsers"
     override val tableStructure: String = "guildId bigint, userId bigint, moment bigint, triesAmount int"
-    override val keys: String = "UNIQUE (guildId, userId)"
+    override val keys: String = "PRIMARY KEY (guildId, userId)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)

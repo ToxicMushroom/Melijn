@@ -10,7 +10,7 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
         "guildId bigint, mutedId bigint, muteAuthorId bigint," +
         " unmuteAuthorId bigint, reason varchar(2048), startTime bigint, endTime bigint," +
         " unmuteReason varchar(2048), active boolean"
-    override val keys: String = "UNIQUE (guildId, mutedId, startTime)"
+    override val keys: String = "PRIMARY KEY (guildId, mutedId, startTime)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)

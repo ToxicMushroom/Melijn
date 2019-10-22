@@ -9,7 +9,7 @@ class DisabledCommandDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "disabledCommands"
     override val tableStructure: String = "guildId bigint, commandId varchar(16)"
-    override val keys: String = "UNIQUE (guildId, commandId)"
+    override val keys: String = "PRIMARY KEY (guildId, commandId)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)

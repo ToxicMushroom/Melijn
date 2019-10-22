@@ -10,7 +10,7 @@ class ChannelCommandStateDao(driverManager: DriverManager) : Dao(driverManager) 
 
     override val table: String = "channelCommandStates"
     override val tableStructure: String = "guildId bigint, channelId bigint, commandId varchar(16), state varchar(32)"
-    override val keys: String = "UNIQUE (channelId, commandId)"
+    override val keys: String = "PRIMARY KEY (channelId, commandId)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)

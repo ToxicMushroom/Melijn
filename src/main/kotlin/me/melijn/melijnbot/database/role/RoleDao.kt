@@ -10,7 +10,7 @@ class RoleDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "roles"
     override val tableStructure: String = "guildId bigInt, roleType varchar(32), roleId bigint"
-    override val keys: String = "UNIQUE (guildId, roleType)"
+    override val keys: String = "PRIMARY KEY (guildId, roleType)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)

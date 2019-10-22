@@ -12,7 +12,7 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
         "guildId bigint, bannedId bigint, banAuthorId bigint, " +
         "unbanAuthorId bigint, reason varchar(2048), startTime bigint, endTime bigint," +
         " unbanReason varchar(2048), active boolean"
-    override val keys: String = "UNIQUE (guildId, bannedId, startTime)"
+    override val keys: String = "PRIMARY KEY (guildId, bannedId, startTime)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)

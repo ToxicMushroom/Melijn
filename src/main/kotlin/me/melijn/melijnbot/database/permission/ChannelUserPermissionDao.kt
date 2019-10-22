@@ -10,7 +10,7 @@ class ChannelUserPermissionDao(driverManager: DriverManager) : Dao(driverManager
 
     override val table: String = "channelUserPermissions"
     override val tableStructure: String = "guildId bigint, channelId bigint, userId bigint, permission varchar(64), state varchar(8)"
-    override val keys: String = "UNIQUE (channelId, userId, permission)"
+    override val keys: String = "PRIMARY KEY (channelId, userId, permission)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)

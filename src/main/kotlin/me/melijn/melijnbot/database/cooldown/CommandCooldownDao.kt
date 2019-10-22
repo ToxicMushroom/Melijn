@@ -10,7 +10,7 @@ class CommandCooldownDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "commandCooldowns"
     override val tableStructure: String = "guildId bigint, commandId varchar(16), cooldown bigint"
-    override val keys: String = "UNIQUE (guildId, commandId)"
+    override val keys: String = "PRIMARY KEY (guildId, commandId)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)

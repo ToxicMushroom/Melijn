@@ -10,7 +10,7 @@ class LogChannelDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "logChannels"
     override val tableStructure: String = "guildId bigInt, type varchar(64), channelId bigInt"
-    override val keys: String = "UNIQUE (guildId, type)"
+    override val keys: String = "PRIMARY KEY (guildId, type)"
 
     init {
         driverManager.registerTable(table, tableStructure, keys)
