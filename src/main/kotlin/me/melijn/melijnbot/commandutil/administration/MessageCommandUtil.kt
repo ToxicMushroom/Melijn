@@ -15,7 +15,7 @@ import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.toHex
 import me.melijn.melijnbot.objects.utils.toLCC
 import net.dv8tion.jda.api.EmbedBuilder
-import org.json.JSONObject
+import net.dv8tion.jda.api.utils.data.DataObject
 
 object MessageCommandUtil {
 
@@ -578,15 +578,15 @@ object MessageCommandUtil {
 
     private suspend fun setEmbedFieldPartAndMessage(index: Int, partName: String, value: Any, context: CommandContext, modularMessage: ModularMessage, type: MessageType) {
         val language = context.getLanguage()
-        val json = JSONObject(modularMessage.toJSON())
-        val embedJSON = json.getJSONObject("embed")
-        val fieldsJSON = embedJSON.getJSONArray("fields")
-        val field = fieldsJSON.getJSONObject(index)
+        val json = DataObject.fromJson(modularMessage.toJSON())
+        val embedJSON = json.getObject("embed")
+        val fieldsJSON = embedJSON.getArray("fields")
+        val field = fieldsJSON.getObject(index)
         field.put(partName, value)
-        fieldsJSON.put(index, field)
+        fieldsJSON.insert(index, field)
         embedJSON.put("fields", fieldsJSON)
         json.put("embed", embedJSON)
-        val modularMessage1 = ModularMessage.fromJSON(json.toString(4))
+        val modularMessage1 = ModularMessage.fromJSON(json.toString())
         modularMessage.embed = modularMessage1.embed
         modularMessage.messageContent = modularMessage1.messageContent
         modularMessage.attachments = modularMessage1.attachments
@@ -627,13 +627,13 @@ object MessageCommandUtil {
         val language = context.getLanguage()
         var modularMessage1 = modularMessage
 
-        val json = JSONObject(modularMessage1.toJSON())
-        val embedJSON = json.getJSONObject("embed")
-        val fieldsJSON = embedJSON.getJSONArray("fields")
+        val json = DataObject.fromJson(modularMessage1.toJSON())
+        val embedJSON = json.getObject("embed")
+        val fieldsJSON = embedJSON.getArray("fields")
         fieldsJSON.remove(index)
         embedJSON.put("fields", fieldsJSON)
         json.put("embed", embedJSON)
-        modularMessage1 = ModularMessage.fromJSON(json.toString(4))
+        modularMessage1 = ModularMessage.fromJSON(json.toString())
         modularMessage.embed = modularMessage1.embed
         modularMessage.messageContent = modularMessage1.messageContent
         modularMessage.attachments = modularMessage1.attachments

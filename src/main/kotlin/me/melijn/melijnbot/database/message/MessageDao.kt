@@ -9,10 +9,9 @@ import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.EmbedType
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
+import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
-import org.json.JSONArray
-import org.json.JSONObject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -50,24 +49,22 @@ data class ModularMessage(var messageContent: String? = null,
                           var attachments: Map<String, String> = emptyMap()) {
 
     fun toJSON(): String {
-        val json = JSONObject()
+        val json = DataObject.empty()
         messageContent?.let { json.put("content", it) }
         embed?.let { membed ->
-            json.put("embed", JSONObject(membed.toData()
+            json.put("embed", membed.toData()
                 .put("type", EmbedType.RICH)
-                .toString()))
+                .toString())
         }
 
-        val attachmentsJson = JSONArray()
+        val attachmentsJson = DataArray.empty()
         for (attachment in attachments) {
-            attachmentsJson.put(
-                JSONObject()
-                    .put("url", attachment.key)
-                    .put("file", attachment.value)
-            )
+            attachmentsJson.add(DataObject.empty()
+                .put("url", attachment.key)
+                .put("file", attachment.value))
         }
         json.put("attachments", attachmentsJson)
-        return json.toString(4)
+        return json.toString()
     }
 
     fun toMessage(): Message? {
@@ -84,24 +81,24 @@ data class ModularMessage(var messageContent: String? = null,
     companion object {
         fun fromJSON(json: String): ModularMessage {
             try {
-                val jsonObj = JSONObject(json)
+                val jsonObj = DataObject.fromJson(json)
                 var content: String? = null
-                if (jsonObj.has("content")) {
+                if (jsonObj.hasKey("content")) {
                     content = jsonObj.getString("content")
                 }
                 var embed: MessageEmbed? = null
-                if (jsonObj.has("embed")) {
+                if (jsonObj.hasKey("embed")) {
                     val jdaImpl = (MelijnBot.shardManager?.shards?.get(0) as JDAImpl)
-                    val embedString = jsonObj.getJSONObject("embed")
-                    val dataObject = DataObject.fromJson(embedString.toString(4))
+                    val embedString = jsonObj.getObject("embed")
+                    val dataObject = DataObject.fromJson(embedString.toString())
                     embed = jdaImpl.entityBuilder.createMessageEmbed(dataObject)
                 }
                 val attachments = mutableMapOf<String, String>()
-                if (jsonObj.has("attachments")) {
-                    val attachmentsJson = jsonObj.getJSONArray("attachments")
+                if (jsonObj.hasKey("attachments")) {
+                    val attachmentsJson = jsonObj.getArray("attachments")
 
                     for (i in 0 until attachmentsJson.length()) {
-                        val attachmentObj = attachmentsJson.getJSONObject(i)
+                        val attachmentObj = attachmentsJson.getObject(i)
                         attachments[attachmentObj.getString("url")] = attachmentObj.getString("file")
                     }
                 }
