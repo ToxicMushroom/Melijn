@@ -5,6 +5,7 @@ import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_USER
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.i18n
 import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.requests.RestAction
 import net.dv8tion.jda.api.sharding.ShardManager
@@ -405,3 +406,17 @@ fun getMemberByArgsN(guild: Guild, arg: String): Member? {
     else guild.getMember(user)
 }
 
+suspend fun notEnoughPermissionsAndNMessage(context: CommandContext, channel: TextChannel, vararg perms: Permission): Boolean {
+    val member = context.getSelfMember()
+    requireNotNull(member) { "This method should only be called from guild events" }
+    if (notEnoughPermissions(member, channel, perms.toList())) {
+        val msg = i18n.getTranslation(context, "message.missing.permission")
+        sendMsg(context, msg)
+        return true
+    }
+    return false
+}
+
+fun notEnoughPermissions(member: Member, channel: TextChannel, perms: Collection<Permission>): Boolean {
+    return !member.hasPermission(channel, perms)
+}

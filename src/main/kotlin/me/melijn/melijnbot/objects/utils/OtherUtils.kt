@@ -148,8 +148,11 @@ suspend fun getLongFromArgNMessage(context: CommandContext, index: Int, min: Lon
 fun getLongFromArgN(context: CommandContext, index: Int): Long? =
     if (context.args.size > index) context.args[index].toLongOrNull() else null
 
-fun getIntegerFromArgN(context: CommandContext, index: Int): Int? =
-    if (context.args.size > index) context.args[index].toIntOrNull() else null
+fun getIntegerFromArgN(context: CommandContext, index: Int, min: Int = Int.MIN_VALUE, max: Int = Int.MAX_VALUE): Int? {
+    val number = (if (context.args.size > index) context.args[index].toIntOrNull() else null) ?: return null
+    if (number > max || number < min) return null
+    return number
+}
 
 fun Executor.launch(block: suspend CoroutineScope.() -> Unit): Job {
     return CoroutineScope(this.asCoroutineDispatcher()).launch {

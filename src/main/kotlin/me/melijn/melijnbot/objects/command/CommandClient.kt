@@ -280,17 +280,17 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 var missingPermissionMessage = ""
 
                 if (!botMember.hasPermission(event.textChannel, permission)) {
-                    missingPermissionMessage += "\n ⁎**${permission.toString().toUpperWordCase()}**"
+                    missingPermissionMessage += "\n ⁎`${permission.toString().toUpperWordCase()}`"
                     missingPermissionCount++
                 }
 
                 if (missingPermissionCount > 0) {
-                    missingPermissionMessage =
-                        "I'm missing the following permission" +
-                            (if (missingPermissionCount > 1) "s" else "") +
-                            missingPermissionMessage
+                    val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
+                    val more = if (missingPermissionCount > 1) "s" else ""
+                    val msg = i18n.getTranslation(language, "message.discordpermission$more.missing")
+                        .replace("%permissions%", missingPermissionMessage)
 
-                    sendMsg(event.textChannel, missingPermissionMessage)
+                    sendMsg(event.textChannel, msg)
                     return true
                 }
             }
