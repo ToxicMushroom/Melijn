@@ -23,4 +23,9 @@ class UserEmbedColorDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeUpdate("INSERT INTO $table (userId, color) VALUES (?, ?) ON CONFLICT (userId) DO UPDATE SET color = ?",
             userId, color, color)
     }
+
+    suspend fun remove(userId: Long) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ?",
+            userId)
+    }
 }
