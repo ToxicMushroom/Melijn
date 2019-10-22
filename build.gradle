@@ -18,7 +18,7 @@ repositories {
 
 dependencies {
     //https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation('net.dv8tion:JDA:4.0.0_52') {
+    implementation('net.dv8tion:JDA:4.0.0_53') {
         exclude module: 'opus-java'
     }
 
@@ -33,8 +33,8 @@ dependencies {
     implementation group: 'com.github.ToxicMushroom', name: 'JagTag-Kotlin', version: '06c2490c63'
 
     //https://search.maven.org/artifact/com.zaxxer/HikariCP
-    //https://mvnrepository.com/artifact/mysql/mysql-connector-java
     implementation group: 'com.zaxxer', name: 'HikariCP', version: '3.4.1'
+
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.8'
 
@@ -97,7 +97,7 @@ dependencies {
     //https://mvnrepository.com/artifact/org.reflections/reflections
     //simplifies loading commands
     implementation group: 'org.reflections', name: 'reflections', version: '0.9.11'
-    implementation 'com.github.rtyley:animated-gif-lib-for-java:733d6f6'
+    implementation group: 'com.github.rtyley', name: 'animated-gif-lib-for-java', version: '733d6f6'
 
     //https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib-jdk8
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.3.50'
