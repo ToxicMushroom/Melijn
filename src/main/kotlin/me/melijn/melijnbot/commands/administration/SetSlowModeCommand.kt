@@ -62,16 +62,18 @@ class SetSlowModeCommand : AbstractCommand("command.setslowmode") {
             }
         } else {
             val channel = getTextChannelByArgsNMessage(context, 0, true) ?: return
-            val slowMode = getIntegerFromArgNMessage(context, 0, 0, 21600) ?: return
+            val number = getIntegerFromArgNMessage(context, 1, 0, 21600) ?: return
             if (notEnoughPermissionsAndNMessage(context, channel, Permission.MANAGE_CHANNEL)) return
-            if (slowMode == 0) {
+            channel.manager.setSlowmode(number).queue()
+            if (number == 0) {
                 i18n.getTranslation(context, "$root.unset")
                     .replace("%channel%", channel.asTag)
             } else {
                 i18n.getTranslation(context, "$root.set")
                     .replace("%channel%", channel.asTag)
-                    .replace("%slowMode%", slowMode.toString())
+                    .replace("%slowMode%", number.toString())
             }
+
         }
         sendMsg(context, msg)
     }

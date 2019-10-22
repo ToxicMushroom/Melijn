@@ -409,14 +409,24 @@ fun getMemberByArgsN(guild: Guild, arg: String): Member? {
 suspend fun notEnoughPermissionsAndNMessage(context: CommandContext, channel: TextChannel, vararg perms: Permission): Boolean {
     val member = context.getSelfMember()
     requireNotNull(member) { "This method should only be called from guild events" }
-    if (notEnoughPermissions(member, channel, perms.toList())) {
-        val msg = i18n.getTranslation(context, "message.missing.permission")
+    val result = notEnoughPermissions(member, channel, perms.toList())
+    if (result.first) {
+        val more = if (result.second.size > 1) "s" else ""
+        val msg = i18n.getTranslation(context, "message.discordpermission$more.missing")
+            .replace("%permissions%", result.second.joinToString(separator = "") { perm ->
+               "\n    ⁎ `${perm.toUCSC()}`"
+            })
+
         sendMsg(context, msg)
         return true
     }
     return false
 }
 
-fun notEnoughPermissions(member: Member, channel: TextChannel, perms: Collection<Permission>): Boolean {
-    return !member.hasPermission(channel, perms)
+fun notEnoughPermissions(member: Member, channel: TextChannel, perms: Collection<Permission>): Pair<Boolean, List<Permission>> {
+    val missingPerms = mutableListOf<Permission>()
+    for (perm in perms) {
+        if (!member.hasPermission(channel, perm)) missingPerms.add(perm)
+    }
+    return Pair(missingPerms.isNotEmpty(), missingPerms)
 }

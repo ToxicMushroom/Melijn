@@ -280,7 +280,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 var missingPermissionMessage = ""
 
                 if (!botMember.hasPermission(event.textChannel, permission)) {
-                    missingPermissionMessage += "\n ⁎`${permission.toString().toUpperWordCase()}`"
+                    missingPermissionMessage += "\n    ⁎ `${permission.toUCSC()}`"
                     missingPermissionCount++
                 }
 

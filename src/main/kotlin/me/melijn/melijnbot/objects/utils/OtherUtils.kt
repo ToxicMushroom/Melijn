@@ -160,13 +160,21 @@ fun Executor.launch(block: suspend CoroutineScope.() -> Unit): Job {
     }
 }
 
+//UpperCamelCase
 fun Enum<*>.toUCC(): String {
-    return toString()
-        .replace("_", " ")
-        .toUpperWordCase()
+    return this
+        .toUCSC()
         .replace(" ", "")
 }
 
+//UpperCamelSpaceCase
+fun Enum<*>.toUCSC(): String {
+    return toString()
+        .replace("_", " ")
+        .toUpperWordCase()
+}
+
+//lowerCamelCase
 fun Enum<*>.toLCC(): String {
     val uCC = this.toUCC()
     return uCC[0].toLowerCase() + uCC.substring(1)
