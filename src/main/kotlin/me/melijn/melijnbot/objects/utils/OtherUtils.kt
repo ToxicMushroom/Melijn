@@ -119,6 +119,29 @@ suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): S
     return commands
 }
 
+suspend fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set<AbstractCommand>? {
+    val arg = context.args[index]
+    val category: CommandCategory? = enumValueOrNull(arg)
+
+    val commands = if (category == null) {
+            context.getCommands()
+                .filter { command -> command.isCommandFor(arg) }
+    } else {
+        context.getCommands()
+            .filter { command -> command.commandCategory == category }
+    }.toMutableSet()
+
+    if (commands.isEmpty()) {
+        val language = context.getLanguage()
+        val msg = i18n.getTranslation(language, "message.unknown.commands")
+            .replace(PLACEHOLDER_ARG, arg)
+        sendMsg(context, msg, null)
+        return null
+    }
+    return commands
+}
+
+
 suspend fun getLongFromArgNMessage(context: CommandContext, index: Int, min: Long = Long.MIN_VALUE, max: Long = Long.MAX_VALUE): Long? {
     val arg = context.args[index]
     val long = arg.toLongOrNull()
