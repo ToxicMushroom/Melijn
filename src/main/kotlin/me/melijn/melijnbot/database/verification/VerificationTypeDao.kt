@@ -10,10 +10,10 @@ class VerificationTypeDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "verificationTypes"
     override val tableStructure: String = "guildId bigint, type varchar(64)"
-    override val keys: String = "PRIMARY KEY(guildId)"
+    override val primaryKey: String = "guildId"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     suspend fun get(guildId: Long): VerificationType = suspendCoroutine {
@@ -27,7 +27,7 @@ class VerificationTypeDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(guildId: Long, type: VerificationType) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, type) VALUES (?, ?) ON CONFLICT (guildId) DO UPDATE SET type = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, type) VALUES (?, ?) ON CONFLICT $primaryKey DO UPDATE SET type = ?",
             guildId, type.toString(), type.toString())
     }
 

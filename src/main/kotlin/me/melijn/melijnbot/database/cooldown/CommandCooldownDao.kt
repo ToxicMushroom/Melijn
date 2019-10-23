@@ -10,10 +10,10 @@ class CommandCooldownDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "commandCooldowns"
     override val tableStructure: String = "guildId bigint, commandId varchar(16), cooldown bigint"
-    override val keys: String = "PRIMARY KEY (guildId, commandId)"
+    override val primaryKey: String = "guildId, commandId"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     suspend fun getCooldowns(guildId: Long): Map<String, Long> = suspendCoroutine {
@@ -27,13 +27,13 @@ class CommandCooldownDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun insert(guildId: Long, commandId: String, cooldown: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, commandId, cooldown) VALUES (?, ?, ?) ON CONFLICT (guildId, commandId) DO NOTHING",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, commandId, cooldown) VALUES (?, ?, ?) ON CONFLICT $primaryKey DO NOTHING",
             guildId, commandId, cooldown)
     }
 
     fun bulkPut(guildId: Long, commandIds: Set<String>, cooldownMillis: Long) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("INSERT INTO $table (guildId, commandId, cooldownMillis) VALUES (?, ?, ?) ON CONFLICT (guildId, commandId) DO UPDATE SET cooldownMillis = ?").use { preparedStatement ->
+            con.prepareStatement("INSERT INTO $table (guildId, commandId, cooldownMillis) VALUES (?, ?, ?) ON CONFLICT $primaryKey DO UPDATE SET cooldownMillis = ?").use { preparedStatement ->
                 preparedStatement.setLong(1, guildId)
                 preparedStatement.setLong(3, cooldownMillis)
                 preparedStatement.setLong(4, cooldownMillis)

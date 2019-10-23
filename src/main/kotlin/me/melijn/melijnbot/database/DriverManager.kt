@@ -49,10 +49,14 @@ class DriverManager(dbSettings: Settings.Database) {
         dataSource.connection.use { connection.invoke(it) }
     }
 
-    fun registerTable(table: String, tableStructure: String, keys: String) {
-        val hasKeys = keys != ""
+    fun registerTable(table: String, tableStructure: String, primaryKey: String) {
+        val hasPrimary = primaryKey != ""
         tableRegistrationQueries.add(
-            "CREATE TABLE IF NOT EXISTS $table ($tableStructure${if (hasKeys) ", $keys" else ""})"
+            "CREATE TABLE IF NOT EXISTS $table ($tableStructure${if (hasPrimary) {
+                ", PRIMARY KEY ($primaryKey)"
+            } else {
+                ""
+            }})"
         )
     }
 

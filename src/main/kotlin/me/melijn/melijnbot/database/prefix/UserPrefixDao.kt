@@ -9,14 +9,14 @@ class UserPrefixDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "userPrefixes"
     override val tableStructure: String = "userId bigint, prefixes varchar(256)"
-    override val keys: String = "PRIMARY KEY (userId)"
+    override val primaryKey: String = "userId"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     suspend fun set(userId: Long, prefixes: String) {
-        driverManager.executeUpdate("INSERT INTO $table (userId, prefixes) VALUES (?, ?) ON CONFLICT (userId) DO UPDATE SET prefixes = ?",
+        driverManager.executeUpdate("INSERT INTO $table (userId, prefixes) VALUES (?, ?) ON CONFLICT $primaryKey DO UPDATE SET prefixes = ?",
             userId, prefixes, prefixes)
     }
 

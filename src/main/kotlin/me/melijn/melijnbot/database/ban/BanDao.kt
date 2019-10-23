@@ -12,16 +12,16 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
         "guildId bigint, bannedId bigint, banAuthorId bigint, " +
         "unbanAuthorId bigint, reason varchar(2048), startTime bigint, endTime bigint," +
         " unbanReason varchar(2048), active boolean"
-    override val keys: String = "PRIMARY KEY (guildId, bannedId, startTime)"
+    override val primaryKey: String = "guildId, bannedId, startTime"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     suspend fun setBan(ban: Ban) {
         ban.apply {
             driverManager.executeUpdate("INSERT INTO $table (guildId, bannedId, banAuthorId, unbanAuthorId, reason, startTime, endTime, unbanReason, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)" +
-                " ON CONFLICT (guildId, bannedId, startTime) DO UPDATE SET endTime = ?, banAuthorId = ?, reason = ?, unbanAuthorId = ?, unbanReason = ?, active = ?",
+                " ON CONFLICT ($primaryKey) DO UPDATE SET endTime = ?, banAuthorId = ?, reason = ?, unbanAuthorId = ?, unbanReason = ?, active = ?",
                 guildId, bannedId, banAuthorId, unbanAuthorId, reason, startTime, endTime, unbanReason, active,
                 endTime, banAuthorId, reason, unbanAuthorId, unbanReason, active)
         }

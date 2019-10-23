@@ -10,10 +10,10 @@ class ChannelUserPermissionDao(driverManager: DriverManager) : Dao(driverManager
 
     override val table: String = "channelUserPermissions"
     override val tableStructure: String = "guildId bigint, channelId bigint, userId bigint, permission varchar(64), state varchar(8)"
-    override val keys: String = "PRIMARY KEY (channelId, userId, permission)"
+    override val primaryKey: String = "channelId, userId, permission"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     fun getPermState(channelId: Long, userId: Long, permission: String, permState: (PermState) -> Unit) {
@@ -25,7 +25,7 @@ class ChannelUserPermissionDao(driverManager: DriverManager) : Dao(driverManager
     }
 
     suspend fun set(guildId: Long, channelId: Long, userId: Long, permission: String, permState: PermState) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, userId, permission, state) VALUES (?, ?, ?, ?, ?) ON CONFLICT (channelId, userId, permission) DO UPDATE SET state = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, userId, permission, state) VALUES (?, ?, ?, ?, ?) ON CONFLICT $primaryKey DO UPDATE SET state = ?",
             guildId, channelId, userId, permission, permState.toString(), permState.toString())
     }
 
@@ -53,7 +53,7 @@ class ChannelUserPermissionDao(driverManager: DriverManager) : Dao(driverManager
 
     fun bulkPut(guildId: Long, channelId: Long, userId: Long, permissions: List<String>, state: PermState) {
         driverManager.getUsableConnection { connection ->
-            connection.prepareStatement("INSERT INTO $table (guildId, channelId, userId, permission, state) VALUES (?, ?, ?, ?, ?) ON CONFLICT (channelId, userId, permission) DO UPDATE SET state = ?").use { statement ->
+            connection.prepareStatement("INSERT INTO $table (guildId, channelId, userId, permission, state) VALUES (?, ?, ?, ?, ?) ON CONFLICT $primaryKey DO UPDATE SET state = ?").use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(2, channelId)
                 statement.setLong(3, userId)

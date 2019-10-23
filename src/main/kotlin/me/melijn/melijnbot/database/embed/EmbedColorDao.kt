@@ -9,10 +9,10 @@ class EmbedColorDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "embedColors"
     override val tableStructure: String = "guildId bigint, color int"
-    override val keys: String = "PRIMARY KEY (guildId)"
+    override val primaryKey: String = "guildId"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     suspend fun get(guildId: Long): Int = suspendCoroutine {
@@ -26,7 +26,7 @@ class EmbedColorDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(guildId: Long, color: Int) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, color) VALUES (?, ?) ON CONFLICT (guildId) DO UPDATE SET color = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, color) VALUES (?, ?) ON CONFLICT $primaryKey DO UPDATE SET color = ?",
             guildId, color, color)
     }
 

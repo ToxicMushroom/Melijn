@@ -9,14 +9,14 @@ class UnverifiedUsersDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "unverifiedUsers"
     override val tableStructure: String = "guildId bigint, userId bigint, moment bigint, triesAmount int"
-    override val keys: String = "PRIMARY KEY (guildId, userId)"
+    override val primaryKey: String = "guildId, userId"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     suspend fun add(guildId: Long, userId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, userId, moment, triesAmount) VALUES (?, ?, ?, ?) ON CONFLICT (guildId, userId) DO NOTHING",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, userId, moment, triesAmount) VALUES (?, ?, ?, ?) ON CONFLICT $primaryKey DO NOTHING",
             guildId, userId, 0, 0)
     }
 

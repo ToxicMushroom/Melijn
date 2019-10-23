@@ -7,15 +7,15 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "kicks"
     override val tableStructure: String = "guildId bigint, kickedId bigint, kickAuthorId bigint, kickReason varchar(64), kickMoment bigint"
-    override val keys: String = "PRIMARY KEY (guildId, kickedId, kickMoment)"
+    override val primaryKey: String = "guildId, kickedId, kickMoment"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     suspend fun add(kick: Kick) {
         kick.apply {
-            driverManager.executeUpdate("INSERT INTO $table (guildId, kickedId, kickAuthorId, kickReason, kickMoment) VALUES (?, ?, ?, ?, ?) ON CONFLICT (guildId, kickedId, kickMoment) DO NOTHING",
+            driverManager.executeUpdate("INSERT INTO $table (guildId, kickedId, kickAuthorId, kickReason, kickMoment) VALUES (?, ?, ?, ?, ?) ON CONFLICT $primaryKey DO NOTHING",
                 guildId, kickedId, kickAuthorId, reason, moment)
         }
 

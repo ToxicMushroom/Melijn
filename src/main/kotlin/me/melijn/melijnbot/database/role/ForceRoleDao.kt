@@ -9,10 +9,10 @@ class ForceRoleDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "forcedRoles"
     override val tableStructure: String = "guildId bigint, userId bigint, roleId bigint"
-    override val keys: String = "PRIMARY KEY(roleId)"
+    override val primaryKey: String = "roleId"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     suspend fun getMap(guildId: Long): Map<Long, List<Long>> = suspendCoroutine {
@@ -29,7 +29,7 @@ class ForceRoleDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun add(guildId: Long, userId: Long, roleId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, userId, roleId) VALUES (?, ?, ?) ON CONFLICT (roleId) DO NOTHING",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, userId, roleId) VALUES (?, ?, ?) ON CONFLICT $primaryKey DO NOTHING",
             guildId, userId, roleId)
     }
 

@@ -19,14 +19,14 @@ class MessageDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "messages"
     override val tableStructure: String = "guildId bigint, type varchar(32), message varchar(4096)"
-    override val keys: String = "PRIMARY KEY (guildId, type)"
+    override val primaryKey: String = "guildId, type"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     suspend fun set(guildId: Long, type: MessageType, message: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, type, message) VALUES (?, ?, ?) ON CONFLICT (guildId, type) DO UPDATE SET message = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, type, message) VALUES (?, ?, ?) ON CONFLICT $primaryKey DO UPDATE SET message = ?",
             guildId, type.toString(), message, message)
     }
 

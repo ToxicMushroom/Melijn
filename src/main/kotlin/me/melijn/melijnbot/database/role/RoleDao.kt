@@ -10,14 +10,14 @@ class RoleDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "roles"
     override val tableStructure: String = "guildId bigInt, roleType varchar(32), roleId bigint"
-    override val keys: String = "PRIMARY KEY (guildId, roleType)"
+    override val primaryKey: String = "guildId, roleType"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     suspend fun set(guildId: Long, roleType: RoleType, roleId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, roleType, roleId) VALUES (?, ?, ?) ON CONFLICT (guildId, roleType) DO UPDATE SET roleId = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, roleType, roleId) VALUES (?, ?, ?) ON CONFLICT $primaryKey DO UPDATE SET roleId = ?",
             guildId, roleType.toString(), roleId, roleId)
     }
 

@@ -8,10 +8,10 @@ import kotlin.coroutines.suspendCoroutine
 class UserLanguageDao(driverManager: DriverManager) : Dao(driverManager) {
     override val table: String = "userLanguages"
     override val tableStructure: String = "userId bigint, language varchar(32)"
-    override val keys: String = "PRIMARY KEY (userId)"
+    override val primaryKey: String = "userId"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     suspend fun get(userId: Long): String = suspendCoroutine {
@@ -26,7 +26,7 @@ class UserLanguageDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(userId: Long, language: String) {
-        driverManager.executeUpdate("INSERT INTO $table (userId, language) VALUES (?, ?) ON CONFLICT (userId) DO UPDATE SET language = ?",
+        driverManager.executeUpdate("INSERT INTO $table (userId, language) VALUES (?, ?) ON CONFLICT $primaryKey DO UPDATE SET language = ?",
             userId, language, language)
     }
 

@@ -9,10 +9,10 @@ class DisabledCommandDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "disabledCommands"
     override val tableStructure: String = "guildId bigint, commandId varchar(16)"
-    override val keys: String = "PRIMARY KEY (guildId, commandId)"
+    override val primaryKey: String = "guildId, commandId"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     suspend fun get(guildId: Long): Set<String> = suspendCoroutine {
@@ -32,13 +32,13 @@ class DisabledCommandDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun insert(guildId: Long, commandId: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, commandId) VALUES (?, ?) ON CONFLICT (guildId, commandId) DO NOTHING",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, commandId) VALUES (?, ?) ON CONFLICT $primaryKey DO NOTHING",
             guildId, commandId)
     }
 
     fun bulkPut(guildId: Long, commandIds: Set<String>) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("INSERT INTO $table (guildId, commandId) VALUES (?, ?) ON CONFLICT (guildId, commandId) DO NOTHING").use { statement ->
+            con.prepareStatement("INSERT INTO $table (guildId, commandId) VALUES (?, ?) ON CONFLICT $primaryKey DO NOTHING").use { statement ->
                 statement.setLong(1, guildId)
                 for (id in commandIds) {
                     statement.setString(2, id)

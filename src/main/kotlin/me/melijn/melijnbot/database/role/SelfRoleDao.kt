@@ -9,14 +9,14 @@ class SelfRoleDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "selfRoles"
     override val tableStructure: String = "guildId bigint, emoteji varchar(64), roleId bigint"
-    override val keys: String = "PRIMARY KEY(emoteji)"
+    override val primaryKey: String = "emoteji"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     suspend fun set(guildId: Long, emoteji: String, roleId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, emoteji, roleId) VALUES (?, ?, ?) ON CONFLICT (emoteji) DO UPDATE SET roleId = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, emoteji, roleId) VALUES (?, ?, ?) ON CONFLICT $primaryKey DO UPDATE SET roleId = ?",
             guildId, emoteji, roleId, roleId)
     }
 

@@ -10,10 +10,10 @@ class ChannelCommandStateDao(driverManager: DriverManager) : Dao(driverManager) 
 
     override val table: String = "channelCommandStates"
     override val tableStructure: String = "guildId bigint, channelId bigint, commandId varchar(16), state varchar(32)"
-    override val keys: String = "PRIMARY KEY (channelId, commandId)"
+    override val primaryKey: String = "channelId, commandId"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     suspend fun get(channelId: Long): Map<String, ChannelCommandState> = suspendCoroutine {
@@ -33,13 +33,13 @@ class ChannelCommandStateDao(driverManager: DriverManager) : Dao(driverManager) 
     }
 
     suspend fun insert(guildId: Long, channelId: Long, commandId: String, state: ChannelCommandState) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, commandId) VALUES (?, ?, ?) ON CONFLICT (channelId, commandId) DO NOTHING",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, commandId) VALUES (?, ?, ?) ON CONFLICT $primaryKey DO NOTHING",
             guildId, channelId, commandId, state.toString())
     }
 
     fun bulkPut(guildId: Long, channelId: Long, commands: Set<String>, channelCommandState: ChannelCommandState) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("INSERT INTO $table (guildId, channelId, commandId, state) VALUES (?, ?, ?, ?) ON CONFLICT (channelId, commandId) DO UPDATE SET state = ?").use { statement ->
+            con.prepareStatement("INSERT INTO $table (guildId, channelId, commandId, state) VALUES (?, ?, ?, ?) ON CONFLICT $primaryKey DO UPDATE SET state = ?").use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(2, channelId)
                 statement.setString(4, channelCommandState.toString())

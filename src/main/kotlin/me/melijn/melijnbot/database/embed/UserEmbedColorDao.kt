@@ -6,10 +6,10 @@ import me.melijn.melijnbot.database.DriverManager
 class UserEmbedColorDao(driverManager: DriverManager) : Dao(driverManager) {
     override val table: String = "userEmbedColors"
     override val tableStructure: String = "userId bigint, color int"
-    override val keys: String = "PRIMARY KEY (userId)"
+    override val primaryKey: String = "userId"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     fun get(userId: Long, color: (Int) -> Unit) {
@@ -20,7 +20,7 @@ class UserEmbedColorDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(userId: Long, color: Int) {
-        driverManager.executeUpdate("INSERT INTO $table (userId, color) VALUES (?, ?) ON CONFLICT (userId) DO UPDATE SET color = ?",
+        driverManager.executeUpdate("INSERT INTO $table (userId, color) VALUES (?, ?) ON CONFLICT $primaryKey DO UPDATE SET color = ?",
             userId, color, color)
     }
 

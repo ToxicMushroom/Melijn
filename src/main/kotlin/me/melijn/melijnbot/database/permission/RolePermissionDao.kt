@@ -10,10 +10,10 @@ class RolePermissionDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "rolePermissions"
     override val tableStructure: String = "guildId bigint, roleId bigint, permission varchar(64), state varchar(8)"
-    override val keys: String = "PRIMARY KEY (roleId, permission)"
+    override val primaryKey: String = "roleId, permission"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     fun getPermState(roleId: Long, permission: String, permState: (PermState) -> Unit) {
@@ -27,7 +27,7 @@ class RolePermissionDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(guildId: Long, roleId: Long, permission: String, permState: PermState) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, roleId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT (roleId, permission) DO UPDATE SET state = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, roleId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT $primaryKey DO UPDATE SET state = ?",
             guildId, roleId, permission, permState.toString(), permState.toString())
     }
 
@@ -51,7 +51,7 @@ class RolePermissionDao(driverManager: DriverManager) : Dao(driverManager) {
 
     fun bulkPut(guildId: Long, roleId: Long, permissions: List<String>, state: PermState) {
         driverManager.getUsableConnection { connection ->
-            connection.prepareStatement("INSERT INTO $table (guildId, roleId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT (roleId, permission) KEY UPDATE state = ?").use { statement ->
+            connection.prepareStatement("INSERT INTO $table (guildId, roleId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT $primaryKey KEY UPDATE state = ?").use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(2, roleId)
                 statement.setString(4, state.toString())

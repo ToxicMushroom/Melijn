@@ -9,10 +9,10 @@ class VerificationUserFlowRateDao(driverManager: DriverManager) : Dao(driverMana
 
     override val table: String = "verificationUserFlowRates"
     override val tableStructure: String = "guildId bigint, rate bigint"
-    override val keys: String = "PRIMARY KEY(guildId)"
+    override val primaryKey: String = "guildId"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     suspend fun get(guildId: Long): Long = suspendCoroutine {
@@ -26,7 +26,7 @@ class VerificationUserFlowRateDao(driverManager: DriverManager) : Dao(driverMana
     }
 
     suspend fun set(guildId: Long, flowRate: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, rate) VALUES (?, ?) ON CONFLICT (guildId) DO UPDATE SET rate = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, rate) VALUES (?, ?) ON CONFLICT $primaryKey DO UPDATE SET rate = ?",
             guildId, flowRate, flowRate)
     }
 

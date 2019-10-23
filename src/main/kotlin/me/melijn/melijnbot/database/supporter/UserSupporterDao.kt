@@ -8,10 +8,10 @@ class UserSupporterDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "supporters"
     override val tableStructure: String = "userId bigint, guildId bigint, startDate bigint"
-    override val keys: String = "PRIMARY KEY (userId)"
+    override val primaryKey: String = "userId"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     fun getSupporters(supporters: (Set<Supporter>) -> Unit) {

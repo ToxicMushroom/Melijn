@@ -6,10 +6,10 @@ import me.melijn.melijnbot.database.DriverManager
 class CommandChannelCooldownDao(driverManager: DriverManager) : Dao(driverManager) {
     override val table: String = "commandChannelCooldowns"
     override val tableStructure: String = "guildId bigint, channelId bigint, commandId varchar(16), cooldownMillis bigint"
-    override val keys: String = "PRIMARY KEY (guildId, commandId)"
+    override val primaryKey: String = "guildId, commandId"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     fun getCooldownMapForChannel(channelId: Long, cooldownMap: (Map<String, Long>) -> Unit) {
@@ -24,7 +24,7 @@ class CommandChannelCooldownDao(driverManager: DriverManager) : Dao(driverManage
 
     fun bulkPut(guildId: Long, channelId: Long, commandsIds: Set<String>, cooldownMillis: Long) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("INSERT INTO $table (guildId, channelId, commandId, cooldownMillis) VALUES (?, ?, ?, ?) ON CONFLICT (guildId, commandId) DO UPDATE SET cooldownMillis = ?").use {
+            con.prepareStatement("INSERT INTO $table (guildId, channelId, commandId, cooldownMillis) VALUES (?, ?, ?, ?) ON CONFLICT $primaryKey DO UPDATE SET cooldownMillis = ?").use {
                 preparedStatement ->
                 preparedStatement.setLong(1, guildId)
                 preparedStatement.setLong(2, channelId)

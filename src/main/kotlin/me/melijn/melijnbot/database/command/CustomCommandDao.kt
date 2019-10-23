@@ -13,10 +13,10 @@ class CustomCommandDao(driverManager: DriverManager) : Dao(driverManager) {
         "guildId bigint, id BIGSERIAL, name varchar(64)," +
             " description varchar(256), content varchar(4096), aliases varchar(128)," +
             " chance int, prefix boolean"
-    override val keys: String = "PRIMARY KEY (id)"
+    override val primaryKey: String = "id"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     suspend fun add(guildId: Long, cc: CustomCommand): Long {

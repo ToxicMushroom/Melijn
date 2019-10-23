@@ -10,10 +10,10 @@ class LogChannelDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "logChannels"
     override val tableStructure: String = "guildId bigInt, type varchar(64), channelId bigInt"
-    override val keys: String = "PRIMARY KEY (guildId, type)"
+    override val primaryKey: String = "guildId, type"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     suspend fun get(guildId: Long, type: LogChannelType): Long = suspendCoroutine {
@@ -40,7 +40,7 @@ class LogChannelDao(driverManager: DriverManager) : Dao(driverManager) {
 
     fun bulkPut(guildId: Long, logChannelTypes: List<LogChannelType>, channelId: Long) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("INSERT INTO $table (guildId, type, channelId) VALUES (?, ?, ?) ON CONFLICT (guildId, type) DO UPDATE SET channelId = ?").use { statement ->
+            con.prepareStatement("INSERT INTO $table (guildId, type, channelId) VALUES (?, ?, ?) ON CONFLICT $primaryKey DO UPDATE SET channelId = ?").use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(3, channelId)
                 statement.setLong(4, channelId)

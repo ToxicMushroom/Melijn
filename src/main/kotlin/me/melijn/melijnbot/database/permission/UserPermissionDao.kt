@@ -10,10 +10,10 @@ class UserPermissionDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "userPermissions"
     override val tableStructure: String = "guildId bigint, userId bigint, permission varchar(64), state varchar(8)"
-    override val keys: String = "PRIMARY KEY (userId, permission)"
+    override val primaryKey: String = "userId, permission"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     fun getPermState(userId: Long, permission: String, permState: (PermState) -> Unit) {
@@ -27,7 +27,7 @@ class UserPermissionDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(guildId: Long, userId: Long, permission: String, permState: PermState) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, userId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT (userId, permission) DO UPDATE SET state = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, userId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT $primaryKey DO UPDATE SET state = ?",
             guildId, userId, permission, permState.toString(), permState.toString())
     }
 
@@ -51,7 +51,7 @@ class UserPermissionDao(driverManager: DriverManager) : Dao(driverManager) {
 
     fun bulkPut(guildId: Long, userId: Long, permissions: List<String>, state: PermState) {
         driverManager.getUsableConnection { connection ->
-            connection.prepareStatement("INSERT INTO $table (guildId, userId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT (userId, permission) DO UPDATE SET state = ?").use { statement ->
+            connection.prepareStatement("INSERT INTO $table (guildId, userId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT $primaryKey DO UPDATE SET state = ?").use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(2, userId)
                 statement.setString(4, state.toString())

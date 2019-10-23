@@ -6,10 +6,10 @@ import me.melijn.melijnbot.database.DriverManager
 class EmbedDisabledDao(driverManager: DriverManager) : Dao(driverManager) {
     override val table: String = "embedDisabled"
     override val tableStructure: String = "guildId bigint"
-    override val keys: String = "PRIMARY KEY (guildId)"
+    override val primaryKey: String = "guildId"
 
     init {
-        driverManager.registerTable(table, tableStructure, keys)
+        driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     fun getSet(set: (Set<Long>) -> Unit) {
@@ -23,7 +23,7 @@ class EmbedDisabledDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun add(guildId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId) VALUES (?) ON CONFLICT (guildId) DO NOTHING", guildId)
+        driverManager.executeUpdate("INSERT INTO $table (guildId) VALUES (?) ON CONFLICT $primaryKey DO NOTHING", guildId)
     }
 
     suspend fun remove(guildId: Long) {
