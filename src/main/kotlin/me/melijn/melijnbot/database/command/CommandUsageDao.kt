@@ -25,16 +25,13 @@ class CommandUsageDao(driverManager: DriverManager) : Dao(driverManager) {
             currentHour = LocalTime.now().hour
             hourMillis = currentTimeMillis
         }
-        driverManager.executeUpdate("INSERT INTO $table (commandId, time, usageCount) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET usageCount= usageCount + 1 ",
+        driverManager.executeUpdate("INSERT INTO $table (commandId, time, usageCount) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET usageCount = EXCLUDED.usageCount + 1 ",
             commandId, hourMillis, 1)
     }
 
 
-    suspend fun getUsageWithinPeriod(period: LongArray): LinkedHashMap<Int, Long> = suspendCoroutine {
-        val smallest = if (period[0] < period[1]) period[0] else period[1]
-        val biggest = if (period[0] < period[1]) period[1] else period[0]
-
-        driverManager.executeQuery("SELECT * FROM $table WHERE time < ? AND time > ?", { rs ->
+    suspend fun getUsageWithinPeriod(from: Long, until: Long): LinkedHashMap<Int, Long> = suspendCoroutine {
+        driverManager.executeQuery("SELECT * FROM $table WHERE time > ? AND time < ?", { rs ->
             val commandUsages = LinkedHashMap<Int, Long>()
             while (rs.next()) {
                 val commandId = rs.getInt("commandId")
@@ -44,7 +41,7 @@ class CommandUsageDao(driverManager: DriverManager) : Dao(driverManager) {
                 commandUsages[commandId] = baseValue + usageCount
             }
             it.resume(commandUsages)
-        }, smallest, biggest)
+        }, from, until)
 
 
     }

@@ -26,7 +26,7 @@ class VerificationEmotejiDao(driverManager: DriverManager) : Dao(driverManager) 
     }
 
     suspend fun set(guildId: Long, emoteji: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, emoteji) VALUES (?, ?) ON CONFLICT $primaryKey DO UPDATE SET emoteji = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, emoteji) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET emoteji = ?",
             guildId, emoteji, emoteji)
     }
 

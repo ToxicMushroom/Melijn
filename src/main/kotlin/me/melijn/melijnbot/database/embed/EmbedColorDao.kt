@@ -26,7 +26,7 @@ class EmbedColorDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(guildId: Long, color: Int) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, color) VALUES (?, ?) ON CONFLICT $primaryKey DO UPDATE SET color = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, color) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET color = ?",
             guildId, color, color)
     }
 

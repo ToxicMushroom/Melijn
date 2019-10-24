@@ -17,14 +17,14 @@ class MessageHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun set(daoMessage: DaoMessage) {
         daoMessage.run {
-            driverManager.executeUpdate("INSERT INTO $table (guildId, textChannelId, authorId, messageId, content, moment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT $primaryKey DO UPDATE SET content = ?",
+            driverManager.executeUpdate("INSERT INTO $table (guildId, textChannelId, authorId, messageId, content, moment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET content = ?",
                 guildId, textChannelId, authorId, messageId, content, moment, content)
         }
     }
 
     suspend fun add(daoMessage: DaoMessage) {
         daoMessage.run {
-            driverManager.executeUpdate("INSERT INTO $table (guildId, textChannelId, authorId, messageId, content, moment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT $primaryKey DO NOTHING",
+            driverManager.executeUpdate("INSERT INTO $table (guildId, textChannelId, authorId, messageId, content, moment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
                 guildId, textChannelId, authorId, messageId, content, moment)
         }
     }

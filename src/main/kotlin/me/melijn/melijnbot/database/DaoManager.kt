@@ -6,10 +6,7 @@ import me.melijn.melijnbot.database.ban.BanDao
 import me.melijn.melijnbot.database.ban.BanWrapper
 import me.melijn.melijnbot.database.channel.ChannelDao
 import me.melijn.melijnbot.database.channel.ChannelWrapper
-import me.melijn.melijnbot.database.command.CommandDao
-import me.melijn.melijnbot.database.command.CommandWrapper
-import me.melijn.melijnbot.database.command.CustomCommandDao
-import me.melijn.melijnbot.database.command.CustomCommandWrapper
+import me.melijn.melijnbot.database.command.*
 import me.melijn.melijnbot.database.cooldown.CommandChannelCooldownDao
 import me.melijn.melijnbot.database.cooldown.CommandChannelCooldownWrapper
 import me.melijn.melijnbot.database.cooldown.CommandCooldownDao
@@ -63,6 +60,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.Database) {
     }
 
     val commandWrapper: CommandWrapper
+    val commandUsageWrapper: CommandUsageWrapper
     val customCommandWrapper: CustomCommandWrapper
 
     val guildLanguageWrapper: GuildLanguageWrapper
@@ -122,6 +120,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.Database) {
 
 
         commandWrapper = CommandWrapper(taskManager, CommandDao(driverManager))
+        commandUsageWrapper = CommandUsageWrapper(taskManager, CommandUsageDao(driverManager))
         customCommandWrapper = CustomCommandWrapper(taskManager, CustomCommandDao((driverManager)))
 
         guildLanguageWrapper = GuildLanguageWrapper(taskManager, GuildLanguageDao(driverManager))

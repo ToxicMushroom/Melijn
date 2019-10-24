@@ -23,7 +23,7 @@ class EmbedDisabledDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun add(guildId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId) VALUES (?) ON CONFLICT $primaryKey DO NOTHING", guildId)
+        driverManager.executeUpdate("INSERT INTO $table (guildId) VALUES (?) ON CONFLICT ($primaryKey) DO NOTHING", guildId)
     }
 
     suspend fun remove(guildId: Long) {

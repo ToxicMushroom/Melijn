@@ -24,7 +24,7 @@ class CommandChannelCooldownDao(driverManager: DriverManager) : Dao(driverManage
 
     fun bulkPut(guildId: Long, channelId: Long, commandsIds: Set<String>, cooldownMillis: Long) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("INSERT INTO $table (guildId, channelId, commandId, cooldownMillis) VALUES (?, ?, ?, ?) ON CONFLICT $primaryKey DO UPDATE SET cooldownMillis = ?").use {
+            con.prepareStatement("INSERT INTO $table (guildId, channelId, commandId, cooldownMillis) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET cooldownMillis = ?").use {
                 preparedStatement ->
                 preparedStatement.setLong(1, guildId)
                 preparedStatement.setLong(2, channelId)

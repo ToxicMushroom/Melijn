@@ -33,13 +33,13 @@ class ChannelCommandStateDao(driverManager: DriverManager) : Dao(driverManager) 
     }
 
     suspend fun insert(guildId: Long, channelId: Long, commandId: String, state: ChannelCommandState) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, commandId) VALUES (?, ?, ?) ON CONFLICT $primaryKey DO NOTHING",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, commandId) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
             guildId, channelId, commandId, state.toString())
     }
 
     fun bulkPut(guildId: Long, channelId: Long, commands: Set<String>, channelCommandState: ChannelCommandState) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("INSERT INTO $table (guildId, channelId, commandId, state) VALUES (?, ?, ?, ?) ON CONFLICT $primaryKey DO UPDATE SET state = ?").use { statement ->
+            con.prepareStatement("INSERT INTO $table (guildId, channelId, commandId, state) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET state = ?").use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(2, channelId)
                 statement.setString(4, channelCommandState.toString())

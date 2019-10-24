@@ -54,6 +54,7 @@ abstract class AbstractCommand(val root: String) {
                 context.daoManager.commandChannelCoolDownWrapper.executions[pair2] = map2
             }
             execute(context)
+            context.daoManager.commandUsageWrapper.addUse(this.id)
         } else sendMissingPermissionMessage(context, permission)
     }
 

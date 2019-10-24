@@ -20,7 +20,7 @@ class UserEmbedColorDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(userId: Long, color: Int) {
-        driverManager.executeUpdate("INSERT INTO $table (userId, color) VALUES (?, ?) ON CONFLICT $primaryKey DO UPDATE SET color = ?",
+        driverManager.executeUpdate("INSERT INTO $table (userId, color) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET color = ?",
             userId, color, color)
     }
 

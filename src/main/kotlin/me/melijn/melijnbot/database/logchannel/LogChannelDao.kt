@@ -40,7 +40,7 @@ class LogChannelDao(driverManager: DriverManager) : Dao(driverManager) {
 
     fun bulkPut(guildId: Long, logChannelTypes: List<LogChannelType>, channelId: Long) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("INSERT INTO $table (guildId, type, channelId) VALUES (?, ?, ?) ON CONFLICT $primaryKey DO UPDATE SET channelId = ?").use { statement ->
+            con.prepareStatement("INSERT INTO $table (guildId, type, channelId) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET channelId = ?").use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(3, channelId)
                 statement.setLong(4, channelId)

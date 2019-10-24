@@ -26,7 +26,7 @@ class UserLanguageDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(userId: Long, language: String) {
-        driverManager.executeUpdate("INSERT INTO $table (userId, language) VALUES (?, ?) ON CONFLICT $primaryKey DO UPDATE SET language = ?",
+        driverManager.executeUpdate("INSERT INTO $table (userId, language) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET language = ?",
             userId, language, language)
     }
 

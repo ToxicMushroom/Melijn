@@ -14,6 +14,11 @@ class TestCommand : AbstractCommand("command.test") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        sendMsg(context, context.webManager.getWeebTypes())
+        val top = context.daoManager.commandUsageWrapper.getTopUsageWithinPeriod(0, System.currentTimeMillis(), 3)
+        var string = "title: "
+        top.forEach { (t, u) ->
+            string += "\n$t - $u"
+        }
+        sendMsg(context, string)
     }
 }

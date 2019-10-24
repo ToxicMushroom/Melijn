@@ -26,7 +26,7 @@ class VerificationUserFlowRateDao(driverManager: DriverManager) : Dao(driverMana
     }
 
     suspend fun set(guildId: Long, flowRate: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, rate) VALUES (?, ?) ON CONFLICT $primaryKey DO UPDATE SET rate = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, rate) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET rate = ?",
             guildId, flowRate, flowRate)
     }
 

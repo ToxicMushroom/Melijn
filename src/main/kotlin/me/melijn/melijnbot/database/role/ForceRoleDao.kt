@@ -29,7 +29,7 @@ class ForceRoleDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun add(guildId: Long, userId: Long, roleId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, userId, roleId) VALUES (?, ?, ?) ON CONFLICT $primaryKey DO NOTHING",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, userId, roleId) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
             guildId, userId, roleId)
     }
 

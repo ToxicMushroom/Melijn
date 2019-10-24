@@ -16,7 +16,7 @@ class SelfRoleDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(guildId: Long, emoteji: String, roleId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, emoteji, roleId) VALUES (?, ?, ?) ON CONFLICT $primaryKey DO UPDATE SET roleId = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, emoteji, roleId) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET roleId = ?",
             guildId, emoteji, roleId, roleId)
     }
 
