@@ -2,6 +2,7 @@ package me.melijn.melijnbot
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import me.melijn.melijnbot.database.DaoManager
+import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.services.ServiceManager
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.web.WebManager
@@ -28,7 +29,7 @@ class Container {
     val daoManager = DaoManager(taskManager, settings.database)
     val webManager = WebManager(taskManager, settings)
     val serviceManager = ServiceManager(taskManager, daoManager)
-
+    var commandMap = emptyMap<Int, AbstractCommand>()
     //messageId, reason
     val filteredMap = mutableMapOf<Long, String>()
 

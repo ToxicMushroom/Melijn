@@ -17,7 +17,7 @@ class TestCommand : AbstractCommand("command.test") {
         val top = context.daoManager.commandUsageWrapper.getTopUsageWithinPeriod(0, System.currentTimeMillis(), 3)
         var string = "title: "
         top.forEach { (t, u) ->
-            string += "\n$t - $u"
+            string += "\n${t.name} - $u"
         }
         sendMsg(context, string)
     }

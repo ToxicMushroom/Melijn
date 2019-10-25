@@ -21,6 +21,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
+import java.util.stream.Collectors
 import kotlin.random.Random
 
 class CommandClient(private val commandList: Set<AbstractCommand>, private val container: Container) : ListenerAdapter() {
@@ -44,7 +45,13 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 commandMap[alias.toLowerCase()] = command
             }
         }
+        container.commandMap = commandList.stream().collect(Collectors.toMap({ cmd: AbstractCommand ->
+            cmd.id
+        }, { cmd: AbstractCommand  ->
+            cmd
+        }))
     }
+
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
         if (event.author.isBot) return
