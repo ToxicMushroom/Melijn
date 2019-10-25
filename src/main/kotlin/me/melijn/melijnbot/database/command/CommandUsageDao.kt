@@ -25,7 +25,7 @@ class CommandUsageDao(driverManager: DriverManager) : Dao(driverManager) {
             currentHour = LocalTime.now().hour
             hourMillis = currentTimeMillis
         }
-        driverManager.executeUpdate("INSERT INTO $table (commandId, time, usageCount) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET usageCount = EXCLUDED.usageCount + 1 ",
+        driverManager.executeUpdate("INSERT INTO $table (commandId, time, usageCount) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET usageCount = $table.usageCount + 1",
             commandId, hourMillis, 1)
     }
 

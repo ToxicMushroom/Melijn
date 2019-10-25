@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
 import java.awt.Color
+import java.util.*
 import java.util.regex.Pattern
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -414,7 +415,7 @@ suspend fun notEnoughPermissionsAndNMessage(context: CommandContext, channel: Te
         val more = if (result.second.size > 1) "s" else ""
         val msg = i18n.getTranslation(context, "message.discordpermission$more.missing")
             .replace("%permissions%", result.second.joinToString(separator = "") { perm ->
-               "\n    ⁎ `${perm.toUCSC()}`"
+                "\n    ⁎ `${perm.toUCSC()}`"
             })
 
         sendMsg(context, msg)
@@ -429,4 +430,78 @@ fun notEnoughPermissions(member: Member, channel: TextChannel, perms: Collection
         if (!member.hasPermission(channel, perm)) missingPerms.add(perm)
     }
     return Pair(missingPerms.isNotEmpty(), missingPerms)
+}
+
+
+fun getTimespanFromArgNMessage(context: CommandContext, beginIndex: Int): Pair<Long, Long> {
+    return when (context.getRawArgPart(beginIndex, -1)) {
+        "hour" -> {
+            Pair(context.contextTime - 3_600_000, context.contextTime)
+        }
+        "day" -> {
+            Pair(context.contextTime - 86_400_000, context.contextTime)
+        }
+        "week" -> {
+            Pair(context.contextTime - 604_800_000, context.contextTime)
+        }
+        "month" -> {
+            Pair(context.contextTime - 2_592_000_000L, context.contextTime)
+        }
+        "year" -> {
+            Pair(context.contextTime - 31_449_600_000, context.contextTime)
+        }
+        "thishour" -> {
+            val c: Calendar = Calendar.getInstance()
+            c.set(Calendar.MINUTE, 0)
+            c.set(Calendar.SECOND, 0)
+            c.set(Calendar.MILLISECOND, 0)
+            Pair(c.timeInMillis, context.contextTime)
+        }
+        "today", "thisday" -> {
+            val c: Calendar = Calendar.getInstance()
+            c.set(Calendar.HOUR_OF_DAY, 0)
+            c.set(Calendar.MINUTE, 0)
+            c.set(Calendar.SECOND, 0)
+            c.set(Calendar.MILLISECOND, 0)
+            Pair(c.timeInMillis, context.contextTime)
+        }
+        "thisweek" -> {
+            val c: Calendar = Calendar.getInstance()
+            c.set(Calendar.DAY_OF_WEEK, 0)
+            c.set(Calendar.HOUR_OF_DAY, 0)
+            c.set(Calendar.MINUTE, 0)
+            c.set(Calendar.SECOND, 0)
+            c.set(Calendar.MILLISECOND, 0)
+            Pair(c.timeInMillis, context.contextTime)
+        }
+        "thismonth" -> {
+            val c: Calendar = Calendar.getInstance()
+            c.set(Calendar.WEEK_OF_MONTH, 0)
+            c.set(Calendar.DAY_OF_WEEK, 0)
+            c.set(Calendar.HOUR_OF_DAY, 0)
+            c.set(Calendar.MINUTE, 0)
+            c.set(Calendar.SECOND, 0)
+            c.set(Calendar.MILLISECOND, 0)
+            Pair(c.timeInMillis, context.contextTime)
+        }
+        "thisyear" -> {
+            val c: Calendar = Calendar.getInstance()
+            c.set(Calendar.MONTH, 0)
+            c.set(Calendar.WEEK_OF_MONTH, 0)
+            c.set(Calendar.DAY_OF_WEEK, 0)
+            c.set(Calendar.HOUR_OF_DAY, 0)
+            c.set(Calendar.MINUTE, 0)
+            c.set(Calendar.SECOND, 0)
+            c.set(Calendar.MILLISECOND, 0)
+            Pair(c.timeInMillis, context.contextTime)
+        }
+        "all" -> {
+            Pair(0, context.contextTime)
+        }
+        else -> {
+            //val timeStamps = timeStamp.split(">".toRegex())
+            Pair(0, context.contextTime)
+        }
+    }
+
 }

@@ -14,11 +14,12 @@ class CommandUsageWrapper(private val taskManager: TaskManager, private val comm
         commandUsageDao.addUse(commandId)
     }
 
-    suspend fun getUsageWithinPeriod(from: Long, until: Long): LinkedHashMap<Int, Long> {
+    private suspend fun getUsageWithinPeriod(from: Long, until: Long): LinkedHashMap<Int, Long> {
         return commandUsageDao.getUsageWithinPeriod(from, until)
     }
+
     suspend fun getTopUsageWithinPeriod(from: Long, until: Long, top: Int): MutableMap<AbstractCommand, Long> {
-        val map =  commandUsageDao.getUsageWithinPeriod(from, until)
+        val map = getUsageWithinPeriod(from, until)
         val sortedAndTopped = sortAndTopOfUsageMap(map, top)
         return mapKeysToAbstractCommand(sortedAndTopped)
     }
@@ -33,12 +34,8 @@ class CommandUsageWrapper(private val taskManager: TaskManager, private val comm
     }
 
     private fun sortAndTopOfUsageMap(map: LinkedHashMap<Int, Long>, top: Int): MutableMap<Int, Long> {
-        val sorted = map.toSortedMap(Comparator { o1, o2 ->
-            val one = map.getOrDefault(o1, -1)
-            val two = map.getOrDefault(o2, -1)
-            two.compareTo(one)
-        })
-        val max = max(top, 1)
+        val sorted = sortUsage(map)
+        val max = max(if (top == -1) map.size else top, 1)
         val limitedMap = mutableMapOf<Int, Long>()
         for ((i, v) in sorted) {
             if (limitedMap.size >= max) break
@@ -46,5 +43,25 @@ class CommandUsageWrapper(private val taskManager: TaskManager, private val comm
         }
 
         return limitedMap
+    }
+
+    suspend fun getFilteredUsageWithinPeriod(from: Long, until: Long, cmdList: List<Int>): MutableMap<AbstractCommand, Long> {
+        val map = getUsageWithinPeriod(from, until).toMutableMap()
+        val filtered = filterUsage(map, cmdList)
+        val sorted = sortUsage(filtered)
+        return mapKeysToAbstractCommand(sorted)
+    }
+
+    private fun filterUsage(map: MutableMap<Int, Long>, cmdList: List<Int>): MutableMap<Int, Long> {
+        return map.filter { cmd -> cmdList.contains(cmd.key) }.toMutableMap()
+    }
+
+    private fun sortUsage(map: MutableMap<Int, Long>): MutableMap<Int, Long> {
+        val sorted = map.toSortedMap(Comparator { o1, o2 ->
+            val one = map.getOrDefault(o1, -1)
+            val two = map.getOrDefault(o2, -1)
+            two.compareTo(one)
+        })
+        return sorted.toMutableMap()
     }
 }

@@ -1,17 +1,20 @@
 package me.melijn.melijnbot.commands.utility
 
+import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.utils.getCommandsFromArgNMessage
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.*
 
 class MetricsCommand : AbstractCommand("command.metrics") {
 
     init {
         id = 79
         name = "metrics"
-        children = arrayOf(LimitArg(root), LimitArg(root))
+        children = arrayOf(
+            LimitArg(root),
+            AllArg(root)
+        )
         commandCategory = CommandCategory.UTILITY
     }
 
@@ -20,8 +23,18 @@ class MetricsCommand : AbstractCommand("command.metrics") {
             sendSyntax(context, syntax)
             return
         }
-        val cmds = getCommandsFromArgNMessage(context, 0) ?: return
+        val cmdList = getCommandsFromArgNMessage(context, 0)?.map { cmd -> cmd.id } ?: return
+        val timespan: Pair<Long, Long> = getTimespanFromArgNMessage(context, 1)
+        val wrapper = context.daoManager.commandUsageWrapper
+        val result = wrapper.getFilteredUsageWithinPeriod(timespan.first, timespan.second, cmdList)
 
+        var msg = "```INI"
+        for ((cmd, usageCount) in result) {
+            msg += "\n$usageCount - [${cmd.name}]"
+        }
+        msg += "```"
+
+        sendMsg(context, msg)
     }
 
     class LimitArg(root: String) : AbstractCommand("$root.limit") {
@@ -32,7 +45,18 @@ class MetricsCommand : AbstractCommand("command.metrics") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            val limit = getIntegerFromArgNMessage(context, 0, 0, Container.instance.commandMap.size) ?: return
+            val timespan: Pair<Long, Long> = getTimespanFromArgNMessage(context, 1)
+            val wrapper = context.daoManager.commandUsageWrapper
+            val result = wrapper.getTopUsageWithinPeriod(timespan.first, timespan.second, limit)
+
+            var msg = "```INI"
+            for ((cmd, usageCount) in result) {
+                msg += "\n$usageCount - [${cmd.name}]"
+            }
+            msg += "```"
+
+            sendMsg(context, msg)
         }
 
     }
@@ -44,7 +68,17 @@ class MetricsCommand : AbstractCommand("command.metrics") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            val timespan: Pair<Long, Long> = getTimespanFromArgNMessage(context, 0)
+            val wrapper = context.daoManager.commandUsageWrapper
+            val result = wrapper.getTopUsageWithinPeriod(timespan.first, timespan.second, -1)
+
+            var msg = "```INI"
+            for ((cmd, usageCount) in result) {
+                msg += "\n$usageCount - [${cmd.name}]"
+            }
+            msg += "```"
+
+            sendMsg(context, msg)
         }
 
     }

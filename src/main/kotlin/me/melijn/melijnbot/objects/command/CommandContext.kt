@@ -90,4 +90,26 @@ class CommandContext(
 
     suspend fun getLanguage(): String = me.melijn.melijnbot.objects.translation.getLanguage(this)
 
+
+    //Gets part of the rawarg by using regex and args
+    fun getRawArgPart(beginIndex: Int, endIndex: Int = -1): String {
+        var stringPatternForRemoval = ""
+        for (i in 0 until beginIndex) {
+            stringPatternForRemoval += "${args[i]}\\s*"
+        }
+        var patternForRemoval = stringPatternForRemoval.toRegex()
+        rawArg.replace(patternForRemoval, "")
+
+        stringPatternForRemoval = ""
+        if (endIndex != -1) {
+            for (i in endIndex until args.size) {
+                stringPatternForRemoval += "${args[i]}\\s*"
+            }
+        }
+
+        patternForRemoval = stringPatternForRemoval.toRegex()
+        rawArg.replace(patternForRemoval, "")
+        return rawArg
+    }
+
 }
