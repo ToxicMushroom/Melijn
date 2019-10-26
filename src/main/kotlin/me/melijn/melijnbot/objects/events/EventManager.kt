@@ -17,7 +17,7 @@ class EventManager(val container: Container) : IEventManager {
 
     private val eventListeners: ArrayList<EventListener> = ArrayList()
 
-    init {
+    fun start() {
         registerEvents()
     }
 
