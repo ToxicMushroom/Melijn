@@ -8,6 +8,7 @@ import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.VerificationType
 import me.melijn.melijnbot.objects.events.AbstractListener
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
@@ -137,7 +138,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             .replace("%moment%", event.message.timeCreated.asLongLongGMTString())
 
         val footer = i18n.getTranslation(language, "listener.message.attachment.log.footer")
-            .replace("%user%", event.author.asTag)
+            .replace(PLACEHOLDER_USER, event.author.asTag)
 
         embedBuilder.setFooter(footer, event.author.effectiveAvatarUrl)
 

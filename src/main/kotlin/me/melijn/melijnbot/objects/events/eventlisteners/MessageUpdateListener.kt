@@ -9,6 +9,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.events.AbstractListener
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
@@ -60,7 +61,7 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
         val description =  i18n.getTranslation(language, "listener.message.update.log.description")
                 .replace("%oldContent%", escapeForLog(oldContent))
                 .replace("%newContent%", escapeForLog(daoMessage.content))
-                .replace("%user%", event.author.asTag)
+                .replace(PLACEHOLDER_USER, event.author.asTag)
                 .replace("%userId%", event.author.id)
                 .replace("%sentTime%", event.message.timeCreated.asLongLongGMTString())
                 .replace("%editedTime%", System.currentTimeMillis().asEpochMillisToDateTime())

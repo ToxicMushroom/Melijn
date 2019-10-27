@@ -421,7 +421,5 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 MessageCommandUtil.removeAttachmentJoinLeave(context, type)
             }
         }
-
     }
-
 }

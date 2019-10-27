@@ -8,6 +8,7 @@ import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.VerificationType
 import me.melijn.melijnbot.objects.events.AbstractListener
 import me.melijn.melijnbot.objects.events.eventutil.SelfRoleUtil
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.VerificationUtils
@@ -101,7 +102,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         embedBuilder.setDescription(description)
         embedBuilder.setThumbnail(if (isEmote) event.reactionEmote.emote.imageUrl else null)
         val footer = i18n.getTranslation(language, "listener.message.reaction.log.footer")
-            .replace("%user%", event.member.asTag)
+            .replace(PLACEHOLDER_USER, event.member.asTag)
         embedBuilder.setFooter(footer, event.member.user.effectiveAvatarUrl)
         embedBuilder.setColor(Color.WHITE)
 

@@ -7,18 +7,15 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.YT_VID_URL_BASE
-import me.melijn.melijnbot.objects.translation.i18n
+import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.YTSearch
+import me.melijn.melijnbot.objects.utils.getDurationString
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.utils.sendMsg
 
 class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
     val root = "message.music"
-    private val youtubeSelector = "ytsearch:"
-    private val soundCloudSelector = "scsearch:"
     private val audioPlayerManager = musicPlayerManager.audioPlayerManager
     private val ytSearch = YTSearch()
 
@@ -27,8 +24,8 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         val guildMusicPlayer = musicPlayerManager.getGuildMusicPlayer(guild)
         val guildTrackManager = guildMusicPlayer.guildTrackManager
         val rawInput = source
-            .replace(youtubeSelector, "")
-            .replace(soundCloudSelector, "")
+            .replace(YT_SELECTOR, "")
+            .replace(SC_SELECTOR, "")
 
         val resultHandler = object : AudioLoadResultHandler {
             override fun loadFailed(exception: FriendlyException) {
@@ -63,7 +60,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             }
         }
 
-        if (source.startsWith(youtubeSelector)) {
+        if (source.startsWith(YT_SELECTOR)) {
             ytSearch.search(rawInput) { videoId ->
                 if (videoId == null) {
                     sendMessageNoMatches(context, rawInput)
@@ -89,6 +86,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         val description = i18n.getTranslation(context, "$root.addedtrack.title")
             .replace("%position%", audioTrack.position.toString())
             .replace("%title%", audioTrack.info.title)
+            .replace("%duration%", getDurationString(audioTrack.duration))
             .replace("%url%", audioTrack.info.uri)
 
         val eb = Embedder(context)
@@ -103,7 +101,8 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             .replace(PLACEHOLDER_USER, context.getAuthor().asTag)
         val description = i18n.getTranslation(context, "$root.addedtrack.title")
             .replace("%size%", audioTracks.size.toString())
-            .replace("%position%", audioTracks[0].position.toString())
+            .replace("%positionFirst%", audioTracks[0].position.toString())
+            .replace("%positionLast%", (audioTracks[0].position + audioTracks.size).toString())
 
         val eb = Embedder(context)
         eb.setTitle(title)

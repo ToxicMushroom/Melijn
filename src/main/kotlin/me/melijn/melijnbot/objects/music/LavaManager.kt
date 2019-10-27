@@ -45,7 +45,8 @@ class LavaManager(
      * @param senderVoiceChannel This is the voice channel you want to join
      * @return returns true on success and false when failed
      */
-    fun tryToConnectToVC(context: CommandContext, guild: Guild, senderVoiceChannel: VoiceChannel): Boolean {
+    fun tryToConnectToVCNMessage(context: CommandContext, senderVoiceChannel: VoiceChannel): Boolean {
+        val guild = senderVoiceChannel.guild
         if (!guild.selfMember.hasPermission(senderVoiceChannel, Permission.VOICE_CONNECT)) {
             context.reply("I don't have permission to join your Voice Channel")
             return false

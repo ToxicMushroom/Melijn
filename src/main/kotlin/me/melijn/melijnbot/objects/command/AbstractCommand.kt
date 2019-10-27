@@ -58,14 +58,14 @@ abstract class AbstractCommand(val root: String) {
         } else sendMissingPermissionMessage(context, permission)
     }
 
-    private suspend fun sendMissingPermissionMessage(context: CommandContext, permission: String) {
+    suspend fun sendMissingPermissionMessage(context: CommandContext, permission: String) {
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.botpermission.missing")
             .replace("%permission%", permission)
         sendMsg(context, msg)
     }
 
-    private suspend fun hasPermission(context: CommandContext, permission: String): Boolean {
+    suspend fun hasPermission(context: CommandContext, permission: String): Boolean {
         if (!context.isFromGuild) return true
         if (context.getMember()?.isOwner!! || context.getMember()?.hasPermission(Permission.ADMINISTRATOR) == true) return true
         val guildId = context.getGuildId()
