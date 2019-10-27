@@ -14,7 +14,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
     init {
         id = 15
         name = "permission"
-        aliases = arrayOf("perm", "p")
+        aliases = arrayOf("perm")
         commandCategory = CommandCategory.ADMINISTRATION
         children = arrayOf(UserCommand(), RoleCommand(), ChannelCommand())
     }

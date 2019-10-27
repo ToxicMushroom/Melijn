@@ -19,7 +19,7 @@ class GuildTrackManager(
 
     fun nextTrack(lastTrack: AudioTrack) {
         if (tracks.isEmpty()) {
-            musicPlayer.stopTrack()
+            iPlayer.stopTrack()
             return
         }
 
@@ -39,11 +39,13 @@ class GuildTrackManager(
         tracks = LinkedList(tracks.shuffled())
     }
 
-    override fun onTrackStart(player: AudioPlayer?, track: AudioTrack?) {
-
+    override fun onTrackStart(player: AudioPlayer?, track: AudioTrack) {
+        println("track started")
     }
 
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack, endReason: AudioTrackEndReason) {
+        println("track ended")
+        nextTrack(track)
 //        val guildId = iPlayer.link.guildIdLong
 //        if (melijn.getVariables().looped.contains(guildId)) {
 //            melijn.getLava().getAudioLoader().loadSimpleTrack(musicPlayer, track.info.uri)

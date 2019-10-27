@@ -3,7 +3,6 @@ package me.melijn.melijnbot.commands.music
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
 
 class PlayCommand : AbstractCommand("command.play") {
 
@@ -11,11 +10,14 @@ class PlayCommand : AbstractCommand("command.play") {
         id = 80
         name = "play"
         aliases = arrayOf("p")
-        runConditions = arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ)
         commandCategory = CommandCategory.MUSIC
     }
 
     override suspend fun execute(context: CommandContext) {
+        if (!context.lavaManager.isConnected(context.getGuild())) {
+            context.getMember()?.voiceState?.channel?.let { context.lavaManager.openConnection(it) }
+        }
 
+        context.audioLoader.loadNewTrackNMessage(context, "ytsearch:" + context.rawArg, false)
     }
 }

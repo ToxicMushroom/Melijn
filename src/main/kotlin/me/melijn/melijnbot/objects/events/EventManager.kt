@@ -30,6 +30,7 @@ class EventManager(val container: Container) : IEventManager {
         val messageReactionAddedListener = MessageReactionAddedListener(container)
         val messageReactionRemovedListener = MessageReactionRemovedListener(container)
         val joinLeaveListener = JoinLeaveListener(container)
+        val lavaEventListener = container.jdaLavaLink
 
 
         val commandListener = CommandClientBuilder(container)
@@ -45,6 +46,9 @@ class EventManager(val container: Container) : IEventManager {
         eventListeners.add(messageReactionAddedListener)
         eventListeners.add(messageReactionRemovedListener)
         eventListeners.add(joinLeaveListener)
+        lavaEventListener?.let {
+            eventListeners.add(it)
+        }
     }
 
     override fun handle(event: GenericEvent) {

@@ -46,6 +46,9 @@ class CommandContext(
     val authorId = getAuthor().idLong
     var rawArg: String = ""
     val contextTime = System.currentTimeMillis()
+    val lavaManager = container.lavaManager
+    val musicPlayerManager = container.lavaManager.musicPlayerManager
+    val audioLoader = container.lavaManager.musicPlayerManager.audioLoader
 
     fun initArgs() {
         args = commandParts.drop(1 + commandOrder.size)

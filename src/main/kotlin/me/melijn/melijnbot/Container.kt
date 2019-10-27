@@ -10,12 +10,10 @@ import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.web.WebManager
 import net.dv8tion.jda.api.sharding.ShardManager
 import java.io.File
-import java.net.URI
 
 
 class Container {
 
-    lateinit var shardManager: ShardManager
     var shuttingDown: Boolean = false
         set(value) {
             if (value) serviceManager.stopServices()
@@ -41,6 +39,8 @@ class Container {
     //messageId
     val botDeletedMessageIds = mutableSetOf<Long>()
 
+    var jdaLavaLink: JdaLavalink? = null
+
     init {
         instance = this
     }
@@ -49,26 +49,12 @@ class Container {
         lateinit var instance: Container
     }
 
-
-    fun start(shardManager: ShardManager) {
-        this.shardManager = shardManager
-
-        val jdaLavaLink = if (settings.lavalink.enabled) {
-            val linkBuilder = JdaLavalink(
-                settings.id.toString(),
-                settings.shardCount
-            ) { id ->
-                shardManager.getShardById(id)
-            }
-
-            for (node in settings.lavalink.nodes) {
-                linkBuilder.addNode(URI.create(node.host), node.host)
-            }
-            linkBuilder
-        } else {
-            null
-        }
+    fun initShardManager(shardManager: ShardManager) {
         lavaManager = LavaManager(settings.lavalink.enabled, daoManager, shardManager, jdaLavaLink)
     }
 
+
+    fun initLava(jdaLavaLink: JdaLavalink?) {
+        this.jdaLavaLink = jdaLavaLink
+    }
 }

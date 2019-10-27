@@ -4,38 +4,36 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
-import me.melijn.melijnbot.objects.utils.YTSearch
 import net.dv8tion.jda.api.entities.Guild
 
 
 class MusicPlayerManager(
     private val lavaManager: LavaManager
 ) {
-    private val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
-    private val players: HashMap<Long, GuildMusicPlayer> = HashMap()
-    private val ytSearch: YTSearch = YTSearch()
-
+    val audioPlayerManager: AudioPlayerManager = DefaultAudioPlayerManager()
+    val audioLoader = AudioLoader(this)
+    private val guildMusicPlayers: HashMap<Long, GuildMusicPlayer> = HashMap()
 
     init {
-        playerManager.configuration.isFilterHotSwapEnabled = true
-        playerManager.frameBufferDuration = 1000
-        AudioSourceManagers.registerRemoteSources(playerManager)
-        AudioSourceManagers.registerLocalSource(playerManager)
+        audioPlayerManager.configuration.isFilterHotSwapEnabled = true
+        audioPlayerManager.frameBufferDuration = 1000
+        AudioSourceManagers.registerRemoteSources(audioPlayerManager)
+        AudioSourceManagers.registerLocalSource(audioPlayerManager)
     }
 
     fun getLPPlayer(): AudioPlayer {
-        return playerManager.createPlayer()
+        return audioPlayerManager.createPlayer()
     }
 
     @Synchronized
-    fun getPlayer(guild: Guild): GuildMusicPlayer = getPlayer(guild.idLong)
-
-    @Synchronized
-    fun getPlayer(guildId: Long): GuildMusicPlayer  {
-        var guildMusicPlayer = players[guildId]
-        if (guildMusicPlayer == null) {
-            guildMusicPlayer = GuildMusicPlayer(lavaManager, guildId)
+    fun getGuildMusicPlayer(guild: Guild): GuildMusicPlayer {
+        val cachedMusicPlayer = guildMusicPlayers[guild.idLong]
+        if (cachedMusicPlayer == null) {
+            val newMusicPlayer = GuildMusicPlayer(lavaManager, guild.idLong)
+            guildMusicPlayers[guild.idLong] = newMusicPlayer
+            guild.audioManager.sendingHandler = newMusicPlayer.getSendHandler()
+            return newMusicPlayer
         }
-        return guildMusicPlayer
+        return cachedMusicPlayer
     }
 }

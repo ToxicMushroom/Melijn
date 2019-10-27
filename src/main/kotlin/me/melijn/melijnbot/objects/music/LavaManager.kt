@@ -19,7 +19,7 @@ class LavaManager(
     private val jdaLavaLink: JdaLavalink?
 ) {
 
-    private val musicPlayerManager: MusicPlayerManager = MusicPlayerManager(this)
+    val musicPlayerManager: MusicPlayerManager = MusicPlayerManager(this)
 
     fun getIPlayer(guildId: Long): IPlayer {
         return if (lavalinkEnabled && jdaLavaLink != null) {
@@ -33,6 +33,7 @@ class LavaManager(
         if (jdaLavaLink == null) {
             val selfMember = channel.guild.selfMember
             if (selfMember.hasPermission(channel, Permission.VOICE_CONNECT)) {
+                channel.guild.audioManager.sendingHandler = AudioPlayerSendHandler(getIPlayer(channel.guild.idLong))
                 channel.guild.audioManager.openAudioConnection(channel)
             }
         } else jdaLavaLink.getLink(channel.guild).connect(channel)

@@ -42,7 +42,7 @@ class YTSearch {
         ).setApplicationName("youtube-search").build()
     }
 
-    fun search(query: String?, videoCallback: (result: String?) -> Unit) {
+    fun search(query: String?, videoCallback: (videoId: String?) -> Unit) {
         youtubeService.submit {
             try {
                 val search: YouTube.Search.List = youtube.search().list("id")
@@ -75,9 +75,12 @@ class YTSearch {
                 return@submit
             } catch (e: GoogleJsonResponseException) {
                 logger.error("There was a service error: ${e.details.code} : ${e.details.message}")
+                e.sendInGuild()
             } catch (e: IOException) {
                 logger.error("There was an IO error: ${e.cause} : ${e.message}")
+                e.sendInGuild()
             } catch (t: Throwable) {
+                t.sendInGuild()
                 t.printStackTrace()
             }
             videoCallback.invoke(null)
