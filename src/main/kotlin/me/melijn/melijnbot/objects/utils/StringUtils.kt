@@ -178,7 +178,7 @@ fun getDurationString(milliseconds: Double): String {
     }
 
     appendTimePart(hours, sb)
-    appendTimePart(minutes, sb, true, canAddZeros = (hours != 0L))
+    appendTimePart(minutes, sb, true, canAddZeros = true)
     appendTimePart(seconds, sb, false, canAddZeros = true)
 
 

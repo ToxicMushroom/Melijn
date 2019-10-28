@@ -36,21 +36,21 @@ class QueueCommand : AbstractCommand("command.queue") {
         var totalDuration = cTrack.duration
 
         val status =  i18n.getTranslation(context, if (trackManager.iPlayer.isPaused) "paused" else "playing")
-        description += "[$status](${cTrack.info.uri})  **${cTrack.info.title}**  `[${getDurationString(trackManager.iPlayer.trackPosition)} / ${getDurationString(cTrack.duration)}]`"
+        description += "[$status](${cTrack.info.uri}) - **${cTrack.info.title}** `[${getDurationString(trackManager.iPlayer.trackPosition)} / ${getDurationString(cTrack.duration)}]`"
         for ((index, track) in allTracks.withIndex()) {
             totalDuration += track.duration
-            description += "\n[#${index + 1}](${track.info.uri})  ${track.info.title}  `[${getDurationString(track.duration)}]`"
+            description += "\n[#${index + 1}](${track.info.uri}) - ${track.info.title} `[${getDurationString(track.duration)}]`"
         }
 
         val title = i18n.getTranslation(context, "$root.title")
+
+        description += i18n.getTranslation(context, "$root.fakefooter")
+            .replace("%duration%", getDurationString(totalDuration - trackManager.iPlayer.trackPosition))
             .replace("%amount%", (allTracks.size + 1).toString())
-        val footer = i18n.getTranslation(context, "$root.footer")
-            .replace("%duration%", getDurationString(totalDuration))
 
         val eb = Embedder(context)
         eb.setTitle(title)
         eb.setDescription(description)
-        eb.setFooter(footer)
         sendEmbed(context, eb.build())
     }
 }
