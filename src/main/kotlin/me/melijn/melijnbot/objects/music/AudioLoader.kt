@@ -37,6 +37,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             }
 
             override fun trackLoaded(track: AudioTrack) {
+                track.userData = TrackUserData(context.getAuthor())
                 guildTrackManager.queue(track)
                 sendMessageAddedTrack(context, track)
             }
@@ -49,11 +50,14 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 val tracks = playlist.tracks
                 if (isPlaylist) {
                     for (track in tracks) {
+                        track.userData = TrackUserData(context.getAuthor())
+
                         guildTrackManager.queue(track)
                     }
                     sendMessageAddedTracks(context, tracks)
                 } else {
                     val track = tracks[0]
+                    track.userData = TrackUserData(context.getAuthor())
                     guildTrackManager.queue(track)
                     sendMessageAddedTrack(context, track)
                 }
@@ -83,8 +87,8 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     fun sendMessageAddedTrack(context: CommandContext, audioTrack: AudioTrack) = runBlocking {
         val title = i18n.getTranslation(context, "$root.addedtrack.title")
             .replace(PLACEHOLDER_USER, context.getAuthor().asTag)
-        val description = i18n.getTranslation(context, "$root.addedtrack.title")
-            .replace("%position%", audioTrack.position.toString())
+        val description = i18n.getTranslation(context, "$root.addedtrack.description")
+            .replace("%position%", getQueuePosition(context, audioTrack).toString())
             .replace("%title%", audioTrack.info.title)
             .replace("%duration%", getDurationString(audioTrack.duration))
             .replace("%url%", audioTrack.info.uri)
@@ -97,12 +101,12 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     fun sendMessageAddedTracks(context: CommandContext, audioTracks: List<AudioTrack>) = runBlocking {
-        val title = i18n.getTranslation(context, "$root.addedtrack.title")
+        val title = i18n.getTranslation(context, "$root.addedtracks.title")
             .replace(PLACEHOLDER_USER, context.getAuthor().asTag)
-        val description = i18n.getTranslation(context, "$root.addedtrack.title")
+        val description = i18n.getTranslation(context, "$root.addedtracks.description")
             .replace("%size%", audioTracks.size.toString())
-            .replace("%positionFirst%", audioTracks[0].position.toString())
-            .replace("%positionLast%", (audioTracks[0].position + audioTracks.size).toString())
+            .replace("%positionFirst%", getQueuePosition(context, audioTracks[0]).toString())
+            .replace("%positionLast%", (getQueuePosition(context, audioTracks[0]) + audioTracks.size).toString())
 
         val eb = Embedder(context)
         eb.setTitle(title)
@@ -110,5 +114,9 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
         sendEmbed(context, eb.build())
     }
+
+    private fun getQueuePosition(context: CommandContext, audioTrack: AudioTrack): Int =
+        context.musicPlayerManager.getGuildMusicPlayer(context.getGuild()).guildTrackManager.getPosition(audioTrack)
+
 
 }

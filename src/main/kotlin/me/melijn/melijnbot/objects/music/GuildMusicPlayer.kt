@@ -9,7 +9,7 @@ class GuildMusicPlayer(lavaManager: LavaManager, val guildId: Long) {
     private val iPlayer: IPlayer = lavaManager.getIPlayer(guildId)
 
     init {
-        guildTrackManager = GuildTrackManager(iPlayer, this)
+        guildTrackManager = GuildTrackManager(iPlayer)
         iPlayer.addListener(guildTrackManager)
     }
 

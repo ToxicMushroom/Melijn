@@ -1,8 +1,6 @@
 package me.melijn.melijnbot.commands.music
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.command.*
 import me.melijn.melijnbot.objects.music.AudioLoader
 import me.melijn.melijnbot.objects.music.LavaManager
 import me.melijn.melijnbot.objects.translation.SC_SELECTOR
@@ -18,6 +16,7 @@ class PlayCommand : AbstractCommand("command.play") {
         aliases = arrayOf("p")
         children = arrayOf(YTArg(root), SCArg(root), AttachmentArg(root))
         commandCategory = CommandCategory.MUSIC
+        runConditions = arrayOf(RunCondition.VC_BOT_OR_USER_DJ)
     }
 
     override suspend fun execute(context: CommandContext) {

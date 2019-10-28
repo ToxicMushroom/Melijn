@@ -277,7 +277,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
 
         command.runConditions.forEach {
-            if (!runConditionCheckPassed(it, event)) return true
+            if (!runConditionCheckPassed(it, event, command)) return true
         }
 
         if (event.isFromGuild) {
@@ -410,10 +410,25 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
      * [@return] returns true if the check passed
      *
      * **/
-    private fun runConditionCheckPassed(runCondition: RunCondition, event: MessageReceivedEvent): Boolean {
+    private suspend fun runConditionCheckPassed(runCondition: RunCondition, event: MessageReceivedEvent, command: AbstractCommand): Boolean {
         return when (runCondition) {
             RunCondition.GUILD -> event.isFromGuild
-            RunCondition.VC_BOT_ALONE_OR_USER_DJ -> false
+            RunCondition.VC_BOT_ALONE_OR_USER_DJ -> {
+                val member = event.member ?: return false
+                val vc = member.voiceState?.channel ?: return false
+                if (vc.members.contains(member.guild.selfMember) && listeningMembers(vc) == 1) return true
+                else if (!vc.members.contains(member.guild.selfMember) && member.guild.selfMember.voiceState?.inVoiceChannel() != true) return true
+                else if (hasPermission(command, container, event, "music.aloneordj.bypass")) return true
+                false
+            }
+            RunCondition.VC_BOT_OR_USER_DJ -> {
+                val member = event.member ?: return false
+                val vc = member.voiceState?.channel ?: return false
+                if (vc.members.contains(member.guild.selfMember)) return true
+                else if (!vc.members.contains(member.guild.selfMember) && member.guild.selfMember.voiceState?.inVoiceChannel() != true) return true
+                else if (hasPermission(command, container, event, "music.samevcordj.bypass")) return true
+                false
+            }
         }
     }
 

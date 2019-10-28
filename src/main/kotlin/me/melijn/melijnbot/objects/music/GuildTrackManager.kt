@@ -9,11 +9,10 @@ import java.util.*
 
 
 class GuildTrackManager(
-    private val iPlayer: IPlayer,
-    private val musicPlayer: GuildMusicPlayer
+    val iPlayer: IPlayer
 ) : AudioEventAdapterWrapped() {
 
-    private var tracks: Queue<AudioTrack> = LinkedList()
+    var tracks: Queue<AudioTrack> = LinkedList()
     fun trackSize() = tracks.size
 
 
@@ -27,7 +26,7 @@ class GuildTrackManager(
         if (track == lastTrack) iPlayer.playTrack(track.makeClone()) else iPlayer.playTrack(track)
     }
 
-    fun queue(track: AudioTrack?) {
+    fun queue(track: AudioTrack) {
         if (iPlayer.playingTrack == null) {
             iPlayer.playTrack(track)
         } else {
@@ -59,5 +58,17 @@ class GuildTrackManager(
 
     fun clear() {
         tracks.clear()
+    }
+
+    fun getPosition(audioTrack: AudioTrack): Int =
+        if (iPlayer.playingTrack == audioTrack) {
+            0
+        } else {
+            tracks.toList().indexOf(audioTrack) + 1
+        }
+
+    fun stop() {
+        iPlayer.stopTrack()
+
     }
 }

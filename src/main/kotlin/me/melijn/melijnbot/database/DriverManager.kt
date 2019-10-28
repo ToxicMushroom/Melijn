@@ -26,21 +26,23 @@ class DriverManager(dbSettings: Settings.Database) {
         config.jdbcUrl = "jdbc:postgresql://${dbSettings.host}:${dbSettings.port}/${dbSettings.database}"
         config.username = dbSettings.user
         config.password = dbSettings.password
-        config.maximumPoolSize = 40
+//        config.maxLifetime = 30_000
+//        config.maximumPoolSize = 40
 
         config.addDataSourceProperty("autoReconnect", "true")
-        config.addDataSourceProperty("useUnicode", "true")
-        config.addDataSourceProperty("useSSL", "false")
-        config.addDataSourceProperty("useLegacyDatetimeCode", "false")
-        config.addDataSourceProperty("serverTimezone", "UTC")
+//        config.addDataSourceProperty("useUnicode", "true")
+//        config.addDataSourceProperty("useSSL", "false")
+//        config.addDataSourceProperty("serverTimezone", "UTC")
+//        config.addDataSourceProperty("useLegacyDatetimeCode", "false")
         //https://github.com/brettwooldridge/HikariCP/wiki/MySQL-Configuration
-        config.addDataSourceProperty("allowMultiQueries", "true")
-        config.addDataSourceProperty("prepStmtCacheSize", "350")
-        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048")
-        config.addDataSourceProperty("cachePrepStmts", "true")
-        config.addDataSourceProperty("useServerPrepStmts", "true")
-        config.addDataSourceProperty("rewriteBatchedStatements", "true")
-        config.addDataSourceProperty("useLocalTransactionState", "true")
+//        config.addDataSourceProperty("allowMultiQueries", "true")
+//        config.addDataSourceProperty("prepStmtCacheSize", "350")
+//        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048")
+//        config.addDataSourceProperty("cachePrepStmts", "true")
+//        config.addDataSourceProperty("useServerPrepStmts", "true")
+//        config.addDataSourceProperty("rewriteBatchedStatements", "true")
+//        config.addDataSourceProperty("useLocalTransactionState", "true")
+//        config.addDataSourceProperty("leakDetectionThreshold", "2000")
 
         this.dataSource = HikariDataSource(config)
     }
@@ -128,54 +130,6 @@ class DriverManager(dbSettings: Settings.Database) {
             e.printStackTrace()
         }
     }
-
-//    /**
-//     * [query] the sql query that needs execution
-//     * [ResultSet] The resultset after executing the query
-//     * [objects] the arguments of the query
-//     * example:
-//     *   query: "SELECT * FROM apples WHERE id = ?"
-//     *   objects: 5
-//     *   resultset: Consumer object to handle the resultset
-//     * **/
-//    suspend fun executeQuery(
-//        query: String,
-//        vararg objects: Any
-//    ): ResultSet = suspendCoroutine {
-//        try {
-//            getUsableConnection { connection ->
-//                connection.prepareStatement(query).use { preparedStatement ->
-//                    for ((index, value) in objects.withIndex()) {
-//                        preparedStatement.setObject(index + 1, value)
-//                    }
-//                    it.resume(preparedStatement.executeQuery())
-//                }
-//            }
-//        } catch (t: Exception) {
-//            logger.error("Something went wrong when executing the query: $query")
-//            t.sendInGuild()
-//        }
-//    }
-//
-//    suspend fun awaitQueryExecution(
-//        query: String,
-//        vararg objects: Any
-//    ): ResultSet = suspendCoroutine {
-//        try {
-//            getUsableConnection { connection ->
-//                connection.prepareStatement(query).use { preparedStatement ->
-//                    for ((index, value) in objects.withIndex()) {
-//                        preparedStatement.setObject(index + 1, value)
-//                    }
-//                    it.resume(preparedStatement.executeQuery())
-//                }
-//            }
-//        } catch (e: SQLException) {
-//            logger.error("Something went wrong when executing the query: $query")
-//            e.sendInGuild()
-//            e.printStackTrace()
-//        }
-//    }
 
     suspend fun getDBVersion(): String = suspendCoroutine {
         try {

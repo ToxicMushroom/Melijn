@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.sharding.ShardManager
 
 
 class LavaManager(
-    private val lavalinkEnabled: Boolean,
+    val lavalinkEnabled: Boolean,
     val daoManager: DaoManager,
     val shardManager: ShardManager,
     private val jdaLavaLink: JdaLavalink?

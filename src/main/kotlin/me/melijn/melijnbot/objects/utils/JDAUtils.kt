@@ -505,3 +505,11 @@ fun getTimespanFromArgNMessage(context: CommandContext, beginIndex: Int): Pair<L
     }
 
 }
+
+fun listeningMembers(vc: VoiceChannel): Int {
+    val guild = vc.guild
+
+    return vc.members.filter { member ->
+        member != guild.selfMember && !(member.voiceState?.isDeafened ?: true)
+    }.count()
+}

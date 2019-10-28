@@ -31,7 +31,9 @@ class MusicPlayerManager(
         if (cachedMusicPlayer == null) {
             val newMusicPlayer = GuildMusicPlayer(lavaManager, guild.idLong)
             guildMusicPlayers[guild.idLong] = newMusicPlayer
-            guild.audioManager.sendingHandler = newMusicPlayer.getSendHandler()
+            if (!lavaManager.lavalinkEnabled) {
+                guild.audioManager.sendingHandler = newMusicPlayer.getSendHandler()
+            }
             return newMusicPlayer
         }
         return cachedMusicPlayer
