@@ -21,11 +21,12 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
             val loadedAllShards = shardManager.shardCache.count { jda -> jda.status == JDA.Status.CONNECTED } == container.settings.shardCount
             if (!loadedAllShards) return
             logger.info("All shards ready")
-            logger.info("Starting services..")
-            container.serviceManager.init(shardManager)
-            container.serviceManager.startServices()
-
-            logger.info("Services ready")
+            if (!container.serviceManager.started) {
+                logger.info("Starting services..")
+                container.serviceManager.init(shardManager)
+                container.serviceManager.startServices()
+                logger.info("Services ready")
+            }
         }
     }
 }

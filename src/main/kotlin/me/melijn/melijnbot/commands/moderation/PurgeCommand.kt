@@ -13,11 +13,12 @@ import java.util.concurrent.TimeUnit
 class PurgeCommand : AbstractCommand("command.purge") {
 
     private val silentPurgeName = "spurge"
+    private val silentPruneName = "sprune"
 
     init {
         id = 39
         name = "purge"
-        aliases = arrayOf(silentPurgeName)
+        aliases = arrayOf(silentPurgeName, silentPruneName, "prune")
         commandCategory = CommandCategory.MODERATION
     }
 
@@ -41,7 +42,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
         val msg = i18n.getTranslation(language, "$root.success")
             .replace("%amount%", amount.toString())
 
-        if (context.commandParts[0].equals(silentPurgeName, true))
-        sendMsg(context, msg)[0].delete().queueAfter(5, TimeUnit.SECONDS)
+        if (context.commandParts[0].equals(silentPurgeName, true) || context.commandParts[0].equals(silentPruneName, true))
+            sendMsg(context, msg)[0].delete().queueAfter(5, TimeUnit.SECONDS)
     }
 }

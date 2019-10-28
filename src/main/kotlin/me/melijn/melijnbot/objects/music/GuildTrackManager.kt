@@ -62,8 +62,8 @@ class GuildTrackManager(
     }
 
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack, endReason: AudioTrackEndReason) {
-        println("track ended")
-        nextTrack(track)
+        println("track ended eventStartNext:" + endReason.mayStartNext)
+        if (endReason.mayStartNext) nextTrack(track)
     }
 
     fun clear() {
