@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.objects.music
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
+import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import lavalink.client.player.IPlayer
@@ -38,6 +39,24 @@ class GuildTrackManager(
         tracks = LinkedList(tracks.shuffled())
     }
 
+
+    override fun onPlayerResume(player: AudioPlayer?) {
+        println("track resume")
+    }
+
+    override fun onPlayerPause(player: AudioPlayer?) {
+        println("track paused")
+    }
+
+    override fun onTrackStuck(player: AudioPlayer?, track: AudioTrack?, thresholdMs: Long) {
+        println("track stuck")
+    }
+
+    override fun onTrackException(player: AudioPlayer?, track: AudioTrack?, exception: FriendlyException?) {
+        exception?.printStackTrace()
+        println("track exception")
+    }
+
     override fun onTrackStart(player: AudioPlayer?, track: AudioTrack) {
         println("track started")
     }
@@ -45,15 +64,6 @@ class GuildTrackManager(
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack, endReason: AudioTrackEndReason) {
         println("track ended")
         nextTrack(track)
-//        val guildId = iPlayer.link.guildIdLong
-//        if (melijn.getVariables().looped.contains(guildId)) {
-//            melijn.getLava().getAudioLoader().loadSimpleTrack(musicPlayer, track.info.uri)
-//        } else if (melijn.getVariables().loopedQueues.contains(guildId)) {
-//            if (endReason.mayStartNext) nextTrack(track)
-//            melijn.getLava().getAudioLoader().loadSimpleTrack(musicPlayer, track.info.uri)
-//        } else {
-//            if (endReason.mayStartNext) nextTrack(track)
-//        }
     }
 
     fun clear() {
@@ -69,6 +79,22 @@ class GuildTrackManager(
 
     fun stop() {
         iPlayer.stopTrack()
+    }
 
+    fun skip(amount: Int) {
+        var nextTrack: AudioTrack? = null
+        for (i in 0 until amount) {
+            nextTrack = tracks.poll()
+        }
+        if (nextTrack == null) {
+            stop()
+        } else {
+            iPlayer.stopTrack()
+            iPlayer.playTrack(nextTrack)
+        }
+    }
+
+    fun setPaused(paused: Boolean) {
+        iPlayer.isPaused = paused
     }
 }

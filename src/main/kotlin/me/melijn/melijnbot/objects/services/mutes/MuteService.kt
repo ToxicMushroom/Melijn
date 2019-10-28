@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.objects.services.mutes
 
 import kotlinx.coroutines.future.await
+import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.commands.moderation.getUnmuteMessage
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
@@ -30,30 +31,32 @@ class MuteService(
 
     var scheduledFuture: ScheduledFuture<*>? = null
 
-    private fun muteService() = taskManager.async {
-        val mutes = muteWrapper.getUnmuteableMutes()
-        for (mute in mutes) {
-            val selfUser = shardManager.shards[0].selfUser
-            val newMute = mute.run {
-                Mute(guildId, mutedId, muteAuthorId, reason, selfUser.idLong, "Mute expired", startTime, endTime, false)
-            }
-
-            muteWrapper.setMute(newMute)
-            val guild = shardManager.getGuildById(mute.guildId) ?: continue
-            try {
-                val author = shardManager.retrieveUserById(newMute.muteAuthorId ?: -1).await()
-                try {
-                    val muted = shardManager.retrieveUserById(newMute.mutedId).await()
-                    createAndSendUnmuteMessage(guild, selfUser, muted, author, newMute)
-                } catch (t: Throwable) {
-                    createAndSendUnmuteMessage(guild, selfUser, null, author, newMute)
+    private val muteService = Runnable {
+        runBlocking {
+            val mutes = muteWrapper.getUnmuteableMutes()
+            for (mute in mutes) {
+                val selfUser = shardManager.shards[0].selfUser
+                val newMute = mute.run {
+                    Mute(guildId, mutedId, muteAuthorId, reason, selfUser.idLong, "Mute expired", startTime, endTime, false)
                 }
-            } catch (t: Throwable) {
+
+                muteWrapper.setMute(newMute)
+                val guild = shardManager.getGuildById(mute.guildId) ?: continue
                 try {
-                    val muted = shardManager.retrieveUserById(newMute.mutedId).await()
-                    createAndSendUnmuteMessage(guild, selfUser, muted, null, newMute)
+                    val author = shardManager.retrieveUserById(newMute.muteAuthorId ?: -1).await()
+                    try {
+                        val muted = shardManager.retrieveUserById(newMute.mutedId).await()
+                        createAndSendUnmuteMessage(guild, selfUser, muted, author, newMute)
+                    } catch (t: Throwable) {
+                        createAndSendUnmuteMessage(guild, selfUser, null, author, newMute)
+                    }
                 } catch (t: Throwable) {
-                    createAndSendUnmuteMessage(guild, selfUser, null, null, newMute)
+                    try {
+                        val muted = shardManager.retrieveUserById(newMute.mutedId).await()
+                        createAndSendUnmuteMessage(guild, selfUser, muted, null, newMute)
+                    } catch (t: Throwable) {
+                        createAndSendUnmuteMessage(guild, selfUser, null, null, newMute)
+                    }
                 }
             }
         }
@@ -91,7 +94,8 @@ class MuteService(
     }
 
     fun start() {
-        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay({ muteService() }, 1_000, 1_000, TimeUnit.MILLISECONDS)
+        logger.info("Started MuteService")
+        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(muteService, 1_100, 1_000, TimeUnit.MILLISECONDS)
     }
 
     fun stop() {

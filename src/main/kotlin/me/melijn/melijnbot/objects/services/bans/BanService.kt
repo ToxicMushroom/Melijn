@@ -90,6 +90,7 @@ class BanService(
     }
 
     fun start() {
+        logger.info("Started BanService")
         scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(banService, 1_000, 1_000, TimeUnit.MILLISECONDS)
     }
 
