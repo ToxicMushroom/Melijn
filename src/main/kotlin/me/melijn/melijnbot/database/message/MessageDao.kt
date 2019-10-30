@@ -88,7 +88,7 @@ data class ModularMessage(var messageContent: String? = null,
                 }
                 var embed: MessageEmbed? = null
                 if (jsonObj.hasKey("embed")) {
-                    val jdaImpl = (MelijnBot.shardManager?.shards?.get(0) as JDAImpl)
+                    val jdaImpl = (MelijnBot.shardManager.shards[0] as JDAImpl)
                     val embedString = jsonObj.getObject("embed")
                     val dataObject = DataObject.fromJson(embedString.toString())
                     embed = jdaImpl.entityBuilder.createMessageEmbed(dataObject)

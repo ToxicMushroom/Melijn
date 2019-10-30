@@ -286,7 +286,7 @@ object MessageCommandUtil {
         } else {
             message.messageContent = arg
             i18n.getTranslation(language, "message.content.set")
-                .replace("PLACEHOLDER_ARG", arg)
+                .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         sendMsg(context, msg)
@@ -303,7 +303,7 @@ object MessageCommandUtil {
         } else {
             eb.setDescription(arg)
             i18n.getTranslation(language, "message.embed.description.set")
-                .replace("PLACEHOLDER_ARG", arg)
+                .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
@@ -322,7 +322,7 @@ object MessageCommandUtil {
         } else {
             eb.setColor(color)
             i18n.getTranslation(language, "message.embed.color.set")
-                .replace("PLACEHOLDER_ARG", arg)
+                .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
@@ -340,7 +340,7 @@ object MessageCommandUtil {
         } else {
             eb.setTitle(arg)
             i18n.getTranslation(language, "message.embed.title.set")
-                .replace("PLACEHOLDER_ARG", arg)
+                .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
@@ -359,7 +359,7 @@ object MessageCommandUtil {
         } else {
             eb.setTitle(title, arg)
             i18n.getTranslation(language, "message.embed.titleurl.set")
-                .replace("PLACEHOLDER_ARG", arg)
+                .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
@@ -377,7 +377,7 @@ object MessageCommandUtil {
         } else {
             eb.setTitle(arg)
             i18n.getTranslation(language, "message.embed.author.set")
-                .replace("PLACEHOLDER_ARG", arg)
+                .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
@@ -397,7 +397,7 @@ object MessageCommandUtil {
         } else {
             eb.setAuthor(authorName, authorUrl, arg)
             i18n.getTranslation(language, "message.embed.authoriconurl.set")
-                .replace("PLACEHOLDER_ARG", arg)
+                .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
@@ -417,7 +417,7 @@ object MessageCommandUtil {
         } else {
             eb.setAuthor(authorName, arg, iconUrl)
             i18n.getTranslation(language, "message.embed.authorurl.set")
-                .replace("PLACEHOLDER_ARG", arg)
+                .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
@@ -435,7 +435,7 @@ object MessageCommandUtil {
         } else {
             eb.setThumbnail(arg)
             i18n.getTranslation(language, "message.embed.thumbnail.set")
-                .replace("PLACEHOLDER_ARG", arg)
+                .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
@@ -453,7 +453,7 @@ object MessageCommandUtil {
         } else {
             eb.setImage(arg)
             i18n.getTranslation(language, "message.embed.image.set")
-                .replace("PLACEHOLDER_ARG", arg)
+                .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
@@ -472,7 +472,7 @@ object MessageCommandUtil {
         } else {
             eb.setFooter(arg, footerIconUrl)
             i18n.getTranslation(language, "message.embed.image.set")
-                .replace("PLACEHOLDER_ARG", arg)
+                .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
@@ -492,7 +492,7 @@ object MessageCommandUtil {
         } else {
             eb.setFooter(footer, arg)
             i18n.getTranslation(language, "message.embed.image.set")
-                .replace("PLACEHOLDER_ARG", arg)
+                .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()

@@ -179,19 +179,18 @@ class DriverManager(dbSettings: Settings.Database) {
     suspend fun executeUpdateGetGeneratedKeys(query: String, vararg objects: Any?): Long = suspendCoroutine {
         try {
             getUsableConnection { connection ->
-                connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)
-                    .use { preparedStatement ->
-                        for ((index, value) in objects.withIndex()) {
-                            preparedStatement.setObject(index + 1, value)
-                        }
-
-
-                        preparedStatement.executeUpdate()
-                        val rs = preparedStatement.generatedKeys
-                        if (rs.next()) {
-                            it.resume(rs.getLong(1))
-                        }
+                connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS).use { preparedStatement ->
+                    for ((index, value) in objects.withIndex()) {
+                        preparedStatement.setObject(index + 1, value)
                     }
+
+
+                    preparedStatement.executeUpdate()
+                    val rs = preparedStatement.generatedKeys
+                    if (rs.next()) {
+                        it.resume(rs.getLong(2))
+                    }
+                }
             }
         } catch (e: SQLException) {
             logger.error("Something went wrong when executing the query: $query")

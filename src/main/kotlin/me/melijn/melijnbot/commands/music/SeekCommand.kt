@@ -4,6 +4,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.getDurationString
 import me.melijn.melijnbot.objects.utils.sendMsg
@@ -57,13 +58,13 @@ class SeekCommand : AbstractCommand("command.seek") {
         } catch (ex: NumberFormatException) {
             val path =  if (workingPart.matches("\\d+".toRegex())) "message.numbertobig" else "message.unknown.number"
             val msg = i18n.getTranslation(context, path)
-                .replace("PLACEHOLDER_ARG", workingPart)
+                .replace(PLACEHOLDER_ARG, workingPart)
             sendMsg(context, msg)
             return null
         }
         if (start > time || end < time) {
             val msg = i18n.getTranslation(context, "command.seek.notinrange")
-                .replace("PLACEHOLDER_ARG", workingPart)
+                .replace(PLACEHOLDER_ARG, workingPart)
             sendMsg(context, msg)
             return null
         }
