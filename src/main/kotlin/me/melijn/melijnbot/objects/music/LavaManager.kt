@@ -37,6 +37,7 @@ class LavaManager(
                 channel.guild.audioManager.openAudioConnection(channel)
             }
         } else jdaLavaLink.getLink(channel.guild).connect(channel)
+
     }
 
     /**

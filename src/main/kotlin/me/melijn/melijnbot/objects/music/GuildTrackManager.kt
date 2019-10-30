@@ -13,18 +13,33 @@ class GuildTrackManager(
     val iPlayer: IPlayer
 ) : AudioEventAdapterWrapped() {
 
+    var loopedTrack = false
+    var loopedQueue = false
+
     var tracks: Queue<AudioTrack> = LinkedList()
     fun trackSize() = tracks.size
 
 
     fun nextTrack(lastTrack: AudioTrack) {
         if (tracks.isEmpty()) {
+            if (loopedQueue || loopedTrack) {
+                iPlayer.playTrack(lastTrack.makeClone())
+                return
+            }
             iPlayer.stopTrack()
+            return
+        }
+
+        if (loopedTrack) {
+            iPlayer.playTrack(lastTrack.makeClone())
             return
         }
 
         val track: AudioTrack = tracks.poll()
         if (track == lastTrack) iPlayer.playTrack(track.makeClone()) else iPlayer.playTrack(track)
+        if (loopedQueue) {
+            tracks.add(lastTrack)
+        }
     }
 
     fun queue(track: AudioTrack) {
