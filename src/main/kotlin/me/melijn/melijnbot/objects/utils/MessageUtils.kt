@@ -59,7 +59,7 @@ suspend fun Throwable.sendInGuildSuspend(guild: Guild? = null, channel: MessageC
     sendMsg(textChannel, sb.toString())
 }
 
-suspend fun sendSyntax(context: CommandContext, translationPath: String) {
+suspend fun sendSyntax(context: CommandContext, translationPath: String = context.commandOrder.last().syntax) {
     val language = context.getLanguage()
     val syntax = i18n.getTranslation(language, "message.command.usage")
         .replace("%syntax%", i18n.getTranslation(language, translationPath)

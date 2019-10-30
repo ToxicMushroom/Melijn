@@ -202,3 +202,10 @@ fun Enum<*>.toLCC(): String {
     val uCC = this.toUCC()
     return uCC[0].toLowerCase() + uCC.substring(1)
 }
+
+val numberRegex = "-?\\d+".toRegex()
+val negativeNumberRegex = "-\\d+".toRegex()
+val positiveNumberRegex = "\\d+".toRegex()
+fun String.isNumber(): Boolean = this.matches(numberRegex)
+fun String.isPositiveNumber(): Boolean = this.matches(positiveNumberRegex)
+fun String.isNegativeNumber(): Boolean = this.matches(negativeNumberRegex)

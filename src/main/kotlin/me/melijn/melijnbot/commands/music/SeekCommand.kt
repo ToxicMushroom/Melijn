@@ -57,13 +57,13 @@ class SeekCommand : AbstractCommand("command.seek") {
         } catch (ex: NumberFormatException) {
             val path =  if (workingPart.matches("\\d+".toRegex())) "message.numbertobig" else "message.unknown.number"
             val msg = i18n.getTranslation(context, path)
-                .replace("%arg%", workingPart)
+                .replace("PLACEHOLDER_ARG", workingPart)
             sendMsg(context, msg)
             return null
         }
         if (start > time || end < time) {
             val msg = i18n.getTranslation(context, "command.seek.notinrange")
-                .replace("%arg%", workingPart)
+                .replace("PLACEHOLDER_ARG", workingPart)
             sendMsg(context, msg)
             return null
         }
