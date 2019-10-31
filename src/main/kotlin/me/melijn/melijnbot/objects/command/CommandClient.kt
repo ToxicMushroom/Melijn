@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.objects.command
 
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.future.await
@@ -277,11 +276,12 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             return true
         }
 
-        var conditions = mutableListOf<RunCondition>()
+        val conditions = mutableListOf<RunCondition>()
+        addConditions(conditions, command.commandCategory.runCondition)
         addConditions(conditions, command.runConditions)
 
         conditions.forEach {
-            if (!runConditionCheckPassed(it, event, command)) return true
+            if (!RunConditionUtil.runConditionCheckPassed(container, it, event, command)) return true
         }
 
         if (event.isFromGuild) {
@@ -417,52 +417,6 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             sendMsg(event.textChannel, msg)
         }
         return bool
-    }
-
-    /**
-     * [@return] returns true if the check passed
-     *
-     * **/
-    private suspend fun runConditionCheckPassed(runCondition: RunCondition, event: MessageReceivedEvent, command: AbstractCommand): Boolean {
-        val userId = event.author.idLong
-        return when (runCondition) {
-            RunCondition.GUILD -> {
-                if (event.isFromGuild) {
-                    true
-                } else {
-                    val msg = i18n.getTranslation(getLanguage(container.daoManager, userId, -1), "message.runcondition.guildonly")
-                    sendMsg(event.privateChannel, msg)
-                    false
-                }
-            }
-            RunCondition.VC_BOT_ALONE_OR_USER_DJ -> {
-                val member = event.member ?: return false
-                val vc = member.voiceState?.channel ?: return false
-                if (vc.members.contains(member.guild.selfMember) && listeningMembers(vc) == 1) return true
-                else if (!vc.members.contains(member.guild.selfMember) && member.guild.selfMember.voiceState?.inVoiceChannel() != true) return true
-                else if (hasPermission(command, container, event, "music.aloneordj.bypass")) return true
-                false
-            }
-            RunCondition.VC_BOT_OR_USER_DJ -> {
-                val member = event.member ?: return false
-                val vc = member.voiceState?.channel ?: return false
-                if (vc.members.contains(member.guild.selfMember)) return true
-                else if (!vc.members.contains(member.guild.selfMember) && member.guild.selfMember.voiceState?.inVoiceChannel() != true) return true
-                else if (hasPermission(command, container, event, "music.samevcordj.bypass")) return true
-                false
-            }
-            RunCondition.PLAYING_TRACK_NOT_NULL -> {
-                val trackManager = container.lavaManager.musicPlayerManager.getGuildMusicPlayer(event.guild).guildTrackManager
-                val cTrack: AudioTrack? = trackManager.iPlayer.playingTrack
-                if (cTrack == null) {
-                    return false
-//                    val noSongPlaying = i18n.getTranslation(context, "message.music.notracks")
-//                    sendMsg(context, noSongPlaying)
-//
-                }
-                return true
-            }
-        }
     }
 
 

@@ -383,6 +383,45 @@ suspend fun getTextChannelByArgsNMessage(context: CommandContext, index: Int, sa
     return textChannel
 }
 
+
+fun getVoiceChannelByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): VoiceChannel? {
+    var channel: VoiceChannel? = null
+    if (!context.isFromGuild && sameGuildAsContext) return channel
+    if (context.args.size > index && context.isFromGuild) {
+        val arg = context.args[index]
+
+        channel = if (arg.matches(Regex("\\d+"))) {
+            context.jda.shardManager?.getVoiceChannelById(arg)
+        } else if (context.isFromGuild && context.getGuild().getTextChannelsByName(arg, true).size > 0) {
+            context.getGuild().getVoiceChannelsByName(arg, true)[0]
+        } else if (arg.matches(Regex("<#\\d+>"))) {
+            var voiceChannel1: VoiceChannel? = null
+            val pattern = Pattern.compile("<#(\\d+)>")
+            val matcher = pattern.matcher(arg)
+            while (matcher.find()) {
+                val id = matcher.group(1)
+                val voiceChannel2 = context.jda.shardManager?.getVoiceChannelById(id)
+                if (voiceChannel1 != null && voiceChannel2 == null) continue
+                voiceChannel1 = voiceChannel2
+            }
+            voiceChannel1
+        } else channel
+    }
+    if (sameGuildAsContext && !context.getGuild().voiceChannels.contains(channel)) return null
+    return channel
+}
+
+suspend fun getVoiceChannelByArgNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): VoiceChannel? {
+    val voiceChannel = getVoiceChannelByArgsN(context, index, sameGuildAsContext)
+    if (voiceChannel == null) {
+        val language = context.getLanguage()
+        val msg = i18n.getTranslation(language, "message.unknown.voicechannel")
+            .replace(PLACEHOLDER_ARG, context.args[index])
+        sendMsg(context, msg, null)
+    }
+    return voiceChannel
+}
+
 suspend fun getMemberByArgsNMessage(context: CommandContext, index: Int): Member? {
     val user = getUserByArgsN(context, index)
     val member =
@@ -408,8 +447,7 @@ fun getMemberByArgsN(guild: Guild, arg: String): Member? {
 }
 
 suspend fun notEnoughPermissionsAndNMessage(context: CommandContext, channel: TextChannel, vararg perms: Permission): Boolean {
-    val member = context.getSelfMember()
-    requireNotNull(member) { "This method should only be called from guild events" }
+    val member = channel.guild.selfMember
     val result = notEnoughPermissions(member, channel, perms.toList())
     if (result.first) {
         val more = if (result.second.size > 1) "s" else ""
@@ -506,10 +544,42 @@ fun getTimespanFromArgNMessage(context: CommandContext, beginIndex: Int): Pair<L
 
 }
 
-fun listeningMembers(vc: VoiceChannel): Int {
+fun listeningMembers(vc: VoiceChannel, alwaysListeningUser: Long = -1L): Int {
     val guild = vc.guild
 
     return vc.members.filter { member ->
-        member != guild.selfMember && !(member.voiceState?.isDeafened ?: true)
+        member != guild.selfMember && !(member.voiceState?.isDeafened ?: true && member.idLong != alwaysListeningUser)
     }.count()
+}
+
+
+suspend fun getTimeFromArgsNMessage(context: CommandContext, start: Long = Long.MIN_VALUE, end: Long = Long.MAX_VALUE): Long? {
+    val parts = context.rawArg.replace(":", " ").split("\\s+".toRegex()).toMutableList()
+    parts.reverse()
+    var time: Long = 0
+    var workingPart = ""
+    try {
+        for ((index, part) in parts.withIndex()) {
+            workingPart = part
+            time += part.toShort() * when (index) {
+                0 -> 1000
+                1 -> 60_000
+                2 -> 3_600_000
+                else -> 0
+            }
+        }
+    } catch (ex: NumberFormatException) {
+        val path =  if (workingPart.matches("\\d+".toRegex())) "message.numbertobig" else "message.unknown.number"
+        val msg = i18n.getTranslation(context, path)
+            .replace(PLACEHOLDER_ARG, workingPart)
+        sendMsg(context, msg)
+        return null
+    }
+    if (start > time || end < time) {
+        val msg = i18n.getTranslation(context, "command.seek.notinrange")
+            .replace(PLACEHOLDER_ARG, workingPart)
+        sendMsg(context, msg)
+        return null
+    }
+    return time
 }

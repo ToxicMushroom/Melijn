@@ -8,13 +8,13 @@ import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.getDurationString
 import me.melijn.melijnbot.objects.utils.getTimeFromArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.sendSyntax
 
-class SeekCommand : AbstractCommand("command.seek") {
+class ForwardCommand : AbstractCommand("command.forward") {
 
     init {
-        id = 89
-        name = "seek"
-        aliases = arrayOf("scrub", "seekTo")
+        id = 92
+        name = "forward"
         runConditions = arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ, RunCondition.PLAYING_TRACK_NOT_NULL)
         commandCategory = CommandCategory.MUSIC
     }
@@ -27,11 +27,12 @@ class SeekCommand : AbstractCommand("command.seek") {
 
 
         val msg = if (context.args.isEmpty()) {
-            i18n.getTranslation(context, "$root.show")
+            sendSyntax(context)
+            return
         } else {
-            trackPosition = getTimeFromArgsNMessage(context, 0, trackDuration) ?: return
+            trackPosition += getTimeFromArgsNMessage(context, 0, trackDuration) ?: return
             iPlayer.seekTo(trackPosition)
-            i18n.getTranslation(context, "$root.seeked")
+            i18n.getTranslation(context, "$root.forwarded")
 
         }
             .replace("%duration%", getDurationString(trackDuration))

@@ -80,7 +80,7 @@ abstract class AbstractCommand(val root: String) {
     }
 }
 
-suspend fun hasPermission(context: CommandContext, permission: String): Boolean {
+suspend fun hasPermission(context: CommandContext, permission: String, required: Boolean = false): Boolean {
     if (!context.isFromGuild) return true
     if (context.getMember()?.isOwner!! || context.getMember()?.hasPermission(Permission.ADMINISTRATOR) == true) return true
     val guildId = context.getGuildId()
@@ -128,7 +128,8 @@ suspend fun hasPermission(context: CommandContext, permission: String): Boolean 
 
     return if (
         context.commandOrder[0].commandCategory == CommandCategory.ADMINISTRATION ||
-        context.commandOrder[0].commandCategory == CommandCategory.MODERATION
+        context.commandOrder[0].commandCategory == CommandCategory.MODERATION ||
+        required
     ) {
         roleResult == PermState.ALLOW
     } else {
@@ -136,7 +137,7 @@ suspend fun hasPermission(context: CommandContext, permission: String): Boolean 
     }
 }
 
-suspend fun hasPermission(command: AbstractCommand, container: Container, event: MessageReceivedEvent, permission: String): Boolean {
+suspend fun hasPermission(command: AbstractCommand, container: Container, event: MessageReceivedEvent, permission: String, required: Boolean = false): Boolean {
     val member = event.member ?: return true
     if (member.isOwner || member.hasPermission(Permission.ADMINISTRATOR)) return true
     val guild = member.guild
@@ -185,7 +186,8 @@ suspend fun hasPermission(command: AbstractCommand, container: Container, event:
 
     return if (
         command.commandCategory == CommandCategory.ADMINISTRATION ||
-        command.commandCategory == CommandCategory.MODERATION
+        command.commandCategory == CommandCategory.MODERATION ||
+        required
     ) {
         roleResult == PermState.ALLOW
     } else {
