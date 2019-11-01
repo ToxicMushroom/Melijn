@@ -2,6 +2,7 @@ package me.melijn.melijnbot.commandutil.image
 
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.ImageUtils
+import me.melijn.melijnbot.objects.utils.getBooleanFromArgN
 import me.melijn.melijnbot.objects.utils.getIntegerFromArgN
 import me.melijn.melijnbot.objects.utils.sendFile
 import java.awt.image.BufferedImage
@@ -47,15 +48,15 @@ object ImageCommandUtil {
     }
 
     suspend fun executeGifEffect(context: CommandContext, effect: (image: BufferedImage, offset: Int) -> Unit, hasOffset: Boolean = true) {
-        executeGifTransform(context, { byteArray, fps, quality, offset ->
-            ImageUtils.addEffectToGifFrames(byteArray, fps, quality) { image ->
+        executeGifTransform(context, { byteArray, fps, quality, repeat, offset ->
+            ImageUtils.addEffectToGifFrames(byteArray, fps, quality, repeat) { image ->
                 effect(image, offset)
             }
         }, hasOffset)
     }
 
 
-    suspend fun executeGifTransform(context: CommandContext, transform: (byteArray: ByteArray, fps: Float, quality: Int, offset: Int) -> ByteArrayOutputStream, hasOffset: Boolean = true) {
+    suspend fun executeGifTransform(context: CommandContext, transform: (byteArray: ByteArray, fps: Float?, quality: Int, repeat: Boolean?, offset: Int) -> ByteArrayOutputStream, hasOffset: Boolean = true) {
         val pair = ImageUtils.getImageBytesNMessage(context) ?: return
         val imageByteArray = pair.first ?: return
         var argInt = if (pair.second) 1 else 0
@@ -66,9 +67,10 @@ object ImageCommandUtil {
 
         val offset = (getIntegerFromArgN(context, argInt + 0) ?: 128)
         val quality = getIntegerFromArgN(context, argInt + 1) ?: 5
-        val fps = (getIntegerFromArgN(context, argInt + 2) ?: 20).toFloat()
+        val repeat = getBooleanFromArgN(context, argInt + 2)
+        val fps = getIntegerFromArgN(context, argInt + 3)?.toFloat()
 
-        val outputStream = transform(imageByteArray, fps, quality, offset)
+        val outputStream = transform(imageByteArray, fps, quality, repeat, offset)
         sendFile(context, outputStream.toByteArray(), "gif")
     }
 

@@ -141,7 +141,7 @@ object ImageUtils {
         }
     }
 
-    fun addEffectToGifFrames(imageByteArray: ByteArray, fps: Float? = null, quality: Int, effect: (BufferedImage) -> Unit): ByteArrayOutputStream {
+    fun addEffectToGifFrames(imageByteArray: ByteArray, fps: Float? = null, quality: Int, repeat: Boolean?, effect: (BufferedImage) -> Unit): ByteArrayOutputStream {
         val byteArrayInputStream = ByteArrayInputStream(imageByteArray)
         val decoder = GifDecoder()
         val encoder = AnimatedGifEncoder()
@@ -149,14 +149,24 @@ object ImageUtils {
 
         encoder.setQuality(quality)
         encoder.start(outputStream)
-        encoder.setRepeat(0)
         decoder.read(byteArrayInputStream)
 
+        val repeatCount = if (repeat != null && repeat == true) {
+            0
+        } else if (repeat != null && repeat == false) {
+            -1
+        } else {
+            decoder.loopCount
+        }
+        encoder.setRepeat(repeatCount)
 
         for (index in 0 until decoder.frameCount) {
-            val gifFrame = decoder.getFrame(index)
+            val frameMeta = decoder.getFrameMeta(index)
+            val gifFrame = frameMeta.image
+
+
             effect(gifFrame)
-            encoder.setDelay(decoder.getDelay(0))
+            encoder.setDelay(frameMeta.delay)
             if (fps != null) encoder.setFrameRate(fps)
             encoder.addFrame(gifFrame)
         }
@@ -200,6 +210,6 @@ object ImageUtils {
     }
 
     fun getInvertedPixel(r: Int, g: Int, b: Int): IntArray {
-        return intArrayOf(255-r, 255-g, 255-b)
+        return intArrayOf(255 - r, 255 - g, 255 - b)
     }
 }

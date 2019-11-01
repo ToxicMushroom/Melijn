@@ -34,15 +34,22 @@ suspend fun getIntegerFromArgNMessage(context: CommandContext, index: Int, start
     return int
 }
 
-suspend fun getBooleanFromArgNMessage(context: CommandContext, index: Int): Boolean? {
-    if (argSizeCheckFailed(context, index)) return null
+suspend fun getBooleanFromArgN(context: CommandContext, index: Int): Boolean?{
+    if (argSizeCheckFailed(context, index, true)) return null
     val arg = context.args[index]
 
-    val bool = when (arg.toLowerCase()) {
+    return when (arg.toLowerCase()) {
         "true", "yes", "on", "enable", "positive", "+" -> true
         "false", "no", "off", "disable", "negative", "-" -> false
         else -> null
     }
+}
+
+suspend fun getBooleanFromArgNMessage(context: CommandContext, index: Int): Boolean? {
+    if (argSizeCheckFailed(context, index)) return null
+    val arg = context.args[index]
+
+    val bool = getBooleanFromArgN(context, index)
     if (bool == null) {
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.boolean")
@@ -53,9 +60,9 @@ suspend fun getBooleanFromArgNMessage(context: CommandContext, index: Int): Bool
     return bool
 }
 
-suspend fun argSizeCheckFailed(context: CommandContext, index: Int): Boolean {
+suspend fun argSizeCheckFailed(context: CommandContext, index: Int, silent: Boolean = false): Boolean {
     return if (context.args.size <= index) {
-        sendSyntax(context, context.commandOrder.last().syntax)
+        if (!silent) sendSyntax(context, context.commandOrder.last().syntax)
         true
     } else {
         false
