@@ -20,48 +20,6 @@ import kotlin.math.sqrt
 
 object ImageUtils {
 
-    suspend fun getBufferedImageNMessage(context: CommandContext): BufferedImage? = suspendCoroutine {
-        context.taskManager.executorService.launch {
-            val args = context.args
-            val attachments = context.getMessage().attachments
-
-            var img: BufferedImage? = null
-            if (args.isNotEmpty() && args[0].isNotEmpty()) {
-                val user = retrieveUserByArgsN(context, 0)
-                if (user != null) {
-                    withContext(Dispatchers.IO) {
-                        img = ImageIO.read(URL(user.effectiveAvatarUrl + "?size=2048"))
-                    }
-                } else {
-                    try {
-                        withContext(Dispatchers.IO) {
-                            img = ImageIO.read(URL(args[0]))
-                        }
-                    } catch (e: Exception) {
-                        val msg = i18n.getTranslation(context, "message.wrong.url")
-                            .replace(PLACEHOLDER_ARG, args[0])
-                        sendMsg(context, msg)
-                    }
-                }
-            } else if (attachments.isNotEmpty()) {
-                try {
-                    withContext(Dispatchers.IO) {
-                        img = ImageIO.read(URL(attachments[0].url + "?size=2048"))
-                    }
-                } catch (e: Exception) {
-                    val msg = i18n.getTranslation(context, "message.attachmentnotanimage")
-                        .replace(PLACEHOLDER_ARG, attachments[0].url)
-                    sendMsg(context, msg)
-                }
-            } else {
-                withContext(Dispatchers.IO) {
-                    img = ImageIO.read(URL(context.getAuthor().effectiveAvatarUrl + "?size=2048"))
-                }
-            }
-            it.resume(img)
-        }
-    }
-
     //ByteArray (imageData)
     //Boolean (if it is from an argument -> true) (attachment or noArgs(author)) -> false)
     suspend fun getImageBytesNMessage(context: CommandContext): Pair<ByteArray?, Boolean>? = suspendCoroutine {
