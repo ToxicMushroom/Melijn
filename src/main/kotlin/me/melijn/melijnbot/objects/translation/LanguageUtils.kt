@@ -10,7 +10,7 @@ suspend fun getLanguage(context: CommandContext): String {
 }
 
 suspend fun getLanguage(daoManager: DaoManager, userId: Long, guildId: Long = -1): String {
-    val isSupporter = daoManager.supporterWrapper.supporterIds.contains(userId)
+    val isSupporter = daoManager.supporterWrapper.userSupporterIds.contains(userId)
     return if (guildId > 0) {
         if (isSupporter) {
             val userLang = getUserLanguage(daoManager, userId)

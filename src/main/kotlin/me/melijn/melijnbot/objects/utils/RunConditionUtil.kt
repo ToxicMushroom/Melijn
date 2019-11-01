@@ -43,7 +43,7 @@ object RunConditionUtil {
         val trackManager = container.lavaManager.musicPlayerManager.getGuildMusicPlayer(event.guild).guildTrackManager
         val cTrack: AudioTrack? = trackManager.iPlayer.playingTrack
         if (cTrack == null) {
-            val noSongPlaying = i18n.getTranslation(language, "message.music.notracks")
+            val noSongPlaying = i18n.getTranslation(language, "message.runcondition.failed.playingtracknotnull")
             sendMsg(event.textChannel, noSongPlaying)
             return false
         }
@@ -126,7 +126,7 @@ object RunConditionUtil {
         return if (botAlone || hasPermission(command, container, event, "music.bypass.botalone", true)) {
             true
         } else {
-            val msg = i18n.getTranslation(language, "message.runcondition.failed.botaloneordj")
+            val msg = i18n.getTranslation(language, "message.runcondition.failed.botalone")
             sendMsg(event.textChannel, msg)
             false
         }

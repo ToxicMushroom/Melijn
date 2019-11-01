@@ -6,13 +6,15 @@ import me.melijn.melijnbot.objects.threading.TaskManager
 class SupporterWrapper(val taskManager: TaskManager, private val userSupporterDao: UserSupporterDao) {
 
     var supporters: Set<Supporter> = setOf()
-    var supporterIds: Set<Long> = setOf()
+    var userSupporterIds: Set<Long> = setOf()
+    var guildSupporterIds: Set<Long> = setOf()
 
     init {
         DaoManager.afterTableFunctions.add {
             userSupporterDao.getSupporters {
                 supporters = it
-                supporterIds = it.map { supporter -> supporter.userId }.toSet()
+                userSupporterIds = it.map { supporter -> supporter.userId }.toSet()
+                guildSupporterIds = it.map { supporter -> supporter.guildId }.toSet()
             }
         }
     }

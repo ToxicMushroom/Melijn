@@ -139,9 +139,7 @@ object ImageUtils {
             if (brightness >= i) intArrayOf(50, 50, 50) //DARK #323232
             else intArrayOf(255, 128, 0) //ORANGE #FF8000
         }
-
     }
-
 
     fun addEffectToGifFrames(imageByteArray: ByteArray, fps: Float? = null, quality: Int, effect: (BufferedImage) -> Unit): ByteArrayOutputStream {
         val byteArrayInputStream = ByteArrayInputStream(imageByteArray)

@@ -4,6 +4,7 @@ package me.melijn.melijnbot.objects.web
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.wrapper.spotify.SpotifyApi
+import com.wrapper.spotify.exceptions.SpotifyWebApiException
 import com.wrapper.spotify.model_objects.specification.PlaylistTrack
 import com.wrapper.spotify.model_objects.specification.Track
 import com.wrapper.spotify.model_objects.specification.TrackSimplified
@@ -22,6 +23,8 @@ import me.melijn.melijnbot.objects.utils.toLCC
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import ru.gildor.coroutines.okhttp.await
+import java.io.IOException
+import java.util.regex.Matcher
 import java.util.regex.Pattern
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -108,6 +111,48 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         simpleTrack: (Array<TrackSimplified>) -> Unit,
         error: (Throwable) -> Unit
     ) = taskManager.async {
+        try {
+            //Tracks
+            when {
+                spotifyTrackUrl.matcher(songArg).matches() -> track.invoke(spotifyApi.getTrack(songArg.replaceFirst("https://open.spotify.com/track/".toRegex(), "").replaceFirst("\\?\\S+".toRegex(), "")).build().execute())
+                spotifyTrackUri.matcher(songArg).matches() -> track.invoke(spotifyApi.getTrack(songArg.replaceFirst("spotify:track:".toRegex(), "").replaceFirst("\\?\\S+".toRegex(), "")).build().execute())
 
+                //Playlists
+                spotifyPlaylistUrl.matcher(songArg).matches() -> acceptTracksIfMatchesPattern(songArg, trackList, spotifyPlaylistUrl)
+                spotifyPlaylistUri.matcher(songArg).matches() -> acceptTracksIfMatchesPattern(songArg, trackList, spotifyPlaylistUri)
+
+                //Albums
+                spotifyAlbumUrl.matcher(songArg).matches() -> acceptIfMatchesPattern(songArg, simpleTrack, spotifyAlbumUrl)
+                spotifyAlbumUri.matcher(songArg).matches() -> acceptIfMatchesPattern(songArg, simpleTrack, spotifyAlbumUri)
+                else -> error.invoke(IllegalArgumentException("That is not a valid spotify link"))
+            }
+        } catch (ignored: IOException) {
+            error.invoke(ignored)
+        } catch (ignored: SpotifyWebApiException) {
+            error.invoke(ignored)
+        }
+    }
+
+
+    private suspend fun acceptTracksIfMatchesPattern(url: String, trackList: (Array<PlaylistTrack>) -> Unit, pattern: Pattern) {
+        val matcher: Matcher = pattern.matcher(url)
+        while (matcher.find()) {
+            if (matcher.group(1) != null) {
+                val id = matcher.group(1).replaceFirst("\\?\\S+".toRegex(), "")
+                val tracks = spotifyApi.getPlaylistsTracks(id).build().executeAsync().await().items
+                trackList(tracks)
+            }
+        }
+    }
+
+    private suspend fun acceptIfMatchesPattern(url: String, simpleTrack: (Array<TrackSimplified>) -> Unit, pattern: Pattern) {
+        val matcher: Matcher = pattern.matcher(url)
+        while (matcher.find()) {
+            if (matcher.group(1) != null) {
+                val id = matcher.group(1).replaceFirst("\\?\\S+".toRegex(), "")
+                val simpleTracks = spotifyApi.getAlbumsTracks(id).build().executeAsync().await().items
+                simpleTrack(simpleTracks)
+            }
+        }
     }
 }

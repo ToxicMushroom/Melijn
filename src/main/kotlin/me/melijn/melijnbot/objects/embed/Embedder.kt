@@ -12,7 +12,7 @@ class Embedder(daoManager: DaoManager, guildId: Long, userId: Long, embedColor: 
         val embedColorWrapper = daoManager.embedColorWrapper
         val userEmbedColorWrapper = daoManager.userEmbedColorWrapper
         var color: Int = embedColorWrapper.embedColorCache.get(guildId).get() //Error
-        if (daoManager.supporterWrapper.supporterIds.contains(userId)) {
+        if (daoManager.supporterWrapper.userSupporterIds.contains(userId)) {
             color = userEmbedColorWrapper.userEmbedColorCache.get(userId).get()
         }
 

@@ -255,7 +255,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         if (prefixes.isEmpty()) prefixes = mutableListOf(container.settings.prefix)
 
         //registering private prefixes
-        if (container.daoManager.supporterWrapper.supporterIds.contains(event.author.idLong))
+        if (container.daoManager.supporterWrapper.userSupporterIds.contains(event.author.idLong))
             prefixes.addAll(userPrefixCache.get(event.author.idLong).await())
 
         //mentioning the bot will always work
