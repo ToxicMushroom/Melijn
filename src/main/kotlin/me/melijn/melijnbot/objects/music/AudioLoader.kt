@@ -34,6 +34,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             .replace(YT_SELECTOR, "")
             .replace(SC_SELECTOR, "")
 
+        if (guildMusicPlayer.queueIsFull(context, 1)) return
         val resultHandler = object : AudioLoadResultHandler {
             override fun loadFailed(exception: FriendlyException) {
                 sendMessageLoadFailed(context, exception)
@@ -79,6 +80,8 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             audioPlayerManager.loadItemOrdered(guildMusicPlayer, source, resultHandler)
         }
     }
+
+
 
     private fun sendMessageLoadFailed(context: CommandContext, exception: FriendlyException) = runBlocking {
         val msg = i18n.getTranslation(context, "$root.loadfailed")
@@ -139,7 +142,12 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         val title: String = query.replaceFirst("$SC_SELECTOR|$YT_SELECTOR".toRegex(), "")
         val source = StringBuilder(query)
         val artistNames = mutableListOf<String>()
+        if (player.queueIsFull(context, 1, silent)) {
+            loaded?.invoke(false)
+            return
+        }
         appendArtists(artists, source, artistNames)
+
         audioPlayerManager.loadItemOrdered(player, source.toString(), object : AudioLoadResultHandler {
             override fun trackLoaded(track: AudioTrack) {
                 if ((durationMs + spotifyTrackDiff > track.duration && track.duration > durationMs - spotifyTrackDiff)
