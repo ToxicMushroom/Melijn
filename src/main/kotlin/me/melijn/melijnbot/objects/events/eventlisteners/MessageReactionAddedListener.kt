@@ -1,22 +1,24 @@
 package me.melijn.melijnbot.objects.events.eventlisteners
 
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.VerificationType
+import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.events.AbstractListener
 import me.melijn.melijnbot.objects.events.eventutil.SelfRoleUtil
+import me.melijn.melijnbot.objects.music.DONATE_QUEUE_LIMIT
+import me.melijn.melijnbot.objects.music.QUEUE_LIMIT
+import me.melijn.melijnbot.objects.music.TrackUserData
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.VerificationUtils
-import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
-import me.melijn.melijnbot.objects.utils.asTag
+import me.melijn.melijnbot.objects.utils.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelByType
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
-import me.melijn.melijnbot.objects.utils.sendEmbed
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.GenericEvent
@@ -33,6 +35,61 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         selfRoleHandler(event)
         postReactionAddedLog(event)
         verificationHandler(event)
+        searchMenuHandler(event)
+    }
+
+    private suspend fun searchMenuHandler(event: GuildMessageReactionAddEvent) {
+        val guild = event.guild
+        if (event.reactionEmote.isEmote) return
+        val guildPlayer = container.lavaManager.musicPlayerManager.getGuildMusicPlayer(guild)
+        val menus = guildPlayer.searchMenus
+        val menu = menus.getOrElse(event.messageIdLong, { return })
+        if (event.user.idLong != (menu.first().userData as TrackUserData).userId) return
+
+        val track: AudioTrack? = when (event.reactionEmote.emoji) {
+            "1⃣" -> menu.getOrElse(0) { return }
+            "2⃣" -> menu.getOrElse(1) { return }
+            "3⃣" -> menu.getOrElse(2) { return }
+            "4⃣" -> menu.getOrElse(3) { return }
+            "5⃣" -> menu.getOrElse(4) { return }
+            "❌" -> null
+            else -> return
+        }
+
+        guildPlayer.searchMenus.remove(event.messageIdLong)
+        val message = event.channel.retrieveMessageById(event.messageIdLong).await() ?: return
+        val language = getLanguage(container.daoManager, event.user.idLong, guild.idLong)
+        when {
+            track == null -> {
+                val title = i18n.getTranslation(language, "message.music.searchmenu")
+                val desc = i18n.getTranslation(language, "message.music.search.cancelled.description")
+                val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong, container.settings.embedColor)
+                eb.setTitle(title)
+                eb.setDescription(desc)
+                message.editMessage(eb.build()).queue()
+            }
+            guildPlayer.safeQueueSilent(container.daoManager, track) -> {
+                val title = i18n.getTranslation(language, "message.music.addedtrack.title")
+                    .replace(PLACEHOLDER_USER, event.user.asTag)
+
+                val description = i18n.getTranslation(language, "message.music.addedtrack.description")
+                    .replace("%position%", guildPlayer.guildTrackManager.getPosition(track).toString())
+                    .replace("%title%", track.info.title)
+                    .replace("%duration%", getDurationString(track.duration))
+                    .replace("%url%", track.info.uri)
+
+                val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong, container.settings.embedColor)
+                eb.setTitle(title)
+                eb.setDescription(description)
+                message.editMessage(eb.build()).queue()
+            }
+            else -> {
+                val msg = i18n.getTranslation(language, "message.music.queuelimit")
+                    .replace("%amount%", QUEUE_LIMIT.toString())
+                    .replace("%donateAmount%", DONATE_QUEUE_LIMIT.toString())
+                message.editMessage(msg).queue()
+            }
+        }
     }
 
     private suspend fun verificationHandler(event: GuildMessageReactionAddEvent) {
@@ -62,8 +119,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                     val code = dao.verificationEmotejiWrapper.verificationEmotejiCache[guild.idLong].await()
                     if (
                         (event.reactionEmote.isEmoji && event.reactionEmote.emoji == code) ||
-                        (event.reactionEmote.isEmote && event.reactionEmote.emote.id == code))
-                    {
+                        (event.reactionEmote.isEmote && event.reactionEmote.emote.id == code)) {
                         VerificationUtils.verify(dao, unverifiedRole, guild.selfMember.user, member)
                     } else {
                         VerificationUtils.failedVerification(dao, member)

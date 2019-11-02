@@ -13,6 +13,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.*
+import net.dv8tion.jda.api.entities.Message
 import java.lang.Integer.min
 
 const val QUEUE_LIMIT = 150
@@ -29,7 +30,6 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     fun loadNewTrackNMessage(context: CommandContext, source: String, isPlaylist: Boolean = false) {
         val guild = context.getGuild()
         val guildMusicPlayer = musicPlayerManager.getGuildMusicPlayer(guild)
-        val guildTrackManager = guildMusicPlayer.guildTrackManager
         val rawInput = source
             .replace(YT_SELECTOR, "")
             .replace(SC_SELECTOR, "")
@@ -42,8 +42,9 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
             override fun trackLoaded(track: AudioTrack) {
                 track.userData = TrackUserData(context.getAuthor())
-                guildTrackManager.queue(track)
-                sendMessageAddedTrack(context, track)
+                if (guildMusicPlayer.safeQueue(context, track)) {
+                    sendMessageAddedTrack(context, track)
+                }
             }
 
             override fun noMatches() {
@@ -53,16 +54,18 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             override fun playlistLoaded(playlist: AudioPlaylist) {
                 val tracks = playlist.tracks
                 if (isPlaylist) {
+                    var notAdded = 0
+
                     for (track in tracks) {
                         track.userData = TrackUserData(context.getAuthor())
 
-                        guildTrackManager.queue(track)
+                        if (!guildMusicPlayer.safeQueueSilent(context.daoManager, track)) notAdded++
                     }
-                    sendMessageAddedTracks(context, tracks)
+                    sendMessageAddedTracks(context, tracks.subList(0, tracks.size - 1 - notAdded))
                 } else {
                     val track = tracks[0]
                     track.userData = TrackUserData(context.getAuthor())
-                    guildTrackManager.queue(track)
+                    guildMusicPlayer.safeQueue(context, track)
                     sendMessageAddedTrack(context, track)
                 }
             }
@@ -80,7 +83,6 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             audioPlayerManager.loadItemOrdered(guildMusicPlayer, source, resultHandler)
         }
     }
-
 
 
     private fun sendMessageLoadFailed(context: CommandContext, exception: FriendlyException) = runBlocking {
@@ -298,5 +300,70 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 }
             }
         }
+    }
+
+    fun loadNewTrackPickerNMessage(context: CommandContext, query: String) {
+        val guildMusicPlayer = context.getGuildMusicPlayer()
+        val rawInput = query
+            .replace(YT_SELECTOR, "")
+            .replace(SC_SELECTOR, "")
+
+        if (guildMusicPlayer.queueIsFull(context, 1)) return
+        val resultHandler = object : AudioLoadResultHandler {
+            override fun loadFailed(exception: FriendlyException) {
+                sendMessageLoadFailed(context, exception)
+            }
+
+            override fun trackLoaded(track: AudioTrack) {
+                prepareSearchMenu(context, listOf(track))
+            }
+
+            override fun noMatches() {
+                sendMessageNoMatches(context, rawInput)
+            }
+
+            override fun playlistLoaded(playlist: AudioPlaylist) {
+                prepareSearchMenu(context, playlist.tracks)
+            }
+        }
+
+        audioPlayerManager.loadItemOrdered(guildMusicPlayer, query, resultHandler)
+    }
+
+    private fun prepareSearchMenu(context: CommandContext, trackList: List<AudioTrack>) {
+        val guildMusicPlayer = context.getGuildMusicPlayer()
+        if (guildMusicPlayer.queueIsFull(context, 1)) return
+
+        val tracks = trackList.filterIndexed { index, _ -> index < 5 }.toMutableList()
+
+        for ((index, track) in tracks.withIndex()) {
+            track.userData = TrackUserData(context.getAuthor())
+            tracks[index] = track
+        }
+
+        context.taskManager.async {
+            val msg = sendMessageSearchMenu(context, tracks).last()
+            guildMusicPlayer.searchMenus[msg.idLong] = tracks
+
+            if (tracks.size > 0) msg.addReaction("\u0031\u20E3").queue()
+            if (tracks.size > 1) msg.addReaction("\u0032\u20E3").queue()
+            if (tracks.size > 2) msg.addReaction("\u0033\u20E3").queue()
+            if (tracks.size > 3) msg.addReaction("\u0034\u20E3").queue()
+            if (tracks.size > 4) msg.addReaction("\u0035\u20E3").queue()
+            if (tracks.size > 5) msg.addReaction("\u0036\u20E3").queue()
+            msg.addReaction("\u274C").queue()
+        }
+    }
+
+    private suspend fun sendMessageSearchMenu(context: CommandContext, tracks: List<AudioTrack>): List<Message> {
+        val title = i18n.getTranslation(context, "$root.searchmenu")
+        var menu = ""
+        for ((index, track) in tracks.withIndex()) {
+            menu += "\n[${index + 1}](${track.info.uri}) - ${track.info.title} `[${getDurationString(track.duration)}]`"
+        }
+        val eb = Embedder(context)
+        eb.setTitle(title)
+        eb.setDescription(menu)
+        return sendEmbed(context, eb.build())
     }
 }

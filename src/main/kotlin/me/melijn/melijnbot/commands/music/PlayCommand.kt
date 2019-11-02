@@ -19,8 +19,8 @@ class PlayCommand : AbstractCommand("command.play") {
         name = "play"
         aliases = arrayOf("p")
         children = arrayOf(YTArg(root), SCArg(root), AttachmentArg(root))
-        commandCategory = CommandCategory.MUSIC
         runConditions = arrayOf(RunCondition.VC_BOT_OR_USER_DJ)
+        commandCategory = CommandCategory.MUSIC
     }
 
     override suspend fun execute(context: CommandContext) {
@@ -110,7 +110,6 @@ class PlayCommand : AbstractCommand("command.play") {
             if (!lava.tryToConnectToVCNMessage(context, senderVoiceChannel)) return
             context.audioLoader.loadNewTrackNMessage(context, "${SC_SELECTOR}$songArg", false)
         }
-
     }
 
     class AttachmentArg(root: String) : AbstractCommand("$root.attachment") {

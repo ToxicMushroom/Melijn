@@ -11,6 +11,7 @@ import me.melijn.melijnbot.objects.utils.sendMsg
 class GuildMusicPlayer(lavaManager: LavaManager, val guildId: Long) {
 
     val guildTrackManager: GuildTrackManager
+    val searchMenus: MutableMap<Long, List<AudioTrack>> = mutableMapOf()
     private val iPlayer: IPlayer = lavaManager.getIPlayer(guildId)
 
     init {

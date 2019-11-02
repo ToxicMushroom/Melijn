@@ -211,6 +211,14 @@ suspend fun sendEmbed(context: CommandContext, embed: MessageEmbed, success: ((m
     }
 }
 
+suspend fun sendEmbed(context: CommandContext, embed: MessageEmbed): List<Message> {
+    return if (context.isFromGuild) {
+        sendEmbed(context.daoManager.embedDisabledWrapper, context.getTextChannel(), embed)
+    } else {
+        sendEmbed(context.getPrivateChannel(), embed)
+    }
+}
+
 suspend fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
     try {
         val msg = privateChannel.sendMessage(embed).await()
@@ -227,8 +235,29 @@ suspend fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed): List
             val msg = privateChannel.sendMessage(embed).await()
             it.resume(listOf(msg))
         } catch (t: Throwable) {
-            t.printStackTrace()
             it.resumeWithException(t)
+        }
+    }
+}
+
+
+suspend fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChannel, embed: MessageEmbed): List<Message> = suspendCoroutine {
+    runBlocking {
+        val guild = textChannel.guild
+        if (!textChannel.canTalk()) {
+            it.resumeWithException(IllegalArgumentException("No permission to talk in this channel"))
+            return@runBlocking
+        }
+        if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
+            !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
+            try {
+                val msg = textChannel.sendMessage(embed).await()
+                it.resume(listOf(msg))
+            } catch (t: Throwable) {
+                it.resumeWithException(t)
+            }
+        } else {
+            it.resume(sendEmbedAsMessage(textChannel, embed))
         }
     }
 }
@@ -286,6 +315,10 @@ suspend fun sendEmbedAsMessage(textChannel: TextChannel, embed: MessageEmbed, su
     sendMsg(textChannel, embed.toMessage(), success, failed)
 }
 
+suspend fun sendEmbedAsMessage(textChannel: TextChannel, embed: MessageEmbed): List<Message> {
+    return sendMsg(textChannel, embed.toMessage())
+}
+
 suspend fun sendMsg(context: CommandContext, msg: String, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
     if (context.isFromGuild) sendMsg(context.getTextChannel(), msg, success, failed)
     else sendMsg(context.getPrivateChannel(), msg, success, failed)
@@ -303,6 +336,7 @@ suspend fun sendMsg(context: CommandContext, image: BufferedImage, extension: St
         }
     }
 }
+
 suspend fun sendMsg(privateChannel: PrivateChannel, image: BufferedImage, extension: String, success: ((List<Message>) -> Unit)? = null, failed: ((Throwable) -> Unit)? = null) {
     try {
         val messageList = mutableListOf<Message>()
@@ -464,6 +498,28 @@ suspend fun sendMsg(privateChannel: PrivateChannel, msg: String, success: ((mess
         t.printStackTrace()
         failed?.invoke(t)
         return
+    }
+}
+
+suspend fun sendMsg(channel: TextChannel, msg: String): List<Message> = suspendCoroutine {
+    runBlocking {
+        require(channel.canTalk()) { "Cannot talk in this channel " + channel.name }
+        try {
+            val messageList = mutableListOf<Message>()
+            if (msg.length <= 2000) {
+                messageList.add(channel.sendMessage(msg).await())
+            } else {
+                val msgParts = StringUtils.splitMessage(msg).withIndex()
+                for ((index, text) in msgParts) {
+                    messageList.add(index, channel.sendMessage(text).await())
+                }
+
+            }
+            it.resume(messageList)
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            it.resumeWithException(t)
+        }
     }
 }
 

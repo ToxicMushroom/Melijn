@@ -40,16 +40,16 @@ class NowPlayingCommand : AbstractCommand("command.nowplaying") {
         eb.addField(progressField, getProgressBar(trackManager.iPlayer.playingTrack, trackManager.iPlayer.trackPosition), false)
         sendEmbed(context, eb.build())
     }
+}
 
-    private fun getProgressBar(playingTrack: AudioTrack, playerPosition: Long): String {
-        if (playingTrack.info.isStream) {
-            return "**" + getDurationString(playerPosition) + " | \uD83D\uDD34 Live**"
-        }
-        val percent = (playerPosition.toDouble() / playingTrack.duration.toDouble() * 18.0).toInt()
-        val sb = StringBuilder("▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬")
-        sb.insert(percent, "](${playingTrack.info.uri + "&t=" + (playerPosition / 1000)})<a:cool_nyan:490978764264570894>")
-        sb.append(" **").append(getDurationString(playerPosition)).append("/").append(getDurationString(playingTrack.duration)).append("**")
-        sb.insert(0, "[")
-        return sb.toString()
+fun getProgressBar(playingTrack: AudioTrack, playerPosition: Long): String {
+    if (playingTrack.info.isStream) {
+        return "**" + getDurationString(playerPosition) + " | \uD83D\uDD34 Live**"
     }
+    val percent = (playerPosition.toDouble() / playingTrack.duration.toDouble() * 18.0).toInt()
+    val sb = StringBuilder("▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬")
+    sb.insert(percent, "](${playingTrack.info.uri + "&t=" + (playerPosition / 1000)})<a:cool_nyan:490978764264570894>")
+    sb.append(" **").append(getDurationString(playerPosition)).append("/").append(getDurationString(playingTrack.duration)).append("**")
+    sb.insert(0, "[")
+    return sb.toString()
 }
