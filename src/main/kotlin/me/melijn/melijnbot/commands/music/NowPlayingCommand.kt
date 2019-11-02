@@ -23,9 +23,11 @@ class NowPlayingCommand : AbstractCommand("command.nowplaying") {
     override suspend fun execute(context: CommandContext) {
         val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val playingTrack = trackManager.iPlayer.playingTrack
-        val status = i18n.getTranslation(context, if (trackManager.iPlayer.isPaused) "paused" else "playing")
+        val trackStatus = i18n.getTranslation(context, if (trackManager.iPlayer.isPaused) "paused" else "playing")
+        val looped = i18n.getTranslation(context, "looped")
+        val status = i18n.getTranslation(context, "$root.status")
         val title = i18n.getTranslation(context, "$root.title")
-            .replace("%status%", status)
+            .replace("%status%", trackStatus)
 
         val description = i18n.getTranslation(context, "$root.show.description")
             .replace("%title%", playingTrack.info.title)
@@ -38,6 +40,7 @@ class NowPlayingCommand : AbstractCommand("command.nowplaying") {
         eb.setThumbnail(thumbnail)
         eb.setDescription(description)
         eb.addField(progressField, getProgressBar(trackManager.iPlayer.playingTrack, trackManager.iPlayer.trackPosition), false)
+        eb.addField(status, "**$trackStatus" + if (trackManager.loopedTrack) "** & **$looped**" else "", false)
         sendEmbed(context, eb.build())
     }
 }
