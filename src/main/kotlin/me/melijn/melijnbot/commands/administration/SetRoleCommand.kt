@@ -23,14 +23,14 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
 
 
         val roleType: RoleType? = enumValueOrNull(context.args[0])
         if (roleType == null) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
 
@@ -70,7 +70,7 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
 
     private suspend fun setRole(context: CommandContext, roleType: RoleType) {
         if (context.args.size < 2) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
 

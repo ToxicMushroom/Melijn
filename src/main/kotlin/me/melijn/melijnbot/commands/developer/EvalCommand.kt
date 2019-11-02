@@ -22,7 +22,7 @@ class EvalCommand : AbstractCommand("command.eval") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        sendSyntax(context, syntax)
+        sendSyntax(context)
     }
 
 //    class KotlinEvalCommand(root: String) : AbstractCommand("$root.kotlin") {

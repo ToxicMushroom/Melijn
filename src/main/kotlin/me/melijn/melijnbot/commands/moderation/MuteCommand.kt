@@ -27,7 +27,7 @@ class MuteCommand : AbstractCommand("command.mute") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.size < 2) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
         val targetUser = getUserByArgsNMessage(context, 0) ?: return

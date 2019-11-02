@@ -25,7 +25,7 @@ class PlayCommand : AbstractCommand("command.play") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty() && context.getMessage().attachments.isEmpty()) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
 
@@ -122,7 +122,7 @@ class PlayCommand : AbstractCommand("command.play") {
 
         override suspend fun execute(context: CommandContext) {
             if (context.getMessage().attachments.isEmpty()) {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
                 return
             }
             val member = context.getMember() ?: return

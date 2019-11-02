@@ -26,7 +26,7 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
             context.args.size == 1 -> {
                 setEmbedStateState(context)
             }
-            else -> sendSyntax(context, syntax)
+            else -> sendSyntax(context)
         }
     }
 
@@ -46,7 +46,7 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
     private suspend fun setEmbedStateState(context: CommandContext) {
         var disabledState: Boolean? = boolFromStateArg(context.args[0].toLowerCase())
         if (disabledState == null) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
         disabledState = !disabledState

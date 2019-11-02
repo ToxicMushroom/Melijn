@@ -25,7 +25,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        sendSyntax(context, syntax)
+        sendSyntax(context)
     }
 
     class SetContentArg(root: String, val type: MessageType) : AbstractCommand("$root.setcontent") {
@@ -68,7 +68,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
         }
 
         class SetTitleArg(root: String, val type: MessageType) : AbstractCommand("$root.settitle") {
@@ -194,7 +194,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
             }
 
             class AddArg(root: String, val type: MessageType) : AbstractCommand("$root.add") {
@@ -207,7 +207,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 override suspend fun execute(context: CommandContext) {
                     val split = context.rawArg.split(">")
                     if (split.size < 2) {
-                        sendSyntax(context, syntax)
+                        sendSyntax(context)
                     }
                     val title = split[0]
                     val value = context.rawArg.replaceFirst("$title>", "")
@@ -225,7 +225,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
 
                 override suspend fun execute(context: CommandContext) {
                     if (context.args.size < 2) {
-                        sendSyntax(context, syntax)
+                        sendSyntax(context)
                         return
                     }
                     val index = getIntegerFromArgNMessage(context, 0) ?: return
@@ -244,7 +244,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
 
                 override suspend fun execute(context: CommandContext) {
                     if (context.args.size < 2) {
-                        sendSyntax(context, syntax)
+                        sendSyntax(context)
                         return
                     }
                     val index = getIntegerFromArgNMessage(context, 0) ?: return
@@ -263,7 +263,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
 
                 override suspend fun execute(context: CommandContext) {
                     if (context.args.size < 2) {
-                        sendSyntax(context, syntax)
+                        sendSyntax(context)
                         return
                     }
                     val index = getIntegerFromArgNMessage(context, 0) ?: return
@@ -280,7 +280,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
 
                 override suspend fun execute(context: CommandContext) {
                     if (context.args.isEmpty()) {
-                        sendSyntax(context, syntax)
+                        sendSyntax(context)
                         return
                     }
                     val index = getIntegerFromArgNMessage(context, 0) ?: return
@@ -385,7 +385,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
         }
 
         class ListArg(root: String, val type: MessageType) : AbstractCommand("$root.list") {

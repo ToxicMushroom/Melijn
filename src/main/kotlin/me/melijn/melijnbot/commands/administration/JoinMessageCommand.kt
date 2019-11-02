@@ -21,6 +21,6 @@ class JoinMessageCommand : AbstractCommand("command.joinmessage") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        sendSyntax(context, syntax)
+        sendSyntax(context)
     }
 }

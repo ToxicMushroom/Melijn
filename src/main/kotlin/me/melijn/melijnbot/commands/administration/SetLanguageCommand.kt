@@ -30,7 +30,7 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
             context.commandParts.size == 3 -> {
                 setLang(context)
             }
-            else -> sendSyntax(context, syntax)
+            else -> sendSyntax(context)
         }
     }
 

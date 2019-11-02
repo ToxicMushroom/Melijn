@@ -26,7 +26,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        sendSyntax(context, syntax)
+        sendSyntax(context)
     }
 
     class AddArg(root: String) : AbstractCommand("$root.add") {
@@ -38,7 +38,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
         override suspend fun execute(context: CommandContext) {
             if (context.args.size < 2) {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
                 return
             }
             val pair = getEmoteOrEmojiByArgsNMessage(context, 0) ?: return
@@ -73,7 +73,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
         override suspend fun execute(context: CommandContext) {
             if (context.args.isEmpty()) {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
                 return
             }
 

@@ -19,7 +19,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        sendSyntax(context, syntax)
+        sendSyntax(context)
     }
 
     class ChannelArg(parentRoot: String) : AbstractCommand("$parentRoot.channel") {
@@ -31,7 +31,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
 
         override suspend fun execute(context: CommandContext) {
             if (context.args.size < 3) {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
                 return
             }
             val channel = getTextChannelByArgsNMessage(context, 0) ?: return
@@ -65,7 +65,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
 
         override suspend fun execute(context: CommandContext) {
             if (context.args.size < 2) {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
                 return
             }
             val commands = getCommandIdsFromArgNMessage(context, 0) ?: return

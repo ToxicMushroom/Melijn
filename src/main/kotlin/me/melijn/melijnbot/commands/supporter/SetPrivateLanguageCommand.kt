@@ -28,7 +28,7 @@ class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") 
             context.commandParts.size == 3 -> {
                 setLang(context)
             }
-            else -> sendSyntax(context, syntax)
+            else -> sendSyntax(context)
         }
     }
 

@@ -22,7 +22,7 @@ class HistoryCommand : AbstractCommand("command.history") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.size < 2) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
         val types = PunishmentType.getMatchingTypesFromNode(context.args[0])

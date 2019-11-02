@@ -34,7 +34,7 @@ class HelpCommand : AbstractCommand("command.help") {
         val commandList = context.getCommands()
         val parent = commandList.firstOrNull() { cmd -> cmd.isCommandFor(args[0]) }
         if (parent == null) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
         val parentChildList = getCorrectChildElseParent(context, mutableListOf(parent), args)

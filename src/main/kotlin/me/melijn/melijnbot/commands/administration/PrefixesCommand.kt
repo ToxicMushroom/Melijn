@@ -18,7 +18,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        sendSyntax(context, syntax)
+        sendSyntax(context)
     }
 
     class ViewCommand(root: String) : AbstractCommand("$root.view") {
@@ -53,7 +53,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
 
         override suspend fun execute(context: CommandContext) {
             if (context.rawArg.isBlank()) {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
                 return
             }
 
@@ -76,7 +76,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
 
         override suspend fun execute(context: CommandContext) {
             if (context.rawArg.isBlank()) {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
                 return
             }
 

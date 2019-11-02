@@ -29,7 +29,7 @@ class BanCommand : AbstractCommand("command.ban") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
         val targetUser = getUserByArgsNMessage(context, 0) ?: return

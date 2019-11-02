@@ -63,7 +63,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        sendSyntax(context, syntax)
+        sendSyntax(context)
     }
 
     class InfoArg(root: String) : AbstractCommand("$root.info") {
@@ -130,7 +130,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         override suspend fun execute(context: CommandContext) {
             val args = context.rawArg.split("\\s*>\\s*".toRegex())
             if (args.size < 2) {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
                 return
             }
 
@@ -165,7 +165,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
         override suspend fun execute(context: CommandContext) {
             if (context.args.isEmpty()) {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
                 return
             }
             val guildId = context.getGuildId()
@@ -195,7 +195,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
         override suspend fun execute(context: CommandContext) {
             if (context.args.isEmpty()) {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
                 return
             }
             val guildId = context.getGuildId()
@@ -229,7 +229,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
         }
 
         class AddArg(root: String) : AbstractCommand("$root.add") {
@@ -240,7 +240,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
             override suspend fun execute(context: CommandContext) {
                 if (context.args.isEmpty()) {
-                    sendSyntax(context, syntax)
+                    sendSyntax(context)
                     return
                 }
 
@@ -272,7 +272,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
             override suspend fun execute(context: CommandContext) {
                 if (context.args.isEmpty()) {
-                    sendSyntax(context, syntax)
+                    sendSyntax(context)
                     return
                 }
 
@@ -283,7 +283,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 val alias: String
 
                 if (possibleLong == -1) {
-                    sendSyntax(context, syntax)
+                    sendSyntax(context)
                     return
                 } else {
                     alias = s[possibleLong]
@@ -315,7 +315,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
             override suspend fun execute(context: CommandContext) {
                 if (context.args.isEmpty()) {
-                    sendSyntax(context, syntax)
+                    sendSyntax(context)
                     return
                 }
 
@@ -356,7 +356,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
         override suspend fun execute(context: CommandContext) {
             if (context.args.isEmpty()) {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
                 return
             }
 
@@ -384,7 +384,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
         override suspend fun execute(context: CommandContext) {
             if (context.args.isEmpty()) {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
                 return
             }
 
@@ -414,7 +414,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
         override suspend fun execute(context: CommandContext) {
             if (context.args.isEmpty()) {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
                 return
             }
 
@@ -449,7 +449,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
         }
 
         class SetContentArg(root: String) : AbstractCommand("$root.setcontent") {
@@ -494,7 +494,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
             }
 
             class SetTitleArg(root: String) : AbstractCommand("$root.settitle") {
@@ -627,7 +627,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 }
 
                 override suspend fun execute(context: CommandContext) {
-                    sendSyntax(context, syntax)
+                    sendSyntax(context)
                 }
 
                 class AddArg(root: String) : AbstractCommand("$root.add") {
@@ -640,7 +640,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     override suspend fun execute(context: CommandContext) {
                         val split = context.rawArg.split(">")
                         if (split.size < 2) {
-                            sendSyntax(context, syntax)
+                            sendSyntax(context)
                         }
                         val title = split[0]
                         val value = context.rawArg.replaceFirst("$title>", "")
@@ -659,7 +659,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                     override suspend fun execute(context: CommandContext) {
                         if (context.args.size < 2) {
-                            sendSyntax(context, syntax)
+                            sendSyntax(context)
                             return
                         }
                         val index = getIntegerFromArgNMessage(context, 0) ?: return
@@ -679,7 +679,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                     override suspend fun execute(context: CommandContext) {
                         if (context.args.size < 2) {
-                            sendSyntax(context, syntax)
+                            sendSyntax(context)
                             return
                         }
                         val index = getIntegerFromArgNMessage(context, 0) ?: return
@@ -699,7 +699,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                     override suspend fun execute(context: CommandContext) {
                         if (context.args.size < 2) {
-                            sendSyntax(context, syntax)
+                            sendSyntax(context)
                             return
                         }
                         val index = getIntegerFromArgNMessage(context, 0) ?: return
@@ -718,7 +718,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                     override suspend fun execute(context: CommandContext) {
                         if (context.args.isEmpty()) {
-                            sendSyntax(context, syntax)
+                            sendSyntax(context)
                             return
                         }
                         val index = getIntegerFromArgNMessage(context, 0) ?: return
@@ -834,7 +834,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
             }
 
             class ListArg(root: String) : AbstractCommand("$root.list") {
@@ -859,7 +859,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 override suspend fun execute(context: CommandContext) {
                     val cc = getSelectedCCNMessage(context) ?: return
                     if (context.args.isEmpty()) {
-                        sendSyntax(context, syntax)
+                        sendSyntax(context)
                         return
                     }
                     MessageCommandUtil.addAttachmentCC(context, cc)
@@ -876,7 +876,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                 override suspend fun execute(context: CommandContext) {
                     if (context.args.isEmpty()) {
-                        sendSyntax(context, syntax)
+                        sendSyntax(context)
                         return
                     }
                     val cc = getSelectedCCNMessage(context) ?: return

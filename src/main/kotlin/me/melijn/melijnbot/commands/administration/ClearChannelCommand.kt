@@ -20,7 +20,7 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.size < 2) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
 
@@ -32,7 +32,7 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
             }
             context.args[0] == "confirm" -> {
                 if (context.args.size > 1) {
-                    sendSyntax(context, syntax)
+                    sendSyntax(context)
                     return
                 }
                 val textChannel = context.getTextChannel()

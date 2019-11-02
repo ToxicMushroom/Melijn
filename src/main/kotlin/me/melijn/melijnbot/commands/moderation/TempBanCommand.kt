@@ -25,7 +25,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.size < 2) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
 

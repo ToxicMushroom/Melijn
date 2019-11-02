@@ -21,7 +21,7 @@ class SetChannelCommand : AbstractCommand("command.setchannel") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
 

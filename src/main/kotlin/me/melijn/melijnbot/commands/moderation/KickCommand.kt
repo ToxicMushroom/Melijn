@@ -23,7 +23,7 @@ class KickCommand : AbstractCommand("command.kick") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
         val targetMember = getMemberByArgsNMessage(context, 0) ?: return

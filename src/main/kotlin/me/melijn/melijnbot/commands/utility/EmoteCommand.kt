@@ -22,7 +22,7 @@ class EmoteCommand : AbstractCommand("command.emote") {
     override suspend fun execute(context: CommandContext) {
         val args = context.rawArg
         if (args.isBlank()) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
 

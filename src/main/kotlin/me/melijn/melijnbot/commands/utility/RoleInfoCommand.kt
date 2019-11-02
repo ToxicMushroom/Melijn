@@ -23,7 +23,7 @@ class RoleInfoCommand : AbstractCommand("command.roleinfo") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
 

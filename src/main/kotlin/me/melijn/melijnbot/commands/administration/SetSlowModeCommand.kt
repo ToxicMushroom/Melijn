@@ -57,7 +57,7 @@ class SetSlowModeCommand : AbstractCommand("command.setslowmode") {
                         .replace("%slowMode%", number.toString())
                 }
             } else {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
                 return
             }
         } else {

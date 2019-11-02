@@ -18,7 +18,7 @@ class VerifyCommand : AbstractCommand("command.verify") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
 

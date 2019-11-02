@@ -23,13 +23,13 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
 
         val matchingEnums: List<LogChannelType> = LogChannelType.getMatchingTypesFromNode(context.args[0])
         if (matchingEnums.isEmpty()) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
         if (matchingEnums.size > 1)
@@ -70,7 +70,7 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
 
     private suspend fun setChannel(context: CommandContext, logChannelType: LogChannelType) {
         if (context.args.size < 2) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
 
@@ -127,7 +127,7 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
 
     private suspend fun setChannels(context: CommandContext, logChannelTypes: List<LogChannelType>) {
         if (context.args.size < 2) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
 

@@ -24,7 +24,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
 

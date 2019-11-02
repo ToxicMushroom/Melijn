@@ -28,7 +28,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
         val guild = context.getGuild()

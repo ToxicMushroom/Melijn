@@ -20,7 +20,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        sendSyntax(context, syntax)
+        sendSyntax(context)
     }
 
 
@@ -33,7 +33,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
         }
 
         class SetCommand : AbstractCommand("command.permission.user.set") {
@@ -45,7 +45,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
             override suspend fun execute(context: CommandContext) {
                 if (context.args.size < 3) {
-                    sendSyntax(context, syntax)
+                    sendSyntax(context)
                     return
                 }
 
@@ -91,7 +91,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
             override suspend fun execute(context: CommandContext) {
                 if (context.args.isEmpty()) {
-                    sendSyntax(context, syntax)
+                    sendSyntax(context)
                     return
                 }
 
@@ -128,7 +128,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
             override suspend fun execute(context: CommandContext) {
                 if (context.args.isEmpty()) {
-                    sendSyntax(context, syntax)
+                    sendSyntax(context)
                     return
                 }
 
@@ -153,7 +153,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
         }
 
         class SetCommand : AbstractCommand("command.permission.role.set") {
@@ -165,7 +165,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
             override suspend fun execute(context: CommandContext) {
                 if (context.args.size < 3) {
-                    sendSyntax(context, syntax)
+                    sendSyntax(context)
                     return
                 }
 
@@ -213,7 +213,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
             override suspend fun execute(context: CommandContext) {
                 if (context.args.isEmpty()) {
-                    sendSyntax(context, syntax)
+                    sendSyntax(context)
                     return
                 }
 
@@ -251,7 +251,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
             override suspend fun execute(context: CommandContext) {
                 if (context.args.isEmpty()) {
-                    sendSyntax(context, syntax)
+                    sendSyntax(context)
                     return
                 }
 
@@ -301,7 +301,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 override suspend fun execute(context: CommandContext) {
                     if (context.args.size < 4) {
-                        sendSyntax(context, syntax)
+                        sendSyntax(context)
                         return
                     }
 
@@ -350,7 +350,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 override suspend fun execute(context: CommandContext) {
                     if (context.args.isEmpty()) {
-                        sendSyntax(context, syntax)
+                        sendSyntax(context)
                         return
                     }
 
@@ -393,7 +393,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 override suspend fun execute(context: CommandContext) {
                     if (context.args.isEmpty()) {
-                        sendSyntax(context, syntax)
+                        sendSyntax(context)
                         return
                     }
 
@@ -433,7 +433,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 override suspend fun execute(context: CommandContext) {
                     if (context.args.size < 4) {
-                        sendSyntax(context, syntax)
+                        sendSyntax(context)
                         return
                     }
 
@@ -482,7 +482,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 override suspend fun execute(context: CommandContext) {
                     if (context.args.isEmpty()) {
-                        sendSyntax(context, syntax)
+                        sendSyntax(context)
                         return
                     }
 
@@ -523,7 +523,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 override suspend fun execute(context: CommandContext) {
                     if (context.args.isEmpty()) {
-                        sendSyntax(context, syntax)
+                        sendSyntax(context)
                         return
                     }
 
@@ -552,7 +552,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
         }
 
         class UserCommand(private val copyParent: AbstractCommand, copyRoot: String) : AbstractCommand("$copyRoot.user") {
@@ -567,7 +567,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
                 ) 1 else 0
                 if (context.args.size < (2 + extraArg)) {
-                    sendSyntax(context, syntax)
+                    sendSyntax(context)
                     return
                 }
                 when (copyParent) {
@@ -706,7 +706,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
                 ) 1 else 0
                 if (context.args.size < (2 + extraArg)) {
-                    sendSyntax(context, syntax)
+                    sendSyntax(context)
                     return
                 }
                 when (copyParent) {
@@ -838,7 +838,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
             }
 
             class RoleChannelCommand(private val copyParent: AbstractCommand, parentRoot: String) : AbstractCommand("$parentRoot.role") {
@@ -854,7 +854,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
                     ) 1 else 0
                     if (context.args.size < (3 + extraArg)) {
-                        sendSyntax(context, syntax)
+                        sendSyntax(context)
                         return
                     }
                     when (copyParent) {
@@ -998,7 +998,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
                     ) 1 else 0
                     if (context.args.size < (3 + extraArg)) {
-                        sendSyntax(context, syntax)
+                        sendSyntax(context)
                         return
                     }
                     when (copyParent) {

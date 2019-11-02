@@ -19,7 +19,7 @@ class RolesCommand : AbstractCommand("command.roles") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty() && !context.isFromGuild) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
 

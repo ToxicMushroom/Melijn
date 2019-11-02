@@ -20,7 +20,7 @@ class MetricsCommand : AbstractCommand("command.metrics") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
         val cmdList = getCommandsFromArgNMessage(context, 0)?.map { cmd -> cmd.id } ?: return

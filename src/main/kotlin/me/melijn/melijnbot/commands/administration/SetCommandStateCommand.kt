@@ -27,7 +27,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
     //setCommandState info [channel*]
 
     override suspend fun execute(context: CommandContext) {
-        sendSyntax(context, syntax)
+        sendSyntax(context)
     }
 
     class GlobalArg(parentRoot: String) : AbstractCommand("$parentRoot.global") {
@@ -39,7 +39,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
 
         override suspend fun execute(context: CommandContext) {
             if (context.args.size < 2) {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
                 return
             }
 
@@ -79,7 +79,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
 
         override suspend fun execute(context: CommandContext) {
             if (context.args.size < 3) {
-                sendSyntax(context, syntax)
+                sendSyntax(context)
                 return
             }
 

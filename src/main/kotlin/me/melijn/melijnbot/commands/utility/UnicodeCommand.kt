@@ -18,7 +18,7 @@ class UnicodeCommand : AbstractCommand("command.unicode") {
     override suspend fun execute(context: CommandContext) {
         val args = context.rawArg
         if (args.isEmpty()) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
 

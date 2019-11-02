@@ -30,7 +30,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
     override suspend fun execute(context: CommandContext) {
         val guild = context.getGuild()
         if (context.args.isEmpty()) {
-            sendSyntax(context, syntax)
+            sendSyntax(context)
             return
         }
         val language = context.getLanguage()

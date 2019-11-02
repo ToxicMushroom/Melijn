@@ -27,7 +27,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        sendSyntax(context, syntax)
+        sendSyntax(context)
     }
 
     class AddArg(root: String) : AbstractCommand("$root.add") {
