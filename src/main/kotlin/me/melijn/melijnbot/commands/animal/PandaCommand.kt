@@ -29,7 +29,7 @@ class PandaCommand : AbstractCommand("command.panda") {
     }
 
     private suspend fun getRandomPandaUrl(webManager: WebManager): String {
-        val reply = webManager.getJsonFromUrl("https://some-random-api.ml/img/panda")
-        return reply?.get("link")?.asText() ?: MISSING_IMAGE_URL
+        val reply = webManager.getJsonFromUrl("https://some-random-api.ml/img/panda")?: return MISSING_IMAGE_URL
+        return reply.getString("link")
     }
 }

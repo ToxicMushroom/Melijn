@@ -13,8 +13,8 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
         id = 19
         name = "privatePrefixes"
         aliases = arrayOf("pp")
-        commandCategory = CommandCategory.ADMINISTRATION
         children = arrayOf(ViewCommand(root), AddCommand(root), RemoveCommand(root))
+        commandCategory = CommandCategory.SUPPORTER
     }
 
     override suspend fun execute(context: CommandContext) {

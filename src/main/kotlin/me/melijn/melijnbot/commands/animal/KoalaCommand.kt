@@ -29,7 +29,7 @@ class KoalaCommand : AbstractCommand("command.koala") {
     }
 
     private suspend fun getRandomKoalaUrl(webManager: WebManager): String {
-        val reply = webManager.getJsonFromUrl("https://some-random-api.ml/img/koala")
-        return reply?.get("link")?.asText() ?: MISSING_IMAGE_URL
+        val reply = webManager.getJsonFromUrl("https://some-random-api.ml/img/koala")?: return MISSING_IMAGE_URL
+        return reply.getString("link")
     }
 }

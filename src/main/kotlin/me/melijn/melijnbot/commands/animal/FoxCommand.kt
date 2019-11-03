@@ -29,7 +29,7 @@ class FoxCommand: AbstractCommand("command.fox") {
     }
 
     private suspend fun getRandomFoxUrl(webManager: WebManager): String {
-        val reply = webManager.getJsonFromUrl("https://some-random-api.ml/img/fox")
-        return reply?.get("link")?.asText() ?: MISSING_IMAGE_URL
+        val reply = webManager.getJsonFromUrl("https://some-random-api.ml/img/fox")?: return MISSING_IMAGE_URL
+        return reply.getString("link")
     }
 }

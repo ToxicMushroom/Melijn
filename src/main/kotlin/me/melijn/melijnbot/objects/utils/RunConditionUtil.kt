@@ -26,6 +26,21 @@ object RunConditionUtil {
             RunCondition.BOT_ALONE_OR_USER_DJ -> checkBotAloneOrUserDJ(container, event, command, language)
             RunCondition.PLAYING_TRACK_NOT_NULL -> checkPlayingTrackNotNull(container, event, language)
             RunCondition.DEV_ONLY -> checkDevOnly(container, event, language)
+            RunCondition.CHANNEL_NSFW -> checkChannelNSFW(container, event, language)
+        }
+    }
+
+    private fun checkChannelNSFW(container: Container, event: MessageReceivedEvent, language: String): Boolean {
+        return if (container.settings.developerIds.contains(event.author.idLong)) {
+            true
+        } else {
+            if (event.textChannel.isNSFW) {
+                true
+            } else {
+                val msg = i18n.getTranslation(language, "message.runcondition.failed.nsfw")
+                event.channel.sendMessage(msg).queue()
+                false
+            }
         }
     }
 

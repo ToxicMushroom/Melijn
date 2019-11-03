@@ -26,23 +26,26 @@ class DriverManager(dbSettings: Settings.Database) {
         config.jdbcUrl = "jdbc:postgresql://${dbSettings.host}:${dbSettings.port}/${dbSettings.database}"
         config.username = dbSettings.user
         config.password = dbSettings.password
-//        config.maxLifetime = 30_000
-//        config.maximumPoolSize = 40
+        config.maxLifetime = 30_000
+        config.validationTimeout = 3_000
+        config.connectionTimeout = 30_000
+        //config.maximumPoolSize = 40
 
         config.addDataSourceProperty("autoReconnect", "true")
-//        config.addDataSourceProperty("useUnicode", "true")
-//        config.addDataSourceProperty("useSSL", "false")
-//        config.addDataSourceProperty("serverTimezone", "UTC")
-//        config.addDataSourceProperty("useLegacyDatetimeCode", "false")
+        //config.addDataSourceProperty("useUnicode", "true")
+        //config.addDataSourceProperty("useSSL", "false")
+        //config.addDataSourceProperty("serverTimezone", "UTC")
+        //config.addDataSourceProperty("useLegacyDatetimeCode", "false")
         //https://github.com/brettwooldridge/HikariCP/wiki/MySQL-Configuration
-//        config.addDataSourceProperty("allowMultiQueries", "true")
-//        config.addDataSourceProperty("prepStmtCacheSize", "350")
-//        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048")
-//        config.addDataSourceProperty("cachePrepStmts", "true")
-//        config.addDataSourceProperty("useServerPrepStmts", "true")
-//        config.addDataSourceProperty("rewriteBatchedStatements", "true")
-//        config.addDataSourceProperty("useLocalTransactionState", "true")
-//        config.addDataSourceProperty("leakDetectionThreshold", "2000")
+
+        //config.addDataSourceProperty("allowMultiQueries", "true")
+        //config.addDataSourceProperty("prepStmtCacheSize", "350")
+        //config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048")
+        //config.addDataSourceProperty("cachePrepStmts", "true")
+        //config.addDataSourceProperty("useServerPrepStmts", "true")
+        //config.addDataSourceProperty("rewriteBatchedStatements", "true")
+        //config.addDataSourceProperty("useLocalTransactionState", "true")
+        //config.addDataSourceProperty("leakDetectionThreshold", "2000")
 
         this.dataSource = HikariDataSource(config)
     }

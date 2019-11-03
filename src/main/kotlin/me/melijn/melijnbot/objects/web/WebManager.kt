@@ -1,8 +1,6 @@
 package me.melijn.melijnbot.objects.web
 
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.wrapper.spotify.SpotifyApi
 import com.wrapper.spotify.exceptions.SpotifyWebApiException
 import com.wrapper.spotify.model_objects.specification.PlaylistTrack
@@ -20,6 +18,7 @@ import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.objects.utils.toLCC
+import net.dv8tion.jda.api.utils.data.DataObject
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import ru.gildor.coroutines.okhttp.await
@@ -62,9 +61,8 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         }
     }
 
-    suspend fun getJsonFromUrl(url: String, parameters: Map<String, String> = emptyMap()): JsonNode? = suspendCoroutine {
+    suspend fun getJsonFromUrl(url: String, parameters: Map<String, String> = emptyMap()): DataObject? = suspendCoroutine {
         taskManager.async {
-            val mapper = ObjectMapper()
             val fullUrlWithParams = url + parameters.entries.joinToString("&", "?",
                 transform = { entry ->
                     entry.key + "=" + entry.value
@@ -83,7 +81,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
             }
             withContext(Dispatchers.IO) {
                 val responseString = responseBody.string()
-                it.resume(mapper.readTree(responseString))
+                it.resume(DataObject.fromJson(responseString))
             }
         }
     }

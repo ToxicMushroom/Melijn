@@ -1,20 +1,20 @@
-package me.melijn.melijnbot.commands.animal
+package me.melijn.melijnbot.commands.image
 
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.web.WebManager
 
-class AlpacaCommand : AbstractCommand("command.alpaca") {
+class DiscordMemeCommand :  AbstractCommand("command.discordmeme") {
 
     init {
-        id = 48
-        name = "alpaca"
-        commandCategory = CommandCategory.ANIMAL
+        id = 102
+        name = "discordMeme"
+        aliases = arrayOf("dmeme")
+        commandCategory = CommandCategory.IMAGE
     }
 
     override suspend fun execute(context: CommandContext) {
@@ -24,12 +24,11 @@ class AlpacaCommand : AbstractCommand("command.alpaca") {
 
         val web = context.webManager
         eb.setTitle(title)
-        eb.setImage(getRandomAlpacaUrl(web))
+        eb.setImage(getRandomDiscordMemeUrl(web))
         sendEmbed(context, eb.build())
     }
 
-    private suspend fun getRandomAlpacaUrl(webManager: WebManager): String {
-        val reply = webManager.getJsonFromUrl("https://apis.duncte123.me/alpaca") ?: return MISSING_IMAGE_URL
-        return reply.getObject("data").getString("file")
+    private suspend fun getRandomDiscordMemeUrl(webManager: WebManager): String {
+        return webManager.getWeebJavaUrl("discord_memes")
     }
 }

@@ -30,7 +30,7 @@ class CatCommand : AbstractCommand("command.cat") {
     }
 
     private suspend fun getRandomCatUrl(webManager: WebManager): String {
-        val reply = webManager.getJsonFromUrl("http://aws.random.cat/meow")
-        return reply?.get("file")?.asText() ?: MISSING_IMAGE_URL
+        val reply = webManager.getJsonFromUrl("http://aws.random.cat/meow")?: return MISSING_IMAGE_URL
+        return reply.getString("link")
     }
 }

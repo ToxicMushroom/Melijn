@@ -16,8 +16,8 @@ class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") 
         id = 5
         name = "setPrivateLanguage"
         aliases = arrayOf("spl", "setPrivateLang", "setPrivLang")
-        commandCategory = CommandCategory.SUPPORTER
         children = arrayOf(SetLanguageCommand.ListCommand())
+        commandCategory = CommandCategory.SUPPORTER
     }
 
     override suspend fun execute(context: CommandContext) {
