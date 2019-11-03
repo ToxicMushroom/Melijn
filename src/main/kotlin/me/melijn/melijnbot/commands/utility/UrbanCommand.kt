@@ -31,6 +31,7 @@ class UrbanCommand : AbstractCommand("command.urban") {
             sendMsg(context, offline)
         } else if (result.first == null && result.second == null) {
             val notfound = i18n.getTranslation(language, "$root.notfound")
+                .replace("%arg%", context.rawArg)
             sendMsg(context, notfound)
         } else {
             val meaning = i18n.getTranslation(language, "$root.meaning")
