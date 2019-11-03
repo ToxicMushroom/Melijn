@@ -52,6 +52,13 @@ class UrbanCommand : AbstractCommand("command.urban") {
         val results = json.getArray("list")
         if (results.isEmpty) return Pair(null, null)
         val result = results.getObject(0)
-        return Pair(result.getString("definition"), result.getString("example"))
+        return Pair(
+            result.getString("definition")
+                .replace("[", "")
+                .replace("]", ""),
+            result.getString("example")
+                .replace("]", "")
+                .replace("[", "")
+        )
     }
 }
