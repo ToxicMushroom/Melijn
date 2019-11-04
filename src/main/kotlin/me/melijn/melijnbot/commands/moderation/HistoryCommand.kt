@@ -36,7 +36,6 @@ class HistoryCommand : AbstractCommand("command.history") {
 
         val targetUser = retrieveUserByArgsNMessage(context, 1) ?: return
         val unorderedMap: MutableMap<Long, String> = hashMapOf()
-        val shardManager = context.shardManager
         val dao = context.daoManager
 
         //put info inside maps

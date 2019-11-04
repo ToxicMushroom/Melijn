@@ -48,7 +48,7 @@ suspend fun <T> RestAction<T>.awaitNE() = suspendCoroutine<T?> {
 
 suspend fun <T> RestAction<T>.awaitBool() = suspendCoroutine<Boolean> {
     queue(
-        { success -> it.resume(true) },
+        { _ -> it.resume(true) },
         { _ -> it.resume(false) }
     )
 }
@@ -233,7 +233,7 @@ suspend fun getRoleByArgsNMessage(
         val msg = i18n.getTranslation(language, "message.unknown.role")
             .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg, null)
-    } else {
+    } else if (canInteract) {
         if (!context.guild.selfMember.canInteract(role)) {
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "message.cantinteract.role")

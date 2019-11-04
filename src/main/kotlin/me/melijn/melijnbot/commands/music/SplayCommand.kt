@@ -26,7 +26,7 @@ class SplayCommand : AbstractCommand("command.splay") {
             return
         }
 
-        val member = context.member ?: return
+        val member = context.member
         val senderVoiceChannel: VoiceChannel = member.voiceState?.channel ?: return
         val lava: LavaManager = context.lavaManager
 
@@ -52,7 +52,7 @@ class SplayCommand : AbstractCommand("command.splay") {
 
 
         override suspend fun execute(context: CommandContext) {
-            val member = context.member ?: return
+            val member = context.member
             val senderVoiceChannel: VoiceChannel = member.voiceState?.channel ?: return
             val lava: LavaManager = context.lavaManager
 
@@ -73,7 +73,7 @@ class SplayCommand : AbstractCommand("command.splay") {
 
 
         override suspend fun execute(context: CommandContext) {
-            val member = context.member ?: return
+            val member = context.member
             val senderVoiceChannel: VoiceChannel = member.voiceState?.channel ?: return
             val lava: LavaManager = context.lavaManager
 
