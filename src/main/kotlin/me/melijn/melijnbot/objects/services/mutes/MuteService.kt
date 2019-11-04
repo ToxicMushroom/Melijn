@@ -10,7 +10,6 @@ import me.melijn.melijnbot.database.mute.Mute
 import me.melijn.melijnbot.database.mute.MuteWrapper
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.services.Service
-import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.utils.await
 import me.melijn.melijnbot.objects.utils.sendEmbed
@@ -22,14 +21,13 @@ import java.util.concurrent.TimeUnit
 
 class MuteService(
     val shardManager: ShardManager,
-    private val taskManager: TaskManager,
     private val muteWrapper: MuteWrapper,
     private val logChannelWrapper: LogChannelWrapper,
     private val embedDisabledWrapper: EmbedDisabledWrapper,
     val daoManager: DaoManager
 ) : Service("mute") {
 
-    var scheduledFuture: ScheduledFuture<*>? = null
+    private var scheduledFuture: ScheduledFuture<*>? = null
 
     private val muteService = Runnable {
         runBlocking {

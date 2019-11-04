@@ -35,7 +35,7 @@ class KickWrapper(val taskManager: TaskManager, private val kickDao: KickDao) {
 
     private suspend fun getKickMessage(context: CommandContext, kickAuthor: User?, kick: Kick): String {
         val deletedUser = i18n.getTranslation(context, "message.deleted.user")
-        return i18n.getTranslation(context, "")
+        return i18n.getTranslation(context, "message.punishmenthistory.kick")
             .replace("%kickAuthor%", kickAuthor?.asTag ?: deletedUser)
             .replace("%kickAuthorId%", "${kick.kickAuthorId}")
             .replace("%reason%", kick.reason.substring(0, min(kick.reason.length, 830)))

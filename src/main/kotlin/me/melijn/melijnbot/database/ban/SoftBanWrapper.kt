@@ -35,7 +35,7 @@ class SoftBanWrapper(val taskManager: TaskManager, private val softBanDao: SoftB
 
     private suspend fun getSoftBanMessage(context: CommandContext, softBanAuthor: User?, softBan: SoftBan): String {
         val deletedUser = i18n.getTranslation(context, "message.deleted.user")
-        return i18n.getTranslation(context, "")
+        return i18n.getTranslation(context, "message.punishmenthistory.softban")
             .replace("%softBanAuthor%", softBanAuthor?.asTag ?: deletedUser)
             .replace("%softBanAuthorId%", "${softBan.softBanAuthorId}")
             .replace("%reason%", softBan.reason.substring(0, min(softBan.reason.length, 830)))

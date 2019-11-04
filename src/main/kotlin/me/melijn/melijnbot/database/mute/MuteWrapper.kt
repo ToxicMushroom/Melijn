@@ -10,7 +10,7 @@ import kotlin.math.min
 
 class MuteWrapper(val taskManager: TaskManager, private val muteDao: MuteDao) {
 
-    fun getUnmuteableMutes(): List<Mute> {
+    suspend fun getUnmuteableMutes(): List<Mute> {
         return muteDao.getUnmuteableMutes()
     }
 
@@ -54,7 +54,7 @@ class MuteWrapper(val taskManager: TaskManager, private val muteDao: MuteDao) {
         val deletedUser = i18n.getTranslation(context, "message.deleted.user")
         val unmuteReason = mute.unmuteReason
 
-        return i18n.getTranslation(context, "")
+        return i18n.getTranslation(context, "message.punishmenthistory.mute")
             .replace("%muteAuthor%", muteAuthor?.asTag ?: deletedUser)
             .replace("%muteAuthorId%", "${mute.muteAuthorId}")
             .replace("%unmuteAuthor%", if (mute.unmuteAuthorId == null) "/" else unmuteAuthor?.asTag ?: deletedUser)

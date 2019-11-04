@@ -54,7 +54,7 @@ class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
     private suspend fun getBanMessage(context: CommandContext, banAuthor: User?, unbanAuthor: User?, ban: Ban): String {
         val deletedUser = i18n.getTranslation(context, "message.deleted.user")
         val unbanReason = ban.unbanReason
-        return i18n.getTranslation(context, "")
+        return i18n.getTranslation(context, "message.punishmenthistory.ban")
             .replace("%banAuthor%", banAuthor?.asTag ?: deletedUser)
             .replace("%banAuthorId%", "${ban.banAuthorId}")
             .replace("%unbanAuthor%", if (ban.unbanAuthorId == null) "/" else unbanAuthor?.asTag ?: deletedUser)

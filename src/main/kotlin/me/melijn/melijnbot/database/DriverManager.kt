@@ -29,7 +29,8 @@ class DriverManager(dbSettings: Settings.Database) {
         config.maxLifetime = 30_000
         config.validationTimeout = 3_000
         config.connectionTimeout = 30_000
-        //config.maximumPoolSize = 40
+        config.leakDetectionThreshold = 2000
+        config.maximumPoolSize = 100
 
         config.addDataSourceProperty("autoReconnect", "true")
         //config.addDataSourceProperty("useUnicode", "true")

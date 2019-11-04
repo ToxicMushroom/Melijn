@@ -36,7 +36,7 @@ class WarnWrapper(val taskManager: TaskManager, private val warnDao: WarnDao) {
 
     private suspend fun getWarnMessage(context: CommandContext, warnAuthor: User?, warn: Warn): String {
         val deletedUser = i18n.getTranslation(context, "message.deleted.user")
-        return i18n.getTranslation(context, "")
+        return i18n.getTranslation(context, "message.punishmenthistory.warn")
             .replace("%warnAuthor%", warnAuthor?.asTag ?: deletedUser)
             .replace("%warnAuthorId%", "${warn.warnAuthorId}")
             .replace("%reason%", warn.reason.substring(0, min(warn.reason.length, 830)))

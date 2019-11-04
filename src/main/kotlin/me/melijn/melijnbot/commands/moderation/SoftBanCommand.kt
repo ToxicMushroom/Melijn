@@ -42,9 +42,20 @@ class SoftBanCommand : AbstractCommand("command.softban") {
 
         }
 
+        val clearDays = getIntegerFromArgN(context, 1, 1, 7)
+
         var reason = context.rawArg
             .replaceFirst(context.args[0], "")
             .trim()
+
+        if (context.args.size > 1 && clearDays != null) {
+            reason = reason
+                .replaceFirst(context.args[1], "")
+                .trim()
+        } else if (context.args.size > 1 && clearDays == null) {
+            sendSyntax(context)
+            return
+        }
 
         if (reason.isBlank()) reason = "/"
         reason = reason.trim()
@@ -59,16 +70,14 @@ class SoftBanCommand : AbstractCommand("command.softban") {
 
         val language = context.getLanguage()
         val banning = i18n.getTranslation(language, "message.softbanning")
-        try {
-            val privateChannel = targetUser.openPrivateChannel().await()
-            val message = privateChannel.sendMessage(banning).await()
-            continueBanning(context, targetUser, ban, hasActiveBan, message)
-        } catch (t: Throwable) {
-            continueBanning(context, targetUser, ban, hasActiveBan)
-        }
+
+        val privateChannel = targetUser.openPrivateChannel().await()
+        val message = privateChannel.sendMessage(banning).awaitNE()
+
+        continueBanning(context, targetUser, ban, hasActiveBan, clearDays ?: 7, message)
     }
 
-    private suspend fun continueBanning(context: CommandContext, targetUser: User, softBan: SoftBan, hasActiveBan: Boolean, softBanningMessage: Message? = null) {
+    private suspend fun continueBanning(context: CommandContext, targetUser: User, softBan: SoftBan, hasActiveBan: Boolean, clearDays: Int, softBanningMessage: Message? = null) {
         val guild = context.guild
         val author = context.author
         val language = context.getLanguage()
@@ -78,18 +87,18 @@ class SoftBanCommand : AbstractCommand("command.softban") {
         context.daoManager.softBanWrapper.addSoftBan(softBan)
 
         val msg = try {
-            guild.ban(targetUser, 7).await()
+            guild.ban(targetUser, clearDays).reason("softbanned").await()
             softBanningMessage?.editMessage(
                 softBannedMessageDm
             )?.override(true)?.queue()
 
             val logChannelWrapper = context.daoManager.logChannelWrapper
-            val logChannelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.PERMANENT_BAN)).await()
+            val logChannelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.SOFT_BAN)).await()
             val logChannel = guild.getTextChannelById(logChannelId)
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, softBannedMessageLc) }
 
             if (!hasActiveBan) {
-                guild.unban(targetUser).await()
+                guild.unban(targetUser).reason("softbanned").await()
             }
 
             i18n.getTranslation(language, "$root.success")
@@ -128,7 +137,7 @@ fun getSoftBanMessage(
             .replace("%guildId%", guild.id)
     }
 
-    description += i18n.getTranslation(language, "message.punishment.softBan.description")
+    description += i18n.getTranslation(language, "message.punishment.softban.description")
         .replace("%softBanAuthor%", softBanAuthor.asTag)
         .replace("%softBanAuthorId%", softBanAuthor.id)
         .replace("%softBanned%", softBannedUser.asTag)
@@ -151,7 +160,7 @@ fun getSoftBanMessage(
     description += extraDesc
     description += "```"
 
-    val author = i18n.getTranslation(language, "message.punishment.softBan.author")
+    val author = i18n.getTranslation(language, "message.punishment.softban.author")
         .replace(PLACEHOLDER_USER, softBanAuthor.asTag)
         .replace("%spaces%", " ".repeat(45).substring(0, 45 - softBanAuthor.name.length) + "\u200B")
 

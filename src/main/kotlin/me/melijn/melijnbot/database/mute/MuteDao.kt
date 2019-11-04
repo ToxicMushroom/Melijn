@@ -2,6 +2,8 @@ package me.melijn.melijnbot.database.mute
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
 
@@ -25,9 +27,9 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
         }
     }
 
-    fun getUnmuteableMutes(): List<Mute> {
-        val mutes = ArrayList<Mute>()
+    suspend fun getUnmuteableMutes(): List<Mute> = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE active = ? AND endTime < ?", { rs ->
+            val mutes = ArrayList<Mute>()
             while (rs.next()) {
                 mutes.add(Mute(
                     rs.getLong("guildId"),
@@ -41,8 +43,8 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
                     true
                 ))
             }
+            it.resume(mutes)
         }, true, System.currentTimeMillis())
-        return mutes
     }
 
     fun getActiveMute(guildId: Long, mutedId: Long): Mute? {

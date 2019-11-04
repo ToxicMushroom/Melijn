@@ -17,7 +17,7 @@ class ServiceManager(val taskManager: TaskManager, val daoManager: DaoManager) {
     fun init(shardManager: ShardManager) {
         this.shardManager = shardManager
         banService = BanService(shardManager, daoManager.banWrapper, daoManager.logChannelWrapper, daoManager.embedDisabledWrapper, daoManager)
-        muteService = MuteService(shardManager, taskManager, daoManager.muteWrapper, daoManager.logChannelWrapper, daoManager.embedDisabledWrapper, daoManager)
+        muteService = MuteService(shardManager, daoManager.muteWrapper, daoManager.logChannelWrapper, daoManager.embedDisabledWrapper, daoManager)
     }
 
     fun startServices() {
