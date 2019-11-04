@@ -22,7 +22,7 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
 
     override suspend fun execute(context: CommandContext) {
         val user: User = retrieveUserByArgsNMessage(context, 0) ?: return
-        val member: Member? = context.getGuild().getMember(user)
+        val member: Member? = context.guild.getMember(user)
 
         val language = context.getLanguage()
 

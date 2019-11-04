@@ -31,8 +31,8 @@ class MuteCommand : AbstractCommand("command.mute") {
             return
         }
         val targetUser = getUserByArgsNMessage(context, 0) ?: return
-        val member = context.getGuild().getMember(targetUser)
-        if (member != null && !context.getGuild().selfMember.canInteract(member)) {
+        val member = context.guild.getMember(targetUser)
+        if (member != null && !context.guild.selfMember.canInteract(member)) {
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.cannotmute")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
@@ -47,15 +47,15 @@ class MuteCommand : AbstractCommand("command.mute") {
 
         reason = reason.trim()
 
-        val roleId = context.daoManager.roleWrapper.roleCache.get(Pair(context.getGuildId(), RoleType.MUTE)).await()
-        val muteRole: Role? = context.getGuild().getRoleById(roleId)
+        val roleId = context.daoManager.roleWrapper.roleCache.get(Pair(context.guildId, RoleType.MUTE)).await()
+        val muteRole: Role? = context.guild.getRoleById(roleId)
         if (muteRole == null) {
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.creatingmuterole")
             sendMsg(context, msg)
 
             try {
-                val role = context.getGuild().createRole()
+                val role = context.guild.createRole()
                     .setName("muted")
                     .setMentionable(false)
                     .setHoisted(false)
@@ -64,7 +64,7 @@ class MuteCommand : AbstractCommand("command.mute") {
                 muteRoleAquired(context, targetUser, reason, role)
             } catch (t: Throwable) {
                 val msgFailed = i18n.getTranslation(language, "$root.failed.creatingmuterole")
-                    .replace("%cause%", t.message ?: "unknown (contact support for info)")
+                    .replace("%cause%", t.message ?: "/")
                 sendMsg(context, msgFailed)
             }
 
@@ -77,9 +77,9 @@ class MuteCommand : AbstractCommand("command.mute") {
     }
 
     private suspend fun muteRoleAquired(context: CommandContext, targetUser: User, reason: String, muteRole: Role) {
-        val activeMute: Mute? = context.daoManager.muteWrapper.getActiveMute(context.getGuildId(), targetUser.idLong)
+        val activeMute: Mute? = context.daoManager.muteWrapper.getActiveMute(context.guildId, targetUser.idLong)
         val mute = Mute(
-            context.getGuildId(),
+            context.guildId,
             targetUser.idLong,
             context.authorId,
             reason,
@@ -102,8 +102,8 @@ class MuteCommand : AbstractCommand("command.mute") {
     }
 
     private suspend fun continueMuting(context: CommandContext, muteRole: Role, targetUser: User, mute: Mute, activeMute: Mute?, mutingMessage: Message? = null) {
-        val guild = context.getGuild()
-        val author = context.getAuthor()
+        val guild = context.guild
+        val author = context.author
         val language = context.getLanguage()
         val mutedMessageDm = getMuteMessage(language, guild, targetUser, author, mute)
         val mutedMessageLc = getMuteMessage(language, guild, targetUser, author, mute, true, targetUser.isBot, mutingMessage != null)
@@ -127,11 +127,12 @@ class MuteCommand : AbstractCommand("command.mute") {
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
                 .replace("%reason%", mute.reason)
         } catch (t: Throwable) {
-            mutingMessage?.editMessage("failed to mute")?.queue()
+            val failedMsg = i18n.getTranslation(language, "message.muting.failed")
+            mutingMessage?.editMessage(failedMsg)?.queue()
 
             i18n.getTranslation(language, "$root.failure")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
-                .replace("%cause%", t.message ?: "unknown (contact support for info)")
+                .replace("%cause%", t.message ?: "/")
         }
         sendMsg(context, msg)
     }

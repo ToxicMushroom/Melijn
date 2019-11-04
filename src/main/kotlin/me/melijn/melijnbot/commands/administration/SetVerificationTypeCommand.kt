@@ -24,7 +24,7 @@ class SetVerificationTypeCommand : AbstractCommand("command.setverificationtype"
         val wrapper = context.daoManager.verificationTypeWrapper
         val language = context.getLanguage()
         if (context.args.isEmpty()) {
-            val type = wrapper.verificationTypeCache.get(context.getGuildId()).await()
+            val type = wrapper.verificationTypeCache.get(context.guildId).await()
             val part = if (type == VerificationType.NONE) "unset" else "set"
             val msg = i18n.getTranslation(language, "$root.show.$part")
                 .replace("%type%", type.toUCC())
@@ -35,13 +35,13 @@ class SetVerificationTypeCommand : AbstractCommand("command.setverificationtype"
 
         val type = enumValueOrNull<VerificationType>(context.rawArg)
         val msg = if (context.rawArg == "null" || type == VerificationType.NONE) {
-            wrapper.removeType(context.getGuildId())
+            wrapper.removeType(context.guildId)
             i18n.getTranslation(language, "$root.unset")
         } else if (type == null) {
             i18n.getTranslation(language, "message.unknown.verificationtype")
                 .replace(PLACEHOLDER_ARG, context.rawArg)
         } else {
-            wrapper.setType(context.getGuildId(), type)
+            wrapper.setType(context.guildId, type)
             i18n.getTranslation(language, "$root.set")
                 .replace(PLACEHOLDER_ARG, type.toUCC())
         }

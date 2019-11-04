@@ -29,7 +29,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
             return
         }
 
-        val guild = context.getGuild()
+        val guild = context.guild
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
         val member = guild.getMember(targetUser)
         if (member != null && !guild.selfMember.canInteract(member)) {
@@ -54,9 +54,9 @@ class TempBanCommand : AbstractCommand("command.tempban") {
 
         reason = reason.trim()
 
-        val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.getGuildId(), targetUser.idLong)
+        val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong)
         val ban = Ban(
-            context.getGuildId(),
+            context.guildId,
             targetUser.idLong,
             context.authorId,
             reason,
@@ -79,15 +79,15 @@ class TempBanCommand : AbstractCommand("command.tempban") {
     }
 
     private suspend fun continueBanning(context: CommandContext, targetUser: User, ban: Ban, activeBan: Ban?, banningMessage: Message? = null) {
-        val guild = context.getGuild()
-        val author = context.getAuthor()
+        val guild = context.guild
+        val author = context.author
         val language = context.getLanguage()
         val bannedMessageDm = getBanMessage(language, guild, targetUser, author, ban)
         val bannedMessageLc = getBanMessage(language, guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
         context.daoManager.banWrapper.setBan(ban)
 
         try {
-            context.getGuild().ban(targetUser, 7).await()
+            context.guild.ban(targetUser, 7).await()
             banningMessage?.editMessage(
                 bannedMessageDm
             )?.override(true)?.queue()
@@ -104,11 +104,12 @@ class TempBanCommand : AbstractCommand("command.tempban") {
                 .replace("%reason%", ban.reason)
             sendMsg(context, msg)
         } catch (t: Throwable) {
-            banningMessage?.editMessage("failed to ban")?.queue()
+            val failedMsg = i18n.getTranslation(language, "message.banning.failed")
+            banningMessage?.editMessage(failedMsg)?.queue()
 
             val msg = i18n.getTranslation(language, "$root.failure")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
-                .replace("%cause%", t.message ?: "unknown (contact support for info)")
+                .replace("%cause%", t.message ?: "/")
             sendMsg(context, msg)
         }
     }

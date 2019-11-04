@@ -30,7 +30,7 @@ class InfoCommand : AbstractCommand("command.info") {
 
         val eb = Embedder(context)
 
-        eb.setThumbnail(context.getSelfUser().effectiveAvatarUrl)
+        eb.setThumbnail(context.selfUser.effectiveAvatarUrl)
         eb.addField(title1, value1, false)
         eb.addField(title2, value2, false)
         eb.addField(title3, value3, false)
@@ -49,7 +49,7 @@ class InfoCommand : AbstractCommand("command.info") {
 
     private fun replaceValueTwoVars(string: String, context: CommandContext): String = string
             .replace("%os%", "${System.getProperty("os.name")} ${System.getProperty("os.arch")} ${System.getProperty("os.version")}")
-            .replace("%commandCount%", context.getCommands().size.toString())
+            .replace("%commandCount%", context.commandList.size.toString())
 
     private fun replaceValueOneVars(string: String, context: CommandContext): String = string
             .replace("%ownerTag%", context.jda.shardManager?.getUserById(231459866630291459L)?.asTag

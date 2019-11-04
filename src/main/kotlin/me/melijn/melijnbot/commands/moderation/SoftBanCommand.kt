@@ -1,7 +1,7 @@
 package me.melijn.melijnbot.commands.moderation
 
 import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.ban.Ban
+import me.melijn.melijnbot.database.ban.SoftBan
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
@@ -17,12 +17,11 @@ import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.User
 import java.awt.Color
 
-class BanCommand : AbstractCommand("command.ban") {
+class SoftBanCommand : AbstractCommand("command.softban") {
 
     init {
-        id = 24
-        name = "ban"
-        aliases = arrayOf("permBan")
+        id = 111
+        name = "softBan"
         commandCategory = CommandCategory.MODERATION
         discordPermissions = arrayOf(Permission.BAN_MEMBERS)
     }
@@ -50,55 +49,56 @@ class BanCommand : AbstractCommand("command.ban") {
         if (reason.isBlank()) reason = "/"
         reason = reason.trim()
 
-        val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong)
-        val ban = Ban(
+        val hasActiveBan: Boolean = context.daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong) != null
+        val ban = SoftBan(
             context.guildId,
             targetUser.idLong,
             context.authorId,
-            reason,
-            null)
-        if (activeBan != null) {
-            ban.startTime = activeBan.startTime
-        }
+            reason)
+
 
         val language = context.getLanguage()
-        val banning = i18n.getTranslation(language, "message.banning")
+        val banning = i18n.getTranslation(language, "message.softbanning")
         try {
             val privateChannel = targetUser.openPrivateChannel().await()
             val message = privateChannel.sendMessage(banning).await()
-            continueBanning(context, targetUser, ban, activeBan, message)
+            continueBanning(context, targetUser, ban, hasActiveBan, message)
         } catch (t: Throwable) {
-            continueBanning(context, targetUser, ban, activeBan)
+            continueBanning(context, targetUser, ban, hasActiveBan)
         }
     }
 
-    private suspend fun continueBanning(context: CommandContext, targetUser: User, ban: Ban, activeBan: Ban?, banningMessage: Message? = null) {
+    private suspend fun continueBanning(context: CommandContext, targetUser: User, softBan: SoftBan, hasActiveBan: Boolean, softBanningMessage: Message? = null) {
         val guild = context.guild
         val author = context.author
         val language = context.getLanguage()
-        val bannedMessageDm = getBanMessage(language, guild, targetUser, author, ban)
-        val bannedMessageLc = getBanMessage(language, guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
+        val softBannedMessageDm = getSoftBanMessage(language, guild, targetUser, author, softBan)
+        val softBannedMessageLc = getSoftBanMessage(language, guild, targetUser, author, softBan, true, targetUser.isBot, softBanningMessage != null)
 
-        context.daoManager.banWrapper.setBan(ban)
+        context.daoManager.softBanWrapper.addSoftBan(softBan)
 
         val msg = try {
-            context.guild.ban(targetUser, 7).await()
-            banningMessage?.editMessage(
-                bannedMessageDm
+            guild.ban(targetUser, 7).await()
+            softBanningMessage?.editMessage(
+                softBannedMessageDm
             )?.override(true)?.queue()
 
             val logChannelWrapper = context.daoManager.logChannelWrapper
             val logChannelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.PERMANENT_BAN)).await()
             val logChannel = guild.getTextChannelById(logChannelId)
-            logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
+            logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, softBannedMessageLc) }
 
-            i18n.getTranslation(language, "$root.success" + if (activeBan != null) ".updated" else "")
+            if (!hasActiveBan) {
+                guild.unban(targetUser).await()
+            }
+
+            i18n.getTranslation(language, "$root.success")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
-                .replace("%reason%", ban.reason)
+                .replace("%reason%", softBan.reason)
 
         } catch (t: Throwable) {
-            val failedMsg = i18n.getTranslation(language, "message.banning.failed")
-            banningMessage?.editMessage(failedMsg)?.queue()
+            val failedMsg = i18n.getTranslation(language, "message.softbanning.failed")
+            softBanningMessage?.editMessage(failedMsg)?.queue()
 
             i18n.getTranslation(language, "$root.failure")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
@@ -108,38 +108,33 @@ class BanCommand : AbstractCommand("command.ban") {
     }
 }
 
-fun getBanMessage(
+
+fun getSoftBanMessage(
     language: String,
     guild: Guild,
-    bannedUser: User,
-    banAuthor: User,
-    ban: Ban,
+    softBannedUser: User,
+    softBanAuthor: User,
+    softBan: SoftBan,
     lc: Boolean = false,
     isBot: Boolean = false,
     received: Boolean = true
 ): MessageEmbed {
     val eb = EmbedBuilder()
-
-    val banDuration = ban.endTime?.let { endTime ->
-        getDurationString((endTime - ban.startTime))
-    } ?: i18n.getTranslation(language, "infinite")
-
     var description = "```LDIF\n"
+
     if (!lc) {
         description += i18n.getTranslation(language, "message.punishment.description.nlc")
             .replace("%guildName%", guild.name)
             .replace("%guildId%", guild.id)
     }
 
-    description += i18n.getTranslation(language, "message.punishment.ban.description")
-        .replace("%banAuthor%", banAuthor.asTag)
-        .replace("%banAuthorId%", banAuthor.id)
-        .replace("%banned%", bannedUser.asTag)
-        .replace("%bannedId%", bannedUser.id)
-        .replace("%reason%", ban.reason)
-        .replace("%duration%", banDuration)
-        .replace("%startTime%", (ban.startTime.asEpochMillisToDateTime()))
-        .replace("%endTime%", (ban.endTime?.asEpochMillisToDateTime() ?: "none"))
+    description += i18n.getTranslation(language, "message.punishment.softBan.description")
+        .replace("%softBanAuthor%", softBanAuthor.asTag)
+        .replace("%softBanAuthorId%", softBanAuthor.id)
+        .replace("%softBanned%", softBannedUser.asTag)
+        .replace("%softBannedId%", softBannedUser.id)
+        .replace("%reason%", softBan.reason)
+        .replace("%moment%", (softBan.moment.asEpochMillisToDateTime()))
 
     val extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,
@@ -152,16 +147,17 @@ fun getBanMessage(
     } else {
         ""
     }
+
     description += extraDesc
     description += "```"
 
-    val author = i18n.getTranslation(language, "message.punishment.ban.author")
-        .replace(PLACEHOLDER_USER, banAuthor.asTag)
-        .replace("%spaces%", " ".repeat(45).substring(0, 45 - banAuthor.name.length) + "\u200B")
+    val author = i18n.getTranslation(language, "message.punishment.softBan.author")
+        .replace(PLACEHOLDER_USER, softBanAuthor.asTag)
+        .replace("%spaces%", " ".repeat(45).substring(0, 45 - softBanAuthor.name.length) + "\u200B")
 
-    eb.setAuthor(author, null, banAuthor.effectiveAvatarUrl)
-    eb.setThumbnail(bannedUser.effectiveAvatarUrl)
-    eb.setColor(Color.RED)
+    eb.setAuthor(author, null, softBanAuthor.effectiveAvatarUrl)
     eb.setDescription(description)
+    eb.setThumbnail(softBannedUser.effectiveAvatarUrl)
+    eb.setColor(Color.RED)
     return eb.build()
 }

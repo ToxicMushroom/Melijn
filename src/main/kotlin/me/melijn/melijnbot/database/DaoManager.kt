@@ -4,6 +4,8 @@ import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.database.ban.BanDao
 import me.melijn.melijnbot.database.ban.BanWrapper
+import me.melijn.melijnbot.database.ban.SoftBanDao
+import me.melijn.melijnbot.database.ban.SoftBanWrapper
 import me.melijn.melijnbot.database.channel.ChannelDao
 import me.melijn.melijnbot.database.channel.ChannelWrapper
 import me.melijn.melijnbot.database.command.*
@@ -99,6 +101,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.Database) {
     val muteWrapper: MuteWrapper
     val kickWrapper: KickWrapper
     val warnWrapper: WarnWrapper
+    val softBanWrapper: SoftBanWrapper
 
     val messageHistoryWrapper: MessageHistoryWrapper
     val messageWrapper: MessageWrapper
@@ -156,6 +159,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.Database) {
         muteWrapper = MuteWrapper(taskManager, MuteDao(driverManager))
         kickWrapper = KickWrapper(taskManager, KickDao(driverManager))
         warnWrapper = WarnWrapper(taskManager, WarnDao(driverManager))
+        softBanWrapper = SoftBanWrapper(taskManager, SoftBanDao(driverManager))
 
         messageHistoryWrapper = MessageHistoryWrapper(taskManager, MessageHistoryDao(driverManager))
         messageWrapper = MessageWrapper(taskManager, MessageDao(driverManager))

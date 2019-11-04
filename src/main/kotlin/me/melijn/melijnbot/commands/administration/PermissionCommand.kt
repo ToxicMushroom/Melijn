@@ -66,9 +66,9 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val dao = context.daoManager.userPermissionWrapper
                 if (permissions.size > 1) {
-                    dao.setPermissions(context.getGuildId(), user.idLong, permissions, state)
+                    dao.setPermissions(context.guildId, user.idLong, permissions, state)
                 } else {
-                    dao.setPermission(context.getGuildId(), user.idLong, permissions[0], state)
+                    dao.setPermission(context.guildId, user.idLong, permissions[0], state)
                 }
 
                 val language = context.getLanguage()
@@ -106,7 +106,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 var content = "\n```INI"
                 val dao = context.daoManager.userPermissionWrapper.guildUserPermissionCache
-                    .get(Pair(context.getGuildId(), user.idLong)).await()
+                    .get(Pair(context.guildId, user.idLong)).await()
                 var index = 1
                 for (perm in permissions) {
                     val state = dao.getOrDefault(perm, PermState.DEFAULT)
@@ -134,7 +134,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val user = retrieveUserByArgsNMessage(context, 0) ?: return
 
-                context.daoManager.userPermissionWrapper.clear(context.getGuildId(), user.idLong)
+                context.daoManager.userPermissionWrapper.clear(context.guildId, user.idLong)
 
                 val language = context.getLanguage()
                 val msg = i18n.getTranslation(language, "$root.response1")
@@ -187,9 +187,9 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val dao = context.daoManager.rolePermissionWrapper
                 if (permissions.size > 1) {
-                    dao.setPermissions(context.getGuildId(), role.idLong, permissions, state)
+                    dao.setPermissions(context.guildId, role.idLong, permissions, state)
                 } else {
-                    dao.setPermission(context.getGuildId(), role.idLong, permissions[0], state)
+                    dao.setPermission(context.guildId, role.idLong, permissions[0], state)
                 }
 
                 val language = context.getLanguage()
@@ -323,9 +323,9 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val dao = context.daoManager.channelRolePermissionWrapper
                     if (permissions.size > 1) {
-                        dao.setPermissions(context.getGuildId(), channel.idLong, role.idLong, permissions, state)
+                        dao.setPermissions(context.guildId, channel.idLong, role.idLong, permissions, state)
                     } else {
-                        dao.setPermission(context.getGuildId(), channel.idLong, role.idLong, permissions[0], state)
+                        dao.setPermission(context.guildId, channel.idLong, role.idLong, permissions[0], state)
                     }
 
                     val language = context.getLanguage()
@@ -455,9 +455,9 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val dao = context.daoManager.channelUserPermissionWrapper
                     if (permissions.size > 1) {
-                        dao.setPermissions(context.getGuildId(), channel.idLong, user.idLong, permissions, state)
+                        dao.setPermissions(context.guildId, channel.idLong, user.idLong, permissions, state)
                     } else {
-                        dao.setPermission(context.getGuildId(), channel.idLong, user.idLong, permissions[0], state)
+                        dao.setPermission(context.guildId, channel.idLong, user.idLong, permissions[0], state)
                     }
 
                     val language = context.getLanguage()
@@ -592,9 +592,9 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val daoWrapper1 = context.daoManager.userPermissionWrapper
                 val permissions = daoWrapper1.guildUserPermissionCache
-                    .get(Pair(context.getGuildId(), user1.idLong)).await()
+                    .get(Pair(context.guildId, user1.idLong)).await()
 
-                daoWrapper1.setPermissions(context.getGuildId(), user2.idLong, permissions)
+                daoWrapper1.setPermissions(context.guildId, user2.idLong, permissions)
 
                 val language = context.getLanguage()
                 val path = "$root.response1" + if (permissions.size > 1) {
@@ -620,7 +620,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     .get(role1.idLong).await()
 
                 val daoWrapper2 = context.daoManager.userPermissionWrapper
-                daoWrapper2.setPermissions(context.getGuildId(), user2.idLong, permissions)
+                daoWrapper2.setPermissions(context.guildId, user2.idLong, permissions)
 
                 val language = context.getLanguage()
                 val path = "$root.response1" + if (permissions.size > 1) {
@@ -646,7 +646,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     .get(Pair(channel1.idLong, user2.idLong)).await()
 
                 val daoWrapper2 = context.daoManager.userPermissionWrapper
-                daoWrapper2.setPermissions(context.getGuildId(), user3.idLong, permissions)
+                daoWrapper2.setPermissions(context.guildId, user3.idLong, permissions)
 
                 val language = context.getLanguage()
                 val path = "$root.response1" + if (permissions.size > 1) {
@@ -674,7 +674,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     .get(Pair(channel1.idLong, role2.idLong)).await()
 
                 val daoWrapper2 = context.daoManager.userPermissionWrapper
-                daoWrapper2.setPermissions(context.getGuildId(), user3.idLong, permissions)
+                daoWrapper2.setPermissions(context.guildId, user3.idLong, permissions)
 
                 val path = "$root.response1" + if (permissions.size > 1) {
                     ".multiple"
@@ -731,10 +731,10 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val daoWrapper1 = context.daoManager.userPermissionWrapper
                 val permissions = daoWrapper1.guildUserPermissionCache
-                    .get(Pair(context.getGuildId(), user1.idLong)).await()
+                    .get(Pair(context.guildId, user1.idLong)).await()
 
                 val daoWrapper2 = context.daoManager.rolePermissionWrapper
-                daoWrapper2.setPermissions(context.getGuildId(), role2.idLong, permissions)
+                daoWrapper2.setPermissions(context.guildId, role2.idLong, permissions)
 
                 val language = context.getLanguage()
                 val path = "$root.response1" + if (permissions.size > 1) {
@@ -759,7 +759,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 val permissions = daoWrapper1.rolePermissionCache
                     .get(role1.idLong).await()
 
-                daoWrapper1.setPermissions(context.getGuildId(), role2.idLong, permissions)
+                daoWrapper1.setPermissions(context.guildId, role2.idLong, permissions)
                 val path = "$root.response1" + if (permissions.size > 1) {
                     ".multiple"
                 } else {
@@ -785,7 +785,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     .get(Pair(channel1.idLong, user2.idLong)).await()
 
                 val daoWrapper2 = context.daoManager.rolePermissionWrapper
-                daoWrapper2.setPermissions(context.getGuildId(), role3.idLong, permissions)
+                daoWrapper2.setPermissions(context.guildId, role3.idLong, permissions)
                 val path = "$root.response1" + if (permissions.size > 1) {
                     ".multiple"
                 } else {
@@ -812,7 +812,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     .get(Pair(channel1.idLong, role2.idLong)).await()
 
                 val daoWrapper2 = context.daoManager.rolePermissionWrapper
-                daoWrapper2.setPermissions(context.getGuildId(), role3.idLong, permissions)
+                daoWrapper2.setPermissions(context.guildId, role3.idLong, permissions)
                 val path = "$root.response1" + if (permissions.size > 1) {
                     ".multiple"
                 } else {
@@ -880,10 +880,10 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val daoWrapper1 = context.daoManager.userPermissionWrapper
                     val permissions = daoWrapper1.guildUserPermissionCache
-                        .get(Pair(context.getGuildId(), user1.idLong)).await()
+                        .get(Pair(context.guildId, user1.idLong)).await()
 
                     val daoWrapper2 = context.daoManager.channelRolePermissionWrapper
-                    daoWrapper2.setPermissions(context.getGuildId(), channel2.idLong, role3.idLong, permissions)
+                    daoWrapper2.setPermissions(context.guildId, channel2.idLong, role3.idLong, permissions)
                     val path = "$root.response1" + if (permissions.size > 1) {
                         ".multiple"
                     } else {
@@ -910,7 +910,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .get(role1.idLong).await()
 
                     val daoWrapper2 = context.daoManager.channelRolePermissionWrapper
-                    daoWrapper2.setPermissions(context.getGuildId(), channel2.idLong, role3.idLong, permissions)
+                    daoWrapper2.setPermissions(context.guildId, channel2.idLong, role3.idLong, permissions)
                     val path = "$root.response1" + if (permissions.size > 1) {
                         ".multiple"
                     } else {
@@ -938,7 +938,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .get(Pair(channel1.idLong, user2.idLong)).await()
 
                     val daoWrapper2 = context.daoManager.channelRolePermissionWrapper
-                    daoWrapper2.setPermissions(context.getGuildId(), channel3.idLong, role4.idLong, permissions)
+                    daoWrapper2.setPermissions(context.guildId, channel3.idLong, role4.idLong, permissions)
                     val path = "$root.response1" + if (permissions.size > 1) {
                         ".multiple"
                     } else {
@@ -966,7 +966,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     val permissions = daoWrapper1.channelRolePermissionCache
                         .get(Pair(channel1.idLong, role2.idLong)).await()
 
-                    daoWrapper1.setPermissions(context.getGuildId(), channel3.idLong, role4.idLong, permissions)
+                    daoWrapper1.setPermissions(context.guildId, channel3.idLong, role4.idLong, permissions)
                     val path = "$root.response1" + if (permissions.size > 1) {
                         ".multiple"
                     } else {
@@ -1024,10 +1024,10 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val daoWrapper1 = context.daoManager.userPermissionWrapper
                     val permissions = daoWrapper1.guildUserPermissionCache
-                        .get(Pair(context.getGuildId(), user1.idLong)).await()
+                        .get(Pair(context.guildId, user1.idLong)).await()
 
                     val daoWrapper2 = context.daoManager.channelUserPermissionWrapper
-                    daoWrapper2.setPermissions(context.getGuildId(), channel2.idLong, user3.idLong, permissions)
+                    daoWrapper2.setPermissions(context.guildId, channel2.idLong, user3.idLong, permissions)
                     val path = "$root.response1" + if (permissions.size > 1) {
                         ".multiple"
                     } else {
@@ -1054,7 +1054,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .get(role1.idLong).await()
 
                     val daoWrapper2 = context.daoManager.channelUserPermissionWrapper
-                    daoWrapper2.setPermissions(context.getGuildId(), channel2.idLong, user3.idLong, permissions)
+                    daoWrapper2.setPermissions(context.guildId, channel2.idLong, user3.idLong, permissions)
                     val path = "$root.response1" + if (permissions.size > 1) {
                         ".multiple"
                     } else {
@@ -1081,7 +1081,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     val permissions = daoWrapper1.channelUserPermissionCache
                         .get(Pair(channel1.idLong, user2.idLong)).await()
 
-                    daoWrapper1.setPermissions(context.getGuildId(), channel3.idLong, user4.idLong, permissions)
+                    daoWrapper1.setPermissions(context.guildId, channel3.idLong, user4.idLong, permissions)
                     val path = "$root.response1" + if (permissions.size > 1) {
                         ".multiple"
                     } else {
@@ -1110,7 +1110,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .get(Pair(channel1.idLong, role2.idLong)).await()
 
                     val daoWrapper2 = context.daoManager.channelUserPermissionWrapper
-                    daoWrapper2.setPermissions(context.getGuildId(), channel3.idLong, user4.idLong, permissions)
+                    daoWrapper2.setPermissions(context.guildId, channel3.idLong, user4.idLong, permissions)
                     val path = "$root.response1" + if (permissions.size > 1) {
                         ".multiple"
                     } else {
@@ -1149,10 +1149,10 @@ fun getPermissionsFromArg(context: CommandContext, arg: String): List<String>? {
 
     val commands = if (category == null) {
         if (arg == "*") {
-            context.getCommands()
-        } else context.getCommands().filter { command -> command.isCommandFor(permParts[0]) }
+            context.commandList
+        } else context.commandList.filter { command -> command.isCommandFor(permParts[0]) }
     } else {
-        context.getCommands().filter { command -> command.commandCategory == category }
+        context.commandList.filter { command -> command.commandCategory == category }
     }
 
     val regex: Regex = when {

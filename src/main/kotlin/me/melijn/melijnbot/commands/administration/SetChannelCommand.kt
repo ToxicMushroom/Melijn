@@ -43,8 +43,8 @@ class SetChannelCommand : AbstractCommand("command.setchannel") {
 
     private suspend fun showChannel(context: CommandContext, type: ChannelType) {
         val channelWrapper = context.daoManager.channelWrapper
-        val channelId = channelWrapper.channelCache.get(Pair(context.getGuildId(), type)).await()
-        val channel = if (channelId == -1L) null else context.getGuild().getTextChannelById(channelId)
+        val channelId = channelWrapper.channelCache.get(Pair(context.guildId, type)).await()
+        val channel = if (channelId == -1L) null else context.guild.getTextChannelById(channelId)
         if (channel == null) {
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.show.unset")
@@ -72,12 +72,12 @@ class SetChannelCommand : AbstractCommand("command.setchannel") {
 
 
         val msg = if (channel == null) {
-            channelWrapper.removeChannel(context.getGuildId(), type)
+            channelWrapper.removeChannel(context.guildId, type)
             val language = context.getLanguage()
             i18n.getTranslation(language, "$root.unset")
 
         } else {
-            channelWrapper.setChannel(context.getGuildId(), type, channel.idLong)
+            channelWrapper.setChannel(context.guildId, type, channel.idLong)
             val language = context.getLanguage()
             i18n.getTranslation(language, "$root.set")
                 .replace(PLACEHOLDER_CHANNEL, channel.asTag)

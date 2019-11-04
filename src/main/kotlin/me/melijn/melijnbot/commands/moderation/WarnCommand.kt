@@ -29,7 +29,7 @@ class WarnCommand : AbstractCommand("command.warn") {
         val targetMember = getMemberByArgsNMessage(context, 0) ?: return
 
         val language = context.getLanguage()
-        if (!context.getGuild().selfMember.canInteract(targetMember)) {
+        if (!context.guild.selfMember.canInteract(targetMember)) {
             val msg = i18n.getTranslation(language, "$root.cannotwarn")
                 .replace(PLACEHOLDER_USER, targetMember.asTag)
             sendMsg(context, msg)
@@ -44,7 +44,7 @@ class WarnCommand : AbstractCommand("command.warn") {
         reason = reason.trim()
 
         val warn = Warn(
-            context.getGuildId(),
+            context.guildId,
             targetMember.idLong,
             context.authorId,
             reason
@@ -63,8 +63,8 @@ class WarnCommand : AbstractCommand("command.warn") {
     }
 
     private suspend fun continueWarning(context: CommandContext, targetMember: Member, warn: Warn, warningMessage: Message? = null) {
-        val guild = context.getGuild()
-        val author = context.getAuthor()
+        val guild = context.guild
+        val author = context.author
 
         val language = context.getLanguage()
         val warnedMessageDm = getWarnMessage(language, guild, targetMember.user, author, warn)

@@ -25,7 +25,7 @@ object ImageUtils {
     suspend fun getImageBytesNMessage(context: CommandContext): Pair<ByteArray?, Boolean>? = suspendCoroutine {
         context.taskManager.executorService.launch {
             val args = context.args
-            val attachments = context.getMessage().attachments
+            val attachments = context.message.attachments
 
             var arg = false
             var img: ByteArray? = null
@@ -62,7 +62,7 @@ object ImageUtils {
             } else {
                 arg = false
                 withContext(Dispatchers.IO) {
-                    img = URL(context.getAuthor().effectiveAvatarUrl + "?size=2048").readBytes()
+                    img = URL(context.author.effectiveAvatarUrl + "?size=2048").readBytes()
                 }
             }
             val pair = Pair(img, arg)

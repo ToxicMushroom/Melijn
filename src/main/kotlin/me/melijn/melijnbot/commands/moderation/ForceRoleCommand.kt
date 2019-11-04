@@ -39,11 +39,11 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
         override suspend fun execute(context: CommandContext) {
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
             val role = getRoleByArgsNMessage(context, 1, true, true) ?: return
-            val member = context.getGuild().getMember(user)
+            val member = context.guild.getMember(user)
 
-            context.daoManager.forceRoleWrapper.add(context.getGuildId(), user.idLong, role.idLong)
+            context.daoManager.forceRoleWrapper.add(context.guildId, user.idLong, role.idLong)
             if (member != null && !member.roles.contains(role)) {
-                context.getGuild().addRoleToMember(member, role).queue()
+                context.guild.addRoleToMember(member, role).queue()
             }
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.success")
@@ -63,11 +63,11 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
         override suspend fun execute(context: CommandContext) {
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
             val role = getRoleByArgsNMessage(context, 1) ?: return
-            val member = context.getGuild().getMember(user)
+            val member = context.guild.getMember(user)
 
-            context.daoManager.forceRoleWrapper.remove(context.getGuildId(), user.idLong, role.idLong)
+            context.daoManager.forceRoleWrapper.remove(context.guildId, user.idLong, role.idLong)
             if (member != null && member.roles.contains(role)) {
-                context.getGuild().removeRoleFromMember(member, role).queue()
+                context.guild.removeRoleFromMember(member, role).queue()
             }
 
             val language = context.getLanguage()
@@ -88,12 +88,12 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
         override suspend fun execute(context: CommandContext) {
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
 
-            val roleIds = context.daoManager.forceRoleWrapper.forceRoleCache.get(context.getGuildId()).await()
+            val roleIds = context.daoManager.forceRoleWrapper.forceRoleCache.get(context.guildId).await()
                 .getOrDefault(user.idLong, emptyList())
 
             var content = "```INI"
             for (roleId in roleIds) {
-                val role = context.getGuild().getRoleById(roleId)
+                val role = context.guild.getRoleById(roleId)
                 content += "\n[${role?.name} - $roleId"
             }
             if (roleIds.isEmpty()) content += "/"

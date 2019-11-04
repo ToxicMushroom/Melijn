@@ -18,7 +18,7 @@ class SetSlowModeCommand : AbstractCommand("command.setslowmode") {
 
     override suspend fun execute(context: CommandContext) {
         val msg: String = if (context.args.isEmpty()) {
-            val channel = context.getTextChannel()
+            val channel = context.textChannel
             val slowMode = channel.slowmode
 
             if (slowMode == 0) {
@@ -44,7 +44,7 @@ class SetSlowModeCommand : AbstractCommand("command.setslowmode") {
                         .replace("%slowMode%", slowMode.toString())
                 }
             } else if (number != null) {
-                channel = context.getTextChannel()
+                channel = context.textChannel
                 if (notEnoughPermissionsAndNMessage(context, channel, Permission.MANAGE_CHANNEL)) return
                 channel.manager.setSlowmode(number).queue()
 

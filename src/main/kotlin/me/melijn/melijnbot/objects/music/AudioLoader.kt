@@ -28,7 +28,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
 
     fun loadNewTrackNMessage(context: CommandContext, source: String, isPlaylist: Boolean = false) {
-        val guild = context.getGuild()
+        val guild = context.guild
         val guildMusicPlayer = musicPlayerManager.getGuildMusicPlayer(guild)
         val rawInput = source
             .replace(YT_SELECTOR, "")
@@ -41,7 +41,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             }
 
             override fun trackLoaded(track: AudioTrack) {
-                track.userData = TrackUserData(context.getAuthor())
+                track.userData = TrackUserData(context.author)
                 if (guildMusicPlayer.safeQueue(context, track)) {
                     sendMessageAddedTrack(context, track)
                 }
@@ -57,14 +57,14 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                     var notAdded = 0
 
                     for (track in tracks) {
-                        track.userData = TrackUserData(context.getAuthor())
+                        track.userData = TrackUserData(context.author)
 
                         if (!guildMusicPlayer.safeQueueSilent(context.daoManager, track)) notAdded++
                     }
                     sendMessageAddedTracks(context, tracks.subList(0, tracks.size - 1 - notAdded))
                 } else {
                     val track = tracks[0]
-                    track.userData = TrackUserData(context.getAuthor())
+                    track.userData = TrackUserData(context.author)
                     guildMusicPlayer.safeQueue(context, track)
                     sendMessageAddedTrack(context, track)
                 }
@@ -100,7 +100,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
     fun sendMessageAddedTrack(context: CommandContext, audioTrack: AudioTrack) = runBlocking {
         val title = i18n.getTranslation(context, "$root.addedtrack.title")
-            .replace(PLACEHOLDER_USER, context.getAuthor().asTag)
+            .replace(PLACEHOLDER_USER, context.author.asTag)
         val description = i18n.getTranslation(context, "$root.addedtrack.description")
             .replace("%position%", getQueuePosition(context, audioTrack).toString())
             .replace("%title%", audioTrack.info.title)
@@ -116,7 +116,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
     fun sendMessageAddedTracks(context: CommandContext, audioTracks: List<AudioTrack>) = runBlocking {
         val title = i18n.getTranslation(context, "$root.addedtracks.title")
-            .replace(PLACEHOLDER_USER, context.getAuthor().asTag)
+            .replace(PLACEHOLDER_USER, context.author.asTag)
         val description = i18n.getTranslation(context, "$root.addedtracks.description")
             .replace("%size%", audioTracks.size.toString())
             .replace("%positionFirst%", getQueuePosition(context, audioTracks[0]).toString())
@@ -130,7 +130,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     private fun getQueuePosition(context: CommandContext, audioTrack: AudioTrack): Int =
-        context.musicPlayerManager.getGuildMusicPlayer(context.getGuild()).guildTrackManager.getPosition(audioTrack)
+        context.musicPlayerManager.getGuildMusicPlayer(context.guild).guildTrackManager.getPosition(audioTrack)
 
     fun loadSpotifyTrack(
         context: CommandContext,
@@ -140,7 +140,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         silent: Boolean = false,
         loaded: ((Boolean) -> Unit)? = null
     ) {
-        val player: GuildMusicPlayer = context.getGuildMusicPlayer()
+        val player: GuildMusicPlayer = context.guildMusicPlayer
         val title: String = query.replaceFirst("$SC_SELECTOR|$YT_SELECTOR".toRegex(), "")
         val source = StringBuilder(query)
         val artistNames = mutableListOf<String>()
@@ -237,7 +237,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     fun loadSpotifyPlaylist(context: CommandContext, tracks: Array<PlaylistTrack>) = runBlocking {
-        if (tracks.size + context.getGuildMusicPlayer().guildTrackManager.tracks.size > QUEUE_LIMIT) {
+        if (tracks.size + context.guildMusicPlayer.guildTrackManager.tracks.size > QUEUE_LIMIT) {
             val msg = i18n.getTranslation(context, "$root.queuelimit")
                 .replace("%amount%", QUEUE_LIMIT.toString())
             sendMsg(context, msg)
@@ -270,7 +270,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     fun loadSpotifyAlbum(context: CommandContext, simpleTracks: Array<TrackSimplified>) = runBlocking {
-        if (simpleTracks.size + context.getGuildMusicPlayer().guildTrackManager.tracks.size > QUEUE_LIMIT) {
+        if (simpleTracks.size + context.guildMusicPlayer.guildTrackManager.tracks.size > QUEUE_LIMIT) {
             val msg = i18n.getTranslation(context, "$root.queuelimit")
                 .replace("%amount%", QUEUE_LIMIT.toString())
                 .replace("%donateAmount%", DONATE_QUEUE_LIMIT.toString())
@@ -303,7 +303,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     fun loadNewTrackPickerNMessage(context: CommandContext, query: String) {
-        val guildMusicPlayer = context.getGuildMusicPlayer()
+        val guildMusicPlayer = context.guildMusicPlayer
         val rawInput = query
             .replace(YT_SELECTOR, "")
             .replace(SC_SELECTOR, "")
@@ -331,13 +331,13 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     private fun prepareSearchMenu(context: CommandContext, trackList: List<AudioTrack>) {
-        val guildMusicPlayer = context.getGuildMusicPlayer()
+        val guildMusicPlayer = context.guildMusicPlayer
         if (guildMusicPlayer.queueIsFull(context, 1)) return
 
         val tracks = trackList.filterIndexed { index, _ -> index < 5 }.toMutableList()
 
         for ((index, track) in tracks.withIndex()) {
-            track.userData = TrackUserData(context.getAuthor())
+            track.userData = TrackUserData(context.author)
             tracks[index] = track
         }
 

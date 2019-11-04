@@ -36,28 +36,31 @@ class HistoryCommand : AbstractCommand("command.history") {
 
         val targetUser = retrieveUserByArgsNMessage(context, 1) ?: return
         val unorderedMap: MutableMap<Long, String> = hashMapOf()
-        val shardManager = context.getShardManager() ?: return
+        val shardManager = context.shardManager
         val dao = context.daoManager
-        val guildId = context.getGuildId()
 
         //put info inside maps
         for (type in types) {
             when (type) {
                 PunishmentType.BAN -> {
-                    val banMap = dao.banWrapper.getBanMap(shardManager, guildId, targetUser)
+                    val banMap = dao.banWrapper.getBanMap(context, targetUser)
                     unorderedMap.putAll(banMap)
                 }
                 PunishmentType.KICK -> {
-                    val kickMap = dao.kickWrapper.getKickMap(shardManager, guildId, targetUser)
+                    val kickMap = dao.kickWrapper.getKickMap(context, targetUser)
                     unorderedMap.putAll(kickMap)
                 }
                 PunishmentType.WARN -> {
-                    val warnMap = dao.warnWrapper.getWarnMap(shardManager, guildId, targetUser)
+                    val warnMap = dao.warnWrapper.getWarnMap(context, targetUser)
                     unorderedMap.putAll(warnMap)
                 }
                 PunishmentType.MUTE -> {
-                    val muteMap = dao.muteWrapper.getMuteMap(shardManager, guildId, targetUser)
+                    val muteMap = dao.muteWrapper.getMuteMap(context, targetUser)
                     unorderedMap.putAll(muteMap)
+                }
+                PunishmentType.SOFTBAN -> {
+                    val banMap = dao.softBanWrapper.getSoftBanMap(context, targetUser)
+                    unorderedMap.putAll(banMap)
                 }
             }
         }

@@ -12,31 +12,22 @@ class CommandContext(
     private val messageReceivedEvent: MessageReceivedEvent,
     val commandParts: List<String>,
     val container: Container,
-    private val commandList: Set<AbstractCommand>
+    val commandList: Set<AbstractCommand>
 ) : ICommandContext {
 
-    override fun getEvent(): MessageReceivedEvent {
-        return messageReceivedEvent
-    }
+    override val event: MessageReceivedEvent
+        get() = messageReceivedEvent
 
-    override fun getGuild(): Guild {
-        if (isFromGuild)
-            return messageReceivedEvent.guild
-        else throw IllegalArgumentException("Cannot be used if the source of the command is not a guild. Make the command guild only or perform checks")
-    }
+    override val guild: Guild
+        get() = event.guild
 
-    fun getGuildN(): Guild? = if (isFromGuild)
-        messageReceivedEvent.guild
-    else null
+    val guildN: Guild?
+        get() = if (isFromGuild) guild else null
 
-    fun getGuildId(): Long {
-        return getGuild().idLong
-    }
 
     val webManager: WebManager = container.webManager
     val usedPrefix: String = commandParts[0]
-    val jda = messageReceivedEvent.jda
-    val offset: Int = retrieveOffset()
+    val mentionOffset: Int = retrieveOffset()
     val embedColor: Int = container.settings.embedColor
     val prefix: String = container.settings.prefix
     var commandOrder: List<AbstractCommand> = emptyList()
@@ -44,7 +35,6 @@ class CommandContext(
     val botDevIds: LongArray = container.settings.developerIds
     val daoManager = container.daoManager
     val taskManager = container.taskManager
-    val authorId = getAuthor().idLong
     var rawArg: String = ""
     val contextTime = System.currentTimeMillis()
     val lavaManager = container.lavaManager
@@ -71,7 +61,6 @@ class CommandContext(
         rawArg = messageReceivedEvent.message.contentRaw.replaceFirst(regex, "")
     }
 
-    fun getCommands() = commandList
     private fun retrieveOffset(): Int {
         var count = 0
         val pattern = Pattern.compile("<@!?(\\d+)>")
@@ -86,10 +75,10 @@ class CommandContext(
     }
 
     fun reply(something: Any) {
-        require(!(isFromGuild && getSelfMember()?.hasPermission(getTextChannel(), Permission.MESSAGE_WRITE) != true)) {
+        require(!(isFromGuild && !selfMember.hasPermission(textChannel, Permission.MESSAGE_WRITE))) {
             "No MESSAGE_WRITE permission"
         }
-        getMessageChannel().sendMessage(something.toString()).queue()
+        messageChannel.sendMessage(something.toString()).queue()
     }
 
     suspend fun getLanguage(): String = me.melijn.melijnbot.objects.translation.getLanguage(this)
@@ -116,6 +105,6 @@ class CommandContext(
         return rawArg
     }
 
-    fun getGuildMusicPlayer(): GuildMusicPlayer =musicPlayerManager.getGuildMusicPlayer(getGuild())
-
+    val guildMusicPlayer: GuildMusicPlayer
+        get() = musicPlayerManager.getGuildMusicPlayer(guild)
 }

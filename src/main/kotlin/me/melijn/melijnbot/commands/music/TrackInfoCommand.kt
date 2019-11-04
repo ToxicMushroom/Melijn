@@ -23,7 +23,7 @@ class TrackInfoCommand : AbstractCommand("command.trackinfo") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val player = context.getGuildMusicPlayer()
+        val player = context.guildMusicPlayer
         val trackManager = player.guildTrackManager
         if (context.args.isEmpty()) {
             sendSyntax(context)

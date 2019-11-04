@@ -35,7 +35,7 @@ class EmoteCommand : AbstractCommand("command.emote") {
         var emote: Emote? = null
         if (args.matches("<.?:.*:\\d+>".toRegex())) {
             id = args.replace("<.?:.*:(\\d+)>".toRegex(), "$1")
-            emote = context.getShardManager()?.getEmoteById(id)
+            emote = context.shardManager.getEmoteById(id)
 
             if (emote == null) {
                 val name = args.replace("<.?:(.*):\\d+>".toRegex(), "$1")
@@ -53,7 +53,7 @@ class EmoteCommand : AbstractCommand("command.emote") {
             }
         } else if (args.matches("\\d+".toRegex())) {
             id = args
-            emote = context.getShardManager()?.getEmoteById(id)
+            emote = context.shardManager.getEmoteById(id)
         }
 
         if (emote == null) {

@@ -24,12 +24,12 @@ class PlayCommand : AbstractCommand("command.play") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        if (context.args.isEmpty() && context.getMessage().attachments.isEmpty()) {
+        if (context.args.isEmpty() && context.message.attachments.isEmpty()) {
             sendSyntax(context)
             return
         }
 
-        val member = context.getMember() ?: return
+        val member = context.member
         val senderVoiceChannel: VoiceChannel = member.voiceState?.channel ?: return
         val lava: LavaManager = context.lavaManager
 
@@ -59,7 +59,7 @@ class PlayCommand : AbstractCommand("command.play") {
                 context.audioLoader.loadNewTrackNMessage(context, "${YT_SELECTOR}$songArg", false)
             }
         } else {
-            val tracks = context.getMessage().attachments.map { attachment -> attachment.url }
+            val tracks = context.message.attachments.map { attachment -> attachment.url }
             if (!hasPermission(context, "$root.attachment")) {
                 sendMissingPermissionMessage(context, "$root.attachment")
                 return
@@ -80,7 +80,7 @@ class PlayCommand : AbstractCommand("command.play") {
 
 
         override suspend fun execute(context: CommandContext) {
-            val member = context.getMember() ?: return
+            val member = context.member
             val senderVoiceChannel: VoiceChannel = member.voiceState?.channel ?: return
             val lava: LavaManager = context.lavaManager
 
@@ -101,7 +101,7 @@ class PlayCommand : AbstractCommand("command.play") {
 
 
         override suspend fun execute(context: CommandContext) {
-            val member = context.getMember() ?: return
+            val member = context.member
             val senderVoiceChannel: VoiceChannel = member.voiceState?.channel ?: return
             val lava: LavaManager = context.lavaManager
 
@@ -121,15 +121,15 @@ class PlayCommand : AbstractCommand("command.play") {
 
 
         override suspend fun execute(context: CommandContext) {
-            if (context.getMessage().attachments.isEmpty()) {
+            if (context.message.attachments.isEmpty()) {
                 sendSyntax(context)
                 return
             }
-            val member = context.getMember() ?: return
+            val member = context.member
             val senderVoiceChannel: VoiceChannel = member.voiceState?.channel ?: return
             val lava: LavaManager = context.lavaManager
 
-            val tracks = context.getMessage().attachments.map { attachment -> attachment.url }
+            val tracks = context.message.attachments.map { attachment -> attachment.url }
 
             if (!lava.tryToConnectToVCNMessage(context, senderVoiceChannel)) return
             for (url in tracks) {

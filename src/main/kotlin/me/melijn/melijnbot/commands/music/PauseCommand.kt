@@ -19,7 +19,7 @@ class PauseCommand : AbstractCommand("command.pause") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val trackManager = context.getGuildMusicPlayer().guildTrackManager
+        val trackManager = context.guildMusicPlayer.guildTrackManager
         val cTrack: AudioTrack? = trackManager.iPlayer.playingTrack
         if (cTrack == null) {
             val noSongPlaying = i18n.getTranslation(context, "message.music.notracks")

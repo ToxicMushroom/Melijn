@@ -72,7 +72,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
             val cooldown = getLongFromArgNMessage(context, 1) ?: return
 
             val daoWrapper = context.daoManager.commandCooldownWrapper
-            daoWrapper.setCooldowns(context.getGuildId(), commands, cooldown)
+            daoWrapper.setCooldowns(context.guildId, commands, cooldown)
             val path = "$root.response1" + if (commands.size > 1) {
                 ".multiple"
             } else {
@@ -106,14 +106,14 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
                 i18n.getTranslation(language, "$root.response1.title")
                     .replace("%channel%", "#${channel.name}")
             } else {
-                map = daoManager.commandCooldownWrapper.commandCooldownCache.get(context.getGuildId()).await()
+                map = daoManager.commandCooldownWrapper.commandCooldownCache.get(context.guildId).await()
                 i18n.getTranslation(language, "$root.response2.title")
             }
 
             var content = "```INI"
 
             for ((index, entry) in map.entries.withIndex()) {
-                val cmd = context.getCommands().firstOrNull { cmd -> cmd.id.toString() == entry.key }
+                val cmd = context.commandList.firstOrNull { cmd -> cmd.id.toString() == entry.key }
                 if (cmd != null) {
                     content += "$index - [${cmd.name}]"
                 } else {

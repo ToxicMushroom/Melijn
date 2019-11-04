@@ -21,7 +21,7 @@ class SetVerificationCodeCommand : AbstractCommand("command.setverificationcode"
         val wrapper = context.daoManager.verificationCodeWrapper
         val language = context.getLanguage()
         if (context.args.isEmpty()) {
-            val code = wrapper.verificationCodeCache.get(context.getGuildId()).await()
+            val code = wrapper.verificationCodeCache.get(context.guildId).await()
             val part = if (code.isBlank()) "unset" else "set"
             val msg = i18n.getTranslation(language, "$root.show.$part")
                 .replace("%code%", code)
@@ -30,10 +30,10 @@ class SetVerificationCodeCommand : AbstractCommand("command.setverificationcode"
         }
 
         val msg = if (context.rawArg == "null") {
-            wrapper.removeCode(context.getGuildId())
+            wrapper.removeCode(context.guildId)
             i18n.getTranslation(language, "$root.unset")
         } else {
-            wrapper.setCode(context.getGuildId(), context.rawArg)
+            wrapper.setCode(context.guildId, context.rawArg)
             i18n.getTranslation(language, "$root.set")
                 .replace(PLACEHOLDER_ARG, context.rawArg)
         }

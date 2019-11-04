@@ -22,7 +22,7 @@ class SetVerificationEmotejiCommand : AbstractCommand("command.setverificationem
         val wrapper = context.daoManager.verificationEmotejiWrapper
         val language = context.getLanguage()
         if (context.args.isEmpty()) {
-            val code = wrapper.verificationEmotejiCache.get(context.getGuildId()).await()
+            val code = wrapper.verificationEmotejiCache.get(context.guildId).await()
             val part = if (code.isBlank()) "unset" else "set"
             val msg = i18n.getTranslation(language, "$root.show.$part")
                 .replace("%code%", code)
@@ -31,7 +31,7 @@ class SetVerificationEmotejiCommand : AbstractCommand("command.setverificationem
         }
 
         val msg = if (context.rawArg == "null") {
-            wrapper.removeEmoteji(context.getGuildId())
+            wrapper.removeEmoteji(context.guildId)
             i18n.getTranslation(language, "$root.unset")
         } else {
             val emoteji = getEmoteOrEmojiByArgsNMessage(context, 0, false) ?: return
@@ -39,13 +39,13 @@ class SetVerificationEmotejiCommand : AbstractCommand("command.setverificationem
             val first = emoteji.first
             when {
                 second != null -> {
-                    wrapper.setEmoteji(context.getGuildId(), second)
+                    wrapper.setEmoteji(context.guildId, second)
                     i18n.getTranslation(language, "$root.set.emoji")
                         .replace(PLACEHOLDER_ARG, second)
 
                 }
                 first != null -> {
-                    wrapper.setEmoteji(context.getGuildId(), first.id)
+                    wrapper.setEmoteji(context.guildId, first.id)
                     i18n.getTranslation(language, "$root.set.emote")
                         .replace("%emoteId%", first.id)
                         .replace("%emoteName%", first.name)

@@ -31,7 +31,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
             sendSyntax(context)
             return
         }
-        val guild = context.getGuild()
+        val guild = context.guild
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
 
         var unmuteReason = context.rawArg
@@ -41,9 +41,9 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
 
         unmuteReason = unmuteReason.trim()
 
-        val activeMute: Mute? = context.daoManager.muteWrapper.getActiveMute(context.getGuildId(), targetUser.idLong)
+        val activeMute: Mute? = context.daoManager.muteWrapper.getActiveMute(context.guildId, targetUser.idLong)
         val mute: Mute = activeMute
-            ?: Mute(context.getGuildId(),
+            ?: Mute(context.guildId,
                 targetUser.idLong,
                 null,
                 "/"
@@ -53,10 +53,10 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         mute.endTime = System.currentTimeMillis()
         mute.active = false
 
-        val muteAuthor = mute.muteAuthorId?.let { context.getShardManager()?.getUserById(it) }
+        val muteAuthor = mute.muteAuthorId?.let { context.shardManager.getUserById(it) }
         val targetMember = guild.getMember(targetUser)
 
-        val muteRoleId = context.daoManager.roleWrapper.roleCache.get(Pair(context.getGuildId(), RoleType.MUTE)).await()
+        val muteRoleId = context.daoManager.roleWrapper.roleCache.get(Pair(context.guildId, RoleType.MUTE)).await()
         val muteRole = guild.getRoleById(muteRoleId)
 
         val language = context.getLanguage()
@@ -76,7 +76,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
                 //Sum ting wrong
                 val msg = i18n.getTranslation(language, "$root.failure")
                     .replace(PLACEHOLDER_USER, targetUser.asTag)
-                    .replace("%cause%", t.message ?: "unknown (contact support for info)")
+                    .replace("%cause%", t.message ?: "/")
                 sendMsg(context, msg)
             }
         } else if (targetMember == null) {
@@ -97,11 +97,11 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
 
     private suspend fun sendUnmuteLogs(context: CommandContext, targetUser: User, muteAuthor: User?, mute: Mute, unmuteReason: String) {
         context.daoManager.muteWrapper.setMute(mute)
-        val guild = context.getGuild()
+        val guild = context.guild
         val language = context.getLanguage()
 
         //Normal success path
-        val msg = getUnmuteMessage(language, guild, targetUser, muteAuthor, context.getAuthor(), mute)
+        val msg = getUnmuteMessage(language, guild, targetUser, muteAuthor, context.author, mute)
         val privateChannel = targetUser.openPrivateChannel().await()
 
         val success = try {
@@ -110,7 +110,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         } catch (t: Throwable) {
             false
         }
-        val msgLc = getUnmuteMessage(language, guild, targetUser, muteAuthor, context.getAuthor(), mute, true, targetUser.isBot, success)
+        val msgLc = getUnmuteMessage(language, guild, targetUser, muteAuthor, context.author, mute, true, targetUser.isBot, success)
 
 
         val logChannelWrapper = context.daoManager.logChannelWrapper

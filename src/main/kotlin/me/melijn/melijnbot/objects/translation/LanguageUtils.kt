@@ -5,7 +5,7 @@ import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.command.CommandContext
 
 suspend fun getLanguage(context: CommandContext): String {
-    val guildId = if (context.isFromGuild) context.getGuildId() else -1L
+    val guildId = if (context.isFromGuild) context.guildId else -1L
     return getLanguage(context.daoManager, context.authorId, guildId)
 }
 

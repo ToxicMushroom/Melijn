@@ -1,10 +1,11 @@
 package me.melijn.melijnbot.database.warn
 
+import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
-import me.melijn.melijnbot.objects.utils.await
+import me.melijn.melijnbot.objects.utils.awaitNE
 import net.dv8tion.jda.api.entities.User
-import net.dv8tion.jda.api.sharding.ShardManager
 import kotlin.math.min
 
 class WarnWrapper(val taskManager: TaskManager, private val warnDao: WarnDao) {
@@ -13,36 +14,32 @@ class WarnWrapper(val taskManager: TaskManager, private val warnDao: WarnDao) {
         warnDao.add(warn)
     }
 
-    suspend fun getWarnMap(shardManager: ShardManager, guildId: Long, targetUser: User): Map<Long, String> {
+    suspend fun getWarnMap(context: CommandContext, targetUser: User): Map<Long, String> {
         val map = hashMapOf<Long, String>()
-        val warns = warnDao.getWarns(guildId, targetUser.idLong)
+        val warns = warnDao.getWarns(context.guildId, targetUser.idLong)
+
         if (warns.isEmpty()) {
             return emptyMap()
         }
 
         warns.forEach { warn ->
-            val message = convertKickInfoToMessage(shardManager, warn)
+            val message = convertKickInfoToMessage(context, warn)
             map[warn.moment] = message
         }
         return map
     }
 
-    private suspend fun convertKickInfoToMessage(shardManager: ShardManager, warn: Warn): String {
-        return try {
-            val warnAuthor = shardManager.retrieveUserById(warn.warnAuthorId).await()
-            getWarnMessage(warnAuthor, warn)
-        } catch (t: Throwable) {
-            getWarnMessage(null, warn)
-        }
+    private suspend fun convertKickInfoToMessage(context: CommandContext, warn: Warn): String {
+        val warnAuthor = context.shardManager.retrieveUserById(warn.warnAuthorId).awaitNE()
+        return getWarnMessage(context, warnAuthor, warn)
     }
 
-    private fun getWarnMessage(warnAuthor: User?, warn: Warn): String {
-        return "```INI" +
-                "\n[Warn Author] ${warnAuthor?.asTag ?: "deleted user"}" +
-                "\n[Warn Author Id] ${warn.warnAuthorId}" +
-                "\n[Warn Reason] ${warn.reason.substring(0, min(warn.reason.length, 830))}" +
-                "\n[Moment] ${warn.moment.asEpochMillisToDateTime()}" +
-                "```"
-
+    private suspend fun getWarnMessage(context: CommandContext, warnAuthor: User?, warn: Warn): String {
+        val deletedUser = i18n.getTranslation(context, "message.deleted.user")
+        return i18n.getTranslation(context, "")
+            .replace("%warnAuthor%", warnAuthor?.asTag ?: deletedUser)
+            .replace("%warnAuthorId%", "${warn.warnAuthorId}")
+            .replace("%reason%", warn.reason.substring(0, min(warn.reason.length, 830)))
+            .replace("%moment%", warn.moment.asEpochMillisToDateTime())
     }
 }

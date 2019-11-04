@@ -32,13 +32,13 @@ class PurgeCommand : AbstractCommand("command.purge") {
         val amount = (getIntegerFromArgNMessage(context, 0, 1, 1000) ?: return) + 1
         val language = context.getLanguage()
 
-        val messages = context.getTextChannel().history.retrievePast(amount).await()
+        val messages = context.textChannel.history.retrievePast(amount).await()
         for (message in messages) {
             context.container.purgedIds[message.idLong] = context.authorId
         }
 
 
-        context.getTextChannel().purgeMessages(messages)
+        context.textChannel.purgeMessages(messages)
         val msg = i18n.getTranslation(language, "$root.success")
             .replace("%amount%", amount.toString())
 

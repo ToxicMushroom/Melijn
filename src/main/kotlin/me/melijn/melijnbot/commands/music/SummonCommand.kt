@@ -20,8 +20,8 @@ class SummonCommand : AbstractCommand("command.summon") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
-            if (!RunConditionUtil.checkOtherOrSameVCBotAloneOrUserDJ(context.container, context.getEvent(), this, context.getLanguage())) return
-            val vc = context.getMember()?.voiceState?.channel ?: throw IllegalStateException("I messed up")
+            if (!RunConditionUtil.checkOtherOrSameVCBotAloneOrUserDJ(context.container, context.event, this, context.getLanguage())) return
+            val vc = context.member?.voiceState?.channel ?: throw IllegalStateException("I messed up")
             context.lavaManager.openConnection(vc)
             val msg = i18n.getTranslation(context, "$root.summoned")
             sendMsg(context, msg)
@@ -31,7 +31,7 @@ class SummonCommand : AbstractCommand("command.summon") {
                 sendMissingPermissionMessage(context, "summon.other")
                 return
             }
-            if (!RunConditionUtil.checkBotAloneOrUserDJ(context.container, context.getEvent(), this, context.getLanguage())) return
+            if (!RunConditionUtil.checkBotAloneOrUserDJ(context.container, context.event, this, context.getLanguage())) return
             context.lavaManager.openConnection(vc)
             val msg = i18n.getTranslation(context, "$root.summoned")
             sendMsg(context, msg)

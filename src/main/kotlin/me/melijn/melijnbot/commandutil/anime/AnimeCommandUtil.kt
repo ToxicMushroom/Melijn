@@ -14,11 +14,11 @@ object AnimeCommandUtil {
         val target: User?
         when {
             context.args.isEmpty() -> {
-                author = context.getAuthor()
+                author = context.author
                 target = null
             }
             context.args.size == 1 -> {
-                author = context.getAuthor()
+                author = context.author
                 target = getUserByArgsNMessage(context, 0) ?: return
             }
             else -> {
@@ -38,8 +38,8 @@ object AnimeCommandUtil {
         }
         var title = i18n.getTranslation(context, path)
         title = if (context.isFromGuild) {
-            val authorMember = context.getGuild().getMember(author) ?: return
-            val targetMember = target?.let { context.getGuild().getMember(it) }
+            val authorMember = context.guild.getMember(author) ?: return
+            val targetMember = target?.let { context.guild.getMember(it) }
             title
                 .replace("%author%", authorMember.effectiveName)
                 .replace("%target%", targetMember?.effectiveName ?: target?.name ?: "%target%")

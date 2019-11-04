@@ -55,15 +55,15 @@ suspend fun <T> RestAction<T>.awaitBool() = suspendCoroutine<Boolean> {
 
 //fun getUserByArgs(context: CommandContext, index: Int): User {
 //    var user = getUserByArgsN(context, index)
-//    if (user == null) user = context.getAuthor()
+//    if (user == null) user = context.author
 //    return user
 //}
 
 
 fun getUserByArgsN(context: CommandContext, index: Int): User? {//With null
-    val shardManager = context.getShardManager() ?: return null
+    val shardManager = context.shardManager
     return if (context.args.size > index) {
-        getUserByArgsN(shardManager, context.getGuildN(), context.args[index])
+        getUserByArgsN(shardManager, context.guildN, context.args[index])
     } else {
         null
     }
@@ -202,8 +202,8 @@ fun getRoleByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Bool
 
         role = if (arg.matches(Regex("\\d+")) && context.jda.shardManager?.getRoleById(arg) != null)
             context.jda.shardManager?.getRoleById(arg)
-        else if (context.isFromGuild && context.getGuild().getRolesByName(arg, true).size > 0)
-            context.getGuild().getRolesByName(arg, true)[0]
+        else if (context.isFromGuild && context.guild.getRolesByName(arg, true).size > 0)
+            context.guild.getRolesByName(arg, true)[0]
         else if (arg.matches(Regex("<@&\\d+>"))) {
             var role2: Role? = null
             val pattern = Pattern.compile("<@&(\\d+)>")
@@ -217,7 +217,7 @@ fun getRoleByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Bool
             role2
         } else role
     }
-    if (sameGuildAsContext && !context.getGuild().roles.contains(role)) return null
+    if (sameGuildAsContext && !context.guild.roles.contains(role)) return null
     return role
 }
 
@@ -234,7 +234,7 @@ suspend fun getRoleByArgsNMessage(
             .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg, null)
     } else {
-        if (!context.getGuild().selfMember.canInteract(role)) {
+        if (!context.guild.selfMember.canInteract(role)) {
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "message.cantinteract.role")
                 .replace(PLACEHOLDER_ARG, context.args[index])
@@ -284,28 +284,28 @@ fun getEmoteByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boo
     val emoteMatcher = EMOTE_MENTION.matcher(arg)
     var emote: Emote? = null
     if (matcher.matches()) {
-        emote = context.getShardManager()?.getEmoteById(arg)
+        emote = context.shardManager.getEmoteById(arg)
 
     } else if (emoteMatcher.find()) {
         val id = emoteMatcher.group(2).toLong()
-        emote = context.getShardManager()?.getEmoteById(id)
+        emote = context.shardManager.getEmoteById(id)
 
     } else {
-        var emotes: List<Emote>? = context.getGuild().getEmotesByName(arg, false)
+        var emotes: List<Emote>? = context.guild.getEmotesByName(arg, false)
         if (emotes?.isNotEmpty() == true) emote = emotes[0]
 
-        emotes = context.getGuild().getEmotesByName(arg, true)
+        emotes = context.guild.getEmotesByName(arg, true)
         if (emotes.isNotEmpty() && emote == null) emote = emotes[0]
 
-        emotes = context.getShardManager()?.getEmotesByName(arg, false)
-        if (emotes?.isNotEmpty() == true && emote == null) emote = emotes[0]
+        emotes = context.shardManager.getEmotesByName(arg, false)
+        if (emotes.isNotEmpty() && emote == null) emote = emotes[0]
 
-        emotes = context.getShardManager()?.getEmotesByName(arg, true)
-        if (emotes?.isNotEmpty() == true && emote == null) emote = emotes[0]
+        emotes = context.shardManager.getEmotesByName(arg, true)
+        if (emotes.isNotEmpty() && emote == null) emote = emotes[0]
 
     }
 
-    return if (sameGuildAsContext && emote?.guild?.idLong != context.getGuildId()) {
+    return if (sameGuildAsContext && emote?.guild?.idLong != context.guildId) {
         null
     } else {
         emote
@@ -353,8 +353,8 @@ fun getTextChannelByArgsN(context: CommandContext, index: Int, sameGuildAsContex
 
         channel = if (arg.matches(Regex("\\d+"))) {
             context.jda.shardManager?.getTextChannelById(arg)
-        } else if (context.isFromGuild && context.getGuild().getTextChannelsByName(arg, true).size > 0) {
-            context.getGuild().getTextChannelsByName(arg, true)[0]
+        } else if (context.isFromGuild && context.guild.getTextChannelsByName(arg, true).size > 0) {
+            context.guild.getTextChannelsByName(arg, true)[0]
         } else if (arg.matches(Regex("<#\\d+>"))) {
             var textChannel1: TextChannel? = null
             val pattern = Pattern.compile("<#(\\d+)>")
@@ -368,7 +368,7 @@ fun getTextChannelByArgsN(context: CommandContext, index: Int, sameGuildAsContex
             textChannel1
         } else channel
     }
-    if (sameGuildAsContext && !context.getGuild().textChannels.contains(channel)) return null
+    if (sameGuildAsContext && !context.guild.textChannels.contains(channel)) return null
     return channel
 }
 
@@ -392,8 +392,8 @@ fun getVoiceChannelByArgsN(context: CommandContext, index: Int, sameGuildAsConte
 
         channel = if (arg.matches(Regex("\\d+"))) {
             context.jda.shardManager?.getVoiceChannelById(arg)
-        } else if (context.isFromGuild && context.getGuild().getTextChannelsByName(arg, true).size > 0) {
-            context.getGuild().getVoiceChannelsByName(arg, true)[0]
+        } else if (context.isFromGuild && context.guild.getTextChannelsByName(arg, true).size > 0) {
+            context.guild.getVoiceChannelsByName(arg, true)[0]
         } else if (arg.matches(Regex("<#\\d+>"))) {
             var voiceChannel1: VoiceChannel? = null
             val pattern = Pattern.compile("<#(\\d+)>")
@@ -407,7 +407,7 @@ fun getVoiceChannelByArgsN(context: CommandContext, index: Int, sameGuildAsConte
             voiceChannel1
         } else channel
     }
-    if (sameGuildAsContext && !context.getGuild().voiceChannels.contains(channel)) return null
+    if (sameGuildAsContext && !context.guild.voiceChannels.contains(channel)) return null
     return channel
 }
 
@@ -426,7 +426,7 @@ suspend fun getMemberByArgsNMessage(context: CommandContext, index: Int): Member
     val user = getUserByArgsN(context, index)
     val member =
         if (user == null) null
-        else context.getGuild().getMember(user)
+        else context.guild.getMember(user)
 
     if (member == null) {
         val language = context.getLanguage()

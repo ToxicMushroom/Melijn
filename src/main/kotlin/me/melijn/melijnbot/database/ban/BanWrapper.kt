@@ -1,10 +1,11 @@
 package me.melijn.melijnbot.database.ban
 
+import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
-import me.melijn.melijnbot.objects.utils.await
+import me.melijn.melijnbot.objects.utils.awaitNE
 import net.dv8tion.jda.api.entities.User
-import net.dv8tion.jda.api.sharding.ShardManager
 import kotlin.math.min
 
 class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
@@ -21,55 +22,47 @@ class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
         return banDao.getActiveBan(guildId, bannedId)
     }
 
-    suspend fun getBanMap(shardManager: ShardManager, guildId: Long, targetUser: User): Map<Long, String> {
+    suspend fun getBanMap(context: CommandContext, targetUser: User): Map<Long, String> {
         val map = hashMapOf<Long, String>()
-        val bans = banDao.getBans(guildId, targetUser.idLong)
+        val bans = banDao.getBans(context.guildId, targetUser.idLong)
         if (bans.isEmpty()) {
             return emptyMap()
         }
 
         bans.forEach { ban ->
-            val message = convertBanInfoToMessage(shardManager, ban)
+            val message = convertBanInfoToMessage(context, ban)
             map[ban.startTime] = message
         }
 
         return map
     }
 
-    private suspend fun convertBanInfoToMessage(shardManager: ShardManager, ban: Ban): String {
-        val banAuthorId = ban.banAuthorId ?: return continueConvertingInfoToMessage(shardManager, null, ban)
+    private suspend fun convertBanInfoToMessage(context: CommandContext, ban: Ban): String {
+        val banAuthorId = ban.banAuthorId ?: return continueConvertingInfoToMessage(context, null, ban)
+        val banAuthor = context.shardManager.retrieveUserById(banAuthorId).awaitNE()
 
-        return try {
-            val banAuthor = shardManager.retrieveUserById(banAuthorId).await()
-            continueConvertingInfoToMessage(shardManager, banAuthor, ban)
-        } catch (t: Throwable) {
-            continueConvertingInfoToMessage(shardManager, null, ban)
-        }
+        return continueConvertingInfoToMessage(context, banAuthor, ban)
     }
 
-    private suspend fun continueConvertingInfoToMessage(shardManager: ShardManager, banAuthor: User?, ban: Ban): String {
-        val unbanAuthorId = ban.unbanAuthorId ?: return getBanMessage(banAuthor, null, ban)
+    private suspend fun continueConvertingInfoToMessage(context: CommandContext, banAuthor: User?, ban: Ban): String {
+        val unbanAuthorId = ban.unbanAuthorId ?: return getBanMessage(context, banAuthor, null, ban)
+        val unbanAuthor = context.shardManager.retrieveUserById(unbanAuthorId).awaitNE()
 
-        return try {
-            val unbanAuthor = shardManager.retrieveUserById(unbanAuthorId).await()
-            getBanMessage(banAuthor, unbanAuthor, ban)
-        } catch (t: Throwable) {
-            getBanMessage(banAuthor, null, ban)
-        }
+        return getBanMessage(context, banAuthor, unbanAuthor, ban)
     }
 
-    private fun getBanMessage(banAuthor: User?, unbanAuthor: User?, ban: Ban): String {
+    private suspend fun getBanMessage(context: CommandContext, banAuthor: User?, unbanAuthor: User?, ban: Ban): String {
+        val deletedUser = i18n.getTranslation(context, "message.deleted.user")
         val unbanReason = ban.unbanReason
-        return "```INI" +
-            "\n[Ban Author] ${banAuthor?.asTag ?: "deleted user"}" +
-            "\n[Ban Author Id] ${ban.banAuthorId}" +
-            "\n[Ban Reason] ${ban.reason.substring(0, min(ban.reason.length, 830))}" +
-            "\n[Unban Reason] ${unbanReason?.substring(0, min(unbanReason.length, 830))}" +
-            "\n[Unban Author] ${unbanAuthor?.asTag ?: "deleted user"}" +
-            "\n[Start Time] ${ban.startTime.asEpochMillisToDateTime()}" +
-            "\n[End Time] ${ban.endTime?.asEpochMillisToDateTime()}" +
-            "\n[Active] ${ban.active}" +
-            "```"
-
+        return i18n.getTranslation(context, "")
+            .replace("%banAuthor%", banAuthor?.asTag ?: deletedUser)
+            .replace("%banAuthorId%", "${ban.banAuthorId}")
+            .replace("%unbanAuthor%", if (ban.unbanAuthorId == null) "/" else unbanAuthor?.asTag ?: deletedUser)
+            .replace("%unbanAuthorId%", ban.unbanAuthorId?.toString() ?: "/")
+            .replace("%banReason%", ban.reason.substring(0, min(ban.reason.length, 830)))
+            .replace("%unbanReason%", unbanReason?.substring(0, min(unbanReason.length, 830)) ?: "/")
+            .replace("%startTime%", ban.startTime.asEpochMillisToDateTime())
+            .replace("%endTime%", ban.endTime?.asEpochMillisToDateTime() ?: "/")
+            .replace("%active%", "${ban.active}")
     }
 }

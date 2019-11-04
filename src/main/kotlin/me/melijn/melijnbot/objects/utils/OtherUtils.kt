@@ -93,13 +93,13 @@ suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): S
 
     val commands = if (category == null) {
         if (arg == "*") {
-            context.getCommands()
+            context.commandList
         } else {
-            context.getCommands()
+            context.commandList
                 .filter { command -> command.isCommandFor(arg) }
         }
     } else {
-        context.getCommands()
+        context.commandList
             .filter { command -> command.commandCategory == category }
     }.map { cmd -> cmd.id.toString() }.toMutableSet()
 
@@ -124,10 +124,10 @@ suspend fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set
     val category: CommandCategory? = enumValueOrNull(arg)
 
     val commands = if (category == null) {
-            context.getCommands()
+            context.commandList
                 .filter { command -> command.isCommandFor(arg) }
     } else {
-        context.getCommands()
+        context.commandList
             .filter { command -> command.commandCategory == category }
     }.toMutableSet()
 

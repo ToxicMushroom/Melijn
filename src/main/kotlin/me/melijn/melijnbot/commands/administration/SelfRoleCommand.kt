@@ -55,7 +55,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
             val role = getRoleByArgsNMessage(context, 1) ?: return
 
-            context.daoManager.selfRoleWrapper.set(context.getGuildId(), id, role.idLong)
+            context.daoManager.selfRoleWrapper.set(context.guildId, id, role.idLong)
 
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.success")
@@ -83,7 +83,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             } else {
                 pair.first?.id
             } ?: return
-            context.daoManager.selfRoleWrapper.remove(context.getGuildId(), id)
+            context.daoManager.selfRoleWrapper.remove(context.guildId, id)
 
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.success")
@@ -100,7 +100,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
         override suspend fun execute(context: CommandContext) {
             val wrapper = context.daoManager.selfRoleWrapper
-            val map = wrapper.selfRoleCache.get(context.getGuildId()).await()
+            val map = wrapper.selfRoleCache.get(context.guildId).await()
 
             val language = context.getLanguage()
             val msg = if (map.isNotEmpty()) {
@@ -108,9 +108,9 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 var content = "```ini\n[emoteji] - roleId - roleName"
 
                 for ((emoteji, roleId) in map) {
-                    val role = context.getGuild().getRoleById(roleId)
+                    val role = context.guild.getRoleById(roleId)
                     if (role == null) {
-                        wrapper.remove(context.getGuildId(), emoteji)
+                        wrapper.remove(context.guildId, emoteji)
                         continue
                     }
 

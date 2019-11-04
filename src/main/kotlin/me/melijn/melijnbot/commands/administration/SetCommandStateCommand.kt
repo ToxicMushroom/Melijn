@@ -54,7 +54,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             }
 
             val dao = context.daoManager.disabledCommandWrapper
-            dao.setCommandState(context.getGuildId(), commands, commandState)
+            dao.setCommandState(context.guildId, commands, commandState)
             val path = "$root.response1" + if (commands.size > 1) {
                 ".multiple"
             } else {
@@ -95,7 +95,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             }
 
             val dao = context.daoManager.channelCommandStateWrapper
-            dao.setCommandState(context.getGuildId(), channel.idLong, commands, commandState)
+            dao.setCommandState(context.guildId, channel.idLong, commands, commandState)
             val path = "$root.response1" + if (commands.size > 1) {
                 ".multiple"
             } else {
@@ -122,14 +122,14 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
         override suspend fun execute(context: CommandContext) {
             val daoManager = context.daoManager
             if (context.args.isEmpty()) {
-                val ids = daoManager.disabledCommandWrapper.disabledCommandsCache.get(context.getGuildId()).await()
+                val ids = daoManager.disabledCommandWrapper.disabledCommandsCache.get(context.guildId).await()
                 val commandNames = mutableListOf<String>()
-                val filteredCommands = context.getCommands()
+                val filteredCommands = context.commandList
                     .filter { cmd -> ids.contains(cmd.id.toString()) }
                     .map { cmd -> cmd.name }
                     .toList()
 
-                val filteredCCs = daoManager.customCommandWrapper.customCommandCache.get(context.getGuildId()).await()
+                val filteredCCs = daoManager.customCommandWrapper.customCommandCache.get(context.guildId).await()
                     .filter { cmd -> ids.contains("cc." + cmd.id.toString()) }
                     .map { cmd -> cmd.name }
                     .toList()
@@ -156,12 +156,12 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                 val stateMap = daoManager.channelCommandStateWrapper.channelCommandsStateCache.get(channel.idLong).await()
                 val ids = stateMap.keys
                 val commandMap = HashMap<String, String>()
-                val filteredCommands = context.getCommands()
+                val filteredCommands = context.commandList
                     .filter { cmd -> ids.contains(cmd.id.toString()) }
                     .map { cmd -> cmd.id.toString() to cmd.name }
                     .toMap()
 
-                val filteredCCs = daoManager.customCommandWrapper.customCommandCache.get(context.getGuildId()).await()
+                val filteredCCs = daoManager.customCommandWrapper.customCommandCache.get(context.guildId).await()
                     .filter { cmd -> ids.contains("cc." + cmd.id) }
                     .map { cmd -> ("cc." + cmd.id) to cmd.name }
                     .toMap()

@@ -27,11 +27,11 @@ class HelpCommand : AbstractCommand("command.help") {
         if (args.isEmpty()) {
             val part = if (context.isFromGuild) "server" else "pm"
             val response = i18n.getTranslation(language, "$root.response1.$part")
-            val msg = replaceArgs(response, if (context.isFromGuild) context.getGuildId() else -1L, context.usedPrefix)
+            val msg = replaceArgs(response, if (context.isFromGuild) context.guildId else -1L, context.usedPrefix)
             sendMsg(context, msg)
             return
         }
-        val commandList = context.getCommands()
+        val commandList = context.commandList
         val parent = commandList.firstOrNull() { cmd -> cmd.isCommandFor(args[0]) }
         if (parent == null) {
             sendSyntax(context)
@@ -80,7 +80,7 @@ class HelpCommand : AbstractCommand("command.help") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            val commandList = context.getCommands()
+            val commandList = context.commandList
             val language = context.getLanguage()
             val title = i18n.getTranslation(language, "$root.title")
             val util = i18n.getTranslation(language, "$root.field1.title")

@@ -27,7 +27,7 @@ class KickCommand : AbstractCommand("command.kick") {
             return
         }
         val targetMember = getMemberByArgsNMessage(context, 0) ?: return
-        if (!context.getGuild().selfMember.canInteract(targetMember)) {
+        if (!context.guild.selfMember.canInteract(targetMember)) {
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.cannotkick")
                 .replace(PLACEHOLDER_USER, targetMember.asTag)
@@ -42,7 +42,7 @@ class KickCommand : AbstractCommand("command.kick") {
         reason = reason.trim()
 
         val kick = Kick(
-            context.getGuildId(),
+            context.guildId,
             targetMember.idLong,
             context.authorId,
             reason
@@ -62,8 +62,8 @@ class KickCommand : AbstractCommand("command.kick") {
     }
 
     private suspend fun continueKicking(context: CommandContext, targetMember: Member, kick: Kick, kickingMessage: Message? = null) {
-        val guild = context.getGuild()
-        val author = context.getAuthor()
+        val guild = context.guild
+        val author = context.author
         val language = context.getLanguage()
 
         val kickedMessageDm = getKickMessage(language, guild, targetMember.user, author, kick)
@@ -71,7 +71,7 @@ class KickCommand : AbstractCommand("command.kick") {
 
         context.daoManager.kickWrapper.addKick(kick)
         val msg = try {
-            context.getGuild().kick(targetMember, kick.reason).await()
+            context.guild.kick(targetMember, kick.reason).await()
             kickingMessage?.editMessage(
                 kickedMessageDm
             )?.override(true)?.queue()
@@ -86,11 +86,12 @@ class KickCommand : AbstractCommand("command.kick") {
                 .replace("%reason%", kick.reason)
 
         } catch (t: Throwable) {
-            kickingMessage?.editMessage("failed to kick")?.queue()
+            val failedMsg = i18n.getTranslation(language, "message.kicking.failed")
+            kickingMessage?.editMessage(failedMsg)?.queue()
 
             i18n.getTranslation(language, "$root.failure")
                 .replace(PLACEHOLDER_USER, targetMember.asTag)
-                .replace("%cause%", t.message ?: "unknown (contact support for info)")
+                .replace("%cause%", t.message ?: "/")
 
         }
         sendMsg(context, msg)

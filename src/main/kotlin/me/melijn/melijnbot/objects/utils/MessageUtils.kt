@@ -25,7 +25,7 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 fun Throwable.sendInGuild(context: CommandContext, thread: Thread = Thread.currentThread()) = runBlocking {
-    sendInGuildSuspend(context.getGuild(), context.getMessageChannel(), context.getAuthor(), thread)
+    sendInGuildSuspend(context.guild, context.messageChannel, context.author, thread)
 }
 
 
@@ -37,7 +37,7 @@ suspend fun Throwable.sendInGuildSuspend(guild: Guild? = null, channel: MessageC
     if (Container.instance.settings.unLoggedThreads.contains(thread.name)) return
 
     val channelId = Container.instance.settings.exceptionChannel
-    val textChannel = MelijnBot.shardManager?.getTextChannelById(channelId) ?: return
+    val textChannel = MelijnBot.shardManager.getTextChannelById(channelId) ?: return
 
     val sb = StringBuilder()
     if (guild != null) {
@@ -64,12 +64,12 @@ suspend fun sendSyntax(context: CommandContext, translationPath: String = contex
     val syntax = i18n.getTranslation(language, "message.command.usage")
         .replace("%syntax%", i18n.getTranslation(language, translationPath)
             .replace("%prefix%", context.usedPrefix))
-    sendMsg(context.getTextChannel(), syntax)
+    sendMsg(context.textChannel, syntax)
 }
 
 fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String) {
     if (context.isFromGuild) {
-        val channel = context.getTextChannel()
+        val channel = context.textChannel
         if (!channel.canTalk()) return
         if (msg.length <= 2000) {
             channel.sendMessage(msg).queue()
@@ -85,7 +85,7 @@ fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String) {
         }
 
     } else {
-        val privateChannel = context.getPrivateChannel()
+        val privateChannel = context.privateChannel
         if (msg.length <= 2000) {
             privateChannel.sendMessage(msg).queue()
         } else {
@@ -109,8 +109,8 @@ fun sendMsgCodeBlocks(
     failed: ((ex: Throwable) -> Unit)? = null,
     multicallback: Boolean = false
 ) {
-    if (context.isFromGuild) sendMsgCodeBlocks(context.getTextChannel(), msg, lang, success, failed, multicallback)
-    else sendMsgCodeBlocks(context.getPrivateChannel(), msg, lang, success, failed, multicallback)
+    if (context.isFromGuild) sendMsgCodeBlocks(context.textChannel, msg, lang, success, failed, multicallback)
+    else sendMsgCodeBlocks(context.privateChannel, msg, lang, success, failed, multicallback)
 }
 
 fun sendMsgCodeBlocks(
@@ -205,17 +205,17 @@ suspend fun sendMsgWithAttachments(channel: TextChannel, message: Message, attac
 
 suspend fun sendEmbed(context: CommandContext, embed: MessageEmbed, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
     if (context.isFromGuild) {
-        sendEmbed(context.daoManager.embedDisabledWrapper, context.getTextChannel(), embed, success, failed)
+        sendEmbed(context.daoManager.embedDisabledWrapper, context.textChannel, embed, success, failed)
     } else {
-        sendEmbed(context.getPrivateChannel(), embed, success, failed)
+        sendEmbed(context.privateChannel, embed, success, failed)
     }
 }
 
 suspend fun sendEmbed(context: CommandContext, embed: MessageEmbed): List<Message> {
     return if (context.isFromGuild) {
-        sendEmbed(context.daoManager.embedDisabledWrapper, context.getTextChannel(), embed)
+        sendEmbed(context.daoManager.embedDisabledWrapper, context.textChannel, embed)
     } else {
-        sendEmbed(context.getPrivateChannel(), embed)
+        sendEmbed(context.privateChannel, embed)
     }
 }
 
@@ -320,8 +320,8 @@ suspend fun sendEmbedAsMessage(textChannel: TextChannel, embed: MessageEmbed): L
 }
 
 suspend fun sendMsg(context: CommandContext, msg: String, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
-    if (context.isFromGuild) sendMsg(context.getTextChannel(), msg, success, failed)
-    else sendMsg(context.getPrivateChannel(), msg, success, failed)
+    if (context.isFromGuild) sendMsg(context.textChannel, msg, success, failed)
+    else sendMsg(context.privateChannel, msg, success, failed)
 }
 
 
@@ -330,9 +330,9 @@ suspend fun sendMsg(context: CommandContext, image: BufferedImage, extension: St
     val failed = { failed: Throwable -> it.resumeWithException(failed) }
     runBlocking {
         if (context.isFromGuild) {
-            sendMsg(context.getTextChannel(), image, extension, success, failed)
+            sendMsg(context.textChannel, image, extension, success, failed)
         } else {
-            sendMsg(context.getPrivateChannel(), image, extension, success, failed)
+            sendMsg(context.privateChannel, image, extension, success, failed)
         }
     }
 }
@@ -379,9 +379,9 @@ suspend fun sendFile(context: CommandContext, bytes: ByteArray, extension: Strin
     val failed = { failed: Throwable -> it.resumeWithException(failed) }
     runBlocking {
         if (context.isFromGuild) {
-            sendFile(context.getTextChannel(), bytes, extension, success, failed)
+            sendFile(context.textChannel, bytes, extension, success, failed)
         } else {
-            sendFile(context.getPrivateChannel(), bytes, extension, success, failed)
+            sendFile(context.privateChannel, bytes, extension, success, failed)
         }
     }
 }
@@ -420,9 +420,9 @@ suspend fun sendMsg(context: CommandContext, listImages: List<BufferedImage>, ex
     val failed = { failed: Throwable -> it.resumeWithException(failed) }
     runBlocking {
         if (context.isFromGuild) {
-            sendMsg(context.getTextChannel(), listImages, extension, success, failed)
+            sendMsg(context.textChannel, listImages, extension, success, failed)
         } else {
-            sendMsg(context.getPrivateChannel(), listImages, extension, success, failed)
+            sendMsg(context.privateChannel, listImages, extension, success, failed)
         }
     }
 }
@@ -474,9 +474,9 @@ suspend fun sendMsg(context: CommandContext, msg: String): List<Message> = suspe
     val failed = { failed: Throwable -> it.resumeWithException(failed) }
     runBlocking {
         if (context.isFromGuild) {
-            sendMsg(context.getTextChannel(), msg, success, failed)
+            sendMsg(context.textChannel, msg, success, failed)
         } else {
-            sendMsg(context.getPrivateChannel(), msg, success, failed)
+            sendMsg(context.privateChannel, msg, success, failed)
         }
     }
 }

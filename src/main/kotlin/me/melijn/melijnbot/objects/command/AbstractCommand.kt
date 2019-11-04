@@ -43,13 +43,13 @@ abstract class AbstractCommand(val root: String) {
         if (hasPermission(context, permission)) {
             context.initArgs()
             if (context.isFromGuild) {
-                val pair1 = Pair(context.getTextChannel().idLong, context.authorId)
+                val pair1 = Pair(context.channelId, context.authorId)
                 val map1 = context.daoManager.commandChannelCoolDownWrapper.executions[pair1]?.toMutableMap()
                     ?: hashMapOf()
                 map1[id.toString()] = System.currentTimeMillis()
                 context.daoManager.commandChannelCoolDownWrapper.executions[pair1] = map1
 
-                val pair2 = Pair(context.getGuildId(), context.authorId)
+                val pair2 = Pair(context.guildId, context.authorId)
                 val map2 = context.daoManager.commandChannelCoolDownWrapper.executions[pair2]?.toMutableMap()
                     ?: hashMapOf()
                 map2[id.toString()] = System.currentTimeMillis()
@@ -82,14 +82,14 @@ abstract class AbstractCommand(val root: String) {
 
 suspend fun hasPermission(context: CommandContext, permission: String, required: Boolean = false): Boolean {
     if (!context.isFromGuild) return true
-    if (context.getMember()?.isOwner!! || context.getMember()?.hasPermission(Permission.ADMINISTRATOR) == true) return true
-    val guildId = context.getGuildId()
-    val authorId = context.getAuthor().idLong
+    if (context.member.isOwner || context.member.hasPermission(Permission.ADMINISTRATOR)) return true
+    val guildId = context.guildId
+    val authorId = context.authorId
     //Gives me better ability to help
     if (context.botDevIds.contains(authorId)) return true
 
 
-    val channelId = context.getTextChannel().idLong
+    val channelId = context.channelId
     val userMap = context.daoManager.userPermissionWrapper.guildUserPermissionCache.get(Pair(guildId, authorId)).await()
     val channelUserMap = context.daoManager.channelUserPermissionWrapper.channelUserPermissionCache.get(Pair(channelId, authorId)).await()
 
@@ -107,7 +107,7 @@ suspend fun hasPermission(context: CommandContext, permission: String, required:
     var channelRoleResult = PermState.DEFAULT
 
     //Permission checking for roles
-    for (roleId in (context.getMember()!!.roles.map { role -> role.idLong } + context.getGuild().publicRole.idLong)) {
+    for (roleId in (context.member.roles.map { role -> role.idLong } + context.guild.publicRole.idLong)) {
         channelRoleResult = when (context.daoManager.channelRolePermissionWrapper.channelRolePermissionCache.get(Pair(channelId, roleId)).await()[permission]) {
             PermState.ALLOW -> PermState.ALLOW
             PermState.DENY -> if (channelRoleResult == PermState.DEFAULT) PermState.DENY else channelRoleResult

@@ -35,7 +35,7 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
                     sendSyntax(context)
                     return
                 }
-                val textChannel = context.getTextChannel()
+                val textChannel = context.textChannel
                 textChannel.createCopy().await()
                 textChannel.delete().queue()
             }

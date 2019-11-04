@@ -20,7 +20,7 @@ class RewindCommand : AbstractCommand("command.rewind") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val iPlayer = context.getGuildMusicPlayer().guildTrackManager.iPlayer
+        val iPlayer = context.guildMusicPlayer.guildTrackManager.iPlayer
         val track = iPlayer.playingTrack
         val trackDuration = track.duration
         var trackPosition = iPlayer.trackPosition

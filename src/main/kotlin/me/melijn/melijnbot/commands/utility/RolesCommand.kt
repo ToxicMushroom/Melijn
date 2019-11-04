@@ -24,9 +24,9 @@ class RolesCommand : AbstractCommand("command.roles") {
         }
 
         val guild: Guild = if (context.args.isNotEmpty() && context.args[0].matches("\\d+".toRegex())) {
-            context.jda.shardManager?.getGuildById(context.args[0]) ?: context.getGuild()
+            context.jda.shardManager?.getGuildById(context.args[0]) ?: context.guild
         } else {
-            context.getGuild()
+            context.guild
         }
 
         val language = context.getLanguage()

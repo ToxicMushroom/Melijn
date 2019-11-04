@@ -23,7 +23,7 @@ class GuildInfoCommand : AbstractCommand("command.guildinfo") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        var guild = context.getGuild()
+        var guild = context.guild
         if (context.args.isNotEmpty()) {
             if (context.args[0].matches(Regex("\\d+"))) {
                 guild = context.jda.shardManager?.getGuildById(context.args[0]) ?: guild

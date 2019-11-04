@@ -28,7 +28,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val guild = context.getGuild()
+        val guild = context.guild
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -43,9 +43,9 @@ class UnbanCommand : AbstractCommand("command.unban") {
 
         unbanReason = unbanReason.trim()
 
-        val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.getGuildId(), targetUser.idLong)
+        val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong)
         val ban: Ban = activeBan
-            ?: Ban(context.getGuildId(),
+            ?: Ban(context.guildId,
                 targetUser.idLong,
                 null,
                 "/"
@@ -55,7 +55,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
         ban.endTime = System.currentTimeMillis()
         ban.active = false
 
-        val banAuthor = ban.banAuthorId?.let { context.getShardManager()?.getUserById(it) }
+        val banAuthor = ban.banAuthorId?.let { context.shardManager.getUserById(it) }
 
         try {
             guild.retrieveBan(targetUser).await()
@@ -64,7 +64,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
                 context.daoManager.banWrapper.setBan(ban)
 
                 //Normal success path
-                val msgLc = getUnbanMessage(language, context.getGuild(), targetUser, banAuthor, context.getAuthor(), ban, true)
+                val msgLc = getUnbanMessage(language, context.guild, targetUser, banAuthor, context.author, ban, true)
 
 
                 val privateChannel = targetUser.openPrivateChannel().awaitNE()
@@ -82,7 +82,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
                 //Sum ting wrong
                 val msg = i18n.getTranslation(language, "$root.failure")
                     .replace(PLACEHOLDER_USER, targetUser.asTag)
-                    .replace("%cause%", t.message ?: "unknown (contact support for info)")
+                    .replace("%cause%", t.message ?: "/")
                 sendMsg(context, msg)
             }
         } catch (t: Throwable) {
@@ -99,8 +99,8 @@ class UnbanCommand : AbstractCommand("command.unban") {
     }
 
     private suspend fun continueUnbanning(context: CommandContext, targetUser: User, ban: Ban, banAuthor: User?, unbanningMessage: Message? = null) {
-        val guild = context.getGuild()
-        val unbanAuthor = context.getAuthor()
+        val guild = context.guild
+        val unbanAuthor = context.author
         val language = context.getLanguage()
         val isBot = targetUser.isBot
         val received = unbanningMessage != null
@@ -110,7 +110,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
 
 
         val logChannelWrapper = context.daoManager.logChannelWrapper
-        val logChannelId = logChannelWrapper.logChannelCache.get(Pair(context.getGuildId(), LogChannelType.UNBAN)).await()
+        val logChannelId = logChannelWrapper.logChannelCache.get(Pair(context.guildId, LogChannelType.UNBAN)).await()
         val logChannel = guild.getTextChannelById(logChannelId)
         logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, lcMsg) }
 

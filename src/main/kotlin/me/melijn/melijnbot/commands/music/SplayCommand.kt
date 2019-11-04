@@ -21,12 +21,12 @@ class SplayCommand : AbstractCommand("command.splay") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        if (context.args.isEmpty() && context.getMessage().attachments.isEmpty()) {
+        if (context.args.isEmpty() && context.message.attachments.isEmpty()) {
             sendSyntax(context)
             return
         }
 
-        val member = context.getMember() ?: return
+        val member = context.member ?: return
         val senderVoiceChannel: VoiceChannel = member.voiceState?.channel ?: return
         val lava: LavaManager = context.lavaManager
 
@@ -52,7 +52,7 @@ class SplayCommand : AbstractCommand("command.splay") {
 
 
         override suspend fun execute(context: CommandContext) {
-            val member = context.getMember() ?: return
+            val member = context.member ?: return
             val senderVoiceChannel: VoiceChannel = member.voiceState?.channel ?: return
             val lava: LavaManager = context.lavaManager
 
@@ -73,7 +73,7 @@ class SplayCommand : AbstractCommand("command.splay") {
 
 
         override suspend fun execute(context: CommandContext) {
-            val member = context.getMember() ?: return
+            val member = context.member ?: return
             val senderVoiceChannel: VoiceChannel = member.voiceState?.channel ?: return
             val lava: LavaManager = context.lavaManager
 

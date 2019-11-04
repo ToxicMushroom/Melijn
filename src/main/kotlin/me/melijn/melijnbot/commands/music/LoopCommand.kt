@@ -18,7 +18,7 @@ class LoopCommand : AbstractCommand("command.loop") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val trackManager = context.getGuildMusicPlayer().guildTrackManager
+        val trackManager = context.guildMusicPlayer.guildTrackManager
         trackManager.loopedTrack = !trackManager.loopedTrack
 
         val msg = i18n.getTranslation(context, "$root." + if (trackManager.loopedTrack) "looped" else "unlooped")

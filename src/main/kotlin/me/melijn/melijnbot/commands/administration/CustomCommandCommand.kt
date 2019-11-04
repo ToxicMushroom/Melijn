@@ -40,10 +40,10 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         val selectionMap = HashMap<Pair<Long, Long>, Long>()
         suspend fun getSelectedCCNMessage(context: CommandContext): CustomCommand? {
             val language = context.getLanguage()
-            val pair = Pair(context.getGuildId(), context.authorId)
+            val pair = Pair(context.guildId, context.authorId)
             return if (selectionMap.containsKey(pair)) {
                 val id = selectionMap[pair]
-                val ccs = context.daoManager.customCommandWrapper.customCommandCache.get(context.getGuildId()).await()
+                val ccs = context.daoManager.customCommandWrapper.customCommandCache.get(context.guildId).await()
                     .filter { cc -> cc.id == id }
                 if (ccs.isNotEmpty()) {
                     ccs[0]
@@ -75,7 +75,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
         override suspend fun execute(context: CommandContext) {
             val id = getLongFromArgN(context, 0)
-            var cc = context.daoManager.customCommandWrapper.getCCById(context.getGuildId(), id)
+            var cc = context.daoManager.customCommandWrapper.getCCById(context.guildId, id)
             if (cc == null && context.args.isNotEmpty()) {
 
                 val msg = i18n.getTranslation(context, "message.unknown.ccid")
@@ -107,7 +107,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             val language = context.getLanguage()
             val title = i18n.getTranslation(language, "$root.title")
 
-            val ccs = context.daoManager.customCommandWrapper.customCommandCache.get(context.getGuildId()).await()
+            val ccs = context.daoManager.customCommandWrapper.customCommandCache.get(context.guildId).await()
             var content = "```INI"
 
             content += "\n[id] - [name] - [chance]"
@@ -143,7 +143,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             }
             val cc = CustomCommand(0, name, ModularMessage(content))
 
-            val ccId = context.daoManager.customCommandWrapper.add(context.getGuildId(), cc)
+            val ccId = context.daoManager.customCommandWrapper.add(context.guildId, cc)
             cc.id = ccId
 
             val language = context.getLanguage()
@@ -168,7 +168,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 sendSyntax(context)
                 return
             }
-            val guildId = context.getGuildId()
+            val guildId = context.guildId
 
             val id = getLongFromArgNMessage(context, 0) ?: return
             val cc = context.daoManager.customCommandWrapper.customCommandCache.get(guildId).await()
@@ -198,7 +198,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 sendSyntax(context)
                 return
             }
-            val guildId = context.getGuildId()
+            val guildId = context.guildId
 
             val id = getLongFromArgNMessage(context, 0) ?: return
             val cc = context.daoManager.customCommandWrapper.getCCById(guildId, id)
@@ -250,7 +250,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 ccSelected.aliases = s.toList()
 
 
-                context.daoManager.customCommandWrapper.update(context.getGuildId(), ccSelected)
+                context.daoManager.customCommandWrapper.update(context.guildId, ccSelected)
 
                 val language = context.getLanguage()
                 val msg = i18n.getTranslation(language, "$root.success")
@@ -292,7 +292,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 ccSelected.aliases = s.toList()
 
 
-                context.daoManager.customCommandWrapper.update(context.getGuildId(), ccSelected)
+                context.daoManager.customCommandWrapper.update(context.guildId, ccSelected)
 
                 val language = context.getLanguage()
                 val msg = i18n.getTranslation(language, "$root.success")
@@ -363,7 +363,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             val ccSelected = getSelectedCCNMessage(context) ?: return
             ccSelected.description = context.rawArg
 
-            context.daoManager.customCommandWrapper.update(context.getGuildId(), ccSelected)
+            context.daoManager.customCommandWrapper.update(context.guildId, ccSelected)
 
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.success")
@@ -392,7 +392,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             val chance = getIntegerFromArgNMessage(context, 0) ?: return
             ccSelected.chance = chance
 
-            context.daoManager.customCommandWrapper.update(context.getGuildId(), ccSelected)
+            context.daoManager.customCommandWrapper.update(context.guildId, ccSelected)
 
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "$root.success")
@@ -423,7 +423,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             ccSelected.prefix = state
 
 
-            context.daoManager.customCommandWrapper.update(context.getGuildId(), ccSelected)
+            context.daoManager.customCommandWrapper.update(context.guildId, ccSelected)
 
             val language = context.getLanguage()
             val pathPart = if (state) "enabled" else "disabled"

@@ -23,15 +23,15 @@ class VerifyCommand : AbstractCommand("command.verify") {
         }
 
         val language = context.getLanguage()
-        val role = VerificationUtils.getUnverifiedRoleNMessage(context.getAuthor(), context.getTextChannel(), context.daoManager)
+        val role = VerificationUtils.getUnverifiedRoleNMessage(context.author, context.textChannel, context.daoManager)
             ?: return
 
         val msg = if (context.args[0] == "*") {
-            val members = context.getGuild().members.filter { member -> member.roles.contains(role) }
+            val members = context.guild.members.filter { member -> member.roles.contains(role) }
             val failures = mutableListOf<Member>()
             for (member in members) {
                 try {
-                    VerificationUtils.verify(context.daoManager, role, context.getAuthor(), member)
+                    VerificationUtils.verify(context.daoManager, role, context.author, member)
                 } catch (t: Throwable) {
                     failures.add(member)
                 }
@@ -51,7 +51,7 @@ class VerifyCommand : AbstractCommand("command.verify") {
         } else {
             val member = getMemberByArgsNMessage(context, 0) ?: return
             try {
-                VerificationUtils.verify(context.daoManager, role, context.getAuthor(), member)
+                VerificationUtils.verify(context.daoManager, role, context.author, member)
                 i18n.getTranslation(language, "$root.success")
             } catch (t: Throwable) {
                 i18n.getTranslation(language, "$root.failure")

@@ -30,8 +30,8 @@ class StatsCommand : AbstractCommand("command.stats") {
         val usedMem = totalMem - (bean.freePhysicalMemorySize shr 20)
         val totalJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.max shr 20
         val usedJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.used shr 20
-        val shardManager = context.getJDA().shardManager
-        val voiceChannels = shardManager?.shards?.stream()?.mapToLong { shard ->
+        val shardManager = context.shardManager
+        val voiceChannels = shardManager.shards.stream().mapToLong { shard ->
             shard.voiceChannels.stream().filter { vc -> vc.members.contains(vc.guild.selfMember) }.count()
         }?.sum()
         val threadPoolExecutor = context.taskManager.executorService as ThreadPoolExecutor
@@ -46,9 +46,9 @@ class StatsCommand : AbstractCommand("command.stats") {
         val unReplaceField1 = i18n.getTranslation(language, "$root.response.field1.value")
         val value1 = replaceValue1Vars(
             unReplaceField1,
-            shardManager?.shardsTotal ?: 0,
-            shardManager?.userCache?.size() ?: 0,
-            shardManager?.guildCache?.size() ?: 0,
+            shardManager.shardsTotal,
+            shardManager.userCache.size(),
+            shardManager.guildCache.size(),
             voiceChannels ?: 0,
             threadPoolExecutor.activeCount + scheduledExecutorService.activeCount + scheduledExecutorService.queue.size,
             getDurationString(ManagementFactory.getRuntimeMXBean().uptime)
@@ -71,7 +71,7 @@ class StatsCommand : AbstractCommand("command.stats") {
         )
 
         val embed = Embedder(context)
-            .setThumbnail(context.getJDA().selfUser.effectiveAvatarUrl)
+            .setThumbnail(context.selfUser.effectiveAvatarUrl)
             .addField(title1, value1, false)
             .addField(title2, value2, false)
             .addField(title3, value3, false)

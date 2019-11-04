@@ -22,7 +22,7 @@ class SetEmbedColorCommand : AbstractCommand("command.setembedcolor") {
     override suspend fun execute(context: CommandContext) {
         val wrapper = context.daoManager.embedColorWrapper
         val msg = if (context.args.isEmpty()) {
-            val colorInt = wrapper.embedColorCache.get(context.getGuildId()).await()
+            val colorInt = wrapper.embedColorCache.get(context.guildId).await()
 
             if (colorInt == -1) {
                 i18n.getTranslation(context, "$root.show.unset")
@@ -32,12 +32,12 @@ class SetEmbedColorCommand : AbstractCommand("command.setembedcolor") {
             }
         } else {
             if (context.rawArg.equals("null", true)) {
-                wrapper.removeColor(context.getGuildId())
+                wrapper.removeColor(context.guildId)
 
                 i18n.getTranslation(context, "$root.unset")
             } else {
                 val color = getColorFromArgNMessage(context, 0) ?: return
-                wrapper.setColor(context.getGuildId(), color.rgb)
+                wrapper.setColor(context.guildId, color.rgb)
 
                 i18n.getTranslation(context, "$root.set")
                     .replace(PLACEHOLDER_ARG, color.rgb.toHexString())

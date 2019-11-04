@@ -47,9 +47,9 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
 
     private suspend fun displayRole(context: CommandContext, roleType: RoleType) {
         val daoWrapper = context.daoManager.roleWrapper
-        val pair = Pair(context.getGuildId(), roleType)
+        val pair = Pair(context.guildId, roleType)
         val roleId = daoWrapper.roleCache.get(pair).await()
-        val role = context.getGuild().getRoleById(roleId)
+        val role = context.guild.getRoleById(roleId)
 
         if (roleId != -1L && role == null) {
             daoWrapper.removeRole(pair.first, pair.second)
@@ -78,13 +78,13 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
         val daoWrapper = context.daoManager.roleWrapper
         val msg = if (context.args[1].equals("null", true)) {
 
-            daoWrapper.removeRole(context.getGuildId(), roleType)
+            daoWrapper.removeRole(context.guildId, roleType)
 
             i18n.getTranslation(language, "$root.unset")
                 .replace("%roleType%", roleType.text)
         } else {
             val role = getRoleByArgsNMessage(context, 1) ?: return
-            daoWrapper.setRole(context.getGuildId(), roleType, role.idLong)
+            daoWrapper.setRole(context.guildId, roleType, role.idLong)
 
             i18n.getTranslation(language, "$root.set")
                 .replace("%roleType%", roleType.text)
