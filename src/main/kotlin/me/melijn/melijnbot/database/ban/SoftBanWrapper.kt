@@ -4,7 +4,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
-import me.melijn.melijnbot.objects.utils.awaitNE
+import me.melijn.melijnbot.objects.utils.awaitOrNull
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
@@ -29,7 +29,7 @@ class SoftBanWrapper(val taskManager: TaskManager, private val softBanDao: SoftB
     }
 
     private suspend fun convertSoftBanInfoToMessage(context: CommandContext, softBan: SoftBan): String {
-        val kickAuthor = context.shardManager.retrieveUserById(softBan.softBanAuthorId).awaitNE()
+        val kickAuthor = context.shardManager.retrieveUserById(softBan.softBanAuthorId).awaitOrNull()
         return getSoftBanMessage(context, kickAuthor, softBan)
     }
 

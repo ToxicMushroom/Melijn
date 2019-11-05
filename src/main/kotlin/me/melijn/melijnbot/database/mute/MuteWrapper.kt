@@ -4,7 +4,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
-import me.melijn.melijnbot.objects.utils.awaitNE
+import me.melijn.melijnbot.objects.utils.awaitOrNull
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
@@ -39,14 +39,14 @@ class MuteWrapper(val taskManager: TaskManager, private val muteDao: MuteDao) {
     private suspend fun convertMuteInfoToMessage(context: CommandContext, mute: Mute): String {
         val muteAuthorId = mute.muteAuthorId ?: return continueConvertingInfoToMessage(context, null, mute)
 
-        val muteAuthor = context.shardManager.retrieveUserById(muteAuthorId).awaitNE()
+        val muteAuthor = context.shardManager.retrieveUserById(muteAuthorId).awaitOrNull()
         return continueConvertingInfoToMessage(context, muteAuthor, mute)
     }
 
     private suspend fun continueConvertingInfoToMessage(context: CommandContext, muteAuthor: User?, mute: Mute): String {
         val unbanAuthorId = mute.unmuteAuthorId ?: return getMuteMessage(context, muteAuthor, null, mute)
 
-        val unmuteAuthor = context.shardManager.retrieveUserById(unbanAuthorId).awaitNE()
+        val unmuteAuthor = context.shardManager.retrieveUserById(unbanAuthorId).awaitOrNull()
         return getMuteMessage(context, muteAuthor, unmuteAuthor, mute)
     }
 

@@ -4,7 +4,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
-import me.melijn.melijnbot.objects.utils.awaitNE
+import me.melijn.melijnbot.objects.utils.awaitOrNull
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
@@ -30,7 +30,7 @@ class WarnWrapper(val taskManager: TaskManager, private val warnDao: WarnDao) {
     }
 
     private suspend fun convertKickInfoToMessage(context: CommandContext, warn: Warn): String {
-        val warnAuthor = context.shardManager.retrieveUserById(warn.warnAuthorId).awaitNE()
+        val warnAuthor = context.shardManager.retrieveUserById(warn.warnAuthorId).awaitOrNull()
         return getWarnMessage(context, warnAuthor, warn)
     }
 

@@ -32,14 +32,21 @@ val Member.asTag: String
 val TextChannel.asTag: String
     get() = "#${this.name}"
 
-suspend fun <T> RestAction<T>.await() = suspendCoroutine<T> {
+suspend fun <T> RestAction<T>.await(failure: ((Throwable) -> Unit)? = null) = suspendCoroutine<T> {
     queue(
-        { success -> it.resume(success) },
-        { failure -> it.resumeWithException(failure) }
+        { success ->
+            it.resume(success)
+        }, { failed ->
+            if (failure == null) {
+                it.resumeWithException(failed)
+            } else{
+                failure.invoke(failed)
+            }
+        }
     )
 }
 
-suspend fun <T> RestAction<T>.awaitNE() = suspendCoroutine<T?> {
+suspend fun <T> RestAction<T>.awaitOrNull() = suspendCoroutine<T?> {
     queue(
         { success -> it.resume(success) },
         { _ -> it.resume(null) }

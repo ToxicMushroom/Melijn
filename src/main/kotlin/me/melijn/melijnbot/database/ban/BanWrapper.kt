@@ -4,7 +4,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
-import me.melijn.melijnbot.objects.utils.awaitNE
+import me.melijn.melijnbot.objects.utils.awaitOrNull
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
@@ -39,14 +39,14 @@ class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
 
     private suspend fun convertBanInfoToMessage(context: CommandContext, ban: Ban): String {
         val banAuthorId = ban.banAuthorId ?: return continueConvertingInfoToMessage(context, null, ban)
-        val banAuthor = context.shardManager.retrieveUserById(banAuthorId).awaitNE()
+        val banAuthor = context.shardManager.retrieveUserById(banAuthorId).awaitOrNull()
 
         return continueConvertingInfoToMessage(context, banAuthor, ban)
     }
 
     private suspend fun continueConvertingInfoToMessage(context: CommandContext, banAuthor: User?, ban: Ban): String {
         val unbanAuthorId = ban.unbanAuthorId ?: return getBanMessage(context, banAuthor, null, ban)
-        val unbanAuthor = context.shardManager.retrieveUserById(unbanAuthorId).awaitNE()
+        val unbanAuthor = context.shardManager.retrieveUserById(unbanAuthorId).awaitOrNull()
 
         return getBanMessage(context, banAuthor, unbanAuthor, ban)
     }
