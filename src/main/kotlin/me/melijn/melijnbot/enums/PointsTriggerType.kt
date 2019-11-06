@@ -1,9 +1,10 @@
 package me.melijn.melijnbot.enums
 
-enum class AutoPunishmentTriggerType {
+enum class PointsTriggerType {
     FIlTERED_MESSAGE,
     MUTE,
     SPAM,
     MANY_MENTIONS,
-    UNVERIFIED_TIME
+    UNVERIFIED_DURATION,
+    HOISTING
 }
