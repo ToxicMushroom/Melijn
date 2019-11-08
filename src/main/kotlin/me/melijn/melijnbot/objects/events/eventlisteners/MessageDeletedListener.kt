@@ -155,6 +155,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         val language = getLanguage(container.daoManager, -1, event.guild.idLong)
         val footer = i18n.getTranslation(language, "listener.message.deletion.log.purged.footer")
             .replace(PLACEHOLDER_USER, messageAuthor.asTag)
+            .replace("%userId%", purgeRequesterId.toString())
         eb.setFooter(footer, messageAuthor.effectiveAvatarUrl)
 
         sendEmbed(container.daoManager.embedDisabledWrapper, pmLogChannel, eb.build())
