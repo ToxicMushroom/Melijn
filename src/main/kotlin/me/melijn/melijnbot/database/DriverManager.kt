@@ -115,7 +115,7 @@ class DriverManager(dbSettings: Settings.Database) {
      *   objects: 5
      *   resultset: Consumer object to handle the resultset
      * **/
-    fun executeQuery(query: String, resultset: (ResultSet) -> Unit, vararg objects: Any) {
+    fun executeQuery(query: String, resultset: (ResultSet) -> Unit, vararg objects: Any?) {
         try {
             getUsableConnection { connection ->
                 if (connection.isClosed) {
@@ -190,9 +190,12 @@ class DriverManager(dbSettings: Settings.Database) {
 
 
                     preparedStatement.executeUpdate()
-                    val rs = preparedStatement.generatedKeys
-                    if (rs.next()) {
-                        it.resume(rs.getLong(2))
+                    preparedStatement.generatedKeys.use { rs ->
+                        if (rs.next()) {
+                            it.resume(rs.getLong(2))
+                        } else {
+                            throw IllegalArgumentException("No keys were generated when executing: $query")
+                        }
                     }
                 }
             }
