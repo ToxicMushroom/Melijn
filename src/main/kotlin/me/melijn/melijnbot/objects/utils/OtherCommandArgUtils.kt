@@ -34,6 +34,35 @@ suspend fun getIntegerFromArgNMessage(context: CommandContext, index: Int, start
     return int
 }
 
+suspend fun getFloatFromArgNMessage(context: CommandContext, index: Int, start: Float = Float.MIN_VALUE, end: Float = Float.MAX_VALUE): Float? {
+    if (argSizeCheckFailed(context, index)) return null
+    val arg = context.args[index]
+
+    val float = arg.toFloatOrNull()
+    val language = context.getLanguage()
+    when {
+        float == null -> {
+            val msg = i18n.getTranslation(language, "message.unknown.float")
+                .replace(PLACEHOLDER_ARG, arg)
+            sendMsg(context, msg)
+        }
+        float < start -> {
+            val msg = i18n.getTranslation(language, "message.tosmall.float")
+                .replace(PLACEHOLDER_ARG, arg)
+                .replace("%min%", start.toString())
+            sendMsg(context, msg)
+        }
+        float > end -> {
+            val msg = i18n.getTranslation(language, "message.tobig.float")
+                .replace(PLACEHOLDER_ARG, arg)
+                .replace("%max%", end.toString())
+            sendMsg(context, msg)
+        }
+    }
+
+    return float
+}
+
 suspend fun getBooleanFromArgN(context: CommandContext, index: Int): Boolean?{
     if (argSizeCheckFailed(context, index, true)) return null
     val arg = context.args[index]
