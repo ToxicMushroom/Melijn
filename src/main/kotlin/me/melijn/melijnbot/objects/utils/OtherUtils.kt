@@ -85,6 +85,20 @@ inline fun <reified T : Enum<*>> enumValueOrNull(name: String): T? =
         it.name.equals(name, true)
     }
 
+suspend inline fun <reified T : Enum<*>> getEnumFromArgNMessage(context: CommandContext, index: Int, path: String): T? {
+    if (argSizeCheckFailed(context, index)) return null
+    val enumName = context.args[index]
+    val enum = T::class.java.enumConstants.firstOrNull {
+        it.name.equals(enumName, true)
+    }
+    if (enum == null) {
+        val msg = i18n.getTranslation(context, path)
+            .replace(PLACEHOLDER_ARG, enumName)
+        sendMsg(context, msg)
+    }
+    return enum
+}
+
 val ccTagPattern = Pattern.compile("cc.\\d+")
 suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): Set<String>? {
     val arg = context.args[index]
@@ -124,8 +138,8 @@ suspend fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set
     val category: CommandCategory? = enumValueOrNull(arg)
 
     val commands = if (category == null) {
-            context.commandList
-                .filter { command -> command.isCommandFor(arg) }
+        context.commandList
+            .filter { command -> command.isCommandFor(arg) }
     } else {
         context.commandList
             .filter { command -> command.commandCategory == category }
