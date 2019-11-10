@@ -15,33 +15,38 @@ class FilterWrapper(val taskManager: TaskManager, private val filterDao: FilterD
     val allowedFilterCache = Caffeine.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
         .executor(taskManager.executorService)
-        .buildAsync<Long, List<String>>() { key, executor -> getFilters(key, FilterType.ALLOWED, executor) }
+        .buildAsync<Pair<Long, Long?>, List<String>>() { (first, second), executor ->
+            getFilters(first, second, FilterType.ALLOWED, executor)
+        }
 
     val deniedFilterCache = Caffeine.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
         .executor(taskManager.executorService)
-        .buildAsync<Long, List<String>>() { key, executor -> getFilters(key, FilterType.DENIED, executor) }
+        .buildAsync<Pair<Long, Long?>, List<String>>() { (first, second), executor ->
+            getFilters(first, second, FilterType.DENIED, executor)
+        }
 
-    private fun getFilters(guildId: Long, filterType: FilterType, executor: Executor = taskManager.executorService): CompletableFuture<List<String>> {
+    private fun getFilters(guildId: Long, channelId: Long?, filterType: FilterType, executor: Executor = taskManager.executorService): CompletableFuture<List<String>> {
         val future = CompletableFuture<List<String>>()
         executor.launch {
-            val filters = filterDao.get(guildId, filterType)
+            val filters = filterDao.get(guildId, channelId, filterType)
             future.complete(filters)
         }
         return future
     }
 
-    suspend fun addFilter(guildId: Long, filterType: FilterType, filter: String) {
-        filterDao.add(guildId, filterType, filter)
+    suspend fun addFilter(guildId: Long, channelId: Long?, filterType: FilterType, filter: String) {
+        filterDao.add(guildId, channelId, filterType, filter)
 
+        val pair = Pair(guildId, channelId)
         when (filterType) {
             FilterType.ALLOWED -> {
-                val newFilters = allowedFilterCache.get(guildId).await().toMutableList() + filter
-                allowedFilterCache.put(guildId, CompletableFuture.completedFuture(newFilters))
+                val newFilters = allowedFilterCache.get(pair).await().toMutableList() + filter
+                allowedFilterCache.put(pair, CompletableFuture.completedFuture(newFilters))
             }
             FilterType.DENIED -> {
-                val newFilters = deniedFilterCache.get(guildId).await().toMutableList() + filter
-                deniedFilterCache.put(guildId, CompletableFuture.completedFuture(newFilters))
+                val newFilters = deniedFilterCache.get(pair).await().toMutableList() + filter
+                deniedFilterCache.put(pair, CompletableFuture.completedFuture(newFilters))
             }
         }
     }
