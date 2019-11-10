@@ -13,9 +13,9 @@ import java.util.concurrent.TimeUnit
 class EmbedColorWrapper(val taskManager: TaskManager, private val embedColorDao: EmbedColorDao) {
 
     val embedColorCache = Caffeine.newBuilder()
-            .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
-            .executor(taskManager.executorService)
-            .buildAsync<Long, Int>() { key, executor -> getColor(key, executor) }
+        .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
+        .executor(taskManager.executorService)
+        .buildAsync<Long, Int>() { key, executor -> getColor(key, executor) }
 
     private fun getColor(guildId: Long, executor: Executor = taskManager.executorService): CompletableFuture<Int> {
         val future = CompletableFuture<Int>()
@@ -23,6 +23,7 @@ class EmbedColorWrapper(val taskManager: TaskManager, private val embedColorDao:
             val int = embedColorDao.get(guildId)
             future.complete(int)
         }
+
         return future
     }
 
@@ -32,7 +33,7 @@ class EmbedColorWrapper(val taskManager: TaskManager, private val embedColorDao:
     }
 
     suspend fun removeColor(userId: Long) {
-        embedColorCache.put(userId, CompletableFuture.completedFuture(-1))
+        embedColorCache.put(userId, CompletableFuture.completedFuture(0))
         embedColorDao.remove(userId)
     }
 }

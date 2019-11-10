@@ -33,7 +33,7 @@ class LogChannelDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun unset(guildId: Long, type: LogChannelType) {
-        driverManager.executeUpdate("REMOVE FROM $table WHERE guildId = ? AND type = ?",
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND type = ?",
             guildId, type.toString())
     }
 
@@ -56,7 +56,7 @@ class LogChannelDao(driverManager: DriverManager) : Dao(driverManager) {
 
     fun bulkRemove(guildId: Long, logChannelTypes: List<LogChannelType>) {
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("REMOVE FROM $table WHERE guildId = ? AND type = ?").use { statement ->
+            con.prepareStatement("DELETE FROM $table WHERE guildId = ? AND type = ?").use { statement ->
                 statement.setLong(1, guildId)
                 for (type in logChannelTypes) {
                     statement.setString(2, type.toString())

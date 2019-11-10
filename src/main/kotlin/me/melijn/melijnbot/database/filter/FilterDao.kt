@@ -17,8 +17,8 @@ class FilterDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun add(guildId: Long, channelId: Long?, type: FilterType, filter: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, type, filter) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
-            guildId, channelId, type, filter)
+        driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, type, filter) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
+            guildId, channelId ?: -1, type.toString(), filter)
     }
 
     suspend fun get(guildId: Long, channelId: Long?, type: FilterType): List<String> = suspendCoroutine {
@@ -28,12 +28,12 @@ class FilterDao(driverManager: DriverManager) : Dao(driverManager) {
                 filters.add(rs.getString("filter"))
             }
             it.resume(filters)
-        }, guildId, channelId, type)
+        }, guildId, channelId ?: -1, type.toString())
     }
 
     suspend fun remove(guildId: Long, channelId: Long?, type: FilterType, filter: String) {
-        driverManager.executeUpdate("REMOVE FROM $table WHERE guildId = ? AND channelId = ? AND type = ? AND filter = ?",
-            guildId, channelId, type, filter)
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND channelId = ? AND type = ? AND filter = ?",
+            guildId, channelId ?: -1, type.toString(), filter)
     }
 
 }

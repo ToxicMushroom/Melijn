@@ -34,7 +34,7 @@ class ForceRoleDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun remove(guildId: Long, userId: Long, roleId: Long) {
-        driverManager.executeUpdate("REMOVE FROM $table WHERE guildId = ? AND userId = ? AND roleId = ?",
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND userId = ? AND roleId = ?",
             guildId, userId, roleId)
     }
 

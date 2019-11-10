@@ -122,7 +122,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.Database) {
     val unverifiedUsersWrapper: UnverifiedUsersWrapper
 
     val filterWrapper: FilterWrapper
-    val filterWrappingModeWrapper: FilterWrappingModeWrapper
+    val filterModeWrapper: FilterWrappingModeWrapper
     val autoPunishmentWrapper: AutoPunishmentWrapper
     val autoPunishmentGroupWrapper: AutoPunishmentGroupWrapper
 
@@ -185,7 +185,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.Database) {
         unverifiedUsersWrapper = UnverifiedUsersWrapper(taskManager, UnverifiedUsersDao(driverManager))
 
         filterWrapper = FilterWrapper(taskManager, FilterDao(driverManager))
-        filterWrappingModeWrapper = FilterWrappingModeWrapper(taskManager, FilterWrappingModeDao(driverManager))
+        filterModeWrapper = FilterWrappingModeWrapper(taskManager, FilterWrappingModeDao(driverManager))
         autoPunishmentWrapper = AutoPunishmentWrapper(taskManager, AutoPunishmentDao(driverManager))
         autoPunishmentGroupWrapper = AutoPunishmentGroupWrapper(taskManager, AutoPunishmentGroupDao(driverManager))
 

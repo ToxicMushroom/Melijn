@@ -20,7 +20,7 @@ class EmbedColorDao(driverManager: DriverManager) : Dao(driverManager) {
             if (rs.next()) {
                 it.resume(rs.getInt("color"))
             } else {
-                it.resume(-1)
+                it.resume(0)
             }
         }, guildId)
     }

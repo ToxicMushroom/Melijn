@@ -39,7 +39,7 @@ class MessageDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun remove(guildId: Long, type: MessageType) {
-        driverManager.executeUpdate("REMOVE FROM $table WHERE guildId = ? AND type = ?",
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND type = ?",
             guildId, type.toString())
     }
 }

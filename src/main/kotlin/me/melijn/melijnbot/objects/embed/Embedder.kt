@@ -16,7 +16,7 @@ class Embedder(daoManager: DaoManager, guildId: Long, userId: Long, embedColor: 
             color = userEmbedColorWrapper.userEmbedColorCache.get(userId).get()
         }
 
-        if (color == -1) color = embedColor
+        if (color == 0) color = embedColor
         setColor(color)
     }
 }

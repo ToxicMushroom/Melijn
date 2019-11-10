@@ -163,7 +163,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                         loaded?.invoke(false)
                     }
                 } else {
-                    loadSpotifyTrackOther(context, query, artists, durationMs, title)
+                    loadSpotifyTrackOther(context, query, artists, durationMs, title, silent, loaded)
                 }
             }
 
@@ -183,11 +183,11 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                         return
                     }
                 }
-                loadSpotifyTrackOther(context, query, artists, durationMs, title)
+                loadSpotifyTrackOther(context, query, artists, durationMs, title, silent, loaded)
             }
 
             override fun noMatches() {
-                loadSpotifyTrackOther(context, query, artists, durationMs, title)
+                loadSpotifyTrackOther(context, query, artists, durationMs, title, silent, loaded)
             }
 
             override fun loadFailed(exception: FriendlyException) {
@@ -210,14 +210,14 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     ) {
         if (query.startsWith(YT_SELECTOR)) {
             if (artists != null) {
-                loadSpotifyTrack(context, query, null, durationMs)
+                loadSpotifyTrack(context, query, null, durationMs, silent, loaded)
             } else {
                 val newQuery = query.replaceFirst(YT_SELECTOR, SC_SELECTOR)
-                loadSpotifyTrack(context, newQuery, artists, durationMs)
+                loadSpotifyTrack(context, newQuery, artists, durationMs, silent, loaded)
             }
         } else if (query.startsWith(SC_SELECTOR)) {
             if (artists != null) {
-                loadSpotifyTrack(context, query, null, durationMs)
+                loadSpotifyTrack(context, query, null, durationMs, silent, loaded)
             } else {
                 if (!silent) sendMessageNoMatches(context, title)
                 loaded?.invoke(false)
@@ -247,8 +247,8 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         val loadedTracks = mutableListOf<Track>()
         val failedTracks = mutableListOf<Track>()
         val msg = i18n.getTranslation(context, "command.play.loadingtrack" + if (tracks.size > 1) "s" else "")
-            .replace("%songCount%", tracks.size.toString())
-            .replace("%donateAmount%", DONATE_QUEUE_LIMIT.toString())
+            .replace("%trackCount%", tracks.size.toString())
+
         val message = sendMsg(context, msg)
         for (track in tracks.map { playListTrack -> playListTrack.track }) {
             loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, true) {
@@ -257,6 +257,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 } else {
                     failedTracks.add(track)
                 }
+                println(loadedTracks.size + failedTracks.size)
                 if (loadedTracks.size + failedTracks.size == tracks.size) {
                     runBlocking {
                         val newMsg = i18n.getTranslation(context, "command.play.loadedtrack" + if (tracks.size > 1) "s" else "")
@@ -290,6 +291,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 } else {
                     failedTracks.add(track)
                 }
+                println(loadedTracks.size + failedTracks.size)
                 if (loadedTracks.size + failedTracks.size == simpleTracks.size) {
                     runBlocking {
                         val newMsg = i18n.getTranslation(context, "command.play.loadedtrack" + if (simpleTracks.size > 1) "s" else "")

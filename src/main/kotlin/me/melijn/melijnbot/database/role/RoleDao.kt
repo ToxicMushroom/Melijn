@@ -32,6 +32,6 @@ class RoleDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun unset(guildId: Long, roleType: RoleType) {
-        driverManager.executeUpdate("REMOVE FROM $table WHERE guildId = ? AND roleType = ?", guildId, roleType.toString())
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND roleType = ?", guildId, roleType.toString())
     }
 }

@@ -1,7 +1,10 @@
 package me.melijn.melijnbot.enums
 
-enum class WrappingMode {
+enum class FilterMode {
     MUST_MATCH_ALLOWED_FORMAT,
     MUST_MATCH_ALLOWED_FORMAT_EXCLUDE_FILTER,
-    DEFAULT
+    NO_WRAP,
+    DISABLED,
+    DEFAULT,
+    NO_MODE
 }

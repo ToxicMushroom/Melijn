@@ -34,7 +34,7 @@ class CustomCommandDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun remove(guildId: Long, id: Long) {
-        driverManager.executeUpdate("REMOVE FROM $table WHERE guildId = ? AND id = ?",
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND id = ?",
             guildId, id)
     }
 

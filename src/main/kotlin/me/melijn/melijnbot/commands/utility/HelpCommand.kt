@@ -97,14 +97,14 @@ class HelpCommand : AbstractCommand("command.help") {
             val eb = Embedder(context)
             eb.setTitle(title, "https://melijn.com/commands")
 
-            eb.addField(util, commandListString(commandList, CommandCategory.UTILITY), true)
-            eb.addField(administration, commandListString(commandList, CommandCategory.ADMINISTRATION), true)
-            eb.addField(moderation, commandListString(commandList, CommandCategory.MODERATION), true)
-            eb.addField(music, commandListString(commandList, CommandCategory.MUSIC), true)
-            eb.addField(image, commandListString(commandList, CommandCategory.IMAGE), true)
-            eb.addField(animal, commandListString(commandList, CommandCategory.ANIMAL), true)
-            eb.addField(anime, commandListString(commandList, CommandCategory.ANIME), true)
-            eb.addField(supporter, commandListString(commandList, CommandCategory.SUPPORTER), true)
+            eb.addField(util, commandListString(commandList, CommandCategory.UTILITY), false)
+            eb.addField(administration, commandListString(commandList, CommandCategory.ADMINISTRATION), false)
+            eb.addField(moderation, commandListString(commandList, CommandCategory.MODERATION), false)
+            eb.addField(music, commandListString(commandList, CommandCategory.MUSIC), false)
+            eb.addField(image, commandListString(commandList, CommandCategory.IMAGE), false)
+            eb.addField(animal, commandListString(commandList, CommandCategory.ANIMAL), false)
+            eb.addField(anime, commandListString(commandList, CommandCategory.ANIME), false)
+            eb.addField(supporter, commandListString(commandList, CommandCategory.SUPPORTER), false)
 
             eb.setFooter(commandAmount, null)
 
@@ -134,8 +134,8 @@ class HelpCommand : AbstractCommand("command.help") {
 
 }
 
-private fun commandListString(list: Set<AbstractCommand>, category: CommandCategory): String = list
+private fun commandListString(list: Set<AbstractCommand>, category: CommandCategory): String = "`" + list
     .stream()
     .filter { command -> command.commandCategory == category }
     .map { fCommand -> fCommand.name }
-    .collect(Collectors.joining("\n"))
+    .collect(Collectors.joining("`, `")) + "`"

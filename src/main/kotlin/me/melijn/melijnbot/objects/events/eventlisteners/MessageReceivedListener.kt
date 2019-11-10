@@ -5,9 +5,11 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.ChannelType
+import me.melijn.melijnbot.enums.FilterMode
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.VerificationType
 import me.melijn.melijnbot.objects.events.AbstractListener
+import me.melijn.melijnbot.objects.events.eventutil.FilterUtil
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
@@ -28,6 +30,40 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             handleMessageReceivedStoring(event)
             handleAttachmentLog(event)
             handleVerification(event)
+            handleFilter(event)
+        }
+    }
+
+    private suspend fun handleFilter(event: GuildMessageReceivedEvent) {
+        val guildId = event.guild.idLong
+        val channelId = event.channel.idLong
+        val daoManager = container.daoManager
+
+        val channelFilterMode = daoManager.filterModeWrapper.filterWrappingModeCache.get(Pair(guildId, channelId)).await()
+        val effectiveMode: FilterMode = if (channelFilterMode == FilterMode.NO_MODE) {
+            val guildFilterMode = daoManager.filterModeWrapper.filterWrappingModeCache.get(Pair(guildId, null)).await()
+            if (guildFilterMode == FilterMode.NO_MODE) {
+                FilterMode.DEFAULT
+            } else {
+                guildFilterMode
+            }
+        } else channelFilterMode
+
+        when (effectiveMode) {
+            FilterMode.MUST_MATCH_ALLOWED_FORMAT -> {
+
+            }
+            FilterMode.MUST_MATCH_ALLOWED_FORMAT_EXCLUDE_FILTER -> {
+
+            }
+            FilterMode.NO_WRAP -> {
+
+            }
+            FilterMode.DEFAULT -> {
+                FilterUtil.filterDefault(container, event.message)
+            }
+            FilterMode.NO_MODE -> throw IllegalArgumentException("Should be DEFAULT rn")
+            FilterMode.DISABLED -> return
         }
     }
 
@@ -73,7 +109,8 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
                     }
 
                 }
-                else -> {}
+                else -> {
+                }
             }
         }
 

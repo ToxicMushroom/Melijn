@@ -9,11 +9,11 @@ import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 
-class DeniedFiltersCommand : AbstractCommand("command.deniedfilters") {
+class AllowedFiltersCommand : AbstractCommand("command.allowedfilters") {
 
     init {
-        id = 115
-        name = "deniedFilters"
+        id = 114
+        name = "allowedFilters"
         children = arrayOf(AddArg(root), RemoveArg(root), RemoveByIndexArg(root), ListArg(root))
         commandCategory = CommandCategory.ADMINISTRATION
     }
@@ -37,7 +37,7 @@ class DeniedFiltersCommand : AbstractCommand("command.deniedfilters") {
                 context.rawArg.replaceFirst((context.args[0] + "\\s+").toRegex(), "")
             }
             val wrapper = context.daoManager.filterWrapper
-            wrapper.addFilter(context.guildId, channel?.idLong, FilterType.DENIED, denied)
+            wrapper.addFilter(context.guildId, channel?.idLong, FilterType.ALLOWED, denied)
 
             val part = if (channel == null) "" else ".channel"
             val msg = i18n.getTranslation(context, "$root.success$part")
@@ -58,10 +58,10 @@ class DeniedFiltersCommand : AbstractCommand("command.deniedfilters") {
         override suspend fun execute(context: CommandContext) {
             val channel = getTextChannelByArgsN(context, 0)
             val wrapper = context.daoManager.filterWrapper
-            val filters = wrapper.deniedFilterCache.get(Pair(context.guildId, channel?.idLong)).await()
+            val filters = wrapper.allowedFilterCache.get(Pair(context.guildId, channel?.idLong)).await()
             val index = getIntegerFromArgNMessage(context, context.args.size - 1, 0, filters.size - 1) ?: return
             val denied = filters[index]
-            wrapper.removeFilter(context.guildId, channel?.idLong, FilterType.DENIED, denied)
+            wrapper.removeFilter(context.guildId, channel?.idLong, FilterType.ALLOWED, denied)
 
             val part = if (channel == null) "" else ".channel"
             val msg = i18n.getTranslation(context, "$root.success$part")
@@ -87,7 +87,7 @@ class DeniedFiltersCommand : AbstractCommand("command.deniedfilters") {
             }
 
             val wrapper = context.daoManager.filterWrapper
-            wrapper.removeFilter(context.guildId, channel?.idLong, FilterType.DENIED, denied)
+            wrapper.removeFilter(context.guildId, channel?.idLong, FilterType.ALLOWED, denied)
 
             val part = if (channel == null) "" else ".channel"
             val msg = i18n.getTranslation(context, "$root.success$part")
@@ -107,7 +107,7 @@ class DeniedFiltersCommand : AbstractCommand("command.deniedfilters") {
         override suspend fun execute(context: CommandContext) {
             val channel = getTextChannelByArgsN(context, 0)
             val wrapper = context.daoManager.filterWrapper
-            val filters = wrapper.deniedFilterCache.get(Pair(context.guildId, channel?.idLong)).await()
+            val filters = wrapper.allowedFilterCache.get(Pair(context.guildId, channel?.idLong)).await()
 
             val part = if (channel == null) "" else ".channel"
             val title = i18n.getTranslation(context, "$root.success$part")

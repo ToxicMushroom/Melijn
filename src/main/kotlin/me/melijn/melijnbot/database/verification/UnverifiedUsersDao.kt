@@ -21,7 +21,7 @@ class UnverifiedUsersDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun remove(guildId: Long, userId: Long) {
-        driverManager.executeUpdate("REMOVE FROM $table WHERE guildId = ? AND userId = ?",
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND userId = ?",
             guildId, userId)
     }
 

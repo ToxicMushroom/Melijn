@@ -2,7 +2,7 @@ package me.melijn.melijnbot.database.filter
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
-import me.melijn.melijnbot.enums.WrappingMode
+import me.melijn.melijnbot.enums.FilterMode
 import me.melijn.melijnbot.objects.utils.enumValueOrNull
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -17,22 +17,23 @@ class FilterWrappingModeDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun set(guildId: Long, channelId: Long?, mode: WrappingMode) {
+    suspend fun set(guildId: Long, channelId: Long?, mode: FilterMode) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, mode) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET mode = ?",
-            guildId, channelId, mode, mode)
+            guildId, channelId ?: -1, mode.toString(), mode.toString())
     }
 
-    suspend fun get(guildId: Long, channelId: Long?): WrappingMode = suspendCoroutine {
-        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND channelId = ?", {rs ->
+    suspend fun get(guildId: Long, channelId: Long?): FilterMode = suspendCoroutine {
+        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND channelId = ?", { rs ->
             if (rs.next()) {
-                it.resume(enumValueOrNull(rs.getString("mode")) ?: WrappingMode.DEFAULT)
+                it.resume(enumValueOrNull(rs.getString("mode")) ?: FilterMode.NO_MODE)
             } else {
-                it.resume(WrappingMode.DEFAULT)
+                it.resume(FilterMode.NO_MODE)
             }
-        }, guildId, channelId)
+        }, guildId, channelId ?: -1)
     }
 
     suspend fun unset(guildId: Long, channelId: Long?) {
-        driverManager.executeUpdate("REMOVE FROM $table WHERE guildId = ? AND channelId = ?", guildId, channelId)
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND channelId = ?",
+            guildId, channelId ?: -1)
     }
 }
