@@ -64,7 +64,10 @@ class DeniedFiltersCommand : AbstractCommand("command.deniedfilters") {
             } else {
                 context.rawArg.replaceFirst((context.args[0] + "\\s+").toRegex(), "")
             }
+
             val wrapper = context.daoManager.filterWrapper
+            //if (wrapper.contains())
+
             wrapper.removeFilter(context.guildId, channel?.idLong, FilterType.DENIED, denied)
 
             val part = if (channel == null) "" else ".channel"

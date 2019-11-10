@@ -31,4 +31,9 @@ class FilterDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId, channelId, type)
     }
 
+    suspend fun remove(guildId: Long, channelId: Long?, type: FilterType, filter: String) {
+        driverManager.executeUpdate("REMOVE FROM $table WHERE guildId = ? AND channelId = ? AND type = ? AND filter = ?",
+            guildId, channelId, type, filter)
+    }
+
 }

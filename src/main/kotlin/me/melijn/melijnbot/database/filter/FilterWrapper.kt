@@ -50,4 +50,28 @@ class FilterWrapper(val taskManager: TaskManager, private val filterDao: FilterD
             }
         }
     }
+
+    suspend fun removeFilter(guildId: Long, channelId: Long?, type: FilterType, filter: String) {
+        filterDao.remove(guildId, channelId, type, filter)
+
+        val pair = Pair(guildId, channelId)
+        when (type) {
+            FilterType.ALLOWED -> {
+                val newFilters = allowedFilterCache.get(pair).await().toMutableList() - filter
+                allowedFilterCache.put(pair, CompletableFuture.completedFuture(newFilters))
+            }
+            FilterType.DENIED -> {
+                val newFilters = deniedFilterCache.get(pair).await().toMutableList() - filter
+                deniedFilterCache.put(pair, CompletableFuture.completedFuture(newFilters))
+            }
+        }
+    }
+
+    suspend fun contains(guildId: Long, channelId: Long?, type: FilterType, filter: String): Boolean {
+        val pair = Pair(guildId, channelId)
+        return when (type) {
+            FilterType.ALLOWED -> allowedFilterCache
+            FilterType.DENIED -> deniedFilterCache
+        }.get(pair).await().contains(filter)
+    }
 }
