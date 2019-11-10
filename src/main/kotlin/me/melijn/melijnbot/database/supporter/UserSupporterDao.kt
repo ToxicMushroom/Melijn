@@ -19,9 +19,9 @@ class UserSupporterDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeQuery("SELECT * FROM $table", { resultset ->
             while (resultset.next()) {
                 list.add(Supporter(
-                        resultset.getLong("userId"),
-                        resultset.getLong("guildId"),
-                        resultset.getLong("startDate")
+                    resultset.getLong("userId"),
+                    resultset.getLong("guildId"),
+                    resultset.getLong("startDate")
                 ))
             }
             supporters.invoke(list)
@@ -29,7 +29,7 @@ class UserSupporterDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     fun contains(userId: Long, contains: (Boolean) -> Unit) {
-        driverManager.executeQuery("SELECT * FROM $table WHERE userId = ?",  { resultset ->
+        driverManager.executeQuery("SELECT * FROM $table WHERE userId = ?", { resultset ->
             contains.invoke(resultset.next())
         }, userId)
     }
