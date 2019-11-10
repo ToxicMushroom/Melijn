@@ -2,6 +2,10 @@ package me.melijn.melijnbot.database
 
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Settings
+import me.melijn.melijnbot.database.autopunishment.AutoPunishmentDao
+import me.melijn.melijnbot.database.autopunishment.AutoPunishmentGroupDao
+import me.melijn.melijnbot.database.autopunishment.AutoPunishmentGroupWrapper
+import me.melijn.melijnbot.database.autopunishment.AutoPunishmentWrapper
 import me.melijn.melijnbot.database.ban.BanDao
 import me.melijn.melijnbot.database.ban.BanWrapper
 import me.melijn.melijnbot.database.ban.SoftBanDao
@@ -18,6 +22,10 @@ import me.melijn.melijnbot.database.disabled.ChannelCommandStateWrapper
 import me.melijn.melijnbot.database.disabled.DisabledCommandDao
 import me.melijn.melijnbot.database.disabled.DisabledCommandWrapper
 import me.melijn.melijnbot.database.embed.*
+import me.melijn.melijnbot.database.filter.FilterDao
+import me.melijn.melijnbot.database.filter.FilterWrapper
+import me.melijn.melijnbot.database.filter.FilterWrappingModeDao
+import me.melijn.melijnbot.database.filter.FilterWrappingModeWrapper
 import me.melijn.melijnbot.database.kick.KickDao
 import me.melijn.melijnbot.database.kick.KickWrapper
 import me.melijn.melijnbot.database.language.GuildLanguageDao
@@ -113,6 +121,11 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.Database) {
     val verificationUserFlowRateWrapper: VerificationUserFlowRateWrapper
     val unverifiedUsersWrapper: UnverifiedUsersWrapper
 
+    val filterWrapper: FilterWrapper
+    val filterWrappingModeWrapper: FilterWrappingModeWrapper
+    val autoPunishmentWrapper: AutoPunishmentWrapper
+    val autoPunishmentGroupWrapper: AutoPunishmentGroupWrapper
+
     init {
         val driverManager = DriverManager(mysqlSettings)
 
@@ -170,6 +183,11 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.Database) {
         verificationTypeWrapper = VerificationTypeWrapper(taskManager, VerificationTypeDao(driverManager))
         verificationUserFlowRateWrapper = VerificationUserFlowRateWrapper(taskManager, VerificationUserFlowRateDao(driverManager))
         unverifiedUsersWrapper = UnverifiedUsersWrapper(taskManager, UnverifiedUsersDao(driverManager))
+
+        filterWrapper = FilterWrapper(taskManager, FilterDao(driverManager))
+        filterWrappingModeWrapper = FilterWrappingModeWrapper(taskManager, FilterWrappingModeDao(driverManager))
+        autoPunishmentWrapper = AutoPunishmentWrapper(taskManager, AutoPunishmentDao(driverManager))
+        autoPunishmentGroupWrapper = AutoPunishmentGroupWrapper(taskManager, AutoPunishmentGroupDao(driverManager))
 
         //After registering wrappers
         driverManager.executeTableRegistration()
