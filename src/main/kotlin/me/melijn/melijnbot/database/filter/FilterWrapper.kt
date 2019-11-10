@@ -10,12 +10,12 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
-class FilterWrapper (val taskManager: TaskManager, private val filterDao: FilterDao) {
+class FilterWrapper(val taskManager: TaskManager, private val filterDao: FilterDao) {
 
     val allowedFilterCache = Caffeine.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
         .executor(taskManager.executorService)
-        .buildAsync<Long, List<String>>() { key, executor -> getFilters(key,FilterType.ALLOWED, executor) }
+        .buildAsync<Long, List<String>>() { key, executor -> getFilters(key, FilterType.ALLOWED, executor) }
 
     val deniedFilterCache = Caffeine.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -31,7 +31,7 @@ class FilterWrapper (val taskManager: TaskManager, private val filterDao: Filter
         return future
     }
 
-    suspend fun addFilter(guildId: Long, channelId: Long, filterType: FilterType, filter: String) {
+    suspend fun addFilter(guildId: Long, filterType: FilterType, filter: String) {
         filterDao.add(guildId, filterType, filter)
 
         when (filterType) {
