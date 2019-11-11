@@ -288,7 +288,7 @@ fun MessageEmbed.toMessage(): String {
         sb.append("***").append(this.author?.name).appendln("***")
     }
     if (this.title != null) {
-        sb.appendln("**__${this.title}__**\n")
+        sb.appendln("__${this.title}__\n")
     }
     if (this.description != null) {
         sb.append(this.description?.replace(Regex("\\[(.+)]\\((.+)\\)"), "$1 (Link: $2)")).append("\n\n")

@@ -39,7 +39,7 @@ class VoteInfoCommand : AbstractCommand("command.voteinfo") {
 
         val title = context.getTranslation("$root.title")
             .replace(PLACEHOLDER_USER, target.asTag)
-        val userId = context.getTranslation("$root.field.userId")
+        val userId = context.getTranslation("$root.field.userid")
         val votes = context.getTranslation("$root.field.votes")
         val streak = context.getTranslation("$root.field.streak")
         val lastTime = context.getTranslation("$root.field.lasttime")
