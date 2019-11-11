@@ -49,6 +49,8 @@ import me.melijn.melijnbot.database.role.*
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.database.supporter.UserSupporterDao
 import me.melijn.melijnbot.database.verification.*
+import me.melijn.melijnbot.database.votes.VoteDao
+import me.melijn.melijnbot.database.votes.VoteWrapper
 import me.melijn.melijnbot.database.warn.WarnDao
 import me.melijn.melijnbot.database.warn.WarnWrapper
 import me.melijn.melijnbot.objects.threading.TaskManager
@@ -126,6 +128,8 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.Database) {
     val autoPunishmentWrapper: AutoPunishmentWrapper
     val autoPunishmentGroupWrapper: AutoPunishmentGroupWrapper
 
+    val voteWrapper: VoteWrapper
+
     init {
         val driverManager = DriverManager(mysqlSettings)
 
@@ -189,6 +193,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.Database) {
         autoPunishmentWrapper = AutoPunishmentWrapper(taskManager, AutoPunishmentDao(driverManager))
         autoPunishmentGroupWrapper = AutoPunishmentGroupWrapper(taskManager, AutoPunishmentGroupDao(driverManager))
 
+        voteWrapper = VoteWrapper(VoteDao(driverManager))
         //After registering wrappers
         driverManager.executeTableRegistration()
         for (func in afterTableFunctions) {
