@@ -81,7 +81,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, path)
                 .replace("%commandCount%", commands.size.toString())
-                .replace("%commandNode%", context.args[1])
+                .replace("%commandNode%", context.args[0])
                 .replace("%cooldown%", cooldown.toString())
 
             sendMsg(context, msg)
@@ -115,11 +115,11 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
             for ((index, entry) in map.entries.withIndex()) {
                 val cmd = context.commandList.firstOrNull { cmd -> cmd.id.toString() == entry.key }
                 if (cmd != null) {
-                    content += "$index - [${cmd.name}]"
+                    content += "\n$index - [${cmd.name}] - ${entry.value}"
                 } else {
                     val matcher = ccTagPattern.matcher(entry.key)
                     if (matcher.find()) {
-                        content += "$index - CustomCommand - ${matcher.group(1)}}"
+                        content += "\n$index - CustomCommand - [${matcher.group(1)}] - ${entry.value}"
                     }
                 }
             }

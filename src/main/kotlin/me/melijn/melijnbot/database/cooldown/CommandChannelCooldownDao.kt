@@ -23,9 +23,9 @@ class CommandChannelCooldownDao(driverManager: DriverManager) : Dao(driverManage
     }
 
     fun bulkPut(guildId: Long, channelId: Long, commandsIds: Set<String>, cooldownMillis: Long) {
+        val sql = "INSERT INTO $table (guildId, channelId, commandId, cooldownMillis) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET cooldownMillis = ?"
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("INSERT INTO $table (guildId, channelId, commandId, cooldownMillis) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET cooldownMillis = ?").use {
-                preparedStatement ->
+            con.prepareStatement(sql).use { preparedStatement ->
                 preparedStatement.setLong(1, guildId)
                 preparedStatement.setLong(2, channelId)
                 preparedStatement.setLong(4, cooldownMillis)
@@ -40,9 +40,9 @@ class CommandChannelCooldownDao(driverManager: DriverManager) : Dao(driverManage
     }
 
     fun bulkDelete(channelId: Long, commandsIds: Set<String>) {
+        val sql = "DELETE FROM $table WHERE channelId = ? AND commandId = ?"
         driverManager.getUsableConnection { con ->
-            con.prepareStatement("DELETE FROM $table WHERE channelId = ? AND commandId = ?").use {
-                preparedStatement ->
+            con.prepareStatement(sql).use { preparedStatement ->
                 preparedStatement.setLong(1, channelId)
                 for (cmdId in commandsIds) {
                     preparedStatement.setString(2, cmdId)

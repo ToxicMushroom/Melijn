@@ -367,7 +367,9 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         val userId = event.author.idLong
         val channelId = event.channel.idLong
 
-        if (!container.daoManager.commandChannelCoolDownWrapper.executions.contains(Pair(guildId, userId))) return false
+        if (!container.daoManager.commandChannelCoolDownWrapper.executions.contains(Pair(guildId, userId))) {
+            return false
+        }
 
         var lastExecution = 0L
         var lastExecutionChannel = 0L
@@ -403,7 +405,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
             val cooldown = commandCooldowns[id] ?: 0L
 
-            if (System.currentTimeMillis() - cooldown < lastExecutionChannel) {
+            if (System.currentTimeMillis() - cooldown < lastExecution) {
                 if (cooldownResult < cooldown) cooldownResult = cooldown
                 bool = true
             }
@@ -424,6 +426,4 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
         return bool
     }
-
-
 }
