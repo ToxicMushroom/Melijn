@@ -1,14 +1,13 @@
 package me.melijn.melijnbot.objects.events.eventlisteners
 
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.future.await
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.events.AbstractListener
+import me.melijn.melijnbot.objects.events.eventutil.FilterUtil
 import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
@@ -20,7 +19,12 @@ import java.awt.Color
 class MessageUpdateListener(container: Container) : AbstractListener(container) {
 
     override fun onEvent(event: GenericEvent) {
-        if (event is GuildMessageUpdateEvent) onMessageUpdate(event)
+        if (event is GuildMessageUpdateEvent) {
+            onMessageUpdate(event)
+            runBlocking {
+                FilterUtil.filterDefault(container, event.message)
+            }
+        }
     }
 
     private fun onMessageUpdate(event: GuildMessageUpdateEvent) = runBlocking {
@@ -39,7 +43,7 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
             )
         val oldContent = daoMessage.content
         daoMessage.content = newContent
-        GlobalScope.launch {
+        container.taskManager.async {
             messageWrapper.setMessage(daoMessage)
         }
 

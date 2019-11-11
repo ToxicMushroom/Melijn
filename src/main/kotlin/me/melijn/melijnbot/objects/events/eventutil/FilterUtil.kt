@@ -2,12 +2,51 @@ package me.melijn.melijnbot.objects.events.eventutil
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.enums.FilterMode
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import java.util.*
 import java.util.regex.Pattern
 
 object FilterUtil {
+
+    suspend fun handleFilter(container: Container, message: Message) = container.taskManager.async {
+        val guild = message.guild
+        val channel = message.textChannel
+        val guildId = guild.idLong
+        val channelId = channel.idLong
+        val member = message.member ?: return@async
+        val daoManager = container.daoManager
+        if (member.hasPermission(channel, Permission.MESSAGE_MANAGE) || member == guild.selfMember) return@async
+
+        val channelFilterMode = daoManager.filterModeWrapper.filterWrappingModeCache.get(Pair(guildId, channelId)).await()
+        val effectiveMode: FilterMode = if (channelFilterMode == FilterMode.NO_MODE) {
+            val guildFilterMode = daoManager.filterModeWrapper.filterWrappingModeCache.get(Pair(guildId, null)).await()
+            if (guildFilterMode == FilterMode.NO_MODE) {
+                FilterMode.DEFAULT
+            } else {
+                guildFilterMode
+            }
+        } else channelFilterMode
+
+        when (effectiveMode) {
+            FilterMode.MUST_MATCH_ALLOWED_FORMAT -> {
+
+            }
+            FilterMode.MUST_MATCH_ALLOWED_FORMAT_EXCLUDE_FILTER -> {
+
+            }
+            FilterMode.NO_WRAP -> {
+
+            }
+            FilterMode.DEFAULT -> {
+                filterDefault(container, message)
+            }
+            FilterMode.NO_MODE -> throw IllegalArgumentException("Should be DEFAULT rn")
+            FilterMode.DISABLED -> return@async
+        }
+    }
+
     suspend fun filterDefault(container: Container, message: Message) {
         val guild = message.guild
         val selfMember = guild.selfMember
