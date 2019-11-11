@@ -42,6 +42,9 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
             else -> {
                 val language = context.getLanguage()
                 val msg = i18n.getTranslation(language, "$root.notconfirm")
+                    .replace("%syntax%", i18n.getTranslation(context, syntax)
+                        .replace("%prefix%", context.usedPrefix)
+                    )
                 sendMsg(context, msg)
             }
         }

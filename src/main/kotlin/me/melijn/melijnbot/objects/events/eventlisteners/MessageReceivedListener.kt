@@ -37,7 +37,9 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
     private suspend fun handleFilter(event: GuildMessageReceivedEvent) = container.taskManager.async {
         val guildId = event.guild.idLong
         val channelId = event.channel.idLong
+        val member = event.member ?: return@async
         val daoManager = container.daoManager
+        if (member.hasPermission(event.channel, Permission.MESSAGE_MANAGE) || member == event.guild.selfMember) return@async
 
         val channelFilterMode = daoManager.filterModeWrapper.filterWrappingModeCache.get(Pair(guildId, channelId)).await()
         val effectiveMode: FilterMode = if (channelFilterMode == FilterMode.NO_MODE) {

@@ -2,6 +2,7 @@ package me.melijn.melijnbot.objects.command
 
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.music.GuildMusicPlayer
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.web.WebManager
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
@@ -104,6 +105,8 @@ class CommandContext(
         rawArg.replace(patternForRemoval, "")
         return rawArg
     }
+
+    suspend fun getTranslation(path: String): String = i18n.getTranslation(this, path)
 
     val guildMusicPlayer: GuildMusicPlayer
         get() = musicPlayerManager.getGuildMusicPlayer(guild)

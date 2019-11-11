@@ -44,27 +44,26 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
     }
 
     private suspend fun setEmbedStateState(context: CommandContext) {
-        var disabledState: Boolean? = boolFromStateArg(context.args[0].toLowerCase())
-        if (disabledState == null) {
+        val state: Boolean? = boolFromStateArg(context.args[0].toLowerCase())
+        if (state == null) {
             sendSyntax(context)
             return
         }
-        disabledState = !disabledState
 
         val dao = context.daoManager.embedDisabledWrapper
-        dao.setDisabled(context.guildId, disabledState)
+        dao.setDisabled(context.guildId, state)
 
         val language = context.getLanguage()
         val unReplaceMsg = i18n.getTranslation(language, "$root.set.success")
         val msg = replaceState(
             unReplaceMsg,
-            disabledState
+            state
         )
         sendMsg(context, msg)
     }
 
 
-    private fun replaceState(msg: String, disabledState: Boolean): String {
-        return msg.replace("%disabledState%", if (disabledState) "disabled" else "enabled")
+    private fun replaceState(msg: String, state: Boolean): String {
+        return msg.replace("%disabledState%", if (state) "enabled" else "disabled")
     }
 }

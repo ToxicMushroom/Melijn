@@ -150,10 +150,16 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             runCustomCommandByChance(event, commandParts, mapje)
             return
         }
+
     }
 
     private suspend fun runCustomCommandByChance(event: MessageReceivedEvent, commandParts: List<String>, ccs: Map<CustomCommand, String?>) {
-        val cc = getCustomCommandByChance(ccs.keys.toList())
+        val cc: CustomCommand = if (ccs.keys.size == 1) {
+            ccs.keys.first()
+        } else {
+            getCustomCommandByChance(ccs.keys.toList())
+        }
+
         if (checksFailed(cc, event)) return
 
         val cParts = commandParts.toMutableList()
@@ -235,9 +241,9 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         val winner = Random.nextInt(range)
         range = 0
         for (cc in ccs) {
-            val bool1 = (range < winner)
+            val bool1 = (range <= winner)
             range += cc.chance
-            val bool2 = (range < winner)
+            val bool2 = (range <= winner)
             if (bool1 && !bool2) {
                 return cc
             }

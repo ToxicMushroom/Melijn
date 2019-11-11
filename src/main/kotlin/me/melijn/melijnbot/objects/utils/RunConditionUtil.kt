@@ -2,6 +2,7 @@ package me.melijn.melijnbot.objects.utils
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.commands.utility.VOTE_URL
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.command.hasPermission
@@ -27,6 +28,23 @@ object RunConditionUtil {
             RunCondition.PLAYING_TRACK_NOT_NULL -> checkPlayingTrackNotNull(container, event, language)
             RunCondition.DEV_ONLY -> checkDevOnly(container, event, language)
             RunCondition.CHANNEL_NSFW -> checkChannelNSFW(container, event, language)
+            RunCondition.VOTED -> checkVoted(container, event, language)
+        }
+    }
+
+    private suspend fun checkVoted(container: Container, event: MessageReceivedEvent, language: String): Boolean {
+        return if (container.settings.developerIds.contains(event.author.idLong)) {
+            true
+        } else {
+            val vote = container.daoManager.voteWrapper.getUserVote(event.author.idLong) ?: return false
+            if ((System.currentTimeMillis() - vote.lastTime) < 86_400_000) {
+                true
+            } else {
+                val msg = i18n.getTranslation(language, "message.runcondition.failed.voted")
+                    .replace("%url%", VOTE_URL)
+                event.channel.sendMessage(msg).queue()
+                false
+            }
         }
     }
 

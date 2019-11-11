@@ -376,22 +376,27 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
         }
     }
 
-    class AttachmentsArg(root: String, val type: MessageType) : AbstractCommand("$root.attachments") {
+    class AttachmentsArg(parent: String, val type: MessageType) : AbstractCommand("$parent.attachments") {
 
         init {
             name = "attachments"
             aliases = arrayOf("a")
-            children = arrayOf(ListArg(root, type), AddArg(root, type), RemoveArg(root, type))
+            children = arrayOf(
+                ListArg(root, type),
+                AddArg(root, type),
+                RemoveArg(root, type)
+            )
         }
 
         override suspend fun execute(context: CommandContext) {
             sendSyntax(context)
         }
 
-        class ListArg(root: String, val type: MessageType) : AbstractCommand("$root.list") {
+        class ListArg(parent: String, val type: MessageType) : AbstractCommand("$parent.list") {
 
             init {
                 name = "list"
+                aliases = arrayOf("ls")
             }
 
             override suspend fun execute(context: CommandContext) {
@@ -399,13 +404,18 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
             }
         }
 
-        class AddArg(root: String, val type: MessageType) : AbstractCommand("$root.add") {
+        class AddArg(parent: String, val type: MessageType) : AbstractCommand("$parent.add") {
 
             init {
                 name = "add"
+                aliases = arrayOf("a")
             }
 
             override suspend fun execute(context: CommandContext) {
+                if (context.args.isEmpty()) {
+                    sendSyntax(context, syntax)
+                    return
+                }
                 MessageCommandUtil.addAttachmentJoinLeave(context, type)
             }
 
@@ -415,9 +425,14 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
 
             init {
                 name = "remove"
+                aliases = arrayOf("delete", "r", "d")
             }
 
             override suspend fun execute(context: CommandContext) {
+                if (context.args.isEmpty()) {
+                    sendSyntax(context, syntax)
+                    return
+                }
                 MessageCommandUtil.removeAttachmentJoinLeave(context, type)
             }
         }

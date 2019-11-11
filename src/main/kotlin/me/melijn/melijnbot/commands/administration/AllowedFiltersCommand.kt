@@ -65,6 +65,7 @@ class AllowedFiltersCommand : AbstractCommand("command.allowedfilters") {
 
             val part = if (channel == null) "" else ".channel"
             val msg = i18n.getTranslation(context, "$root.success$part")
+                .replace("%index%", index.toString())
                 .replace("%filter%", denied)
                 .replace(PLACEHOLDER_CHANNEL, channel?.asTag ?: "")
             sendMsg(context, msg)
@@ -97,6 +98,7 @@ class AllowedFiltersCommand : AbstractCommand("command.allowedfilters") {
         }
     }
 
+
     class ListArg(parent: String) : AbstractCommand("$parent.list") {
 
         init {
@@ -116,6 +118,7 @@ class AllowedFiltersCommand : AbstractCommand("command.allowedfilters") {
             for ((index, filter) in filters.withIndex()) {
                 content += "\n$index - [$filter]"
             }
+            content += "```"
             val msg = title + content
             sendMsg(context, msg)
         }

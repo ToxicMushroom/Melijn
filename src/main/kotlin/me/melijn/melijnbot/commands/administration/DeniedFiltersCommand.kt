@@ -116,6 +116,7 @@ class DeniedFiltersCommand : AbstractCommand("command.deniedfilters") {
             for ((index, filter) in filters.withIndex()) {
                 content += "\n$index - [$filter]"
             }
+            content += "```"
             val msg = title + content
             sendMsg(context, msg)
         }

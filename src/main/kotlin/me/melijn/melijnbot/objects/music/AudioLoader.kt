@@ -27,6 +27,18 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     private val spotifyTrackDiff = 2000
 
 
+//    fun audioLoadResultHandler(
+//        failed: (FriendlyException) -> Unit,
+//        loaded: (AudioTrack) -> Unit,
+//        noMatches: () -> Unit,
+//        playListLoaded: (AudioPlaylist) -> Unit
+//    ) = object : AudioLoadResultHandler {
+//        override fun loadFailed(exception: FriendlyException) = failed(exception)
+//        override fun trackLoaded(track: AudioTrack) = loaded(track)
+//        override fun noMatches() = noMatches()
+//        override fun playlistLoaded(playlist: AudioPlaylist) = playListLoaded(playlist)
+//    }
+
     fun loadNewTrackNMessage(context: CommandContext, source: String, isPlaylist: Boolean = false) {
         val guild = context.guild
         val guildMusicPlayer = musicPlayerManager.getGuildMusicPlayer(guild)

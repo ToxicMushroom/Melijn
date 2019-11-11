@@ -8,7 +8,6 @@ import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
-import java.util.stream.Collectors
 
 
 class HelpCommand : AbstractCommand("command.help") {
@@ -81,6 +80,7 @@ class HelpCommand : AbstractCommand("command.help") {
 
         override suspend fun execute(context: CommandContext) {
             val commandList = context.commandList
+                .sortedBy { cmd -> cmd.name }
             val language = context.getLanguage()
             val title = i18n.getTranslation(language, "$root.title")
             val util = i18n.getTranslation(language, "$root.field1.title")
@@ -134,8 +134,8 @@ class HelpCommand : AbstractCommand("command.help") {
 
 }
 
-private fun commandListString(list: Set<AbstractCommand>, category: CommandCategory): String = "`" + list
-    .stream()
+private fun commandListString(list: List<AbstractCommand>, category: CommandCategory): String = list
     .filter { command -> command.commandCategory == category }
-    .map { fCommand -> fCommand.name }
-    .collect(Collectors.joining("`, `")) + "`"
+    .joinToString("`, `", "`", "`") { cmd ->
+        cmd.name
+    }

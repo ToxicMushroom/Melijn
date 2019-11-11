@@ -48,8 +48,9 @@ object FilterUtil {
                     val endDenied = deniedPositions[beginDenied] ?: return
                     for (beginAllowed in allowedPositions.keys) {
                         val endAllowed = allowedPositions[beginAllowed] ?: return
-                        if (beginDenied > beginAllowed && endDenied < endAllowed) continue
-                        detectedWord.append(messageContent, beginDenied, endDenied)
+                        if (beginDenied < beginAllowed || endDenied > endAllowed) {
+                            detectedWord.append(messageContent, beginDenied, endDenied)
+                        }
                     }
                 }
             } else if (deniedPositions.isNotEmpty()) {

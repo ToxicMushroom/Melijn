@@ -7,7 +7,6 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
@@ -130,7 +129,7 @@ object StringUtils {
 @Nullable
 fun boolFromStateArg(state: String): Boolean? {
     return when (state) {
-        "disable", "no", "false", "disabled", "off" -> true
+        "disable", "no", "false", "disabled", "off" -> false
         "enable", "yes", "true", "enabled", "on" -> true
         else -> null
     }
@@ -150,7 +149,7 @@ fun Long.asEpochMillisToDateTime(): String {
 }
 
 fun OffsetDateTime.asLongLongGMTString(): String {
-    return this.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG, FormatStyle.LONG).withZone(ZoneId.of("GMT")))
+    return this.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss"))
 }
 
 fun getDurationString(milliseconds: Long): String {
