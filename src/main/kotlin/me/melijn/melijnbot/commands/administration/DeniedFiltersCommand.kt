@@ -6,7 +6,6 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 
 class DeniedFiltersCommand : AbstractCommand("command.deniedfilters") {
@@ -40,7 +39,7 @@ class DeniedFiltersCommand : AbstractCommand("command.deniedfilters") {
             wrapper.addFilter(context.guildId, channel?.idLong, FilterType.DENIED, denied)
 
             val part = if (channel == null) "" else ".channel"
-            val msg = i18n.getTranslation(context, "$root.success$part")
+            val msg = context.getTranslation("$root.success$part")
                 .replace("%filter%", denied)
                 .replace(PLACEHOLDER_CHANNEL, channel?.asTag ?: "")
             sendMsg(context, msg)
@@ -64,7 +63,7 @@ class DeniedFiltersCommand : AbstractCommand("command.deniedfilters") {
             wrapper.removeFilter(context.guildId, channel?.idLong, FilterType.DENIED, denied)
 
             val part = if (channel == null) "" else ".channel"
-            val msg = i18n.getTranslation(context, "$root.success$part")
+            val msg = context.getTranslation("$root.success$part")
                 .replace("%filter%", denied)
                 .replace(PLACEHOLDER_CHANNEL, channel?.asTag ?: "")
             sendMsg(context, msg)
@@ -90,7 +89,7 @@ class DeniedFiltersCommand : AbstractCommand("command.deniedfilters") {
             wrapper.removeFilter(context.guildId, channel?.idLong, FilterType.DENIED, denied)
 
             val part = if (channel == null) "" else ".channel"
-            val msg = i18n.getTranslation(context, "$root.success$part")
+            val msg = context.getTranslation("$root.success$part")
                 .replace("%filter%", denied)
                 .replace(PLACEHOLDER_CHANNEL, channel?.asTag ?: "")
             sendMsg(context, msg)
@@ -110,7 +109,7 @@ class DeniedFiltersCommand : AbstractCommand("command.deniedfilters") {
             val filters = wrapper.deniedFilterCache.get(Pair(context.guildId, channel?.idLong)).await()
 
             val part = if (channel == null) "" else ".channel"
-            val title = i18n.getTranslation(context, "$root.success$part")
+            val title = context.getTranslation("$root.success$part")
                 .replace(PLACEHOLDER_CHANNEL, channel?.asTag ?: "error")
             var content = "```INI"
             for ((index, filter) in filters.withIndex()) {

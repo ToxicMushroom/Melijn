@@ -4,7 +4,6 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.getDurationString
 import me.melijn.melijnbot.objects.utils.getTimeFromArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
@@ -32,7 +31,7 @@ class RewindCommand : AbstractCommand("command.rewind") {
         } else {
             trackPosition -= getTimeFromArgsNMessage(context, 0, trackDuration) ?: return
             iPlayer.seekTo(trackPosition)
-            i18n.getTranslation(context, "$root.rewinded")
+            context.getTranslation("$root.rewinded")
 
         }
             .replace("%duration%", getDurationString(trackDuration))

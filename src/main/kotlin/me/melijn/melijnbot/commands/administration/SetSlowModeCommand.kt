@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.administration
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.i18n
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.Permission
 
@@ -22,11 +22,11 @@ class SetSlowModeCommand : AbstractCommand("command.setslowmode") {
             val slowMode = channel.slowmode
 
             if (slowMode == 0) {
-                i18n.getTranslation(context, "$root.show.unset")
-                    .replace("%channel%", channel.asTag)
+                context.getTranslation("$root.show.unset")
+                    .replace(PLACEHOLDER_CHANNEL, channel.asTag)
             } else {
-                i18n.getTranslation(context, "$root.show.set")
-                    .replace("%channel%", channel.asTag)
+                context.getTranslation("$root.show.set")
+                    .replace(PLACEHOLDER_CHANNEL, channel.asTag)
                     .replace("%slowMode%", slowMode.toString())
             }
         } else if (context.args.size == 1) {
@@ -36,11 +36,11 @@ class SetSlowModeCommand : AbstractCommand("command.setslowmode") {
                 val slowMode = channel.slowmode
 
                 if (slowMode == 0) {
-                    i18n.getTranslation(context, "$root.show.unset")
-                        .replace("%channel%", channel.asTag)
+                    context.getTranslation("$root.show.unset")
+                        .replace(PLACEHOLDER_CHANNEL, channel.asTag)
                 } else {
-                    i18n.getTranslation(context, "$root.show.set")
-                        .replace("%channel%", channel.asTag)
+                    context.getTranslation("$root.show.set")
+                        .replace(PLACEHOLDER_CHANNEL, channel.asTag)
                         .replace("%slowMode%", slowMode.toString())
                 }
             } else if (number != null) {
@@ -49,11 +49,11 @@ class SetSlowModeCommand : AbstractCommand("command.setslowmode") {
                 channel.manager.setSlowmode(number).queue()
 
                 if (number == 0) {
-                    i18n.getTranslation(context, "$root.unset")
-                        .replace("%channel%", channel.asTag)
+                    context.getTranslation("$root.unset")
+                        .replace(PLACEHOLDER_CHANNEL, channel.asTag)
                 } else {
-                    i18n.getTranslation(context, "$root.set")
-                        .replace("%channel%", channel.asTag)
+                    context.getTranslation("$root.set")
+                        .replace(PLACEHOLDER_CHANNEL, channel.asTag)
                         .replace("%slowMode%", number.toString())
                 }
             } else {
@@ -66,11 +66,11 @@ class SetSlowModeCommand : AbstractCommand("command.setslowmode") {
             if (notEnoughPermissionsAndNMessage(context, channel, Permission.MANAGE_CHANNEL)) return
             channel.manager.setSlowmode(number).queue()
             if (number == 0) {
-                i18n.getTranslation(context, "$root.unset")
-                    .replace("%channel%", channel.asTag)
+                context.getTranslation("$root.unset")
+                    .replace(PLACEHOLDER_CHANNEL, channel.asTag)
             } else {
-                i18n.getTranslation(context, "$root.set")
-                    .replace("%channel%", channel.asTag)
+                context.getTranslation("$root.set")
+                    .replace(PLACEHOLDER_CHANNEL, channel.asTag)
                     .replace("%slowMode%", number.toString())
             }
 

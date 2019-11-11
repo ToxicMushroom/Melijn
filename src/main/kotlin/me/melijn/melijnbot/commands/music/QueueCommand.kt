@@ -5,7 +5,6 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.StringUtils
 import me.melijn.melijnbot.objects.utils.getDurationString
 import me.melijn.melijnbot.objects.utils.sendEmbed
@@ -30,22 +29,22 @@ class QueueCommand : AbstractCommand("command.queue") {
 
         val cTrack: AudioTrack? = trackManager.iPlayer.playingTrack
         if (cTrack == null) {
-            val noSongPlaying = i18n.getTranslation(context, "message.music.notracks")
+            val noSongPlaying = context.getTranslation("message.music.notracks")
             sendMsg(context, noSongPlaying)
             return
         }
         var totalDuration = cTrack.duration
 
-        val status = i18n.getTranslation(context, if (trackManager.iPlayer.isPaused) "paused" else "playing")
+        val status = context.getTranslation(if (trackManager.iPlayer.isPaused) "paused" else "playing")
         description += "[$status](${cTrack.info.uri}) - **${cTrack.info.title}** `[${getDurationString(trackManager.iPlayer.trackPosition)} / ${getDurationString(cTrack.duration)}]`"
         for ((index, track) in allTracks.withIndex()) {
             totalDuration += track.duration
             description += "\n[#${index + 1}](${track.info.uri}) - ${track.info.title} `[${getDurationString(track.duration)}]`"
         }
 
-        val title = i18n.getTranslation(context, "$root.title")
+        val title = context.getTranslation("$root.title")
 
-        description += i18n.getTranslation(context, "$root.fakefooter")
+        description += context.getTranslation("$root.fakefooter")
             .replace("%duration%", getDurationString(totalDuration - trackManager.iPlayer.trackPosition))
             .replace("%amount%", (allTracks.size + 1).toString())
 

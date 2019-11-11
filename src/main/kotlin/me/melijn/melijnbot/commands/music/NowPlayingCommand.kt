@@ -6,7 +6,6 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.getDurationString
 import me.melijn.melijnbot.objects.utils.sendEmbed
 
@@ -23,16 +22,16 @@ class NowPlayingCommand : AbstractCommand("command.nowplaying") {
     override suspend fun execute(context: CommandContext) {
         val trackManager = context.guildMusicPlayer.guildTrackManager
         val playingTrack = trackManager.iPlayer.playingTrack
-        val trackStatus = i18n.getTranslation(context, if (trackManager.iPlayer.isPaused) "paused" else "playing")
-        val looped = i18n.getTranslation(context, "looped")
-        val status = i18n.getTranslation(context, "$root.status")
-        val title = i18n.getTranslation(context, "$root.title")
+        val trackStatus = context.getTranslation(if (trackManager.iPlayer.isPaused) "paused" else "playing")
+        val looped = context.getTranslation("looped")
+        val status = context.getTranslation("$root.status")
+        val title = context.getTranslation("$root.title")
             .replace("%status%", trackStatus)
 
-        val description = i18n.getTranslation(context, "$root.show.description")
+        val description = context.getTranslation("$root.show.description")
             .replace("%title%", playingTrack.info.title)
             .replace("%url%", playingTrack.info.uri)
-        val progressField = i18n.getTranslation(context, "$root.progress")
+        val progressField = context.getTranslation("$root.progress")
         val thumbnail = "https://img.youtube.com/vi/${playingTrack.identifier}/hqdefault.jpg"
 
         val eb = Embedder(context)

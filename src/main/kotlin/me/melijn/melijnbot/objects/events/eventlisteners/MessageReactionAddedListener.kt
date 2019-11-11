@@ -13,9 +13,7 @@ import me.melijn.melijnbot.objects.events.eventutil.SelfRoleUtil
 import me.melijn.melijnbot.objects.music.DONATE_QUEUE_LIMIT
 import me.melijn.melijnbot.objects.music.QUEUE_LIMIT
 import me.melijn.melijnbot.objects.music.TrackUserData
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.getLanguage
-import me.melijn.melijnbot.objects.translation.i18n
+import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelByType
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
@@ -141,12 +139,12 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         val embedBuilder = EmbedBuilder()
         val language = getLanguage(dao, -1, event.guild.idLong)
         val title = i18n.getTranslation(language, "listener.message.reaction.log.title")
-            .replace("%channel%", event.channel.asTag)
+            .replace(PLACEHOLDER_CHANNEL, event.channel.asTag)
 
         val isEmote = event.reactionEmote.isEmote
         val part = if (isEmote) "emote" else "emoji"
         val description = i18n.getTranslation(language, "listener.message.reaction.$part.log.description")
-            .replace("%userId%", event.member.id)
+            .replace(PLACEHOLDER_USER_ID, event.member.id)
             .replace("%messageId%", event.messageId)
             .replace("%emoteName%", event.reactionEmote.name)
             .replace("%emoteId%", if (isEmote) event.reactionEmote.id else "/")

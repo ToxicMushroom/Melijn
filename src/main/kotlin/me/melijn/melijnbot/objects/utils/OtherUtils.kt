@@ -92,7 +92,7 @@ suspend inline fun <reified T : Enum<*>> getEnumFromArgNMessage(context: Command
         it.name.equals(enumName, true)
     }
     if (enum == null) {
-        val msg = i18n.getTranslation(context, path)
+        val msg = context.getTranslation(path)
             .replace(PLACEHOLDER_ARG, enumName)
         sendMsg(context, msg)
     }

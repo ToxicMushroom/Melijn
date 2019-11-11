@@ -4,6 +4,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER_ID
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asLongLongGMTString
 import me.melijn.melijnbot.objects.utils.retrieveUserByArgsNMessage
@@ -21,7 +22,12 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val user: User = retrieveUserByArgsNMessage(context, 0) ?: return
+        val user: User = if (context.args.isEmpty()) {
+            context.author
+        } else {
+            retrieveUserByArgsNMessage(context, 0) ?: return
+        }
+
         val member: Member? = context.guild.getMember(user)
 
         val language = context.getLanguage()
@@ -77,6 +83,7 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
 
     private fun replaceUserVar(string: String, user: User, yes: String, no: String): String = string
         .replace("%name%", user.name)
+        .replace(PLACEHOLDER_USER_ID, user.id)
         .replace("%discrim%", user.discriminator)
         .replace("%isBot%", if (user.isBot) yes else no)
         .replace("%avatarUrl%", user.effectiveAvatarUrl)

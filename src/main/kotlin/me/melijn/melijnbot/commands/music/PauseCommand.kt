@@ -5,7 +5,6 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendMsg
 
 class PauseCommand : AbstractCommand("command.pause") {
@@ -22,12 +21,12 @@ class PauseCommand : AbstractCommand("command.pause") {
         val trackManager = context.guildMusicPlayer.guildTrackManager
         val cTrack: AudioTrack? = trackManager.iPlayer.playingTrack
         if (cTrack == null) {
-            val noSongPlaying = i18n.getTranslation(context, "message.music.notracks")
+            val noSongPlaying = context.getTranslation("message.music.notracks")
             sendMsg(context, noSongPlaying)
             return
         }
         trackManager.setPaused(true)
-        val msg = i18n.getTranslation(context, "$root.success")
+        val msg = context.getTranslation("$root.success")
         sendMsg(context, msg)
     }
 }

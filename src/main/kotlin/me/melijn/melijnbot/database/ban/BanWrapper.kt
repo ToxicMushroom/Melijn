@@ -2,7 +2,6 @@ package me.melijn.melijnbot.database.ban
 
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.objects.utils.awaitOrNull
 import net.dv8tion.jda.api.entities.User
@@ -52,9 +51,9 @@ class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
     }
 
     private suspend fun getBanMessage(context: CommandContext, banAuthor: User?, unbanAuthor: User?, ban: Ban): String {
-        val deletedUser = i18n.getTranslation(context, "message.deleted.user")
+        val deletedUser = context.getTranslation("message.deleted.user")
         val unbanReason = ban.unbanReason
-        return i18n.getTranslation(context, "message.punishmenthistory.ban")
+        return context.getTranslation("message.punishmenthistory.ban")
             .replace("%banAuthor%", banAuthor?.asTag ?: deletedUser)
             .replace("%banAuthorId%", "${ban.banAuthorId}")
             .replace("%unbanAuthor%", if (ban.unbanAuthorId == null) "/" else unbanAuthor?.asTag ?: deletedUser)

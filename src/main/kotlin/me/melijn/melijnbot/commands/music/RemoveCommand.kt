@@ -6,7 +6,6 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 
 class RemoveCommand : AbstractCommand("command.remove") {
@@ -27,7 +26,7 @@ class RemoveCommand : AbstractCommand("command.remove") {
         val indexes = getIntegersFromArgsNMessage(context, 1, trackManager.trackSize()) ?: return
         val removed = trackManager.removeAt(indexes)
 
-        var msg = i18n.getTranslation(context, "$root.removed")
+        var msg = context.getTranslation("$root.removed")
             .replace("%count%", removed.size.toString())
         for ((index, track) in removed) {
             msg += "\n[#${index + 1}](${track.info.uri}) - ${track.info.title}"
@@ -59,7 +58,7 @@ class RemoveCommand : AbstractCommand("command.remove") {
                                     ints.add(i - 1)
                         }
                     } else {
-                        val msg = i18n.getTranslation(context, "message.unknown.intorintrange")
+                        val msg = context.getTranslation("message.unknown.intorintrange")
                             .replace(PLACEHOLDER_ARG, arg)
                         sendMsg(context, msg)
                         return null
@@ -69,7 +68,7 @@ class RemoveCommand : AbstractCommand("command.remove") {
                         ints.add(arg.toInt() - 1)
                     }
                 } else {
-                    val msg = i18n.getTranslation(context, "message.unknown.intorintrange")
+                    val msg = context.getTranslation("message.unknown.intorintrange")
                         .replace(PLACEHOLDER_ARG, arg)
                     sendMsg(context, msg)
                     return null
@@ -77,14 +76,14 @@ class RemoveCommand : AbstractCommand("command.remove") {
             }
 
         } catch (e: NumberFormatException) {
-            val msg = i18n.getTranslation(context, "message.numbertobig")
+            val msg = context.getTranslation("message.numbertobig")
                 .replace(PLACEHOLDER_ARG, e.message ?: "/")
             sendMsg(context, msg)
             return null
         }
         for (i in ints) {
             if (i < start - 1 || i > end - 1) {
-                val msg = i18n.getTranslation(context, "message.number.notinrange")
+                val msg = context.getTranslation("message.number.notinrange")
                     .replace(PLACEHOLDER_ARG, (i + 1).toString())
                     .replace("%start%", start.toString())
                     .replace("%end%", end.toString())

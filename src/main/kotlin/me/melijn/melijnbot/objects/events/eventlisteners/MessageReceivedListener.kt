@@ -10,9 +10,7 @@ import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.VerificationType
 import me.melijn.melijnbot.objects.events.AbstractListener
 import me.melijn.melijnbot.objects.events.eventutil.FilterUtil
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.getLanguage
-import me.melijn.melijnbot.objects.translation.i18n
+import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelByType
 import net.dv8tion.jda.api.EmbedBuilder
@@ -167,10 +165,10 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         val embedBuilder = EmbedBuilder()
         val language = getLanguage(container.daoManager, -1, event.guild.idLong)
         val title = i18n.getTranslation(language, "listener.message.attachment.log.title")
-            .replace("%channel%", event.channel.asTag)
+            .replace(PLACEHOLDER_CHANNEL, event.channel.asTag)
 
         val description = i18n.getTranslation(language, "listener.message.attachment.log.description")
-            .replace("%userId%", event.author.id)
+            .replace(PLACEHOLDER_USER_ID, event.author.id)
             .replace("%messageId%", event.messageId)
             .replace("%messageUrl%", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.message.id}")
             .replace("%attachmentUrl%", attachment.url)

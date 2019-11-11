@@ -4,7 +4,6 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 
@@ -21,7 +20,7 @@ class VolumeCommand : AbstractCommand("command.volume") {
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
             val amount = context.guildMusicPlayer.guildTrackManager.iPlayer.volume
-            val msg = i18n.getTranslation(context, "$root.show")
+            val msg = context.getTranslation("$root.show")
                 .replace("%volume%", amount.toString())
             sendMsg(context, msg)
             return
@@ -29,7 +28,7 @@ class VolumeCommand : AbstractCommand("command.volume") {
         val amount = getIntegerFromArgNMessage(context, 0, 0, 1000) ?: return
         context.guildMusicPlayer.guildTrackManager.iPlayer.volume = amount
 
-        val msg = i18n.getTranslation(context, "$root.set")
+        val msg = context.getTranslation("$root.set")
             .replace("%volume%", amount.toString())
         sendMsg(context, msg)
     }

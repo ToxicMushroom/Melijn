@@ -2,7 +2,6 @@ package me.melijn.melijnbot.database.mute
 
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.objects.utils.awaitOrNull
 import net.dv8tion.jda.api.entities.User
@@ -51,10 +50,10 @@ class MuteWrapper(val taskManager: TaskManager, private val muteDao: MuteDao) {
     }
 
     private suspend fun getMuteMessage(context: CommandContext, muteAuthor: User?, unmuteAuthor: User?, mute: Mute): String {
-        val deletedUser = i18n.getTranslation(context, "message.deleted.user")
+        val deletedUser = context.getTranslation("message.deleted.user")
         val unmuteReason = mute.unmuteReason
 
-        return i18n.getTranslation(context, "message.punishmenthistory.mute")
+        return context.getTranslation("message.punishmenthistory.mute")
             .replace("%muteAuthor%", muteAuthor?.asTag ?: deletedUser)
             .replace("%muteAuthorId%", "${mute.muteAuthorId}")
             .replace("%unmuteAuthor%", if (mute.unmuteAuthorId == null) "/" else unmuteAuthor?.asTag ?: deletedUser)

@@ -5,7 +5,6 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.getColorFromArgNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 import okhttp3.internal.toHexString
@@ -25,21 +24,21 @@ class SetEmbedColorCommand : AbstractCommand("command.setembedcolor") {
             val colorInt = wrapper.embedColorCache.get(context.guildId).await()
 
             if (colorInt == -1) {
-                i18n.getTranslation(context, "$root.show.unset")
+                context.getTranslation("$root.show.unset")
             } else {
-                i18n.getTranslation(context, "$root.show.set")
+                context.getTranslation("$root.show.set")
                     .replace("%color%", colorInt.toHexString())
             }
         } else {
             if (context.rawArg.equals("null", true)) {
                 wrapper.removeColor(context.guildId)
 
-                i18n.getTranslation(context, "$root.unset")
+                context.getTranslation("$root.unset")
             } else {
                 val color = getColorFromArgNMessage(context, 0) ?: return
                 wrapper.setColor(context.guildId, color.rgb)
 
-                i18n.getTranslation(context, "$root.set")
+                context.getTranslation("$root.set")
                     .replace(PLACEHOLDER_ARG, color.rgb.toHexString())
             }
         }

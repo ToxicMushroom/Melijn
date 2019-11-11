@@ -6,7 +6,6 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.music.TrackUserData
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.getDurationString
 import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.objects.utils.sendEmbed
@@ -38,12 +37,12 @@ class TrackInfoCommand : AbstractCommand("command.trackinfo") {
         }
 
         val trackUserData = (track.userData as TrackUserData)
-        val title = i18n.getTranslation(context, "$root.title")
-        val requester = i18n.getTranslation(context, "$root.requester")
-        val requesterId = i18n.getTranslation(context, "$root.requesterid")
-        val length = i18n.getTranslation(context, "$root.length")
-        val timeuntil = i18n.getTranslation(context, "$root.timeuntil")
-        val progress = i18n.getTranslation(context, "$root.progress")
+        val title = context.getTranslation("$root.title")
+        val requester = context.getTranslation("$root.requester")
+        val requesterId = context.getTranslation("$root.requesterid")
+        val length = context.getTranslation("$root.length")
+        val timeuntil = context.getTranslation("$root.timeuntil")
+        val progress = context.getTranslation("$root.progress")
         val desc = "**[${track.info.title}](${track.info.uri})**"
         var timeUntilTime = trackManager.iPlayer.playingTrack.duration - trackManager.iPlayer.trackPosition
         trackManager.tracks.toList().subList(0, max(index - 1, 0)).forEach { tr -> timeUntilTime += tr.duration }

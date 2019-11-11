@@ -2,7 +2,6 @@ package me.melijn.melijnbot.database.ban
 
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.objects.utils.awaitOrNull
 import net.dv8tion.jda.api.entities.User
@@ -34,8 +33,8 @@ class SoftBanWrapper(val taskManager: TaskManager, private val softBanDao: SoftB
     }
 
     private suspend fun getSoftBanMessage(context: CommandContext, softBanAuthor: User?, softBan: SoftBan): String {
-        val deletedUser = i18n.getTranslation(context, "message.deleted.user")
-        return i18n.getTranslation(context, "message.punishmenthistory.softban")
+        val deletedUser = context.getTranslation("message.deleted.user")
+        return context.getTranslation("message.punishmenthistory.softban")
             .replace("%softBanAuthor%", softBanAuthor?.asTag ?: deletedUser)
             .replace("%softBanAuthorId%", "${softBan.softBanAuthorId}")
             .replace("%reason%", softBan.reason.substring(0, min(softBan.reason.length, 830)))

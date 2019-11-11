@@ -7,7 +7,9 @@ const val MESSAGE_UNKNOWN_PERMSTATE = "message.unknown.permstate"
 
 const val PLACEHOLDER_CHANNEL = "%channel%"
 const val PLACEHOLDER_USER = "%user%"
+const val PLACEHOLDER_USER_ID = "%userId"
 const val PLACEHOLDER_ROLE = "%role%"
+const val PLACEHOLDER_ROLE_ID = "%roleId%"
 const val PLACEHOLDER_ARG = "%arg%"
 const val PLACEHOLDER_TYPE = "%type%"
 

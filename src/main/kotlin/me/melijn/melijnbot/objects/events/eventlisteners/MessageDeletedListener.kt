@@ -8,9 +8,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.events.AbstractListener
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.getLanguage
-import me.melijn.melijnbot.objects.translation.i18n
+import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.objects.utils.asTag
 import me.melijn.melijnbot.objects.utils.await
@@ -154,7 +152,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         val language = getLanguage(container.daoManager, -1, event.guild.idLong)
         val footer = i18n.getTranslation(language, "listener.message.deletion.log.purged.footer")
             .replace(PLACEHOLDER_USER, messageAuthor.asTag)
-            .replace("%userId%", purgeRequesterId.toString())
+            .replace(PLACEHOLDER_USER_ID, purgeRequesterId.toString())
         eb.setFooter(footer, messageAuthor.effectiveAvatarUrl)
 
         sendEmbed(container.daoManager.embedDisabledWrapper, pmLogChannel, eb.build())
@@ -219,7 +217,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
         val language = getLanguage(container.daoManager, -1, event.guild.idLong)
         val title =  i18n.getTranslation(language, "listener.message.deletion.log.title")
-            .replace("%channel%", channel?.asTag ?: "<#${msg.textChannelId}>")
+            .replace(PLACEHOLDER_CHANNEL, channel?.asTag ?: "<#${msg.textChannelId}>")
 
         val extra = if (msg.authorId == messageDeleterId) ".self" else ""
         val description = i18n.getTranslation(language, "listener.message.deletion.log${extra}.description")

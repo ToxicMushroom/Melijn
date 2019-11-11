@@ -2,7 +2,6 @@ package me.melijn.melijnbot.database.warn
 
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.objects.utils.awaitOrNull
 import net.dv8tion.jda.api.entities.User
@@ -35,8 +34,8 @@ class WarnWrapper(val taskManager: TaskManager, private val warnDao: WarnDao) {
     }
 
     private suspend fun getWarnMessage(context: CommandContext, warnAuthor: User?, warn: Warn): String {
-        val deletedUser = i18n.getTranslation(context, "message.deleted.user")
-        return i18n.getTranslation(context, "message.punishmenthistory.warn")
+        val deletedUser = context.getTranslation("message.deleted.user")
+        return context.getTranslation("message.punishmenthistory.warn")
             .replace("%warnAuthor%", warnAuthor?.asTag ?: deletedUser)
             .replace("%warnAuthorId%", "${warn.warnAuthorId}")
             .replace("%reason%", warn.reason.substring(0, min(warn.reason.length, 830)))

@@ -4,7 +4,6 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendMsg
 
 class LoopCommand : AbstractCommand("command.loop") {
@@ -21,7 +20,7 @@ class LoopCommand : AbstractCommand("command.loop") {
         val trackManager = context.guildMusicPlayer.guildTrackManager
         trackManager.loopedTrack = !trackManager.loopedTrack
 
-        val msg = i18n.getTranslation(context, "$root." + if (trackManager.loopedTrack) "looped" else "unlooped")
+        val msg = context.getTranslation("$root." + if (trackManager.loopedTrack) "looped" else "unlooped")
         sendMsg(context, msg)
     }
 }

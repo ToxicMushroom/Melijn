@@ -4,7 +4,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import lavalink.client.player.IPlayer
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendMsg
 
 
@@ -33,7 +32,7 @@ class GuildMusicPlayer(lavaManager: LavaManager, val guildId: Long) {
         val success = safeQueueSilent(context.daoManager, track)
         if (!success) {
             context.taskManager.async {
-                val msg = i18n.getTranslation(context, "message.music.queuelimit")
+                val msg = context.getTranslation("message.music.queuelimit")
                     .replace("%amount%", QUEUE_LIMIT.toString())
                     .replace("%donateAmount%", DONATE_QUEUE_LIMIT.toString())
                 sendMsg(context, msg)
@@ -51,7 +50,7 @@ class GuildMusicPlayer(lavaManager: LavaManager, val guildId: Long) {
         ) {
             if (!silent) {
                 context.taskManager.async {
-                    val msg = i18n.getTranslation(context, "message.music.queuelimit")
+                    val msg = context.getTranslation("message.music.queuelimit")
                         .replace("%amount%", QUEUE_LIMIT.toString())
                         .replace("%donateAmount%", DONATE_QUEUE_LIMIT.toString())
                     sendMsg(context, msg)

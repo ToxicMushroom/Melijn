@@ -2,7 +2,6 @@ package me.melijn.melijnbot.commandutil.anime
 
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.getUserByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import net.dv8tion.jda.api.entities.User
@@ -36,7 +35,7 @@ object AnimeCommandUtil {
         } else{
             ".eb.description"
         }
-        var title = i18n.getTranslation(context, path)
+        var title = context.getTranslation(path)
         title = if (context.isFromGuild) {
             val authorMember = context.guild.getMember(author) ?: return
             val targetMember = target?.let { context.guild.getMember(it) }

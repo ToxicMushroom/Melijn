@@ -2,7 +2,6 @@ package me.melijn.melijnbot.database.kick
 
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.objects.utils.awaitOrNull
 import net.dv8tion.jda.api.entities.User
@@ -34,8 +33,8 @@ class KickWrapper(val taskManager: TaskManager, private val kickDao: KickDao) {
     }
 
     private suspend fun getKickMessage(context: CommandContext, kickAuthor: User?, kick: Kick): String {
-        val deletedUser = i18n.getTranslation(context, "message.deleted.user")
-        return i18n.getTranslation(context, "message.punishmenthistory.kick")
+        val deletedUser = context.getTranslation("message.deleted.user")
+        return context.getTranslation("message.punishmenthistory.kick")
             .replace("%kickAuthor%", kickAuthor?.asTag ?: deletedUser)
             .replace("%kickAuthorId%", "${kick.kickAuthorId}")
             .replace("%reason%", kick.reason.substring(0, min(kick.reason.length, 830)))

@@ -4,7 +4,6 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.hasPermission
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.RunConditionUtil
 import me.melijn.melijnbot.objects.utils.getVoiceChannelByArgNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
@@ -23,7 +22,7 @@ class SummonCommand : AbstractCommand("command.summon") {
             if (!RunConditionUtil.checkOtherOrSameVCBotAloneOrUserDJ(context.container, context.event, this, context.getLanguage())) return
             val vc = context.member.voiceState?.channel ?: throw IllegalStateException("I messed up")
             context.lavaManager.openConnection(vc)
-            val msg = i18n.getTranslation(context, "$root.summoned")
+            val msg = context.getTranslation("$root.summoned")
             sendMsg(context, msg)
         } else {
             val vc = getVoiceChannelByArgNMessage(context, 0) ?: return
@@ -33,7 +32,7 @@ class SummonCommand : AbstractCommand("command.summon") {
             }
             if (!RunConditionUtil.checkBotAloneOrUserDJ(context.container, context.event, this, context.getLanguage())) return
             context.lavaManager.openConnection(vc)
-            val msg = i18n.getTranslation(context, "$root.summoned")
+            val msg = context.getTranslation("$root.summoned")
             sendMsg(context, msg)
         }
     }

@@ -3,10 +3,7 @@ package me.melijn.melijnbot.objects.utils
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.getLanguage
-import me.melijn.melijnbot.objects.translation.i18n
+import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Member
@@ -42,7 +39,7 @@ object LogUtils {
         val title = i18n.getTranslation(language, "logging.verification.hitverificationthroughputlimit.title")
         val cause = "```LDIF" + i18n.getTranslation(language, "logging.verification.hitverificationthroughputlimit.description")
             .replace(PLACEHOLDER_USER, member.asTag)
-            .replace("%userId%", member.id) + "```"
+            .replace(PLACEHOLDER_USER_ID, member.id) + "```"
 
         val eb = EmbedBuilder()
         eb.setTitle(title)
@@ -63,10 +60,10 @@ object LogUtils {
         val language = getLanguage(daoManager, -1, guild.idLong)
         val title = i18n.getTranslation(language, "logging.verification.failedaddingrole.title")
         val description = "```LDIF" + i18n.getTranslation(language, "logging.verification.failedaddingrole.description")
-            .replace("%userId%", member.id)
+            .replace(PLACEHOLDER_USER_ID, member.id)
             .replace(PLACEHOLDER_USER, member.asTag)
             .replace(PLACEHOLDER_ROLE, role.name)
-            .replace("%roleId%", role.id) + "```"
+            .replace(PLACEHOLDER_ROLE_ID, role.id) + "```"
 
         val eb = EmbedBuilder()
         eb.setTitle(title)
@@ -87,7 +84,7 @@ object LogUtils {
         val title = i18n.getTranslation(language, "logging.verification.failed.title")
         val description = "```LDIF" + i18n.getTranslation(language, "logging.verification.failed.description")
             .replace(PLACEHOLDER_USER, member.asTag)
-            .replace("%userId%", member.id) + "```"
+            .replace(PLACEHOLDER_USER_ID, member.id) + "```"
 
         val eb = EmbedBuilder()
         eb.setTitle(title)
@@ -109,7 +106,7 @@ object LogUtils {
             .replace("%author%", author.asTag)
         val description = "```LDIF" + i18n.getTranslation(language, "logging.verification.verified.description")
             .replace(PLACEHOLDER_USER, member.asTag)
-            .replace("%userId%", member.id) + "```"
+            .replace(PLACEHOLDER_USER_ID, member.id) + "```"
 
         val eb = EmbedBuilder()
         eb.setTitle(title)

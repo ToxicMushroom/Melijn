@@ -11,7 +11,10 @@ import com.wrapper.spotify.model_objects.specification.TrackSimplified
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.*
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
+import me.melijn.melijnbot.objects.translation.SC_SELECTOR
+import me.melijn.melijnbot.objects.translation.YT_SELECTOR
+import me.melijn.melijnbot.objects.translation.YT_VID_URL_BASE
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.entities.Message
 import java.lang.Integer.min
@@ -98,22 +101,22 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
 
     private fun sendMessageLoadFailed(context: CommandContext, exception: FriendlyException) = runBlocking {
-        val msg = i18n.getTranslation(context, "$root.loadfailed")
+        val msg = context.getTranslation("$root.loadfailed")
             .replace("%cause%", exception.message ?: "/")
         sendMsg(context, msg)
     }
 
     fun sendMessageNoMatches(context: CommandContext, input: String) = runBlocking {
-        val msg = i18n.getTranslation(context, "$root.nomatches")
+        val msg = context.getTranslation("$root.nomatches")
             .replace("%source%", input)
         sendMsg(context, msg)
     }
 
 
     fun sendMessageAddedTrack(context: CommandContext, audioTrack: AudioTrack) = runBlocking {
-        val title = i18n.getTranslation(context, "$root.addedtrack.title")
+        val title = context.getTranslation("$root.addedtrack.title")
             .replace(PLACEHOLDER_USER, context.author.asTag)
-        val description = i18n.getTranslation(context, "$root.addedtrack.description")
+        val description = context.getTranslation("$root.addedtrack.description")
             .replace("%position%", getQueuePosition(context, audioTrack).toString())
             .replace("%title%", audioTrack.info.title)
             .replace("%duration%", getDurationString(audioTrack.duration))
@@ -127,9 +130,9 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     fun sendMessageAddedTracks(context: CommandContext, audioTracks: List<AudioTrack>) = runBlocking {
-        val title = i18n.getTranslation(context, "$root.addedtracks.title")
+        val title = context.getTranslation("$root.addedtracks.title")
             .replace(PLACEHOLDER_USER, context.author.asTag)
-        val description = i18n.getTranslation(context, "$root.addedtracks.description")
+        val description = context.getTranslation("$root.addedtracks.description")
             .replace("%size%", audioTracks.size.toString())
             .replace("%positionFirst%", getQueuePosition(context, audioTracks[0]).toString())
             .replace("%positionLast%", (getQueuePosition(context, audioTracks[0]) + audioTracks.size).toString())
@@ -250,7 +253,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
     fun loadSpotifyPlaylist(context: CommandContext, tracks: Array<PlaylistTrack>) = runBlocking {
         if (tracks.size + context.guildMusicPlayer.guildTrackManager.tracks.size > QUEUE_LIMIT) {
-            val msg = i18n.getTranslation(context, "$root.queuelimit")
+            val msg = context.getTranslation("$root.queuelimit")
                 .replace("%amount%", QUEUE_LIMIT.toString())
             sendMsg(context, msg)
             return@runBlocking
@@ -258,7 +261,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
         val loadedTracks = mutableListOf<Track>()
         val failedTracks = mutableListOf<Track>()
-        val msg = i18n.getTranslation(context, "command.play.loadingtrack" + if (tracks.size > 1) "s" else "")
+        val msg = context.getTranslation("command.play.loadingtrack" + if (tracks.size > 1) "s" else "")
             .replace("%trackCount%", tracks.size.toString())
 
         val message = sendMsg(context, msg)
@@ -272,7 +275,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 println(loadedTracks.size + failedTracks.size)
                 if (loadedTracks.size + failedTracks.size == tracks.size) {
                     runBlocking {
-                        val newMsg = i18n.getTranslation(context, "command.play.loadedtrack" + if (tracks.size > 1) "s" else "")
+                        val newMsg = context.getTranslation("command.play.loadedtrack" + if (tracks.size > 1) "s" else "")
                             .replace("%loadedCount%", loadedTracks.size.toString())
                             .replace("%failedCount%", failedTracks.size.toString())
                         message[0].editMessage(newMsg).await()
@@ -284,7 +287,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
     fun loadSpotifyAlbum(context: CommandContext, simpleTracks: Array<TrackSimplified>) = runBlocking {
         if (simpleTracks.size + context.guildMusicPlayer.guildTrackManager.tracks.size > QUEUE_LIMIT) {
-            val msg = i18n.getTranslation(context, "$root.queuelimit")
+            val msg = context.getTranslation("$root.queuelimit")
                 .replace("%amount%", QUEUE_LIMIT.toString())
                 .replace("%donateAmount%", DONATE_QUEUE_LIMIT.toString())
             sendMsg(context, msg)
@@ -293,7 +296,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
         val loadedTracks = mutableListOf<TrackSimplified>()
         val failedTracks = mutableListOf<TrackSimplified>()
-        val msg = i18n.getTranslation(context, "command.play.loadingtrack" + if (simpleTracks.size > 1) "s" else "")
+        val msg = context.getTranslation("command.play.loadingtrack" + if (simpleTracks.size > 1) "s" else "")
             .replace("%trackCount%", simpleTracks.size.toString())
         val message = sendMsg(context, msg)
         for (track in simpleTracks) {
@@ -306,7 +309,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 println(loadedTracks.size + failedTracks.size)
                 if (loadedTracks.size + failedTracks.size == simpleTracks.size) {
                     runBlocking {
-                        val newMsg = i18n.getTranslation(context, "command.play.loadedtrack" + if (simpleTracks.size > 1) "s" else "")
+                        val newMsg = context.getTranslation("command.play.loadedtrack" + if (simpleTracks.size > 1) "s" else "")
                             .replace("%loadedCount%", loadedTracks.size.toString())
                             .replace("%failedCount%", failedTracks.size.toString())
                         message[0].editMessage(newMsg).await()
@@ -370,7 +373,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     private suspend fun sendMessageSearchMenu(context: CommandContext, tracks: List<AudioTrack>): List<Message> {
-        val title = i18n.getTranslation(context, "$root.searchmenu")
+        val title = context.getTranslation("$root.searchmenu")
         var menu = ""
         for ((index, track) in tracks.withIndex()) {
             menu += "\n[${index + 1}](${track.info.uri}) - ${track.info.title} `[${getDurationString(track.duration)}]`"

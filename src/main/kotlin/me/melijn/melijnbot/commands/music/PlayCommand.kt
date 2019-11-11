@@ -6,7 +6,6 @@ import me.melijn.melijnbot.objects.music.AudioLoader
 import me.melijn.melijnbot.objects.music.LavaManager
 import me.melijn.melijnbot.objects.translation.SC_SELECTOR
 import me.melijn.melijnbot.objects.translation.YT_SELECTOR
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendInGuild
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
@@ -151,7 +150,7 @@ class PlayCommand : AbstractCommand("command.play") {
                 audioLoader.loadSpotifyAlbum(context, simpleTrackList)
             },
             { error -> runBlocking {
-                val msg = i18n.getTranslation(context, "message.spotify.down")
+                val msg = context.getTranslation("message.spotify.down")
                 sendMsg(context, msg)
                 error.sendInGuild(context)
             }

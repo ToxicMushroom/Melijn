@@ -9,9 +9,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.events.AbstractListener
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.getLanguage
-import me.melijn.melijnbot.objects.translation.i18n
+import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.TextChannel
@@ -56,13 +54,13 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
         val embedBuilder = EmbedBuilder()
         val language = getLanguage(container.daoManager, -1, event.guild.idLong)
         val title = i18n.getTranslation(language, "listener.message.update.log.title")
-            .replace("%channel%", event.channel.asTag)
+            .replace(PLACEHOLDER_CHANNEL, event.channel.asTag)
 
         val description = i18n.getTranslation(language, "listener.message.update.log.description")
             .replace("%oldContent%", escapeForLog(oldContent))
             .replace("%newContent%", escapeForLog(daoMessage.content))
             .replace(PLACEHOLDER_USER, event.author.asTag)
-            .replace("%userId%", event.author.id)
+            .replace(PLACEHOLDER_USER_ID, event.author.id)
             .replace("%sentTime%", event.message.timeCreated.asLongLongGMTString())
             .replace("%editedTime%", System.currentTimeMillis().asEpochMillisToDateTime())
             .replace("%link%", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.message.id}")

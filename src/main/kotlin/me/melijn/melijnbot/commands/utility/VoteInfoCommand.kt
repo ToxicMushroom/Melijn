@@ -5,6 +5,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER_ID
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.objects.utils.getUserByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendEmbed
@@ -37,20 +38,17 @@ class VoteInfoCommand : AbstractCommand("command.voteinfo") {
         }
 
 
-        val title = context.getTranslation("$root.title")
+        val fieldTitle = context.getTranslation("$root.field.voteinfo")
+        val value = context.getTranslation("$root.field.value")
             .replace(PLACEHOLDER_USER, target.asTag)
-        val userId = context.getTranslation("$root.field.userid")
-        val votes = context.getTranslation("$root.field.votes")
-        val streak = context.getTranslation("$root.field.streak")
-        val lastTime = context.getTranslation("$root.field.lasttime")
+            .replace(PLACEHOLDER_USER_ID, target.id)
+            .replace("%votes%", userVote.votes.toString())
+            .replace("%streak%", userVote.streak.toString())
+            .replace("%lastTime%", userVote.lastTime.asEpochMillisToDateTime())
 
         val eb = Embedder(context)
-        eb.setTitle(title)
         eb.setThumbnail(target.effectiveAvatarUrl)
-        eb.addField(votes, userVote.votes.toString(), true)
-        eb.addField(streak, userVote.streak.toString(), true)
-        eb.addField(lastTime, userVote.lastTime.asEpochMillisToDateTime(), true)
-        eb.addField(userId, target.id, true)
+        eb.addField(fieldTitle, value, true)
         sendEmbed(context, eb.build())
     }
 }

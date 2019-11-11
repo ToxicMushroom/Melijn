@@ -6,7 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.translation.i18n
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -43,7 +42,7 @@ object ImageUtils {
                             img = URL(args[0]).readBytes()
                         }
                     } catch (e: Exception) {
-                        val msg = i18n.getTranslation(context, "message.wrong.url")
+                        val msg = context.getTranslation("message.wrong.url")
                             .replace(PLACEHOLDER_ARG, args[0])
                         sendMsg(context, msg)
                     }
@@ -55,7 +54,7 @@ object ImageUtils {
                         img = URL(attachments[0].url + "?size=2048").readBytes()
                     }
                 } catch (e: Exception) {
-                    val msg = i18n.getTranslation(context, "message.attachmentnotanimage")
+                    val msg = context.getTranslation("message.attachmentnotanimage")
                         .replace(PLACEHOLDER_ARG, attachments[0].url)
                     sendMsg(context, msg)
                 }

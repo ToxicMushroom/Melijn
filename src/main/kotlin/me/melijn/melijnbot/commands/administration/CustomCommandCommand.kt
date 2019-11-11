@@ -78,7 +78,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             var cc = context.daoManager.customCommandWrapper.getCCById(context.guildId, id)
             if (cc == null && context.args.isNotEmpty()) {
 
-                val msg = i18n.getTranslation(context, "message.unknown.ccid")
+                val msg = context.getTranslation("message.unknown.ccid")
                     .replace(PLACEHOLDER_ARG, id.toString())
                 sendMsg(context, msg)
                 return
@@ -86,8 +86,8 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 cc = getSelectedCCNMessage(context) ?: return
             }
 
-            val title = i18n.getTranslation(context, "$root.title")
-            val description = i18n.getTranslation(context, "$root.description")
+            val title = context.getTranslation("$root.title")
+            val description = context.getTranslation("$root.description")
                 .replace("%ccName%", cc.name)
             val eb = Embedder(context)
             eb.setTitle(title)
@@ -203,7 +203,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             val id = getLongFromArgNMessage(context, 0) ?: return
             val cc = context.daoManager.customCommandWrapper.getCCById(guildId, id)
             if (cc == null) {
-                val msg = i18n.getTranslation(context, "message.unknown.ccid")
+                val msg = context.getTranslation("message.unknown.ccid")
                     .replace(PLACEHOLDER_ARG, id.toString())
                 sendMsg(context, msg)
                 return
@@ -212,7 +212,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             selectionMap[Pair(guildId, context.authorId)] = id
 
 
-            val msg = i18n.getTranslation(context, "$root.selected")
+            val msg = context.getTranslation("$root.selected")
                 .replace("%id%", cc.id.toString())
                 .replace("%ccName%", cc.name)
             sendMsg(context, msg)

@@ -6,7 +6,6 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.entities.TextChannel
 
@@ -54,7 +53,7 @@ class SetFilterModeCommand : AbstractCommand("command.setfiltermode") {
         val wrapper = context.daoManager.filterModeWrapper
         wrapper.setMode(context.guildId, channelId, mode)
         val part = if (channelId == null) "" else ".channel"
-        val msg = i18n.getTranslation(context, "$root.set$part")
+        val msg = context.getTranslation("$root.set$part")
             .replace(PLACEHOLDER_CHANNEL, channel?.asTag ?: "error")
             .replace("%mode%", mode.toUCSC())
         sendMsg(context, msg)
@@ -65,7 +64,7 @@ class SetFilterModeCommand : AbstractCommand("command.setfiltermode") {
         val wrapper = context.daoManager.filterModeWrapper
         wrapper.unsetMode(context.guildId, channelId)
         val part = if (channelId == null) "" else ".channel"
-        val msg = i18n.getTranslation(context, "$root.unset$part")
+        val msg = context.getTranslation("$root.unset$part")
             .replace(PLACEHOLDER_CHANNEL, channel?.asTag ?: "error")
         sendMsg(context, msg)
     }
@@ -76,7 +75,7 @@ class SetFilterModeCommand : AbstractCommand("command.setfiltermode") {
         val wrapper = context.daoManager.filterModeWrapper
         val mode = wrapper.filterWrappingModeCache.get(Pair(context.guildId, channelId)).await()
         val part = if (channelId == null) "" else ".channel"
-        val msg = i18n.getTranslation(context, "$root.show$part")
+        val msg = context.getTranslation("$root.show$part")
             .replace(PLACEHOLDER_CHANNEL, channel?.asTag ?: "error")
             .replace("%mode%", mode.toUCSC())
         sendMsg(context, msg)

@@ -911,7 +911,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     val language = context.getLanguage()
                     val msg = i18n.getTranslation(language, path)
                         .replace("%role1%", role1.name)
-                        .replace("%channel%", channel2.asTag)
+                        .replace(PLACEHOLDER_CHANNEL, channel2.asTag)
                         .replace("%role2%", role3.name)
                         .replace("%permissionCount%", permissions.size.toString())
                       

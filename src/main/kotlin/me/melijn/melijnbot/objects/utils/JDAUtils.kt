@@ -458,7 +458,7 @@ suspend fun notEnoughPermissionsAndNMessage(context: CommandContext, channel: Te
     val result = notEnoughPermissions(member, channel, perms.toList())
     if (result.first) {
         val more = if (result.second.size > 1) "s" else ""
-        val msg = i18n.getTranslation(context, "message.discordpermission$more.missing")
+        val msg = context.getTranslation("message.discordpermission$more.missing")
             .replace("%permissions%", result.second.joinToString(separator = "") { perm ->
                 "\n    ⁎ `${perm.toUCSC()}`"
             })
@@ -577,13 +577,13 @@ suspend fun getTimeFromArgsNMessage(context: CommandContext, start: Long = Long.
         }
     } catch (ex: NumberFormatException) {
         val path =  if (workingPart.matches("\\d+".toRegex())) "message.numbertobig" else "message.unknown.number"
-        val msg = i18n.getTranslation(context, path)
+        val msg = context.getTranslation(path)
             .replace(PLACEHOLDER_ARG, workingPart)
         sendMsg(context, msg)
         return null
     }
     if (start > time || end < time) {
-        val msg = i18n.getTranslation(context, "command.seek.notinrange")
+        val msg = context.getTranslation("command.seek.notinrange")
             .replace(PLACEHOLDER_ARG, workingPart)
         sendMsg(context, msg)
         return null

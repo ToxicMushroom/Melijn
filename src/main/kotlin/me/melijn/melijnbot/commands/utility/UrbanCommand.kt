@@ -4,6 +4,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.embed.Embedder
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.utils.sendMsg
@@ -31,7 +32,7 @@ class UrbanCommand : AbstractCommand("command.urban") {
             sendMsg(context, offline)
         } else if (result.first == null && result.second == null) {
             val notfound = i18n.getTranslation(language, "$root.notfound")
-                .replace("%arg%", context.rawArg)
+                .replace(PLACEHOLDER_ARG, context.rawArg)
             sendMsg(context, notfound)
         } else {
             val meaning = i18n.getTranslation(language, "$root.meaning")

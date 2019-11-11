@@ -104,7 +104,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
                 val channel = getTextChannelByArgsNMessage(context, 0) ?: return
                 map = daoManager.commandChannelCoolDownWrapper.commandChannelCooldownCache.get(channel.idLong).await()
                 i18n.getTranslation(language, "$root.response1.title")
-                    .replace("%channel%", "#${channel.name}")
+                    .replace(PLACEHOLDER_CHANNEL, "#${channel.name}")
             } else {
                 map = daoManager.commandCooldownWrapper.commandCooldownCache.get(context.guildId).await()
                 i18n.getTranslation(language, "$root.response2.title")

@@ -4,6 +4,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE_ID
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asLongLongGMTString
 import me.melijn.melijnbot.objects.utils.getRoleByArgsNMessage
@@ -41,15 +42,15 @@ class RoleInfoCommand : AbstractCommand("command.roleinfo") {
     }
 
     private fun replaceRoleVars(string: String, role: Role, yes: String, no: String): String = string
-            .replace("%roleName%", role.name)
-            .replace("%roleId%", role.id)
-            .replace("%creationTime%", role.timeCreated.asLongLongGMTString())
-            .replace("%position%", role.position.toString() + "/" + role.guild.roleCache.size())
-            .replace("%members%", role.guild.memberCache.stream().filter { member -> member.roles.contains(role) }.count().toString())
-            .replace("%isMentionable%", if (role.isMentionable) yes else no)
-            .replace("%isHoisted%", if (role.isHoisted) yes else no)
-            .replace("%isManaged%", if (role.isManaged) yes else no)
-            .replace("%color%", getColorString(role))
+        .replace("%roleName%", role.name)
+        .replace(PLACEHOLDER_ROLE_ID, role.id)
+        .replace("%creationTime%", role.timeCreated.asLongLongGMTString())
+        .replace("%position%", role.position.toString() + "/" + role.guild.roleCache.size())
+        .replace("%members%", role.guild.memberCache.stream().filter { member -> member.roles.contains(role) }.count().toString())
+        .replace("%isMentionable%", if (role.isMentionable) yes else no)
+        .replace("%isHoisted%", if (role.isHoisted) yes else no)
+        .replace("%isManaged%", if (role.isManaged) yes else no)
+        .replace("%color%", getColorString(role))
 
     private fun getColorString(role: Role): String {
         if (role.color == null) return "none"
