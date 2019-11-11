@@ -26,27 +26,12 @@ class DriverManager(dbSettings: Settings.Database) {
         config.jdbcUrl = "jdbc:postgresql://${dbSettings.host}:${dbSettings.port}/${dbSettings.database}"
         config.username = dbSettings.user
         config.password = dbSettings.password
+
         config.maxLifetime = 30_000
         config.validationTimeout = 3_000
         config.connectionTimeout = 30_000
         config.leakDetectionThreshold = 2000
-        config.maximumPoolSize = 100
-
-        config.addDataSourceProperty("autoReconnect", "true")
-        //config.addDataSourceProperty("useUnicode", "true")
-        //config.addDataSourceProperty("useSSL", "false")
-        //config.addDataSourceProperty("serverTimezone", "UTC")
-        //config.addDataSourceProperty("useLegacyDatetimeCode", "false")
-        //https://github.com/brettwooldridge/HikariCP/wiki/MySQL-Configuration
-
-        //config.addDataSourceProperty("allowMultiQueries", "true")
-        //config.addDataSourceProperty("prepStmtCacheSize", "350")
-        //config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048")
-        //config.addDataSourceProperty("cachePrepStmts", "true")
-        //config.addDataSourceProperty("useServerPrepStmts", "true")
-        //config.addDataSourceProperty("rewriteBatchedStatements", "true")
-        //config.addDataSourceProperty("useLocalTransactionState", "true")
-        //config.addDataSourceProperty("leakDetectionThreshold", "2000")
+        config.maximumPoolSize = 60
 
         this.dataSource = HikariDataSource(config)
     }
@@ -57,13 +42,13 @@ class DriverManager(dbSettings: Settings.Database) {
 
     fun registerTable(table: String, tableStructure: String, primaryKey: String, uniqueKey: String = "") {
         val hasPrimary = primaryKey != ""
-        val hasUnique = uniqueKey
+        val hasUnique = uniqueKey != ""
         tableRegistrationQueries.add(
             "CREATE TABLE IF NOT EXISTS $table ($tableStructure${if (hasPrimary) {
                 ", PRIMARY KEY ($primaryKey)"
             } else {
                 ""
-            }})"
+            }}${if (hasUnique) ", UNIQUE ($uniqueKey)" else ""})"
         )
     }
 

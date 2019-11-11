@@ -26,11 +26,12 @@ enum class LogChannelType(val text: String = this.toString(), val parentNodes: A
     EDITED_MESSAGE("Edited-Message", arrayOf("em", "edited-messages", "edited-message", "emlc")),
     REACTION("Reaction", arrayOf("r", "reaction", "reactions", "mr", "rlc")),
     ATTACHMENT("Attachment", arrayOf("a", "alc")),
-    BOT("Bot",  arrayOf("b", "blc"));
+    BOT("Bot", arrayOf("b", "blc"));
 
 
     //Messages
     companion object {
+
         fun getMatchingTypesFromNode(node: String): List<LogChannelType> {
             return values().filter { channel ->
                 channel.parentNodes.contains(node.toLowerCase()) || node.equals("all", true)

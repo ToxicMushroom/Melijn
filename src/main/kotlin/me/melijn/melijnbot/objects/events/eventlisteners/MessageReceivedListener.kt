@@ -34,7 +34,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         }
     }
 
-    private suspend fun handleFilter(event: GuildMessageReceivedEvent) {
+    private suspend fun handleFilter(event: GuildMessageReceivedEvent) = container.taskManager.async {
         val guildId = event.guild.idLong
         val channelId = event.channel.idLong
         val daoManager = container.daoManager
@@ -63,7 +63,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
                 FilterUtil.filterDefault(container, event.message)
             }
             FilterMode.NO_MODE -> throw IllegalArgumentException("Should be DEFAULT rn")
-            FilterMode.DISABLED -> return
+            FilterMode.DISABLED -> return@async
         }
     }
 

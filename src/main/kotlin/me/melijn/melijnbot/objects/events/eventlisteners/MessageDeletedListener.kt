@@ -103,7 +103,6 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
             container.filteredMap.keys.contains(msg.messageId) -> {
                 postDeletedByFilterLog(fmLogChannel, msg, event, container.filteredMap[msg.messageId])
                 container.filteredMap.remove(msg.messageId)
-                println("Bot filtered this message")
                 return
             }
             container.botDeletedMessageIds.contains(msg.messageId) -> {
