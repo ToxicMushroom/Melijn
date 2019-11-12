@@ -37,7 +37,10 @@ class DriverManager(dbSettings: Settings.Database) {
     }
 
     fun getUsableConnection(connection: (Connection) -> Unit) {
+        val startConnection = System.currentTimeMillis()
         dataSource.connection.use { connection.invoke(it) }
+        if (System.currentTimeMillis() - startConnection > 3_000)
+            logger.info("Connection collected: Alive for ${(System.currentTimeMillis() - startConnection)}ms")
     }
 
     fun registerTable(table: String, tableStructure: String, primaryKey: String, uniqueKey: String = "") {
