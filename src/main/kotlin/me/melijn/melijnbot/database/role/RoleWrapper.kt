@@ -14,7 +14,9 @@ class RoleWrapper(private val taskManager: TaskManager, private val roleDao: Rol
     val roleCache = Caffeine.newBuilder()
         .executor(taskManager.executorService)
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .buildAsync<Pair<Long, RoleType>, Long>() { key, executor -> getRoleId(key.first, key.second, executor) }
+        .buildAsync<Pair<Long, RoleType>, Long>() { (first, second), executor ->
+            getRoleId(first, second, executor)
+        }
 
     private fun getRoleId(guildId: Long, roleType: RoleType, executor: Executor = taskManager.executorService): CompletableFuture<Long> {
         val future = CompletableFuture<Long>()
@@ -30,8 +32,8 @@ class RoleWrapper(private val taskManager: TaskManager, private val roleDao: Rol
         roleCache.put(Pair(guildId, roleType), CompletableFuture.completedFuture(-1))
     }
 
-    suspend fun setRole(guildId: Long, roleType: RoleType, channelId: Long) {
-        roleDao.set(guildId, roleType, channelId)
-        roleCache.put(Pair(guildId, roleType), CompletableFuture.completedFuture(channelId))
+    suspend fun setRole(guildId: Long, roleType: RoleType, roleId: Long) {
+        roleDao.set(guildId, roleType, roleId)
+        roleCache.put(Pair(guildId, roleType), CompletableFuture.completedFuture(roleId))
     }
 }
