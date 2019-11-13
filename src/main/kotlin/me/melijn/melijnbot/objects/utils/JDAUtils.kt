@@ -37,13 +37,12 @@ suspend fun <T> RestAction<T>.await(failure: ((Throwable) -> Unit)? = null) = su
         { success ->
             it.resume(success)
         }, { failed ->
-            if (failure == null) {
-                it.resumeWithException(failed)
-            } else{
-                failure.invoke(failed)
-            }
+        if (failure == null) {
+            it.resumeWithException(failed)
+        } else {
+            failure.invoke(failed)
         }
-    )
+    })
 }
 
 suspend fun <T> RestAction<T>.awaitOrNull() = suspendCoroutine<T?> {
@@ -576,7 +575,7 @@ suspend fun getTimeFromArgsNMessage(context: CommandContext, start: Long = Long.
             }
         }
     } catch (ex: NumberFormatException) {
-        val path =  if (workingPart.matches("\\d+".toRegex())) "message.numbertobig" else "message.unknown.number"
+        val path = if (workingPart.matches("\\d+".toRegex())) "message.numbertobig" else "message.unknown.number"
         val msg = context.getTranslation(path)
             .replace(PLACEHOLDER_ARG, workingPart)
         sendMsg(context, msg)

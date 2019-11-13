@@ -32,5 +32,4 @@ class VerificationUserFlowRateWrapper(val taskManager: TaskManager, private val 
         verificationUserFlowRateCache.put(guildId, CompletableFuture.completedFuture(-1))
         verificationUserFlowRateDao.remove(guildId)
     }
-
 }

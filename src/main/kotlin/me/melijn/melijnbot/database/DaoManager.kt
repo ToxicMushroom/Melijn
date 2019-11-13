@@ -10,8 +10,7 @@ import me.melijn.melijnbot.database.ban.BanDao
 import me.melijn.melijnbot.database.ban.BanWrapper
 import me.melijn.melijnbot.database.ban.SoftBanDao
 import me.melijn.melijnbot.database.ban.SoftBanWrapper
-import me.melijn.melijnbot.database.channel.ChannelDao
-import me.melijn.melijnbot.database.channel.ChannelWrapper
+import me.melijn.melijnbot.database.channel.*
 import me.melijn.melijnbot.database.command.*
 import me.melijn.melijnbot.database.cooldown.CommandChannelCooldownDao
 import me.melijn.melijnbot.database.cooldown.CommandChannelCooldownWrapper
@@ -65,12 +64,14 @@ const val LARGE_CACHE = 200L
 const val NORMAL_CACHE = 100L
 const val SMALL_CACHE = 50L
 
-class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.Database) {
+class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
 
     companion object {
         val afterTableFunctions = mutableListOf<() -> Unit>()
     }
 
+    val streamUrlWrapper: StreamUrlWrapper
+    val musicChannelWrapper: MusicChannelWrapper
     val commandWrapper: CommandWrapper
     val commandUsageWrapper: CommandUsageWrapper
     val customCommandWrapper: CustomCommandWrapper
@@ -129,15 +130,17 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.Database) {
     val autoPunishmentGroupWrapper: AutoPunishmentGroupWrapper
 
     val voteWrapper: VoteWrapper
+    var driverManager: DriverManager
 
     init {
-        val driverManager = DriverManager(mysqlSettings)
+        driverManager = DriverManager(dbSettings, dbSettings.mySQL)
 
         runBlocking {
             mySQLVersion = driverManager.getDBVersion()
             connectorVersion = driverManager.getConnectorVersion()
         }
 
+        streamUrlWrapper = StreamUrlWrapper(taskManager, StreamUrlDao(driverManager))
 
         commandWrapper = CommandWrapper(taskManager, CommandDao(driverManager))
         commandUsageWrapper = CommandUsageWrapper(taskManager, CommandUsageDao(driverManager))
@@ -169,6 +172,7 @@ class DaoManager(taskManager: TaskManager, mysqlSettings: Settings.Database) {
 
         logChannelWrapper = LogChannelWrapper(taskManager, LogChannelDao(driverManager))
         channelWrapper = ChannelWrapper(taskManager, ChannelDao(driverManager))
+        musicChannelWrapper = MusicChannelWrapper(taskManager, MusicChannelDao(driverManager))
         roleWrapper = RoleWrapper(taskManager, RoleDao(driverManager))
         selfRoleWrapper = SelfRoleWrapper(taskManager, SelfRoleDao(driverManager))
 

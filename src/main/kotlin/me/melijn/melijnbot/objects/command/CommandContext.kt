@@ -7,6 +7,8 @@ import me.melijn.melijnbot.objects.web.WebManager
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.util.regex.Pattern
 
 class CommandContext(
@@ -15,6 +17,8 @@ class CommandContext(
     val container: Container,
     val commandList: Set<AbstractCommand>
 ) : ICommandContext {
+
+    lateinit var logger: Logger
 
     override val event: MessageReceivedEvent
         get() = messageReceivedEvent
@@ -56,6 +60,7 @@ class CommandContext(
             } else {
                 "\\s+"
             }
+            logger = LoggerFactory.getLogger(commandOrder.first().javaClass.name)
         }
 
         val regex: Regex = ("${Pattern.quote(usedPrefix)}\\s*$commandPath").toRegex()
