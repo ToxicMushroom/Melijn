@@ -18,7 +18,7 @@ repositories {
 
 dependencies {
     //https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation('net.dv8tion:JDA:4.0.0_59') {
+    implementation('net.dv8tion:JDA:4.0.0_60') {
         exclude module: 'opus-java'
     }
 
@@ -39,6 +39,9 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.8'
+
+    // https://mvnrepository.com/artifact/mysql/mysql-connector-java
+    implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.18'
 
 
     //https://mvnrepository.com/artifact/org.codehaus.janino/janino
