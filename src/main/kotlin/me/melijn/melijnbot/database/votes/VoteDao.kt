@@ -29,6 +29,11 @@ class VoteDao(driverManager: DriverManager) : Dao(driverManager) {
             }
         }, userId)
     }
+
+    suspend fun set(userId: Long, votes: Long, streak: Long, lastTime: Long) {
+        val sql = "INSERT INTO $table (userId, votes, streak, lastTime) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET votes = ?, streak = ?, lastTime = ?"
+        driverManager.executeUpdate(sql, userId, votes, streak, lastTime, votes, streak, lastTime)
+    }
 }
 
 data class UserVote(
