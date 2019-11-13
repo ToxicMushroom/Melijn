@@ -29,6 +29,9 @@ class EventManager(val container: Container) : IEventManager {
         val messageUpdateListener = MessageUpdateListener(container)
         val messageReactionAddedListener = MessageReactionAddedListener(container)
         val messageReactionRemovedListener = MessageReactionRemovedListener(container)
+        val voiceJoinListener = VoiceJoinListener(container)
+        val voiceLeaveListener = VoiceLeaveListener(container)
+        val voiceMoveListener = VoiceMoveListener(container)
         val joinLeaveListener = JoinLeaveListener(container)
         val lavaEventListener = container.jdaLavaLink
 
@@ -46,6 +49,9 @@ class EventManager(val container: Container) : IEventManager {
         eventListeners.add(messageReactionAddedListener)
         eventListeners.add(messageReactionRemovedListener)
         eventListeners.add(joinLeaveListener)
+        eventListeners.add(voiceJoinListener)
+        eventListeners.add(voiceLeaveListener)
+        eventListeners.add(voiceMoveListener)
         lavaEventListener?.let {
             eventListeners.add(it)
         }
