@@ -7,14 +7,14 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.sendMsg
 
 
-class GuildMusicPlayer(lavaManager: LavaManager, val guildId: Long) {
+class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val guildId: Long) {
 
     val guildTrackManager: GuildTrackManager
     val searchMenus: MutableMap<Long, List<AudioTrack>> = mutableMapOf()
     private val iPlayer: IPlayer = lavaManager.getIPlayer(guildId)
 
     init {
-        guildTrackManager = GuildTrackManager(iPlayer)
+        guildTrackManager = GuildTrackManager(guildId, daoManager, lavaManager, iPlayer)
         iPlayer.addListener(guildTrackManager)
     }
 
@@ -43,9 +43,8 @@ class GuildMusicPlayer(lavaManager: LavaManager, val guildId: Long) {
     }
 
     fun queueIsFull(context: CommandContext, add: Int, silent: Boolean = false): Boolean {
-        if (
-            (guildTrackManager.tracks.size + add > QUEUE_LIMIT &&
-            !context.daoManager.supporterWrapper.guildSupporterIds.contains(guildId)) ||
+        if ((guildTrackManager.tracks.size + add > QUEUE_LIMIT &&
+                !context.daoManager.supporterWrapper.guildSupporterIds.contains(guildId)) ||
             guildTrackManager.tracks.size + add > DONATE_QUEUE_LIMIT
         ) {
             if (!silent) {

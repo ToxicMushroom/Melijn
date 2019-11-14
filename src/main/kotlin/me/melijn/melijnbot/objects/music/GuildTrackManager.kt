@@ -4,14 +4,34 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
+import kotlinx.coroutines.runBlocking
 import lavalink.client.player.IPlayer
 import lavalink.client.player.event.AudioEventAdapterWrapped
+import me.melijn.melijnbot.MelijnBot
+import me.melijn.melijnbot.database.DaoManager
+import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.objects.utils.LogUtils
+import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
+import me.melijn.melijnbot.objects.utils.sendEmbed
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.MessageEmbed
+import org.slf4j.LoggerFactory
 import java.util.*
 
 
 class GuildTrackManager(
+    val guildId: Long,
+    val daoManager: DaoManager,
+    val lavaManager: LavaManager,
     val iPlayer: IPlayer
 ) : AudioEventAdapterWrapped() {
+
+    val logger = LoggerFactory.getLogger(this::class.java.name + " - $guildId")
+
+    val resumeMomentMessageMap = mutableMapOf<Long, MessageEmbed>()
+    val pauseMomentMessageMap = mutableMapOf<Long, MessageEmbed>()
+    val startMomentMessageMap = mutableMapOf<Long, MessageEmbed>()
+
 
     var loopedTrack = false
     var loopedQueue = false
@@ -26,7 +46,7 @@ class GuildTrackManager(
                 iPlayer.playTrack(lastTrack.makeClone())
                 return
             }
-            iPlayer.stopTrack()
+            lavaManager.closeConnection(guildId)
             return
         }
 
@@ -55,30 +75,64 @@ class GuildTrackManager(
     }
 
 
-    override fun onPlayerResume(player: AudioPlayer?) {
-        println("track resume")
+    override fun onPlayerResume(player: AudioPlayer) {
+        val data = player.playingTrack.userData as TrackUserData
+        val embed = resumeMomentMessageMap.getOrElse(data.currentTime) {
+            return
+        }
+        val guild = getAndCheckGuild(guildId) ?: return
+
+        runBlocking {
+            val channel = guild.getAndVerifyLogChannelByType(LogChannelType.MUSIC, daoManager.logChannelWrapper)
+                ?: return@runBlocking
+            sendEmbed(daoManager.embedDisabledWrapper, channel, embed)
+        }
     }
 
-    override fun onPlayerPause(player: AudioPlayer?) {
-        println("track paused")
+    override fun onPlayerPause(player: AudioPlayer) {
+        val data = player.playingTrack.userData as TrackUserData
+        val embed = pauseMomentMessageMap.getOrElse(data.currentTime) {
+            return
+        }
+        val guild = getAndCheckGuild(guildId) ?: return
+
+        runBlocking {
+            val channel = guild.getAndVerifyLogChannelByType(LogChannelType.MUSIC, daoManager.logChannelWrapper)
+                ?: return@runBlocking
+            sendEmbed(daoManager.embedDisabledWrapper, channel, embed)
+        }
     }
 
-    override fun onTrackStuck(player: AudioPlayer?, track: AudioTrack?, thresholdMs: Long) {
-        println("track stuck")
+    override fun onTrackStuck(player: AudioPlayer, track: AudioTrack, thresholdMs: Long) {
+        logger.debug("track stuck $thresholdMs")
     }
 
-    override fun onTrackException(player: AudioPlayer?, track: AudioTrack?, exception: FriendlyException?) {
-        exception?.printStackTrace()
-        println("track exception")
+    override fun onTrackException(player: AudioPlayer, track: AudioTrack, exception: FriendlyException) {
+        val guild = getAndCheckGuild(guildId) ?: return
+        runBlocking {
+            LogUtils.sendMusicPlayerException(daoManager, guild, player, track, exception)
+        }
     }
 
-    override fun onTrackStart(player: AudioPlayer?, track: AudioTrack) {
-        println("track started")
+    override fun onTrackStart(player: AudioPlayer, track: AudioTrack) {
+        val data = player.playingTrack.userData as TrackUserData
+        val embed = startMomentMessageMap.getOrElse(data.currentTime) {
+            return
+        }
+        val guild = getAndCheckGuild(guildId) ?: return
+
+        runBlocking {
+            val channel = guild.getAndVerifyLogChannelByType(LogChannelType.MUSIC, daoManager.logChannelWrapper)
+                ?: return@runBlocking
+            sendEmbed(daoManager.embedDisabledWrapper, channel, embed)
+        }
     }
 
-    override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack, endReason: AudioTrackEndReason) {
-        println("track ended eventStartNext:" + endReason.mayStartNext)
-        if (endReason.mayStartNext) nextTrack(track)
+    override fun onTrackEnd(player: AudioPlayer, track: AudioTrack, endReason: AudioTrackEndReason) {
+        //logger.debug("track ended eventStartNext:" + endReason.mayStartNext)
+        if (endReason.mayStartNext) {
+            nextTrack(track)
+        }
     }
 
     fun clear() {
@@ -126,5 +180,14 @@ class GuildTrackManager(
         }
         tracks = newQueue
         return removed
+    }
+
+    private fun getAndCheckGuild(guildById: Long): Guild? {
+        val guild = MelijnBot.shardManager.getGuildById(guildId)
+        if (guild == null) {
+            stop()
+            lavaManager.closeConnection(guildId)
+        }
+        return guild
     }
 }
