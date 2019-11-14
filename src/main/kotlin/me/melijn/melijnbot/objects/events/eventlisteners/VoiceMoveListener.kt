@@ -11,6 +11,7 @@ class VoiceMoveListener(container: Container) : AbstractListener(container) {
     override fun onEvent(event: GenericEvent) {
         if (event is GuildVoiceMoveEvent) {
             VoiceUtil.channelUpdate(container, event.channelJoined)
+            VoiceUtil.channelUpdate(container, event.channelLeft)
         }
     }
 }
