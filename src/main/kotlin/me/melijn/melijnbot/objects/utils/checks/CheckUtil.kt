@@ -14,6 +14,10 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.VoiceChannel
+
+private const val UNKNOWN_ID_CAUSE = "unknownid"
+private const val NO_PERM_CAUSE = "nopermission"
 
 suspend fun Guild.getAndVerifyLogChannelByType(type: LogChannelType, logChannelWrapper: LogChannelWrapper): TextChannel? {
     val channelId = logChannelWrapper.logChannelCache.get(Pair(idLong, type)).await()
@@ -49,7 +53,7 @@ suspend fun Guild.getAndVerifyChannelByType(
 
     var shouldRemove = false
     if (channelId != -1L && textChannel == null) {
-        LogUtils.sendRemovedChannelLog(language, type, logChannel, "unknownId", channelId.toString())
+        LogUtils.sendRemovedChannelLog(language, type, logChannel, UNKNOWN_ID_CAUSE, channelId.toString())
         shouldRemove = true
     }
 
@@ -57,7 +61,7 @@ suspend fun Guild.getAndVerifyChannelByType(
         if (shouldRemove || selfMember == null) break
         if (!selfMember.hasPermission(textChannel, perm)) {
             shouldRemove = true
-            LogUtils.sendRemovedChannelLog(language, type, logChannel, "noPermission", perm.toString().toUpperWordCase())
+            LogUtils.sendRemovedChannelLog(language, type, logChannel, NO_PERM_CAUSE, perm.toString().toUpperWordCase())
         }
     }
 
@@ -66,6 +70,40 @@ suspend fun Guild.getAndVerifyChannelByType(
     }
 
     return textChannel
+}
+
+suspend fun Guild.getAndVerifyMusicChannel(
+    daoManager: DaoManager,
+    vararg requiredPerms: Permission
+): VoiceChannel? {
+    val channelWrapper = daoManager.musicChannelWrapper
+    val logChannelWrapper = daoManager.logChannelWrapper
+    val channelId = channelWrapper.musicChannelCache.get(idLong).await()
+    val voiceChannel = getVoiceChannelById(channelId)
+    val selfMember = voiceChannel?.guild?.selfMember
+    val logChannel = voiceChannel?.guild?.getAndVerifyLogChannelByType(LogChannelType.BOT, logChannelWrapper)
+
+    val language = getLanguage(daoManager, -1, this.idLong)
+
+    var shouldRemove = false
+    if (channelId != -1L && voiceChannel == null) {
+        LogUtils.sendRemovedMusicChannelLog(language, logChannel, UNKNOWN_ID_CAUSE, channelId.toString())
+        shouldRemove = true
+    }
+
+    for (perm in requiredPerms) {
+        if (shouldRemove || selfMember == null) break
+        if (!selfMember.hasPermission(voiceChannel, perm)) {
+            shouldRemove = true
+            LogUtils.sendRemovedMusicChannelLog(language, logChannel, NO_PERM_CAUSE, perm.toString().toUpperWordCase())
+        }
+    }
+
+    if (shouldRemove) {
+        channelWrapper.removeChannel(this.idLong)
+    }
+
+    return voiceChannel
 }
 
 suspend fun Guild.getAndVerifyRoleByType(type: RoleType, roleWrapper: RoleWrapper, shouldBeInteractable: Boolean = false): Role? {

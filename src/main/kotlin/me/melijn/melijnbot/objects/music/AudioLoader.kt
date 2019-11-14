@@ -9,6 +9,7 @@ import com.wrapper.spotify.model_objects.specification.PlaylistTrack
 import com.wrapper.spotify.model_objects.specification.Track
 import com.wrapper.spotify.model_objects.specification.TrackSimplified
 import kotlinx.coroutines.runBlocking
+import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
@@ -16,6 +17,7 @@ import me.melijn.melijnbot.objects.translation.SC_SELECTOR
 import me.melijn.melijnbot.objects.translation.YT_SELECTOR
 import me.melijn.melijnbot.objects.translation.YT_VID_URL_BASE
 import me.melijn.melijnbot.objects.utils.*
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import java.lang.Integer.min
 
@@ -382,5 +384,30 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         eb.setTitle(title)
         eb.setDescription(menu)
         return sendEmbed(context, eb.build())
+    }
+
+    fun loadNewTrack(daoManager: DaoManager, guild: Guild, source: String) {
+        val guildMusicPlayer = musicPlayerManager.getGuildMusicPlayer(guild)
+
+        val resultHandler = object : AudioLoadResultHandler {
+            override fun loadFailed(exception: FriendlyException) = runBlocking {
+                LogUtils.sendFailedLoadStreamTrackLog(daoManager, guild, source, exception)
+            }
+
+            override fun trackLoaded(track: AudioTrack) {
+                track.userData = TrackUserData(guild.selfMember.user)
+                guildMusicPlayer.guildTrackManager.queue(track)
+            }
+
+            override fun noMatches() {
+                return
+            }
+
+            override fun playlistLoaded(playlist: AudioPlaylist) {
+                return
+            }
+        }
+
+        audioPlayerManager.loadItemOrdered(guildMusicPlayer, source, resultHandler)
     }
 }
