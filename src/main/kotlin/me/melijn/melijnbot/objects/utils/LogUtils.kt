@@ -1,12 +1,14 @@
 package me.melijn.melijnbot.objects.utils
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.embed.Embedder
+import me.melijn.melijnbot.objects.music.LavaManager
 import me.melijn.melijnbot.objects.music.TrackUserData
 import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
@@ -181,15 +183,120 @@ object LogUtils {
         trackManager.resumeMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
     }
 
-    suspend fun sendMusicPlayerPaused(daoManager: DaoManager, guild: Guild, player: AudioPlayer) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    suspend fun addMusicPlayerPaused(context: CommandContext) {
+        val trackManager = context.guildMusicPlayer.guildTrackManager
+        val track = trackManager.iPlayer.playingTrack ?: return
+        val eb = EmbedBuilder()
+
+        val title = context.getTranslation("logging.music.pause.title")
+
+
+        val userTitle = i18n.getTranslation(context, "logging.music.pause.userfield.title")
+        val userIdTitle = i18n.getTranslation(context, "logging.music.pause.userIdfield.title")
+        val channel = i18n.getTranslation(context, "logging.music.pause.channelfield.title")
+        val channelId = i18n.getTranslation(context, "logging.music.pause.channelIdfield.title")
+        val trackField = i18n.getTranslation(context, "logging.music.pause.trackfield.title")
+        eb.setTitle(title)
+
+        eb.addField(userTitle, context.author.asTag, false)
+        eb.addField(userIdTitle, context.author.asTag, false)
+        eb.addField(channel, context.selfMember.voiceState?.channel?.name
+            ?: throw IllegalArgumentException("Fix code pls"), false)
+        eb.addField(channelId, context.selfMember.voiceState?.channel?.id
+            ?: throw IllegalArgumentException("Fix code pls"), false)
+        eb.addField(trackField, track.info.title, false)
+
+        eb.setColor(Color.decode("2f3136"))
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+
+        trackManager.resumeMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
     }
 
-    suspend fun sendMusicPlayerException(daoManager: DaoManager, guild: Guild, player: AudioPlayer, track: AudioTrack, exception: FriendlyException) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
+    suspend fun sendMusicPlayerException(daoManager: DaoManager, guild: Guild, track: AudioTrack, exception: FriendlyException) {
+        val eb = EmbedBuilder()
+
+        val language = getLanguage(daoManager, -1, guild.idLong)
+        val logChannel = guild.getAndVerifyLogChannelByType(LogChannelType.MUSIC, daoManager.logChannelWrapper)
+            ?: return
+        val title = i18n.getTranslation(language, "logging.music.pause.title")
+
+
+        val channel = i18n.getTranslation(language, "logging.music.pause.channelfield.title")
+        val channelId = i18n.getTranslation(language, "logging.music.pause.channelIdfield.title")
+        val trackField = i18n.getTranslation(language, "logging.music.pause.trackfield.title")
+        val cause = i18n.getTranslation(language, "logging.music.pause.causefield.title")
+        eb.setTitle(title)
+
+        Container.instance.lavaManager.getConnectedChannel(guild)
+        eb.addField(channel, guild.selfMember.voiceState?.channel?.name
+            ?: throw IllegalArgumentException("NO"), false)
+        eb.addField(channelId, guild.selfMember.voiceState?.channel?.id
+            ?: throw IllegalArgumentException("NO"), false)
+        eb.addField(trackField, track.info.title, false)
+        eb.addField(cause, exception.message ?: "/", false)
+
+        eb.setColor(Color.decode("2f3136"))
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+
+        sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 
-    suspend fun sendMusicPlayerNewtrack(daoManager: DaoManager, guild: Guild, player: AudioPlayer, track: AudioTrack) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    suspend fun addMusicPlayerNewTrack(context: CommandContext) {
+        val trackManager = context.guildMusicPlayer.guildTrackManager
+        val track = trackManager.iPlayer.playingTrack ?: return
+        val eb = EmbedBuilder()
+
+        val title = context.getTranslation("logging.music.newtrack.title")
+
+
+        val userTitle = i18n.getTranslation(context, "logging.music.newtrack.userfield.title")
+        val userIdTitle = i18n.getTranslation(context, "logging.music.newtrack.userIdfield.title")
+        val channel = i18n.getTranslation(context, "logging.music.newtrack.channelfield.title")
+        val channelId = i18n.getTranslation(context, "logging.music.newtrack.channelIdfield.title")
+        val trackField = i18n.getTranslation(context, "logging.music.newtrack.trackfield.title")
+        eb.setTitle(title)
+
+        eb.addField(userTitle, context.author.asTag, false)
+        eb.addField(userIdTitle, context.author.asTag, false)
+        eb.addField(channel, context.selfMember.voiceState?.channel?.name
+            ?: throw IllegalArgumentException("Fix code pls"), false)
+        eb.addField(channelId, context.selfMember.voiceState?.channel?.id
+            ?: throw IllegalArgumentException("Fix code pls"), false)
+        eb.addField(trackField, track.info.title, false)
+
+        eb.setColor(Color.decode("2f3136"))
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+
+        trackManager.startMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
+    }
+
+    suspend fun addMusicPlayerNewTrack(daoManager: DaoManager, lavaManager: LavaManager, vc: VoiceChannel, author: User) {
+        val guild = vc.guild
+        val language = getLanguage(daoManager, -1, guild.idLong)
+
+        val trackManager = lavaManager.musicPlayerManager.getGuildMusicPlayer(guild).guildTrackManager
+        val track = trackManager.playingTrack ?: return
+        val eb = Embedder(daoManager, guild.idLong, -1, Color.decode("2f3136").rgb)
+
+        val title = i18n.getTranslation(language, "logging.music.newtrack.title")
+
+
+        val userTitle = i18n.getTranslation(language, "logging.music.newtrack.userfield.title")
+        val userIdTitle = i18n.getTranslation(language, "logging.music.newtrack.userIdfield.title")
+        val channel = i18n.getTranslation(language, "logging.music.newtrack.channelfield.title")
+        val channelId = i18n.getTranslation(language, "logging.music.newtrack.channelIdfield.title")
+        val trackField = i18n.getTranslation(language, "logging.music.newtrack.trackfield.title")
+        eb.setTitle(title)
+
+        eb.addField(userTitle, author.asTag, false)
+        eb.addField(userIdTitle, author.asTag, false)
+        eb.addField(channel, vc.name, false)
+        eb.addField(channelId, vc.id, false)
+        eb.addField(trackField, track.info.title, false)
+
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+
+        trackManager.startMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
     }
 }

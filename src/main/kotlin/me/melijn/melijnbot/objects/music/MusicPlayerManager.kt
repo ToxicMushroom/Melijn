@@ -4,10 +4,12 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
+import me.melijn.melijnbot.database.DaoManager
 import net.dv8tion.jda.api.entities.Guild
 
 
 class MusicPlayerManager(
+    private val daoManager: DaoManager,
     private val lavaManager: LavaManager
 ) {
     val audioPlayerManager: AudioPlayerManager = DefaultAudioPlayerManager()
@@ -29,7 +31,7 @@ class MusicPlayerManager(
     fun getGuildMusicPlayer(guild: Guild): GuildMusicPlayer {
         val cachedMusicPlayer = guildMusicPlayers[guild.idLong]
         if (cachedMusicPlayer == null) {
-            val newMusicPlayer = GuildMusicPlayer(lavaManager, guild.idLong)
+            val newMusicPlayer = GuildMusicPlayer(daoManager, lavaManager, guild.idLong)
             guildMusicPlayers[guild.idLong] = newMusicPlayer
             if (!lavaManager.lavalinkEnabled) {
                 guild.audioManager.sendingHandler = newMusicPlayer.getSendHandler()

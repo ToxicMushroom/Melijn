@@ -80,6 +80,10 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 eb.setTitle(title)
                 eb.setDescription(description)
                 message.editMessage(eb.build()).queue()
+
+                event.guild.selfMember.voiceState?.channel?.let {
+                    LogUtils.addMusicPlayerNewTrack(container.daoManager, container.lavaManager, it, event.user)
+                }
             }
             else -> {
                 val msg = i18n.getTranslation(language, "message.music.queuelimit")

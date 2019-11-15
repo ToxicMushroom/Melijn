@@ -1,10 +1,10 @@
 package me.melijn.melijnbot.commands.music
 
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
+import me.melijn.melijnbot.objects.utils.LogUtils
 import me.melijn.melijnbot.objects.utils.sendMsg
 
 class ResumeCommand : AbstractCommand("command.resume") {
@@ -19,13 +19,11 @@ class ResumeCommand : AbstractCommand("command.resume") {
 
     override suspend fun execute(context: CommandContext) {
         val trackManager = context.guildMusicPlayer.guildTrackManager
-        val cTrack: AudioTrack? = trackManager.iPlayer.playingTrack
-        if (cTrack == null) {
-            val noSongPlaying = context.getTranslation("message.music.notracks")
-            sendMsg(context, noSongPlaying)
-            return
-        }
         trackManager.setPaused(false)
+
+        //Adds a message to the resumeEventMessageQueue thing so it gets logged to MUSIC logchannel
+        LogUtils.addMusicPlayerResumed(context)
+
         val msg = context.getTranslation("$root.success")
         sendMsg(context, msg)
     }

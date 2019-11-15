@@ -118,7 +118,6 @@ class PlayCommand : AbstractCommand("command.play") {
             aliases = arrayOf("file")
         }
 
-
         override suspend fun execute(context: CommandContext) {
             if (context.message.attachments.isEmpty()) {
                 sendSyntax(context)
@@ -135,7 +134,6 @@ class PlayCommand : AbstractCommand("command.play") {
                 context.audioLoader.loadNewTrackNMessage(context, url, false)
             }
         }
-
     }
 
     private fun spotifySearchNLoad(audioLoader: AudioLoader, context: CommandContext, songArg: String) {
@@ -149,11 +147,12 @@ class PlayCommand : AbstractCommand("command.play") {
             { simpleTrackList ->
                 audioLoader.loadSpotifyAlbum(context, simpleTrackList)
             },
-            { error -> runBlocking {
-                val msg = context.getTranslation("message.spotify.down")
-                sendMsg(context, msg)
-                error.sendInGuild(context)
-            }
+            { error ->
+                runBlocking {
+                    val msg = context.getTranslation("message.spotify.down")
+                    sendMsg(context, msg)
+                    error.sendInGuild(context)
+                }
             }
         )
     }

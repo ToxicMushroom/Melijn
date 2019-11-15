@@ -4,13 +4,14 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyMusicChannel
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.VoiceChannel
 
 object VoiceUtil {
-    suspend fun channelUpdate(container: Container, channelJoined: VoiceChannel) {
+
+    suspend fun channelUpdate(container: Container, channelJoined: VoiceChannel, user: User) {
         val guild = channelJoined.guild
         val daoManager = container.daoManager
-        val musicChannelId = daoManager.musicChannelWrapper.musicChannelCache.get(guild.idLong).await()
 
         val musicChannel = guild.getAndVerifyMusicChannel(daoManager, Permission.VOICE_CONNECT, Permission.VOICE_SPEAK)
             ?: return
@@ -20,15 +21,16 @@ object VoiceUtil {
 
 
         val selfMember = guild.selfMember
-        val trackManager = container.lavaManager.musicPlayerManager.getGuildMusicPlayer(guild).guildTrackManager
-        val audioLoader = container.lavaManager.musicPlayerManager.audioLoader
+        val musicPlayerManager = container.lavaManager.musicPlayerManager
+        val trackManager = musicPlayerManager.getGuildMusicPlayer(guild).guildTrackManager
+        val audioLoader = musicPlayerManager.audioLoader
         val iPlayer = trackManager.iPlayer
         val botChannel = container.lavaManager.getConnectedChannel(guild)
 
         if (musicChannel.id == botChannel?.id && channelJoined.id == botChannel.id && iPlayer.playingTrack != null) {
             return
         } else if (musicChannel.id == botChannel?.id && channelJoined.id == botChannel.id) {
-            audioLoader.loadNewTrack(daoManager, guild, musicUrl)
+            audioLoader.loadNewTrack(daoManager, container.lavaManager, channelJoined, user, musicUrl)
         }
     }
 }

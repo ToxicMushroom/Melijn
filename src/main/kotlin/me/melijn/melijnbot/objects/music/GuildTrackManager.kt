@@ -26,6 +26,7 @@ class GuildTrackManager(
     val iPlayer: IPlayer
 ) : AudioEventAdapterWrapped() {
 
+    val playingTrack: AudioTrack? = iPlayer.playingTrack
     val logger = LoggerFactory.getLogger(this::class.java.name + " - $guildId")
 
     val resumeMomentMessageMap = mutableMapOf<Long, MessageEmbed>()
@@ -110,7 +111,7 @@ class GuildTrackManager(
     override fun onTrackException(player: AudioPlayer, track: AudioTrack, exception: FriendlyException) {
         val guild = getAndCheckGuild(guildId) ?: return
         runBlocking {
-            LogUtils.sendMusicPlayerException(daoManager, guild, player, track, exception)
+            LogUtils.sendMusicPlayerException(daoManager, guild, track, exception)
         }
     }
 

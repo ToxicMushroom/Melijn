@@ -19,7 +19,7 @@ class LavaManager(
     private val jdaLavaLink: JdaLavalink?
 ) {
 
-    val musicPlayerManager: MusicPlayerManager = MusicPlayerManager(this)
+    val musicPlayerManager: MusicPlayerManager = MusicPlayerManager(daoManager, this)
 
     fun getIPlayer(guildId: Long): IPlayer {
         return if (lavalinkEnabled && jdaLavaLink != null) {

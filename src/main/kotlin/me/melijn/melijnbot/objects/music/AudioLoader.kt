@@ -17,8 +17,9 @@ import me.melijn.melijnbot.objects.translation.SC_SELECTOR
 import me.melijn.melijnbot.objects.translation.YT_SELECTOR
 import me.melijn.melijnbot.objects.translation.YT_VID_URL_BASE
 import me.melijn.melijnbot.objects.utils.*
-import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.entities.VoiceChannel
 import java.lang.Integer.min
 
 const val QUEUE_LIMIT = 150
@@ -61,6 +62,9 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 track.userData = TrackUserData(context.author)
                 if (guildMusicPlayer.safeQueue(context, track)) {
                     sendMessageAddedTrack(context, track)
+                    runBlocking {
+                        LogUtils.addMusicPlayerNewTrack(context)
+                    }
                 }
             }
 
@@ -77,13 +81,23 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                         track.userData = TrackUserData(context.author)
 
                         if (!guildMusicPlayer.safeQueueSilent(context.daoManager, track)) notAdded++
+                        else {
+                            runBlocking {
+                                LogUtils.addMusicPlayerNewTrack(context)
+                            }
+                        }
                     }
                     sendMessageAddedTracks(context, tracks.subList(0, tracks.size - 1 - notAdded))
                 } else {
                     val track = tracks[0]
                     track.userData = TrackUserData(context.author)
-                    guildMusicPlayer.safeQueue(context, track)
-                    sendMessageAddedTrack(context, track)
+                    if (guildMusicPlayer.safeQueue(context, track)) {
+                        sendMessageAddedTrack(context, track)
+                        runBlocking {
+                            LogUtils.addMusicPlayerNewTrack(context)
+                        }
+                    }
+
                 }
             }
         }
@@ -175,6 +189,9 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                         if (!silent) {
                             sendMessageAddedTrack(context, track)
                         }
+                        runBlocking {
+                            LogUtils.addMusicPlayerNewTrack(context)
+                        }
                         loaded?.invoke(true)
                     } else {
                         loaded?.invoke(false)
@@ -192,6 +209,9 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                         if (player.safeQueue(context, track)) {
                             if (!silent) {
                                 sendMessageAddedTrack(context, track)
+                            }
+                            runBlocking {
+                                LogUtils.addMusicPlayerNewTrack(context)
                             }
                             loaded?.invoke(true)
                         } else {
@@ -386,7 +406,8 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         return sendEmbed(context, eb.build())
     }
 
-    fun loadNewTrack(daoManager: DaoManager, guild: Guild, source: String) {
+    fun loadNewTrack(daoManager: DaoManager, lavaManager: LavaManager, vc: VoiceChannel, author: User, source: String) {
+        val guild = vc.guild
         val guildMusicPlayer = musicPlayerManager.getGuildMusicPlayer(guild)
 
         val resultHandler = object : AudioLoadResultHandler {
@@ -397,6 +418,9 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             override fun trackLoaded(track: AudioTrack) {
                 track.userData = TrackUserData(guild.selfMember.user)
                 guildMusicPlayer.guildTrackManager.queue(track)
+                runBlocking {
+                    LogUtils.addMusicPlayerNewTrack(daoManager, lavaManager, vc, author)
+                }
             }
 
             override fun noMatches() {
