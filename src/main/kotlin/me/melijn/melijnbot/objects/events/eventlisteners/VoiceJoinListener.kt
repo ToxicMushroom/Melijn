@@ -12,7 +12,7 @@ class VoiceJoinListener(container: Container) : AbstractListener(container) {
     override fun onEvent(event: GenericEvent) {
         if (event is GuildVoiceJoinEvent) {
             runBlocking {
-                VoiceUtil.channelUpdate(container, event.channelJoined, event.member.user)
+                VoiceUtil.channelUpdate(container, event.channelJoined)
             }
         }
     }

@@ -51,7 +51,7 @@ class RolePermissionDao(driverManager: DriverManager) : Dao(driverManager) {
 
     fun bulkPut(guildId: Long, roleId: Long, permissions: List<String>, state: PermState) {
         driverManager.getUsableConnection { connection ->
-            connection.prepareStatement("INSERT INTO $table (guildId, roleId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) KEY UPDATE state = ?").use { statement ->
+            connection.prepareStatement("INSERT INTO $table (guildId, roleId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET state = ?").use { statement ->
                 statement.setLong(1, guildId)
                 statement.setLong(2, roleId)
                 statement.setString(4, state.toString())

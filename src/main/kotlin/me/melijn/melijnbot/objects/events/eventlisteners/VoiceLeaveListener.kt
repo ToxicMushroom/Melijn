@@ -12,7 +12,7 @@ class VoiceLeaveListener(container: Container) : AbstractListener(container) {
     override fun onEvent(event: GenericEvent) {
         if (event is GuildVoiceLeaveEvent) {
             runBlocking {
-                VoiceUtil.channelUpdate(container, event.channelLeft, event.member.user)
+                VoiceUtil.channelUpdate(container, event.channelLeft)
             }
         }
     }
