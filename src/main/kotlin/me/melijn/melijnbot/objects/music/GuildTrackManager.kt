@@ -158,7 +158,7 @@ class GuildTrackManager(
         }
     }
 
-    override fun onTrackEnd(player: AudioPlayer, track: AudioTrack, endReason: AudioTrackEndReason) {
+    override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack, endReason: AudioTrackEndReason) {
         //logger.debug("track ended eventStartNext:" + endReason.mayStartNext)
         if (endReason.mayStartNext) {
             nextTrack(track)
@@ -176,8 +176,9 @@ class GuildTrackManager(
             tracks.toList().indexOf(audioTrack) + 1
         }
 
-    fun stop() {
+    fun stopAndDestroy() {
         iPlayer.stopTrack()
+        lavaManager.closeConnection(guildId)
     }
 
     fun skip(amount: Int) {
@@ -186,7 +187,7 @@ class GuildTrackManager(
             nextTrack = tracks.poll()
         }
         if (nextTrack == null) {
-            stop()
+            stopAndDestroy()
         } else {
             iPlayer.stopTrack()
             iPlayer.playTrack(nextTrack)
@@ -215,8 +216,7 @@ class GuildTrackManager(
     private fun getAndCheckGuild(): Guild? {
         val guild = MelijnBot.shardManager.getGuildById(guildId)
         if (guild == null) {
-            stop()
-            lavaManager.closeConnection(guildId)
+            stopAndDestroy()
         }
         return guild
     }

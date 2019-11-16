@@ -19,8 +19,7 @@ class StopCommand : AbstractCommand("command.stop") {
     override suspend fun execute(context: CommandContext) {
         val guildMusicPlayer = context.musicPlayerManager.getGuildMusicPlayer(context.guild)
         guildMusicPlayer.guildTrackManager.clear()
-        guildMusicPlayer.guildTrackManager.stop()
-        context.lavaManager.closeConnection(context.guild)
+        guildMusicPlayer.guildTrackManager.stopAndDestroy()
 
         val msg = context.getTranslation("$root.success")
         sendMsg(context, msg)

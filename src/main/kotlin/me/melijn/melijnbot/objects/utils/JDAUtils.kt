@@ -554,8 +554,8 @@ fun listeningMembers(vc: VoiceChannel, alwaysListeningUser: Long = -1L): Int {
     val guild = vc.guild
 
     return vc.members.filter { member ->
-        member != guild.selfMember && !(member.voiceState?.isDeafened ?: true && member.idLong != alwaysListeningUser)
-    }.count()
+        member != guild.selfMember && !(member.voiceState?.isDeafened ?: true) && member.idLong != alwaysListeningUser
+    }.size
 }
 
 

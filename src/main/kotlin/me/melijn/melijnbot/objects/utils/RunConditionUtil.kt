@@ -86,13 +86,16 @@ object RunConditionUtil {
     suspend fun checkVCBotOrUserDJ(container: Container, event: MessageReceivedEvent, command: AbstractCommand, language: String): Boolean {
         val member = event.member ?: return false
         val vc = member.voiceState?.channel
-        if (vc == null) {
+        val botVc = container.lavaManager.getConnectedChannel(event.guild)
+
+        if (vc == null && botVc == null) {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.vc")
             sendMsg(event.textChannel, msg)
             return false
         }
-        if (vc.members.contains(member.guild.selfMember)) return true
-        else if (!vc.members.contains(member.guild.selfMember) && member.guild.selfMember.voiceState?.inVoiceChannel() != true) return true
+
+        if (vc?.id == botVc?.id) return true
+        else if (vc != null && botVc == null) return true
         else if (hasPermission(command, container, event, "music.bypass.samevc", true)) return true
 
         val msg = i18n.getTranslation(language, "message.runcondition.failed.vcbot")
@@ -105,16 +108,17 @@ object RunConditionUtil {
     suspend fun checkOtherOrSameVCBotAloneOrUserDJ(container: Container, event: MessageReceivedEvent, command: AbstractCommand, language: String): Boolean {
         val member = event.member ?: return false
         val vc = member.voiceState?.channel
-        if (vc == null) {
+        val bc = member.guild.selfMember.voiceState?.channel
+
+        if (vc == null && bc == null) {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.vc")
             sendMsg(event.textChannel, msg)
             return false
         }
-        val bc = member.guild.selfMember.voiceState?.channel
 
-        return if (vc.members.contains(member.guild.selfMember) && listeningMembers(vc, member.idLong) == 0) true
-        else if (!vc.members.contains(member.guild.selfMember) && member.guild.selfMember.voiceState?.inVoiceChannel() != true) true
-        else if (!vc.members.contains(member.guild.selfMember) && bc != null && listeningMembers(bc) == 0) true
+        return if (vc?.id == bc?.id && vc?.let { listeningMembers(it, member.idLong) } == 0) true
+        else if (vc != null && bc == null) true
+        else if (vc?.id != bc?.id && bc != null && listeningMembers(bc) == 0) true
         else if (hasPermission(command, container, event, "music.bypass.vcbotalone", true)) true
         else {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.vcbotalone")

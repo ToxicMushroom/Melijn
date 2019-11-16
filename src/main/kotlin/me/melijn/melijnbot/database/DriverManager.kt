@@ -114,7 +114,7 @@ class DriverManager(dbSettings: Settings.Database, mysqlSettings: Settings.Datab
                 }
             }
         } catch (e: SQLException) {
-            logger.error("Something went wrong when executing the query: $query")
+            logger.error("Something went wrong when executing the query: $query\nObjects: ${objects.joinToString { o -> o.toString() }}")
             e.sendInGuild()
             e.printStackTrace()
         }
@@ -144,7 +144,8 @@ class DriverManager(dbSettings: Settings.Database, mysqlSettings: Settings.Datab
                 }
             }
         } catch (e: SQLException) {
-            logger.error("Something went wrong when executing the query: $query")
+            logger.error("Something went wrong when executing the query: $query\n" +
+                "Objects: ${objects.joinToString { o -> o.toString() }}")
             e.sendInGuild()
             e.printStackTrace()
         }
@@ -173,7 +174,8 @@ class DriverManager(dbSettings: Settings.Database, mysqlSettings: Settings.Datab
                 }
             }
         } catch (e: SQLException) {
-            logger.error("Something went wrong when executing the MySQL query: $query")
+            logger.error("Something went wrong when executing the MySQL query: $query\n" +
+                "Objects: ${objects.joinToString { o -> o.toString() }}")
             e.sendInGuild()
             e.printStackTrace()
         }
@@ -244,7 +246,8 @@ class DriverManager(dbSettings: Settings.Database, mysqlSettings: Settings.Datab
                 }
             }
         } catch (e: SQLException) {
-            logger.error("Something went wrong when executing the query: $query")
+            logger.error("Something went wrong when executing the query: $query\n" +
+                "Objects: ${objects.joinToString { o -> o.toString() }}")
             e.sendInGuild()
             e.printStackTrace()
         }

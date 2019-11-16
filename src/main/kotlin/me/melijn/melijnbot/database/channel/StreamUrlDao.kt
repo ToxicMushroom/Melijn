@@ -8,7 +8,7 @@ import kotlin.coroutines.suspendCoroutine
 class StreamUrlDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "streamUrls"
-    override val tableStructure: String = "guildId bigint, url varchar(128)"
+    override val tableStructure: String = "guildId bigint, url varchar(512)"
     override val primaryKey: String = "guildId"
 
     init {

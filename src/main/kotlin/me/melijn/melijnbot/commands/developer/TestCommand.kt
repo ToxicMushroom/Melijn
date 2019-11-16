@@ -16,21 +16,24 @@ class TestCommand : AbstractCommand("command.test") {
     }
 
     override suspend fun execute(context: CommandContext) {
+        migrate(context)
+    }
+
+    suspend fun migrate(context: CommandContext) {
+
         val daoManager = context.daoManager
         val driverManager = context.daoManager.driverManager
 
-        val wrapper = daoManager.voteWrapper
+        val wrapper = daoManager.streamUrlWrapper
         val rows = DataArray.empty()
-        val table = "votes"
+        val table = "stream_urls"
         driverManager.executeMySQLQuery("SELECT * FROM $table", { rs ->
 
             while (rs.next()) {
                 val obj = DataObject.empty()
 
-                obj.put("userId", rs.getLong("userId"))
-                obj.put("votes", rs.getLong("votes"))
-                obj.put("streak", rs.getLong("streak"))
-                obj.put("lastTime", rs.getLong("lastTime"))
+                obj.put("guildId", rs.getLong("guildId"))
+                obj.put("url", rs.getString("url"))
                 //obj.put("mode", rs.getString("mode"))
 
                 rows.add(obj)
@@ -40,11 +43,9 @@ class TestCommand : AbstractCommand("command.test") {
         for (i in 0 until rows.length()) {
             val row = rows.getObject(i)
 
-            wrapper.setVote(
-                row.getLong("userId"),
-                row.getLong("votes"),
-                row.getLong("streak"),
-                row.getLong("lastTime")
+            wrapper.setUrl(
+                row.getLong("guildId"),
+                row.getString("url")
             )
 
             context.logger.info("Migrating $table row ${i + 1}/${rows.length()}")
