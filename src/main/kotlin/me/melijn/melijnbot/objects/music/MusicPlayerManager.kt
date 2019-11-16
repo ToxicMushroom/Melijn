@@ -12,6 +12,7 @@ class MusicPlayerManager(
     private val daoManager: DaoManager,
     private val lavaManager: LavaManager
 ) {
+
     val audioPlayerManager: AudioPlayerManager = DefaultAudioPlayerManager()
     val audioLoader = AudioLoader(this)
     private val guildMusicPlayers: HashMap<Long, GuildMusicPlayer> = HashMap()

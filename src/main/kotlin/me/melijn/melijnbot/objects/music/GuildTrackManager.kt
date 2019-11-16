@@ -4,9 +4,11 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import lavalink.client.player.IPlayer
 import lavalink.client.player.event.AudioEventAdapterWrapped
+import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.LogChannelType
@@ -77,55 +79,82 @@ class GuildTrackManager(
 
 
     override fun onPlayerResume(player: AudioPlayer) {
-        val data = player.playingTrack.userData as TrackUserData
-        val embed = resumeMomentMessageMap.getOrElse(data.currentTime) {
-            return
-        }
-        val guild = getAndCheckGuild(guildId) ?: return
+        Container.instance.taskManager.async {
+            val data = player.playingTrack.userData as TrackUserData
+            val embed = getResumedEmbedFromMap(data.currentTime) ?: return@async
+            val guild = getAndCheckGuild() ?: return@async
 
-        runBlocking {
             val channel = guild.getAndVerifyLogChannelByType(LogChannelType.MUSIC, daoManager.logChannelWrapper)
-                ?: return@runBlocking
+                ?: return@async
             sendEmbed(daoManager.embedDisabledWrapper, channel, embed)
         }
     }
 
     override fun onPlayerPause(player: AudioPlayer) {
-        val data = player.playingTrack.userData as TrackUserData
-        val embed = pauseMomentMessageMap.getOrElse(data.currentTime) {
-            return
-        }
-        val guild = getAndCheckGuild(guildId) ?: return
+        Container.instance.taskManager.async {
+            val data = player.playingTrack.userData as TrackUserData
+            val embed = getPausedEmbedFromMap(data.currentTime) ?: return@async
+            val guild = getAndCheckGuild() ?: return@async
 
-        runBlocking {
             val channel = guild.getAndVerifyLogChannelByType(LogChannelType.MUSIC, daoManager.logChannelWrapper)
-                ?: return@runBlocking
+                ?: return@async
             sendEmbed(daoManager.embedDisabledWrapper, channel, embed)
         }
     }
 
-    override fun onTrackStuck(player: AudioPlayer, track: AudioTrack, thresholdMs: Long) {
+    override fun onTrackStuck(player: AudioPlayer?, track: AudioTrack, thresholdMs: Long) {
         logger.debug("track stuck $thresholdMs")
     }
 
-    override fun onTrackException(player: AudioPlayer, track: AudioTrack, exception: FriendlyException) {
-        val guild = getAndCheckGuild(guildId) ?: return
+    override fun onTrackException(player: AudioPlayer?, track: AudioTrack, exception: FriendlyException) {
+        val guild = getAndCheckGuild() ?: return
         runBlocking {
             LogUtils.sendMusicPlayerException(daoManager, guild, track, exception)
         }
     }
 
-    override fun onTrackStart(player: AudioPlayer, track: AudioTrack) {
-        val data = player.playingTrack.userData as TrackUserData
-        val embed = startMomentMessageMap.getOrElse(data.currentTime) {
-            return
-        }
-        val guild = getAndCheckGuild(guildId) ?: return
+    override fun onTrackStart(player: AudioPlayer?, track: AudioTrack) {
+        Container.instance.taskManager.async {
+            val data = track.userData as TrackUserData
+            val embed = getStartEmbedFromMap(data.currentTime) ?: return@async
+            val guild = getAndCheckGuild() ?: return@async
 
-        runBlocking {
             val channel = guild.getAndVerifyLogChannelByType(LogChannelType.MUSIC, daoManager.logChannelWrapper)
-                ?: return@runBlocking
+                ?: return@async
             sendEmbed(daoManager.embedDisabledWrapper, channel, embed)
+        }
+    }
+
+    suspend fun getStartEmbedFromMap(time: Long, nesting: Int = 0, nestCountLimit: Int = 5): MessageEmbed? {
+        return startMomentMessageMap.getOrElse(time) {
+            delay(500)
+            return if (nesting >= nestCountLimit) {
+                null
+            } else {
+                getStartEmbedFromMap(time, nesting + 1, nestCountLimit)
+            }
+        }
+    }
+
+    suspend fun getPausedEmbedFromMap(time: Long, nesting: Int = 0, nestCountLimit: Int = 5): MessageEmbed? {
+        return pauseMomentMessageMap.getOrElse(time) {
+            delay(500)
+            return if (nesting >= nestCountLimit) {
+                null
+            } else {
+                getStartEmbedFromMap(time, nesting + 1, nestCountLimit)
+            }
+        }
+    }
+
+    suspend fun getResumedEmbedFromMap(time: Long, nesting: Int = 0, nestCountLimit: Int = 5): MessageEmbed? {
+        return resumeMomentMessageMap.getOrElse(time) {
+            delay(500)
+            return if (nesting >= nestCountLimit) {
+                null
+            } else {
+                getStartEmbedFromMap(time, nesting + 1, nestCountLimit)
+            }
         }
     }
 
@@ -183,7 +212,7 @@ class GuildTrackManager(
         return removed
     }
 
-    private fun getAndCheckGuild(guildById: Long): Guild? {
+    private fun getAndCheckGuild(): Guild? {
         val guild = MelijnBot.shardManager.getGuildById(guildId)
         if (guild == null) {
             stop()

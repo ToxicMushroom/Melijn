@@ -67,6 +67,10 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 message.editMessage(eb.build()).queue()
             }
             guildPlayer.safeQueueSilent(container.daoManager, track) -> {
+                event.guild.selfMember.voiceState?.channel?.let {
+                    LogUtils.addMusicPlayerNewTrack(container.daoManager, container.lavaManager, it, event.user, track)
+                }
+
                 val title = i18n.getTranslation(language, "message.music.addedtrack.title")
                     .replace(PLACEHOLDER_USER, event.user.asTag)
 
@@ -81,9 +85,6 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 eb.setDescription(description)
                 message.editMessage(eb.build()).queue()
 
-                event.guild.selfMember.voiceState?.channel?.let {
-                    LogUtils.addMusicPlayerNewTrack(container.daoManager, container.lavaManager, it, event.user)
-                }
             }
             else -> {
                 val msg = i18n.getTranslation(language, "message.music.queuelimit")

@@ -63,7 +63,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 if (guildMusicPlayer.safeQueue(context, track)) {
                     sendMessageAddedTrack(context, track)
                     runBlocking {
-                        LogUtils.addMusicPlayerNewTrack(context)
+                        LogUtils.addMusicPlayerNewTrack(context, track)
                     }
                 }
             }
@@ -83,7 +83,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                         if (!guildMusicPlayer.safeQueueSilent(context.daoManager, track)) notAdded++
                         else {
                             runBlocking {
-                                LogUtils.addMusicPlayerNewTrack(context)
+                                LogUtils.addMusicPlayerNewTrack(context, track)
                             }
                         }
                     }
@@ -94,7 +94,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                     if (guildMusicPlayer.safeQueue(context, track)) {
                         sendMessageAddedTrack(context, track)
                         runBlocking {
-                            LogUtils.addMusicPlayerNewTrack(context)
+                            LogUtils.addMusicPlayerNewTrack(context, track)
                         }
                     }
 
@@ -190,7 +190,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                             sendMessageAddedTrack(context, track)
                         }
                         runBlocking {
-                            LogUtils.addMusicPlayerNewTrack(context)
+                            LogUtils.addMusicPlayerNewTrack(context, track)
                         }
                         loaded?.invoke(true)
                     } else {
@@ -211,7 +211,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                                 sendMessageAddedTrack(context, track)
                             }
                             runBlocking {
-                                LogUtils.addMusicPlayerNewTrack(context)
+                                LogUtils.addMusicPlayerNewTrack(context, track)
                             }
                             loaded?.invoke(true)
                         } else {
@@ -419,7 +419,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 track.userData = TrackUserData(guild.selfMember.user)
                 guildMusicPlayer.guildTrackManager.queue(track)
                 runBlocking {
-                    LogUtils.addMusicPlayerNewTrack(daoManager, lavaManager, vc, author)
+                    LogUtils.addMusicPlayerNewTrack(daoManager, lavaManager, vc, author, track)
                 }
             }
 

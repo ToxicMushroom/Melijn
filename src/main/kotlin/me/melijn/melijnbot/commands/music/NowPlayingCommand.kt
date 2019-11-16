@@ -39,7 +39,7 @@ class NowPlayingCommand : AbstractCommand("command.nowplaying") {
         eb.setThumbnail(thumbnail)
         eb.setDescription(description)
         eb.addField(progressField, getProgressBar(trackManager.iPlayer.playingTrack, trackManager.iPlayer.trackPosition), false)
-        eb.addField(status, "**$trackStatus" + if (trackManager.loopedTrack) "** & **$looped**" else "", false)
+        eb.addField(status, "**$trackStatus**" + if (trackManager.loopedTrack) " & **$looped**" else "", false)
         sendEmbed(context, eb.build())
     }
 }

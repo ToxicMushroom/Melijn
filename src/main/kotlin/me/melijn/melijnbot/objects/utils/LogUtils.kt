@@ -177,7 +177,7 @@ object LogUtils {
             ?: throw IllegalArgumentException("Fix code pls"), false)
         eb.addField(trackField, track.info.title, false)
 
-        eb.setColor(Color.decode("43b581"))
+        eb.setColor(Color.decode("#43b581"))
         eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
 
         trackManager.resumeMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
@@ -206,7 +206,7 @@ object LogUtils {
             ?: throw IllegalArgumentException("Fix code pls"), false)
         eb.addField(trackField, track.info.title, false)
 
-        eb.setColor(Color.decode("2f3136"))
+        eb.setColor(Color.decode("#2f3136"))
         eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
 
         trackManager.resumeMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
@@ -236,16 +236,15 @@ object LogUtils {
         eb.addField(trackField, track.info.title, false)
         eb.addField(cause, exception.message ?: "/", false)
 
-        eb.setColor(Color.decode("2f3136"))
+        eb.setColor(Color.decode("#2f3136"))
         eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 
-    suspend fun addMusicPlayerNewTrack(context: CommandContext) {
+    suspend fun addMusicPlayerNewTrack(context: CommandContext, track: AudioTrack) {
         val trackManager = context.guildMusicPlayer.guildTrackManager
-        val track = trackManager.iPlayer.playingTrack ?: return
-        val eb = EmbedBuilder()
+        val eb = Embedder(context.daoManager, context.guildId, -1, Color.decode("#2f3136").rgb)
 
         val title = context.getTranslation("logging.music.newtrack.title")
 
@@ -257,27 +256,26 @@ object LogUtils {
         val trackField = i18n.getTranslation(context, "logging.music.newtrack.trackfield.title")
         eb.setTitle(title)
 
-        eb.addField(userTitle, context.author.asTag, false)
-        eb.addField(userIdTitle, context.author.asTag, false)
-        eb.addField(channel, context.selfMember.voiceState?.channel?.name
-            ?: throw IllegalArgumentException("Fix code pls"), false)
-        eb.addField(channelId, context.selfMember.voiceState?.channel?.id
-            ?: throw IllegalArgumentException("Fix code pls"), false)
+        eb.addField(userTitle, context.author.asTag, true)
+        eb.addField(userIdTitle, context.author.id, true)
         eb.addField(trackField, track.info.title, false)
+        eb.addField(channel, context.selfMember.voiceState?.channel?.name
+            ?: throw IllegalArgumentException("Fix code pls"), true)
+        eb.addField(channelId, context.selfMember.voiceState?.channel?.id
+            ?: throw IllegalArgumentException("Fix code pls"), true)
 
-        eb.setColor(Color.decode("2f3136"))
+        eb.setColor(Color.decode("#2f3136"))
         eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
 
         trackManager.startMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
     }
 
-    suspend fun addMusicPlayerNewTrack(daoManager: DaoManager, lavaManager: LavaManager, vc: VoiceChannel, author: User) {
+    suspend fun addMusicPlayerNewTrack(daoManager: DaoManager, lavaManager: LavaManager, vc: VoiceChannel, author: User, track: AudioTrack) {
         val guild = vc.guild
         val language = getLanguage(daoManager, -1, guild.idLong)
 
         val trackManager = lavaManager.musicPlayerManager.getGuildMusicPlayer(guild).guildTrackManager
-        val track = trackManager.playingTrack ?: return
-        val eb = Embedder(daoManager, guild.idLong, -1, Color.decode("2f3136").rgb)
+        val eb = Embedder(daoManager, guild.idLong, -1, Color.decode("#2f3136").rgb)
 
         val title = i18n.getTranslation(language, "logging.music.newtrack.title")
 
@@ -289,11 +287,11 @@ object LogUtils {
         val trackField = i18n.getTranslation(language, "logging.music.newtrack.trackfield.title")
         eb.setTitle(title)
 
-        eb.addField(userTitle, author.asTag, false)
-        eb.addField(userIdTitle, author.asTag, false)
-        eb.addField(channel, vc.name, false)
-        eb.addField(channelId, vc.id, false)
+        eb.addField(userTitle, author.asTag, true)
+        eb.addField(userIdTitle, author.id, true)
         eb.addField(trackField, track.info.title, false)
+        eb.addField(channel, vc.name, true)
+        eb.addField(channelId, vc.id, true)
 
         eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
 

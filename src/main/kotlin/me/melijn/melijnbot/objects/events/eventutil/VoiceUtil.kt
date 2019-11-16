@@ -31,6 +31,10 @@ object VoiceUtil {
             return
         } else if (musicChannel.id == botChannel?.id && channelJoined.id == botChannel.id) {
             audioLoader.loadNewTrack(daoManager, container.lavaManager, channelJoined, user, musicUrl)
+        } else if (botChannel == null && musicChannel.id == channelJoined.id) {
+            if (container.lavaManager.tryToConnectToVCSilent(musicChannel)) {
+                audioLoader.loadNewTrack(daoManager, container.lavaManager, channelJoined, user, musicUrl)
+            }
         }
     }
 }
