@@ -149,7 +149,7 @@ fun Long.asEpochMillisToDateTime(): String {
 }
 
 fun OffsetDateTime.asLongLongGMTString(): String {
-    return this.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss"))
+    return this.format(DateTimeFormatter.ofPattern("yyyy-MM-dd kk:mm:ss O"))
 }
 
 fun getDurationString(milliseconds: Long): String {
