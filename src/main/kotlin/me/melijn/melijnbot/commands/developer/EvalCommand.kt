@@ -6,6 +6,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
 import org.codehaus.commons.compiler.CompilerFactoryFactory
+
 //import org.jetbrains.kotlin.cli.common.environment.setIdeaIoUseFallback
 //import org.jetbrains.kotlin.script.jsr223.KotlinJsr223JvmLocalScriptEngineFactory
 
@@ -60,24 +61,25 @@ class EvalCommand : AbstractCommand("command.eval") {
         }
 
         private fun createDummyClassSource(source: String): String {
-            return "import me.melijn.melijnbot.objects.command.CommandContext;\n" +
-                    "import java.io.*;\n" +
-                    "import java.lang.*;\n" +
-                    "import java.util.*;\n" +
-                    "import java.util.concurrent.*;\n" +
-                    "import net.dv8tion.jda.core.*;\n" +
-                    "import net.dv8tion.jda.core.entities.*;\n" +
-                    "import net.dv8tion.jda.core.entities.impl.*;\n" +
-                    "import net.dv8tion.jda.core.managers.*;\n" +
-                    "import net.dv8tion.jda.core.managers.impl.*;\n" +
-                    "import net.dv8tion.jda.core.utils.*;\n" +
-                    "import java.util.regex.*;\n" +
-                    "import java.awt.*;\n" +
-                    "class " + className + " {\n" +
-                    "   public static void eval(final CommandContext context) {\n" +
-                    "       " + source + "\n" +
-                    "   }\n" +
-                    "}\n"
+            return "" +
+                "import me.melijn.melijnbot.objects.command.CommandContext;\n" +
+                "import java.io.*;\n" +
+                "import java.lang.*;\n" +
+                "import java.util.*;\n" +
+                "import java.util.concurrent.*;\n" +
+                "import net.dv8tion.jda.core.*;\n" +
+                "import net.dv8tion.jda.core.entities.*;\n" +
+                "import net.dv8tion.jda.core.entities.impl.*;\n" +
+                "import net.dv8tion.jda.core.managers.*;\n" +
+                "import net.dv8tion.jda.core.managers.impl.*;\n" +
+                "import net.dv8tion.jda.core.utils.*;\n" +
+                "import java.util.regex.*;\n" +
+                "import java.awt.*;\n" +
+                "class " + className + " {\n" +
+                "   public static void eval(final CommandContext context) {\n" +
+                "       " + source + "\n" +
+                "   }\n" +
+                "}\n"
         }
 
         private fun evaluateDummyClassMethod(context: CommandContext, classLoader: ClassLoader) {

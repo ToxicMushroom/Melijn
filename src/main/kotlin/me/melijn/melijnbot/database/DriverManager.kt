@@ -18,7 +18,7 @@ class DriverManager(dbSettings: Settings.Database, mysqlSettings: Settings.Datab
 
     private val afterConnectToBeExecutedQueries = ArrayList<String>()
     private val dataSource: DataSource
-    private val dataSourceMySQL: DataSource
+//    private val dataSourceMySQL: DataSource
     private val logger = LoggerFactory.getLogger(DriverManager::class.java.name)
     private val postgresqlPattern = "(\\d+\\.\\d+).*".toRegex()
 
@@ -35,24 +35,24 @@ class DriverManager(dbSettings: Settings.Database, mysqlSettings: Settings.Datab
         config.maximumPoolSize = 60
 
         this.dataSource = HikariDataSource(config)
-
-        val mysqlConfig = HikariConfig()
-        mysqlConfig.jdbcUrl = "jdbc:mysql://${mysqlSettings.host}:${mysqlSettings.port}/${mysqlSettings.database}"
-        mysqlConfig.username = mysqlSettings.user
-        mysqlConfig.password = mysqlSettings.password
-
-        mysqlConfig.maxLifetime = 30_000
-        mysqlConfig.validationTimeout = 3_000
-        mysqlConfig.connectionTimeout = 30_000
-        mysqlConfig.leakDetectionThreshold = 2000
-        mysqlConfig.maximumPoolSize = 60
-
-        mysqlConfig.addDataSourceProperty("autoReconnect", "true")
-        mysqlConfig.addDataSourceProperty("useUnicode", "true")
-        mysqlConfig.addDataSourceProperty("useSSL", "false")
-        mysqlConfig.addDataSourceProperty("useLegacyDatetimeCode", "false")
-        mysqlConfig.addDataSourceProperty("serverTimezone", "UTC")
-        this.dataSourceMySQL = HikariDataSource(mysqlConfig)
+//
+//        val mysqlConfig = HikariConfig()
+//        mysqlConfig.jdbcUrl = "jdbc:mysql://${mysqlSettings.host}:${mysqlSettings.port}/${mysqlSettings.database}"
+//        mysqlConfig.username = mysqlSettings.user
+//        mysqlConfig.password = mysqlSettings.password
+//
+//        mysqlConfig.maxLifetime = 30_000
+//        mysqlConfig.validationTimeout = 3_000
+//        mysqlConfig.connectionTimeout = 30_000
+//        mysqlConfig.leakDetectionThreshold = 2000
+//        mysqlConfig.maximumPoolSize = 60
+//
+//        mysqlConfig.addDataSourceProperty("autoReconnect", "true")
+//        mysqlConfig.addDataSourceProperty("useUnicode", "true")
+//        mysqlConfig.addDataSourceProperty("useSSL", "false")
+//        mysqlConfig.addDataSourceProperty("useLegacyDatetimeCode", "false")
+//        mysqlConfig.addDataSourceProperty("serverTimezone", "UTC")
+//        this.dataSourceMySQL = HikariDataSource(mysqlConfig)
     }
 
     fun getUsableConnection(connection: (Connection) -> Unit) {
@@ -62,12 +62,12 @@ class DriverManager(dbSettings: Settings.Database, mysqlSettings: Settings.Datab
             logger.info("Connection collected: Alive for ${(System.currentTimeMillis() - startConnection)}ms")
     }
 
-    fun getUsableMySQLConnection(connection: (Connection) -> Unit) {
-        val startConnection = System.currentTimeMillis()
-        dataSourceMySQL.connection.use { connection.invoke(it) }
-        if (System.currentTimeMillis() - startConnection > 3_000)
-            logger.info("MySQL Connection collected: Alive for ${(System.currentTimeMillis() - startConnection)}ms")
-    }
+//    fun getUsableMySQLConnection(connection: (Connection) -> Unit) {
+//        val startConnection = System.currentTimeMillis()
+//        dataSourceMySQL.connection.use { connection.invoke(it) }
+//        if (System.currentTimeMillis() - startConnection > 3_000)
+//            logger.info("MySQL Connection collected: Alive for ${(System.currentTimeMillis() - startConnection)}ms")
+//    }
 
     fun registerTable(table: String, tableStructure: String, primaryKey: String, uniqueKey: String = "") {
         val hasPrimary = primaryKey != ""
@@ -151,35 +151,35 @@ class DriverManager(dbSettings: Settings.Database, mysqlSettings: Settings.Datab
         }
     }
 
-    /**
-     * [query] the sql query that needs execution
-     * [resultset] The consumer that will contain the resultset after executing the query
-     * [objects] the arguments of the query
-     * example:
-     *   query: "SELECT * FROM apples WHERE id = ?"
-     *   objects: 5
-     *   resultset: Consumer object to handle the resultset
-     * **/
-    fun executeMySQLQuery(query: String, resultset: (ResultSet) -> Unit, vararg objects: Any?) {
-        try {
-            getUsableMySQLConnection { connection ->
-                if (connection.isClosed) {
-                    logger.warn("Connection closed: $query")
-                }
-                connection.prepareStatement(query).use { preparedStatement ->
-                    for ((index, value) in objects.withIndex()) {
-                        preparedStatement.setObject(index + 1, value)
-                    }
-                    preparedStatement.executeQuery().use { resultSet -> resultset.invoke(resultSet) }
-                }
-            }
-        } catch (e: SQLException) {
-            logger.error("Something went wrong when executing the MySQL query: $query\n" +
-                "Objects: ${objects.joinToString { o -> o.toString() }}")
-            e.sendInGuild()
-            e.printStackTrace()
-        }
-    }
+//    /**
+//     * [query] the sql query that needs execution
+//     * [resultset] The consumer that will contain the resultset after executing the query
+//     * [objects] the arguments of the query
+//     * example:
+//     *   query: "SELECT * FROM apples WHERE id = ?"
+//     *   objects: 5
+//     *   resultset: Consumer object to handle the resultset
+//     * **/
+//    fun executeMySQLQuery(query: String, resultset: (ResultSet) -> Unit, vararg objects: Any?) {
+//        try {
+//            getUsableMySQLConnection { connection ->
+//                if (connection.isClosed) {
+//                    logger.warn("Connection closed: $query")
+//                }
+//                connection.prepareStatement(query).use { preparedStatement ->
+//                    for ((index, value) in objects.withIndex()) {
+//                        preparedStatement.setObject(index + 1, value)
+//                    }
+//                    preparedStatement.executeQuery().use { resultSet -> resultset.invoke(resultSet) }
+//                }
+//            }
+//        } catch (e: SQLException) {
+//            logger.error("Something went wrong when executing the MySQL query: $query\n" +
+//                "Objects: ${objects.joinToString { o -> o.toString() }}")
+//            e.sendInGuild()
+//            e.printStackTrace()
+//        }
+//    }
 
     suspend fun getDBVersion(): String = suspendCoroutine {
         try {
