@@ -52,9 +52,6 @@ class SoftBanCommand : AbstractCommand("command.softban") {
             reason = reason
                 .replaceFirst(context.args[1], "")
                 .trim()
-        } else if (context.args.size > 1 && clearDays == null) {
-            sendSyntax(context)
-            return
         }
 
         if (reason.isBlank()) reason = "/"
