@@ -44,7 +44,7 @@ object VerificationUtils {
         sendMsg(textChannel, msg)
     }
 
-    suspend fun verify(daoManager: DaoManager, unverifiedRole: Role, author: User,  member: Member) {
+    suspend fun verify(daoManager: DaoManager, unverifiedRole: Role, author: User, member: Member) {
         if (hasHitThroughputLimit(daoManager, member)) {
             LogUtils.sendHitVerificationThroughputLimitLog(daoManager, member)
             return
@@ -59,7 +59,7 @@ object VerificationUtils {
 
     suspend fun failedVerification(dao: DaoManager, member: Member) {
         val guild = member.guild
-        val tries=  dao.unverifiedUsersWrapper.getTries(guild.idLong, member.idLong)
+        val tries = dao.unverifiedUsersWrapper.getTries(guild.idLong, member.idLong)
         dao.unverifiedUsersWrapper.update(guild.idLong, member.idLong, tries + 1)
         LogUtils.sendFailedVerificationLog(dao, member)
     }
@@ -72,7 +72,9 @@ object VerificationUtils {
         val lastMembers = memberJoinTimes
             .getOrDefault(guild.idLong, emptyMap<Long, Long>())
 
-        val lastHourJoinedMembersAmount = lastMembers.filter { (System.currentTimeMillis() - it.value) < 3_600_000 }.count()
+        val lastHourJoinedMembersAmount = lastMembers.filter {
+            (System.currentTimeMillis() - it.value) < 60_000
+        }.size
         return lastHourJoinedMembersAmount >= max
     }
 
