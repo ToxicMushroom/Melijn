@@ -67,6 +67,7 @@ suspend fun Guild.getAndVerifyChannelByType(
 
     if (shouldRemove) {
         channelWrapper.removeChannel(this.idLong, type)
+        return null
     }
 
     return textChannel
