@@ -545,7 +545,9 @@ suspend fun sendMsg(channel: TextChannel, msg: String, success: ((messages: List
 }
 
 fun sendMsg(channel: TextChannel, msg: Message, success: ((messages: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
-    require(channel.canTalk()) { "Cannot talk in this channel " + channel.name }
+    require(channel.canTalk()) {
+        "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
+    }
     var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(msg.contentRaw) else null
     for (embed in msg.embeds) {
         if (action == null) action = channel.sendMessage(embed)

@@ -24,7 +24,8 @@ object JoinLeaveUtil {
         val guild = member.guild
         val guildId = guild.idLong
 
-        val channel = guild.getAndVerifyChannelByType(channelType, daoManager, Permission.MESSAGE_WRITE) ?: return
+        val channel = guild.getAndVerifyChannelByType(channelType, daoManager, Permission.MESSAGE_WRITE, Permission.MESSAGE_READ)
+            ?: return
 
         val messageWrapper = daoManager.messageWrapper
         var modularMessage = messageWrapper.messageCache.get(Pair(guildId, messageType)).await() ?: return
