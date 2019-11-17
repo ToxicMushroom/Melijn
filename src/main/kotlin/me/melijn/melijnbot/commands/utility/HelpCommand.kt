@@ -5,9 +5,8 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.sendEmbed
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.*
+import java.util.regex.Pattern
 
 
 class HelpCommand : AbstractCommand("command.help") {
@@ -39,16 +38,16 @@ class HelpCommand : AbstractCommand("command.help") {
         val parentChildList = getCorrectChildElseParent(context, mutableListOf(parent), args)
         val command = parentChildList.last()
 
-        var msg = i18n.getTranslation(language, "$root.response3.line1")
-        msg += i18n.getTranslation(language, "$root.response3.line2")
+        var msg = context.getTranslation("$root.response3.line1")
+        msg += context.getTranslation("$root.response3.line2")
         if (command.aliases.isNotEmpty()) {
-            msg += i18n.getTranslation(language, "$root.response3.line3")
+            msg += context.getTranslation("$root.response3.line3")
         }
-        msg += i18n.getTranslation(language, "$root.response3.line4")
-        if (command.help != "empty") {
-            msg += i18n.getTranslation(language, "$root.response3.line5")
+        msg += context.getTranslation("$root.response3.line4")
+        if (command.help != context.getTranslation(command.help)) {
+            msg += context.getTranslation("$root.response3.line5")
         }
-        msg += i18n.getTranslation(language, "$root.response3.line6")
+        msg += context.getTranslation("$root.response3.line6")
         msg = replaceCmdVars(msg, context, parentChildList)
 
         sendMsg(context, msg)
@@ -79,32 +78,37 @@ class HelpCommand : AbstractCommand("command.help") {
         }
 
         override suspend fun execute(context: CommandContext) {
+            val category = getEnumFromArgN<CommandCategory>(context, 0)
+
             val commandList = context.commandList
+                .filter { cmd -> category == null || cmd.commandCategory == category }
                 .sortedBy { cmd -> cmd.name }
-            val language = context.getLanguage()
-            val title = i18n.getTranslation(language, "$root.title")
-            val util = i18n.getTranslation(language, "$root.field1.title")
-            val administration = i18n.getTranslation(language, "$root.field2.title")
-            val moderation = i18n.getTranslation(language, "$root.field3.title")
-            val music = i18n.getTranslation(language, "$root.field4.title")
-            val image = i18n.getTranslation(language, "$root.field5.title")
-            val animal = i18n.getTranslation(language, "$root.field6.title")
-            val anime = i18n.getTranslation(language, "$root.field7.title")
-            val supporter = i18n.getTranslation(language, "$root.field8.title")
-            val commandAmount = i18n.getTranslation(language, "$root.footer")
+
+            val title = context.getTranslation("$root.title")
+
+            //Alphabetical order
+            val categoryPathMap = mapOf(
+                Pair(CommandCategory.ADMINISTRATION, "$root.field2.title"),
+                Pair(CommandCategory.ANIMAL, "$root.field6.title"),
+                Pair(CommandCategory.ANIME, "$root.field7.title"),
+                Pair(CommandCategory.IMAGE, "$root.field5.title"),
+                Pair(CommandCategory.MODERATION, "$root.field3.title"),
+                Pair(CommandCategory.MUSIC, "$root.field4.title"),
+                Pair(CommandCategory.SUPPORTER, "$root.field8.title"),
+                Pair(CommandCategory.UTILITY, "$root.field1.title")
+            ).filter { entry ->
+                entry.key == category || category == null
+            }
+
+            val commandAmount = context.getTranslation("$root.footer")
                 .replace("%cmdCount%", commandList.size.toString())
 
             val eb = Embedder(context)
             eb.setTitle(title, "https://melijn.com/commands")
 
-            eb.addField(util, commandListString(commandList, CommandCategory.UTILITY), false)
-            eb.addField(administration, commandListString(commandList, CommandCategory.ADMINISTRATION), false)
-            eb.addField(moderation, commandListString(commandList, CommandCategory.MODERATION), false)
-            eb.addField(music, commandListString(commandList, CommandCategory.MUSIC), false)
-            eb.addField(image, commandListString(commandList, CommandCategory.IMAGE), false)
-            eb.addField(animal, commandListString(commandList, CommandCategory.ANIMAL), false)
-            eb.addField(anime, commandListString(commandList, CommandCategory.ANIME), false)
-            eb.addField(supporter, commandListString(commandList, CommandCategory.SUPPORTER), false)
+            categoryPathMap.forEach { entry ->
+                eb.addField(context.getTranslation(entry.value), commandListString(commandList, entry.key), false)
+            }
 
             eb.setFooter(commandAmount, null)
 
@@ -117,13 +121,22 @@ class HelpCommand : AbstractCommand("command.help") {
     private suspend fun replaceCmdVars(msg: String, context: CommandContext, parentChildList: List<AbstractCommand>): String {
         val command = parentChildList.last()
         val name = parentChildList.joinToString(" ") { cmd -> cmd.name }
+        var help = context.getTranslation(command.help)
+
+        val matcher = Pattern.compile("%(help\\.arg\\..+)%").matcher(help)
+        while (matcher.find()) {
+            val og = matcher.group(0)
+            val path = matcher.group(1)
+            help = help.replace(og, context.getTranslation(path))
+        }
+
         return msg
             .replace("%cmdName%", name)
-            .replace("%cmdSyntax%", i18n.getTranslation(context.getLanguage(), command.syntax))
+            .replace("%cmdSyntax%", context.getTranslation(command.syntax))
             .replace("%cmdAliases%", command.aliases.joinToString())
-            .replace("%cmdDescription%", i18n.getTranslation(context.getLanguage(), command.description))
-            .replace("%cmdHelp%", i18n.getTranslation(context.getLanguage(), command.help))
-            .replace("%cmdCategory%", command.commandCategory.toString())
+            .replace("%cmdDescription%", context.getTranslation(command.description))
+            .replace("%cmdHelp%", help)
+            .replace("%cmdCategory%", command.commandCategory.toLCC())
             .replace("%prefix%", context.usedPrefix)
     }
 

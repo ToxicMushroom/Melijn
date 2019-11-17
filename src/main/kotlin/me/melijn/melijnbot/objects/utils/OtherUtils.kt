@@ -98,6 +98,13 @@ suspend inline fun <reified T : Enum<*>> getEnumFromArgNMessage(context: Command
     }
     return enum
 }
+suspend inline fun <reified T : Enum<*>> getEnumFromArgN(context: CommandContext, index: Int): T? {
+    if (argSizeCheckFailed(context, index, true)) return null
+    val enumName = context.args[index]
+    return T::class.java.enumConstants.firstOrNull {
+        it.name.equals(enumName, true)
+    }
+}
 
 val ccTagPattern = Pattern.compile("cc.\\d+")
 suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): Set<String>? {
