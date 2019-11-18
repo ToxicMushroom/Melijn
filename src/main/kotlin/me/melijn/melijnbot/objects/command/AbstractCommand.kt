@@ -22,6 +22,7 @@ abstract class AbstractCommand(val root: String) {
     var discordPermissions: Array<Permission> = arrayOf()
     var runConditions: Array<RunCondition> = arrayOf()
     var children: Array<AbstractCommand> = arrayOf()
+    var args: Array<CommandArg> = arrayOf()
 
     init {
         description = "$root.description"

@@ -10,10 +10,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_TYPE
 import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.getColorFromArgNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.toHex
-import me.melijn.melijnbot.objects.utils.toLCC
+import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.utils.data.DataObject
 
@@ -385,19 +382,33 @@ object MessageCommandUtil {
     }
 
     private suspend fun setEmbedAuthorIconUrlAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
-        val language = context.getLanguage()
         val arg = context.rawArg
         val authorName = message.embed?.author?.name
         val authorUrl = message.embed?.author?.url
         val eb = EmbedBuilder(message.embed)
+        val attachments = context.message.attachments
+        val user = retrieveUserByArgsN(context, 0)
 
-        val msg = if (arg.equals("null", true)) {
-            eb.setAuthor(authorName, authorUrl, null)
-            i18n.getTranslation(language, "message.embed.authoriconurl.unset")
-        } else {
-            eb.setAuthor(authorName, authorUrl, arg)
-            i18n.getTranslation(language, "message.embed.authoriconurl.set")
-                .replace(PLACEHOLDER_ARG, arg)
+        val msg = when {
+            arg.equals("null", true) -> {
+                eb.setAuthor(authorName, authorUrl, null)
+                context.getTranslation("message.embed.authoriconurl.unset")
+            }
+            attachments.isNotEmpty() -> {
+                eb.setAuthor(authorName, authorUrl, attachments[0].url)
+                context.getTranslation("message.embed.authoriconurl.set")
+                    .replace(PLACEHOLDER_ARG, attachments[0].url)
+            }
+            user != null -> {
+                eb.setAuthor(authorName, authorUrl, user.effectiveAvatarUrl)
+                context.getTranslation("message.embed.authoriconurl.set")
+                    .replace(PLACEHOLDER_ARG, user.effectiveAvatarUrl)
+            }
+            else -> {
+                eb.setAuthor(authorName, authorUrl, arg)
+                context.getTranslation("message.embed.authoriconurl.set")
+                    .replace(PLACEHOLDER_ARG, arg)
+            }
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
@@ -425,17 +436,31 @@ object MessageCommandUtil {
     }
 
     private suspend fun setEmbedThumbnailAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
-        val language = context.getLanguage()
         val arg = context.rawArg
         val eb = EmbedBuilder(message.embed)
+        val attachments = context.message.attachments
+        val user = retrieveUserByArgsN(context, 0)
 
-        val msg = if (arg.equals("null", true)) {
-            eb.setThumbnail(null)
-            i18n.getTranslation(language, "message.embed.thumbnail.unset")
-        } else {
-            eb.setThumbnail(arg)
-            i18n.getTranslation(language, "message.embed.thumbnail.set")
-                .replace(PLACEHOLDER_ARG, arg)
+        val msg = when {
+            arg.equals("null", true) -> {
+                eb.setThumbnail(null)
+                context.getTranslation("message.embed.thumbnail.unset")
+            }
+            attachments.isNotEmpty() -> {
+                eb.setThumbnail(attachments[0].url)
+                context.getTranslation("message.embed.thumbnail.set")
+                    .replace(PLACEHOLDER_ARG, attachments[0].url)
+            }
+            user != null -> {
+                eb.setThumbnail(user.effectiveAvatarUrl)
+                context.getTranslation("message.embed.thumbnail.set")
+                    .replace(PLACEHOLDER_ARG, user.effectiveAvatarUrl)
+            }
+            else -> {
+                eb.setThumbnail(arg)
+                context.getTranslation("message.embed.thumbnail.set")
+                    .replace(PLACEHOLDER_ARG, arg)
+            }
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
@@ -443,17 +468,31 @@ object MessageCommandUtil {
     }
 
     private suspend fun setEmbedImageAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
-        val language = context.getLanguage()
         val arg = context.rawArg
         val eb = EmbedBuilder(message.embed)
+        val attachments = context.message.attachments
+        val user = retrieveUserByArgsN(context, 0)
 
-        val msg = if (arg.equals("null", true)) {
-            eb.setImage(null)
-            i18n.getTranslation(language, "message.embed.image.unset")
-        } else {
-            eb.setImage(arg)
-            i18n.getTranslation(language, "message.embed.image.set")
-                .replace(PLACEHOLDER_ARG, arg)
+        val msg = when {
+            arg.equals("null", true) -> {
+                eb.setImage(null)
+                context.getTranslation("message.embed.image.unset")
+            }
+            attachments.isNotEmpty() -> {
+                eb.setImage(attachments[0].url)
+                context.getTranslation("message.embed.image.set")
+                    .replace(PLACEHOLDER_ARG, attachments[0].url)
+            }
+            user != null -> {
+                eb.setImage(user.effectiveAvatarUrl)
+                context.getTranslation("message.embed.image.set")
+                    .replace(PLACEHOLDER_ARG, user.effectiveAvatarUrl)
+            }
+            else -> {
+                eb.setImage(arg)
+                context.getTranslation("message.embed.image.set")
+                    .replace(PLACEHOLDER_ARG, arg)
+            }
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
@@ -481,18 +520,32 @@ object MessageCommandUtil {
 
 
     private suspend fun setEmbedFooterIconUrlAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
-        val language = context.getLanguage()
         val arg = context.rawArg
         val footer = message.embed?.footer?.text
         val eb = EmbedBuilder(message.embed)
+        val attachments = context.message.attachments
+        val user = retrieveUserByArgsN(context, 0)
 
-        val msg = if (arg.equals("null", true)) {
-            eb.setFooter(footer, null)
-            i18n.getTranslation(language, "message.embed.image.unset")
-        } else {
-            eb.setFooter(footer, arg)
-            i18n.getTranslation(language, "message.embed.image.set")
-                .replace(PLACEHOLDER_ARG, arg)
+        val msg = when {
+            arg.equals("null", true) -> {
+                eb.setFooter(footer, null)
+                context.getTranslation("message.embed.footericon.unset")
+            }
+            attachments.isNotEmpty() -> {
+                eb.setFooter(footer, attachments[0].url)
+                context.getTranslation("message.embed.footericon.set")
+                    .replace(PLACEHOLDER_ARG, attachments[0].url)
+            }
+            user != null -> {
+                eb.setFooter(footer, user.effectiveAvatarUrl)
+                context.getTranslation("message.embed.footericon.set")
+                    .replace(PLACEHOLDER_ARG, user.effectiveAvatarUrl)
+            }
+            else -> {
+                eb.setFooter(footer, arg)
+                context.getTranslation("message.embed.footericon.set")
+                    .replace(PLACEHOLDER_ARG, arg)
+            }
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
