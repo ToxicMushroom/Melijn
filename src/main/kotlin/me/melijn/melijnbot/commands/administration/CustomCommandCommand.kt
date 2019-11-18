@@ -360,13 +360,13 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 return
             }
 
+            val unset = context.rawArg == "null"
             val ccSelected = getSelectedCCNMessage(context) ?: return
-            ccSelected.description = context.rawArg
+            ccSelected.description = if (context.rawArg == "null") null else context.rawArg
 
             context.daoManager.customCommandWrapper.update(context.guildId, ccSelected)
 
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.success")
+            val msg = context.getTranslation("$root.${if (unset) "unset" else "set"}")
                 .replace("%id%", ccSelected.id.toString())
                 .replace("%ccName%", ccSelected.name)
                 .replace(PLACEHOLDER_ARG, context.rawArg)

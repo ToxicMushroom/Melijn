@@ -15,8 +15,66 @@ class HelpCommand : AbstractCommand("command.help") {
         id = 6
         name = "help"
         aliases = arrayOf("commands", "command", "cmds", "cmd")
-        children = arrayOf(ListArg(root))
+        children = arrayOf(
+            ListArg(root),
+            VariableArg(root),
+            ArgArg(root)
+        )
         commandCategory = CommandCategory.UTILITY
+    }
+
+    class ArgArg(parent: String) : AbstractCommand("$parent.argument") {
+
+        init {
+            name = "argument"
+            aliases = arrayOf("args", "arg", "arguments")
+            children = arrayOf(
+                ListArg(root)
+            )
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        }
+
+        class ListArg(parent: String) : AbstractCommand("$parent.list") {
+
+            init {
+                name = "list"
+                aliases = arrayOf("ls")
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+        }
+    }
+
+    class VariableArg(parent: String) : AbstractCommand("$parent.variable") {
+
+        init {
+            name = "variable"
+            aliases = arrayOf("variables", "vars", "var")
+            children = arrayOf(
+                ListArg(root)
+            )
+        }
+
+        override suspend fun execute(context: CommandContext) {
+
+        }
+
+        class ListArg(parent: String) : AbstractCommand("$parent.list") {
+
+            init {
+                name = "list"
+                aliases = arrayOf("ls")
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+        }
     }
 
     override suspend fun execute(context: CommandContext) {
@@ -75,6 +133,7 @@ class HelpCommand : AbstractCommand("command.help") {
 
         init {
             name = "list"
+            aliases = arrayOf("ls")
         }
 
         override suspend fun execute(context: CommandContext) {
