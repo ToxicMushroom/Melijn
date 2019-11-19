@@ -16,7 +16,7 @@ class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") 
         id = 5
         name = "setPrivateLanguage"
         aliases = arrayOf("spl", "setPrivateLang", "setPrivLang")
-        children = arrayOf(SetLanguageCommand.ListCommand())
+        children = arrayOf(SetLanguageCommand.ListArg())
         commandCategory = CommandCategory.SUPPORTER
     }
 

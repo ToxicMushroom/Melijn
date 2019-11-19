@@ -6,7 +6,9 @@ import me.melijn.melijnbot.enums.Language
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_LANGUAGE
 import me.melijn.melijnbot.objects.translation.i18n
+import me.melijn.melijnbot.objects.utils.getEnumFromArgNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendMsgCodeBlock
 import me.melijn.melijnbot.objects.utils.sendSyntax
@@ -17,17 +19,19 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
         id = 2
         name = "setLanguage"
         aliases = arrayOf("setLang", "sl")
+        children = arrayOf(
+            ListArg(root)
+        )
         commandCategory = CommandCategory.ADMINISTRATION
-        children = arrayOf(ListCommand())
     }
 
 
     override suspend fun execute(context: CommandContext) {
-        when {
-            context.commandParts.size == 2 -> {
+        when (context.commandParts.size) {
+            2 -> {
                 sendCurrentLang(context)
             }
-            context.commandParts.size == 3 -> {
+            3 -> {
                 setLang(context)
             }
             else -> sendSyntax(context)
@@ -35,8 +39,8 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
     }
 
     private suspend fun sendCurrentLang(context: CommandContext) {
-        val dao = context.daoManager.guildLanguageWrapper
-        val lang = dao.languageCache.get(context.guildId).await()
+        val wrapper = context.daoManager.guildLanguageWrapper
+        val lang = wrapper.languageCache.get(context.guildId).await()
 
         val language = context.getLanguage()
         val unReplacedMsg = i18n.getTranslation(language, "$root.currentlangresponse")
@@ -50,29 +54,19 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
     private suspend fun setLang(context: CommandContext) {
         val lang: String
         val shouldUnset = "null".equals(context.commandParts[2], true)
-        try {
-            lang = if (shouldUnset) ""
-            else Language.valueOf(context.commandParts[2].toUpperCase()).toString()
-        } catch (ignored: IllegalArgumentException) {
-            val language = context.getLanguage()
-            val unReplacedMsg = i18n.getTranslation(language, "$root.set.invalidarg")
-            val msg = replaceArg(
-                unReplacedMsg,
-                context.commandParts
-            )
-            sendMsg(context, msg)
-            return
+
+        lang = if (shouldUnset) {
+            ""
+        } else {
+            getEnumFromArgNMessage<Language>(context, 0, MESSAGE_UNKNOWN_LANGUAGE)?.toString() ?: return
         }
 
-
-        val dao = context.daoManager.guildLanguageWrapper
-        dao.setLanguage(context.guildId, lang)
-
+        val wrapper = context.daoManager.guildLanguageWrapper
+        wrapper.setLanguage(context.guildId, lang)
 
         val possible = if (shouldUnset) "un" else ""
 
-        val language = context.getLanguage()
-        val unReplacedMsg = i18n.getTranslation(language, "$root.${possible}set.success")
+        val unReplacedMsg = context.getTranslation("$root.${possible}set.success")
         val msg = replaceLang(
             unReplacedMsg,
             lang
@@ -80,33 +74,29 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
         sendMsg(context, msg)
     }
 
-    private fun replaceArg(msg: String, commandParts: List<String>): String {
-        return msg.replace("%argument%", commandParts[2]).replace("%prefix%", commandParts[0])
-    }
-
     private fun replaceLang(msg: String, lang: String): String {
         return msg.replace("%language%", lang)
     }
 
-
-    /** SUBCOMMAND list **/
-    class ListCommand : AbstractCommand("command.setlanguage.list") {
+    class ListArg(parent: String) : AbstractCommand("$parent.list") {
 
         init {
             name = "list"
         }
 
         override suspend fun execute(context: CommandContext) {
-            val language = context.getLanguage()
-            val unReplacedMsg = i18n.getTranslation(language, "$root.response1")
-            val msg = replaceLangList(
-                unReplacedMsg
-            )
+            var msg = context.getTranslation("$root.title")
+            msg += Language.values()
+                .withIndex()
+                .joinToString("\n", "```INI\n", "```") { (index, lang) ->
+                    "$index - [$lang]"
+                }
             sendMsgCodeBlock(context, msg, "INI")
         }
 
         private fun replaceLangList(string: String): String {
             val sb = StringBuilder()
+
             for ((index, value) in Language.values().withIndex()) {
                 sb.append(index + 1).append(" - [").append(value).append("]").append("\n")
             }

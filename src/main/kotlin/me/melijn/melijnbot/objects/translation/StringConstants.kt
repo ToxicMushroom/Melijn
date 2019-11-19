@@ -4,6 +4,7 @@ package me.melijn.melijnbot.objects.translation
 const val MESSAGE_UNKNOWN_USER = "message.unknown.user"
 const val MESSAGE_UNKNOWN_PERMISSIONNODE = "message.unknown.permissionnode"
 const val MESSAGE_UNKNOWN_PERMSTATE = "message.unknown.permstate"
+const val MESSAGE_UNKNOWN_LANGUAGE = "message.unknown.language"
 
 const val PLACEHOLDER_CHANNEL = "%channel%"
 const val PLACEHOLDER_USER = "%user%"

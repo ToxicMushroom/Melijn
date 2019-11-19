@@ -13,7 +13,11 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
         id = 19
         name = "privatePrefixes"
         aliases = arrayOf("pp")
-        children = arrayOf(ViewCommand(root), AddCommand(root), RemoveCommand(root))
+        children = arrayOf(
+            ListCommand(root),
+            AddCommand(root),
+            RemoveCommand(root)
+        )
         commandCategory = CommandCategory.SUPPORTER
     }
 
@@ -21,11 +25,11 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
         sendSyntax(context)
     }
 
-    class ViewCommand(root: String) : AbstractCommand("$root.view") {
+    class ListCommand(root: String) : AbstractCommand("$root.list") {
 
         init {
-            name = "view"
-            aliases = arrayOf("v", "vw", "list")
+            name = "list"
+            aliases = arrayOf("ls")
         }
 
         override suspend fun execute(context: CommandContext) {

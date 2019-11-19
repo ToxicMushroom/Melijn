@@ -2,6 +2,7 @@ package me.melijn.melijnbot.objects.command
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.enums.CommandArg
 import me.melijn.melijnbot.enums.PermState
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendMsg
@@ -22,7 +23,7 @@ abstract class AbstractCommand(val root: String) {
     var discordPermissions: Array<Permission> = arrayOf()
     var runConditions: Array<RunCondition> = arrayOf()
     var children: Array<AbstractCommand> = arrayOf()
-    var args: Array<CommandArg> = arrayOf()
+    //var args: Array<CommandArg> = arrayOf() cannot put extra information after global definitions with this
 
     init {
         description = "$root.description"
