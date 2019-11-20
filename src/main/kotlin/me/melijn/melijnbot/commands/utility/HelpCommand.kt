@@ -4,7 +4,6 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 import java.util.regex.Pattern
 
@@ -79,10 +78,9 @@ class HelpCommand : AbstractCommand("command.help") {
 
     override suspend fun execute(context: CommandContext) {
         val args = context.args
-        val language = context.getLanguage()
         if (args.isEmpty()) {
             val part = if (context.isFromGuild) "server" else "pm"
-            val response = i18n.getTranslation(language, "$root.response1.$part")
+            val response = context.getTranslation("$root.response1.$part")
             val msg = replaceArgs(response, if (context.isFromGuild) context.guildId else -1L, context.usedPrefix)
             sendMsg(context, msg)
             return

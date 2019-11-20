@@ -3,7 +3,6 @@ package me.melijn.melijnbot.commands.administration
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.await
 import me.melijn.melijnbot.objects.utils.getTextChannelByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
@@ -40,8 +39,7 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
                 textChannel.delete().queue()
             }
             else -> {
-                val language = context.getLanguage()
-                val msg = i18n.getTranslation(language, "$root.notconfirm")
+                val msg = context.getTranslation("$root.notconfirm")
                     .replace("%syntax%", context.getTranslation(syntax)
                         .replace("%prefix%", context.usedPrefix)
                     )

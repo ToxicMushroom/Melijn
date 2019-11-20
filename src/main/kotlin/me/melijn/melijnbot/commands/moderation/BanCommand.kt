@@ -35,12 +35,10 @@ class BanCommand : AbstractCommand("command.ban") {
         val targetUser = getUserByArgsNMessage(context, 0) ?: return
         val member = context.guild.getMember(targetUser)
         if (member != null && !context.guild.selfMember.canInteract(member)) {
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.cannotban")
+            val msg = context.getTranslation("$root.cannotban")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
             sendMsg(context, msg)
             return
-
         }
 
         var reason = context.rawArg
@@ -61,8 +59,7 @@ class BanCommand : AbstractCommand("command.ban") {
             ban.startTime = activeBan.startTime
         }
 
-        val language = context.getLanguage()
-        val banning = i18n.getTranslation(language, "message.banning")
+        val banning = context.getTranslation( "message.banning")
         try {
             val privateChannel = targetUser.openPrivateChannel().await()
             val message = privateChannel.sendMessage(banning).await()
@@ -92,15 +89,15 @@ class BanCommand : AbstractCommand("command.ban") {
             val logChannel = guild.getTextChannelById(logChannelId)
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
 
-            i18n.getTranslation(language, "$root.success" + if (activeBan != null) ".updated" else "")
+            context.getTranslation("$root.success" + if (activeBan != null) ".updated" else "")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
                 .replace("%reason%", ban.reason)
 
         } catch (t: Throwable) {
-            val failedMsg = i18n.getTranslation(language, "message.banning.failed")
+            val failedMsg = context.getTranslation("message.banning.failed")
             banningMessage?.editMessage(failedMsg)?.queue()
 
-            i18n.getTranslation(language, "$root.failure")
+            context.getTranslation("$root.failure")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
                 .replace("%cause%", t.message ?: "/")
         }

@@ -11,7 +11,6 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 
 class CustomCommandCommand : AbstractCommand("command.customcommand") {
@@ -39,22 +38,21 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
     companion object {
         val selectionMap = HashMap<Pair<Long, Long>, Long>()
         suspend fun getSelectedCCNMessage(context: CommandContext): CustomCommand? {
-            val language = context.getLanguage()
             val pair = Pair(context.guildId, context.authorId)
             return if (selectionMap.containsKey(pair)) {
                 val id = selectionMap[pair]
                 val ccs = context.daoManager.customCommandWrapper.customCommandCache.get(context.guildId).await()
-                    .filter { cc -> cc.id == id }
+                    .filter { (ccId) -> ccId == id }
                 if (ccs.isNotEmpty()) {
                     ccs[0]
                 } else {
-                    val msg = i18n.getTranslation(language, "message.ccremoved")
+                    val msg = context.getTranslation("message.ccremoved")
                         .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
                     sendMsg(context, msg)
                     null
                 }
             } else {
-                val msg = i18n.getTranslation(language, "message.noccselected")
+                val msg = context.getTranslation("message.noccselected")
                     .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
                 sendMsg(context, msg)
                 null
@@ -104,8 +102,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            val language = context.getLanguage()
-            val title = i18n.getTranslation(language, "$root.title")
+            val title = context.getTranslation("$root.title")
 
             val ccs = context.daoManager.customCommandWrapper.customCommandCache.get(context.guildId).await()
             var content = "```INI"
@@ -147,7 +144,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             cc.id = ccId
 
             val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.success")
+            val msg = context.getTranslation("$root.success")
                 .replace("%id%", cc.id.toString())
                 .replace("%ccName%", cc.name)
                 .replace("%content%", cc.content.messageContent ?: "error")
@@ -172,18 +169,16 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
             val id = getLongFromArgNMessage(context, 0) ?: return
             val cc = context.daoManager.customCommandWrapper.customCommandCache.get(guildId).await()
-                .first { cc -> cc.id == id }
+                .first { (ccId) -> ccId == id }
 
             context.daoManager.customCommandWrapper.remove(guildId, id)
 
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.success")
+            val msg = context.getTranslation("$root.success")
                 .replace("%id%", cc.id.toString())
                 .replace("%ccName%", cc.name)
 
             sendMsg(context, msg)
         }
-
     }
 
     class SelectArg(root: String) : AbstractCommand("$root.select") {
@@ -249,11 +244,9 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 s.add(context.rawArg)
                 ccSelected.aliases = s.toList()
 
-
                 context.daoManager.customCommandWrapper.update(context.guildId, ccSelected)
 
-                val language = context.getLanguage()
-                val msg = i18n.getTranslation(language, "$root.success")
+                val msg = context.getTranslation("$root.success")
                     .replace("%id%", ccSelected.id.toString())
                     .replace("%ccName%", ccSelected.name)
                     .replace(PLACEHOLDER_ARG, context.rawArg)
@@ -291,11 +284,9 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 }
                 ccSelected.aliases = s.toList()
 
-
                 context.daoManager.customCommandWrapper.update(context.guildId, ccSelected)
 
-                val language = context.getLanguage()
-                val msg = i18n.getTranslation(language, "$root.success")
+                val msg = context.getTranslation( "$root.success")
                     .replace("%id%", ccSelected.id.toString())
                     .replace("%ccName%", ccSelected.name)
                     .replace("%position%", possibleLong.toString())
@@ -321,10 +312,9 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                 val ccSelected = getSelectedCCNMessage(context) ?: return
                 val aliases = ccSelected.aliases
-                val language = context.getLanguage()
 
                 val path = if (aliases == null) "$root.empty" else "$root.title"
-                val title = i18n.getTranslation(language, path)
+                val title = context.getTranslation(path)
                     .replace("%id%", ccSelected.id.toString())
                     .replace("%ccName%", ccSelected.name)
 
@@ -394,8 +384,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
             context.daoManager.customCommandWrapper.update(context.guildId, ccSelected)
 
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.success")
+            val msg = context.getTranslation("$root.success")
                 .replace("%id%", ccSelected.id.toString())
                 .replace("%ccName%", ccSelected.name)
                 .replace(PLACEHOLDER_ARG, chance.toString())
@@ -425,9 +414,8 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
             context.daoManager.customCommandWrapper.update(context.guildId, ccSelected)
 
-            val language = context.getLanguage()
             val pathPart = if (state) "enabled" else "disabled"
-            val msg = i18n.getTranslation(language, "$root.$pathPart")
+            val msg = context.getTranslation("$root.$pathPart")
                 .replace("%id%", ccSelected.id.toString())
                 .replace("%ccName%", ccSelected.name)
 
@@ -883,8 +871,6 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     MessageCommandUtil.removeAttachmentCC(context, cc)
                 }
             }
-
         }
-
     }
 }

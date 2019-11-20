@@ -6,6 +6,7 @@ import me.melijn.melijnbot.enums.CommandState
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_CHANNELCOMMANDSTATE
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.objects.translation.i18n
@@ -46,8 +47,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             val commands = getCommandIdsFromArgNMessage(context, 0) ?: return
             val commandState = enumValueOrNull<CommandState>(context.args[1])
             if (commandState == null) {
-                val language = context.getLanguage()
-                val msg = i18n.getTranslation(language, "message.unknown.commandstate")
+                val msg = context.getTranslation("message.unknown.commandstate")
                     .replace(PLACEHOLDER_ARG, context.args[1])
                 sendMsg(context, msg)
                 return
@@ -60,8 +60,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             } else {
                 ""
             }
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, path)
+            val msg = context.getTranslation(path)
                 .replace("%commandCount%", commands.size.toString())
                 .replace("%state%", commandState.toString())
                 .replace("%commandNode%", context.args[0])
@@ -85,13 +84,12 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
 
             val channel = getTextChannelByArgsNMessage(context, 0) ?: return
             val commands = getCommandIdsFromArgNMessage(context, 1) ?: return
-            val commandState = enumValueOrNull<ChannelCommandState>(context.args[2])
-            if (commandState == null) {
-                val language = context.getLanguage()
-                val msg = i18n.getTranslation(language, "message.unknown.channelcommandstate")
-                    .replace(PLACEHOLDER_ARG, context.args[2])
-                sendMsg(context, msg)
-                return
+
+            val nullS = context.args[2] == "null"
+            val commandState = if (nullS) {
+                ChannelCommandState.DEFAULT
+            } else {
+                getEnumFromArgNMessage(context, 2, MESSAGE_UNKNOWN_CHANNELCOMMANDSTATE) ?: return
             }
 
             val dao = context.daoManager.channelCommandStateWrapper
@@ -162,17 +160,14 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                     .toMap()
 
                 val filteredCCs = daoManager.customCommandWrapper.customCommandCache.get(context.guildId).await()
-                    .filter { cmd -> ids.contains("cc." + cmd.id) }
-                    .map { cmd -> ("cc." + cmd.id) to cmd.name }
+                    .filter { (ccId) -> ids.contains("cc." + ccId) }
+                    .map { (ccId, ccName) -> ("cc." + ccId) to ccName }
                     .toMap()
 
                 commandMap.putAll(filteredCommands)
                 commandMap.putAll(filteredCCs)
 
-
-
-                val language = context.getLanguage()
-                val title = i18n.getTranslation(language, "$root.channelstate.response1")
+                val title = context.getTranslation("$root.channelstate.response1")
                     .replace(PLACEHOLDER_CHANNEL, channel.asTag)
 
                 var content = "```INI"

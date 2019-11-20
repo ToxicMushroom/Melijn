@@ -165,8 +165,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 val state: PermState? = enumValueOrNull(context.args[2])
                 if (state == null) {
-                    val language = context.getLanguage()
-                    val msg = i18n.getTranslation(language, MESSAGE_UNKNOWN_PERMSTATE)
+                    val msg = context.getTranslation(MESSAGE_UNKNOWN_PERMSTATE)
                         .replace(PLACEHOLDER_ARG, context.args[2])
                     sendMsg(context, msg)
 

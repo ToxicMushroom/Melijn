@@ -209,8 +209,7 @@ suspend fun getDurationByArgsNMessage(context: CommandContext, timeStamps: List<
 
         val amount = matcher.group(1).toLongOrNull()
         if (amount == null) {
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "message.numbertobig")
+            val msg = context.getTranslation("message.numbertobig")
                 .replace("%args%", matcher.group(1))
 
             sendMsg(context, msg, null)
