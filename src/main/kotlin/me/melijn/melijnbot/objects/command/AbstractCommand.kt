@@ -2,7 +2,6 @@ package me.melijn.melijnbot.objects.command
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
-import me.melijn.melijnbot.enums.CommandArg
 import me.melijn.melijnbot.enums.PermState
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendMsg
