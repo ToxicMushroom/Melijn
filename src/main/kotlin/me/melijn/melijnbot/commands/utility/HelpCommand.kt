@@ -4,7 +4,10 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
+import me.melijn.melijnbot.objects.jagtag.DiscordMethods
 import me.melijn.melijnbot.objects.utils.*
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.util.regex.Pattern
 
 
@@ -33,7 +36,19 @@ class HelpCommand : AbstractCommand("command.help") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+
+            val path = "%help.arg.${context.rawArg.toLowerCase()}%"
+            val translation = context.getTranslation(path)
+            if (path == translation) {
+                sendSyntax(context)
+                return
+            }
+
+            sendMsg(context, translation)
         }
 
         class ListArg(parent: String) : AbstractCommand("$parent.list") {
@@ -44,7 +59,22 @@ class HelpCommand : AbstractCommand("command.help") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                val inStream = Thread.currentThread().contextClassLoader.getResourceAsStream("strings_en.properties") ?: return
+                val ir = InputStreamReader(inStream)
+                val list = mutableListOf<String>()
+                val pattern = Pattern.compile(".*%help\\.arg\\.(([a-zA-Z]+|\\.){1,5})%.*")
+                for (line in BufferedReader(ir).lines()) {
+                    val matcher = pattern.matcher(line)
+                    if (matcher.find()) {
+                        val s = matcher.group(1)
+                        if (!list.contains(s))
+                            list.add(s)
+                    }
+                }
+                val eb = Embedder(context)
+                val title = context.getTranslation("$root.title")
+                eb.addField(title, list.joinToString("`, `", "`", "`"), false)
+                sendEmbed(context, eb.build())
             }
         }
     }
@@ -60,7 +90,18 @@ class HelpCommand : AbstractCommand("command.help") {
         }
 
         override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+            val path = "help.var.${context.rawArg}"
+            val translation = context.getTranslation(path)
+            if (path == translation) {
+                sendSyntax(context)
+                return
+            }
 
+            sendMsg(context, translation)
         }
 
         class ListArg(parent: String) : AbstractCommand("$parent.list") {
@@ -71,7 +112,13 @@ class HelpCommand : AbstractCommand("command.help") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                val dList = DiscordMethods.getMethods().map { method -> method.name }
+                val ccList = DiscordMethods.getMethods().map { method -> method.name }
+                val eb = Embedder(context)
+
+                eb.addField("CustomCommand", ccList.joinToString("}`, `{", "`{", "}`"), false)
+                eb.addField("Discord", dList.joinToString("}`, `{", "`{", "}`"), false)
+                sendEmbed(context, eb.build())
             }
         }
     }
@@ -184,7 +231,7 @@ class HelpCommand : AbstractCommand("command.help") {
         while (matcher.find()) {
             val og = matcher.group(0)
             val path = matcher.group(1)
-            help = help.replace(og, context.getTranslation(path))
+            help = help.replace(og, "*" + context.getTranslation(path))
         }
 
         return msg
