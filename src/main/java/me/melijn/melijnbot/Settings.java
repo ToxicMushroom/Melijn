@@ -38,9 +38,16 @@ public class Settings {
 
     public static class Tokens {
         public String melijn;
-        public String discordBotList;
+        public String topDotGG;
         public String weebSh;
         public String cache;
+        public String botsOnDiscordXYZ;
+        public String botlistSpace;
+        public String discordBotListCom;
+        public String divinedDiscordBotsCom;
+        public String discordBotsGG;
+        public String botsForDiscordCom;
+        public String discordBoats;
     }
 
     public static class Database {

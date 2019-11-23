@@ -91,12 +91,12 @@ class MuteService(
         sendEmbed(embedDisabledWrapper, channel, msgLc)
     }
 
-    fun start() {
+    override fun start() {
         logger.info("Started MuteService")
         scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(muteService, 1_100, 1_000, TimeUnit.MILLISECONDS)
     }
 
-    fun stop() {
+    override fun stop() {
         scheduledFuture?.cancel(false)
     }
 }

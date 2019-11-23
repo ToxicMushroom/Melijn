@@ -16,9 +16,10 @@ import me.duncte123.weebJava.models.WeebApi
 import me.duncte123.weebJava.types.TokenType
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.translation.MISSING_IMAGE_URL
+import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.toLCC
 import net.dv8tion.jda.api.utils.data.DataObject
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import ru.gildor.coroutines.okhttp.await
@@ -151,6 +152,169 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 val simpleTracks = spotifyApi.getAlbumsTracks(id).build().executeAsync().await().items
                 simpleTrack(simpleTracks)
             }
+        }
+    }
+
+    fun updateTopDotGG(serversArray: List<Long>) {
+        val token = settings.tokens.topDotGG
+        val url = "$TOP_GG_URL/bots/${settings.id}/stats"
+        if (token.isBlank()) return
+        taskManager.async {
+            val body = MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("shards", serversArray.joinToString(",", "[", "]"))
+                .build()
+
+            val request = Request.Builder()
+                .addHeader("Authorization", token)
+                .url(url)
+                .post(body)
+                .build()
+
+            httpClient.newCall(request).await()
+        }
+    }
+
+    fun updateBotsOnDiscordXYZ(servers: Long) {
+        val token = settings.tokens.botsOnDiscordXYZ
+        val url = "$BOTS_ON_DISCORD_XYZ_URL/bot-api/bots/${settings.id}/guilds"
+        if (token.isBlank()) return
+        taskManager.async {
+            val body = MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("guildCount", "$servers")
+                .build()
+
+            val request = Request.Builder()
+                .addHeader("Authorization", token)
+                .url(url)
+                .post(body)
+                .build()
+
+            httpClient.newCall(request).await()
+        }
+    }
+
+    fun updateBotlistSpace(serversArray: List<Long>) {
+        val token = settings.tokens.botlistSpace
+        val url = "$BOTLIST_SPACE/v1/bots/${settings.id}"
+        if (token.isBlank()) return
+        taskManager.async {
+            val body = MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("shards", serversArray.joinToString(",", "[", "]"))
+                .build()
+
+            val request = Request.Builder()
+                .addHeader("Authorization", token)
+                .url(url)
+                .post(body)
+                .build()
+
+            httpClient.newCall(request).await()
+        }
+    }
+
+    fun updateDiscordBotListCom(servers: Long, users: Long) {
+        val token = settings.tokens.discordBotListCom
+        val url = "$DISCORD_BOT_LIST_COM/api/bots/${settings.id}/stats"
+        if (token.isBlank()) return
+        taskManager.async {
+            val body = MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("guilds", "$servers")
+                .addFormDataPart("users", "$users")
+                .build()
+
+            val request = Request.Builder()
+                .addHeader("Authorization", "Bot $token")
+                .url(url)
+                .post(body)
+                .build()
+
+            httpClient.newCall(request).await()
+        }
+    }
+
+    fun updateDivinedDiscordBots(servers: Long, shards: Long) {
+        val token = settings.tokens.divinedDiscordBotsCom
+        val url = "$DIVINED_DISCORD_BOTS_COM/bot/${settings.id}/stats"
+        if (token.isBlank()) return
+        taskManager.async {
+            val body = MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("server_count", "$servers")
+                .addFormDataPart("shard_count", "$shards")
+                .build()
+
+            val request = Request.Builder()
+                .addHeader("Authorization", token)
+                .url(url)
+                .post(body)
+                .build()
+
+            httpClient.newCall(request).await()
+        }
+    }
+
+    fun updateDiscordBotsGG(servers: Long, shards: Long) {
+        val token = settings.tokens.discordBotsGG
+        val url = "$DISCORD_BOTS_GG/bots/${settings.id}/stats"
+        if (token.isBlank()) return
+        taskManager.async {
+            val body = MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("guildCount", "$servers")
+                .addFormDataPart("shardCount", "$shards")
+                .build()
+
+            val request = Request.Builder()
+                .addHeader("Authorization", token)
+                .url(url)
+                .post(body)
+                .build()
+
+            httpClient.newCall(request).await()
+        }
+    }
+
+    fun updateBotsForDiscordCom(servers: Long) {
+        val token = settings.tokens.botsForDiscordCom
+        val url = "$BOTS_FOR_DISCORD_COM/api/bot/${settings.id}"
+        if (token.isBlank()) return
+        taskManager.async {
+            val body = MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("server_count", "$servers")
+                .build()
+
+            val request = Request.Builder()
+                .addHeader("Authorization", token)
+                .url(url)
+                .post(body)
+                .build()
+
+            httpClient.newCall(request).await()
+        }
+    }
+
+    fun updateDiscordBoats(servers: Long) {
+        val token = settings.tokens.discordBoats
+        val url = "$DISCORD_BOATS/api/bot/${settings.id}"
+        if (token.isBlank()) return
+        taskManager.async {
+            val body = MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("server_count", "$servers")
+                .build()
+
+            val request = Request.Builder()
+                .addHeader("Authorization", token)
+                .url(url)
+                .post(body)
+                .build()
+
+            httpClient.newCall(request).await()
         }
     }
 }

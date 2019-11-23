@@ -89,12 +89,12 @@ class BanService(
         sendEmbed(embedDisabledWrapper, channel, msgLc)
     }
 
-    fun start() {
+    override fun start() {
         logger.info("Started BanService")
         scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(banService, 1_000, 1_000, TimeUnit.MILLISECONDS)
     }
 
-    fun stop() {
+    override fun stop() {
         scheduledFuture?.cancel(false)
     }
 }

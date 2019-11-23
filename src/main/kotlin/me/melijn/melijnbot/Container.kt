@@ -27,7 +27,7 @@ class Container {
     val daoManager = DaoManager(taskManager, settings.database)
     val webManager = WebManager(taskManager, settings)
     //enabled on event
-    val serviceManager = ServiceManager(taskManager, daoManager)
+    val serviceManager = ServiceManager(taskManager, daoManager, webManager)
 
     lateinit var lavaManager: LavaManager
 

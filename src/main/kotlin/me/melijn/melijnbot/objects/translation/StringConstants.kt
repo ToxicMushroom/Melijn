@@ -14,8 +14,18 @@ const val PLACEHOLDER_ROLE = "%role%"
 const val PLACEHOLDER_ROLE_ID = "%roleId%"
 const val PLACEHOLDER_ARG = "%arg%"
 const val PLACEHOLDER_TYPE = "%type%"
-
 const val MISSING_IMAGE_URL = "https://discordapp.com/assets/e0c782560fd96acd7f01fda1f8c6ff24.svg"
+
 const val YT_VID_URL_BASE = "https://youtu.be/"
 const val YT_SELECTOR = "ytsearch:"
 const val SC_SELECTOR = "scsearch:"
+
+const val TOP_GG_URL = "https://top.gg"
+const val BOTS_ON_DISCORD_XYZ_URL = "https://bots.ondiscord.xyz"
+const val BOTLIST_SPACE = "https://api.botlist.space"
+const val DISCORD_BOT_LIST_COM = "https://discordbotlist.com"
+const val DIVINED_DISCORD_BOTS_COM = "https://divinediscordbots.com"
+const val DISCORD_BOTS_GG = "https://discord.bots.gg"
+const val BOTS_FOR_DISCORD_COM = "https://botsfordiscord.com"
+const val DISCORD_BOATS = "https://discord.boats"
+
