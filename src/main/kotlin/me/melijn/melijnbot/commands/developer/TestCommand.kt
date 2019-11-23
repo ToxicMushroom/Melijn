@@ -3,6 +3,10 @@ package me.melijn.melijnbot.commands.developer
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.utils.sendMsg
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.util.regex.Pattern
 
 class TestCommand : AbstractCommand("command.test") {
 
@@ -13,7 +17,19 @@ class TestCommand : AbstractCommand("command.test") {
     }
 
     override suspend fun execute(context: CommandContext) {
-
+        val inStream = Thread.currentThread().contextClassLoader.getResourceAsStream("strings_en.properties") ?: return
+        val ir = InputStreamReader(inStream)
+        val list = mutableListOf<String>()
+        val pattern = Pattern.compile(".*%(help\\.arg\\.([a-zA-Z]+|\\.){1,5})%.*")
+        for (line in BufferedReader(ir).lines()) {
+            val matcher = pattern.matcher(line)
+            if (matcher.find()) {
+                val s = matcher.group(1)
+                if (!list.contains(s))
+                    list.add(s)
+            }
+        }
+        sendMsg(context, list.joinToString("\n"))
     }
 
 //    suspend fun migrate(context: CommandContext) {
