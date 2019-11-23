@@ -7,6 +7,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.music.LavaManager
 import me.melijn.melijnbot.objects.services.ServiceManager
 import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.objects.web.RestServer
 import me.melijn.melijnbot.objects.web.WebManager
 import net.dv8tion.jda.api.sharding.ShardManager
 import java.io.File
@@ -14,11 +15,14 @@ import java.io.File
 
 class Container {
 
+    var restServer: RestServer? = null
     var shuttingDown: Boolean = false
         set(value) {
             if (value) serviceManager.stopServices()
             field = value
         }
+
+    var startTime = System.currentTimeMillis()
 
     var settings: Settings = ObjectMapper().readValue(File("config.json"), Settings::class.java)
     val taskManager = TaskManager()
@@ -57,4 +61,7 @@ class Container {
     fun initLava(jdaLavaLink: JdaLavalink?) {
         this.jdaLavaLink = jdaLavaLink
     }
+
+    val uptimeMillis: Long
+        get() = System.currentTimeMillis() - startTime
 }

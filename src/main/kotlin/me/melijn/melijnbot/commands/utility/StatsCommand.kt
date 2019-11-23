@@ -5,6 +5,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
+import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.getDurationString
 import me.melijn.melijnbot.objects.utils.getSystemUptime
@@ -31,9 +32,8 @@ class StatsCommand : AbstractCommand("command.stats") {
         val totalJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.max shr 20
         val usedJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.used shr 20
         val shardManager = context.shardManager
-        val voiceChannels = shardManager.shards.stream().mapToLong { shard ->
-            shard.voiceChannels.stream().filter { vc -> vc.members.contains(vc.guild.selfMember) }.count()
-        }?.sum()
+        val voiceChannels = VoiceUtil.getConnectedChannels(shardManager)
+
         val threadPoolExecutor = context.taskManager.executorService as ThreadPoolExecutor
         val scheduledExecutorService = context.taskManager.scheduledExecutorService as ThreadPoolExecutor
 

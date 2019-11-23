@@ -5,6 +5,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyMusicChannel
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.VoiceChannel
+import net.dv8tion.jda.api.sharding.ShardManager
 
 object VoiceUtil {
 
@@ -19,7 +20,6 @@ object VoiceUtil {
         if (musicUrl == "") return
 
 
-        val selfMember = guild.selfMember
         val musicPlayerManager = container.lavaManager.musicPlayerManager
         val trackManager = musicPlayerManager.getGuildMusicPlayer(guild).guildTrackManager
         val audioLoader = musicPlayerManager.audioLoader
@@ -35,5 +35,11 @@ object VoiceUtil {
                 audioLoader.loadNewTrack(daoManager, container.lavaManager, channelJoined, guild.jda.selfUser, musicUrl)
             }
         }
+    }
+
+    fun getConnectedChannels(shardManager: ShardManager): Long {
+        return shardManager.shards.stream().mapToLong { shard ->
+            shard.voiceChannels.stream().filter { vc -> vc.members.contains(vc.guild.selfMember) }.count()
+        }?.sum() ?: 0
     }
 }
