@@ -16,6 +16,11 @@ object DiscordMethods {
             user.asTag
         }),
 
+        Method("user.isBot", { env ->
+            val user: User = env.getReifiedX("user")
+            if (user.isBot) "true" else "false"
+        }),
+
 
         //{isUser:userId|userTag}
         Method("isUser", { "true" }, { env: Environment, input: Array<String> ->
@@ -59,7 +64,7 @@ object DiscordMethods {
             val user: User = env.getReifiedX("user")
             user.effectiveAvatarUrl
         }),
-        Method("discrim", { env ->
+        Method("discriminator", { env ->
             val user: User = env.getReifiedX("user")
             user.discriminator
         }),
@@ -71,7 +76,7 @@ object DiscordMethods {
             val guild: Guild = env.getReifiedX("guild")
             guild.id
         }),
-        Method("membercount", { env ->
+        Method("memberCount", { env ->
             val guild: Guild = env.getReifiedX("guild")
             guild.memberCache.size().toString()
         })

@@ -218,7 +218,6 @@ class HelpCommand : AbstractCommand("command.help") {
 
             sendEmbed(context, eb.build())
         }
-
     }
 
 
