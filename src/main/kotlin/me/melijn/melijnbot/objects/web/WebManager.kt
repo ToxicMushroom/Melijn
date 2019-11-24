@@ -17,11 +17,10 @@ import me.duncte123.weebJava.types.TokenType
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.translation.*
+import me.melijn.melijnbot.objects.utils.sendInGuild
 import me.melijn.melijnbot.objects.utils.toLCC
 import net.dv8tion.jda.api.utils.data.DataObject
-import okhttp3.MultipartBody
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import okhttp3.*
 import ru.gildor.coroutines.okhttp.await
 import java.io.IOException
 import java.util.regex.Matcher
@@ -39,6 +38,10 @@ private val spotifyAlbumUri: Pattern = Pattern.compile("spotify:album:(\\S+)")
 class WebManager(val taskManager: TaskManager, val settings: Settings) {
 
     private val httpClient = OkHttpClient()
+        .newBuilder()
+        .dispatcher(Dispatcher(taskManager.executorService))
+        .build()
+
     private lateinit var spotifyApi: SpotifyApi
     private val weebApi: WeebApi = WeebApiBuilder(TokenType.WOLKETOKENS)
         .setBotInfo(settings.name, settings.version, settings.environment.toLCC())
@@ -46,6 +49,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         .build()
 
     init {
+
         updateSpotifyCredentials()
     }
 
@@ -78,12 +82,14 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
             val responseBody = response.body
             if (responseBody == null) {
                 it.resume(null)
+                response.close()
                 return@async
             }
             withContext(Dispatchers.IO) {
                 val responseString = responseBody.string()
                 it.resume(DataObject.fromJson(responseString))
             }
+            response.close()
         }
     }
 
@@ -155,6 +161,16 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         }
     }
 
+    private val defaultCallbackHandler = object : Callback {
+        override fun onFailure(call: Call, e: IOException) {
+            e.sendInGuild(extra = call.request().url.toString())
+        }
+
+        override fun onResponse(call: Call, response: Response) {
+            response.close()
+        }
+    }
+
     fun updateTopDotGG(serversArray: List<Long>) {
         val token = settings.tokens.topDotGG
         val url = "$TOP_GG_URL/bots/${settings.id}/stats"
@@ -171,7 +187,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 .post(body)
                 .build()
 
-            httpClient.newCall(request).await().close()
+            httpClient.newCall(request).enqueue(defaultCallbackHandler)
         }
     }
 
@@ -191,7 +207,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 .post(body)
                 .build()
 
-            httpClient.newCall(request).await().close()
+            httpClient.newCall(request).enqueue(defaultCallbackHandler)
         }
     }
 
@@ -211,7 +227,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 .post(body)
                 .build()
 
-            httpClient.newCall(request).await().close()
+            httpClient.newCall(request).enqueue(defaultCallbackHandler)
         }
     }
 
@@ -232,7 +248,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 .post(body)
                 .build()
 
-            httpClient.newCall(request).await().close()
+            httpClient.newCall(request).enqueue(defaultCallbackHandler)
         }
     }
 
@@ -253,7 +269,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 .post(body)
                 .build()
 
-            httpClient.newCall(request).await().close()
+            httpClient.newCall(request).enqueue(defaultCallbackHandler)
         }
     }
 
@@ -274,7 +290,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 .post(body)
                 .build()
 
-            httpClient.newCall(request).await().close()
+            httpClient.newCall(request).enqueue(defaultCallbackHandler)
         }
     }
 
@@ -294,7 +310,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 .post(body)
                 .build()
 
-            httpClient.newCall(request).await().close()
+            httpClient.newCall(request).enqueue(defaultCallbackHandler)
         }
     }
 
@@ -314,7 +330,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 .post(body)
                 .build()
 
-            httpClient.newCall(request).await().close()
+            httpClient.newCall(request).enqueue(defaultCallbackHandler)
         }
     }
 }

@@ -30,7 +30,7 @@ class DogCommand : AbstractCommand("command.dog") {
     }
 
     private suspend fun getRandomDogUrl(webManager: WebManager): String {
-        val reply = webManager.getJsonFromUrl("https://random.dog/woof.json")?: return MISSING_IMAGE_URL
-        return reply.getString("link")
+        val reply = webManager.getJsonFromUrl("https://random.dog/woof.json") ?: return MISSING_IMAGE_URL
+        return reply.getString("url")
     }
 }

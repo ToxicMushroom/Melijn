@@ -24,16 +24,16 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-fun Throwable.sendInGuild(context: CommandContext, thread: Thread = Thread.currentThread()) = runBlocking {
-    sendInGuildSuspend(context.guild, context.messageChannel, context.author, thread)
+fun Throwable.sendInGuild(context: CommandContext, thread: Thread = Thread.currentThread(), extra: String? = null) = runBlocking {
+    sendInGuildSuspend(context.guild, context.messageChannel, context.author, thread, extra)
 }
 
 
-fun Throwable.sendInGuild(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread()) = runBlocking {
-    sendInGuildSuspend(guild, channel, author, thread)
+fun Throwable.sendInGuild(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread(), extra: String? = null) = runBlocking {
+    sendInGuildSuspend(guild, channel, author, thread, extra)
 }
 
-suspend fun Throwable.sendInGuildSuspend(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread()) {
+suspend fun Throwable.sendInGuildSuspend(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread(), extra: String? = null) {
     if (Container.instance.settings.unLoggedThreads.contains(thread.name)) return
 
     val channelId = Container.instance.settings.exceptionChannel
@@ -56,6 +56,10 @@ suspend fun Throwable.sendInGuildSuspend(guild: Guild? = null, channel: MessageC
     val stacktrace = MarkdownSanitizer.escape(writer.toString())
         .replace("at me.melijn.melijnbot", "**at me.melijn.melijnbot**")
     sb.append(stacktrace)
+    extra?.let {
+        sb.appendln("**Extra**")
+        sb.appendln(it)
+    }
     sendMsg(textChannel, sb.toString())
 }
 
