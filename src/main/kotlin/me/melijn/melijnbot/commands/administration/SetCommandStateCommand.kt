@@ -103,7 +103,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             val msg = i18n.getTranslation(language, path)
                 .replace(PLACEHOLDER_CHANNEL, channel.asTag)
                 .replace("%commandCount%", commands.size.toString())
-                .replace("%tate%", commandState.toString())
+                .replace("%state%", commandState.toString())
                 .replace("%commandNode%", context.args[1])
 
             sendMsg(context, msg)
@@ -128,7 +128,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                     .toList()
 
                 val filteredCCs = daoManager.customCommandWrapper.customCommandCache.get(context.guildId).await()
-                    .filter { cmd -> ids.contains("cc." + cmd.id.toString()) }
+                    .filter { (ccId) -> ids.contains("cc.$ccId") }
                     .map { cmd -> cmd.name }
                     .toList()
 
@@ -146,7 +146,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                 content += "```"
 
                 val msg = title + content
-                sendMsg(context, msg)
+                sendMsgCodeBlock(context, msg, "INI")
             } else {
                 val channel = getTextChannelByArgsNMessage(context, 0) ?: return
 
@@ -160,8 +160,8 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                     .toMap()
 
                 val filteredCCs = daoManager.customCommandWrapper.customCommandCache.get(context.guildId).await()
-                    .filter { (ccId) -> ids.contains("cc." + ccId) }
-                    .map { (ccId, ccName) -> ("cc." + ccId) to ccName }
+                    .filter { (ccId) -> ids.contains("cc.$ccId") }
+                    .map { (ccId, ccName) -> ("cc.$ccId") to ccName }
                     .toMap()
 
                 commandMap.putAll(filteredCommands)
@@ -177,7 +177,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                 content += "```"
 
                 val msg = title + content
-                sendMsg(context, msg)
+                sendMsgCodeBlock(context, msg, "INI")
             }
         }
     }
