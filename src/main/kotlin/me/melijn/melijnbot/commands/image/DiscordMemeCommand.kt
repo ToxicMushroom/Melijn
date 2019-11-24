@@ -8,7 +8,7 @@ import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.web.WebManager
 
-class DiscordMemeCommand :  AbstractCommand("command.discordmeme") {
+class DiscordMemeCommand : AbstractCommand("command.discordmeme") {
 
     init {
         id = 102

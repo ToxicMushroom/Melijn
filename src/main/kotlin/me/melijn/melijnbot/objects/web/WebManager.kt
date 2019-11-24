@@ -171,7 +171,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 .post(body)
                 .build()
 
-            httpClient.newCall(request).await()
+            httpClient.newCall(request).await().close()
         }
     }
 
@@ -191,7 +191,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 .post(body)
                 .build()
 
-            httpClient.newCall(request).await()
+            httpClient.newCall(request).await().close()
         }
     }
 
@@ -211,7 +211,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 .post(body)
                 .build()
 
-            httpClient.newCall(request).await()
+            httpClient.newCall(request).await().close()
         }
     }
 
@@ -232,7 +232,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 .post(body)
                 .build()
 
-            httpClient.newCall(request).await()
+            httpClient.newCall(request).await().close()
         }
     }
 
@@ -253,7 +253,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 .post(body)
                 .build()
 
-            httpClient.newCall(request).await()
+            httpClient.newCall(request).await().close()
         }
     }
 
@@ -274,7 +274,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 .post(body)
                 .build()
 
-            httpClient.newCall(request).await()
+            httpClient.newCall(request).await().close()
         }
     }
 
@@ -294,7 +294,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 .post(body)
                 .build()
 
-            httpClient.newCall(request).await()
+            httpClient.newCall(request).await().close()
         }
     }
 
@@ -314,7 +314,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 .post(body)
                 .build()
 
-            httpClient.newCall(request).await()
+            httpClient.newCall(request).await().close()
         }
     }
 }
