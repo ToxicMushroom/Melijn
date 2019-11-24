@@ -20,8 +20,13 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
     private fun onStatusChange(event: StatusChangeEvent) {
         val shardManager = event.jda.shardManager ?: return
         if (event.newStatus == JDA.Status.CONNECTED) {
-            val loadedAllShards = shardManager.shardCache.count { jda -> jda.status == JDA.Status.CONNECTED } == container.settings.shardCount
-            if (!loadedAllShards) return
+            val readyShards = shardManager.shards.count { jda -> jda.status == JDA.Status.CONNECTED }
+            val loadedAllShards = readyShards == container.settings.shardCount
+
+            if (!loadedAllShards) {
+                logger.info("$readyShards shard(s) ready")
+                return
+            }
             logger.info("All shards ready")
             if (!container.serviceManager.started) {
                 container.startTime = System.currentTimeMillis()
