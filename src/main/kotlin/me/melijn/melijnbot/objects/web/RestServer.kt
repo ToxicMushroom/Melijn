@@ -20,7 +20,7 @@ import java.util.concurrent.ThreadPoolExecutor
 
 class RestServer(container: Container) : Jooby() {
     init {
-        val token = container.settings.tokens.melijn
+        val token = container.settings.tokens.melijnRest
         use(Jackson())
 
         get("/guildCount") { _, rsp ->
@@ -162,6 +162,12 @@ class RestServer(container: Container) : Jooby() {
                 .put("isSame", path == translation)
                 .put("translation", translation)
                 .toMap())
+        }
+
+        get("/translations/{language:.*}") { req, rsp ->
+            val lang = req.param("language").value()
+            val data =   i18n.getTranslations(lang)
+            rsp.send(data.toMap())
         }
 
         //Has to be registered last to not override other paths

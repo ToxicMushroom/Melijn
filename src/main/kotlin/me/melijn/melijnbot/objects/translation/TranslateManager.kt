@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.objects.translation
 
 import me.melijn.melijnbot.objects.command.CommandContext
+import net.dv8tion.jda.api.utils.data.DataObject
 import java.util.*
 
 val i18n = TranslateManager()
@@ -25,5 +26,13 @@ class TranslateManager {
         } else {
             path
         }
+    }
+
+    fun getTranslations(lang: String): DataObject {
+        val map = DataObject.empty()
+        defaultRecourseBundle.keySet().forEach { key ->
+            map.put(key, getTranslation(lang, key))
+        }
+        return map
     }
 }

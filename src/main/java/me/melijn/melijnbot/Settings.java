@@ -40,7 +40,7 @@ public class Settings {
         public String melijn;
         public String topDotGG;
         public String weebSh;
-        public String cache;
+        public String melijnRest;
         public String botsOnDiscordXYZ;
         public String botlistSpace;
         public String discordBotListCom;

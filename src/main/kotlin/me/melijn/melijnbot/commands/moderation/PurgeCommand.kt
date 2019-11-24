@@ -39,7 +39,8 @@ class PurgeCommand : AbstractCommand("command.purge") {
 
 
         context.textChannel.purgeMessages(messages)
-        val msg = i18n.getTranslation(language, "$root.success")
+        val more = if (amount > 1) "more" else "one"
+        val msg = i18n.getTranslation(language, "$root.success.$more")
             .replace("%amount%", amount.toString())
 
         if (context.commandParts[0].equals(silentPurgeName, true) || context.commandParts[0].equals(silentPruneName, true))

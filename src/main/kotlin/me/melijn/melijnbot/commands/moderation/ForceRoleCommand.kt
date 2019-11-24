@@ -38,7 +38,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
 
         override suspend fun execute(context: CommandContext) {
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
-            val role = getRoleByArgsNMessage(context, 1, true, true) ?: return
+            val role = getRoleByArgsNMessage(context, 1, sameGuildAsContext = true, canInteract = true) ?: return
             val member = context.guild.getMember(user)
 
             context.daoManager.forceRoleWrapper.add(context.guildId, user.idLong, role.idLong)
@@ -104,7 +104,5 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
                 .replace(PLACEHOLDER_USER, user.asTag)
             sendMsg(context, msg)
         }
-
     }
-
 }
