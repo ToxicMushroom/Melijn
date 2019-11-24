@@ -41,14 +41,22 @@ class HelpCommand : AbstractCommand("command.help") {
                 return
             }
 
-            val path = "%help.arg.${context.rawArg.toLowerCase()}%"
+            val path = "help.arg.${context.rawArg.toLowerCase()}"
+            val pathExtra = "help.arg.${context.rawArg.toLowerCase()}.help"
             val translation = context.getTranslation(path)
+            val translationExtra = context.getTranslation(path)
+            val hasExtra = translationExtra != pathExtra
             if (path == translation) {
                 sendSyntax(context)
                 return
             }
 
-            sendMsg(context, translation)
+            val msg = if (hasExtra) {
+                translation + "\n" + translationExtra
+            } else {
+                translation
+            }
+            sendMsg(context, msg)
         }
 
         class ListArg(parent: String) : AbstractCommand("$parent.list") {

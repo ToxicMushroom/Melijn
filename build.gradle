@@ -86,7 +86,10 @@ dependencies {
 
     //https://mvnrepository.com/artifact/org.jooby/jooby
     //WebServer
-    implementation group: 'org.jooby', name: 'jooby-netty', version: '1.6.4'
+    implementation(group: 'org.jooby', name: 'jooby-netty', version: '1.6.4')
+    constraints {
+        implementation(group: 'com.google.inject', name: 'guice', version: '4.2.2')
+    }
     implementation group: 'org.jooby', name: 'jooby-jackson', version: '1.6.4'
 
     // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
