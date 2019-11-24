@@ -37,7 +37,7 @@ public class Settings {
     }
 
     public static class Tokens {
-        public String melijn;
+        public String discord;
         public String topDotGG;
         public String weebSh;
         public String melijnRest;

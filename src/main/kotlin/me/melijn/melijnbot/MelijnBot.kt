@@ -47,7 +47,7 @@ class MelijnBot {
 
         val defaultShardManagerBuilder = DefaultShardManagerBuilder()
             .setShardsTotal(container.settings.shardCount)
-            .setToken(container.settings.tokens.melijn)
+            .setToken(container.settings.tokens.discord)
             .setActivity(Activity.listening("commands | ${container.settings.prefix}help"))
             .setAutoReconnect(true)
             .setEventManagerProvider { eventManager }
