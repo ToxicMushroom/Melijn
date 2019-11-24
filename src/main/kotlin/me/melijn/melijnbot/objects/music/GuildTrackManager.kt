@@ -90,9 +90,9 @@ class GuildTrackManager(
         }
     }
 
-    override fun onPlayerPause(player: AudioPlayer) {
+    override fun onPlayerPause(player: AudioPlayer?) {
         Container.instance.taskManager.async {
-            val data = player.playingTrack.userData as TrackUserData
+            val data = playingTrack?.userData as TrackUserData? ?: return@async
             val embed = getPausedEmbedFromMap(data.currentTime) ?: return@async
             val guild = getAndCheckGuild() ?: return@async
 

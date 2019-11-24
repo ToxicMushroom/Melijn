@@ -105,7 +105,7 @@ object MessageCommandUtil {
                 message?.embed?.image?.url
             }
             ModularMessageProperty.EMBED_AUTHOR -> {
-                path = "message.embed.author.show"
+                path = "message.embed.authorname.show"
                 message?.embed?.author?.name
             }
             ModularMessageProperty.EMBED_AUTHOR_URL -> {
@@ -370,10 +370,10 @@ object MessageCommandUtil {
 
         val msg = if (arg.equals("null", true)) {
             eb.setAuthor(null)
-            i18n.getTranslation(language, "message.embed.author.unset")
+            i18n.getTranslation(language, "message.embed.authorname.unset")
         } else {
             eb.setTitle(arg)
-            i18n.getTranslation(language, "message.embed.author.set")
+            i18n.getTranslation(language, "message.embed.authorname.set")
                 .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
