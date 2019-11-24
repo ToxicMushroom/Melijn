@@ -3,7 +3,6 @@ package me.melijn.melijnbot.objects.command
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.PermState
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendMsg
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
@@ -62,8 +61,7 @@ abstract class AbstractCommand(val root: String) {
     }
 
     suspend fun sendMissingPermissionMessage(context: CommandContext, permission: String) {
-        val language = context.getLanguage()
-        val msg = i18n.getTranslation(language, "message.botpermission.missing")
+        val msg = context.getTranslation("message.botpermission.missing")
             .replace("%permission%", permission)
         sendMsg(context, msg)
     }

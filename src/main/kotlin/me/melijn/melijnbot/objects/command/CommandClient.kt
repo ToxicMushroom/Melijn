@@ -13,6 +13,7 @@ import me.melijn.melijnbot.objects.jagtag.CCJagTagParserArgs
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.EmbedType
 import net.dv8tion.jda.api.entities.Member
@@ -91,7 +92,9 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             }
         }
 
-
+        if (event.channelType == ChannelType.TEXT) {
+            if (!event.guild.selfMember.hasPermission(event.textChannel, Permission.MESSAGE_WRITE)) return
+        }
         val ccsWithPrefixMatches = mutableMapOf<CustomCommand, String>()
         val ccsWithoutPrefixMatches = mutableListOf<CustomCommand>()
         for (prefix in prefixes) {
