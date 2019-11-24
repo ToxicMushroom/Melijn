@@ -5,6 +5,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.objects.translation.MISSING_IMAGE_URL
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.getDurationString
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
@@ -12,12 +13,16 @@ import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
 import org.jooby.Jooby
+import org.jooby.json.Jackson
 import java.lang.management.ManagementFactory
 import java.util.concurrent.ThreadPoolExecutor
 
 
 class RestServer(container: Container) : Jooby() {
     init {
+        val token = container.settings.tokens.melijn
+        use(Jackson())
+
         get("/guildCount") { _, rsp ->
             rsp.send(MelijnBot.shardManager.guildCache.size())
         }
@@ -149,6 +154,17 @@ class RestServer(container: Container) : Jooby() {
         }
 
 
+        get("/translate/{language:.*}/{path:.*}") { req, rsp ->
+            val lang = req.param("language").value()
+            val path = req.param("path").value()
+            val translation = i18n.getTranslation(lang, path)
+            rsp.send(DataObject.empty()
+                .put("isSame", path == translation)
+                .put("translation", translation)
+                .toMap())
+        }
+
+        //Has to be registered last to not override other paths
         get("*") { -> "blub" }
     }
 

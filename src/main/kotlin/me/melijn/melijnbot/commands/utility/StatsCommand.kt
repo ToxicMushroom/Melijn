@@ -49,7 +49,7 @@ class StatsCommand : AbstractCommand("command.stats") {
             shardManager.shardsTotal,
             shardManager.userCache.size(),
             shardManager.guildCache.size(),
-            voiceChannels ?: 0,
+            voiceChannels,
             threadPoolExecutor.activeCount + scheduledExecutorService.activeCount + scheduledExecutorService.queue.size,
             getDurationString(ManagementFactory.getRuntimeMXBean().uptime)
         )
