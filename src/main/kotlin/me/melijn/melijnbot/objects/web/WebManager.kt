@@ -21,6 +21,7 @@ import me.melijn.melijnbot.objects.utils.sendInGuild
 import me.melijn.melijnbot.objects.utils.toLCC
 import net.dv8tion.jda.api.utils.data.DataObject
 import okhttp3.*
+import okhttp3.RequestBody.Companion.toRequestBody
 import ru.gildor.coroutines.okhttp.await
 import java.io.IOException
 import java.util.regex.Matcher
@@ -257,16 +258,15 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         val url = "$DIVINED_DISCORD_BOTS_COM/bot/${settings.id}/stats"
         if (token.isBlank()) return
         taskManager.async {
-            val body = MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("server_count", "$servers")
-                .addFormDataPart("shard_count", "$shards")
-                .build()
+            val body = DataObject.empty()
+                .put("server_count", servers)
+                .put("shard_count", shards)
+                .toString()
 
             val request = Request.Builder()
                 .addHeader("Authorization", token)
                 .url(url)
-                .post(body)
+                .post(body.toRequestBody())
                 .build()
 
             httpClient.newCall(request).enqueue(defaultCallbackHandler)
