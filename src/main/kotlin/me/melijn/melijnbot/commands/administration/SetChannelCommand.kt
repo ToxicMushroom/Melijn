@@ -5,7 +5,7 @@ import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_CHANNELTYPE
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
@@ -25,14 +25,7 @@ class SetChannelCommand : AbstractCommand("command.setchannel") {
             return
         }
 
-        val type = enumValueOrNull<ChannelType>(context.args[0])
-        if (type == null) {
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "message.unknown.channeltype")
-                .replace(PLACEHOLDER_ARG, context.args[0])
-            sendMsg(context, msg)
-            return
-        }
+        val type: ChannelType = getEnumFromArgNMessage(context, 0, MESSAGE_UNKNOWN_CHANNELTYPE) ?: return
 
         if (context.args.size > 1) {
             setChannel(context, type)
@@ -73,13 +66,11 @@ class SetChannelCommand : AbstractCommand("command.setchannel") {
 
         val msg = if (channel == null) {
             channelWrapper.removeChannel(context.guildId, type)
-            val language = context.getLanguage()
-            i18n.getTranslation(language, "$root.unset")
+            context.getTranslation("$root.unset")
 
         } else {
             channelWrapper.setChannel(context.guildId, type, channel.idLong)
-            val language = context.getLanguage()
-            i18n.getTranslation(language, "$root.set")
+            context.getTranslation("$root.set")
                 .replace(PLACEHOLDER_CHANNEL, channel.asTag)
         }.replace("%channelType%", type.toString().toUpperWordCase())
 

@@ -7,7 +7,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_CHANNELCOMMANDSTATE
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_COMMANDSTATE
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
@@ -45,13 +45,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
             }
 
             val commands = getCommandIdsFromArgNMessage(context, 0) ?: return
-            val commandState = enumValueOrNull<CommandState>(context.args[1])
-            if (commandState == null) {
-                val msg = context.getTranslation("message.unknown.commandstate")
-                    .replace(PLACEHOLDER_ARG, context.args[1])
-                sendMsg(context, msg)
-                return
-            }
+            val commandState: CommandState = getEnumFromArgNMessage(context, 1, MESSAGE_UNKNOWN_COMMANDSTATE) ?: return
 
             val dao = context.daoManager.disabledCommandWrapper
             dao.setCommandState(context.guildId, commands, commandState)
