@@ -54,14 +54,14 @@ data class ModularMessage(var messageContent: String? = null,
         embed?.let { membed ->
             json.put("embed", membed.toData()
                 .put("type", EmbedType.RICH)
-                .toString())
+            )
         }
 
         val attachmentsJson = DataArray.empty()
-        for (attachment in attachments) {
+        for ((key, value) in attachments) {
             attachmentsJson.add(DataObject.empty()
-                .put("url", attachment.key)
-                .put("file", attachment.value))
+                .put("url", key)
+                .put("file", value))
         }
         json.put("attachments", attachmentsJson)
         return json.toString()

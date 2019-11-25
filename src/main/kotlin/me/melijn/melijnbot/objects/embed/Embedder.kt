@@ -6,12 +6,12 @@ import net.dv8tion.jda.api.EmbedBuilder
 
 class Embedder(daoManager: DaoManager, guildId: Long, userId: Long, embedColor: Int) : EmbedBuilder() {
 
-    constructor(context: CommandContext) : this(context.daoManager, context.guildId, context.authorId, context.embedColor)
+    constructor(context: CommandContext) : this(context.daoManager, if (context.isFromGuild) context.guildId else -1, context.authorId, context.embedColor)
 
     init {
         val embedColorWrapper = daoManager.embedColorWrapper
         val userEmbedColorWrapper = daoManager.userEmbedColorWrapper
-        var color: Int = embedColorWrapper.embedColorCache.get(guildId).get() //Error
+        var color: Int = embedColorWrapper.embedColorCache.get(guildId).get()
         if (daoManager.supporterWrapper.userSupporterIds.contains(userId)) {
             color = userEmbedColorWrapper.userEmbedColorCache.get(userId).get()
         }
