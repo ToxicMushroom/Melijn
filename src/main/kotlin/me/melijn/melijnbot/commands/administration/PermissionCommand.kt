@@ -430,15 +430,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                     val permissionNode = context.args[2]
 
-                    val state: PermState? = enumValueOrNull(context.args[3])
-                    if (state == null) {
-                        val language = context.getLanguage()
-                        val msg = i18n.getTranslation(language, MESSAGE_UNKNOWN_PERMSTATE)
-                            .replace(PLACEHOLDER_ARG, context.args[3])
-                        sendMsg(context, msg)
-
-                        return
-                    }
+                    val state: PermState = getEnumFromArgNMessage(context, 3, MESSAGE_UNKNOWN_PERMSTATE) ?: return
 
                     val channel = getTextChannelByArgsNMessage(context, 0) ?: return
                     val user = retrieveUserByArgsNMessage(context, 1) ?: return

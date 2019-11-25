@@ -134,7 +134,7 @@ object MessageCommandUtil {
             i18n.getTranslation(language, "$path.unset")
         } else {
             i18n.getTranslation(language, "$path.set")
-                .replace("%${property.toLCC()}%", string)
+                .replace("%${property.toLCC()}%", "```${string.replace("`", "´")}```")
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         sendMsg(context, msg)
@@ -283,7 +283,7 @@ object MessageCommandUtil {
         } else {
             message.messageContent = arg
             i18n.getTranslation(language, "message.content.set")
-                .replace(PLACEHOLDER_ARG, arg)
+                .replace(PLACEHOLDER_ARG, "```${arg.replace("`", "´")}```")
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         sendMsg(context, msg)

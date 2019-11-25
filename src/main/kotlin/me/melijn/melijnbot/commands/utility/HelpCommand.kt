@@ -4,6 +4,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
+import me.melijn.melijnbot.objects.jagtag.CCMethods
 import me.melijn.melijnbot.objects.jagtag.DiscordMethods
 import me.melijn.melijnbot.objects.utils.*
 import java.io.BufferedReader
@@ -121,7 +122,7 @@ class HelpCommand : AbstractCommand("command.help") {
 
             override suspend fun execute(context: CommandContext) {
                 val dList = DiscordMethods.getMethods().map { method -> method.name }
-                val ccList = DiscordMethods.getMethods().map { method -> method.name }
+                val ccList = CCMethods.getMethods().map { method -> method.name }
                 val eb = Embedder(context)
 
                 eb.addField("CustomCommand", ccList.joinToString("}`, `{", "`{", "}`"), false)
