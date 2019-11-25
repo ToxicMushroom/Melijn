@@ -1,9 +1,10 @@
-package me.melijn.melijnbot.commands.supporter
+package me.melijn.melijnbot.commands.utility
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
@@ -18,7 +19,8 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             AddCommand(root),
             RemoveCommand(root)
         )
-        commandCategory = CommandCategory.SUPPORTER
+        runConditions = arrayOf(RunCondition.SUPPORTER)
+        commandCategory = CommandCategory.UTILITY
     }
 
     override suspend fun execute(context: CommandContext) {
@@ -42,6 +44,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
                 content += "\n$index - [$prefix]"
             }
             content += "```"
+
 
             val msg = title + content
             sendMsg(context, msg)

@@ -1,23 +1,23 @@
 package me.melijn.melijnbot.database.verification
 
-import com.github.benmanes.caffeine.cache.Caffeine
+import com.google.common.cache.CacheBuilder
 import me.melijn.melijnbot.database.NOT_IMPORTANT_CACHE
 import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.launch
+import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class VerificationCodeWrapper(val taskManager: TaskManager, private val verificationCodeDao: VerificationCodeDao) {
 
-    val verificationCodeCache = Caffeine.newBuilder()
+    val verificationCodeCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .executor(taskManager.executorService)
-        .buildAsync<Long, String>() { key, executor -> getCode(key, executor) }
+        .build(loadingCacheFrom<Long, String> { key ->
+            getCode(key)
+        })
 
-    private fun getCode(guildId: Long, executor: Executor): CompletableFuture<String> {
+    private fun getCode(guildId: Long): CompletableFuture<String> {
         val future = CompletableFuture<String>()
-        executor.launch {
+        taskManager.async {
             val code = verificationCodeDao.get(guildId)
             future.complete(code)
         }

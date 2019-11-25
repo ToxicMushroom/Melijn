@@ -1,26 +1,26 @@
 package me.melijn.melijnbot.database.disabled
 
-import com.github.benmanes.caffeine.cache.Caffeine
+import com.google.common.cache.CacheBuilder
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.IMPORTANT_CACHE
 import me.melijn.melijnbot.enums.CommandState
 import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.launch
+import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class DisabledCommandWrapper(val taskManager: TaskManager, private val disabledCommandDao: DisabledCommandDao) {
 
     //guildId | commandId (or ccId)
-    val disabledCommandsCache = Caffeine.newBuilder()
+    val disabledCommandsCache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .executor(taskManager.executorService)
-        .buildAsync<Long, Set<String>>() { key, executor -> getDisabledCommandSet(key, executor) }
+        .build(loadingCacheFrom<Long, Set<String>> { key ->
+            getDisabledCommandSet(key)
+        })
 
-    private fun getDisabledCommandSet(guildId: Long, executor: Executor = taskManager.executorService): CompletableFuture<Set<String>> {
+    private fun getDisabledCommandSet(guildId: Long): CompletableFuture<Set<String>> {
         val future = CompletableFuture<Set<String>>()
-        executor.launch {
+        taskManager.async {
             val id = disabledCommandDao.get(guildId)
             future.complete(id)
         }

@@ -1,4 +1,4 @@
-package me.melijn.melijnbot.commands.supporter
+package me.melijn.melijnbot.commands.utility
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.commands.administration.SetLanguageCommand
@@ -6,6 +6,7 @@ import me.melijn.melijnbot.enums.Language
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
@@ -19,15 +20,16 @@ class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") 
         children = arrayOf(
             SetLanguageCommand.ListArg("command.setlanguage")
         )
-        commandCategory = CommandCategory.SUPPORTER
+        runConditions = arrayOf(RunCondition.SUPPORTER)
+        commandCategory = CommandCategory.UTILITY
     }
 
     override suspend fun execute(context: CommandContext) {
-        when {
-            context.commandParts.size == 2 -> {
+        when (context.commandParts.size) {
+            2 -> {
                 sendCurrentLang(context)
             }
-            context.commandParts.size == 3 -> {
+            3 -> {
                 setLang(context)
             }
             else -> sendSyntax(context)

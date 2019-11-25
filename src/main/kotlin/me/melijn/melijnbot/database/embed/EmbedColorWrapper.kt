@@ -1,25 +1,23 @@
 package me.melijn.melijnbot.database.embed
 
-import com.github.benmanes.caffeine.cache.Caffeine
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.launch
+import com.google.common.cache.CacheBuilder
 import me.melijn.melijnbot.database.FREQUENTLY_USED_CACHE
 import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class EmbedColorWrapper(val taskManager: TaskManager, private val embedColorDao: EmbedColorDao) {
 
-    val embedColorCache = Caffeine.newBuilder()
+    val embedColorCache = CacheBuilder.newBuilder()
         .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
-        .executor(taskManager.executorService)
-        .buildAsync<Long, Int>() { key, executor -> getColor(key, executor) }
+        .build(loadingCacheFrom<Long, Int> { key ->
+            getColor(key)
+        })
 
-    private fun getColor(guildId: Long, executor: Executor = taskManager.executorService): CompletableFuture<Int> {
+    private fun getColor(guildId: Long): CompletableFuture<Int> {
         val future = CompletableFuture<Int>()
-        CoroutineScope(executor.asCoroutineDispatcher()).launch {
+        taskManager.async {
             val int = embedColorDao.get(guildId)
             future.complete(int)
         }

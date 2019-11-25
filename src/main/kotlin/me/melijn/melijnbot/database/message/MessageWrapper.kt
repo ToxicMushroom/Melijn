@@ -1,11 +1,12 @@
 package me.melijn.melijnbot.database.message
 
-import com.github.benmanes.caffeine.cache.Caffeine
+import com.google.common.cache.CacheBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import me.melijn.melijnbot.database.IMPORTANT_CACHE
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import net.dv8tion.jda.api.AccountType
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
@@ -16,12 +17,12 @@ import java.util.concurrent.TimeUnit
 
 class MessageWrapper(val taskManager: TaskManager, private val messageDao: MessageDao) {
 
-    val messageCache = Caffeine.newBuilder()
-        .executor(taskManager.executorService)
+    val messageCache = CacheBuilder.newBuilder()
+
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .buildAsync<Pair<Long, MessageType>, ModularMessage?> { key, _ ->
-            getMessage(key)
-        }
+        .build(loadingCacheFrom<Pair<Long, MessageType>, ModularMessage?> { key ->
+getMessage(key)
+})
 
     private fun getMessage(pair: Pair<Long, MessageType>): CompletableFuture<ModularMessage?> {
         val future = CompletableFuture<ModularMessage?>()

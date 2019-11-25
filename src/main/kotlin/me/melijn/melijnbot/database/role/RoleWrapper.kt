@@ -1,26 +1,24 @@
 package me.melijn.melijnbot.database.role
 
-import com.github.benmanes.caffeine.cache.Caffeine
+import com.google.common.cache.CacheBuilder
 import me.melijn.melijnbot.database.IMPORTANT_CACHE
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.launch
+import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class RoleWrapper(private val taskManager: TaskManager, private val roleDao: RoleDao) {
 
-    val roleCache = Caffeine.newBuilder()
-        .executor(taskManager.executorService)
+    val roleCache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .buildAsync<Pair<Long, RoleType>, Long>() { (first, second), executor ->
-            getRoleId(first, second, executor)
-        }
+        .build(loadingCacheFrom<Pair<Long, RoleType>, Long> { (first, second) ->
+            getRoleId(first, second)
+        })
 
-    private fun getRoleId(guildId: Long, roleType: RoleType, executor: Executor = taskManager.executorService): CompletableFuture<Long> {
+    private fun getRoleId(guildId: Long, roleType: RoleType): CompletableFuture<Long> {
         val future = CompletableFuture<Long>()
-        executor.launch {
+        taskManager.async {
             val roleId = roleDao.get(guildId, roleType)
             future.complete(roleId)
         }

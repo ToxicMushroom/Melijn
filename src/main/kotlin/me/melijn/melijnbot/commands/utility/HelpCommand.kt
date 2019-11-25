@@ -45,7 +45,7 @@ class HelpCommand : AbstractCommand("command.help") {
             val path = "help.arg.${context.rawArg.toLowerCase()}"
             val pathExtra = "help.arg.${context.rawArg.toLowerCase()}.help"
             val translation = context.getTranslation(path)
-            val translationExtra = context.getTranslation(path)
+            val translationExtra = context.getTranslation(pathExtra)
             val hasExtra = translationExtra != pathExtra
             if (path == translation) {
                 sendSyntax(context)

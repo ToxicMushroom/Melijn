@@ -1,34 +1,31 @@
 package me.melijn.melijnbot.database.filter
 
-import com.github.benmanes.caffeine.cache.Caffeine
+import com.google.common.cache.CacheBuilder
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.IMPORTANT_CACHE
 import me.melijn.melijnbot.enums.FilterType
 import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.launch
+import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class FilterWrapper(val taskManager: TaskManager, private val filterDao: FilterDao) {
 
-    val allowedFilterCache = Caffeine.newBuilder()
+    val allowedFilterCache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .executor(taskManager.executorService)
-        .buildAsync<Pair<Long, Long?>, List<String>>() { (first, second), executor ->
-            getFilters(first, second, FilterType.ALLOWED, executor)
-        }
+        .build(loadingCacheFrom<Pair<Long, Long?>, List<String>> { (first, second) ->
+            getFilters(first, second, FilterType.ALLOWED)
+        })
 
-    val deniedFilterCache = Caffeine.newBuilder()
+    val deniedFilterCache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .executor(taskManager.executorService)
-        .buildAsync<Pair<Long, Long?>, List<String>>() { (first, second), executor ->
-            getFilters(first, second, FilterType.DENIED, executor)
-        }
+        .build(loadingCacheFrom<Pair<Long, Long?>, List<String>> { (first, second) ->
+            getFilters(first, second, FilterType.DENIED)
+        })
 
-    private fun getFilters(guildId: Long, channelId: Long?, filterType: FilterType, executor: Executor = taskManager.executorService): CompletableFuture<List<String>> {
+    private fun getFilters(guildId: Long, channelId: Long?, filterType: FilterType): CompletableFuture<List<String>> {
         val future = CompletableFuture<List<String>>()
-        executor.launch {
+        taskManager.async {
             val filters = filterDao.get(guildId, channelId, filterType)
             future.complete(filters)
         }

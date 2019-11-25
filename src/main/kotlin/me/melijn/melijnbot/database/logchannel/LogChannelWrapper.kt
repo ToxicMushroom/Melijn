@@ -1,24 +1,24 @@
 package me.melijn.melijnbot.database.logchannel
 
-import com.github.benmanes.caffeine.cache.Caffeine
+import com.google.common.cache.CacheBuilder
 import me.melijn.melijnbot.database.IMPORTANT_CACHE
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.launch
+import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class LogChannelWrapper(private val taskManager: TaskManager, private val logChannelDao: LogChannelDao) {
 
-    val logChannelCache = Caffeine.newBuilder()
-        .executor(taskManager.executorService)
+    val logChannelCache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .buildAsync<Pair<Long, LogChannelType>, Long>() { key, executor -> getChannelId(key.first, key.second, executor) }
+        .build(loadingCacheFrom<Pair<Long, LogChannelType>, Long> { key ->
+            getChannelId(key.first, key.second)
+        })
 
-    private fun getChannelId(guildId: Long, logChannelType: LogChannelType, executor: Executor = taskManager.executorService): CompletableFuture<Long> {
+    private fun getChannelId(guildId: Long, logChannelType: LogChannelType): CompletableFuture<Long> {
         val future = CompletableFuture<Long>()
-        executor.launch {
+        taskManager.async {
             val logChannel = logChannelDao.get(guildId, logChannelType)
             future.complete(logChannel)
         }

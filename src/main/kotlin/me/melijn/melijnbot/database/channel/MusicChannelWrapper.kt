@@ -1,26 +1,24 @@
 package me.melijn.melijnbot.database.channel
 
-import com.github.benmanes.caffeine.cache.Caffeine
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.launch
+import com.google.common.cache.CacheBuilder
 import me.melijn.melijnbot.database.IMPORTANT_CACHE
 import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class MusicChannelWrapper(val taskManager: TaskManager, val musicChannelDao: MusicChannelDao) {
 
-    val musicChannelCache = Caffeine.newBuilder()
-        .executor(taskManager.executorService)
+    val musicChannelCache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .buildAsync<Long, Long>() { guildId, executor -> getChannelId(guildId, executor) }
+        .build(loadingCacheFrom<Long, Long> { guildId ->
+            getChannelId(guildId)
+        })
 
-    private fun getChannelId(guildId: Long, executor: Executor = taskManager.executorService): CompletableFuture<Long> {
+    private fun getChannelId(guildId: Long): CompletableFuture<Long> {
         val future = CompletableFuture<Long>()
 
-        CoroutineScope(executor.asCoroutineDispatcher()).launch {
+        taskManager.async {
             val channelId = musicChannelDao.get(guildId)
             future.complete(channelId)
         }

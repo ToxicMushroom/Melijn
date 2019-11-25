@@ -1,23 +1,23 @@
 package me.melijn.melijnbot.database.channel
 
-import com.github.benmanes.caffeine.cache.Caffeine
+import com.google.common.cache.CacheBuilder
 import me.melijn.melijnbot.database.NOT_IMPORTANT_CACHE
 import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.launch
+import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class StreamUrlWrapper(val taskManager: TaskManager, private val streamUrlDao: StreamUrlDao) {
 
-    val streamUrlCache = Caffeine.newBuilder()
+    val streamUrlCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .executor(taskManager.executorService)
-        .buildAsync<Long, String>() { key, executor -> getCode(key, executor) }
+        .build(loadingCacheFrom<Long, String> { key ->
+            getCode(key)
+        })
 
-    private fun getCode(guildId: Long, executor: Executor): CompletableFuture<String> {
+    private fun getCode(guildId: Long): CompletableFuture<String> {
         val future = CompletableFuture<String>()
-        executor.launch {
+        taskManager.async {
             val url = streamUrlDao.get(guildId)
             future.complete(url)
         }

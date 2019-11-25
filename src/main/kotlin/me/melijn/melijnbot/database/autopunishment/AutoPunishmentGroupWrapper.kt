@@ -1,27 +1,25 @@
 package me.melijn.melijnbot.database.autopunishment
 
-import com.github.benmanes.caffeine.cache.Caffeine
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.launch
+import com.google.common.cache.CacheBuilder
 import me.melijn.melijnbot.database.NOT_IMPORTANT_CACHE
 import me.melijn.melijnbot.enums.PointsTriggerType
 import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class AutoPunishmentGroupWrapper(val taskManager: TaskManager, private val autoPunishmentGroupDao: AutoPunishmentGroupDao) {
 
-    val autoPunishmentCache = Caffeine.newBuilder()
-        .executor(taskManager.executorService)
+    val autoPunishmentCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .buildAsync<Pair<Long, Long>, Map<PointsTriggerType, Int>> { pair, executor -> getPointsMap(pair, executor) }
+        .build(loadingCacheFrom<Pair<Long, Long>, Map<PointsTriggerType, Int>> { pair ->
+            getPointsMap(pair)
+        })
 
-    private fun getPointsMap(pair: Pair<Long, Long>, executor: Executor): CompletableFuture<Map<PointsTriggerType, Int>> {
+    private fun getPointsMap(pair: Pair<Long, Long>): CompletableFuture<Map<PointsTriggerType, Int>> {
         val future = CompletableFuture<Map<PointsTriggerType, Int>>()
 
-        CoroutineScope(executor.asCoroutineDispatcher()).launch {
+        taskManager.async {
             val pointsMap = autoPunishmentGroupDao.get(pair.first, pair.second)
             val entries = pointsMap
                 .removeSurrounding("[", "]")

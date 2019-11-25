@@ -1,9 +1,10 @@
-package me.melijn.melijnbot.commands.supporter
+package me.melijn.melijnbot.commands.utility
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.utils.getColorFromArgNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
@@ -15,7 +16,8 @@ class SetPrivateEmbedColorCommand : AbstractCommand("command.setprivateembedcolo
         id = 76
         name = "setPrivateEmbedColor"
         aliases = arrayOf("spec")
-        commandCategory = CommandCategory.SUPPORTER
+        runConditions = arrayOf(RunCondition.SUPPORTER)
+        commandCategory = CommandCategory.UTILITY
     }
 
     override suspend fun execute(context: CommandContext) {

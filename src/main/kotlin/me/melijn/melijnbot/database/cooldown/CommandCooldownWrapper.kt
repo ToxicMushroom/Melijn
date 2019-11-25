@@ -1,24 +1,24 @@
 package me.melijn.melijnbot.database.cooldown
 
-import com.github.benmanes.caffeine.cache.Caffeine
+import com.google.common.cache.CacheBuilder
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.IMPORTANT_CACHE
 import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.launch
+import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class CommandCooldownWrapper(val taskManager: TaskManager, private val commandCooldownDao: CommandCooldownDao) {
 
-    val commandCooldownCache = Caffeine.newBuilder()
+    val commandCooldownCache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .executor(taskManager.executorService)
-        .buildAsync<Long, Map<String, Long>>() { key, executor -> getMap(key, executor) }
+        .build(loadingCacheFrom<Long, Map<String, Long>> { key ->
+            getMap(key)
+        })
 
-    private fun getMap(guildId: Long, executor: Executor = taskManager.executorService): CompletableFuture<Map<String, Long>> {
+    private fun getMap(guildId: Long): CompletableFuture<Map<String, Long>> {
         val future = CompletableFuture<Map<String, Long>>()
-        executor.launch {
+        taskManager.async {
             val map = commandCooldownDao.getCooldowns(guildId)
             future.complete(map)
         }

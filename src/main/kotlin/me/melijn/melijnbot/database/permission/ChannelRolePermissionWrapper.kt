@@ -1,23 +1,24 @@
 package me.melijn.melijnbot.database.permission
 
-import com.github.benmanes.caffeine.cache.Caffeine
+import com.google.common.cache.CacheBuilder
 import me.melijn.melijnbot.database.IMPORTANT_CACHE
 import me.melijn.melijnbot.enums.PermState
 import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.launch
+import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class ChannelRolePermissionWrapper(val taskManager: TaskManager, private val channelRolePermissionDao: ChannelRolePermissionDao) {
-    val channelRolePermissionCache = Caffeine.newBuilder()
-        .executor(taskManager.executorService)
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .buildAsync<Pair<Long, Long>, Map<String, PermState>>() { pair, executor -> getPermissionList(pair.first, pair.second, executor) }
 
-    private fun getPermissionList(channelId: Long, roleId: Long, executor: Executor = taskManager.executorService): CompletableFuture<Map<String, PermState>> {
+    val channelRolePermissionCache = CacheBuilder.newBuilder()
+        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
+        .build(loadingCacheFrom<Pair<Long, Long>, Map<String, PermState>> { pair ->
+            getPermissionList(pair.first, pair.second)
+        })
+
+    private fun getPermissionList(channelId: Long, roleId: Long): CompletableFuture<Map<String, PermState>> {
         val languageFuture = CompletableFuture<Map<String, PermState>>()
-        executor.launch {
+        taskManager.async {
             val map = channelRolePermissionDao.getMap(channelId, roleId)
             languageFuture.complete(map)
         }

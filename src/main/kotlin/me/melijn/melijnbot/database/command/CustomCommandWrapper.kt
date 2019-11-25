@@ -1,25 +1,28 @@
 package me.melijn.melijnbot.database.command
 
-import com.github.benmanes.caffeine.cache.Caffeine
+import com.google.common.cache.CacheBuilder
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.IMPORTANT_CACHE
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.utils.launch
+import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
+
+
 
 class CustomCommandWrapper(private val taskManager: TaskManager, private val customCommandDao: CustomCommandDao) {
 
-    val customCommandCache = Caffeine.newBuilder()
-        .executor(taskManager.executorService)
+    val customCommandCache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.HOURS)
-        .buildAsync<Long, List<CustomCommand>> { key: Long, executor: Executor -> getCustomCommands(key, executor)}
+        .build(loadingCacheFrom<Long, List<CustomCommand>> { key ->
+            getCustomCommands(key)
+        })
 
-    private fun getCustomCommands(guildId: Long, executor: Executor): CompletableFuture<List<CustomCommand>> {
+    private fun getCustomCommands(guildId: Long): CompletableFuture<List<CustomCommand>> {
         val future = CompletableFuture<List<CustomCommand>>()
 
-        executor.launch {
+        taskManager.executorService.launch {
             val customCommands = customCommandDao.getForGuild(guildId)
             future.complete(customCommands)
         }

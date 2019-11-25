@@ -1,22 +1,23 @@
 package me.melijn.melijnbot.database.verification
 
-import com.github.benmanes.caffeine.cache.Caffeine
+import com.google.common.cache.CacheBuilder
 import me.melijn.melijnbot.database.NOT_IMPORTANT_CACHE
 import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.launch
+import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class VerificationUserFlowRateWrapper(val taskManager: TaskManager, private val verificationUserFlowRateDao: VerificationUserFlowRateDao) {
-    val verificationUserFlowRateCache = Caffeine.newBuilder()
-        .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .executor(taskManager.executorService)
-        .buildAsync<Long, Long>() { key, executor -> getUserFlowRate(key, executor) }
 
-    private fun getUserFlowRate(guildId: Long, executor: Executor): CompletableFuture<Long> {
+    val verificationUserFlowRateCache = CacheBuilder.newBuilder()
+        .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
+        .build(loadingCacheFrom<Long, Long> { key ->
+            getUserFlowRate(key)
+        })
+
+    private fun getUserFlowRate(guildId: Long): CompletableFuture<Long> {
         val future = CompletableFuture<Long>()
-        executor.launch {
+        taskManager.async {
             val flowRate = verificationUserFlowRateDao.get(guildId)
             future.complete(flowRate)
         }

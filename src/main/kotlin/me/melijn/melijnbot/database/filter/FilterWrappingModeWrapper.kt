@@ -1,24 +1,24 @@
 package me.melijn.melijnbot.database.filter
 
-import com.github.benmanes.caffeine.cache.Caffeine
+import com.google.common.cache.CacheBuilder
 import me.melijn.melijnbot.database.FREQUENTLY_USED_CACHE
 import me.melijn.melijnbot.enums.FilterMode
 import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.launch
+import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class FilterWrappingModeWrapper(val taskManager: TaskManager, private val filterWrappingModeDao: FilterWrappingModeDao) {
 
-    val filterWrappingModeCache = Caffeine.newBuilder()
+    val filterWrappingModeCache = CacheBuilder.newBuilder()
         .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
-        .executor(taskManager.executorService)
-        .buildAsync<Pair<Long, Long?>, FilterMode> { (first, second), executor -> getMode(first, second, executor) }
+        .build(loadingCacheFrom<Pair<Long, Long?>, FilterMode> { (first, second) ->
+            getMode(first, second)
+        })
 
-    private fun getMode(guildId: Long, channelId: Long?, executor: Executor): CompletableFuture<FilterMode> {
+    private fun getMode(guildId: Long, channelId: Long?): CompletableFuture<FilterMode> {
         val future = CompletableFuture<FilterMode>()
-        executor.launch {
+        taskManager.async {
             val mode = filterWrappingModeDao.get(guildId, channelId)
             future.complete(mode)
         }

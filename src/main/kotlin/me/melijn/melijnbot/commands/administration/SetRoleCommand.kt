@@ -5,9 +5,10 @@ import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_ROLETYPE
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
 import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.enumValueOrNull
+import me.melijn.melijnbot.objects.utils.getEnumFromArgNMessage
 import me.melijn.melijnbot.objects.utils.getRoleByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
@@ -28,11 +29,7 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
         }
 
 
-        val roleType: RoleType? = enumValueOrNull(context.args[0])
-        if (roleType == null) {
-            sendSyntax(context)
-            return
-        }
+        val roleType: RoleType = getEnumFromArgNMessage(context, 0, MESSAGE_UNKNOWN_ROLETYPE) ?: return
 
         handleEnum(context, roleType)
     }

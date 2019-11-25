@@ -1,28 +1,28 @@
 package me.melijn.melijnbot.database.prefix
 
-import com.github.benmanes.caffeine.cache.Caffeine
+import com.google.common.cache.CacheBuilder
 import me.melijn.melijnbot.database.FREQUENTLY_USED_CACHE
 import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.launch
+import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class GuildPrefixWrapper(private val taskManager: TaskManager, private val guildPrefixDao: GuildPrefixDao) {
 
-    val prefixCache = Caffeine.newBuilder()
-            .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
-            .executor(taskManager.executorService)
-            .buildAsync<Long, List<String>>() { key, executor -> getPrefixes(key, executor) }
+    val prefixCache = CacheBuilder.newBuilder()
+        .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
+        .build(loadingCacheFrom<Long, List<String>> { key ->
+            getPrefixes(key)
+        })
 
-    private fun getPrefixes(guildId: Long, executor: Executor = taskManager.executorService): CompletableFuture<List<String>> {
+    private fun getPrefixes(guildId: Long): CompletableFuture<List<String>> {
         val prefixes = CompletableFuture<List<String>>()
-        executor.launch {
+        taskManager.async {
             val prefixesString = guildPrefixDao.get(guildId)
-                val list: List<String> =
-                        if (prefixesString == "") emptyList()
-                        else prefixesString.split("%SPLIT%")
-                prefixes.complete(list)
+            val list: List<String> =
+                if (prefixesString == "") emptyList()
+                else prefixesString.split("%SPLIT%")
+            prefixes.complete(list)
 
         }
         return prefixes

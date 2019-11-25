@@ -1,24 +1,24 @@
 package me.melijn.melijnbot.database.verification
 
-import com.github.benmanes.caffeine.cache.Caffeine
+import com.google.common.cache.CacheBuilder
 import me.melijn.melijnbot.database.NOT_IMPORTANT_CACHE
 import me.melijn.melijnbot.enums.VerificationType
 import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.launch
+import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
 class VerificationTypeWrapper(val taskManager: TaskManager, private val verificationTypeDao: VerificationTypeDao) {
 
-    val verificationTypeCache = Caffeine.newBuilder()
+    val verificationTypeCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .executor(taskManager.executorService)
-        .buildAsync<Long, VerificationType>() { key, executor -> getType(key, executor) }
+        .build(loadingCacheFrom<Long, VerificationType> { key ->
+            getType(key)
+        })
 
-    private fun getType(guildId: Long, executor: Executor): CompletableFuture<VerificationType> {
+    private fun getType(guildId: Long): CompletableFuture<VerificationType> {
         val future = CompletableFuture<VerificationType>()
-        executor.launch {
+        taskManager.async {
             val type = verificationTypeDao.get(guildId)
             future.complete(type)
         }

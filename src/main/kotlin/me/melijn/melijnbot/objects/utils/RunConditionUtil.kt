@@ -29,6 +29,18 @@ object RunConditionUtil {
             RunCondition.DEV_ONLY -> checkDevOnly(container, event, language)
             RunCondition.CHANNEL_NSFW -> checkChannelNSFW(container, event, language)
             RunCondition.VOTED -> checkVoted(container, event, language)
+            RunCondition.SUPPORTER -> checkSupporter(container, event, language)
+        }
+    }
+
+    private fun checkSupporter(container: Container, event: MessageReceivedEvent, language: String): Boolean {
+        val supporters = container.daoManager.supporterWrapper.userSupporterIds
+        return if (!supporters.contains(event.author.idLong)) {
+            val msg = i18n.getTranslation(language, "message.runcondition.failed.supporter")
+            event.channel.sendMessage(msg).queue()
+            false
+        } else {
+            true
         }
     }
 

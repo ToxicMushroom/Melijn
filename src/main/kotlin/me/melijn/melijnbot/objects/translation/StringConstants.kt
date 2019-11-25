@@ -8,6 +8,7 @@ const val MESSAGE_UNKNOWN_LANGUAGE = "message.unknown.language"
 const val MESSAGE_UNKNOWN_CHANNELCOMMANDSTATE = "message.unknown.channelcommandstate"
 const val MESSAGE_UNKNOWN_COMMANDSTATE = "message.unknown.commandstate"
 const val MESSAGE_UNKNOWN_CHANNELTYPE = "message.unknown.channeltype"
+const val MESSAGE_UNKNOWN_ROLETYPE = "message.unknown.roletype"
 
 const val PLACEHOLDER_CHANNEL = "%channel%"
 const val PLACEHOLDER_USER = "%user%"
@@ -30,4 +31,6 @@ const val DIVINED_DISCORD_BOTS_COM = "https://divinediscordbots.com"
 const val DISCORD_BOTS_GG = "https://discord.bots.gg"
 const val BOTS_FOR_DISCORD_COM = "https://botsfordiscord.com"
 const val DISCORD_BOATS = "https://discord.boats"
+
+class StringConstants
 
