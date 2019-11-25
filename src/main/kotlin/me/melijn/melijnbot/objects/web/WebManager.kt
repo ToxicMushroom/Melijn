@@ -17,11 +17,11 @@ import me.duncte123.weebJava.types.TokenType
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.translation.*
-import me.melijn.melijnbot.objects.utils.sendInGuild
 import me.melijn.melijnbot.objects.utils.toLCC
 import net.dv8tion.jda.api.utils.data.DataObject
 import okhttp3.*
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.slf4j.LoggerFactory
 import ru.gildor.coroutines.okhttp.await
 import java.io.IOException
 import java.util.regex.Matcher
@@ -37,6 +37,8 @@ private val spotifyAlbumUrl: Pattern = Pattern.compile("https://open.spotify.com
 private val spotifyAlbumUri: Pattern = Pattern.compile("spotify:album:(\\S+)")
 
 class WebManager(val taskManager: TaskManager, val settings: Settings) {
+
+    val logger = LoggerFactory.getLogger(WebManager::class.java.name)
 
     private val httpClient = OkHttpClient()
         .newBuilder()
@@ -164,7 +166,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
 
     private val defaultCallbackHandler = object : Callback {
         override fun onFailure(call: Call, e: IOException) {
-            e.sendInGuild(extra = call.request().url.toString())
+            logger.error(e.message ?: return)
         }
 
         override fun onResponse(call: Call, response: Response) {
