@@ -3,6 +3,7 @@ package me.melijn.melijnbot.objects.events.eventutil
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyMusicChannel
+import me.melijn.melijnbot.objects.utils.listeningMembers
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.sharding.ShardManager
@@ -37,9 +38,17 @@ object VoiceUtil {
         }
     }
 
-    fun getConnectedChannels(shardManager: ShardManager): Long {
+    fun getConnectedChannelsAmount(shardManager: ShardManager, andHasListeners: Boolean = false): Long {
         return shardManager.shards.stream().mapToLong { shard ->
-            shard.voiceChannels.stream().filter { vc -> vc.members.contains(vc.guild.selfMember) }.count()
+            shard.voiceChannels.stream().filter { vc ->
+                val contains = vc.members.contains(vc.guild.selfMember)
+                val lm = listeningMembers(vc)
+                if (andHasListeners) {
+                    contains && lm > 0
+                } else {
+                    contains
+                }
+            }.count()
         }?.sum() ?: 0
     }
 }

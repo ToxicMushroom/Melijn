@@ -32,7 +32,8 @@ class StatsCommand : AbstractCommand("command.stats") {
         val totalJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.max shr 20
         val usedJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.used shr 20
         val shardManager = context.shardManager
-        val voiceChannels = VoiceUtil.getConnectedChannels(shardManager)
+        val voiceChannels = VoiceUtil.getConnectedChannelsAmount(shardManager)
+        val voiceChannelsNotEmpty = VoiceUtil.getConnectedChannelsAmount(shardManager, true)
 
         val threadPoolExecutor = context.taskManager.executorService as ThreadPoolExecutor
         val scheduledExecutorService = context.taskManager.scheduledExecutorService as ThreadPoolExecutor
@@ -49,6 +50,7 @@ class StatsCommand : AbstractCommand("command.stats") {
             shardManager.shardsTotal,
             shardManager.userCache.size(),
             shardManager.guildCache.size(),
+            voiceChannelsNotEmpty,
             voiceChannels,
             threadPoolExecutor.activeCount + scheduledExecutorService.activeCount + scheduledExecutorService.queue.size,
             getDurationString(ManagementFactory.getRuntimeMXBean().uptime)
@@ -86,6 +88,7 @@ class StatsCommand : AbstractCommand("command.stats") {
         shardCount: Int,
         userCount: Long,
         guildCount: Long,
+        voiceChannelsNotEmpty: Long,
         voiceChannels: Long,
         threadCount: Int,
         uptime: String
@@ -93,7 +96,7 @@ class StatsCommand : AbstractCommand("command.stats") {
         .replace("%shardCount%", shardCount.toString())
         .replace("%userCount%", userCount.toString())
         .replace("%guildCount%", guildCount.toString())
-        .replace("%cVCCount%", voiceChannels.toString())
+        .replace("%cVCCount%", "$voiceChannelsNotEmpty/$voiceChannels")
         .replace("%botThreadCount%", threadCount.toString())
         .replace("%botUptime%", uptime)
 
