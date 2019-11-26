@@ -73,8 +73,22 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
         embedBuilder.setThumbnail(event.author.effectiveAvatarUrl)
 
         embedBuilder.setTitle(title)
-        embedBuilder.setDescription(description)
 
-        sendEmbed(container.daoManager.embedDisabledWrapper, logChannel, embedBuilder.build())
+        if (description.length > 2048) {
+            val parts = StringUtils.splitMessageWithCodeBlocks(description, lang = "LDIF").toMutableList()
+            embedBuilder.setDescription(parts[0])
+            sendEmbed(container.daoManager.embedDisabledWrapper, logChannel, embedBuilder.build())
+            embedBuilder.setThumbnail(null)
+            parts.removeAt(0)
+
+            for (part in parts) {
+                embedBuilder.setDescription(part)
+                sendEmbed(container.daoManager.embedDisabledWrapper, logChannel, embedBuilder.build())
+            }
+        } else {
+            embedBuilder.setDescription(description)
+
+            sendEmbed(container.daoManager.embedDisabledWrapper, logChannel, embedBuilder.build())
+        }
     }
 }

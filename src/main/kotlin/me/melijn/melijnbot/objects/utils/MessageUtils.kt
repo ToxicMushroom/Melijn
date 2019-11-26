@@ -168,7 +168,8 @@ fun sendMsgCodeBlocks(
 }
 
 fun escapeForLog(string: String): String {
-    return string.replace("`", "´")
+    return string
+        .replace("`", "´")
         .replace("\n", " ")
 }
 

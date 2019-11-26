@@ -9,8 +9,10 @@ import me.melijn.melijnbot.enums.ModularMessageProperty
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_TYPE
-import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.getColorFromArgNMessage
+import me.melijn.melijnbot.objects.utils.retrieveUserByArgsN
+import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.toHex
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.utils.data.DataObject
 
@@ -77,12 +79,11 @@ object MessageCommandUtil {
     }
 
     private suspend fun showMessage(context: CommandContext, property: ModularMessageProperty, message: ModularMessage?, type: MessageType) {
-        val language = context.getLanguage()
         var path = ""
         val string: String? = when (property) {
             ModularMessageProperty.CONTENT -> {
                 path = "message.content.show"
-                message?.messageContent
+                message?.messageContent?.let { "```${it.replace("`", "´")}```" }
             }
             ModularMessageProperty.EMBED_DESCRIPTION -> {
                 path = "message.embed.description.show"
@@ -131,10 +132,10 @@ object MessageCommandUtil {
         }
 
         val msg = if (string == null) {
-            i18n.getTranslation(language, "$path.unset")
+            context.getTranslation("$path.unset")
         } else {
-            i18n.getTranslation(language, "$path.set")
-                .replace("%${property.toLCC()}%", "```${string.replace("`", "´")}```")
+            context.getTranslation("$path.set")
+                .replace("%${property.variableName}%", string)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         sendMsg(context, msg)
@@ -158,10 +159,9 @@ object MessageCommandUtil {
     }
 
     private suspend fun clearEmbedAndMessage(context: CommandContext, type: MessageType, modularMessage: ModularMessage) {
-        val language = context.getLanguage()
         modularMessage.embed = null
 
-        val msg = i18n.getTranslation(language, "message.embed.clear")
+        val msg = context.getTranslation("message.embed.clear")
             .replace(PLACEHOLDER_TYPE, type.text)
 
         sendMsg(context, msg)
@@ -180,14 +180,12 @@ object MessageCommandUtil {
     }
 
     private suspend fun listAttachmentsAndMessage(context: CommandContext, message: ModularMessage?, type: MessageType) {
-        val language = context.getLanguage()
-
         val msg = if (message == null || message.attachments.isEmpty()) {
-            i18n.getTranslation(language, "message.attachments.list.empty")
+            context.getTranslation("message.attachments.list.empty")
                 .replace(PLACEHOLDER_TYPE, type.text)
 
         } else {
-            val title = i18n.getTranslation(language, "message.attachments.list.title")
+            val title = context.getTranslation("message.attachments.list.title")
                 .replace(PLACEHOLDER_TYPE, type.text)
             var content = "\n```INI"
             for ((index, attachment) in message.attachments.entries.withIndex()) {
@@ -218,13 +216,12 @@ object MessageCommandUtil {
 
 
     private suspend fun addAttachmentAndMessage(context: CommandContext, type: MessageType, modularMessage: ModularMessage) {
-        val language = context.getLanguage()
         val newMap = modularMessage.attachments.toMutableMap()
         newMap[context.args[0]] = context.args[1]
 
         modularMessage.attachments = newMap.toMap()
 
-        val msg = i18n.getTranslation(language, "message.attachments.add")
+        val msg = context.getTranslation("message.attachments.add")
             .replace(PLACEHOLDER_TYPE, type.text)
             .replace("%attachment%", context.args[0])
             .replace("%file%", context.args[1])
@@ -250,7 +247,6 @@ object MessageCommandUtil {
     }
 
     private suspend fun removeAttachmentAndMessage(context: CommandContext, type: MessageType, modularMessage: ModularMessage) {
-        val language = context.getLanguage()
         val attachments = modularMessage.attachments.toMutableMap()
         val file = if (attachments.containsKey(context.args[0])) {
             attachments[context.args[0]]
@@ -263,9 +259,9 @@ object MessageCommandUtil {
 
         val msg =
             if (file == null) {
-                i18n.getTranslation(language, "message.attachments.remove.notanattachment")
+                context.getTranslation("message.attachments.remove.notanattachment")
             } else {
-                i18n.getTranslation(language, "message.attachments.remove.success")
+                context.getTranslation("message.attachments.remove.success")
                     .replace("%file%", file)
             }.replace(PLACEHOLDER_ARG, context.args[0])
                 .replace(PLACEHOLDER_TYPE, type.text)
@@ -274,15 +270,14 @@ object MessageCommandUtil {
     }
 
     private suspend fun setMessageContentAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
-        val language = context.getLanguage()
         val arg = context.rawArg
 
         val msg = if (arg.equals("null", true)) {
             message.messageContent = null
-            i18n.getTranslation(language, "message.content.unset")
+            context.getTranslation("message.content.unset")
         } else {
             message.messageContent = arg
-            i18n.getTranslation(language, "message.content.set")
+            context.getTranslation("message.content.set")
                 .replace(PLACEHOLDER_ARG, "```${arg.replace("`", "´")}```")
         }.replace(PLACEHOLDER_TYPE, type.text)
 
@@ -290,16 +285,15 @@ object MessageCommandUtil {
     }
 
     private suspend fun setEmbedDescriptionAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
-        val language = context.getLanguage()
         val arg = context.rawArg
         val eb = EmbedBuilder(message.embed)
 
         val msg = if (arg.equals("null", true)) {
             eb.setDescription(null)
-            i18n.getTranslation(language, "message.embed.description.unset")
+            context.getTranslation("message.embed.description.unset")
         } else {
             eb.setDescription(arg)
-            i18n.getTranslation(language, "message.embed.description.set")
+            context.getTranslation("message.embed.description.set")
                 .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
@@ -309,16 +303,15 @@ object MessageCommandUtil {
 
     private suspend fun setEmbedColorAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
         val color = getColorFromArgNMessage(context, 0) ?: return
-        val language = context.getLanguage()
         val arg = context.rawArg
         val eb = EmbedBuilder(message.embed)
 
         val msg = if (arg.equals("null", true)) {
             eb.setColor(null)
-            i18n.getTranslation(language, "message.embed.color.unset")
+            context.getTranslation("message.embed.color.unset")
         } else {
             eb.setColor(color)
-            i18n.getTranslation(language, "message.embed.color.set")
+            context.getTranslation("message.embed.color.set")
                 .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
@@ -327,16 +320,15 @@ object MessageCommandUtil {
     }
 
     private suspend fun setEmbedTitleAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
-        val language = context.getLanguage()
         val arg = context.rawArg
         val eb = EmbedBuilder(message.embed)
 
         val msg = if (arg.equals("null", true)) {
             eb.setTitle(null)
-            i18n.getTranslation(language, "message.embed.title.unset")
+            context.getTranslation("message.embed.title.unset")
         } else {
             eb.setTitle(arg)
-            i18n.getTranslation(language, "message.embed.title.set")
+            context.getTranslation("message.embed.title.set")
                 .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
@@ -345,17 +337,16 @@ object MessageCommandUtil {
     }
 
     private suspend fun setEmbedUrlAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
-        val language = context.getLanguage()
         val arg = context.rawArg
         val title = message.embed?.title
         val eb = EmbedBuilder(message.embed)
 
         val msg = if (arg.equals("null", true)) {
             eb.setTitle(title, null)
-            i18n.getTranslation(language, "message.embed.titleurl.unset")
+            context.getTranslation("message.embed.titleurl.unset")
         } else {
             eb.setTitle(title, arg)
-            i18n.getTranslation(language, "message.embed.titleurl.set")
+            context.getTranslation("message.embed.titleurl.set")
                 .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
@@ -364,16 +355,15 @@ object MessageCommandUtil {
     }
 
     private suspend fun setEmbedAuthorAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
-        val language = context.getLanguage()
         val arg = context.rawArg
         val eb = EmbedBuilder(message.embed)
 
         val msg = if (arg.equals("null", true)) {
             eb.setAuthor(null)
-            i18n.getTranslation(language, "message.embed.authorname.unset")
+            context.getTranslation("message.embed.authorname.unset")
         } else {
             eb.setTitle(arg)
-            i18n.getTranslation(language, "message.embed.authorname.set")
+            context.getTranslation("message.embed.authorname.set")
                 .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
@@ -416,7 +406,6 @@ object MessageCommandUtil {
     }
 
     suspend fun setEmbedAuthorUrlAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
-        val language = context.getLanguage()
         val arg = context.rawArg
         val authorName = message.embed?.author?.name
         val iconUrl = message.embed?.author?.iconUrl
@@ -424,10 +413,10 @@ object MessageCommandUtil {
 
         val msg = if (arg.equals("null", true)) {
             eb.setAuthor(authorName, null, iconUrl)
-            i18n.getTranslation(language, "message.embed.authorurl.unset")
+            context.getTranslation("message.embed.authorurl.unset")
         } else {
             eb.setAuthor(authorName, arg, iconUrl)
-            i18n.getTranslation(language, "message.embed.authorurl.set")
+            context.getTranslation("message.embed.authorurl.set")
                 .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
@@ -500,17 +489,16 @@ object MessageCommandUtil {
     }
 
     private suspend fun setEmbedFooterAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
-        val language = context.getLanguage()
         val arg = context.rawArg
         val footerIconUrl = message.embed?.footer?.iconUrl
         val eb = EmbedBuilder(message.embed)
 
         val msg = if (arg.equals("null", true)) {
             eb.setFooter(null, footerIconUrl)
-            i18n.getTranslation(language, "message.embed.image.unset")
+            context.getTranslation("message.embed.image.unset")
         } else {
             eb.setFooter(arg, footerIconUrl)
-            i18n.getTranslation(language, "message.embed.image.set")
+            context.getTranslation("message.embed.image.set")
                 .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
@@ -571,13 +559,12 @@ object MessageCommandUtil {
     }
 
     private suspend fun addEmbedFieldAndMessage(title: String, value: String, inline: Boolean, context: CommandContext, message: ModularMessage, type: MessageType) {
-        val language = context.getLanguage()
         val embedBuilder = EmbedBuilder(message.embed)
         embedBuilder.addField(title, value, inline)
         message.embed = embedBuilder.build()
 
-        val inlineString = i18n.getTranslation(language, if (inline) "yes" else "no")
-        val msg = i18n.getTranslation(language, "message.embed.field.add")
+        val inlineString = context.getTranslation(if (inline) "yes" else "no")
+        val msg = context.getTranslation("message.embed.field.add")
             .replace("%title%", title)
             .replace("%value%", value)
             .replace("%inline%", inlineString)
@@ -630,7 +617,6 @@ object MessageCommandUtil {
     }
 
     private suspend fun setEmbedFieldPartAndMessage(index: Int, partName: String, value: Any, context: CommandContext, modularMessage: ModularMessage, type: MessageType) {
-        val language = context.getLanguage()
         val json = DataObject.fromJson(modularMessage.toJSON())
         val embedJSON = json.getObject("embed")
         val fieldsJSON = embedJSON.getArray("fields")
@@ -645,10 +631,10 @@ object MessageCommandUtil {
         modularMessage.attachments = modularMessage1.attachments
 
         val partValue: String = when (value) {
-            is Boolean -> i18n.getTranslation(language, if (value) "yes" else "no")
+            is Boolean -> context.getTranslation(if (value) "yes" else "no")
             else -> value.toString()
         }
-        val msg = i18n.getTranslation(language, "message.embed.field$partName.set")
+        val msg = context.getTranslation("message.embed.field$partName.set")
             .replace("%index%", index.toString())
             .replace("%$partName%", partValue)
             .replace(PLACEHOLDER_TYPE, type.text)
@@ -677,7 +663,6 @@ object MessageCommandUtil {
     }
 
     private suspend fun removeEmbedFieldAndMessage(index: Int, context: CommandContext, type: MessageType, modularMessage: ModularMessage) {
-        val language = context.getLanguage()
         var modularMessage1 = modularMessage
 
         val json = DataObject.fromJson(modularMessage1.toJSON())
@@ -691,7 +676,7 @@ object MessageCommandUtil {
         modularMessage.messageContent = modularMessage1.messageContent
         modularMessage.attachments = modularMessage1.attachments
 
-        val msg = i18n.getTranslation(language, "message.embed.field.removed")
+        val msg = context.getTranslation("message.embed.field.removed")
             .replace("%index%", index.toString())
             .replace(PLACEHOLDER_TYPE, type.text)
 
@@ -714,13 +699,12 @@ object MessageCommandUtil {
 
 
     private suspend fun showEmbedFieldsAndMessage(context: CommandContext, type: MessageType, modularMessage: ModularMessage) {
-        val language = context.getLanguage()
         val fields = modularMessage.embed?.fields
 
         val msg = if (fields == null || fields.isEmpty()) {
-            i18n.getTranslation(language, "message.embed.field.list.empty")
+            context.getTranslation("message.embed.field.list.empty")
         } else {
-            val title = i18n.getTranslation(language, "message.embed.field.list.title")
+            val title = context.getTranslation("message.embed.field.list.title")
             var desc = "```INI"
             for ((index, field) in fields.withIndex()) {
                 desc += "\n$index - [${field.name}] - [${field.value}] - ${if (field.isInline) "true" else "\nfalse"}"

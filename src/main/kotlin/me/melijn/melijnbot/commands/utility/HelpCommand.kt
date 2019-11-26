@@ -43,7 +43,7 @@ class HelpCommand : AbstractCommand("command.help") {
             }
 
             val path = "help.arg.${context.rawArg.toLowerCase()}"
-            val pathExtra = "help.arg.${context.rawArg.toLowerCase()}.help"
+            val pathExtra = "help.arg.${context.rawArg.toLowerCase()}.examples"
             val translation = context.getTranslation(path)
             val translationExtra = context.getTranslation(pathExtra)
             val hasExtra = translationExtra != pathExtra
@@ -68,7 +68,8 @@ class HelpCommand : AbstractCommand("command.help") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                val inStream = Thread.currentThread().contextClassLoader.getResourceAsStream("strings_en.properties") ?: return
+                val inStream = Thread.currentThread().contextClassLoader.getResourceAsStream("strings_en.properties")
+                    ?: return
                 val ir = InputStreamReader(inStream)
                 val list = mutableListOf<String>()
                 val pattern = Pattern.compile(".*%help\\.arg\\.(([a-zA-Z]+|\\.){1,5})%.*")
