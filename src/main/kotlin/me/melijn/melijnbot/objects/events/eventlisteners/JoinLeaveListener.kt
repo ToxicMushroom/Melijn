@@ -23,11 +23,12 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
 
     private fun onGuildMemberJoin(event: GuildMemberJoinEvent) = CoroutineScope(Dispatchers.Default).launch {
         val daoManager = container.daoManager
+        val member = event.member
         if (guildHasNoVerification(event)) {
-            JoinLeaveUtil.postWelcomeMessage(daoManager, event.member, ChannelType.JOIN, MessageType.JOIN)
-            JoinLeaveUtil.forceRole(daoManager, event)
+            JoinLeaveUtil.postWelcomeMessage(daoManager, member, ChannelType.JOIN, MessageType.JOIN)
+            JoinLeaveUtil.forceRole(daoManager, member)
         } else {
-            VerificationUtils.addUnverified(event.member, daoManager)
+            VerificationUtils.addUnverified(member, daoManager)
         }
     }
 

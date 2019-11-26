@@ -15,7 +15,6 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.EmbedType
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
 
@@ -69,9 +68,8 @@ object JoinLeaveUtil {
 
     }
 
-    suspend fun forceRole(daoManager: DaoManager, event: GuildMemberJoinEvent) {
-        val member = event.member
-        val guild = event.guild
+    suspend fun forceRole(daoManager: DaoManager, member: Member) {
+        val guild = member.guild
         if (!guild.selfMember.canInteract(member)) return
         val wrapper = daoManager.forceRoleWrapper
 

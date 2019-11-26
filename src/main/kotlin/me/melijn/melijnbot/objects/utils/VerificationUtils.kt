@@ -2,7 +2,10 @@ package me.melijn.melijnbot.objects.utils
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.DaoManager
+import me.melijn.melijnbot.enums.ChannelType
+import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.enums.RoleType
+import me.melijn.melijnbot.objects.events.eventutil.JoinLeaveUtil
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyRoleByType
@@ -55,6 +58,8 @@ object VerificationUtils {
             .queue()
 
         LogUtils.sendVerifiedUserLog(daoManager, author, member)
+        JoinLeaveUtil.postWelcomeMessage(daoManager, member, ChannelType.JOIN, MessageType.JOIN)
+        JoinLeaveUtil.forceRole(daoManager, member)
     }
 
     suspend fun failedVerification(dao: DaoManager, member: Member) {
