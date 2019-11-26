@@ -15,11 +15,11 @@ class SpotifyService(val webManager: WebManager) : Service("spotify") {
 
     override fun start() {
         logger.info("Started MuteService")
-        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(spotifyService, 1_100, 1_000, TimeUnit.MILLISECONDS)
+        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(spotifyService, 1_800_000, 1_800_000, TimeUnit.MILLISECONDS)
     }
 
     override fun stop() {
         logger.info("Stopping SpotifyService")
-        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(spotifyService, 1_100, 1_000, TimeUnit.MILLISECONDS)
+        scheduledFuture?.cancel(false)
     }
 }

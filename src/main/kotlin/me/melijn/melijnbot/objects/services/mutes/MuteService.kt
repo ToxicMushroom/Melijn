@@ -97,6 +97,7 @@ class MuteService(
     }
 
     override fun stop() {
+        logger.info("Stopping MuteService")
         scheduledFuture?.cancel(false)
     }
 }

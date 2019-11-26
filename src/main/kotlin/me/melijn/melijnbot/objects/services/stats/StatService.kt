@@ -11,7 +11,7 @@ class StatService(val shardManager: ShardManager, val webManager: WebManager) : 
 
     private var scheduledFuture: ScheduledFuture<*>? = null
 
-    private val banService = Runnable {
+    private val statService = Runnable {
         runBlocking {
             val shards = shardManager.shardCache.size()
             val serversArray = shardManager.shardCache.map { shard -> shard.userCache.size() }
@@ -30,11 +30,12 @@ class StatService(val shardManager: ShardManager, val webManager: WebManager) : 
     }
 
     override fun start() {
-        logger.info("Started BanService")
-        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(banService, 10, 10, TimeUnit.MINUTES)
+        logger.info("Started StateService")
+        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(statService, 10, 10, TimeUnit.MINUTES)
     }
 
     override fun stop() {
+        logger.info("Stopping StateService")
         scheduledFuture?.cancel(false)
     }
 }

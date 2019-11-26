@@ -95,6 +95,7 @@ class BanService(
     }
 
     override fun stop() {
+        logger.info("Stopping BanService")
         scheduledFuture?.cancel(false)
     }
 }
