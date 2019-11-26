@@ -3,6 +3,7 @@ package me.melijn.melijnbot.objects.services
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.services.bans.BanService
 import me.melijn.melijnbot.objects.services.mutes.MuteService
+import me.melijn.melijnbot.objects.services.spotify.SpotifyService
 import me.melijn.melijnbot.objects.services.stats.StatService
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.web.WebManager
@@ -19,6 +20,7 @@ class ServiceManager(val taskManager: TaskManager, val daoManager: DaoManager, v
         services.add(BanService(shardManager, daoManager.banWrapper, daoManager.logChannelWrapper, daoManager.embedDisabledWrapper, daoManager))
         services.add(MuteService(shardManager, daoManager.muteWrapper, daoManager.logChannelWrapper, daoManager.embedDisabledWrapper, daoManager))
         services.add(StatService(shardManager, webManager))
+        services.add(SpotifyService(webManager))
     }
 
     fun startServices() {

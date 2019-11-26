@@ -52,12 +52,11 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         .build()
 
     init {
-
         updateSpotifyCredentials()
     }
 
     //TODO ("Add service that calls this function each 1_800_000 millis")
-    private fun updateSpotifyCredentials() {
+    fun updateSpotifyCredentials() {
         spotifyApi = SpotifyApi.Builder()
             .setClientId(settings.spotify.clientId)
             .setClientSecret(settings.spotify.password)

@@ -40,7 +40,7 @@ class RemoveCommand : AbstractCommand("command.remove") {
     }
 
     private suspend fun getIntegersFromArgsNMessage(context: CommandContext, start: Int, end: Int): IntArray? {
-        val args = context.rawArg.replace(" ", "").split(",")
+        val args = context.rawArg.remove(" ").split(",")
         val ints = mutableListOf<Int>()
         try {
             for (arg in args) {

@@ -29,7 +29,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
 
         init {
             name = "list"
-            aliases = arrayOf("ls")
+            aliases = arrayOf("ls", "view", "info")
         }
 
         override suspend fun execute(context: CommandContext) {

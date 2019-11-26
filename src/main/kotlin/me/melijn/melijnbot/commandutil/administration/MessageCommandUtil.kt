@@ -9,10 +9,7 @@ import me.melijn.melijnbot.enums.ModularMessageProperty
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_TYPE
-import me.melijn.melijnbot.objects.utils.getColorFromArgNMessage
-import me.melijn.melijnbot.objects.utils.retrieveUserByArgsN
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.toHex
+import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.utils.data.DataObject
 
@@ -714,5 +711,33 @@ object MessageCommandUtil {
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         sendMsg(context, msg)
+    }
+
+    suspend fun showMessagePreviewTyped(context: CommandContext, type: MessageType) {
+        val messageWrapper = context.daoManager.messageWrapper
+        val guildId = context.guildId
+        val message = messageWrapper.messageCache.get(Pair(guildId, type)).await()?.toMessage()
+        if (message == null) {
+            val msg2 = context.getTranslation("message.view.isempty")
+                .replace("%type%", type.toUCC())
+            sendMsg(context, msg2)
+            return
+        }
+
+        context.textChannel.sendMessage(message).queue()
+    }
+
+
+    suspend fun showMessagePreviewCC(context: CommandContext, cc: CustomCommand) {
+        val msg = cc.content.toMessage()
+        if (msg == null) {
+            val msg2 = context.getTranslation("message.view.cc.isempty")
+                .replace("%ccId%", cc.id.toString())
+                .replace("%ccName%", cc.name)
+
+            context.textChannel.sendMessage(msg2).queue()
+        } else {
+            context.textChannel.sendMessage(msg).queue()
+        }
     }
 }

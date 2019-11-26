@@ -78,9 +78,9 @@ class GuildTrackManager(
     }
 
 
-    override fun onPlayerResume(player: AudioPlayer) {
+    override fun onPlayerResume(player: AudioPlayer?) {
         Container.instance.taskManager.async {
-            val data = player.playingTrack.userData as TrackUserData
+            val data = playingTrack?.userData as TrackUserData? ?: return@async
             val embed = getResumedEmbedFromMap(data.currentTime) ?: return@async
             val guild = getAndCheckGuild() ?: return@async
 

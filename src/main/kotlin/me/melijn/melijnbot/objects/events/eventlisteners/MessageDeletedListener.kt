@@ -9,10 +9,7 @@ import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.events.AbstractListener
 import me.melijn.melijnbot.objects.translation.*
-import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
-import me.melijn.melijnbot.objects.utils.asTag
-import me.melijn.melijnbot.objects.utils.await
-import me.melijn.melijnbot.objects.utils.sendEmbed
+import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.audit.ActionType
@@ -106,7 +103,6 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
             container.botDeletedMessageIds.contains(msg.messageId) -> {
                 postDeletedByOtherLog(odmLogChannel, msg, event, event.guild.selfMember)
                 container.botDeletedMessageIds.remove(msg.messageId)
-                println("Bot deleted this message")
                 return
             }
             else -> {
@@ -145,7 +141,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
     private suspend fun postDeletedByPurgeLog(pmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent, purgeRequesterId: Long) {
         if (pmLogChannel == null) return
-        val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.await() ?: return
+        val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull() ?: return
         val eb = getGeneralEmbedBuilder(msg, event, messageAuthor, event.jda.selfUser.idLong)
         eb.setColor(Color.decode("#551A8B"))
 
@@ -160,7 +156,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
     private suspend fun postDeletedBySelfLog(sdmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent) {
         if (sdmLogChannel == null) return
-        val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.await() ?: return
+        val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull() ?: return
         val eb = getGeneralEmbedBuilder(msg, event, messageAuthor, messageAuthor.idLong)
         eb.setColor(Color.decode("#000001"))
 
@@ -174,7 +170,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
     private suspend fun postDeletedByOtherLog(odmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent, deleterMember: Member) {
         if (odmLogChannel == null) return
-        val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.await() ?: return
+        val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull() ?: return
 
         val eb = getGeneralEmbedBuilder(msg, event, messageAuthor, deleterMember.idLong)
         eb.setColor(Color.decode("#000001"))
@@ -190,7 +186,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
     private suspend fun postDeletedByFilterLog(fmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent, cause: String?) {
         if (fmLogChannel == null) return
-        val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.await() ?: return
+        val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull() ?: return
 
         val eb = getGeneralEmbedBuilder(msg, event, messageAuthor, event.jda.selfUser.idLong)
         eb.setColor(Color.YELLOW)
@@ -216,13 +212,13 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         val channel = event.guild.getTextChannelById(msg.textChannelId)
 
         val language = getLanguage(container.daoManager, -1, event.guild.idLong)
-        val title =  i18n.getTranslation(language, "listener.message.deletion.log.title")
+        val title = i18n.getTranslation(language, "listener.message.deletion.log.title")
             .replace(PLACEHOLDER_CHANNEL, channel?.asTag ?: "<#${msg.textChannelId}>")
 
         val extra = if (msg.authorId == messageDeleterId) ".self" else ""
         val description = i18n.getTranslation(language, "listener.message.deletion.log${extra}.description")
             .replace("%messageAuthor%", messageAuthor.asTag)
-            .replace("%messageContent%", msg.content.replace("`", "´"))
+            .replace("%messageContent%", escapeForLog(msg.content))
             .replace("%messageAuthorId%", msg.authorId.toString())
             .replace("%messageDeleterId%", messageDeleterId.toString())
             .replace("%sentTime%", msg.moment.asEpochMillisToDateTime())

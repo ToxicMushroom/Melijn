@@ -264,3 +264,11 @@ fun getUnicode(text: String): String {
     }
     return builder.toString()
 }
+
+fun String.remove(vararg chars: String): String {
+    var s = this
+    for (char in chars) {
+        s = s.replace(char, "")
+    }
+    return s
+}

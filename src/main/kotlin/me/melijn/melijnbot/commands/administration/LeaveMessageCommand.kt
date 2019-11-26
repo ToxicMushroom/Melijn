@@ -20,7 +20,8 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
         children = arrayOf(
             SetContentArg(root, MessageType.LEAVE),
             EmbedArg(root, MessageType.LEAVE),
-            AttachmentsArg(root, MessageType.LEAVE)
+            AttachmentsArg(root, MessageType.LEAVE),
+            ViewArg(root, MessageType.LEAVE)
         )
     }
 
@@ -28,7 +29,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
         sendSyntax(context)
     }
 
-    class SetContentArg(root: String, val type: MessageType) : AbstractCommand("$root.setcontent") {
+    class SetContentArg(parent: String, val type: MessageType) : AbstractCommand("$parent.setcontent") {
 
         init {
             name = "setContent"
@@ -44,7 +45,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
         }
     }
 
-    class EmbedArg(root: String, val type: MessageType) : AbstractCommand("$root.embed") {
+    class EmbedArg(parent: String, val type: MessageType) : AbstractCommand("$parent.embed") {
 
         init {
             name = "embed"
@@ -71,7 +72,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
             sendSyntax(context)
         }
 
-        class SetTitleArg(root: String, val type: MessageType) : AbstractCommand("$root.settitle") {
+        class SetTitleArg(parent: String, val type: MessageType) : AbstractCommand("$parent.settitle") {
 
             init {
                 name = "setTitle"
@@ -86,7 +87,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
             }
         }
 
-        class SetTitleUrlArg(root: String, val type: MessageType) : AbstractCommand("$root.settitleurl") {
+        class SetTitleUrlArg(parent: String, val type: MessageType) : AbstractCommand("$parent.settitleurl") {
 
             init {
                 name = "setTitleUrl"
@@ -102,7 +103,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
         }
 
 
-        class SetAuthorArg(root: String, val type: MessageType) : AbstractCommand("$root.setauthor") {
+        class SetAuthorArg(parent: String, val type: MessageType) : AbstractCommand("$parent.setauthor") {
 
             init {
                 name = "setAuthor"
@@ -117,7 +118,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
             }
         }
 
-        class SetAuthorIconArg(root: String, val type: MessageType) : AbstractCommand("$root.setauthoricon") {
+        class SetAuthorIconArg(parent: String, val type: MessageType) : AbstractCommand("$parent.setauthoricon") {
 
             init {
                 name = "setAuthorIcon"
@@ -132,7 +133,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
             }
         }
 
-        class SetAuthorUrlArg(root: String, val type: MessageType) : AbstractCommand("$root.setauthorurl") {
+        class SetAuthorUrlArg(parent: String, val type: MessageType) : AbstractCommand("$parent.setauthorurl") {
 
             init {
                 name = "setAuthorUrl"
@@ -148,7 +149,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
         }
 
 
-        class SetThumbnailArg(root: String, val type: MessageType) : AbstractCommand("$root.setthumbnail") {
+        class SetThumbnailArg(parent: String, val type: MessageType) : AbstractCommand("$parent.setthumbnail") {
 
             init {
                 name = "setThumbnail"
@@ -163,7 +164,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
             }
         }
 
-        class SetImageArg(root: String, val type: MessageType) : AbstractCommand("$root.setimage") {
+        class SetImageArg(parent: String, val type: MessageType) : AbstractCommand("$parent.setimage") {
 
             init {
                 name = "setImage"
@@ -197,7 +198,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 sendSyntax(context)
             }
 
-            class AddArg(root: String, val type: MessageType) : AbstractCommand("$root.add") {
+            class AddArg(parent: String, val type: MessageType) : AbstractCommand("$parent.add") {
 
                 init {
                     name = "add"
@@ -217,7 +218,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 }
             }
 
-            class SetTitleArg(root: String, val type: MessageType) : AbstractCommand("$root.settitle") {
+            class SetTitleArg(parent: String, val type: MessageType) : AbstractCommand("$parent.settitle") {
 
                 init {
                     name = "setTitle"
@@ -236,7 +237,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 }
             }
 
-            class SetValueArg(root: String, val type: MessageType) : AbstractCommand("$root.setvalue") {
+            class SetValueArg(parent: String, val type: MessageType) : AbstractCommand("$parent.setvalue") {
 
                 init {
                     name = "setValue"
@@ -255,7 +256,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 }
             }
 
-            class SetInlineArg(root: String, val type: MessageType) : AbstractCommand("$root.setinline") {
+            class SetInlineArg(parent: String, val type: MessageType) : AbstractCommand("$parent.setinline") {
 
                 init {
                     name = "setInline"
@@ -272,7 +273,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 }
             }
 
-            class RemoveArg(root: String, val type: MessageType) : AbstractCommand("$root.remove") {
+            class RemoveArg(parent: String, val type: MessageType) : AbstractCommand("$parent.remove") {
 
                 init {
                     name = "remove"
@@ -288,7 +289,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 }
             }
 
-            class ListArg(root: String, val type: MessageType) : AbstractCommand("$root.list") {
+            class ListArg(parent: String, val type: MessageType) : AbstractCommand("$parent.list") {
 
                 init {
                     name = "list"
@@ -301,7 +302,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
         }
 
 
-        class SetDescriptionArg(root: String, val type: MessageType) : AbstractCommand("$root.setdescription") {
+        class SetDescriptionArg(parent: String, val type: MessageType) : AbstractCommand("$parent.setdescription") {
 
             init {
                 name = "setDescription"
@@ -317,7 +318,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
             }
         }
 
-        class SetColorArg(root: String, val type: MessageType) : AbstractCommand("$root.setcolor") {
+        class SetColorArg(parent: String, val type: MessageType) : AbstractCommand("$parent.setcolor") {
 
             init {
                 name = "setColor"
@@ -333,7 +334,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
             }
         }
 
-        class SetFooterArg(root: String, val type: MessageType) : AbstractCommand("$root.setfooter") {
+        class SetFooterArg(parent: String, val type: MessageType) : AbstractCommand("$parent.setfooter") {
 
             init {
                 name = "setFooter"
@@ -363,7 +364,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
             }
         }
 
-        class ClearArg(root: String, val type: MessageType) : AbstractCommand("$root.clear") {
+        class ClearArg(parent: String, val type: MessageType) : AbstractCommand("$parent.clear") {
 
             init {
                 name = "clear"
@@ -421,7 +422,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
 
         }
 
-        class RemoveArg(root: String, val type: MessageType) : AbstractCommand("$root.remove") {
+        class RemoveArg(parent: String, val type: MessageType) : AbstractCommand("$parent.remove") {
 
             init {
                 name = "remove"
@@ -435,6 +436,18 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                 }
                 MessageCommandUtil.removeAttachmentJoinLeave(context, type)
             }
+        }
+    }
+
+    class ViewArg(parent: String, val type: MessageType) : AbstractCommand("$parent.view") {
+
+        init {
+            name = "view"
+            aliases = arrayOf("preview")
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            MessageCommandUtil.showMessagePreviewTyped(context, type)
         }
     }
 }

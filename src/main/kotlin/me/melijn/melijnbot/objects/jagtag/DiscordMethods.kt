@@ -11,12 +11,17 @@ import net.dv8tion.jda.api.entities.User
 
 object DiscordMethods {
     fun getMethods(): List<Method> = listOf(
-        Method("user", { env ->
+        Method("userMention", { env ->
+            val user: User = env.getReifiedX("user")
+            user.asMention
+        }),
+
+        Method("userTag", { env ->
             val user: User = env.getReifiedX("user")
             user.asTag
         }),
 
-        Method("user.isBot", { env ->
+        Method("isBot", { env ->
             val user: User = env.getReifiedX("user")
             if (user.isBot) "true" else "false"
         }),

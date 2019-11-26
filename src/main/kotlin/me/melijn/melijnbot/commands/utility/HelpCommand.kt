@@ -104,7 +104,7 @@ class HelpCommand : AbstractCommand("command.help") {
                 sendSyntax(context)
                 return
             }
-            val path = "help.var.${context.rawArg}"
+            val path = "help.var.${context.rawArg.remove("{", "}")}"
             val translation = context.getTranslation(path)
             if (path == translation) {
                 sendSyntax(context)
@@ -208,7 +208,6 @@ class HelpCommand : AbstractCommand("command.help") {
                 Pair(CommandCategory.IMAGE, "$root.field5.title"),
                 Pair(CommandCategory.MODERATION, "$root.field3.title"),
                 Pair(CommandCategory.MUSIC, "$root.field4.title"),
-                Pair(CommandCategory.SUPPORTER, "$root.field8.title"),
                 Pair(CommandCategory.UTILITY, "$root.field1.title")
             ).filter { entry ->
                 entry.key == category || category == null

@@ -6,6 +6,7 @@ import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.i18n
+import me.melijn.melijnbot.objects.utils.remove
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.web.WebManager
@@ -56,11 +57,11 @@ class UrbanCommand : AbstractCommand("command.urban") {
         val result = results.getObject(0)
         return Pair(
             result.getString("definition")
-                .replace("[", "")
-                .replace("]", ""),
+                .remove("[")
+                .remove("]"),
             result.getString("example")
-                .replace("]", "")
-                .replace("[", "")
+                .remove("]")
+                .remove("[")
         )
     }
 }

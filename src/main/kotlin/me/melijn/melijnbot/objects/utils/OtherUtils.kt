@@ -69,12 +69,12 @@ fun getWindowsUptime(): Long {
     for (line in `in`.readLines()) {
         if (line.startsWith("Statistieken vanaf")) {
             val format = SimpleDateFormat("'Statistieken vanaf' dd/MM/yyyy hh:mm:ss") //Dutch windows version
-            val bootTime = format.parse(line.replace("?", ""))
+            val bootTime = format.parse(line.remove("?"))
             return System.currentTimeMillis() - bootTime.time
 
         } else if (line.startsWith("Statistics since")) {
             val format = SimpleDateFormat("'Statistics since' MM/dd/yyyy hh:mm:ss") //English windows version
-            val bootTime = format.parse(line.replace("?", ""))
+            val bootTime = format.parse(line.remove("?"))
             return System.currentTimeMillis() - bootTime.time
 
         }
@@ -218,7 +218,7 @@ fun Executor.launch(block: suspend CoroutineScope.() -> Unit): Job {
 fun Enum<*>.toUCC(): String {
     return this
         .toUCSC()
-        .replace(" ", "")
+        .remove(" ")
 }
 
 //UpperCamelSpaceCase

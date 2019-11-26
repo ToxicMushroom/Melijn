@@ -166,8 +166,12 @@ class RestServer(container: Container) : Jooby() {
 
         get("/translations/{language:.*}") { req, rsp ->
             val lang = req.param("language").value()
-            val data =   i18n.getTranslations(lang)
+            val data = i18n.getTranslations(lang)
             rsp.send(data.toMap())
+        }
+
+        get("/commands") { _, rsp ->
+            rsp.send(container.commandMap)
         }
 
         //Has to be registered last to not override other paths
