@@ -28,7 +28,9 @@ class GuildTrackManager(
     val iPlayer: IPlayer
 ) : AudioEventAdapterWrapped() {
 
-    val playingTrack: AudioTrack? = iPlayer.playingTrack
+    val playingTrack: AudioTrack?
+        get() = iPlayer.playingTrack
+
     val logger = LoggerFactory.getLogger(this::class.java.name + " - $guildId")
 
     val resumeMomentMessageMap = mutableMapOf<Long, MessageEmbed>()
@@ -115,7 +117,7 @@ class GuildTrackManager(
 
     override fun onTrackStart(player: AudioPlayer?, track: AudioTrack) {
         Container.instance.taskManager.async {
-            val data = track.userData as TrackUserData
+            val data = track.userData as TrackUserData? ?: return@async
             val embed = getStartEmbedFromMap(data.currentTime) ?: return@async
             val guild = getAndCheckGuild() ?: return@async
 
@@ -178,6 +180,7 @@ class GuildTrackManager(
 
     fun stopAndDestroy() {
         iPlayer.stopTrack()
+        clear()
         lavaManager.closeConnection(guildId)
     }
 

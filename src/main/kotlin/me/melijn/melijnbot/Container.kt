@@ -9,6 +9,8 @@ import me.melijn.melijnbot.objects.services.ServiceManager
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.web.RestServer
 import me.melijn.melijnbot.objects.web.WebManager
+import net.dv8tion.jda.api.OnlineStatus
+import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.sharding.ShardManager
 import java.io.File
 
@@ -18,7 +20,12 @@ class Container {
     var restServer: RestServer? = null
     var shuttingDown: Boolean = false
         set(value) {
-            if (value) serviceManager.stopServices()
+            if (value) {
+                serviceManager.stopServices()
+                restServer?.stop()
+                MelijnBot.shardManager.setActivity(Activity.playing("shutting down.."))
+                MelijnBot.shardManager.setStatus(OnlineStatus.DO_NOT_DISTURB)
+            }
             field = value
         }
 

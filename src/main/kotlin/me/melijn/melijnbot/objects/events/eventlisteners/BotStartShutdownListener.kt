@@ -1,7 +1,9 @@
 package me.melijn.melijnbot.objects.events.eventlisteners
 
+import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.events.AbstractListener
+import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.objects.web.RestServer
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.GenericEvent
@@ -13,11 +15,11 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
 
     override fun onEvent(event: GenericEvent) {
         if (event is StatusChangeEvent) {
-            onStatusChange(event)
+            runBlocking { onStatusChange(event) }
         }
     }
 
-    private fun onStatusChange(event: StatusChangeEvent) {
+    private suspend fun onStatusChange(event: StatusChangeEvent) {
         val shardManager = event.jda.shardManager ?: return
         if (event.newStatus == JDA.Status.CONNECTED) {
             val readyShards = shardManager.shards.count { jda -> jda.status == JDA.Status.CONNECTED }
@@ -29,6 +31,11 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
             }
             logger.info("All shards ready")
             if (!container.serviceManager.started) {
+                container.taskManager.async {
+                    logger.info("Starting music clients..")
+                    VoiceUtil.resumeMusic(event, container)
+                    logger.info("Started music clients")
+                }
                 container.startTime = System.currentTimeMillis()
                 logger.info("Starting services..")
                 container.serviceManager.init(shardManager)

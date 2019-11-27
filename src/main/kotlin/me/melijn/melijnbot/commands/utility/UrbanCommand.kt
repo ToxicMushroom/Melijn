@@ -1,11 +1,11 @@
 package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.objects.command.AbstractCommand
+import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.remove
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.utils.sendMsg
@@ -19,25 +19,25 @@ class UrbanCommand : AbstractCommand("command.urban") {
         name = "urban"
         aliases = arrayOf("urbanDictionary")
         runConditions = arrayOf(RunCondition.CHANNEL_NSFW)
+        commandCategory = CommandCategory.UTILITY
     }
 
     override suspend fun execute(context: CommandContext) {
-        val language = context.getLanguage()
         val web = context.webManager
         val result = getUrbanResult(web, context.rawArg)
         val first = result?.first
         val second = result?.second
 
         if (result == null) {
-            val offline = i18n.getTranslation(language, "$root.urbanoffline")
+            val offline = context.getTranslation("$root.urbanoffline")
             sendMsg(context, offline)
         } else if (result.first == null && result.second == null) {
-            val notfound = i18n.getTranslation(language, "$root.notfound")
+            val notfound = context.getTranslation("$root.notfound")
                 .replace(PLACEHOLDER_ARG, context.rawArg)
             sendMsg(context, notfound)
         } else {
-            val meaning = i18n.getTranslation(language, "$root.meaning")
-            val example = i18n.getTranslation(language, "$root.example")
+            val meaning = context.getTranslation("$root.meaning")
+            val example = context.getTranslation("$root.example")
 
             val actualMeaning = if (first == null || first.isEmpty()) "/" else first.substring(0, min(1000, first.length))
             val actualExample = if (second == null || second.isEmpty()) "/" else second.substring(0, min(1000, second.length))

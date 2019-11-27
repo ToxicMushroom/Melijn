@@ -8,6 +8,5 @@ enum class CommandCategory(val runCondition: Array<RunCondition> = emptyArray())
     IMAGE,
     UTILITY,
     MODERATION(arrayOf(RunCondition.GUILD)),
-    ADMINISTRATION(arrayOf(RunCondition.GUILD)),
-    SUPPORTER
+    ADMINISTRATION(arrayOf(RunCondition.GUILD))
 }

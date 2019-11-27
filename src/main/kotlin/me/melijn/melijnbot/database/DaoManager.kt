@@ -2,6 +2,9 @@ package me.melijn.melijnbot.database
 
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Settings
+import me.melijn.melijnbot.database.audio.LastVoiceChannelDao
+import me.melijn.melijnbot.database.audio.TracksDao
+import me.melijn.melijnbot.database.audio.TracksWrapper
 import me.melijn.melijnbot.database.autopunishment.AutoPunishmentDao
 import me.melijn.melijnbot.database.autopunishment.AutoPunishmentGroupDao
 import me.melijn.melijnbot.database.autopunishment.AutoPunishmentGroupWrapper
@@ -70,6 +73,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
         val afterTableFunctions = mutableListOf<() -> Unit>()
     }
 
+    val tracksWrapper: TracksWrapper
     val streamUrlWrapper: StreamUrlWrapper
     val musicChannelWrapper: MusicChannelWrapper
     val commandWrapper: CommandWrapper
@@ -139,6 +143,8 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
             mySQLVersion = driverManager.getDBVersion()
             connectorVersion = driverManager.getConnectorVersion()
         }
+
+        tracksWrapper = TracksWrapper(TracksDao(driverManager), LastVoiceChannelDao(driverManager))
 
         streamUrlWrapper = StreamUrlWrapper(taskManager, StreamUrlDao(driverManager))
 

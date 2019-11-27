@@ -21,6 +21,8 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.VoiceChannel
 import java.lang.Integer.min
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 const val QUEUE_LIMIT = 150
 const val DONATE_QUEUE_LIMIT = 1000
@@ -433,5 +435,25 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
 
         audioPlayerManager.loadItemOrdered(guildMusicPlayer, source, resultHandler)
+    }
+
+    suspend fun localTrackToAudioTrack(absolutePath: String): AudioTrack? = suspendCoroutine {
+        audioPlayerManager.loadItem(absolutePath, object : AudioLoadResultHandler {
+            override fun trackLoaded(track: AudioTrack) {
+                it.resume(track)
+            }
+
+            override fun playlistLoaded(playlist: AudioPlaylist) {
+                it.resume(null)
+            }
+
+            override fun noMatches() {
+                it.resume(null)
+            }
+
+            override fun loadFailed(ignored: FriendlyException) {
+                it.resume(null)
+            }
+        })
     }
 }

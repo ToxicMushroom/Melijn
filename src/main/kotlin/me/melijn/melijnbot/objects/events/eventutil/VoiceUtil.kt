@@ -6,6 +6,7 @@ import me.melijn.melijnbot.objects.utils.checks.getAndVerifyMusicChannel
 import me.melijn.melijnbot.objects.utils.listeningMembers
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.VoiceChannel
+import net.dv8tion.jda.api.events.StatusChangeEvent
 import net.dv8tion.jda.api.sharding.ShardManager
 
 object VoiceUtil {
@@ -50,5 +51,26 @@ object VoiceUtil {
                 }
             }.count()
         }?.sum() ?: 0
+    }
+
+    suspend fun resumeMusic(event: StatusChangeEvent, container: Container) {
+        val wrapper = container.daoManager.tracksWrapper
+        val music = wrapper.getMap()
+        val channelMap = wrapper.getChannels()
+        val shardManager = event.jda.shardManager ?: return
+        val mpm = container.lavaManager.musicPlayerManager
+        for ((guildId, tracks) in music) {
+            val guild = shardManager.getGuildById(guildId) ?: continue
+            val channel = channelMap[guildId]?.let { guild.getVoiceChannelById(it) } ?: continue
+
+            if (container.lavaManager.tryToConnectToVCSilent(channel)) {
+                val mp = mpm.getGuildMusicPlayer(guild)
+                for (track in tracks) {
+                    mp.safeQueueSilent(container.daoManager, track)
+                }
+            }
+        }
+        wrapper.clearChannels()
+        wrapper.clear()
     }
 }

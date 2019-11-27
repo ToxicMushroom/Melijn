@@ -41,4 +41,6 @@ class MusicPlayerManager(
         }
         return cachedMusicPlayer
     }
+
+    fun getPlayers() = guildMusicPlayers
 }
