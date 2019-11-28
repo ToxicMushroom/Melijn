@@ -44,10 +44,8 @@ object StringUtils {
 
                 if (lastEvenIndex > (nextSplitThreshold - margin)) {
                     val subMsg = msg.substring(0, lastEvenIndex)
-                    println(subMsg)
                     messages.add(subMsg)
                     msg = msg.substring(lastEvenIndex)
-                    println(msg)
                     continue
                 } else {
                     shouldAppendBackTicks = true

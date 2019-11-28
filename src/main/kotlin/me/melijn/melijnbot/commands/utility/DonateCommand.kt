@@ -16,7 +16,7 @@ class DonateCommand : AbstractCommand("command.donate") {
 
     override suspend fun execute(context: CommandContext) {
         val msg = context.getTranslation("$root.response")
-            .replace("%url%", "https://patreon.com/")
+            .replace("%url%", "https://patreon.com/melijn")
         sendMsg(context, msg)
     }
 }

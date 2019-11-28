@@ -21,6 +21,11 @@ object DiscordMethods {
             user.asTag
         }),
 
+        Method("user", { env ->
+            val user: User = env.getReifiedX("user")
+            user.asTag
+        }),
+
         Method("isBot", { env ->
             val user: User = env.getReifiedX("user")
             if (user.isBot) "true" else "false"

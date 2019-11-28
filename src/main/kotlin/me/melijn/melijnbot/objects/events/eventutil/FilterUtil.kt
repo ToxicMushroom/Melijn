@@ -3,12 +3,15 @@ package me.melijn.melijnbot.objects.events.eventutil
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.FilterMode
+import me.melijn.melijnbot.objects.jagtag.RegexJagTagParser
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import java.util.*
 import java.util.regex.Pattern
 
 object FilterUtil {
+
+    val matchAllPattern = Pattern.compile(".")
 
     suspend fun handleFilter(container: Container, message: Message) = container.taskManager.async {
         val guild = message.guild
@@ -31,19 +34,51 @@ object FilterUtil {
 
         when (effectiveMode) {
             FilterMode.MUST_MATCH_ALLOWED_FORMAT -> {
-
+                //filterMatch(container, message)
             }
             FilterMode.MUST_MATCH_ALLOWED_FORMAT_EXCLUDE_FILTER -> {
-
+               // filterMatchNoDenied(container, message)
             }
             FilterMode.NO_WRAP -> {
-
+                filterNoWrap(container, message)
             }
             FilterMode.DEFAULT -> {
                 filterDefault(container, message)
             }
             FilterMode.NO_MODE -> throw IllegalArgumentException("Should be DEFAULT rn")
             FilterMode.DISABLED -> return@async
+        }
+    }
+
+    private suspend fun filterNoWrap(container: Container, message: Message) {
+        val guild = message.guild
+        val selfMember = guild.selfMember
+        val channel = message.textChannel
+        if (!selfMember.hasPermission(channel, Permission.MESSAGE_MANAGE)) return
+
+        val filterWrapper = container.daoManager.filterWrapper
+        val globalPair = Pair(guild.idLong, -1L)
+        val specificPair = Pair(guild.idLong, channel.idLong)
+        val globalDeniedFilters = filterWrapper.deniedFilterCache.get(globalPair).await()
+        val specificDeniedFilters = filterWrapper.deniedFilterCache.get(specificPair).await()
+
+        val deniedList = globalDeniedFilters + specificDeniedFilters
+        if (deniedList.isEmpty()) return
+
+        val messageContent: String = message.contentRaw
+
+
+        val detectedWord = deniedList
+            .filter { denied ->
+                val regexJagTag = RegexJagTagParser.makeIntoPattern(denied)
+                val matcher = regexJagTag.matcher(messageContent)
+                matcher.matches()
+            }
+            .joinToString()
+
+        if (detectedWord.isNotEmpty()) {
+            container.filteredMap[message.idLong] = detectedWord
+            message.delete().reason("Filter detection").queue()
         }
     }
 

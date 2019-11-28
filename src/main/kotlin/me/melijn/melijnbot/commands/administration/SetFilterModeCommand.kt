@@ -17,67 +17,91 @@ class SetFilterModeCommand : AbstractCommand("command.setfiltermode") {
         id = 113
         name = "setFilterMode"
         aliases = arrayOf("sfm")
+        children = arrayOf(
+            ChannelArg(root),
+            GlobalArg(root)
+        )
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
-            showFilterMode(context, null)
-        } else if (context.args.size == 1) {
-            val firstArg = context.args[0]
-            if (firstArg == "null") {
-                unSetFilterMode(context, null)
-            } else if (CHANNEL_MENTION.matcher(firstArg).matches() || firstArg.isNumber()) {
-                val textChannel = getTextChannelByArgsNMessage(context, 0) ?: return
-                showFilterMode(context, textChannel)
-            } else {
-                val mode: FilterMode = getEnumFromArgNMessage(context, 0, UNKNOWN_WRAPPINGMODE_PATH) ?: return
-                setFilterMode(context, null, mode)
-            }
-        } else if (context.args.size == 2) {
-            val secondArg = context.args[1]
-            val textChannel = getTextChannelByArgsNMessage(context, 0) ?: return
-            if (secondArg == "null") {
-                unSetFilterMode(context, textChannel)
-            } else {
-                val mode: FilterMode = getEnumFromArgNMessage(context, 1, UNKNOWN_WRAPPINGMODE_PATH) ?: return
-                setFilterMode(context, null, mode)
-            }
-        } else {
             sendSyntax(context)
         }
     }
 
-    private suspend fun setFilterMode(context: CommandContext, channel: TextChannel?, mode: FilterMode) {
-        val channelId = channel?.idLong
-        val wrapper = context.daoManager.filterModeWrapper
-        wrapper.setMode(context.guildId, channelId, mode)
-        val part = if (channelId == null) "" else ".channel"
-        val msg = context.getTranslation("$root.set$part")
-            .replace(PLACEHOLDER_CHANNEL, channel?.asTag ?: "error")
-            .replace("%mode%", mode.toUCSC())
-        sendMsg(context, msg)
+    class GlobalArg(parent: String) : AbstractCommand("$parent.global") {
+
+        init {
+            name = "global"
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                showFilterMode(context, null)
+            } else {
+                if (context.args[1] == "null") {
+                    unSetFilterMode(context, null)
+                    return
+                }
+                val mode: FilterMode = getEnumFromArgNMessage(context, 0, UNKNOWN_WRAPPINGMODE_PATH) ?: return
+                setFilterMode(context, null, mode)
+            }
+        }
     }
 
-    private suspend fun unSetFilterMode(context: CommandContext, channel: TextChannel?) {
-        val channelId = channel?.idLong
-        val wrapper = context.daoManager.filterModeWrapper
-        wrapper.unsetMode(context.guildId, channelId)
-        val part = if (channelId == null) "" else ".channel"
-        val msg = context.getTranslation("$root.unset$part")
-            .replace(PLACEHOLDER_CHANNEL, channel?.asTag ?: "error")
-        sendMsg(context, msg)
+    class ChannelArg(parent: String) : AbstractCommand("$parent.channel") {
+
+        init {
+            name = "channel"
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+            }
+
+            val textChannel = getTextChannelByArgsNMessage(context, 0) ?: return
+            if (context.args.size == 1) {
+                showFilterMode(context, textChannel)
+            } else {
+                if (context.args[1] == "null") {
+                    unSetFilterMode(context, textChannel)
+                    return
+                }
+                val mode: FilterMode = getEnumFromArgNMessage(context, 1, UNKNOWN_WRAPPINGMODE_PATH) ?: return
+                setFilterMode(context, textChannel, mode)
+            }
+        }
     }
+}
+
+suspend fun setFilterMode(context: CommandContext, channel: TextChannel?, mode: FilterMode) {
+    val channelId = channel?.idLong
+    val wrapper = context.daoManager.filterModeWrapper
+    wrapper.setMode(context.guildId, channelId, mode)
+    val msg = context.getTranslation(context.commandOrder.last().root + ".set")
+        .replace(PLACEHOLDER_CHANNEL, channel?.asTag ?: "error")
+        .replace("%mode%", mode.toUCSC())
+    sendMsg(context, msg)
+}
+
+suspend fun unSetFilterMode(context: CommandContext, channel: TextChannel?) {
+    val channelId = channel?.idLong
+    val wrapper = context.daoManager.filterModeWrapper
+    wrapper.unsetMode(context.guildId, channelId)
+    val msg = context.getTranslation(context.commandOrder.last().root + ".unset")
+        .replace(PLACEHOLDER_CHANNEL, channel?.asTag ?: "error")
+    sendMsg(context, msg)
+}
 
 
-    private suspend fun showFilterMode(context: CommandContext, channel: TextChannel?) {
-        val channelId = channel?.idLong
-        val wrapper = context.daoManager.filterModeWrapper
-        val mode = wrapper.filterWrappingModeCache.get(Pair(context.guildId, channelId)).await()
-        val part = if (channelId == null) "" else ".channel"
-        val msg = context.getTranslation("$root.show$part")
-            .replace(PLACEHOLDER_CHANNEL, channel?.asTag ?: "error")
-            .replace("%mode%", mode.toUCSC())
-        sendMsg(context, msg)
-    }
+suspend fun showFilterMode(context: CommandContext, channel: TextChannel?) {
+    val channelId = channel?.idLong
+    val wrapper = context.daoManager.filterModeWrapper
+    val mode = wrapper.filterWrappingModeCache.get(Pair(context.guildId, channelId)).await()
+    val msg = context.getTranslation(context.commandOrder.last().root + ".show")
+        .replace(PLACEHOLDER_CHANNEL, channel?.asTag ?: "error")
+        .replace("%mode%", mode.toUCSC())
+    sendMsg(context, msg)
 }

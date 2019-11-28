@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.objects.command.AbstractCommand
+import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.utils.sendEmbed
@@ -11,6 +12,7 @@ class InviteCommand : AbstractCommand("command.invite") {
         id = 98
         name = "invite"
         aliases = arrayOf("inviteLink", "inviteBot")
+        commandCategory = CommandCategory.UTILITY
     }
 
     override suspend fun execute(context: CommandContext) {

@@ -296,7 +296,6 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 } else {
                     failedTracks.add(track)
                 }
-                println(loadedTracks.size + failedTracks.size)
                 if (loadedTracks.size + failedTracks.size == tracks.size) {
                     runBlocking {
                         val newMsg = context.getTranslation("command.play.loadedtrack" + if (tracks.size > 1) "s" else "")
@@ -330,7 +329,6 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 } else {
                     failedTracks.add(track)
                 }
-                println(loadedTracks.size + failedTracks.size)
                 if (loadedTracks.size + failedTracks.size == simpleTracks.size) {
                     runBlocking {
                         val newMsg = context.getTranslation("command.play.loadedtrack" + if (simpleTracks.size > 1) "s" else "")

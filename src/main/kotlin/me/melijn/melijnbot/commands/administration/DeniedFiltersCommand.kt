@@ -13,7 +13,12 @@ class DeniedFiltersCommand : AbstractCommand("command.deniedfilters") {
     init {
         id = 115
         name = "deniedFilters"
-        children = arrayOf(AddArg(root), RemoveArg(root), RemoveByIndexArg(root), ListArg(root))
+        children = arrayOf(
+            AddArg(root),
+            RemoveArg(root),
+            RemoveByIndexArg(root),
+            ListArg(root)
+        )
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
@@ -64,6 +69,7 @@ class DeniedFiltersCommand : AbstractCommand("command.deniedfilters") {
 
             val part = if (channel == null) "" else ".channel"
             val msg = context.getTranslation("$root.success$part")
+                .replace("%index%", index.toString())
                 .replace("%filter%", denied)
                 .replace(PLACEHOLDER_CHANNEL, channel?.asTag ?: "")
             sendMsg(context, msg)
