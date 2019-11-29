@@ -5,6 +5,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.ImageUtils
+import net.dv8tion.jda.api.Permission
 
 
 class BlurpleCommand : AbstractCommand("command.blurple") {
@@ -13,6 +14,7 @@ class BlurpleCommand : AbstractCommand("command.blurple") {
         id = 54
         name = "blurple"
         aliases = arrayOf("blurpleGif")
+        discordPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
 

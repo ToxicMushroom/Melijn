@@ -45,7 +45,7 @@ class SetSlowModeCommand : AbstractCommand("command.setslowmode") {
                 }
             } else if (number != null) {
                 channel = context.textChannel
-                if (notEnoughPermissionsAndNMessage(context, channel, Permission.MANAGE_CHANNEL)) return
+                if (notEnoughPermissionsAndMessage(context, channel, Permission.MANAGE_CHANNEL)) return
                 channel.manager.setSlowmode(number).queue()
 
                 if (number == 0) {
@@ -63,7 +63,7 @@ class SetSlowModeCommand : AbstractCommand("command.setslowmode") {
         } else {
             val channel = getTextChannelByArgsNMessage(context, 0, true) ?: return
             val number = getIntegerFromArgNMessage(context, 1, 0, 21600) ?: return
-            if (notEnoughPermissionsAndNMessage(context, channel, Permission.MANAGE_CHANNEL)) return
+            if (notEnoughPermissionsAndMessage(context, channel, Permission.MANAGE_CHANNEL)) return
             channel.manager.setSlowmode(number).queue()
             if (number == 0) {
                 context.getTranslation("$root.unset")

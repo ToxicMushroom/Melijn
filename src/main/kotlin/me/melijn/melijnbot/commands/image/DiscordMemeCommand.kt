@@ -7,6 +7,7 @@ import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.web.WebManager
+import net.dv8tion.jda.api.Permission
 
 class DiscordMemeCommand : AbstractCommand("command.discordmeme") {
 
@@ -14,6 +15,7 @@ class DiscordMemeCommand : AbstractCommand("command.discordmeme") {
         id = 102
         name = "discordMeme"
         aliases = arrayOf("dmeme")
+        discordPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
 

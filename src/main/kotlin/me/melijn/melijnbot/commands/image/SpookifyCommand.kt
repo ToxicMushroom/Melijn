@@ -5,6 +5,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.ImageUtils
+import net.dv8tion.jda.api.Permission
 
 class SpookifyCommand : AbstractCommand("command.spookify") {
 
@@ -12,6 +13,7 @@ class SpookifyCommand : AbstractCommand("command.spookify") {
         id = 55
         name = "spookify"
         aliases = arrayOf("spookifyGif")
+        discordPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
 

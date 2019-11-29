@@ -452,7 +452,7 @@ fun getMemberByArgsN(guild: Guild, arg: String): Member? {
     else guild.getMember(user)
 }
 
-suspend fun notEnoughPermissionsAndNMessage(context: CommandContext, channel: TextChannel, vararg perms: Permission): Boolean {
+suspend fun notEnoughPermissionsAndMessage(context: CommandContext, channel: GuildChannel, vararg perms: Permission): Boolean {
     val member = channel.guild.selfMember
     val result = notEnoughPermissions(member, channel, perms.toList())
     if (result.first) {
@@ -461,6 +461,7 @@ suspend fun notEnoughPermissionsAndNMessage(context: CommandContext, channel: Te
             .replace("%permissions%", result.second.joinToString(separator = "") { perm ->
                 "\n    ⁎ `${perm.toUCSC()}`"
             })
+            .replace("%channel%", channel.name)
 
         sendMsg(context, msg)
         return true
@@ -468,7 +469,7 @@ suspend fun notEnoughPermissionsAndNMessage(context: CommandContext, channel: Te
     return false
 }
 
-fun notEnoughPermissions(member: Member, channel: TextChannel, perms: Collection<Permission>): Pair<Boolean, List<Permission>> {
+fun notEnoughPermissions(member: Member, channel: GuildChannel, perms: Collection<Permission>): Pair<Boolean, List<Permission>> {
     val missingPerms = mutableListOf<Permission>()
     for (perm in perms) {
         if (!member.hasPermission(channel, perm)) missingPerms.add(perm)

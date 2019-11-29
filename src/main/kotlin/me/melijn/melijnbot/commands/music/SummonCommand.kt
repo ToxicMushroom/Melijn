@@ -6,7 +6,9 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.hasPermission
 import me.melijn.melijnbot.objects.utils.RunConditionUtil
 import me.melijn.melijnbot.objects.utils.getVoiceChannelByArgNMessage
+import me.melijn.melijnbot.objects.utils.notEnoughPermissionsAndMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
+import net.dv8tion.jda.api.Permission
 
 class SummonCommand : AbstractCommand("command.summon") {
 
@@ -21,6 +23,7 @@ class SummonCommand : AbstractCommand("command.summon") {
         if (context.args.isEmpty()) {
             if (!RunConditionUtil.checkOtherOrSameVCBotAloneOrUserDJ(context.container, context.event, this, context.getLanguage())) return
             val vc = context.member.voiceState?.channel ?: throw IllegalStateException("I messed up")
+            if (notEnoughPermissionsAndMessage(context, vc, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)) return
             context.lavaManager.openConnection(vc)
             val msg = context.getTranslation("$root.summoned")
             sendMsg(context, msg)
@@ -30,6 +33,7 @@ class SummonCommand : AbstractCommand("command.summon") {
                 sendMissingPermissionMessage(context, "summon.other")
                 return
             }
+            if (notEnoughPermissionsAndMessage(context, vc, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)) return
             if (!RunConditionUtil.checkBotAloneOrUserDJ(context.container, context.event, this, context.getLanguage())) return
             context.lavaManager.openConnection(vc)
             val msg = context.getTranslation("$root.summoned")

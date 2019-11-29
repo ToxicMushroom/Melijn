@@ -5,6 +5,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.ImageUtils
+import net.dv8tion.jda.api.Permission
 
 class InvertCommand : AbstractCommand("command.invert") {
 
@@ -13,6 +14,7 @@ class InvertCommand : AbstractCommand("command.invert") {
         id = 56
         name = "invert"
         aliases = arrayOf("invertGif")
+        discordPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
 
