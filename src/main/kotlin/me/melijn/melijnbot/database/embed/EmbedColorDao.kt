@@ -31,7 +31,7 @@ class EmbedColorDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun remove(guildId: Long) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ?",
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ?",
             guildId)
     }
 }

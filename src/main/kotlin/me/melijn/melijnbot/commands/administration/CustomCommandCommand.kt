@@ -64,7 +64,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         sendSyntax(context)
     }
 
-    class InfoArg(root: String) : AbstractCommand("$root.info") {
+    class InfoArg(parent: String) : AbstractCommand("$parent.info") {
 
         init {
             name = "info"
@@ -94,7 +94,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
     }
 
-    class ListArg(root: String) : AbstractCommand("$root.list") {
+    class ListArg(parent: String) : AbstractCommand("$parent.list") {
 
         init {
             name = "list"
@@ -118,7 +118,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
     }
 
-    class AddArg(root: String) : AbstractCommand("$root.add") {
+    class AddArg(parent: String) : AbstractCommand("$parent.add") {
 
         init {
             name = "add"
@@ -153,7 +153,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
     }
 
-    class RemoveArg(root: String) : AbstractCommand("$root.remove") {
+    class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
 
         init {
             name = "remove"
@@ -181,7 +181,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
     }
 
-    class SelectArg(root: String) : AbstractCommand("$root.select") {
+    class SelectArg(parent: String) : AbstractCommand("$parent.select") {
 
         init {
             name = "select"
@@ -216,11 +216,15 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
     }
 
 
-    class AliasesArg(root: String) : AbstractCommand("$root.aliases") {
+    class AliasesArg(parent: String) : AbstractCommand("$parent.aliases") {
 
         init {
             name = "aliases"
-            children = arrayOf(AddArg(root), RemoveArg(root), ListArg(root))
+            children = arrayOf(
+                AddArg(root),
+                RemoveArg(root),
+                ListArg(root)
+            )
         }
 
         override suspend fun execute(context: CommandContext) {
@@ -256,7 +260,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
         }
 
-        class RemoveArg(root: String) : AbstractCommand("$root.remove") {
+        class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
 
             init {
                 name = "remove"
@@ -297,7 +301,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
         }
 
-        class ListArg(root: String) : AbstractCommand("$root.list") {
+        class ListArg(parent: String) : AbstractCommand("$parent.list") {
 
             init {
                 name = "list"
@@ -337,7 +341,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
     }
 
-    class SetDescriptionArg(root: String) : AbstractCommand("$root.setdescription") {
+    class SetDescriptionArg(parent: String) : AbstractCommand("$parent.setdescription") {
 
         init {
             name = "setDescription"
@@ -365,7 +369,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
     }
 
-    class SetChanceArg(root: String) : AbstractCommand("$root.setchance") {
+    class SetChanceArg(parent: String) : AbstractCommand("$parent.setchance") {
 
         init {
             name = "setChance"
@@ -394,7 +398,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
     }
 
-    class SetPrefixStateArg(root: String) : AbstractCommand("$root.setprefixstate") {
+    class SetPrefixStateArg(parent: String) : AbstractCommand("$parent.setprefixstate") {
 
         init {
             name = "setPrefixState"
@@ -424,15 +428,16 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
     }
 
-    class ResponseArg(root: String) : AbstractCommand("$root.response") {
+    class ResponseArg(parent: String) : AbstractCommand("$parent.response") {
 
         init {
             name = "response"
             aliases = arrayOf("r")
             children = arrayOf(
-                SetContentArg(this.root),
-                EmbedArg(this.root),
-                AttachmentsArg(this.root)
+                SetContentArg(root),
+                EmbedArg(root),
+                AttachmentsArg(root),
+                ViewArg(root)
             )
         }
 
@@ -440,7 +445,19 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             sendSyntax(context)
         }
 
-        class SetContentArg(root: String) : AbstractCommand("$root.setcontent") {
+        class ViewArg(parent: String) : AbstractCommand("$parent.view") {
+            init {
+                name ="view"
+                aliases = arrayOf("preview", "show", "info")
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                val cc = getSelectedCCNMessage(context) ?: return
+                MessageCommandUtil.showMessagePreviewCC(context, cc)
+            }
+        }
+
+        class SetContentArg(parent: String) : AbstractCommand("$parent.setcontent") {
 
             init {
                 name = "setContent"
@@ -458,25 +475,25 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             }
         }
 
-        class EmbedArg(root: String) : AbstractCommand("$root.embed") {
+        class EmbedArg(parent: String) : AbstractCommand("$parent.embed") {
 
             init {
                 name = "embed"
                 aliases = arrayOf("e")
                 children = arrayOf(
-                    ClearArg(this.root),
-                    SetDescriptionArg(this.root),
-                    SetColorArg(this.root),
-                    SetTitleArg(this.root),
-                    SetTitleUrlArg(this.root),
-                    SetAuthorArg(this.root),
-                    SetAuthorIconArg(this.root),
-                    SetAuthorUrlArg(this.root),
-                    SetThumbnailArg(this.root),
-                    SetImageArg(this.root),
-                    FieldArg(this.root),
-                    SetFooterArg(this.root),
-                    SetFooterIconArg(this.root)
+                    ClearArg(root),
+                    SetDescriptionArg(root),
+                    SetColorArg(root),
+                    SetTitleArg(root),
+                    SetTitleUrlArg(root),
+                    SetAuthorArg(root),
+                    SetAuthorIconArg(root),
+                    SetAuthorUrlArg(root),
+                    SetThumbnailArg(root),
+                    SetImageArg(root),
+                    FieldArg(root),
+                    SetFooterArg(root),
+                    SetFooterIconArg(root)
                     //What even is optimization
                 )
             }
@@ -485,7 +502,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 sendSyntax(context)
             }
 
-            class SetTitleArg(root: String) : AbstractCommand("$root.settitle") {
+            class SetTitleArg(parent: String) : AbstractCommand("$parent.settitle") {
 
                 init {
                     name = "setTitle"
@@ -501,7 +518,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 }
             }
 
-            class SetTitleUrlArg(root: String) : AbstractCommand("$root.settitleurl") {
+            class SetTitleUrlArg(parent: String) : AbstractCommand("$parent.settitleurl") {
 
                 init {
                     name = "setTitleUrl"
@@ -518,7 +535,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             }
 
 
-            class SetAuthorArg(root: String) : AbstractCommand("$root.setauthor") {
+            class SetAuthorArg(parent: String) : AbstractCommand("$parent.setauthor") {
 
                 init {
                     name = "setAuthor"
@@ -534,7 +551,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 }
             }
 
-            class SetAuthorIconArg(root: String) : AbstractCommand("$root.setauthoricon") {
+            class SetAuthorIconArg(parent: String) : AbstractCommand("$parent.setauthoricon") {
 
                 init {
                     name = "setAuthorIcon"
@@ -550,7 +567,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 }
             }
 
-            class SetAuthorUrlArg(root: String) : AbstractCommand("$root.setauthorurl") {
+            class SetAuthorUrlArg(parent: String) : AbstractCommand("$parent.setauthorurl") {
 
                 init {
                     name = "setAuthorUrl"
@@ -567,7 +584,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             }
 
 
-            class SetThumbnailArg(root: String) : AbstractCommand("$root.setthumbnail") {
+            class SetThumbnailArg(parent: String) : AbstractCommand("$parent.setthumbnail") {
 
                 init {
                     name = "setThumbnail"
@@ -583,7 +600,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 }
             }
 
-            class SetImageArg(root: String) : AbstractCommand("$root.setimage") {
+            class SetImageArg(parent: String) : AbstractCommand("$parent.setimage") {
 
                 init {
                     name = "setImage"
@@ -600,17 +617,17 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             }
 
 
-            class FieldArg(root: String) : AbstractCommand("$root.field") {
+            class FieldArg(parent: String) : AbstractCommand("$parent.field") {
 
                 init {
                     name = "field"
                     children = arrayOf(
-                        AddArg(this.root),
-                        RemoveArg(this.root),
-                        ListArg(this.root),
-                        SetTitleArg(this.root),
-                        SetValueArg(this.root),
-                        SetInlineArg(this.root)
+                        AddArg(root),
+                        RemoveArg(root),
+                        ListArg(root),
+                        SetTitleArg(root),
+                        SetValueArg(root),
+                        SetInlineArg(root)
                     )
                 }
 
@@ -618,7 +635,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     sendSyntax(context)
                 }
 
-                class AddArg(root: String) : AbstractCommand("$root.add") {
+                class AddArg(parent: String) : AbstractCommand("$parent.add") {
 
                     init {
                         name = "add"
@@ -639,7 +656,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     }
                 }
 
-                class SetTitleArg(root: String) : AbstractCommand("$root.settitle") {
+                class SetTitleArg(parent: String) : AbstractCommand("$parent.settitle") {
 
                     init {
                         name = "setTitle"
@@ -659,7 +676,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     }
                 }
 
-                class SetValueArg(root: String) : AbstractCommand("$root.setvalue") {
+                class SetValueArg(parent: String) : AbstractCommand("$parent.setvalue") {
 
                     init {
                         name = "setValue"
@@ -679,7 +696,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     }
                 }
 
-                class SetInlineArg(root: String) : AbstractCommand("$root.setinline") {
+                class SetInlineArg(parent: String) : AbstractCommand("$parent.setinline") {
 
                     init {
                         name = "setInline"
@@ -697,7 +714,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     }
                 }
 
-                class RemoveArg(root: String) : AbstractCommand("$root.remove") {
+                class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
 
                     init {
                         name = "remove"
@@ -715,7 +732,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     }
                 }
 
-                class ListArg(root: String) : AbstractCommand("$root.list") {
+                class ListArg(parent: String) : AbstractCommand("$parent.list") {
 
                     init {
                         name = "list"
@@ -730,7 +747,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             }
 
 
-            class SetDescriptionArg(root: String) : AbstractCommand("$root.setdescription") {
+            class SetDescriptionArg(parent: String) : AbstractCommand("$parent.setdescription") {
 
                 init {
                     name = "setDescription"
@@ -747,7 +764,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 }
             }
 
-            class SetColorArg(root: String) : AbstractCommand("$root.setcolor") {
+            class SetColorArg(parent: String) : AbstractCommand("$parent.setcolor") {
 
                 init {
                     name = "setColor"
@@ -764,7 +781,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 }
             }
 
-            class SetFooterArg(root: String) : AbstractCommand("$root.setfooter") {
+            class SetFooterArg(parent: String) : AbstractCommand("$parent.setfooter") {
 
                 init {
                     name = "setFooter"
@@ -780,7 +797,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 }
             }
 
-            class SetFooterIconArg(root: String) : AbstractCommand("$root.setfootericon") {
+            class SetFooterIconArg(parent: String) : AbstractCommand("$parent.setfootericon") {
 
                 init {
                     name = "setFooterIcon"
@@ -796,7 +813,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 }
             }
 
-            class ClearArg(root: String) : AbstractCommand("$root.clear") {
+            class ClearArg(parent: String) : AbstractCommand("$parent.clear") {
 
                 init {
                     name = "clear"
@@ -809,15 +826,15 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             }
         }
 
-        class AttachmentsArg(root: String) : AbstractCommand("$root.attachments") {
+        class AttachmentsArg(parent: String) : AbstractCommand("$parent.attachments") {
 
             init {
                 name = "attachments"
                 aliases = arrayOf("a")
                 children = arrayOf(
-                    ListArg(this.root),
-                    AddArg(this.root),
-                    RemoveArg(this.root)
+                    ListArg(root),
+                    AddArg(root),
+                    RemoveArg(root)
                 )
             }
 
@@ -825,7 +842,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 sendSyntax(context)
             }
 
-            class ListArg(root: String) : AbstractCommand("$root.list") {
+            class ListArg(parent: String) : AbstractCommand("$parent.list") {
 
                 init {
                     name = "list"
@@ -838,7 +855,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 }
             }
 
-            class AddArg(root: String) : AbstractCommand("$root.add") {
+            class AddArg(parent: String) : AbstractCommand("$parent.add") {
 
                 init {
                     name = "add"
@@ -855,7 +872,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
             }
 
-            class RemoveArg(root: String) : AbstractCommand("$root.remove") {
+            class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
 
                 init {
                     name = "remove"

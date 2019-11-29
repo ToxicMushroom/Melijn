@@ -17,7 +17,7 @@ class UnverifiedUsersDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun add(guildId: Long, userId: Long) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, userId, moment, triesAmount) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
-            guildId, userId, 0, 0)
+            guildId, userId, System.currentTimeMillis(), 0)
     }
 
     suspend fun remove(guildId: Long, userId: Long) {

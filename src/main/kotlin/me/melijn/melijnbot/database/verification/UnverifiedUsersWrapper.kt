@@ -19,6 +19,7 @@ class UnverifiedUsersWrapper(val taskManager: TaskManager, private val unverifie
     suspend fun add(guildId: Long, userId: Long) {
         unverifiedUsersDao.add(guildId, userId)
     }
+
     suspend fun contains(guildId: Long, userId: Long): Boolean {
         return unverifiedUsersDao.contains(guildId, userId)
     }
