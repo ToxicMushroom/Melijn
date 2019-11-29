@@ -2,6 +2,7 @@ package me.melijn.melijnbot.objects.utils
 
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
@@ -167,7 +168,8 @@ object LogUtils {
         eb.setTitle(title)
 
 
-        val vc = context.selfMember.voiceState?.channel ?: throw IllegalArgumentException("NO")
+        val vc = context.lavaManager.getConnectedChannel(context.guild)
+            ?: throw IllegalArgumentException("Not connected to a channel")
         eb.setDescription("[${track.info.title}](${track.info.uri})")
 
         eb.addField(userTitle, context.author.asTag, true)
@@ -189,10 +191,10 @@ object LogUtils {
         val title = context.getTranslation("logging.music.pause.title")
 
 
-        val userTitle = i18n.getTranslation(context, "logging.music.pause.userfield.title")
-        val userIdTitle = i18n.getTranslation(context, "logging.music.pause.userIdfield.title")
-        val channel = i18n.getTranslation(context, "logging.music.pause.channelfield.title")
-        val channelId = i18n.getTranslation(context, "logging.music.pause.channelIdfield.title")
+        val userTitle = context.getTranslation("logging.music.pause.userfield.title")
+        val userIdTitle = context.getTranslation("logging.music.pause.userIdfield.title")
+        val channel = context.getTranslation("logging.music.pause.channelfield.title")
+        val channelId = context.getTranslation("logging.music.pause.channelIdfield.title")
         eb.setTitle(title)
 
         val vc = context.selfMember.voiceState?.channel ?: throw IllegalArgumentException("NO")
@@ -224,7 +226,8 @@ object LogUtils {
         val cause = i18n.getTranslation(language, "logging.music.pause.causefield.title")
         eb.setTitle(title)
 
-        val vc = guild.selfMember.voiceState?.channel ?: throw IllegalArgumentException("NO")
+        val vc = Container.instance.lavaManager.getConnectedChannel(guild)
+            ?: throw IllegalArgumentException("Not connected to a channel")
         eb.setDescription("[${track.info.title}](${track.info.uri})")
         eb.addField(channel, vc.name, true)
         eb.addField(channelId, vc.id, true)
@@ -243,13 +246,13 @@ object LogUtils {
         val title = context.getTranslation("logging.music.newtrack.title")
 
 
-        val userTitle = i18n.getTranslation(context, "logging.music.newtrack.userfield.title")
-        val userIdTitle = i18n.getTranslation(context, "logging.music.newtrack.userIdfield.title")
-        val channel = i18n.getTranslation(context, "logging.music.newtrack.channelfield.title")
-        val channelId = i18n.getTranslation(context, "logging.music.newtrack.channelIdfield.title")
+        val userTitle = context.getTranslation("logging.music.newtrack.userfield.title")
+        val userIdTitle = context.getTranslation("logging.music.newtrack.userIdfield.title")
+        val channel = context.getTranslation("logging.music.newtrack.channelfield.title")
+        val channelId = context.getTranslation("logging.music.newtrack.channelIdfield.title")
         eb.setTitle(title)
 
-        val vc = context.selfMember.voiceState?.channel ?: throw IllegalArgumentException("NO")
+        val vc = context.lavaManager.getConnectedChannel(context.guild) ?: throw IllegalArgumentException("NO")
 
         eb.setDescription("[${track.info.title}](${track.info.uri})")
         eb.addField(userTitle, context.author.asTag, true)

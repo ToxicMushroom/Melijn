@@ -7,6 +7,7 @@ import me.melijn.melijnbot.objects.utils.await
 import me.melijn.melijnbot.objects.utils.getTextChannelByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
+import net.dv8tion.jda.api.Permission
 
 class ClearChannelCommand : AbstractCommand("command.clearchannel") {
 
@@ -14,6 +15,7 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
         id = 40
         name = "clearChannel"
         aliases = arrayOf("cChannel")
+        discordPermissions = arrayOf(Permission.MANAGE_CHANNEL)
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
@@ -25,6 +27,7 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
 
         when {
             context.args[1] == "confirm" -> {
+
                 val textChannel = getTextChannelByArgsNMessage(context, 0) ?: return
                 textChannel.createCopy().await()
                 textChannel.delete().queue()
