@@ -42,12 +42,13 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             ?: return
         if (verificationChannel.idLong != textChannel.idLong) return
 
+
         val unverifiedRole = VerificationUtils.getUnverifiedRoleN(event.channel, dao) ?: return
         if (!dao.unverifiedUsersWrapper.contains(guild.idLong, member.idLong) && !member.roles.contains(unverifiedRole)) {
             //User is already verified
             if (!member.hasPermission(Permission.ADMINISTRATOR)) {
-                //User doesn't have admin perms to send message in verification channel
                 container.botDeletedMessageIds.add(event.messageIdLong)
+                //User doesn't have admin perms to send message in verification channel
                 event.message.delete().queue()
             }
             return
@@ -78,7 +79,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
                 }
             }
         }
-
+        container.botDeletedMessageIds.add(event.messageIdLong)
         event.message.delete().queue()
     }
 

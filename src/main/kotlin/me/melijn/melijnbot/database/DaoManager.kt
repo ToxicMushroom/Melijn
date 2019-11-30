@@ -5,10 +5,7 @@ import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.database.audio.LastVoiceChannelDao
 import me.melijn.melijnbot.database.audio.TracksDao
 import me.melijn.melijnbot.database.audio.TracksWrapper
-import me.melijn.melijnbot.database.autopunishment.AutoPunishmentDao
-import me.melijn.melijnbot.database.autopunishment.AutoPunishmentGroupDao
-import me.melijn.melijnbot.database.autopunishment.AutoPunishmentGroupWrapper
-import me.melijn.melijnbot.database.autopunishment.AutoPunishmentWrapper
+import me.melijn.melijnbot.database.autopunishment.*
 import me.melijn.melijnbot.database.ban.BanDao
 import me.melijn.melijnbot.database.ban.BanWrapper
 import me.melijn.melijnbot.database.ban.SoftBanDao
@@ -132,6 +129,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
     val filterModeWrapper: FilterWrappingModeWrapper
     val autoPunishmentWrapper: AutoPunishmentWrapper
     val autoPunishmentGroupWrapper: AutoPunishmentGroupWrapper
+    val punishmentWrapper: PunishmentWrapper
 
     val voteWrapper: VoteWrapper
     var driverManager: DriverManager
@@ -202,6 +200,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
         filterModeWrapper = FilterWrappingModeWrapper(taskManager, FilterWrappingModeDao(driverManager))
         autoPunishmentWrapper = AutoPunishmentWrapper(taskManager, AutoPunishmentDao(driverManager))
         autoPunishmentGroupWrapper = AutoPunishmentGroupWrapper(taskManager, AutoPunishmentGroupDao(driverManager))
+        punishmentWrapper = PunishmentWrapper(taskManager, PunishmentDao(driverManager))
 
         voteWrapper = VoteWrapper(VoteDao(driverManager))
         //After registering wrappers

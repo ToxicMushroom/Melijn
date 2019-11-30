@@ -1,4 +1,4 @@
-package me.melijn.melijnbot.database.pol
+package me.melijn.melijnbot.database.poll
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager

@@ -8,6 +8,7 @@ import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.objects.events.AbstractListener
 import me.melijn.melijnbot.objects.events.eventutil.JoinLeaveUtil
+import me.melijn.melijnbot.objects.events.eventutil.JoinLeaveUtil.joinRole
 import me.melijn.melijnbot.objects.utils.VerificationUtils
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelByType
 import net.dv8tion.jda.api.events.GenericEvent
@@ -27,6 +28,7 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
         if (guildHasNoVerification(event)) {
             JoinLeaveUtil.postWelcomeMessage(daoManager, member, ChannelType.JOIN, MessageType.JOIN)
             JoinLeaveUtil.forceRole(daoManager, member)
+            joinRole(daoManager, member)
         } else {
             VerificationUtils.addUnverified(member, daoManager)
         }

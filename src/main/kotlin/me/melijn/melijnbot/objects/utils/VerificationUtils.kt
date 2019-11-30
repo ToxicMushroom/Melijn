@@ -61,6 +61,7 @@ object VerificationUtils {
         LogUtils.sendVerifiedUserLog(daoManager, author, member)
         JoinLeaveUtil.postWelcomeMessage(daoManager, member, ChannelType.JOIN, MessageType.JOIN)
         JoinLeaveUtil.forceRole(daoManager, member)
+        JoinLeaveUtil.joinRole(daoManager, member)
     }
 
     suspend fun failedVerification(dao: DaoManager, member: Member) {

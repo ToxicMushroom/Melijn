@@ -59,7 +59,7 @@ class BanCommand : AbstractCommand("command.ban") {
             ban.startTime = activeBan.startTime
         }
 
-        val banning = context.getTranslation( "message.banning")
+        val banning = context.getTranslation("message.banning")
         try {
             val privateChannel = targetUser.openPrivateChannel().await()
             val message = privateChannel.sendMessage(banning).await()

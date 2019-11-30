@@ -4,6 +4,7 @@ import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 
 class CommandChannelCooldownDao(driverManager: DriverManager) : Dao(driverManager) {
+
     override val table: String = "commandChannelCooldowns"
     override val tableStructure: String = "guildId bigint, channelId bigint, commandId varchar(16), cooldownMillis bigint"
     override val primaryKey: String = "guildId, commandId"

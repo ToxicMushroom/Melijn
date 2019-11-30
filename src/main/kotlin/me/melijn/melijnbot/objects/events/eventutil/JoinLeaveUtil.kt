@@ -6,8 +6,10 @@ import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
+import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.jagtag.WelcomeJagTagParser
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelByType
+import me.melijn.melijnbot.objects.utils.checks.getAndVerifyRoleByType
 import me.melijn.melijnbot.objects.utils.sendAttachments
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendMsgWithAttachments
@@ -66,6 +68,18 @@ object JoinLeaveUtil {
         newMessage.attachments = newAttachments
         return newMessage
 
+    }
+
+    suspend fun joinRole(daoManager: DaoManager, member: Member) {
+        val guild = member.guild
+        if (!guild.selfMember.canInteract(member)) return
+        val wrapper = daoManager.roleWrapper
+
+        val joinRole = guild.getAndVerifyRoleByType(RoleType.JOIN, wrapper, true) ?: return
+
+        if (guild.selfMember.canInteract(member)) {
+            guild.addRoleToMember(member, joinRole).queue()
+        }
     }
 
     suspend fun forceRole(daoManager: DaoManager, member: Member) {
