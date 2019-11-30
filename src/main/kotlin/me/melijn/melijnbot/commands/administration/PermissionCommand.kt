@@ -2,6 +2,7 @@ package me.melijn.melijnbot.commands.administration
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.PermState
+import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
@@ -15,12 +16,12 @@ class PermissionCommand : AbstractCommand("command.permission") {
         id = 15
         name = "permission"
         aliases = arrayOf("perm")
-        commandCategory = CommandCategory.ADMINISTRATION
         children = arrayOf(
-            UserCommand(),
-            RoleCommand(),
-            ChannelCommand()
+            UserCommand(root),
+            RoleCommand(root),
+            ChannelCommand(root)
         )
+        commandCategory = CommandCategory.ADMINISTRATION
     }
 
     override suspend fun execute(context: CommandContext) {
@@ -28,19 +29,24 @@ class PermissionCommand : AbstractCommand("command.permission") {
     }
 
 
-    class UserCommand : AbstractCommand("command.permission.user") {
+    class UserCommand(parent: String) : AbstractCommand("$parent.user") {
 
         init {
             name = "user"
             aliases = arrayOf("u")
-            children = arrayOf(SetCommand(), CopyCommand(this), ViewCommand(), ClearCommand())
+            children = arrayOf(
+                SetCommand(root),
+                CopyCommand(this),
+                ViewCommand(root),
+                ClearCommand(root)
+            )
         }
 
         override suspend fun execute(context: CommandContext) {
             sendSyntax(context)
         }
 
-        class SetCommand : AbstractCommand("command.permission.user.set") {
+        class SetCommand(parent: String) : AbstractCommand("$parent.set") {
 
             init {
                 name = "set"
@@ -78,11 +84,11 @@ class PermissionCommand : AbstractCommand("command.permission") {
             }
         }
 
-        class ViewCommand : AbstractCommand("command.permission.user.view") {
+        class ViewCommand(parent: String) : AbstractCommand("$parent.view") {
 
             init {
                 name = "view"
-                aliases = arrayOf("v", "vw", "info")
+                aliases = arrayOf("v", "vw", "list", "info")
             }
 
             override suspend fun execute(context: CommandContext) {
@@ -115,7 +121,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
             }
         }
 
-        class ClearCommand : AbstractCommand("command.permission.user.clear") {
+        class ClearCommand(parent: String) : AbstractCommand("$parent.clear") {
 
             init {
                 name = "clear"
@@ -140,19 +146,24 @@ class PermissionCommand : AbstractCommand("command.permission") {
         }
     }
 
-    class RoleCommand : AbstractCommand("command.permission.role") {
+    class RoleCommand(parent: String) : AbstractCommand("$parent.role") {
 
         init {
             name = "role"
             aliases = arrayOf("r")
-            children = arrayOf(SetCommand(), CopyCommand(this), ViewCommand(), ClearCommand())
+            children = arrayOf(
+                SetCommand(root),
+                CopyCommand(this),
+                ViewCommand(root),
+                ClearCommand(root)
+            )
         }
 
         override suspend fun execute(context: CommandContext) {
             sendSyntax(context)
         }
 
-        class SetCommand : AbstractCommand("command.permission.role.set") {
+        class SetCommand(parent: String) : AbstractCommand("$parent.set") {
 
             init {
                 name = "set"
@@ -193,11 +204,11 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
         }
 
-        class ViewCommand : AbstractCommand("command.permission.role.view") {
+        class ViewCommand(parent: String) : AbstractCommand("$parent.view") {
 
             init {
                 name = "view"
-                aliases = arrayOf("v", "vw")
+                aliases = arrayOf("v", "vw", "list", "info")
             }
 
             override suspend fun execute(context: CommandContext) {
@@ -231,7 +242,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
         }
 
-        class ClearCommand : AbstractCommand("command.permission.role.clear") {
+        class ClearCommand(parent: String) : AbstractCommand("$parent.clear") {
 
             init {
                 name = "clear"
@@ -257,31 +268,39 @@ class PermissionCommand : AbstractCommand("command.permission") {
         }
     }
 
-    class ChannelCommand : AbstractCommand("command.permission.channel") {
+    class ChannelCommand(parent: String) : AbstractCommand("$parent.channel") {
 
         init {
             name = "channel"
             aliases = arrayOf("c")
-            children = arrayOf(UserChannelCommand(), RoleChannelCommand())
+            children = arrayOf(
+                UserChannelCommand(root),
+                RoleChannelCommand(root)
+            )
         }
 
         override suspend fun execute(context: CommandContext) {
             sendMsg(context, "Channel Permissions")
         }
 
-        class RoleChannelCommand : AbstractCommand("command.permission.channel.role") {
+        class RoleChannelCommand(parent: String) : AbstractCommand("$parent.role") {
 
             init {
                 name = "role"
                 aliases = arrayOf("r")
-                children = arrayOf(SetCommand(), CopyCommand(this), ViewCommand(), ClearCommand())
+                children = arrayOf(
+                    SetCommand(root),
+                    CopyCommand(this),
+                    ViewCommand(root),
+                    ClearCommand(root)
+                )
             }
 
             override suspend fun execute(context: CommandContext) {
-                sendMsg(context, "Role Channel Permissions")
+                sendSyntax(context)
             }
 
-            class SetCommand : AbstractCommand("command.permission.channel.role.set") {
+            class SetCommand(parent: String) : AbstractCommand("$parent.set") {
 
                 init {
                     name = "set"
@@ -322,11 +341,11 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
             }
 
-            class ViewCommand : AbstractCommand("command.permission.channel.role.view") {
+            class ViewCommand(parent: String) : AbstractCommand("$parent.view") {
 
                 init {
                     name = "view"
-                    aliases = arrayOf("v", "vw")
+                    aliases = arrayOf("v", "vw", "list", "info")
                 }
 
                 override suspend fun execute(context: CommandContext) {
@@ -362,10 +381,9 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     val msg = title + content
                     sendMsgCodeBlock(context, msg, "INI")
                 }
-
             }
 
-            class ClearCommand : AbstractCommand("command.permission.channel.role.clear") {
+            class ClearCommand(parent: String) : AbstractCommand("$parent.clear") {
 
                 init {
                     name = "clear"
@@ -389,23 +407,27 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .replace(PLACEHOLDER_CHANNEL, channel.asTag)
                     sendMsg(context, msg)
                 }
-
             }
         }
 
-        class UserChannelCommand : AbstractCommand("command.permission.channel.user") {
+        class UserChannelCommand(parent: String) : AbstractCommand("$parent.user") {
 
             init {
                 name = "user"
                 aliases = arrayOf("u")
-                children = arrayOf(SetCommand(), CopyCommand(this), ViewCommand(), ClearCommand())
+                children = arrayOf(
+                    SetCommand(root),
+                    CopyCommand(this),
+                    ViewCommand(root),
+                    ClearCommand(root)
+                )
             }
 
             override suspend fun execute(context: CommandContext) {
-                sendMsg(context, "User Channel Permissions")
+                sendSyntax(context)
             }
 
-            class SetCommand : AbstractCommand("command.permission.channel.user.set") {
+            class SetCommand(parent: String) : AbstractCommand("$parent.set") {
 
                 init {
                     name = "set"
@@ -446,11 +468,11 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
             }
 
-            class ViewCommand : AbstractCommand("command.permission.channel.user.view") {
+            class ViewCommand(parent: String) : AbstractCommand("$parent.view") {
 
                 init {
                     name = "view"
-                    aliases = arrayOf("v", "vw")
+                    aliases = arrayOf("v", "vw", "list", "info")
                 }
 
                 override suspend fun execute(context: CommandContext) {
@@ -487,7 +509,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
             }
 
-            class ClearCommand : AbstractCommand("command.permission.channel.user.clear") {
+            class ClearCommand(parent: String) : AbstractCommand("$parent.clear") {
 
                 init {
                     name = "clear"
@@ -521,7 +543,11 @@ class PermissionCommand : AbstractCommand("command.permission") {
         init {
             name = "copy"
             aliases = arrayOf("cp")
-            children = arrayOf(UserCommand(parent, root), RoleCommand(parent, root), ChannelCommand(parent, root))
+            children = arrayOf(
+                UserCommand(parent, root),
+                RoleCommand(parent, root),
+                ChannelCommand(parent, root)
+            )
         }
 
         override suspend fun execute(context: CommandContext) {
@@ -575,7 +601,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 } else {
                     ""
                 }
-                    
+
                 val msg = i18n.getTranslation(language, path)
                     .replace("%user1%", user1.asTag)
                     .replace("%user2%", user2.asTag)
@@ -627,7 +653,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 } else {
                     ""
                 }
-                
+
                 val msg = i18n.getTranslation(language, path)
                     .replace("%user1%", user2.asTag)
                     .replace(PLACEHOLDER_CHANNEL, channel1.asTag)
@@ -719,7 +745,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     .replace(PLACEHOLDER_USER, user1.asTag)
                     .replace(PLACEHOLDER_ROLE, role2.name)
                     .replace("%permissionCount%", permissions.size.toString())
-                  
+
 
                 sendMsg(context, msg)
             }
@@ -743,7 +769,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     .replace("%role1%", role1.name)
                     .replace("%role2%", role2.name)
                     .replace("%permissionCount%", permissions.size.toString())
-                  
+
 
                 sendMsg(context, msg)
             }
@@ -770,7 +796,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     .replace(PLACEHOLDER_CHANNEL, channel1.asTag)
                     .replace(PLACEHOLDER_ROLE, role3.name)
                     .replace("%permissionCount%", permissions.size.toString())
-                  
+
 
                 sendMsg(context, msg)
             }
@@ -797,7 +823,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     .replace(PLACEHOLDER_CHANNEL, channel1.asTag)
                     .replace("%role2%", role3.name)
                     .replace("%permissionCount%", permissions.size.toString())
-                  
+
 
                 sendMsg(context, msg)
             }
@@ -868,7 +894,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .replace(PLACEHOLDER_CHANNEL, channel2.asTag)
                         .replace(PLACEHOLDER_ROLE, role3.name)
                         .replace("%permissionCount%", permissions.size.toString())
-                      
+
 
                     sendMsg(context, msg)
                 }
@@ -895,7 +921,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .replace(PLACEHOLDER_CHANNEL, channel2.asTag)
                         .replace("%role2%", role3.name)
                         .replace("%permissionCount%", permissions.size.toString())
-                      
+
 
                     sendMsg(context, msg)
                 }
@@ -924,7 +950,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .replace("%channel2%", channel3.asTag)
                         .replace(PLACEHOLDER_ROLE, role4.name)
                         .replace("%permissionCount%", permissions.size.toString())
-                      
+
 
                     sendMsg(context, msg)
                 }
@@ -952,7 +978,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .replace("%channel2%", channel3.asTag)
                         .replace("%role2%", role4.name)
                         .replace("%permissionCount%", permissions.size.toString())
-                      
+
 
                     sendMsg(context, msg)
                 }
@@ -1012,7 +1038,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .replace(PLACEHOLDER_CHANNEL, channel2.asTag)
                         .replace("%user2%", user3.asTag)
                         .replace("%permissionCount%", permissions.size.toString())
-                      
+
 
                     sendMsg(context, msg)
                 }
@@ -1039,7 +1065,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .replace(PLACEHOLDER_CHANNEL, channel2.asTag)
                         .replace(PLACEHOLDER_USER, user3.asTag)
                         .replace("%permissionCount%", permissions.size.toString())
-                      
+
 
                     sendMsg(context, msg)
                 }
@@ -1067,7 +1093,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .replace("%channel2%", channel3.asTag)
                         .replace("%user2%", user4.asTag)
                         .replace("%permissionCount%", permissions.size.toString())
-                      
+
 
                     sendMsg(context, msg)
                 }
@@ -1096,7 +1122,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .replace("%channel2%", channel3.asTag)
                         .replace(PLACEHOLDER_USER, user4.asTag)
                         .replace("%permissionCount%", permissions.size.toString())
-                      
+
 
                     sendMsg(context, msg)
                 }
@@ -1138,9 +1164,15 @@ fun getPermissionsFromArg(context: CommandContext, arg: String): List<String>? {
         else -> Pattern.quote(arg).toRegex()
     }
 
-    val perms = getPermissions(commands).filter { perm ->
-        perm.matches(regex)
-    }.toMutableList()
+    val perms = getPermissions(commands)
+        .filter { perm ->
+            perm.matches(regex)
+        }.toMutableList()
+
+    val extraNodes = SpecialPermission.values()
+        .filter { perm -> regex.matches(perm.node) }
+        .map { perm -> perm.node }
+    perms.addAll(extraNodes)
 
     val matcher = ccTagPattern.matcher(arg)
     if (perms.isEmpty() && matcher.matches()) {

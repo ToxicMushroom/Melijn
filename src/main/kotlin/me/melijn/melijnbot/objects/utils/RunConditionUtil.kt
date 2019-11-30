@@ -3,6 +3,7 @@ package me.melijn.melijnbot.objects.utils
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.utility.VOTE_URL
+import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.command.hasPermission
@@ -108,7 +109,7 @@ object RunConditionUtil {
 
         if (vc?.id == botVc?.id) return true
         else if (vc != null && botVc == null) return true
-        else if (hasPermission(command, container, event, "music.bypass.samevc", true)) return true
+        else if (hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_SAMEVC.node, true)) return true
 
         val msg = i18n.getTranslation(language, "message.runcondition.failed.vcbot")
         sendMsg(event.textChannel, msg)
@@ -131,7 +132,7 @@ object RunConditionUtil {
         return if (vc?.id == bc?.id && vc?.let { listeningMembers(it, member.idLong) } == 0) true
         else if (vc != null && bc == null) true
         else if (vc?.id != bc?.id && bc != null && listeningMembers(bc) == 0) true
-        else if (hasPermission(command, container, event, "music.bypass.vcbotalone", true)) true
+        else if (hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_VCBOTALONE.node, true)) true
         else {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.vcbotalone")
             sendMsg(event.textChannel, msg)
@@ -149,7 +150,7 @@ object RunConditionUtil {
         }
         return if (vc.members.contains(member.guild.selfMember) && listeningMembers(vc, member.idLong) == 0) true
         else if (!vc.members.contains(member.guild.selfMember) && member.guild.selfMember.voiceState?.inVoiceChannel() != true) true
-        else if (hasPermission(command, container, event, "music.bypass.samevcalone", true)) true
+        else if (hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_SAMEVCALONE.node, true)) true
         else {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.samevcalone")
             sendMsg(event.textChannel, msg)
@@ -172,7 +173,7 @@ object RunConditionUtil {
         val selfMember = guild.selfMember
         val vc = selfMember.voiceState?.channel
         val botAlone = vc == null || listeningMembers(vc, event.author.idLong) == 0
-        return if (botAlone || hasPermission(command, container, event, "music.bypass.botalone", true)) {
+        return if (botAlone || hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_BOTALONE.node, true)) {
             true
         } else {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.botalone")

@@ -47,6 +47,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             //User is already verified
             if (!member.hasPermission(Permission.ADMINISTRATOR)) {
                 //User doesn't have admin perms to send message in verification channel
+                container.botDeletedMessageIds.add(event.messageIdLong)
                 event.message.delete().queue()
             }
             return

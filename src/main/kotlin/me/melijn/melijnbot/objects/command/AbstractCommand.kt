@@ -105,6 +105,7 @@ suspend fun hasPermission(context: CommandContext, permission: String, required:
     var roleResult = PermState.DEFAULT
     var channelRoleResult = PermState.DEFAULT
 
+
     //Permission checking for roles
     for (roleId in (context.member.roles.map { role -> role.idLong } + context.guild.publicRole.idLong)) {
         channelRoleResult = when (context.daoManager.channelRolePermissionWrapper.channelRolePermissionCache.get(Pair(channelId, roleId)).await()[permission]) {
