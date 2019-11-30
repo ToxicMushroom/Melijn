@@ -57,6 +57,7 @@ object VerificationUtils {
             .reason("verified")
             .queue()
 
+        daoManager.unverifiedUsersWrapper.remove(member.guild.idLong, member.idLong)
         LogUtils.sendVerifiedUserLog(daoManager, author, member)
         JoinLeaveUtil.postWelcomeMessage(daoManager, member, ChannelType.JOIN, MessageType.JOIN)
         JoinLeaveUtil.forceRole(daoManager, member)

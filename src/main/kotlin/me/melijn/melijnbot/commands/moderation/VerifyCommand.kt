@@ -4,7 +4,6 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.entities.Member
 
@@ -22,7 +21,7 @@ class VerifyCommand : AbstractCommand("command.verify") {
             return
         }
 
-        val language = context.getLanguage()
+
         val role = VerificationUtils.getUnverifiedRoleNMessage(context.author, context.textChannel, context.daoManager)
             ?: return
 
@@ -38,13 +37,12 @@ class VerifyCommand : AbstractCommand("command.verify") {
             }
 
             if (failures.isEmpty()) {
-                i18n.getTranslation(language, "$root.all")
+                context.getTranslation("$root.all")
             } else {
-                i18n.getTranslation(language, "$root.all.failures")
+                context.getTranslation("$root.all.failures")
                     .replace("%failures%", failures.joinToString("\n") { member ->
                         member.asTag + " - " + member.id
-                    }
-                    )
+                    })
 
             }.replace("%count%", (members.size - failures.size).toString())
 
@@ -52,9 +50,9 @@ class VerifyCommand : AbstractCommand("command.verify") {
             val member = getMemberByArgsNMessage(context, 0) ?: return
             try {
                 VerificationUtils.verify(context.daoManager, role, context.author, member)
-                i18n.getTranslation(language, "$root.success")
+                context.getTranslation("$root.success")
             } catch (t: Throwable) {
-                i18n.getTranslation(language, "$root.failure")
+                context.getTranslation("$root.failure")
             }.replace(PLACEHOLDER_USER, member.asTag)
         }
         sendMsg(context, msg)

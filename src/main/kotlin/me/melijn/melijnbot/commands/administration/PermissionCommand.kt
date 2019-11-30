@@ -16,7 +16,11 @@ class PermissionCommand : AbstractCommand("command.permission") {
         name = "permission"
         aliases = arrayOf("perm")
         commandCategory = CommandCategory.ADMINISTRATION
-        children = arrayOf(UserCommand(), RoleCommand(), ChannelCommand())
+        children = arrayOf(
+            UserCommand(),
+            RoleCommand(),
+            ChannelCommand()
+        )
     }
 
     override suspend fun execute(context: CommandContext) {

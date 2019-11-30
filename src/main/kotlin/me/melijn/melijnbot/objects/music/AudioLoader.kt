@@ -89,7 +89,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                             }
                         }
                     }
-                    sendMessageAddedTracks(context, tracks.subList(0, tracks.size - 1 - notAdded))
+                    sendMessageAddedTracks(context, tracks.subList(0, tracks.size - notAdded))
                 } else {
                     val track = tracks[0]
                     track.userData = TrackUserData(context.author)
@@ -99,7 +99,6 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                             LogUtils.addMusicPlayerNewTrack(context, track)
                         }
                     }
-
                 }
             }
         }

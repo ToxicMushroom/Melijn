@@ -29,7 +29,9 @@ class PlayCommand : AbstractCommand("command.play") {
         }
 
         val member = context.member
-        val senderVoiceChannel: VoiceChannel = member.voiceState?.channel ?: return
+        val senderVoiceChannel = member.voiceState?.channel
+        val botChannel = context.lavaManager.getConnectedChannel(context.guild)
+        if (senderVoiceChannel == null && botChannel == null) throw IllegalArgumentException("Fix vc_bot_or_user_dj")
         val lava: LavaManager = context.lavaManager
 
         val songArg = context.rawArg.trim()
@@ -39,7 +41,7 @@ class PlayCommand : AbstractCommand("command.play") {
                 sendMissingPermissionMessage(context, "$root.url")
                 return
             }
-            if (!lava.tryToConnectToVCNMessage(context, senderVoiceChannel)) return
+            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel)) return
             if (songArg.contains("open.spotify.com")) {
                 spotifySearchNLoad(context.audioLoader, context, songArg)
             } else {
@@ -50,7 +52,7 @@ class PlayCommand : AbstractCommand("command.play") {
                 sendMissingPermissionMessage(context, "$root.yt")
                 return
             }
-            if (!lava.tryToConnectToVCNMessage(context, senderVoiceChannel)) return
+            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel)) return
 
             if (songArg.matches("spotify:(.*)".toRegex())) {
                 spotifySearchNLoad(context.audioLoader, context, songArg)
@@ -63,7 +65,7 @@ class PlayCommand : AbstractCommand("command.play") {
                 sendMissingPermissionMessage(context, "$root.attachment")
                 return
             }
-            if (!lava.tryToConnectToVCNMessage(context, senderVoiceChannel)) return
+            if (botChannel == null && senderVoiceChannel != null &&  !lava.tryToConnectToVCNMessage(context, senderVoiceChannel)) return
             for (url in tracks) {
                 context.audioLoader.loadNewTrackNMessage(context, url, false)
             }

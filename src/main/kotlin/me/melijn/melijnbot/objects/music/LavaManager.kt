@@ -6,6 +6,7 @@ import lavalink.client.player.IPlayer
 import lavalink.client.player.LavaplayerPlayerWrapper
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.utils.notEnoughPermissionsAndMessage
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.VoiceChannel
@@ -37,26 +38,20 @@ class LavaManager(
                 channel.guild.audioManager.openAudioConnection(channel)
             }
         } else jdaLavaLink.getLink(channel.guild).connect(channel)
-
     }
 
     /**
      * @param context            This will be used to send replies
      * @param guild              This will be used to check permissions
-     * @param senderVoiceChannel This is the voice channel you want to join
+     * @param channel This is the voice channel you want to join
      * @return returns true on success and false when failed
      */
-    fun tryToConnectToVCNMessage(context: CommandContext, senderVoiceChannel: VoiceChannel): Boolean {
-        val guild = senderVoiceChannel.guild
-        if (!guild.selfMember.hasPermission(senderVoiceChannel, Permission.VOICE_CONNECT)) {
-            context.reply("I don't have permission to join your Voice Channel")
-            return false
-        }
-        return if (senderVoiceChannel.userLimit == 0 || senderVoiceChannel.userLimit > senderVoiceChannel.members.size || guild.selfMember.hasPermission(senderVoiceChannel, Permission.VOICE_MOVE_OTHERS)) {
-            openConnection(senderVoiceChannel)
+    suspend fun tryToConnectToVCNMessage(context: CommandContext, channel: VoiceChannel): Boolean {
+        if (notEnoughPermissionsAndMessage(context, channel, Permission.VOICE_CONNECT)) return false
+        return if (channel.userLimit == 0 || channel.userLimit > channel.members.size || notEnoughPermissionsAndMessage(context, channel, Permission.VOICE_MOVE_OTHERS)) {
+            openConnection(channel)
             true
         } else {
-            context.reply("Your channel is full. I need the **Move Members** permission to join full channels")
             false
         }
     }

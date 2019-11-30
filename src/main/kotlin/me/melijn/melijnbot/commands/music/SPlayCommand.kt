@@ -8,7 +8,7 @@ import me.melijn.melijnbot.objects.utils.sendSyntax
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.VoiceChannel
 
-class SplayCommand : AbstractCommand("command.splay") {
+class SPlayCommand : AbstractCommand("command.splay") {
 
     init {
         id = 95
