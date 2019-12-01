@@ -6,6 +6,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.jagtag.CCMethods
 import me.melijn.melijnbot.objects.jagtag.DiscordMethods
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.utils.*
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -48,7 +49,9 @@ class HelpCommand : AbstractCommand("command.help") {
             val translationExtra = context.getTranslation(pathExtra)
             val hasExtra = translationExtra != pathExtra
             if (path == translation) {
-                sendSyntax(context)
+                val msg = context.getTranslation("$root.missing")
+                    .replace(PLACEHOLDER_ARG, context.rawArg)
+                sendMsg(context, msg)
                 return
             }
 
@@ -107,7 +110,9 @@ class HelpCommand : AbstractCommand("command.help") {
             val path = "help.var.${context.rawArg.remove("{", "}")}"
             val translation = context.getTranslation(path)
             if (path == translation) {
-                sendSyntax(context)
+                val msg = context.getTranslation("$root.missing")
+                    .replace(PLACEHOLDER_ARG, context.rawArg)
+                sendMsg(context, msg)
                 return
             }
 
@@ -136,10 +141,15 @@ class HelpCommand : AbstractCommand("command.help") {
     override suspend fun execute(context: CommandContext) {
         val args = context.args
         if (args.isEmpty()) {
-            val part = if (context.isFromGuild) "server" else "pm"
-            val response = context.getTranslation("$root.response1.$part")
-            val msg = replaceArgs(response, if (context.isFromGuild) context.guildId else -1L, context.usedPrefix)
-            sendMsg(context, msg)
+            val title = context.getTranslation("$root.embed.title")
+            val description = context.getTranslation("$root.embed.description")
+                .replace("%prefix%", context.usedPrefix)
+                .replace("%melijnMention%", if (context.isFromGuild) context.selfMember.asMention else context.selfUser.asMention)
+            val embedder = Embedder(context)
+            embedder.setTitle(title)
+            embedder.setDescription(description)
+
+            sendEmbed(context, embedder.build())
             return
         }
         val commandList = context.commandList
@@ -251,11 +261,6 @@ class HelpCommand : AbstractCommand("command.help") {
             .replace("%cmdCategory%", command.commandCategory.toLCC())
             .replace("%prefix%", context.usedPrefix)
     }
-
-
-    private fun replaceArgs(string: String, guildId: Long, usedPrefix: String): String = string
-        .replace("%guildId%", guildId.toString())
-        .replace("%prefix%", usedPrefix)
 
 }
 

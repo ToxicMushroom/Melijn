@@ -379,6 +379,7 @@ fun getTextChannelByArgsN(context: CommandContext, index: Int, sameGuildAsContex
 }
 
 suspend fun getTextChannelByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): TextChannel? {
+    if (argSizeCheckFailed(context, index)) return null
     val textChannel = getTextChannelByArgsN(context, index, sameGuildAsContext)
     if (textChannel == null) {
         val language = context.getLanguage()

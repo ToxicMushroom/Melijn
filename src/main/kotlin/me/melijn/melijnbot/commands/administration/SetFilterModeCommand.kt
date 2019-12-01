@@ -59,6 +59,7 @@ class SetFilterModeCommand : AbstractCommand("command.setfiltermode") {
         override suspend fun execute(context: CommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
+                return
             }
 
             val textChannel = getTextChannelByArgsNMessage(context, 0) ?: return
