@@ -143,7 +143,6 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             val ccId = context.daoManager.customCommandWrapper.add(context.guildId, cc)
             cc.id = ccId
 
-            val language = context.getLanguage()
             val msg = context.getTranslation("$root.success")
                 .replace("%id%", cc.id.toString())
                 .replace("%ccName%", cc.name)

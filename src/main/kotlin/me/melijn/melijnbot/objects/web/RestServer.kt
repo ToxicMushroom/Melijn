@@ -20,7 +20,7 @@ import java.util.concurrent.ThreadPoolExecutor
 
 class RestServer(container: Container) : Jooby() {
     init {
-        val token = container.settings.tokens.melijnRest
+        //val token = container.settings.tokens.melijnRest
         use(Jackson())
 
         get("/guildCount") { _, rsp ->

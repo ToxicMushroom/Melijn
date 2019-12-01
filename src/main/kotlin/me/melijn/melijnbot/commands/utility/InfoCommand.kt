@@ -44,7 +44,7 @@ class InfoCommand : AbstractCommand("command.info") {
             .replace("%jdaVersion%", JDAInfo.VERSION)
             .replace("%lavaplayerVersion%", PlayerLibrary.VERSION)
             .replace("%weebVersion%", WeebInfo.VERSION)
-            .replace("%dbVersion%", context.daoManager.mySQLVersion)
+            .replace("%dbVersion%", context.daoManager.dbVersion)
             .replace("%dbConnectorVersion%", context.daoManager.connectorVersion)
 
     private fun replaceValueTwoVars(string: String, context: CommandContext): String = string

@@ -106,7 +106,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
     val roleWrapper: RoleWrapper
     val selfRoleWrapper: SelfRoleWrapper
 
-    lateinit var mySQLVersion: String
+    lateinit var dbVersion: String
     lateinit var connectorVersion: String
 
     val banWrapper: BanWrapper
@@ -135,10 +135,12 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
     var driverManager: DriverManager
 
     init {
-        driverManager = DriverManager(dbSettings, dbSettings.mySQL)
+        driverManager = DriverManager(dbSettings
+            //, dbSettings.mySQL
+        )
 
         runBlocking {
-            mySQLVersion = driverManager.getDBVersion()
+            dbVersion = driverManager.getDBVersion()
             connectorVersion = driverManager.getConnectorVersion()
         }
 

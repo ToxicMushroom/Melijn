@@ -22,10 +22,12 @@ class TracksWrapper(val tracksDao: TracksDao, val lastVoiceChannelDao: LastVoice
     }
 
     suspend fun put(guildId: Long, playingTrack: AudioTrack, queue: Queue<AudioTrack>) {
+        //Concurrent modification don't ask me why
+        val newQueue: Queue<AudioTrack> = LinkedList(queue)
         val playing = LavalinkUtil.toMessage(playingTrack)
         tracksDao.set(guildId, 0, playing)
 
-        for ((index, track) in queue.withIndex()) {
+        for ((index, track) in newQueue.withIndex()) {
             val json = LavalinkUtil.toMessage(track)
             tracksDao.set(guildId, index + 1, json)
         }

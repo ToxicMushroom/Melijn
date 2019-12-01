@@ -353,9 +353,10 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
     private suspend fun commandIsDisabled(id: String, event: MessageReceivedEvent): Boolean {
         val disabledChannelCommands = channelCommandStateCache.get(event.channel.idLong).await()
         if (disabledChannelCommands.contains(id)) {
-            when (disabledChannelCommands[id]) {
-                ChannelCommandState.ENABLED -> return false
-                ChannelCommandState.DISABLED -> return true
+            if (disabledChannelCommands[id] == ChannelCommandState.ENABLED) {
+                return false
+            } else if (disabledChannelCommands[id] == ChannelCommandState.DISABLED) {
+                return true
             }
         }
 

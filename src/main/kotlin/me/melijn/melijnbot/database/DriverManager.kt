@@ -14,11 +14,14 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 
-class DriverManager(dbSettings: Settings.Database, mysqlSettings: Settings.Database.MySQL) {
+class DriverManager(
+    dbSettings: Settings.Database
+    // , mysqlSettings: Settings.Database.MySQL
+) {
 
     private val afterConnectToBeExecutedQueries = ArrayList<String>()
     private val dataSource: DataSource
-//    private val dataSourceMySQL: DataSource
+    //    private val dataSourceMySQL: DataSource
     private val logger = LoggerFactory.getLogger(DriverManager::class.java.name)
     private val postgresqlPattern = "(\\d+\\.\\d+).*".toRegex()
 
