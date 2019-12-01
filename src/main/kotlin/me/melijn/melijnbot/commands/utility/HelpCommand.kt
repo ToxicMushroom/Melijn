@@ -111,7 +111,7 @@ class HelpCommand : AbstractCommand("command.help") {
                 sendSyntax(context)
                 return
             }
-            val path = "help.var.${context.rawArg.remove("{", "}")}"
+            val path = "help.var.${context.rawArg.toLowerCase().remove("{", "}")}"
             val translation = context.getTranslation(path)
             if (path == translation) {
                 val msg = context.getTranslation("$root.missing")

@@ -86,7 +86,7 @@ class GuildTrackManager(
             val embed = getResumedEmbedFromMap(data.currentTime) ?: return@async
             val guild = getAndCheckGuild() ?: return@async
 
-            val channel = guild.getAndVerifyLogChannelByType(LogChannelType.MUSIC, daoManager.logChannelWrapper)
+            val channel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.MUSIC)
                 ?: return@async
             sendEmbed(daoManager.embedDisabledWrapper, channel, embed)
         }
@@ -98,7 +98,7 @@ class GuildTrackManager(
             val embed = getPausedEmbedFromMap(data.currentTime) ?: return@async
             val guild = getAndCheckGuild() ?: return@async
 
-            val channel = guild.getAndVerifyLogChannelByType(LogChannelType.MUSIC, daoManager.logChannelWrapper)
+            val channel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.MUSIC)
                 ?: return@async
             sendEmbed(daoManager.embedDisabledWrapper, channel, embed)
         }
@@ -121,7 +121,7 @@ class GuildTrackManager(
             val embed = getStartEmbedFromMap(data.currentTime) ?: return@async
             val guild = getAndCheckGuild() ?: return@async
 
-            val channel = guild.getAndVerifyLogChannelByType(LogChannelType.MUSIC, daoManager.logChannelWrapper)
+            val channel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.MUSIC)
                 ?: return@async
             sendEmbed(daoManager.embedDisabledWrapper, channel, embed)
         }

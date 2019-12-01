@@ -24,7 +24,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             SetReason(root),
             SetExtra(root)
         )
-        commandCategory = CommandCategory.ADMINISTRATION
+        commandCategory = CommandCategory.DEVELOPER
     }
 
     override suspend fun execute(context: CommandContext) {

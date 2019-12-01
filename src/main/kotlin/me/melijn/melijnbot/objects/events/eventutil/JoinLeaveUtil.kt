@@ -73,9 +73,8 @@ object JoinLeaveUtil {
     suspend fun joinRole(daoManager: DaoManager, member: Member) {
         val guild = member.guild
         if (!guild.selfMember.canInteract(member)) return
-        val wrapper = daoManager.roleWrapper
 
-        val joinRole = guild.getAndVerifyRoleByType(RoleType.JOIN, wrapper, true) ?: return
+        val joinRole = guild.getAndVerifyRoleByType(daoManager, RoleType.JOIN, true) ?: return
 
         if (guild.selfMember.canInteract(member)) {
             guild.addRoleToMember(member, joinRole).queue()

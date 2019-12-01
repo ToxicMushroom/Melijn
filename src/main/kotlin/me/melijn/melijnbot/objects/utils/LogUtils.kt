@@ -6,6 +6,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.music.LavaManager
@@ -29,8 +30,8 @@ object LogUtils {
         if (logChannel == null) return
         val title = i18n.getTranslation(language, "logging.removed.channel.title")
             .replace("%type%", type)
-        val cause = "```LDIF" + i18n.getTranslation(language, "logging.removed.channel.causePath.$causePath")
-            .replace("%causeArg%", causeArg) + "```"
+        val cause = i18n.getTranslation(language, "logging.removed.channel.causepath.$causePath")
+            .replace("%causeArg%", causeArg)
 
 
         val eb = EmbedBuilder()
@@ -45,7 +46,7 @@ object LogUtils {
     suspend fun sendHitVerificationThroughputLimitLog(daoManager: DaoManager, member: Member) {
         val guild = member.guild
         val language = getLanguage(daoManager, -1, guild.idLong)
-        val logChannel = guild.getAndVerifyLogChannelByType(LogChannelType.VERIFICATION, daoManager.logChannelWrapper)
+        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.VERIFICATION)
             ?: return
 
         val title = i18n.getTranslation(language, "logging.verification.hitverificationthroughputlimit.title")
@@ -66,7 +67,7 @@ object LogUtils {
 
     suspend fun sendMessageFailedToAddRoleToMember(daoManager: DaoManager, member: Member, role: Role) {
         val guild = member.guild
-        val logChannel = guild.getAndVerifyLogChannelByType(LogChannelType.VERIFICATION, daoManager.logChannelWrapper)
+        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.VERIFICATION)
             ?: return
 
         val language = getLanguage(daoManager, -1, guild.idLong)
@@ -90,7 +91,7 @@ object LogUtils {
     suspend fun sendFailedVerificationLog(daoManager: DaoManager, member: Member) {
         val guild = member.guild
         val language = getLanguage(daoManager, -1, guild.idLong)
-        val logChannel = guild.getAndVerifyLogChannelByType(LogChannelType.VERIFICATION, daoManager.logChannelWrapper)
+        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.VERIFICATION)
             ?: return
 
         val title = i18n.getTranslation(language, "logging.verification.failed.title")
@@ -111,7 +112,7 @@ object LogUtils {
     suspend fun sendVerifiedUserLog(daoManager: DaoManager, author: User, member: Member) {
         val guild = member.guild
         val language = getLanguage(daoManager, -1, guild.idLong)
-        val logChannel = guild.getAndVerifyLogChannelByType(LogChannelType.VERIFICATION, daoManager.logChannelWrapper)
+        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.VERIFICATION)
             ?: return
 
         val title = i18n.getTranslation(language, "logging.verification.verified.title")
@@ -137,7 +138,7 @@ object LogUtils {
 
     suspend fun sendFailedLoadStreamTrackLog(daoManager: DaoManager, guild: Guild, source: String, exception: FriendlyException) {
         val language = getLanguage(daoManager, -1, guild.idLong)
-        val logChannel = guild.getAndVerifyLogChannelByType(LogChannelType.MUSIC, daoManager.logChannelWrapper)
+        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.MUSIC)
             ?: return
 
         val title = i18n.getTranslation(language, "logging.music.streamurl.loadfailed.title")
@@ -216,7 +217,7 @@ object LogUtils {
         val eb = EmbedBuilder()
 
         val language = getLanguage(daoManager, -1, guild.idLong)
-        val logChannel = guild.getAndVerifyLogChannelByType(LogChannelType.MUSIC, daoManager.logChannelWrapper)
+        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.MUSIC, true)
             ?: return
         val title = i18n.getTranslation(language, "logging.music.pause.title")
 
@@ -277,9 +278,9 @@ object LogUtils {
 
 
         val userTitle = i18n.getTranslation(language, "logging.music.newtrack.userfield.title")
-        val userIdTitle = i18n.getTranslation(language, "logging.music.newtrack.userIdfield.title")
+        val userIdTitle = i18n.getTranslation(language, "logging.music.newtrack.useridfield.title")
         val channel = i18n.getTranslation(language, "logging.music.newtrack.channelfield.title")
-        val channelId = i18n.getTranslation(language, "logging.music.newtrack.channelIdfield.title")
+        val channelId = i18n.getTranslation(language, "logging.music.newtrack.channelidfield.title")
         eb.setTitle(title)
 
         eb.setDescription("[${track.info.title}](${track.info.uri})")
@@ -291,5 +292,39 @@ object LogUtils {
         eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
 
         trackManager.startMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
+    }
+
+    fun sendRemovedLogChannelLog(language: String, logChannelType: LogChannelType, logChannel: TextChannel?, causePath: String, causeArg: String) {
+        if (logChannel == null) return
+        val title = i18n.getTranslation(language, "logging.removed.logchannel.title")
+            .replace("%type%", logChannelType.text)
+        val cause = i18n.getTranslation(language, "logging.removed.logchannel.causepath.$causePath")
+            .replace("%causeArg%", causeArg)
+
+
+        val eb = EmbedBuilder()
+        eb.setTitle(title)
+        eb.setColor(Color.decode("#CC0000"))
+        eb.setDescription(cause)
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+
+        logChannel.sendMessage(eb.build())
+    }
+
+    fun sendRemovedRoleLog(language: String, roleType: RoleType, logChannel: TextChannel?, causePath: String, causeArg: String) {
+        if (logChannel == null) return
+        val title = i18n.getTranslation(language, "logging.removed.role.title")
+            .replace("%type%", roleType.text)
+        val cause = i18n.getTranslation(language, "logging.removed.role.causepath.$causePath")
+            .replace("%causeArg%", causeArg)
+
+
+        val eb = EmbedBuilder()
+        eb.setTitle(title)
+        eb.setColor(Color.decode("#CC0000"))
+        eb.setDescription(cause)
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+
+        logChannel.sendMessage(eb.build())
     }
 }

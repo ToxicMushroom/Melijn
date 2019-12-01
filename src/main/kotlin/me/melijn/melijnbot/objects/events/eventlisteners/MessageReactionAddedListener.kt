@@ -138,7 +138,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
     private suspend fun postReactionAddedLog(event: GuildMessageReactionAddEvent) {
         val dao = container.daoManager
-        val logChannel = event.guild.getAndVerifyLogChannelByType(LogChannelType.REACTION, dao.logChannelWrapper)
+        val logChannel = event.guild.getAndVerifyLogChannelByType(dao, LogChannelType.REACTION)
             ?: return
 
         val embedBuilder = EmbedBuilder()
