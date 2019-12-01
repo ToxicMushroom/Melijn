@@ -55,12 +55,16 @@ class HelpCommand : AbstractCommand("command.help") {
                 return
             }
 
-            val msg = if (hasExtra) {
-                translation + "\n" + translationExtra
-            } else {
-                translation
+            val title = context.getTranslation("$root.embed.title")
+                .replace("%argName%", context.rawArg)
+            val embedder = Embedder(context)
+            embedder.setTitle(title)
+            embedder.setDescription(translation)
+            if (hasExtra) {
+                val examples = context.getTranslation("$root.embed.examples")
+                embedder.addField(examples, translationExtra, false)
             }
-            sendMsg(context, msg)
+            sendEmbed(context, embedder.build())
         }
 
         class ListArg(parent: String) : AbstractCommand("$parent.list") {
@@ -116,7 +120,13 @@ class HelpCommand : AbstractCommand("command.help") {
                 return
             }
 
-            sendMsg(context, translation)
+            val title = context.getTranslation("$root.embed.title")
+                .replace("%varName%", "{${context.rawArg.remove("{", "}")}}")
+            val embedder = Embedder(context)
+            embedder.setTitle(title)
+            embedder.setDescription(translation)
+
+            sendEmbed(context, embedder.build())
         }
 
         class ListArg(parent: String) : AbstractCommand("$parent.list") {
@@ -161,19 +171,47 @@ class HelpCommand : AbstractCommand("command.help") {
         val parentChildList = getCorrectChildElseParent(context, mutableListOf(parent), args)
         val command = parentChildList.last()
 
-        var msg = context.getTranslation("$root.response3.line1")
-        msg += context.getTranslation("$root.response3.line2")
-        if (command.aliases.isNotEmpty()) {
-            msg += context.getTranslation("$root.response3.line3")
-        }
-        msg += context.getTranslation("$root.response3.line4")
-        if (command.help != context.getTranslation(command.help)) {
-            msg += context.getTranslation("$root.response3.line5")
-        }
-        msg += context.getTranslation("$root.response3.line6")
-        msg = replaceCmdVars(msg, context, parentChildList)
+        val name = parentChildList.joinToString(" ") { cmd -> cmd.name }
+        val cmdTitle = context.getTranslation("$root.cmd.title")
+            .replace("%cmdName%", name)
+        val cmdSyntax = context.getTranslation("$root.cmd.syntax")
+        val cmdAliases = context.getTranslation("$root.cmd.aliases")
+        val cmdDesc = context.getTranslation("$root.cmd.description")
+        val cmdHelp = context.getTranslation("$root.cmd.help")
+        val cmdCategory = context.getTranslation("$root.cmd.category")
+        val cmdHelpValue = context.getTranslation(command.help)
 
-        sendMsg(context, msg)
+        val embedder = Embedder(context)
+        embedder.setTitle(cmdTitle)
+        embedder.addField(
+            cmdSyntax,
+            context.getTranslation(command.syntax)
+                .replace("%prefix%", context.usedPrefix)
+            , false
+        )
+        if (command.aliases.isNotEmpty()) {
+            embedder.addField(cmdAliases, command.aliases.joinToString(), false)
+        }
+        embedder.addField(
+            cmdDesc,
+            context.getTranslation(command.description)
+                .replace("%prefix%", context.usedPrefix)
+            , false
+        )
+        if (command.help != cmdHelpValue) {
+            var help = cmdHelpValue.replace("%prefix%", context.usedPrefix)
+
+            val matcher = Pattern.compile("%(help\\.arg\\..+)%").matcher(help)
+            while (matcher.find()) {
+                val og = matcher.group(0)
+                val path = matcher.group(1)
+                help = help.replace(og, "*" + context.getTranslation(path))
+            }
+            embedder.addField(cmdHelp, help, false)
+        }
+        embedder.addField(cmdCategory, command.commandCategory.toLCC(), false)
+
+        sendEmbed(context, embedder.build())
     }
 
     //Converts ("ping", "pong", "dunste") into a list of (PingCommand, PongArg, DunsteArg) if the args are matching an existing parent child sequence
@@ -184,8 +222,12 @@ class HelpCommand : AbstractCommand("command.help") {
         argIndex: Int = 1
     ): MutableList<AbstractCommand> {
         if (argIndex >= args.size) return cmdList
+
         val commandList = cmdList.last().children
-        val child = commandList.firstOrNull { child -> child.isCommandFor(args[argIndex]) } ?: cmdList.last()
+        val child = commandList.firstOrNull { child ->
+            child.isCommandFor(args[argIndex])
+        } ?: cmdList.last()
+
         return if (child == cmdList.last()) {
             cmdList
         } else {
@@ -238,30 +280,6 @@ class HelpCommand : AbstractCommand("command.help") {
             sendEmbed(context, eb.build())
         }
     }
-
-
-    private suspend fun replaceCmdVars(msg: String, context: CommandContext, parentChildList: List<AbstractCommand>): String {
-        val command = parentChildList.last()
-        val name = parentChildList.joinToString(" ") { cmd -> cmd.name }
-        var help = context.getTranslation(command.help)
-
-        val matcher = Pattern.compile("%(help\\.arg\\..+)%").matcher(help)
-        while (matcher.find()) {
-            val og = matcher.group(0)
-            val path = matcher.group(1)
-            help = help.replace(og, "*" + context.getTranslation(path))
-        }
-
-        return msg
-            .replace("%cmdName%", name)
-            .replace("%cmdSyntax%", context.getTranslation(command.syntax))
-            .replace("%cmdAliases%", command.aliases.joinToString())
-            .replace("%cmdDescription%", context.getTranslation(command.description))
-            .replace("%cmdHelp%", help)
-            .replace("%cmdCategory%", command.commandCategory.toLCC())
-            .replace("%prefix%", context.usedPrefix)
-    }
-
 }
 
 private fun commandListString(list: List<AbstractCommand>, category: CommandCategory): String = list

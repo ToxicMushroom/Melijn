@@ -3,10 +3,12 @@ package me.melijn.melijnbot.objects.events.eventlisteners
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.commands.utility.HelpCommand
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.VerificationType
+import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.events.AbstractListener
 import me.melijn.melijnbot.objects.events.eventutil.FilterUtil
 import me.melijn.melijnbot.objects.translation.*
@@ -17,6 +19,7 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.events.GenericEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import java.awt.Color
 
@@ -28,6 +31,21 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             handleAttachmentLog(event)
             handleVerification(event)
             FilterUtil.handleFilter(container, event.message)
+        }
+        if (event is MessageReceivedEvent) {
+            handleSimpleMelijnPing(event)
+        }
+    }
+
+    private suspend fun handleSimpleMelijnPing(event: MessageReceivedEvent) {
+        if (event.author.isBot) return
+        val tag = if (event.isFromGuild) event.guild.selfMember.asMention else event.jda.selfUser.asMention
+        if (event.message.contentRaw == tag) {
+            val helpCmd = container.commandMap.values.firstOrNull { cmd -> cmd is HelpCommand } ?: return
+            val cmdContext = CommandContext(event, listOf(">", "help"), container, container.commandMap.values.toSet())
+            container.taskManager.async {
+                helpCmd.run(cmdContext)
+            }
         }
     }
 
