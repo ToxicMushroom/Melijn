@@ -8,6 +8,7 @@ import me.melijn.melijnbot.objects.jagtag.CCMethods
 import me.melijn.melijnbot.objects.jagtag.DiscordMethods
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.utils.*
+import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.regex.Pattern
@@ -185,8 +186,10 @@ class HelpCommand : AbstractCommand("command.help") {
         embedder.setTitle(cmdTitle)
         embedder.addField(
             cmdSyntax,
-            context.getTranslation(command.syntax)
-                .replace("%prefix%", context.usedPrefix)
+            MarkdownSanitizer.escape(
+                context.getTranslation(command.syntax)
+                    .replace("%prefix%", context.usedPrefix)
+            )
             , false
         )
         if (command.aliases.isNotEmpty()) {

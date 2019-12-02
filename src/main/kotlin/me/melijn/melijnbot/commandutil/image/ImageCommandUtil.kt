@@ -10,6 +10,8 @@ import java.io.ByteArrayOutputStream
 
 object ImageCommandUtil {
 
+    val defaultOffset = 128
+    val defaultQuality = 5
 
     suspend fun executeNormalRecolor(context: CommandContext, recolor: (ints: IntArray) -> IntArray, hasOffset: Boolean = true) {
         executeNormalEffect(context, { image, offset ->
@@ -32,7 +34,7 @@ object ImageCommandUtil {
         val pair = ImageUtils.getImageBytesNMessage(context) ?: return
         val imageByteArray = pair.first ?: return
         val argInt = if (pair.second) 1 else 0
-        val offset = (getIntegerFromArgN(context, argInt + 0) ?: 128)
+        val offset = if (hasOffset) (getIntegerFromArgN(context, argInt + 0) ?: defaultOffset) else defaultOffset
 
         val outputStream = transform(imageByteArray, offset)
         sendFile(context, outputStream.toByteArray(), "png")
@@ -65,8 +67,8 @@ object ImageCommandUtil {
             argInt -= 1
         }
 
-        val offset = (getIntegerFromArgN(context, argInt + 0) ?: 128)
-        val quality = getIntegerFromArgN(context, argInt + 1) ?: 5
+        val offset = (getIntegerFromArgN(context, argInt + 0) ?: defaultOffset)
+        val quality = getIntegerFromArgN(context, argInt + 1) ?: defaultQuality
         val repeat = getBooleanFromArgN(context, argInt + 2)
         val fps = getIntegerFromArgN(context, argInt + 3)?.toFloat()
 
