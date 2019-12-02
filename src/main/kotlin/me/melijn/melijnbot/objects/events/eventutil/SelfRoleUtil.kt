@@ -3,13 +3,14 @@ package me.melijn.melijnbot.objects.events.eventutil
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.ChannelType
+import me.melijn.melijnbot.objects.utils.awaitOrNull
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.events.message.guild.react.GenericGuildMessageReactionEvent
 
 object SelfRoleUtil {
     suspend fun getSelectedSelfRoleNByReactionEvent(event: GenericGuildMessageReactionEvent, container: Container): Role? {
         val guild = event.guild
-        val member = event.member
+        val member = event.member ?: guild.retrieveMemberById(event.userIdLong).awaitOrNull() ?: return null
         val channel = event.channel
         val reaction = event.reaction
         val guildId = guild.idLong

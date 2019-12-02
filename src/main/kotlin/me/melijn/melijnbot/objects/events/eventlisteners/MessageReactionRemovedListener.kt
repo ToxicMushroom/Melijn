@@ -4,6 +4,7 @@ import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.events.AbstractListener
 import me.melijn.melijnbot.objects.events.eventutil.SelfRoleUtil
+import me.melijn.melijnbot.objects.utils.awaitOrNull
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveEvent
 
@@ -19,7 +20,7 @@ class MessageReactionRemovedListener(container: Container) : AbstractListener(co
 
     private suspend fun selfRoleHandler(event: GuildMessageReactionRemoveEvent) {
         val guild = event.guild
-        val member = event.member
+        val member = event.member ?: guild.retrieveMemberById(event.userIdLong).awaitOrNull() ?: return
         val role = SelfRoleUtil.getSelectedSelfRoleNByReactionEvent(event, container) ?: return
 
         if (member.roles.contains(role)) {
