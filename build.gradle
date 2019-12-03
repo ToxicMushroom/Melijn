@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
     //https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation('net.dv8tion:JDA:4.0.0_69') {
+    implementation('net.dv8tion:JDA:4.0.0_70') {
         exclude module: 'opus-java'
     }
 
@@ -83,11 +83,6 @@ dependencies {
 
     //https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib-jdk8
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.3.61'
-}
-
-// Minimizing an shadow JAR
-shadowJar {
-    minimize()
 }
 
 
