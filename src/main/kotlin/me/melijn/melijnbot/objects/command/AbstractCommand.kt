@@ -3,6 +3,7 @@ package me.melijn.melijnbot.objects.command
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.PermState
+import me.melijn.melijnbot.objects.utils.sendInGuild
 import me.melijn.melijnbot.objects.utils.sendMsg
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
@@ -55,7 +56,11 @@ abstract class AbstractCommand(val root: String) {
                 map2[id.toString()] = System.currentTimeMillis()
                 context.daoManager.commandChannelCoolDownWrapper.executions[pair2] = map2
             }
-            execute(context)
+            try {
+                execute(context)
+            } catch (e: Exception) {
+                e.sendInGuild(context)
+            }
             context.daoManager.commandUsageWrapper.addUse(context.commandOrder[0].id)
         } else sendMissingPermissionMessage(context, permission)
     }

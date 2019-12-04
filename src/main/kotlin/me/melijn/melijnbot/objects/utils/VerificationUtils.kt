@@ -47,21 +47,28 @@ object VerificationUtils {
         sendMsg(textChannel, msg)
     }
 
-    suspend fun verify(daoManager: DaoManager, unverifiedRole: Role, author: User, member: Member) {
+    suspend fun verify(daoManager: DaoManager, unverifiedRole: Role, author: User, member: Member): Boolean {
         if (hasHitThroughputLimit(daoManager, member)) {
             LogUtils.sendHitVerificationThroughputLimitLog(daoManager, member)
-            return
+            return false
         }
         val guild = unverifiedRole.guild
-        guild.removeRoleFromMember(member, unverifiedRole)
-            .reason("verified")
-            .queue()
+        if (unverifiedRole.idLong != guild.idLong) {
+            val result = guild.removeRoleFromMember(member, unverifiedRole)
+                .reason("verified")
+                .awaitBool()
+            if (!result) {
+                LogUtils.sendMessageFailedToAddRoleToMember(daoManager, member, unverifiedRole)
+                return false
+            }
+        }
 
         daoManager.unverifiedUsersWrapper.remove(member.guild.idLong, member.idLong)
         LogUtils.sendVerifiedUserLog(daoManager, author, member)
         JoinLeaveUtil.postWelcomeMessage(daoManager, member, ChannelType.JOIN, MessageType.JOIN)
         JoinLeaveUtil.forceRole(daoManager, member)
         JoinLeaveUtil.joinRole(daoManager, member)
+        return true
     }
 
     suspend fun failedVerification(dao: DaoManager, member: Member) {
@@ -89,10 +96,14 @@ object VerificationUtils {
     suspend fun addUnverified(member: Member, daoManager: DaoManager) {
         val guild = member.guild
         val role = guild.getAndVerifyRoleByType(daoManager, RoleType.UNVERIFIED, true) ?: return
-        val result = guild.addRoleToMember(member, role).awaitBool()
+
+        val result = if (role.idLong != guild.idLong) {
+            guild.addRoleToMember(member, role).awaitBool()
+        } else {
+            true
+        }
         if (result) {
             daoManager.unverifiedUsersWrapper.add(member.guild.idLong, member.idLong)
-
         } else {
             LogUtils.sendMessageFailedToAddRoleToMember(daoManager, member, role)
         }

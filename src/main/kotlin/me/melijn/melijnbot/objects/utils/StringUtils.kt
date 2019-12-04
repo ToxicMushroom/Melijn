@@ -168,10 +168,16 @@ fun getDurationString(milliseconds: Long): String {
     return getDurationString(milliseconds.toDouble())
 }
 
+const val HUNDRED_YEARS_MILLIS = 3_153_600_000_000
 fun getDurationString(milliseconds: Double): String {
-    if (milliseconds < 0.0) {
-        return "error"
+    if (milliseconds >= Double.MAX_VALUE || milliseconds >= Double.POSITIVE_INFINITY || milliseconds >= HUNDRED_YEARS_MILLIS) {
+        return "infinite"
     }
+
+    if (milliseconds < 0.0) {
+        return "infinite"
+    }
+
 
     var millis = milliseconds.toLong()
     val days = TimeUnit.MILLISECONDS.toDays(millis)
