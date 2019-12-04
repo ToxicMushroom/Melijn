@@ -13,7 +13,7 @@ class InvertCommand : AbstractCommand("command.invert") {
     init {
         id = 56
         name = "invert"
-        aliases = arrayOf("invertGif")
+        aliases = arrayOf("invertGif", "inverse", "inverseGif")
         discordPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }

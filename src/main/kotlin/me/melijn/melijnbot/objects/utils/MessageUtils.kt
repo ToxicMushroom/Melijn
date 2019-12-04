@@ -9,6 +9,7 @@ import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
 import me.melijn.melijnbot.objects.translation.i18n
+import me.melijn.melijnbot.objects.utils.StringUtils.humanReadableByteCountBin
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.requests.restaction.MessageAction
@@ -384,17 +385,26 @@ suspend fun sendFile(context: CommandContext, bytes: ByteArray, extension: Strin
     val failed = { failed: Throwable -> it.resumeWithException(failed) }
     runBlocking {
         if (context.isFromGuild) {
-            sendFile(context.textChannel, bytes, extension, success, failed)
+            sendFile(context.getLanguage(), context.textChannel, bytes, extension, success, failed)
         } else {
-            sendFile(context.privateChannel, bytes, extension, success, failed)
+            sendFile(context.getLanguage(), context.privateChannel, bytes, extension, success, failed)
         }
     }
 }
 
 
-suspend fun sendFile(privateChannel: PrivateChannel, bytes: ByteArray, extension: String, success: ((List<Message>) -> Unit)? = null, failed: ((Throwable) -> Unit)? = null) {
+suspend fun sendFile(language: String, privateChannel: PrivateChannel, bytes: ByteArray, extension: String, success: ((List<Message>) -> Unit)? = null, failed: ((Throwable) -> Unit)? = null) {
     try {
         val messageList = mutableListOf<Message>()
+        if (privateChannel.jda.selfUser.allowedFileSize < (bytes.size)) {
+            val size = humanReadableByteCountBin(bytes.size)
+            val max = humanReadableByteCountBin(privateChannel.jda.selfUser.allowedFileSize)
+            val msg = i18n.getTranslation(language, "message.filetoobig")
+                .replace("%size%", size)
+                .replace("%max%", max)
+            sendMsg(privateChannel, msg)
+            return
+        }
         messageList.add(privateChannel.sendFile(bytes, "finished.$extension").await())
 
         success?.invoke(messageList)
@@ -405,10 +415,19 @@ suspend fun sendFile(privateChannel: PrivateChannel, bytes: ByteArray, extension
     }
 }
 
-suspend fun sendFile(textChannel: TextChannel, bytes: ByteArray, extension: String, success: ((List<Message>) -> Unit)? = null, failed: ((Throwable) -> Unit)? = null) {
+suspend fun sendFile(language: String, textChannel: TextChannel, bytes: ByteArray, extension: String, success: ((List<Message>) -> Unit)? = null, failed: ((Throwable) -> Unit)? = null) {
     require(textChannel.canTalk()) { "Cannot talk in this channel " + textChannel.name }
     try {
         val messageList = mutableListOf<Message>()
+        if (textChannel.jda.selfUser.allowedFileSize < (bytes.size)) {
+            val size = humanReadableByteCountBin(bytes.size)
+            val max = humanReadableByteCountBin(textChannel.jda.selfUser.allowedFileSize)
+            val msg = i18n.getTranslation(language, "message.filetoobig")
+                .replace("%size%", size)
+                .replace("%max%", max)
+            sendMsg(textChannel, msg)
+            return
+        }
         messageList.add(textChannel.sendFile(bytes, "finished.$extension").await())
 
         success?.invoke(messageList)
@@ -418,6 +437,8 @@ suspend fun sendFile(textChannel: TextChannel, bytes: ByteArray, extension: Stri
         return
     }
 }
+
+
 
 
 suspend fun sendMsg(context: CommandContext, listImages: List<BufferedImage>, extension: String): List<Message> = suspendCoroutine {

@@ -11,6 +11,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 import javax.annotation.Nullable
+import kotlin.math.pow
 
 
 object StringUtils {
@@ -73,6 +74,19 @@ object StringUtils {
 
         if (msg.isNotEmpty()) messages.add(msg)
         return messages
+    }
+
+    fun humanReadableByteCountBin(bytes: Int): String = humanReadableByteCountBin(bytes.toLong())
+    fun humanReadableByteCountBin(bytes: Long): String {
+        return when {
+            bytes < 1024L -> "$bytes B"
+            bytes < 0xfffccccccccccccL shr 40 -> String.format("%.3f KiB", bytes / 2.0.pow(10.0))
+            bytes < 0xfffccccccccccccL shr 30 -> String.format("%.3f MiB", bytes / 2.0.pow(20.0))
+            bytes < 0xfffccccccccccccL shr 20 -> String.format("%.3f GiB", bytes / 2.0.pow(30.0))
+            bytes < 0xfffccccccccccccL shr 10 -> String.format("%.3f TiB", bytes / 2.0.pow(40.0))
+            bytes < 0xfffccccccccccccL -> String.format("%.3f PiB", (bytes shr 10) / 2.0.pow(40.0))
+            else -> String.format("%.3f EiB", (bytes shr 20) / 2.0.pow(40.0))
+        }
     }
 
     private fun getBackTickAmountAndLastTwoIndexes(findLastNewline: String): Triple<Int, Int, Int> {
