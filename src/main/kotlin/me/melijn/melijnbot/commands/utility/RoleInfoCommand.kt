@@ -5,7 +5,6 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE_ID
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asLongLongGMTString
 import me.melijn.melijnbot.objects.utils.getRoleByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendEmbed
@@ -28,12 +27,11 @@ class RoleInfoCommand : AbstractCommand("command.roleinfo") {
             return
         }
 
-        val language = context.getLanguage()
         val role = getRoleByArgsNMessage(context, 0, false) ?: return
-        val tile1 = i18n.getTranslation(language, "$root.response1.field1.title")
-        val yes = i18n.getTranslation(language, "yes")
-        val no = i18n.getTranslation(language, "no")
-        val unReplacedValue1 = i18n.getTranslation(language, "$root.response1.field1.value")
+        val tile1 = context.getTranslation("$root.response1.field1.title")
+        val yes = context.getTranslation("yes")
+        val no = context.getTranslation("no")
+        val unReplacedValue1 = context.getTranslation("$root.response1.field1.value")
         val value1 = replaceRoleVars(unReplacedValue1, role, yes, no)
 
         val eb = Embedder(context)

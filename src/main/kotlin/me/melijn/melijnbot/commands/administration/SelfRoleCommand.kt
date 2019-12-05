@@ -29,7 +29,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         sendSyntax(context)
     }
 
-    class AddArg(root: String) : AbstractCommand("$root.add") {
+    class AddArg(parent: String) : AbstractCommand("$parent.add") {
 
         init {
             name = "add"
@@ -41,6 +41,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 sendSyntax(context)
                 return
             }
+
             val pair = getEmoteOrEmojiByArgsNMessage(context, 0) ?: return
             var rname: String? = null
             val id = if (pair.first == null) {
@@ -57,15 +58,14 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
             context.daoManager.selfRoleWrapper.set(context.guildId, id, role.idLong)
 
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.success")
+            val msg = context.getTranslation("$root.success")
                 .replace("%emoteji%", name)
                 .replace(PLACEHOLDER_ROLE, role.name)
             sendMsg(context, msg)
         }
     }
 
-    class RemoveArg(root: String) : AbstractCommand("$root.remove") {
+    class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
 
         init {
             name = "remove"
@@ -85,17 +85,18 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             } ?: return
             context.daoManager.selfRoleWrapper.remove(context.guildId, id)
 
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.success")
+
+            val msg = context.getTranslation("$root.success")
             sendMsg(context, msg)
         }
 
     }
 
-    class ListArg(root: String) : AbstractCommand("$root.list") {
+    class ListArg(parent: String) : AbstractCommand("$parent.list") {
 
         init {
             name = "list"
+            aliases = arrayOf("ls")
         }
 
         override suspend fun execute(context: CommandContext) {

@@ -58,7 +58,6 @@ class MetricsCommand : AbstractCommand("command.metrics") {
 
             sendMsg(context, msg)
         }
-
     }
 
     class AllArg(root: String) : AbstractCommand("$root.all") {
@@ -80,6 +79,5 @@ class MetricsCommand : AbstractCommand("command.metrics") {
 
             sendMsg(context, msg)
         }
-
     }
 }

@@ -18,15 +18,16 @@ class VolumeCommand : AbstractCommand("command.volume") {
     }
 
     override suspend fun execute(context: CommandContext) {
+        val iPlayer = context.guildMusicPlayer.guildTrackManager.iPlayer
         if (context.args.isEmpty()) {
-            val amount = context.guildMusicPlayer.guildTrackManager.iPlayer.volume
+            val amount = iPlayer.volume
             val msg = context.getTranslation("$root.show")
                 .replace("%volume%", amount.toString())
             sendMsg(context, msg)
             return
         }
         val amount = getIntegerFromArgNMessage(context, 0, 0, 1000) ?: return
-        context.guildMusicPlayer.guildTrackManager.iPlayer.volume = amount
+        iPlayer.volume = amount
 
         val msg = context.getTranslation("$root.set")
             .replace("%volume%", amount.toString())

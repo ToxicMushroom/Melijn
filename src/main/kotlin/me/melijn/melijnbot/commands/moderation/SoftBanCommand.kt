@@ -34,8 +34,7 @@ class SoftBanCommand : AbstractCommand("command.softban") {
         val targetUser = getUserByArgsNMessage(context, 0) ?: return
         val member = context.guild.getMember(targetUser)
         if (member != null && !context.guild.selfMember.canInteract(member)) {
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.cannotban")
+            val msg = context.getTranslation("$root.cannotban")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
             sendMsg(context, msg)
             return
@@ -64,9 +63,7 @@ class SoftBanCommand : AbstractCommand("command.softban") {
             context.authorId,
             reason)
 
-
-        val language = context.getLanguage()
-        val banning = i18n.getTranslation(language, "message.softbanning")
+        val banning = context.getTranslation("message.softbanning")
 
         val privateChannel = targetUser.openPrivateChannel().await()
         val message = privateChannel.sendMessage(banning).awaitOrNull()
@@ -98,15 +95,15 @@ class SoftBanCommand : AbstractCommand("command.softban") {
                 guild.unban(targetUser).reason("softbanned").await()
             }
 
-            i18n.getTranslation(language, "$root.success")
+            context.getTranslation("$root.success")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
                 .replace("%reason%", softBan.reason)
 
         } catch (t: Throwable) {
-            val failedMsg = i18n.getTranslation(language, "message.softbanning.failed")
+            val failedMsg = context.getTranslation("message.softbanning.failed")
             softBanningMessage?.editMessage(failedMsg)?.queue()
 
-            i18n.getTranslation(language, "$root.failure")
+            context.getTranslation("$root.failure")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
                 .replace("%cause%", t.message ?: "/")
         }

@@ -1,13 +1,12 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_ROLETYPE
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
-import me.melijn.melijnbot.objects.translation.i18n
+import me.melijn.melijnbot.objects.utils.checks.getAndVerifyRoleByType
 import me.melijn.melijnbot.objects.utils.getEnumFromArgNMessage
 import me.melijn.melijnbot.objects.utils.getRoleByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
@@ -28,7 +27,6 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
             return
         }
 
-
         val roleType: RoleType = getEnumFromArgNMessage(context, 0, MESSAGE_UNKNOWN_ROLETYPE) ?: return
 
         handleEnum(context, roleType)
@@ -43,22 +41,14 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
     }
 
     private suspend fun displayRole(context: CommandContext, roleType: RoleType) {
-        val daoWrapper = context.daoManager.roleWrapper
-        val pair = Pair(context.guildId, roleType)
-        val roleId = daoWrapper.roleCache.get(pair).await()
-        val role = context.guild.getRoleById(roleId)
+        val daoManager = context.daoManager
+        val role = context.guild.getAndVerifyRoleByType(daoManager, roleType)
 
-        if (roleId != -1L && role == null) {
-            daoWrapper.removeRole(pair.first, pair.second)
-            return
-        }
-
-        val language = context.getLanguage()
         val msg = (if (role != null) {
-            i18n.getTranslation(language, "$root.show.set")
+            context.getTranslation("$root.show.set")
                 .replace(PLACEHOLDER_ROLE, role.name)
         } else {
-            i18n.getTranslation(language, "$root.show.unset")
+            context.getTranslation("$root.show.unset")
         }).replace("%roleType%", roleType.text)
 
         sendMsg(context, msg)
@@ -71,19 +61,18 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
             return
         }
 
-        val language = context.getLanguage()
         val daoWrapper = context.daoManager.roleWrapper
         val msg = if (context.args[1].equals("null", true)) {
 
             daoWrapper.removeRole(context.guildId, roleType)
 
-            i18n.getTranslation(language, "$root.unset")
+            context.getTranslation("$root.unset")
                 .replace("%roleType%", roleType.text)
         } else {
             val role = getRoleByArgsNMessage(context, 1) ?: return
             daoWrapper.setRole(context.guildId, roleType, role.idLong)
 
-            i18n.getTranslation(language, "$root.set")
+            context.getTranslation("$root.set")
                 .replace("%roleType%", roleType.text)
                 .replace(PLACEHOLDER_ROLE, role.name)
 

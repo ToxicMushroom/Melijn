@@ -51,8 +51,8 @@ suspend fun Guild.getAndVerifyLogChannelByType(daoManager: DaoManager, type: Log
 }
 
 suspend fun Guild.getAndVerifyChannelByType(
-    type: ChannelType,
     daoManager: DaoManager,
+    type: ChannelType,
     vararg requiredPerms: Permission
 ): TextChannel? {
     val channelWrapper = daoManager.channelWrapper

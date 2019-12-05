@@ -52,18 +52,19 @@ suspend fun <T> RestAction<T>.awaitOrNull() = suspendCoroutine<T?> {
     )
 }
 
+suspend fun <T> RestAction<T>.awaitEX() = suspendCoroutine<Throwable?> {
+    queue(
+        { _ -> it.resume(null) },
+        { throwable -> it.resume(throwable) }
+    )
+}
+
 suspend fun <T> RestAction<T>.awaitBool() = suspendCoroutine<Boolean> {
     queue(
         { _ -> it.resume(true) },
         { _ -> it.resume(false) }
     )
 }
-
-//fun getUserByArgs(context: CommandContext, index: Int): User {
-//    var user = getUserByArgsN(context, index)
-//    if (user == null) user = context.author
-//    return user
-//}
 
 
 fun getUserByArgsN(context: CommandContext, index: Int): User? {//With null
@@ -577,7 +578,11 @@ suspend fun getTimeFromArgsNMessage(context: CommandContext, start: Long = Long.
             }
         }
     } catch (ex: NumberFormatException) {
-        val path = if (workingPart.matches("\\d+".toRegex())) "message.numbertobig" else "message.unknown.number"
+        val path = if (workingPart.matches("\\d+".toRegex())) {
+            "message.numbertobig"
+        } else {
+            "message.unknown.number"
+        }
         val msg = context.getTranslation(path)
             .replace(PLACEHOLDER_ARG, workingPart)
         sendMsg(context, msg)

@@ -29,7 +29,7 @@ class KickCommand : AbstractCommand("command.kick") {
         val targetMember = getMemberByArgsNMessage(context, 0) ?: return
         if (!context.guild.selfMember.canInteract(targetMember)) {
             val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.cannotkick")
+            val msg = context.getTranslation("$root.cannotkick")
                 .replace(PLACEHOLDER_USER, targetMember.asTag)
             sendMsg(context, msg)
             return
@@ -49,8 +49,7 @@ class KickCommand : AbstractCommand("command.kick") {
         )
 
 
-        val language = context.getLanguage()
-        val kicking = i18n.getTranslation(language, "message.kicking")
+        val kicking = context.getTranslation("message.kicking")
         try {
             val privateChannel = targetMember.user.openPrivateChannel().await()
             val message = privateChannel.sendMessage(kicking).await()
@@ -81,15 +80,15 @@ class KickCommand : AbstractCommand("command.kick") {
             val logChannel = guild.getTextChannelById(logChannelId)
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, warnedMessageLc) }
 
-            i18n.getTranslation(language, "$root.success")
+            context.getTranslation("$root.success")
                 .replace(PLACEHOLDER_USER, targetMember.asTag)
                 .replace("%reason%", kick.reason)
 
         } catch (t: Throwable) {
-            val failedMsg = i18n.getTranslation(language, "message.kicking.failed")
+            val failedMsg = context.getTranslation("message.kicking.failed")
             kickingMessage?.editMessage(failedMsg)?.queue()
 
-            i18n.getTranslation(language, "$root.failure")
+            context.getTranslation("$root.failure")
                 .replace(PLACEHOLDER_USER, targetMember.asTag)
                 .replace("%cause%", t.message ?: "/")
 

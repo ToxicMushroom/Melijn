@@ -6,11 +6,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.getRoleByArgsNMessage
-import me.melijn.melijnbot.objects.utils.retrieveUserByArgsNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.*
 
 class ForceRoleCommand : AbstractCommand("command.forcerole") {
 
@@ -43,15 +39,16 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
 
             context.daoManager.forceRoleWrapper.add(context.guildId, user.idLong, role.idLong)
             if (member != null && !member.roles.contains(role)) {
-                context.guild.addRoleToMember(member, role).queue()
+                if (!context.guild.addRoleToMember(member, role).awaitBool()) {
+                    LogUtils.sendMessageFailedToAddRoleToMember(context.daoManager, member, role)
+                }
             }
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.success")
+
+            val msg = context.getTranslation("$root.success")
                 .replace(PLACEHOLDER_USER, user.asTag)
                 .replace(PLACEHOLDER_ROLE, role.name)
             sendMsg(context, msg)
         }
-
     }
 
     class RemoveArg(root: String) : AbstractCommand("$root.remove") {
@@ -67,16 +64,16 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
 
             context.daoManager.forceRoleWrapper.remove(context.guildId, user.idLong, role.idLong)
             if (member != null && member.roles.contains(role)) {
-                context.guild.removeRoleFromMember(member, role).queue()
+                if (context.guild.removeRoleFromMember(member, role).awaitBool()) {
+                    LogUtils.sendMessageFailedToRemoveRoleFromMember(context.daoManager, member, role)
+                }
             }
 
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.success")
+            val msg = context.getTranslation("$root.success")
                 .replace(PLACEHOLDER_USER, user.asTag)
                 .replace(PLACEHOLDER_ROLE, role.name)
             sendMsg(context, msg)
         }
-
     }
 
     class ListArg(root: String) : AbstractCommand("$root.list") {
@@ -99,8 +96,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             if (roleIds.isEmpty()) content += "/"
             content += "```"
 
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.title")
+            val msg = context.getTranslation("$root.title")
                 .replace(PLACEHOLDER_USER, user.asTag)
             sendMsg(context, msg)
         }

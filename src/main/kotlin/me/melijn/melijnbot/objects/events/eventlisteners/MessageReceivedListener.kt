@@ -56,7 +56,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         val member = event.member ?: return
         val dao = container.daoManager
 
-        val verificationChannel = guild.getAndVerifyChannelByType(ChannelType.VERIFICATION, dao, Permission.MESSAGE_MANAGE)
+        val verificationChannel = guild.getAndVerifyChannelByType(dao, ChannelType.VERIFICATION, Permission.MESSAGE_MANAGE)
             ?: return
         if (verificationChannel.idLong != textChannel.idLong) return
 

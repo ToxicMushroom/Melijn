@@ -35,7 +35,7 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
     }
 
     private suspend fun guildHasNoVerification(event: GuildMemberJoinEvent): Boolean {
-        val channel = event.guild.getAndVerifyChannelByType(ChannelType.VERIFICATION, container.daoManager)
+        val channel = event.guild.getAndVerifyChannelByType(container.daoManager, ChannelType.VERIFICATION)
         return channel == null
     }
 

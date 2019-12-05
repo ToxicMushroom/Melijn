@@ -5,7 +5,6 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asLongLongGMTString
 import me.melijn.melijnbot.objects.utils.asTag
 import me.melijn.melijnbot.objects.utils.sendEmbed
@@ -30,18 +29,16 @@ class GuildInfoCommand : AbstractCommand("command.guildinfo") {
             }
         }
 
-        val language = context.getLanguage()
+        val title1 = context.getTranslation("$root.response1.field1.title")
+        val title2 = context.getTranslation("$root.response1.field2.title")
+        val title3 = context.getTranslation("$root.response1.field3.title")
 
-        val title1 = i18n.getTranslation(language, "$root.response1.field1.title")
-        val title2 = i18n.getTranslation(language, "$root.response1.field2.title")
-        val title3 = i18n.getTranslation(language, "$root.response1.field3.title")
-
-        val value1 = replaceFieldVar(i18n.getTranslation(language, "$root.response1.field1.value"), guild)
-        val value2 = replaceFieldVar(i18n.getTranslation(language, "$root.response1.field2.value"), guild)
-        val value31 = replaceFieldVar(i18n.getTranslation(language, "$root.response1.field3.value.part1"), guild)
-        val value32 = replaceFieldVar(i18n.getTranslation(language, "$root.response1.field3.value.part2"), guild)
-        val value33 = replaceFieldVar(i18n.getTranslation(language, "$root.response1.field3.value.part3"), guild)
-        val value34 = replaceFieldVar(i18n.getTranslation(language, "$root.response1.field3.value.part4"), guild)
+        val value1 = replaceFieldVar(context.getTranslation("$root.response1.field1.value"), guild)
+        val value2 = replaceFieldVar(context.getTranslation("$root.response1.field2.value"), guild)
+        val value31 = replaceFieldVar(context.getTranslation("$root.response1.field3.value.part1"), guild)
+        val value32 = replaceFieldVar(context.getTranslation("$root.response1.field3.value.part2"), guild)
+        val value33 = replaceFieldVar(context.getTranslation("$root.response1.field3.value.part3"), guild)
+        val value34 = replaceFieldVar(context.getTranslation("$root.response1.field3.value.part4"), guild)
 
         var value3 = ""
         if (guild.iconUrl != null) value3 += replaceFieldVar(value31, guild)
@@ -60,33 +57,33 @@ class GuildInfoCommand : AbstractCommand("command.guildinfo") {
 
     private fun replaceFieldVar(string: String, guild: Guild): String {
         val botCount = guild.memberCache
-                .stream()
-                .filter { member -> member.user.isBot }
-                .count()
+            .stream()
+            .filter { member -> member.user.isBot }
+            .count()
 
         return string
-                .replace("%guildName%", guild.name)
-                .replace("%guildId%", guild.id)
-                .replace("%iconUrl%", (if (guild.iconUrl != null) "${guild.iconUrl}?size=2048" else "").toString())
-                .replace("%bannerUrl%", (if (guild.bannerUrl != null) "${guild.bannerUrl}?size=2048" else "").toString())
-                .replace("%splashUrl%", (if (guild.splashUrl != null) "${guild.splashUrl}?size=2048" else "").toString())
-                .replace("%vanityUrl%", (if (guild.vanityUrl != null) "${guild.vanityUrl}?size=2048" else "").toString())
-                .replace("%creationDate%", guild.timeCreated.asLongLongGMTString())
-                .replace("%region%", guild.region.name)
-                .replace("%isVip%", if (guild.region.isVip) "yes" else "no")
-                .replace("%boostCount%", guild.boostCount.toString())
-                .replace("%boostTier%", guild.boostTier.key.toString())
-                .replace("%memberCount%", guild.memberCache.size().toString())
-                .replace("%roleCount%", guild.roleCache.size().toString())
-                .replace("%textChannelCount%", guild.textChannelCache.size().toString())
-                .replace("%voiceChannelCount%", guild.voiceChannelCache.size().toString())
-                .replace("%categoryCount%", guild.categoryCache.size().toString())
-                .replace("%owner%", (if (guild.owner != null) guild.owner?.asTag else "NONE").toString())
-                .replace("%verificationLevel%", guild.verificationLevel.name)
-                .replace("%botCount%", botCount.toString())
-                .replace("%userCount%", (guild.memberCache.size() - botCount).toString())
-                .replace("%botPercent%", (((botCount.toDouble() / guild.memberCache.size()) * 10000).roundToLong() / 100.0).toString())
-                .replace("%userPercent%", ((((guild.memberCache.size() - botCount.toDouble()) / guild.memberCache.size()) * 10000).roundToLong() / 100.0).toString())
-                .replace("%mfa%", guild.requiredMFALevel.name)
+            .replace("%guildName%", guild.name)
+            .replace("%guildId%", guild.id)
+            .replace("%iconUrl%", (if (guild.iconUrl != null) "${guild.iconUrl}?size=2048" else "").toString())
+            .replace("%bannerUrl%", (if (guild.bannerUrl != null) "${guild.bannerUrl}?size=2048" else "").toString())
+            .replace("%splashUrl%", (if (guild.splashUrl != null) "${guild.splashUrl}?size=2048" else "").toString())
+            .replace("%vanityUrl%", (if (guild.vanityUrl != null) "${guild.vanityUrl}?size=2048" else "").toString())
+            .replace("%creationDate%", guild.timeCreated.asLongLongGMTString())
+            .replace("%region%", guild.region.name)
+            .replace("%isVip%", if (guild.region.isVip) "yes" else "no")
+            .replace("%boostCount%", guild.boostCount.toString())
+            .replace("%boostTier%", guild.boostTier.key.toString())
+            .replace("%memberCount%", guild.memberCache.size().toString())
+            .replace("%roleCount%", guild.roleCache.size().toString())
+            .replace("%textChannelCount%", guild.textChannelCache.size().toString())
+            .replace("%voiceChannelCount%", guild.voiceChannelCache.size().toString())
+            .replace("%categoryCount%", guild.categoryCache.size().toString())
+            .replace("%owner%", (if (guild.owner != null) guild.owner?.asTag else "NONE").toString())
+            .replace("%verificationLevel%", guild.verificationLevel.name)
+            .replace("%botCount%", botCount.toString())
+            .replace("%userCount%", (guild.memberCache.size() - botCount).toString())
+            .replace("%botPercent%", (((botCount.toDouble() / guild.memberCache.size()) * 10000).roundToLong() / 100.0).toString())
+            .replace("%userPercent%", ((((guild.memberCache.size() - botCount.toDouble()) / guild.memberCache.size()) * 10000).roundToLong() / 100.0).toString())
+            .replace("%mfa%", guild.requiredMFALevel.name)
     }
 }

@@ -23,11 +23,13 @@ class AvatarCommand : AbstractCommand("command.avatar") {
         } else {
             retrieveUserByArgsNMessage(context, 0) ?: return
         }
+
         val avatar = user.effectiveAvatarUrl + "?size=2048"
 
         val title = context.getTranslation("$root.title")
             .replace(PLACEHOLDER_USER, user.asTag)
         val links = context.getTranslation("$root.links")
+
         val embedder = Embedder(context)
         embedder.setTitle(title)
         embedder.setImage(avatar)

@@ -33,6 +33,7 @@ class QueueCommand : AbstractCommand("command.queue") {
             sendMsg(context, noSongPlaying)
             return
         }
+
         var totalDuration = cTrack.duration
 
         val status = context.getTranslation(if (trackManager.iPlayer.isPaused) "paused" else "playing")

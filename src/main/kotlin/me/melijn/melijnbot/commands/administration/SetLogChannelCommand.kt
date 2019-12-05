@@ -1,13 +1,12 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asTag
+import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.objects.utils.getTextChannelByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
@@ -47,21 +46,14 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
     }
 
     private suspend fun displayChannel(context: CommandContext, logChannelType: LogChannelType) {
-        val daoWrapper = context.daoManager.logChannelWrapper
-        val pair = Pair(context.guildId, logChannelType)
-        val channelId = daoWrapper.logChannelCache.get(pair).await()
-        val channel = context.guild.getTextChannelById(channelId)
+        val daoManager = context.daoManager
+        val channel = context.guild.getAndVerifyLogChannelByType(daoManager, logChannelType)
 
-        if (channelId != -1L && channel == null) {
-            daoWrapper.removeChannel(pair.first, pair.second)
-            return
-        }
-        val language = context.getLanguage()
         val msg = (if (channel != null) {
-            i18n.getTranslation(language, "$root.show.set.single")
+            context.getTranslation("$root.show.set.single")
                 .replace(PLACEHOLDER_CHANNEL, channel.asTag)
         } else {
-            i18n.getTranslation(language, "$root.show.unset.single")
+            context.getTranslation("$root.show.unset.single")
         }).replace("%logChannelType%", logChannelType.text)
 
         sendMsg(context, msg)
@@ -78,15 +70,13 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
         val msg = if (context.args[1].equals("null", true)) {
 
             daoWrapper.removeChannel(context.guildId, logChannelType)
-            val language = context.getLanguage()
-            i18n.getTranslation(language, "$root.unset.single")
+            context.getTranslation("$root.unset.single")
                 .replace("%logChannelType%", logChannelType.text)
         } else {
             val channel = getTextChannelByArgsNMessage(context, 1) ?: return
             daoWrapper.setChannel(context.guildId, logChannelType, channel.idLong)
 
-            val language = context.getLanguage()
-            i18n.getTranslation(language, "$root.set.single")
+            context.getTranslation("$root.set.single")
                 .replace("%logChannelType%", logChannelType.text)
                 .replace(PLACEHOLDER_CHANNEL, channel.asTag)
 
@@ -103,20 +93,15 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
     }
 
     private suspend fun displayChannels(context: CommandContext, logChannelTypes: List<LogChannelType>) {
-        val daoWrapper = context.daoManager.logChannelWrapper
-        val language = context.getLanguage()
-        val title = i18n.getTranslation(language, "$root.show.multiple")
+        val daoManager = context.daoManager
+        val title = context.getTranslation("$root.show.multiple")
             .replace("%channelCount%", logChannelTypes.size.toString())
             .replace("%logChannelTypeNode%", context.args[0])
 
         val lines = emptyList<String>().toMutableList()
 
         for (type in logChannelTypes) {
-            val pair = Pair(context.guildId, type)
-            val channelId = daoWrapper.logChannelCache.get(pair).await()
-            val channel = context.guild.getTextChannelById(channelId)
-
-            if (channelId != -1L && channel == null) daoWrapper.removeChannel(pair.first, pair.second)
+            val channel = context.guild.getAndVerifyLogChannelByType(daoManager, type)
             lines += "${type.text}: " + (channel?.asMention ?: "/")
         }
 
@@ -131,13 +116,12 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
             return
         }
 
-        val language = context.getLanguage()
         val daoWrapper = context.daoManager.logChannelWrapper
         val msg = if (context.args[1].equals("null", true)) {
 
             daoWrapper.removeChannels(context.guildId, logChannelTypes)
 
-            i18n.getTranslation(language, "$root.unset.multiple")
+            context.getTranslation("$root.unset.multiple")
                 .replace("%channelCount%", logChannelTypes.size.toString())
                 .replace("%logChannelTypeNode%", context.args[0])
         } else {
@@ -145,7 +129,7 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
             daoWrapper.setChannels(context.guildId, logChannelTypes, channel.idLong)
 
 
-            i18n.getTranslation(language, ("$root.set.multiple"))
+            context.getTranslation("$root.set.multiple")
                 .replace("%channelCount%", logChannelTypes.size.toString())
                 .replace("%logChannelTypeNode%", context.args[0])
                 .replace(PLACEHOLDER_CHANNEL, channel.asTag)

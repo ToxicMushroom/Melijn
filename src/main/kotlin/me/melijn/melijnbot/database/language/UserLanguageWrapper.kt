@@ -24,9 +24,14 @@ class UserLanguageWrapper(val taskManager: TaskManager, private val userLanguage
         return languageFuture
     }
 
-    suspend fun setLanguage(guildId: Long, language: String) {
+    suspend fun setLanguage(userId: Long, language: String) {
         val future = CompletableFuture.completedFuture(language)
-        languageCache.put(guildId, future)
-        userLanguageDao.set(guildId, language)
+        languageCache.put(userId, future)
+        userLanguageDao.set(userId, language)
+    }
+
+    suspend fun removeLanguage(authorId: Long) {
+        languageCache.put(authorId, CompletableFuture.completedFuture(""))
+        userLanguageDao.remove(authorId)
     }
 }

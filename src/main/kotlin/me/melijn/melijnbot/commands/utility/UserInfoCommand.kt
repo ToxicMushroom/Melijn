@@ -5,7 +5,6 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER_ID
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.asLongLongGMTString
 import me.melijn.melijnbot.objects.utils.retrieveUserByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendEmbed
@@ -30,13 +29,11 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
 
         val member: Member? = context.guild.getMember(user)
 
-        val language = context.getLanguage()
+        val title1 = context.getTranslation("$root.response1.field1.title")
+        val yes = context.getTranslation("yes")
+        val no = context.getTranslation("no")
 
-        val title1 = i18n.getTranslation(language, "$root.response1.field1.title")
-        val yes = i18n.getTranslation(language, "yes")
-        val no = i18n.getTranslation(language, "no")
-
-        val unReplacedValue1 = i18n.getTranslation(language, "$root.response1.field1.value")
+        val unReplacedValue1 = context.getTranslation("$root.response1.field1.value")
         val value1 = replaceUserVar(unReplacedValue1, user, yes, no)
 
         val eb = Embedder(context)
@@ -44,8 +41,8 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
         eb.addField(title1, value1, false)
 
         if (context.isFromGuild && member != null) {
-            val title2 = i18n.getTranslation(language, "$root.response1.field2.title")
-            val unReplacedValue2 = i18n.getTranslation(language, "$root.response1.field2.value")
+            val title2 = context.getTranslation("$root.response1.field2.title")
+            val unReplacedValue2 = context.getTranslation("$root.response1.field2.value")
             val value2 = replaceMemberVar(unReplacedValue2, member, yes, no)
             eb.addField(title2, value2, false)
         }

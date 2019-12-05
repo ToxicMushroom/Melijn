@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.moderation
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.command.AbstractCommand
@@ -9,6 +8,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
@@ -80,7 +80,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
 
             } catch (t: Throwable) {
                 //Sum ting wrong
-                val msg = i18n.getTranslation(language, "$root.failure")
+                val msg = context.getTranslation("$root.failure")
                     .replace(PLACEHOLDER_USER, targetUser.asTag)
                     .replace("%cause%", t.message ?: "/")
                 sendMsg(context, msg)
@@ -88,7 +88,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
         } catch (t: Throwable) {
             //Not banned anymore
 
-            val msg = i18n.getTranslation(language, "$root.notbanned")
+            val msg = context.getTranslation("$root.notbanned")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
             sendMsg(context, msg)
 
@@ -108,14 +108,12 @@ class UnbanCommand : AbstractCommand("command.unban") {
             language, guild, targetUser, banAuthor, unbanAuthor, ban, true, isBot, received
         )
 
-
-        val logChannelWrapper = context.daoManager.logChannelWrapper
-        val logChannelId = logChannelWrapper.logChannelCache.get(Pair(context.guildId, LogChannelType.UNBAN)).await()
-        val logChannel = guild.getTextChannelById(logChannelId)
-        logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, lcMsg) }
+        val daoManager = context.daoManager
+        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.UNBAN)
+        logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, lcMsg) }
 
 
-        val success = i18n.getTranslation(language, "$root.success")
+        val success = context.getTranslation("$root.success")
             .replace(PLACEHOLDER_USER, targetUser.asTag)
             .replace("%reason%", ban.unbanReason ?: "/")
         sendMsg(context, success)

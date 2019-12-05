@@ -20,7 +20,13 @@ class LoopQueueCommand : AbstractCommand("command.loopqueue") {
         val trackManager = context.guildMusicPlayer.guildTrackManager
         trackManager.loopedQueue = !trackManager.loopedQueue
 
-        val msg = context.getTranslation("$root." + if (trackManager.loopedQueue) "looped" else "unlooped")
+        val extra = if (trackManager.loopedQueue) {
+            "looped"
+        } else {
+            "unlooped"
+        }
+
+        val msg = context.getTranslation("$root.$extra")
         sendMsg(context, msg)
     }
 }

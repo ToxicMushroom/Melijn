@@ -33,8 +33,7 @@ class ForwardCommand : AbstractCommand("command.forward") {
             iPlayer.seekTo(trackPosition)
             context.getTranslation("$root.forwarded")
 
-        }
-            .replace("%duration%", getDurationString(trackDuration))
+        }.replace("%duration%", getDurationString(trackDuration))
             .replace("%position%", getDurationString(trackPosition))
 
         sendMsg(context, msg)

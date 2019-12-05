@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.objects.utils
 
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.i18n
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -198,7 +197,6 @@ fun getDurationString(milliseconds: Double): String {
     appendTimePart(minutes, sb, true, canAddZeros = true)
     appendTimePart(seconds, sb, false, canAddZeros = true)
 
-
     return sb.toString()
 }
 
@@ -211,6 +209,7 @@ suspend fun getDurationByArgsNMessage(context: CommandContext, timeStamps: List<
     //merge numbed with their right neighbour so the number type is present along with the number itself
     for ((index, corruptTimeStamp) in corruptTimeStamps.withIndex()) {
         if (corruptTimeStamp.matches("\\d+".toRegex())) {
+            if (corruptTimeStamps.size >= index + 1) continue
             val corruptTimeType = corruptTimeStamps[index + 1]
             if (!corruptTimeType.matches("[a-zA-Z]+".toRegex())) continue
 
@@ -218,6 +217,14 @@ suspend fun getDurationByArgsNMessage(context: CommandContext, timeStamps: List<
         } else if (holyPattern.matcher(corruptTimeStamp).matches()) {
             holyTimeStamps.add(corruptTimeStamp)
         }
+    }
+
+    if (holyTimeStamps.isEmpty()) {
+        val msg = context.getTranslation("unknown.time")
+            .replace("%args%", timeStamps.joinToString(" "))
+
+        sendMsg(context, msg)
+        return null
     }
 
     //CorruptTimeStamps aren't corrupt anymore
@@ -248,11 +255,10 @@ suspend fun getDurationByArgsNMessage(context: CommandContext, timeStamps: List<
         }
 
         if (multiplier == null) {
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "unknown.timeunit")
+            val msg = context.getTranslation("unknown.timeunit")
                 .replace("%args%", matcher.group(2))
 
-            sendMsg(context, msg, null)
+            sendMsg(context, msg)
             return null
         }
 
@@ -268,19 +274,6 @@ private fun appendTimePart(timePart: Long, sb: StringBuilder, colon: Boolean = t
         sb.append(timePart)
         if (colon) sb.append(":")
     }
-}
-
-fun getUnicode(text: String): String {
-    val builder = StringBuilder()
-    text.codePoints().forEachOrdered { code ->
-        val chars = Character.toChars(code)
-        for (char in chars) {
-            val int = Integer.toHexString(char.toInt()).toUpperCase()
-            val unicode = "0$int"
-            builder.append("\\u$unicode")
-        }
-    }
-    return builder.toString()
 }
 
 fun String.remove(vararg chars: String): String {

@@ -5,7 +5,6 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
 
@@ -35,8 +34,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            val language = context.getLanguage()
-            val title = i18n.getTranslation(language, "$root.response1.title")
+            val title = context.getTranslation("$root.response1.title")
 
             var content = "```INI"
             val prefixes = context.daoManager.userPrefixWrapper.prefixCache.get(context.authorId).await()
@@ -67,8 +65,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             val prefix = context.rawArg
             context.daoManager.userPrefixWrapper.addPrefix(context.authorId, prefix)
 
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.response1")
+            val msg = context.getTranslation("$root.response1")
                 .replace("%prefix%", prefix)
             sendMsg(context, msg)
         }
@@ -90,8 +87,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             val prefix = context.rawArg
             context.daoManager.userPrefixWrapper.removePrefix(context.authorId, prefix)
 
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.response1")
+            val msg = context.getTranslation("$root.response1")
                 .replace("%prefix%", prefix)
             sendMsg(context, msg)
         }

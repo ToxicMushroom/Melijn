@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.moderation
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.mute.Mute
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.RoleType
@@ -10,6 +9,8 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
+import me.melijn.melijnbot.objects.utils.checks.getAndVerifyRoleByType
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
@@ -32,22 +33,25 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
             return
         }
         val guild = context.guild
+        val daoManager = context.daoManager
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
 
         var unmuteReason = context.rawArg
             .replaceFirst(context.args[0], "")
             .trim()
-        if (unmuteReason.isBlank()) unmuteReason = "/"
 
-        unmuteReason = unmuteReason.trim()
+        if (unmuteReason.isBlank()) {
+            unmuteReason = "/"
+        }
 
-        val activeMute: Mute? = context.daoManager.muteWrapper.getActiveMute(context.guildId, targetUser.idLong)
+        val activeMute: Mute? = daoManager.muteWrapper.getActiveMute(context.guildId, targetUser.idLong)
         val mute: Mute = activeMute
             ?: Mute(context.guildId,
                 targetUser.idLong,
                 null,
                 "/"
             )
+
         mute.unmuteAuthorId = context.authorId
         mute.unmuteReason = unmuteReason
         mute.endTime = System.currentTimeMillis()
@@ -56,70 +60,65 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         val muteAuthor = mute.muteAuthorId?.let { context.shardManager.getUserById(it) }
         val targetMember = guild.getMember(targetUser)
 
-        val muteRoleId = context.daoManager.roleWrapper.roleCache.get(Pair(context.guildId, RoleType.MUTE)).await()
-        val muteRole = guild.getRoleById(muteRoleId)
-
-        val language = context.getLanguage()
+        val muteRole = guild.getAndVerifyRoleByType(daoManager, RoleType.MUTE)
         if (muteRole == null) {
-
-            val msg = i18n.getTranslation(language, "$root.nomuterole")
+            val msg = context.getTranslation("$root.nomuterole")
                 .replace("%prefix%", context.usedPrefix)
             sendMsg(context, msg)
             return
         }
 
         if (targetMember != null && targetMember.roles.contains(muteRole)) {
-            try {
-                guild.removeRoleFromMember(targetMember, muteRole).await()
+            val exception = guild.removeRoleFromMember(targetMember, muteRole).awaitEX()
+            if (exception == null) {
                 sendUnmuteLogs(context, targetUser, muteAuthor, mute, unmuteReason)
-            } catch (t: Throwable) {
-                //Sum ting wrong
-                val msg = i18n.getTranslation(language, "$root.failure")
+            } else {
+                val msg = context.getTranslation("$root.failure")
                     .replace(PLACEHOLDER_USER, targetUser.asTag)
-                    .replace("%cause%", t.message ?: "/")
+                    .replace("%cause%", exception.message ?: "/")
                 sendMsg(context, msg)
             }
+
         } else if (targetMember == null) {
             sendUnmuteLogs(context, targetUser, muteAuthor, mute, unmuteReason)
-        } else if (!targetMember.roles.contains(muteRole)) {
-            //Not muted anymore
-            val msg = i18n.getTranslation(language, "$root.notmuted")
 
+        } else if (!targetMember.roles.contains(muteRole)) {
+            val msg = context.getTranslation("$root.notmuted")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
 
             sendMsg(context, msg)
 
             if (activeMute != null) {
-                context.daoManager.muteWrapper.setMute(mute)
+                daoManager.muteWrapper.setMute(mute)
             }
         }
     }
 
     private suspend fun sendUnmuteLogs(context: CommandContext, targetUser: User, muteAuthor: User?, mute: Mute, unmuteReason: String) {
-        context.daoManager.muteWrapper.setMute(mute)
         val guild = context.guild
+        val daoManager = context.daoManager
         val language = context.getLanguage()
+        daoManager.muteWrapper.setMute(mute)
 
         //Normal success path
         val msg = getUnmuteMessage(language, guild, targetUser, muteAuthor, context.author, mute)
-        val privateChannel = targetUser.openPrivateChannel().await()
+        val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
 
         val success = try {
-            sendEmbed(privateChannel, msg)
-            true
+            privateChannel?.let {
+                sendEmbed(it, msg)
+                true
+            } ?: false
         } catch (t: Throwable) {
             false
         }
+
         val msgLc = getUnmuteMessage(language, guild, targetUser, muteAuthor, context.author, mute, true, targetUser.isBot, success)
 
+        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.UNMUTE)
+        logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, msgLc) }
 
-        val logChannelWrapper = context.daoManager.logChannelWrapper
-        val logChannelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.UNMUTE)).await()
-        val logChannel = guild.getTextChannelById(logChannelId)
-        logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, msgLc) }
-
-
-        val successMsg = i18n.getTranslation(language, "$root.success")
+        val successMsg = context.getTranslation("$root.success")
             .replace(PLACEHOLDER_USER, targetUser.asTag)
             .replace("%reason%", unmuteReason)
 

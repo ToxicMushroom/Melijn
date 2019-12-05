@@ -6,7 +6,6 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.getDurationString
 import me.melijn.melijnbot.objects.utils.getSystemUptime
 import me.melijn.melijnbot.objects.utils.sendEmbed
@@ -38,13 +37,12 @@ class StatsCommand : AbstractCommand("command.stats") {
         val threadPoolExecutor = context.taskManager.executorService as ThreadPoolExecutor
         val scheduledExecutorService = context.taskManager.scheduledExecutorService as ThreadPoolExecutor
 
-        val language = context.getLanguage()
 
-        val title1 = i18n.getTranslation(language, "$root.response.field1.title")
-        val title2 = i18n.getTranslation(language, "$root.response.field2.title")
-        val title3 = i18n.getTranslation(language, "$root.response.field3.title")
+        val title1 = context.getTranslation("$root.response.field1.title")
+        val title2 = context.getTranslation("$root.response.field2.title")
+        val title3 = context.getTranslation("$root.response.field3.title")
 
-        val unReplaceField1 = i18n.getTranslation(language, "$root.response.field1.value")
+        val unReplaceField1 = context.getTranslation("$root.response.field1.value")
         val value1 = replaceValue1Vars(
             unReplaceField1,
             shardManager.shardsTotal,
@@ -56,7 +54,7 @@ class StatsCommand : AbstractCommand("command.stats") {
             getDurationString(ManagementFactory.getRuntimeMXBean().uptime)
         )
 
-        val unReplaceField2 = i18n.getTranslation(language, "$root.response.field2.value")
+        val unReplaceField2 = context.getTranslation("$root.response.field2.value")
         val value2 = replaceValue2Vars(
             unReplaceField2,
             bean.availableProcessors,
@@ -64,7 +62,7 @@ class StatsCommand : AbstractCommand("command.stats") {
             getDurationString(getSystemUptime())
         )
 
-        val unReplaceField3 = i18n.getTranslation(language, "$root.response.field3.value")
+        val unReplaceField3 = context.getTranslation("$root.response.field3.value")
         val value3 = replaceValue3Vars(
             unReplaceField3,
             DecimalFormat("###.###%").format(bean.processCpuLoad),

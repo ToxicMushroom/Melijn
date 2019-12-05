@@ -7,9 +7,8 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.translation.i18n
+import me.melijn.melijnbot.objects.utils.getEnumFromArgNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
 
 class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") {
 
@@ -25,14 +24,10 @@ class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") 
     }
 
     override suspend fun execute(context: CommandContext) {
-        when (context.commandParts.size) {
-            2 -> {
-                sendCurrentLang(context)
-            }
-            3 -> {
-                setLang(context)
-            }
-            else -> sendSyntax(context)
+        if (context.args.isEmpty()) {
+            sendCurrentLang(context)
+        } else {
+            setLang(context)
         }
     }
 
@@ -40,52 +35,43 @@ class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") 
         val dao = context.daoManager.userLanguageWrapper
         val lang = dao.languageCache.get(context.authorId).await()
 
-        val language = context.getLanguage()
-        val msg = if (lang.isBlank()) {
-            i18n.getTranslation(language, "$root.unset.currentlangresponse")
-        } else {
-            val unReplaced = i18n.getTranslation(language, "$root.currentlangresponse")
-            replaceLang(unReplaced, lang)
-        }
+        val msg = context.getTranslation(
+            if (lang.isBlank()) {
+                "$root.show.unset"
+            } else {
+                "$root.show.set"
+            }
+        ).replace("%language%", lang)
 
         sendMsg(context, msg)
     }
 
     private suspend fun setLang(context: CommandContext) {
         val shouldUnset = "null".equals(context.commandParts[2], true)
-        val language = context.getLanguage()
 
-        val lang: String = try {
-            if (shouldUnset) {
-                ""
-            } else {
-                Language.valueOf(context.commandParts[2].toUpperCase()).toString()
-            }
-        } catch (ignored: IllegalArgumentException) {
-            val unReplacedMsg = i18n.getTranslation(language, "$root.set.invalidarg")
-
-            val msg = replaceArg(unReplacedMsg, context.commandParts)
-
-            sendMsg(context, msg)
-            return
+        val language = if (shouldUnset) {
+            null
+        } else {
+            getEnumFromArgNMessage<Language>(context, 0, "message.unknown.language") ?: return
         }
 
+
         val dao = context.daoManager.userLanguageWrapper
-        dao.setLanguage(context.authorId, lang)
+        if (language == null) {
+            dao.removeLanguage(context.authorId)
+        } else {
+            dao.setLanguage(context.authorId, language.toString())
+        }
 
-        val possible = if (shouldUnset) "un" else ""
-        val unReplacedMsg = i18n.getTranslation(language, "$root.${possible}set.success")
+        val possible = if (shouldUnset) {
+            "un"
+        } else {
+            ""
+        }
 
-        val msg = replaceLang(unReplacedMsg, lang)
+        val msg = context.getTranslation("$root.${possible}set")
+            .replace("%language%", language.toString())
 
         sendMsg(context, msg)
     }
-
-    private fun replaceArg(msg: String, commandParts: List<String>): String = msg
-        .replace("%argument%", commandParts[2])
-        .replace("%prefix%", commandParts[0])
-
-    private fun replaceLang(msg: String, lang: String): String = msg
-        .replace("%language%", lang)
-
 }

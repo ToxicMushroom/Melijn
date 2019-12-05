@@ -85,5 +85,4 @@ class EmoteCommand : AbstractCommand("command.emote") {
         replaceMissingEmoteVars(string, context, emote.id, emote.name, emote.isAnimated)
             .replace("%creationTime%", emote.timeCreated.asLongLongGMTString())
 
-
 }

@@ -3,7 +3,6 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.await
 import me.melijn.melijnbot.objects.utils.sendMsg
 
@@ -13,20 +12,21 @@ class PingCommand : AbstractCommand("command.ping") {
     init {
         id = 1
         name = "ping"
-        aliases = arrayOf("pong")
+        aliases = arrayOf("pong", "latency")
+        children = arrayOf(
+            PongCommand(root)
+        )
         commandCategory = CommandCategory.UTILITY
-        children = arrayOf(PongCommand())
     }
 
     override suspend fun execute(context: CommandContext) {
         val timeStamp1 = System.currentTimeMillis()
-        val language = context.getLanguage()
-        val part1 = replaceGatewayPing(
-            i18n.getTranslation(language, "command.ping.response1.part1"),
-            context.jda.gatewayPing
-        )
-        val part2 = i18n.getTranslation(language, "command.ping.response1.part2")
-        val part3 = i18n.getTranslation(language, "command.ping.response1.part3")
+
+        val part1 = context.getTranslation("$root.response1.part1")
+            .replace("%gatewayPing%", context.jda.gatewayPing.toString())
+
+        val part2 = context.getTranslation("$root.response1.part2")
+        val part3 = context.getTranslation("$root.response1.part3")
 
         val message = sendMsg(context, part1)
         val timeStamp2 = System.currentTimeMillis()
@@ -37,11 +37,7 @@ class PingCommand : AbstractCommand("command.ping") {
         val timeStamp3 = System.currentTimeMillis()
         val eMsgPing = timeStamp3 - timeStamp2
         editedMessage.editMessage("${editedMessage.contentRaw}${replacePart3(part3, eMsgPing)}").queue()
-
     }
-
-    private fun replaceGatewayPing(string: String, gatewayPing: Long): String = string
-        .replace("%gatewayPing%", "$gatewayPing")
 
 
     private fun replacePart2(string: String, restPing: Long, sendMessagePing: Long): String = string
@@ -53,20 +49,22 @@ class PingCommand : AbstractCommand("command.ping") {
         .replace("%editMessagePing%", "$editMessagePing")
 
 
-    private class PongCommand : AbstractCommand("command.ping.pong") {
+    private class PongCommand(parent: String) : AbstractCommand("$parent.pong") {
 
         init {
             name = "pong"
+            children = arrayOf(
+                DunsteCommand(root)
+            )
             aliases = arrayOf("ping")
-            children = arrayOf(DunsteCommand())
         }
 
         override suspend fun execute(context: CommandContext) {
-            val language = context.getLanguage()
-            sendMsg(context, i18n.getTranslation(language, "$root.response1"))
+            val msg = context.getTranslation("$root.response1")
+            sendMsg(context, msg)
         }
 
-        private class DunsteCommand : AbstractCommand("command.ping.pong.dunste") {
+        private class DunsteCommand(parent: String) : AbstractCommand("$parent.dunste") {
 
             init {
                 name = "dunste"
@@ -74,8 +72,8 @@ class PingCommand : AbstractCommand("command.ping") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                val language = context.getLanguage()
-                sendMsg(context, i18n.getTranslation(language, "$root.response1"))
+                val msg = context.getTranslation("$root.response1")
+                sendMsg(context, msg)
             }
         }
     }

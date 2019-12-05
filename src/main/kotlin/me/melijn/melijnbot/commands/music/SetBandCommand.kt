@@ -28,8 +28,9 @@ class SetBandCommand : AbstractCommand("command.setband") {
             return
         }
         val bandId = getIntegerFromArgNMessage(context, 0, 0, BAND_COUNT - 1) ?: return
+        val iPlayer = context.guildMusicPlayer.guildTrackManager.iPlayer
         if (context.args.size == 1) {
-            val bandVal = context.guildMusicPlayer.guildTrackManager.iPlayer.bands.getOrElse(bandId) { 0.0f }
+            val bandVal = iPlayer.bands.getOrElse(bandId) { 0.0f }
             val gain = ((bandVal + 0.25f) * 400).toInt()
 
             val msg = context.getTranslation("$root.show")
@@ -40,9 +41,9 @@ class SetBandCommand : AbstractCommand("command.setband") {
         }
         val gain = getIntegerFromArgNMessage(context, 1, 0, 500) ?: return
 
-        //Actual range is -0.25f to 1.0f
+        // Actual range is -0.25f to 1.0f
         val actualGain = (gain / 400f - 0.25f)
-        context.guildMusicPlayer.guildTrackManager.iPlayer.setBand(bandId, actualGain)
+        iPlayer.setBand(bandId, actualGain)
 
         val msg = context.getTranslation("$root.set")
             .replace("%bandId%", bandId.toString())
@@ -57,15 +58,18 @@ class SetBandCommand : AbstractCommand("command.setband") {
         }
 
         override suspend fun execute(context: CommandContext) {
+            val iPlayer = context.guildMusicPlayer.guildTrackManager.iPlayer
             if (context.args.isEmpty()) {
                 val title = context.getTranslation("$root.show")
+
                 var content = "```INI"
                 for (i in 0..14) {
-                    val bandVal = context.guildMusicPlayer.guildTrackManager.iPlayer.bands.getOrElse(i) { 0.0f }
+                    val bandVal = iPlayer.bands.getOrElse(i) { 0.0f }
                     val gain = ((bandVal + 0.25f) * 400).toInt()
                     content += "\n[$i] - $gain%"
                 }
                 content += "```"
+
                 val msg = title + content
                 sendMsg(context, msg)
 
@@ -74,7 +78,7 @@ class SetBandCommand : AbstractCommand("command.setband") {
                 val actualGain = (gain / 400f - 0.25f)
 
                 for (i in 0..14) {
-                    context.guildMusicPlayer.guildTrackManager.iPlayer.setBand(i, actualGain)
+                    iPlayer.setBand(i, actualGain)
                 }
 
                 val msg = context.getTranslation("$root.set")

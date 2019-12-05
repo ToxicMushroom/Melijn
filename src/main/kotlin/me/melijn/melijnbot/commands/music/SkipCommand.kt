@@ -29,12 +29,15 @@ class SkipCommand : AbstractCommand("command.skip") {
                 .replace("%amount%", amount.toString())
         } else {
             context.getTranslation("$root.skip")
-        }.replace("%track%", cTrack.info.title)
+        }
+            .replace("%track%", cTrack.info.title)
             .replace("%url%", cTrack.info.uri)
             .replace("%position%", getDurationString(trackManager.iPlayer.trackPosition))
             .replace("%duration%", getDurationString(cTrack.duration))
+
         context.guildMusicPlayer.guildTrackManager.skip(amount)
         val nTrack: AudioTrack? = trackManager.iPlayer.playingTrack
+
         val part2 = if (nTrack == null) {
             context.getTranslation("$root.nonext")
         } else {
@@ -46,6 +49,7 @@ class SkipCommand : AbstractCommand("command.skip") {
 
         val title = context.getTranslation("$root.title")
             .replace(PLACEHOLDER_USER, context.author.asTag)
+
         val eb = Embedder(context)
         eb.setTitle(title)
         eb.setDescription(part1 + part2)

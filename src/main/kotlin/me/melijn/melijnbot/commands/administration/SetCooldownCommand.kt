@@ -5,7 +5,6 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 
 class SetCooldownCommand : AbstractCommand("command.setcooldown") {
@@ -22,7 +21,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
         sendSyntax(context)
     }
 
-    class ChannelArg(parentRoot: String) : AbstractCommand("$parentRoot.channel") {
+    class ChannelArg(parent: String) : AbstractCommand("$parent.channel") {
 
         init {
             name = "channel"
@@ -34,6 +33,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
                 sendSyntax(context)
                 return
             }
+
             val channel = getTextChannelByArgsNMessage(context, 0) ?: return
             val commands = getCommandIdsFromArgNMessage(context, 1) ?: return
             val cooldown = getLongFromArgNMessage(context, 2) ?: return
@@ -41,14 +41,13 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
             val daoWrapper = context.daoManager.commandChannelCoolDownWrapper
             daoWrapper.setCooldowns(channel.guild.idLong, channel.idLong, commands, cooldown)
 
-            val language = context.getLanguage()
             val path = "$root.response1" + if (commands.size > 1) {
                 ".multiple"
             } else {
                 ""
             }
-            val msg = i18n.getTranslation(language, path)
-                .replace(PLACEHOLDER_CHANNEL, "#${channel.name}")
+            val msg = context.getTranslation(path)
+                .replace(PLACEHOLDER_CHANNEL, channel.asTag)
                 .replace("%commandCount%", commands.size.toString())
                 .replace("%commandNode%", context.args[1])
                 .replace("%cooldown%", cooldown.toString())
@@ -56,7 +55,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
         }
     }
 
-    class GlobalArg(parentRoot: String) : AbstractCommand("$parentRoot.global") {
+    class GlobalArg(parent: String) : AbstractCommand("$parent.global") {
 
         init {
             name = "global"
@@ -68,6 +67,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
                 sendSyntax(context)
                 return
             }
+
             val commands = getCommandIdsFromArgNMessage(context, 0) ?: return
             val cooldown = getLongFromArgNMessage(context, 1) ?: return
 
@@ -78,8 +78,8 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
             } else {
                 ""
             }
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, path)
+
+            val msg = context.getTranslation(path)
                 .replace("%commandCount%", commands.size.toString())
                 .replace("%commandNode%", context.args[0])
                 .replace("%cooldown%", cooldown.toString())
@@ -88,7 +88,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
         }
     }
 
-    class InfoArg(parentRoot: String) : AbstractCommand("$parentRoot.info") {
+    class InfoArg(parent: String) : AbstractCommand("$parent.info") {
 
         init {
             name = "info"
@@ -98,16 +98,16 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
         override suspend fun execute(context: CommandContext) {
             val map: Map<String, Long>
 
-            val language = context.getLanguage()
             val daoManager = context.daoManager
             val title: String = if (context.args.isNotEmpty()) {
                 val channel = getTextChannelByArgsNMessage(context, 0) ?: return
+
                 map = daoManager.commandChannelCoolDownWrapper.commandChannelCooldownCache.get(channel.idLong).await()
-                i18n.getTranslation(language, "$root.response1.title")
-                    .replace(PLACEHOLDER_CHANNEL, "#${channel.name}")
+                context.getTranslation("$root.response1.title")
+                    .replace(PLACEHOLDER_CHANNEL, channel.asTag)
             } else {
                 map = daoManager.commandCooldownWrapper.commandCooldownCache.get(context.guildId).await()
-                i18n.getTranslation(language, "$root.response2.title")
+                context.getTranslation("$root.response2.title")
             }
 
             var content = "```INI"

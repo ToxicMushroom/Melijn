@@ -4,7 +4,6 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
 
@@ -25,7 +24,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
         sendSyntax(context)
     }
 
-    class ListCommand(root: String) : AbstractCommand("$root.list") {
+    class ListCommand(parent: String) : AbstractCommand("$parent.list") {
 
         init {
             name = "list"
@@ -33,8 +32,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            val language = context.getLanguage()
-            val title = i18n.getTranslation(language, "$root.response1.title")
+            val title = context.getTranslation("$root.response1.title")
             val prefixes = context.daoManager.guildPrefixWrapper.prefixCache.get(context.guildId).await()
 
             var content = "```INI"
@@ -48,7 +46,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
         }
     }
 
-    class AddCommand(root: String) : AbstractCommand("$root.add") {
+    class AddCommand(parent: String) : AbstractCommand("$parent.add") {
 
         init {
             name = "add"
@@ -64,14 +62,13 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             val prefix = context.rawArg
             context.daoManager.guildPrefixWrapper.addPrefix(context.guildId, prefix)
 
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.response1")
+            val msg = context.getTranslation("$root.response1")
                 .replace("%prefix%", prefix)
             sendMsg(context, msg)
         }
     }
 
-    class RemoveCommand(root: String) : AbstractCommand("$root.remove") {
+    class RemoveCommand(parent: String) : AbstractCommand("$parent.remove") {
 
         init {
             name = "remove"
@@ -87,8 +84,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             val prefix = context.rawArg
             context.daoManager.guildPrefixWrapper.removePrefix(context.guildId, prefix)
 
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.response1")
+            val msg = context.getTranslation("$root.response1")
                 .replace("%prefix%", prefix)
             sendMsg(context, msg)
         }

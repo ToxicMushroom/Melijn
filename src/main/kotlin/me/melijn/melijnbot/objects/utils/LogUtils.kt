@@ -162,10 +162,10 @@ object LogUtils {
 
         val title = context.getTranslation("logging.music.resumed.title")
 
-        val userTitle = i18n.getTranslation(context, "logging.music.resume.userfield.title")
-        val userIdTitle = i18n.getTranslation(context, "logging.music.resume.userIdfield.title")
-        val channel = i18n.getTranslation(context, "logging.music.resume.channelfield.title")
-        val channelId = i18n.getTranslation(context, "logging.music.resume.channelIdfield.title")
+        val userTitle = context.getTranslation("logging.music.resume.userfield.title")
+        val userIdTitle = context.getTranslation("logging.music.resume.userIdfield.title")
+        val channel = context.getTranslation("logging.music.resume.channelfield.title")
+        val channelId = context.getTranslation("logging.music.resume.channelIdfield.title")
         eb.setTitle(title)
 
 
@@ -326,5 +326,28 @@ object LogUtils {
         eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
 
         logChannel.sendMessage(eb.build())
+    }
+
+    suspend fun sendMessageFailedToRemoveRoleFromMember(daoManager: DaoManager, member: Member, role: Role) {
+        val guild = member.guild
+        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.VERIFICATION)
+            ?: return
+
+        val language = getLanguage(daoManager, -1, guild.idLong)
+        val title = i18n.getTranslation(language, "logging.verification.failedremovingrole.title")
+        val description = "```LDIF" + i18n.getTranslation(language, "logging.verification.failedremovingrole.description")
+            .replace(PLACEHOLDER_USER_ID, member.id)
+            .replace(PLACEHOLDER_USER, member.asTag)
+            .replace(PLACEHOLDER_ROLE, role.name)
+            .replace(PLACEHOLDER_ROLE_ID, role.id) + "```"
+
+        val eb = EmbedBuilder()
+        eb.setTitle(title)
+        eb.setColor(Color.RED)
+        eb.setDescription(description)
+        eb.setThumbnail(member.user.effectiveAvatarUrl)
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+
+        sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 }

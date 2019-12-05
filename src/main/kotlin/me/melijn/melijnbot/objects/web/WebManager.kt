@@ -1,9 +1,9 @@
 package me.melijn.melijnbot.objects.web
 
 
+import com.neovisionaries.i18n.CountryCode
 import com.wrapper.spotify.SpotifyApi
 import com.wrapper.spotify.exceptions.SpotifyWebApiException
-import com.wrapper.spotify.model_objects.specification.PlaylistTrack
 import com.wrapper.spotify.model_objects.specification.Track
 import com.wrapper.spotify.model_objects.specification.TrackSimplified
 import kotlinx.coroutines.CoroutineScope
@@ -35,6 +35,7 @@ private val spotifyPlaylistUrl: Pattern = Pattern.compile("https://open.spotify.
 private val spotifyPlaylistUri: Pattern = Pattern.compile("spotify:(?:user:\\S+:)?playlist:(\\S+)")
 private val spotifyAlbumUrl: Pattern = Pattern.compile("https://open.spotify.com/album/(\\S+)")
 private val spotifyAlbumUri: Pattern = Pattern.compile("spotify:album:(\\S+)")
+private val spotifyArtistUrl: Pattern = Pattern.compile("https://open.spotify.com/artist/(\\S+)")
 
 class WebManager(val taskManager: TaskManager, val settings: Settings) {
 
@@ -113,7 +114,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
     fun getTracksFromSpotifyUrl(
         songArg: String,
         track: (Track) -> Unit,
-        trackList: (Array<PlaylistTrack>) -> Unit,
+        trackList: (Array<Track>) -> Unit,
         simpleTrack: (Array<TrackSimplified>) -> Unit,
         error: (Throwable) -> Unit
     ) = taskManager.async {
@@ -130,6 +131,8 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 //Albums
                 spotifyAlbumUrl.matcher(songArg).matches() -> acceptIfMatchesPattern(songArg, simpleTrack, spotifyAlbumUrl)
                 spotifyAlbumUri.matcher(songArg).matches() -> acceptIfMatchesPattern(songArg, simpleTrack, spotifyAlbumUri)
+
+                spotifyArtistUrl.matcher(songArg).matches() -> fetchTracksFromArtist(songArg, trackList, spotifyArtistUrl)
                 else -> error.invoke(IllegalArgumentException("That is not a valid spotify link"))
             }
         } catch (ignored: IOException) {
@@ -139,14 +142,27 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         }
     }
 
+    private suspend fun fetchTracksFromArtist(songArg: String, trackList: (Array<Track>) -> Unit, spotifyArtistUrl: Pattern) {
+        val matcher: Matcher = spotifyArtistUrl.matcher(songArg)
+        while (matcher.find()) {
+            if (matcher.group(1) != null) {
+                val id = matcher.group(1).replaceFirst("\\?\\S+".toRegex(), "")
+                val tracks = spotifyApi.getArtistsTopTracks(id, CountryCode.US).build().executeAsync().await()
+                trackList(tracks)
+            }
+        }
+    }
 
-    private suspend fun acceptTracksIfMatchesPattern(url: String, trackList: (Array<PlaylistTrack>) -> Unit, pattern: Pattern) {
+
+    private suspend fun acceptTracksIfMatchesPattern(url: String, trackList: (Array<Track>) -> Unit, pattern: Pattern) {
         val matcher: Matcher = pattern.matcher(url)
         while (matcher.find()) {
             if (matcher.group(1) != null) {
                 val id = matcher.group(1).replaceFirst("\\?\\S+".toRegex(), "")
-                val tracks = spotifyApi.getPlaylistsTracks(id).build().executeAsync().await().items
-                trackList(tracks)
+                val tracks = spotifyApi.getPlaylistsTracks(id).build().executeAsync().await().items.map { playlistTrack ->
+                    playlistTrack.track
+                }
+                trackList(tracks.toTypedArray())
             }
         }
     }

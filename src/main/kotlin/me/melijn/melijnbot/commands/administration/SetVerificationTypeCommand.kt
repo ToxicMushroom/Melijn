@@ -6,7 +6,6 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.enumValueOrNull
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.toUCC
@@ -22,11 +21,10 @@ class SetVerificationTypeCommand : AbstractCommand("command.setverificationtype"
 
     override suspend fun execute(context: CommandContext) {
         val wrapper = context.daoManager.verificationTypeWrapper
-        val language = context.getLanguage()
         if (context.args.isEmpty()) {
             val type = wrapper.verificationTypeCache.get(context.guildId).await()
             val part = if (type == VerificationType.NONE) "unset" else "set"
-            val msg = i18n.getTranslation(language, "$root.show.$part")
+            val msg = context.getTranslation("$root.show.$part")
                 .replace("%type%", type.toUCC())
             sendMsg(context, msg)
             return
@@ -36,13 +34,13 @@ class SetVerificationTypeCommand : AbstractCommand("command.setverificationtype"
         val type = enumValueOrNull<VerificationType>(context.rawArg)
         val msg = if (context.rawArg == "null" || type == VerificationType.NONE) {
             wrapper.removeType(context.guildId)
-            i18n.getTranslation(language, "$root.unset")
+            context.getTranslation("$root.unset")
         } else if (type == null) {
-            i18n.getTranslation(language, "message.unknown.verificationtype")
+            context.getTranslation("message.unknown.verificationtype")
                 .replace(PLACEHOLDER_ARG, context.rawArg)
         } else {
             wrapper.setType(context.guildId, type)
-            i18n.getTranslation(language, "$root.set")
+            context.getTranslation("$root.set")
                 .replace(PLACEHOLDER_ARG, type.toUCC())
         }
 

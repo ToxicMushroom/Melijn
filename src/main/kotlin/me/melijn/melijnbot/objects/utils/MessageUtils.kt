@@ -26,7 +26,7 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 fun Throwable.sendInGuild(context: CommandContext, thread: Thread = Thread.currentThread(), extra: String? = null) = runBlocking {
-    sendInGuildSuspend(context.guild, context.messageChannel, context.author, thread, "Message: ${context.message.contentRaw}\n" + extra)
+    sendInGuildSuspend(context.guild, context.messageChannel, context.author, thread, "Message: ${context.message.contentRaw}\n" + (extra ?: ""))
 }
 
 
@@ -65,9 +65,8 @@ suspend fun Throwable.sendInGuildSuspend(guild: Guild? = null, channel: MessageC
 }
 
 suspend fun sendSyntax(context: CommandContext, translationPath: String = context.commandOrder.last().syntax) {
-    val language = context.getLanguage()
-    val syntax = i18n.getTranslation(language, "message.command.usage")
-        .replace("%syntax%", i18n.getTranslation(language, translationPath)
+    val syntax = context.getTranslation("message.command.usage")
+        .replace("%syntax%", context.getTranslation(translationPath)
             .replace("%prefix%", context.usedPrefix))
     sendMsg(context.textChannel, syntax)
 }

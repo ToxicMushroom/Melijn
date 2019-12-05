@@ -33,8 +33,7 @@ class MuteCommand : AbstractCommand("command.mute") {
         val targetUser = getUserByArgsNMessage(context, 0) ?: return
         val member = context.guild.getMember(targetUser)
         if (member != null && !context.guild.selfMember.canInteract(member)) {
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.cannotmute")
+            val msg = context.getTranslation("$root.cannotmute")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
             sendMsg(context, msg)
             return
@@ -50,8 +49,7 @@ class MuteCommand : AbstractCommand("command.mute") {
         val roleId = context.daoManager.roleWrapper.roleCache.get(Pair(context.guildId, RoleType.MUTE)).await()
         val muteRole: Role? = context.guild.getRoleById(roleId)
         if (muteRole == null) {
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.creatingmuterole")
+            val msg = context.getTranslation("$root.creatingmuterole")
             sendMsg(context, msg)
 
             try {
@@ -63,7 +61,7 @@ class MuteCommand : AbstractCommand("command.mute") {
                     .await()
                 muteRoleAquired(context, targetUser, reason, role)
             } catch (t: Throwable) {
-                val msgFailed = i18n.getTranslation(language, "$root.failed.creatingmuterole")
+                val msgFailed = context.getTranslation("$root.failed.creatingmuterole")
                     .replace("%cause%", t.message ?: "/")
                 sendMsg(context, msgFailed)
             }
@@ -89,8 +87,7 @@ class MuteCommand : AbstractCommand("command.mute") {
 
         if (activeMute != null) mute.startTime = activeMute.startTime
 
-        val language = context.getLanguage()
-        val muting = i18n.getTranslation(language, "message.muting")
+        val muting = context.getTranslation("message.muting")
 
         try {
             val privateChannel = targetUser.openPrivateChannel().await()
@@ -123,14 +120,14 @@ class MuteCommand : AbstractCommand("command.mute") {
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, mutedMessageLc) }
 
 
-            i18n.getTranslation(language, "$root.success" + if (activeMute != null) ".updated" else "")
+            context.getTranslation("$root.success" + if (activeMute != null) ".updated" else "")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
                 .replace("%reason%", mute.reason)
         } catch (t: Throwable) {
-            val failedMsg = i18n.getTranslation(language, "message.muting.failed")
+            val failedMsg = context.getTranslation("message.muting.failed")
             mutingMessage?.editMessage(failedMsg)?.queue()
 
-            i18n.getTranslation(language, "$root.failure")
+            context.getTranslation("$root.failure")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
                 .replace("%cause%", t.message ?: "/")
         }

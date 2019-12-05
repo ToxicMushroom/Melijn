@@ -101,7 +101,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         val member = event.member
         val dao = container.daoManager
 
-        val verificationChannel = guild.getAndVerifyChannelByType(ChannelType.VERIFICATION, dao, Permission.MESSAGE_MANAGE)
+        val verificationChannel = guild.getAndVerifyChannelByType(dao, ChannelType.VERIFICATION, Permission.MESSAGE_MANAGE)
             ?: return
         if (verificationChannel.idLong != textChannel.idLong) return
 

@@ -5,7 +5,6 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.wrapper.spotify.model_objects.specification.ArtistSimplified
-import com.wrapper.spotify.model_objects.specification.PlaylistTrack
 import com.wrapper.spotify.model_objects.specification.Track
 import com.wrapper.spotify.model_objects.specification.TrackSimplified
 import kotlinx.coroutines.runBlocking
@@ -186,6 +185,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             override fun trackLoaded(track: AudioTrack) {
                 if ((durationMs + spotifyTrackDiff > track.duration && track.duration > durationMs - spotifyTrackDiff)
                     || track.info.title.contains(title, true)) {
+                    track.userData = TrackUserData(context.author)
                     if (player.safeQueue(context, track)) {
                         if (!silent) {
                             sendMessageAddedTrack(context, track)
@@ -207,6 +207,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 for (track in tracks.subList(0, min(tracks.size, 5))) {
                     if ((durationMs + spotifyTrackDiff > track.duration && track.duration > durationMs - spotifyTrackDiff)
                         || track.info.title.contains(title, true)) {
+                        track.userData = TrackUserData(context.author)
                         if (player.safeQueue(context, track)) {
                             if (!silent) {
                                 sendMessageAddedTrack(context, track)
@@ -274,10 +275,11 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
     }
 
-    fun loadSpotifyPlaylist(context: CommandContext, tracks: Array<PlaylistTrack>) = runBlocking {
+    fun loadSpotifyPlaylist(context: CommandContext, tracks: Array<Track>) = runBlocking {
         if (tracks.size + context.guildMusicPlayer.guildTrackManager.tracks.size > QUEUE_LIMIT) {
             val msg = context.getTranslation("$root.queuelimit")
                 .replace("%amount%", QUEUE_LIMIT.toString())
+
             sendMsg(context, msg)
             return@runBlocking
         }
@@ -286,9 +288,10 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         val failedTracks = mutableListOf<Track>()
         val msg = context.getTranslation("command.play.loadingtrack" + if (tracks.size > 1) "s" else "")
             .replace("%trackCount%", tracks.size.toString())
+            .replace("%donateAmount%", DONATE_QUEUE_LIMIT.toString())
 
         val message = sendMsg(context, msg)
-        for (track in tracks.map { playListTrack -> playListTrack.track }) {
+        for (track in tracks) {
             loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, true) {
                 if (it) {
                     loadedTracks.add(track)

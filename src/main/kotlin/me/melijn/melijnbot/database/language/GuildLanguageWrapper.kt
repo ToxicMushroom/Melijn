@@ -29,7 +29,7 @@ class GuildLanguageWrapper(private val taskManager: TaskManager, private val lan
         val future = CompletableFuture<String>()
         languageCache.put(guildId, future)
 
-        if ("".equals(language, true)) {
+        if (language.isEmpty()) {
             future.complete(Language.EN.toString())
             languageDao.remove(guildId)
         } else {

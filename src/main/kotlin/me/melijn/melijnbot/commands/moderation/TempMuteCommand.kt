@@ -8,8 +8,8 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
@@ -32,12 +32,11 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
             return
         }
 
-        val language = context.getLanguage()
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
         val member = context.guild.getMember(targetUser)
         if (member != null && !context.guild.selfMember.canInteract(member)) {
 
-            val msg = i18n.getTranslation(language, "$root.cannotmute")
+            val msg = context.getTranslation("$root.cannotmute")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
             sendMsg(context, msg)
             return
@@ -61,7 +60,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         val roleId = roleWrapper.roleCache.get(Pair(context.guildId, RoleType.MUTE)).await()
         var muteRole: Role? = context.guild.getRoleById(roleId)
         if (muteRole == null) {
-            val msg = i18n.getTranslation(language, "$root.creatingmuterole")
+            val msg = context.getTranslation("$root.creatingmuterole")
             sendMsg(context, msg)
 
             try {
@@ -74,7 +73,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
 
                 roleWrapper.setRole(context.guildId, RoleType.MUTE, muteRole.idLong)
             } catch (t: Throwable) {
-                val msgFailed = i18n.getTranslation(language, "$root.failed.creatingmuterole")
+                val msgFailed = context.getTranslation("$root.failed.creatingmuterole")
                     .replace("%cause%", t.message ?: "/")
                 sendMsg(context, msgFailed)
             }
@@ -99,9 +98,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         )
         if (activeMute != null) mute.startTime = activeMute.startTime
 
-
-        val language = context.getLanguage()
-        val muting = i18n.getTranslation(language, "message.muting")
+        val muting = context.getTranslation("message.muting")
         try {
             val privateChannel = targetUser.openPrivateChannel().await()
             val message = privateChannel.sendMessage(muting).await()
@@ -130,10 +127,10 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
             guild.addRoleToMember(targetMember, muteRole).await()
             death(mutingMessage, mutedMessageDm, context, mutedMessageLc, activeMute, mute, targetUser)
         } catch (t: Throwable) {
-            val failedMsg = i18n.getTranslation(language, "message.muting.failed")
+            val failedMsg = context.getTranslation("message.muting.failed")
             mutingMessage?.editMessage(failedMsg)?.queue()
 
-            val msg = i18n.getTranslation(language, "$root.failure")
+            val msg = context.getTranslation("$root.failure")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
                 .replace("%cause%", t.message ?: "/")
             sendMsg(context, msg)
@@ -145,14 +142,11 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         mutingMessage?.editMessage(
             mutedMessageDm
         )?.override(true)?.queue()
+        val daoManager = context.daoManager
+        val logChannel = context.guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.TEMP_MUTE)
+        logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, mutedMessageLc) }
 
-        val logChannelWrapper = context.daoManager.logChannelWrapper
-        val logChannelId = logChannelWrapper.logChannelCache.get(Pair(context.guildId, LogChannelType.TEMP_MUTE)).await()
-        val logChannel = context.guild.getTextChannelById(logChannelId)
-        logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, mutedMessageLc) }
-
-        val language = context.getLanguage()
-        val msg = i18n.getTranslation(language, "$root.success" + if (activeMute != null) ".updated" else "")
+        val msg = context.getTranslation("$root.success" + if (activeMute != null) ".updated" else "")
             .replace(PLACEHOLDER_USER, targetUser.asTag)
             .replace("%endTime%", mute.endTime?.asEpochMillisToDateTime() ?: "none")
             .replace("%reason%", mute.reason)

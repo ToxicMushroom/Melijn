@@ -1,14 +1,13 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_CHANNELTYPE
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelByType
 
 class SetChannelCommand : AbstractCommand("command.setchannel") {
 
@@ -35,19 +34,16 @@ class SetChannelCommand : AbstractCommand("command.setchannel") {
     }
 
     private suspend fun showChannel(context: CommandContext, type: ChannelType) {
-        val channelWrapper = context.daoManager.channelWrapper
-        val channelId = channelWrapper.channelCache.get(Pair(context.guildId, type)).await()
-        val channel = if (channelId == -1L) null else context.guild.getTextChannelById(channelId)
+        val channel = context.guild.getAndVerifyChannelByType(context.daoManager, type)
         if (channel == null) {
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "$root.show.unset")
+            val msg = context.getTranslation("$root.show.unset")
                 .replace("%channelType%", type.toString().toUpperWordCase())
 
             sendMsg(context, msg)
             return
         }
-        val language = context.getLanguage()
-        val msg = i18n.getTranslation(language, "$root.show.set")
+
+        val msg = context.getTranslation("$root.show.set")
             .replace("%channelType%", type.toString().toUpperWordCase())
             .replace(PLACEHOLDER_CHANNEL, channel.asTag)
 

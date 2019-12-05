@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.moderation
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.warn.Warn
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.command.AbstractCommand
@@ -9,6 +8,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.*
 import java.awt.Color
@@ -28,9 +28,8 @@ class WarnCommand : AbstractCommand("command.warn") {
         }
         val targetMember = getMemberByArgsNMessage(context, 0) ?: return
 
-        val language = context.getLanguage()
         if (!context.guild.selfMember.canInteract(targetMember)) {
-            val msg = i18n.getTranslation(language, "$root.cannotwarn")
+            val msg = context.getTranslation("$root.cannotwarn")
                 .replace(PLACEHOLDER_USER, targetMember.asTag)
             sendMsg(context, msg)
             return
@@ -39,9 +38,11 @@ class WarnCommand : AbstractCommand("command.warn") {
         var reason = context.rawArg
             .replaceFirst(context.args[0], "")
             .trim()
-        if (reason.isBlank()) reason = "/"
 
-        reason = reason.trim()
+        if (reason.isBlank()) {
+            reason = "/"
+        }
+
 
         val warn = Warn(
             context.guildId,
@@ -50,21 +51,23 @@ class WarnCommand : AbstractCommand("command.warn") {
             reason
         )
 
-        val warning = i18n.getTranslation(language, "message.warning..")
+        val warning = context.getTranslation("message.warning..")
 
-        try {
-            val privateChannel = targetMember.user.openPrivateChannel().await()
-            val message = privateChannel.sendMessage(warning).await()
 
-            continueWarning(context, targetMember, warn, message)
-        } catch (t: Throwable) {
+        val privateChannel = targetMember.user.openPrivateChannel().awaitOrNull()
+        if (privateChannel == null) {
             continueWarning(context, targetMember, warn)
+            return
         }
+
+        val message = privateChannel.sendMessage(warning).await()
+        continueWarning(context, targetMember, warn, message)
     }
 
     private suspend fun continueWarning(context: CommandContext, targetMember: Member, warn: Warn, warningMessage: Message? = null) {
         val guild = context.guild
         val author = context.author
+        val daoManager = context.daoManager
 
         val language = context.getLanguage()
         val warnedMessageDm = getWarnMessage(language, guild, targetMember.user, author, warn)
@@ -76,14 +79,12 @@ class WarnCommand : AbstractCommand("command.warn") {
             warnedMessageDm
         )?.override(true)?.queue()
 
-        val logChannelWrapper = context.daoManager.logChannelWrapper
-        val logChannelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.WARN)).await()
-        val logChannel = guild.getTextChannelById(logChannelId)
+        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.WARN)
         logChannel?.let { it1 ->
-            sendEmbed(context.daoManager.embedDisabledWrapper, it1, warnedMessageLc)
+            sendEmbed(daoManager.embedDisabledWrapper, it1, warnedMessageLc)
         }
 
-        val msg = i18n.getTranslation(language, "$root.success")
+        val msg = context.getTranslation("$root.success")
             .replace(PLACEHOLDER_USER, targetMember.asTag)
             .replace("%reason%", warn.reason)
         sendMsg(context, msg)
@@ -132,7 +133,7 @@ fun getWarnMessage(
     description += "```"
 
     val author = i18n.getTranslation(language, "message.punishment.warn.author")
-            .replace(PLACEHOLDER_USER, warnAuthor.asTag)
+        .replace(PLACEHOLDER_USER, warnAuthor.asTag)
         .replace("%spaces%", " ".repeat(45).substring(0, 45 - warnAuthor.name.length) + "\u200B")
 
     eb.setAuthor(author, null, warnAuthor.effectiveAvatarUrl)

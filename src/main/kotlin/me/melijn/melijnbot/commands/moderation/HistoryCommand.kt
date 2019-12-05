@@ -6,7 +6,6 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.retrieveUserByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendMsgCodeBlocks
@@ -27,8 +26,7 @@ class HistoryCommand : AbstractCommand("command.history") {
         }
         val types = PunishmentType.getMatchingTypesFromNode(context.args[0])
         if (types.isEmpty()) {
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "message.unknown.punishmenttype")
+            val msg = context.getTranslation("message.unknown.punishmenttype")
                 .replace(PLACEHOLDER_ARG, context.args[0])
             sendMsg(context, msg)
             return
@@ -70,8 +68,7 @@ class HistoryCommand : AbstractCommand("command.history") {
         val msg = orderedMap.values.joinToString("")
 
         if (msg.isBlank()) {
-            val language = context.getLanguage()
-            val or = i18n.getTranslation(language, "or")
+            val or = context.getTranslation("or")
             var readableList = types.subList(0, types.size - 1).joinToString(", ", transform = { type ->
                 type.name.toLowerCase()
             })
@@ -82,7 +79,7 @@ class HistoryCommand : AbstractCommand("command.history") {
             }
 
 
-            val noHistory = i18n.getTranslation(language, "$root.nohistory")
+            val noHistory = context.getTranslation("$root.nohistory")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
                 .replace("%typeList%", readableList)
             sendMsg(context, noHistory)
