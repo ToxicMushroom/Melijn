@@ -28,7 +28,6 @@ class KickCommand : AbstractCommand("command.kick") {
         }
         val targetMember = getMemberByArgsNMessage(context, 0) ?: return
         if (!context.guild.selfMember.canInteract(targetMember)) {
-            val language = context.getLanguage()
             val msg = context.getTranslation("$root.cannotkick")
                 .replace(PLACEHOLDER_USER, targetMember.asTag)
             sendMsg(context, msg)

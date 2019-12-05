@@ -36,6 +36,7 @@ private val spotifyPlaylistUri: Pattern = Pattern.compile("spotify:(?:user:\\S+:
 private val spotifyAlbumUrl: Pattern = Pattern.compile("https://open.spotify.com/album/(\\S+)")
 private val spotifyAlbumUri: Pattern = Pattern.compile("spotify:album:(\\S+)")
 private val spotifyArtistUrl: Pattern = Pattern.compile("https://open.spotify.com/artist/(\\S+)")
+private val spotifyArtistUri: Pattern = Pattern.compile("spotify:artist:(\\S+)")
 
 class WebManager(val taskManager: TaskManager, val settings: Settings) {
 
@@ -133,6 +134,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 spotifyAlbumUri.matcher(songArg).matches() -> acceptIfMatchesPattern(songArg, simpleTrack, spotifyAlbumUri)
 
                 spotifyArtistUrl.matcher(songArg).matches() -> fetchTracksFromArtist(songArg, trackList, spotifyArtistUrl)
+                spotifyArtistUri.matcher(songArg).matches() -> fetchTracksFromArtist(songArg, trackList, spotifyArtistUri)
                 else -> error.invoke(IllegalArgumentException("That is not a valid spotify link"))
             }
         } catch (ignored: IOException) {
