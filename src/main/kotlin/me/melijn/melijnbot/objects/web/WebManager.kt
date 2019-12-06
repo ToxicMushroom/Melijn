@@ -20,6 +20,7 @@ import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.toLCC
 import net.dv8tion.jda.api.utils.data.DataObject
 import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.LoggerFactory
 import ru.gildor.coroutines.okhttp.await
@@ -41,6 +42,7 @@ private val spotifyArtistUri: Pattern = Pattern.compile("spotify:artist:(\\S+)")
 class WebManager(val taskManager: TaskManager, val settings: Settings) {
 
     val logger = LoggerFactory.getLogger(WebManager::class.java.name)
+val jsonMedia = "application/json".toMediaType()
 
     private val httpClient = OkHttpClient()
         .newBuilder()
@@ -192,18 +194,17 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
 
     fun updateTopDotGG(serversArray: List<Long>) {
         val token = settings.tokens.topDotGG
-        val url = "$TOP_GG_URL/bots/${settings.id}/stats"
+        val url = "$TOP_GG_URL/api/bots/${settings.id}/stats"
         if (token.isBlank()) return
         taskManager.async {
-            val body = MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("shards", serversArray.joinToString(",", "[", "]"))
-                .build()
+            val body = DataObject.empty()
+                .put("shards", serversArray.joinToString(",", "[", "]"))
+                .toString()
 
             val request = Request.Builder()
                 .addHeader("Authorization", token)
                 .url(url)
-                .post(body)
+                .post(body.toRequestBody(jsonMedia))
                 .build()
 
             httpClient.newCall(request).enqueue(defaultCallbackHandler)
@@ -215,15 +216,14 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         val url = "$BOTS_ON_DISCORD_XYZ_URL/bot-api/bots/${settings.id}/guilds"
         if (token.isBlank()) return
         taskManager.async {
-            val body = MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("guildCount", "$servers")
-                .build()
+            val body = DataObject.empty()
+                .put("guildCount", "$servers")
+                .toString()
 
             val request = Request.Builder()
                 .addHeader("Authorization", token)
                 .url(url)
-                .post(body)
+                .post(body.toRequestBody(jsonMedia))
                 .build()
 
             httpClient.newCall(request).enqueue(defaultCallbackHandler)
@@ -235,15 +235,14 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         val url = "$BOTLIST_SPACE/v1/bots/${settings.id}"
         if (token.isBlank()) return
         taskManager.async {
-            val body = MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("shards", serversArray.joinToString(",", "[", "]"))
-                .build()
+            val body = DataObject.empty()
+                .put("shards", serversArray.joinToString(",", "[", "]"))
+                .toString()
 
             val request = Request.Builder()
                 .addHeader("Authorization", token)
                 .url(url)
-                .post(body)
+                .post(body.toRequestBody(jsonMedia))
                 .build()
 
             httpClient.newCall(request).enqueue(defaultCallbackHandler)
@@ -275,6 +274,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         val token = settings.tokens.divinedDiscordBotsCom
         val url = "$DIVINED_DISCORD_BOTS_COM/bot/${settings.id}/stats"
         if (token.isBlank()) return
+
         taskManager.async {
             val body = DataObject.empty()
                 .put("server_count", servers)
@@ -284,7 +284,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
             val request = Request.Builder()
                 .addHeader("Authorization", token)
                 .url(url)
-                .post(body.toRequestBody())
+                .post(body.toRequestBody(jsonMedia))
                 .build()
 
             httpClient.newCall(request).enqueue(defaultCallbackHandler)
@@ -296,16 +296,15 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         val url = "$DISCORD_BOTS_GG/bots/${settings.id}/stats"
         if (token.isBlank()) return
         taskManager.async {
-            val body = MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("guildCount", "$servers")
-                .addFormDataPart("shardCount", "$shards")
-                .build()
+            val body = DataObject.empty()
+                .put("guildCount", servers)
+                .put("shardCount", shards)
+                .toString()
 
             val request = Request.Builder()
                 .addHeader("Authorization", token)
                 .url(url)
-                .post(body)
+                .post(body.toRequestBody(jsonMedia))
                 .build()
 
             httpClient.newCall(request).enqueue(defaultCallbackHandler)
@@ -317,15 +316,14 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         val url = "$BOTS_FOR_DISCORD_COM/api/bot/${settings.id}"
         if (token.isBlank()) return
         taskManager.async {
-            val body = MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("server_count", "$servers")
-                .build()
+            val body = DataObject.empty()
+                .put("server_count", servers)
+                .toString()
 
             val request = Request.Builder()
                 .addHeader("Authorization", token)
                 .url(url)
-                .post(body)
+                .post(body.toRequestBody(jsonMedia))
                 .build()
 
             httpClient.newCall(request).enqueue(defaultCallbackHandler)
@@ -337,15 +335,14 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         val url = "$DISCORD_BOATS/api/bot/${settings.id}"
         if (token.isBlank()) return
         taskManager.async {
-            val body = MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("server_count", "$servers")
-                .build()
+            val body = DataObject.empty()
+                .put("server_count", servers)
+                .toString()
 
             val request = Request.Builder()
                 .addHeader("Authorization", token)
                 .url(url)
-                .post(body)
+                .post(body.toRequestBody(jsonMedia))
                 .build()
 
             httpClient.newCall(request).enqueue(defaultCallbackHandler)

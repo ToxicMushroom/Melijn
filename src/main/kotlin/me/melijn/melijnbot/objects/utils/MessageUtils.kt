@@ -26,7 +26,9 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 fun Throwable.sendInGuild(context: CommandContext, thread: Thread = Thread.currentThread(), extra: String? = null) = runBlocking {
-    sendInGuildSuspend(context.guild, context.messageChannel, context.author, thread, "Message: ${context.message.contentRaw}\n" + (extra ?: ""))
+    sendInGuildSuspend(context.guild, context.messageChannel, context.author, thread, "Message: ${MarkdownSanitizer.escape(context.message.contentRaw)}\n" + (extra
+        ?: "")
+    )
 }
 
 
@@ -436,8 +438,6 @@ suspend fun sendFile(language: String, textChannel: TextChannel, bytes: ByteArra
         return
     }
 }
-
-
 
 
 suspend fun sendMsg(context: CommandContext, listImages: List<BufferedImage>, extension: String): List<Message> = suspendCoroutine {

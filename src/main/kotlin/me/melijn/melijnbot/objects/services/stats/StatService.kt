@@ -30,12 +30,12 @@ class StatService(val shardManager: ShardManager, val webManager: WebManager) : 
     }
 
     override fun start() {
-        logger.info("Started StateService")
-        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(statService, 10, 10, TimeUnit.MINUTES)
+        logger.info("Started StatService")
+        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(statService, 1, 3, TimeUnit.MINUTES)
     }
 
     override fun stop() {
-        logger.info("Stopping StateService")
+        logger.info("Stopping StatService")
         scheduledFuture?.cancel(false)
     }
 }

@@ -56,7 +56,11 @@ fun getUnixUptime(): Long {
     if (!matcher.find()) return -1 //Extract ints out of groups
     val days2 = matcher.group(1)
     val hours2 = matcher.group(2)
-    val minutes2 = if (matcher.group(3) == null) matcher.group(4) else matcher.group(3)
+    val minutes2 = if (matcher.group(3) == null) {
+        matcher.group(4)
+    } else {
+        matcher.group(3)
+    }
     val days = if (days2 != null) Integer.parseInt(days2) else 0
     val hours = if (hours2 != null) Integer.parseInt(hours2) else 0
     val minutes = if (minutes2 != null) Integer.parseInt(minutes2) else 0
