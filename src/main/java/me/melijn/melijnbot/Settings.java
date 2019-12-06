@@ -44,7 +44,7 @@ public class Settings {
         public String botsOnDiscordXYZ;
         public String botlistSpace;
         public String discordBotListCom;
-        public String divinedDiscordBotsCom;
+        public String divineDiscordBotsCom;
         public String discordBotsGG;
         public String botsForDiscordCom;
         public String discordBoats;

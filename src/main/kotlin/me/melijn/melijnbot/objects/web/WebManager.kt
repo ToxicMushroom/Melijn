@@ -271,8 +271,8 @@ val jsonMedia = "application/json".toMediaType()
     }
 
     fun updateDivinedDiscordBots(servers: Long, shards: Long) {
-        val token = settings.tokens.divinedDiscordBotsCom
-        val url = "$DIVINED_DISCORD_BOTS_COM/bot/${settings.id}/stats"
+        val token = settings.tokens.divineDiscordBotsCom
+        val url = "$DIVINE_DISCORD_BOTS_COM/bot/${settings.id}/stats"
         if (token.isBlank()) return
 
         taskManager.async {
