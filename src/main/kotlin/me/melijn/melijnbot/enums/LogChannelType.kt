@@ -24,8 +24,9 @@ enum class LogChannelType(val text: String = this.toString(), val parentNodes: A
     //Others
     VERIFICATION("Verification", arrayOf("v", "uv", "vlc", "uvlc")),
     EDITED_MESSAGE("Edited-Message", arrayOf("em", "edited-messages", "emlc")),
-    REACTION("Reaction", arrayOf("r", "reactions", "mr", "rlc")),
+    REACTION("Reaction", arrayOf("r", "reactions", "r", "rlc")),
     ATTACHMENT("Attachment", arrayOf("a", "alc")),
+    // OTHER_ROLES("Other-Roles", arrayOf("or", "orlc")),
 
     MUSIC("Music", arrayOf("m", "mlc")),
     BOT("Bot", arrayOf("b", "blc"));

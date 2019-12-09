@@ -3,6 +3,7 @@ package me.melijn.melijnbot
 import com.fasterxml.jackson.databind.ObjectMapper
 import lavalink.client.io.jda.JdaLavalink
 import me.melijn.melijnbot.database.DaoManager
+import me.melijn.melijnbot.enums.RoleUpdateCause
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.music.LavaManager
 import me.melijn.melijnbot.objects.services.ServiceManager
@@ -16,6 +17,10 @@ import java.io.File
 
 
 class Container {
+
+    // userId, roleId, cause
+    val roleAddedMap = mutableMapOf<Pair<Long, Long>, RoleUpdateCause>()
+    val roleRemovedMap = mutableMapOf<Pair<Long, Long>, RoleUpdateCause>()
 
     var restServer: RestServer? = null
     var shuttingDown: Boolean = false

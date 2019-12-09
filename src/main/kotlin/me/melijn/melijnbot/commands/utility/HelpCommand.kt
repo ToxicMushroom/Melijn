@@ -63,7 +63,9 @@ class HelpCommand : AbstractCommand("command.help") {
             embedder.setDescription(translation)
             if (hasExtra) {
                 val examples = context.getTranslation("$root.embed.examples")
-                embedder.addField(examples, translationExtra, false)
+                for (extra in StringUtils.splitMessage(translationExtra, nextSplitThreshold = 1024)) {
+                    embedder.addField(examples, extra, false)
+                }
             }
             sendEmbed(context, embedder.build())
         }

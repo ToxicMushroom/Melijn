@@ -21,7 +21,7 @@ class SetFilterModeCommand : AbstractCommand("command.setfiltermode") {
             ChannelArg(root),
             GlobalArg(root)
         )
-        commandCategory = CommandCategory.ADMINISTRATION
+        commandCategory = CommandCategory.DEVELOPER
     }
 
     override suspend fun execute(context: CommandContext) {

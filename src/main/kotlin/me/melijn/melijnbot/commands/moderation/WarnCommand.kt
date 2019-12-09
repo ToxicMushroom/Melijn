@@ -29,7 +29,7 @@ class WarnCommand : AbstractCommand("command.warn") {
         val targetMember = getMemberByArgsNMessage(context, 0) ?: return
 
         if (!context.guild.selfMember.canInteract(targetMember)) {
-            val msg = context.getTranslation("$root.cannotwarn")
+            val msg = context.getTranslation("message.interact.member.hierarchyexception")
                 .replace(PLACEHOLDER_USER, targetMember.asTag)
             sendMsg(context, msg)
             return
@@ -51,7 +51,7 @@ class WarnCommand : AbstractCommand("command.warn") {
             reason
         )
 
-        val warning = context.getTranslation("message.warning..")
+        val warning = context.getTranslation("message.warning")
 
 
         val privateChannel = targetMember.user.openPrivateChannel().awaitOrNull()

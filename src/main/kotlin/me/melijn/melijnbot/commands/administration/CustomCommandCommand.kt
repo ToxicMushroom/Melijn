@@ -32,7 +32,6 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             InfoArg(root)
         )
         commandCategory = CommandCategory.ADMINISTRATION
-
     }
 
     companion object {

@@ -252,6 +252,59 @@ suspend fun getRoleByArgsNMessage(
     return role
 }
 
+suspend fun getStringFromArgsNMessage(
+    context: CommandContext,
+    index: Int,
+    min: Int,
+    max: Int,
+    mustMatch: Regex? = null,
+    cantContainChars: Array<Char> = emptyArray(),
+    cantContainWords: Array<String> = emptyArray(),
+    ignoreCase: Boolean = false): String? {
+    if (argSizeCheckFailed(context, index)) return null
+    val arg = context.args[index]
+    if (arg.length < min) {
+        val msg = context.getTranslation("message.string.minfailed")
+            .replace("%min%", min.toString())
+        sendMsg(context, msg)
+        return null
+    }
+    if (arg.length > max) {
+        val msg = context.getTranslation("message.string.maxfailed")
+            .replace("%max%", max.toString())
+        sendMsg(context, msg)
+        return null
+    }
+    if (mustMatch != null && !mustMatch.matches(arg)) {
+        val msg = context.getTranslation("message.string.matchfailed")
+            .replace("%pattern%", mustMatch.toString())
+        sendMsg(context, msg)
+        return null
+    }
+    for (char in cantContainChars) {
+        if (arg.contains(char, ignoreCase)) {
+            val msg = context.getTranslation("message.string.cantcontaincharfailed")
+                .replace("%chars%", cantContainChars.toString())
+                .replace("%char%", char.toString())
+                .replace("%ignorecase%", ignoreCase.toString())
+            sendMsg(context, msg)
+            return null
+        }
+    }
+    for (word in cantContainWords) {
+        if (arg.contains(word, ignoreCase)) {
+            val msg = context.getTranslation("message.string.cantcontainwordfailed")
+                .replace("%words%", cantContainWords.toString())
+                .replace("%word%", word.toString())
+                .replace("%ignorecase%", ignoreCase.toString())
+            sendMsg(context, msg)
+            return null
+        }
+    }
+
+    return arg
+}
+
 suspend fun getEmoteByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): Emote? {
     val emote = getEmoteByArgsN(context, index, sameGuildAsContext)
     if (emote == null) {

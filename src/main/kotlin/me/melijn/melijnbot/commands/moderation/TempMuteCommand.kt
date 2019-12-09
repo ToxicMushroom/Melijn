@@ -36,7 +36,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         val member = context.guild.getMember(targetUser)
         if (member != null && !context.guild.selfMember.canInteract(member)) {
 
-            val msg = context.getTranslation("$root.cannotmute")
+            val msg = context.getTranslation("message.interact.member.hierarchyexception")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
             sendMsg(context, msg)
             return
@@ -60,7 +60,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         val roleId = roleWrapper.roleCache.get(Pair(context.guildId, RoleType.MUTE)).await()
         var muteRole: Role? = context.guild.getRoleById(roleId)
         if (muteRole == null) {
-            val msg = context.getTranslation("$root.creatingmuterole")
+            val msg = context.getTranslation("message.creatingmuterole")
             sendMsg(context, msg)
 
             try {
@@ -73,7 +73,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
 
                 roleWrapper.setRole(context.guildId, RoleType.MUTE, muteRole.idLong)
             } catch (t: Throwable) {
-                val msgFailed = context.getTranslation("$root.failed.creatingmuterole")
+                val msgFailed = context.getTranslation("message.creatingmuterole.failed")
                     .replace("%cause%", t.message ?: "/")
                 sendMsg(context, msgFailed)
             }

@@ -35,7 +35,7 @@ class BanCommand : AbstractCommand("command.ban") {
         val targetUser = getUserByArgsNMessage(context, 0) ?: return
         val member = context.guild.getMember(targetUser)
         if (member != null && !context.guild.selfMember.canInteract(member)) {
-            val msg = context.getTranslation("$root.cannotban")
+            val msg = context.getTranslation("message.interact.member.hierarchyexception")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
             sendMsg(context, msg)
             return

@@ -4,6 +4,8 @@ import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.events.AbstractListener
 import me.melijn.melijnbot.objects.events.eventutil.SelfRoleUtil
+import me.melijn.melijnbot.objects.utils.LogUtils
+import me.melijn.melijnbot.objects.utils.awaitBool
 import me.melijn.melijnbot.objects.utils.awaitOrNull
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveEvent
@@ -24,7 +26,10 @@ class MessageReactionRemovedListener(container: Container) : AbstractListener(co
         val role = SelfRoleUtil.getSelectedSelfRoleNByReactionEvent(event, container) ?: return
 
         if (member.roles.contains(role)) {
-            guild.removeRoleFromMember(member, role).queue()
+            val removed = guild.removeRoleFromMember(member, role).awaitBool()
+            if (!removed) {
+                LogUtils.sendMessageFailedToRemoveRoleFromMember(container.daoManager, member, role)
+            }
         }
     }
 }

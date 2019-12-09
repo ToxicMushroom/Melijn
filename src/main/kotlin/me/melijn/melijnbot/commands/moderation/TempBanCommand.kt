@@ -32,7 +32,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
         val member = guild.getMember(targetUser)
         if (member != null && !guild.selfMember.canInteract(member)) {
-            val msg = context.getTranslation("$root.cannotban")
+            val msg = context.getTranslation("message.interact.member.hierarchyexception")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
             sendMsg(context, msg)
             return

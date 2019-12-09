@@ -12,34 +12,95 @@ class AutoPunishmentGroupWrapper(val taskManager: TaskManager, private val autoP
 
     val autoPunishmentCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Pair<Long, Long>, Map<PointsTriggerType, Int>> { pair ->
-            getPointsMap(pair)
+        .build(loadingCacheFrom<Long, List<PunishGroup>> { pair ->
+            getPunishGroups(pair)
         })
 
-    private fun getPointsMap(pair: Pair<Long, Long>): CompletableFuture<Map<PointsTriggerType, Int>> {
-        val future = CompletableFuture<Map<PointsTriggerType, Int>>()
+    private fun getPunishGroups(guildId: Long): CompletableFuture<List<PunishGroup>> {
+        val future = CompletableFuture<Pair<Map<PointsTriggerType, Int>, Map<Int, String>>>()
 
         taskManager.async {
-            val pointsMap = autoPunishmentGroupDao.get(pair.first, pair.second)
-            val entries = pointsMap
+            val valuePair = autoPunishmentGroupDao.getAll(guildId)
+            val firstEntries = valuePair
+                .first
                 .removeSurrounding("[", "]")
                 .split("],[")
-            val map = mutableMapOf<PointsTriggerType, Int>()
-            for (entry in entries) {
+            val secondEntries = valuePair
+                .second
+                .removeSurrounding("[", "]")
+                .split("],[")
+            val ppTriggerMap = mutableMapOf<PointsTriggerType, Int>()
+            val ppGoalMap = mutableMapOf<Int, String>()
+            for (entry in firstEntries) {
                 val entryParts = entry.split(", ")
-                map[PointsTriggerType.valueOf(entryParts[0])] = entryParts[1].toInt()
+                ppTriggerMap[PointsTriggerType.valueOf(entryParts[0])] = entryParts[1].toInt()
             }
-            future.complete(map)
+            for (entry in secondEntries) {
+                val entryParts = entry.split(", ")
+                ppGoalMap[entryParts[0].toInt()] = entryParts[1]
+            }
+            future.complete(Pair(ppTriggerMap, ppGoalMap))
         }
 
         return future
     }
 
-    suspend fun set(guildId: Long, groupId: Long, types: Map<PointsTriggerType, Int>) {
+    suspend fun getMapsForGuild(guildId: Long): Map<String, Pair<Map<PointsTriggerType, Int>, Map<Int, String>>> {
+        val maps = autoPunishmentGroupDao.getAll(guildId)
+        val final = mutableMapOf<String, Pair<Map<PointsTriggerType, Int>, Map<Int, String>>>()
+        for ((group, pair) in maps) {
+            val firstEntries = pair
+                .first
+                .removeSurrounding("[", "]")
+                .split("],[")
+            val secondEntries = pair
+                .second
+                .removeSurrounding("[", "]")
+                .split("],[")
+            val ppTriggerMap = mutableMapOf<PointsTriggerType, Int>()
+            val ppGoalMap = mutableMapOf<Int, String>()
+            for (entry in firstEntries) {
+                val entryParts = entry.split(", ")
+                ppTriggerMap[PointsTriggerType.valueOf(entryParts[0])] = entryParts[1].toInt()
+            }
+            for (entry in secondEntries) {
+                val entryParts = entry.split(", ")
+                ppGoalMap[entryParts[0].toInt()] = entryParts[1]
+            }
+            final[group] = Pair(ppTriggerMap, ppGoalMap)
+        }
+        return final
+    }
+
+    suspend fun add(guildId: Long, group: String) {
+        autoPunishmentGroupDao.add(guildId, group)
+        autoPunishmentCache.invalidate(Pair(guildId, group))
+    }
+
+    suspend fun setTypePointsMap(guildId: Long, group: String, types: Map<PointsTriggerType, Int>) {
         val string = types
             .map { entry -> "${entry.key}, ${entry.value}" }
             .joinToString("],[", "[", "]")
-        autoPunishmentGroupDao.set(guildId, groupId, string)
-        autoPunishmentCache.put(Pair(guildId, groupId), CompletableFuture.completedFuture(types))
+        autoPunishmentGroupDao.setTypePointsMap(guildId, group, string)
+        autoPunishmentCache.invalidate(Pair(guildId, group))
+    }
+
+    suspend fun setPointGoalMap(guildId: Long, group: String, goals: Map<Long, String>) {
+        val string = goals
+            .map { entry -> "${entry.key}, ${entry.value}" }
+            .joinToString("],[", "[", "]")
+        autoPunishmentGroupDao.setTypePointsMap(guildId, group, string)
+        autoPunishmentCache.invalidate(Pair(guildId, group))
+    }
+
+    suspend fun remove(guildId: Long, group: String) {
+        autoPunishmentGroupDao.remove(guildId, group)
+        autoPunishmentCache.invalidate(Pair(guildId, group))
     }
 }
+
+data class PunishGroup(
+    val groupName: String,
+    val typePointsMap: Map<PointsTriggerType, Int>,
+    val pointGoalMAp: Map<Long, String>
+)

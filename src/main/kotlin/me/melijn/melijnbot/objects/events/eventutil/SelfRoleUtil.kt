@@ -27,7 +27,9 @@ object SelfRoleUtil {
             reaction.reactionEmote.emoji
         }
         val map = daoManager.selfRoleWrapper.selfRoleCache.get(guildId).await()
-        if (!map.containsKey(emoteji)) return null
+        if (!map.containsKey(emoteji)) {
+            return null
+        }
 
         val roleId = map[emoteji] ?: return null
         if (daoManager.forceRoleWrapper.forceRoleCache[guildId].await()[member.idLong]?.contains(roleId) == true) return null

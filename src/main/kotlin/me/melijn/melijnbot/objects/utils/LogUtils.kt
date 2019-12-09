@@ -350,4 +350,59 @@ object LogUtils {
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
+
+    suspend fun sendRoleAddedLog(container: Container, adder: User, target: User, role: Role) {
+//        val daoManager = container.daoManager
+//        val guild = role.guild
+//        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.ROLES)
+//            ?: return
+//
+//        val language = getLanguage(daoManager, -1, guild.idLong)
+//        val title = i18n.getTranslation(language, "logging.role.member.added.title")
+//        val description = "```LDIF" + i18n.getTranslation(language, "logging.role.member.added.description")
+//            .replace(PLACEHOLDER_USER_ID, adder.id)
+//            .replace(PLACEHOLDER_USER, adder.asTag)
+//            .replace("%targetId%", target.id)
+//            .replace("%target%", target.asTag)
+//            .replace(PLACEHOLDER_ROLE, role.name)
+//            .replace(PLACEHOLDER_ROLE_ID, role.id) + "```"
+//        if (adder.idLong == adder.jda.selfUser.idLong) {
+//            container.roleAddedMap
+//        }
+//
+//        val eb = EmbedBuilder()
+//        eb.setTitle(title)
+//        eb.setColor(role.color)
+//        eb.setDescription(description)
+//        eb.setThumbnail(target.effectiveAvatarUrl)
+//        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(), adder.effectiveAvatarUrl)
+//
+//        sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
+    }
+
+    suspend fun sendRoleRemovedLog(container: Container, remover: User, target: User, role: Role) {
+//        val daoManager = container.daoManager
+//        val guild = role.guild
+//        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.ROLES)
+//            ?: return
+//
+//        val language = getLanguage(daoManager, -1, guild.idLong)
+//        val title = i18n.getTranslation(language, "logging.role.member.removed.title")
+//        val description = "```LDIF" + i18n.getTranslation(language, "logging.role.member.removed.description")
+//            .replace(PLACEHOLDER_USER_ID, remover.id)
+//            .replace(PLACEHOLDER_USER, remover.asTag)
+//            .replace("%targetId%", target.id)
+//            .replace("%target%", target.asTag)
+//            .replace(PLACEHOLDER_ROLE, role.name)
+//            .replace(PLACEHOLDER_ROLE_ID, role.id) + "```"
+//
+//        val eb = EmbedBuilder()
+//        eb.setTitle(title)
+//        eb.setColor(role.color)
+//        eb.setDescription(description)
+//        eb.setThumbnail(target.effectiveAvatarUrl)
+//        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(), remover.effectiveAvatarUrl)
+//
+//        sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
+    }
 }

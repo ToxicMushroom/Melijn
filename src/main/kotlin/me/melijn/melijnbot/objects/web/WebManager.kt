@@ -18,6 +18,7 @@ import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.toLCC
+import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
@@ -198,7 +199,7 @@ val jsonMedia = "application/json".toMediaType()
         if (token.isBlank()) return
         taskManager.async {
             val body = DataObject.empty()
-                .put("shards", serversArray.joinToString(",", "[", "]"))
+                .put("shards", DataArray.fromCollection(serversArray))
                 .toString()
 
             val request = Request.Builder()
