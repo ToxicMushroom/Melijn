@@ -237,7 +237,7 @@ val jsonMedia = "application/json".toMediaType()
         if (token.isBlank()) return
         taskManager.async {
             val body = DataObject.empty()
-                .put("shards", serversArray.joinToString(",", "[", "]"))
+                .put("shards", DataArray.fromCollection(serversArray))
                 .toString()
 
             val request = Request.Builder()
