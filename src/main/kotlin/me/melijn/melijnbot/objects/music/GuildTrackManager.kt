@@ -68,6 +68,7 @@ class GuildTrackManager(
     }
 
     fun queue(track: AudioTrack) {
+        if (track.userData == null) throw IllegalArgumentException("no")
         if (iPlayer.playingTrack == null) {
             iPlayer.playTrack(track)
         } else {

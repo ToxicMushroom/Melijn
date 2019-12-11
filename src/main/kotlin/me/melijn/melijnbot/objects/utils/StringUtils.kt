@@ -100,12 +100,12 @@ object StringUtils {
         return Triple(amount, almostMostRight, mostRight)
     }
 
-    fun splitMessage(message: String, nextSplitThreshold: Int = 1800, margin: Int = 0): List<String> {
+    fun splitMessage(message: String, splitAtLeast: Int = 1800, maxLength: Int = 2000): List<String> {
         var msg = message
         val messages = ArrayList<String>()
-        while (msg.length > 2000 - margin) {
-            val findLastNewline = msg.substring(0, 1999 - margin)
-            val index = getSplitIndex(findLastNewline, nextSplitThreshold, margin)
+        while (msg.length > maxLength) {
+            val findLastNewline = msg.substring(0, maxLength - 1)
+            val index = getSplitIndex(findLastNewline, splitAtLeast, maxLength - 1)
 
             messages.add(msg.substring(0, index))
             msg = msg.substring(index)
@@ -114,18 +114,18 @@ object StringUtils {
         return messages
     }
 
-    fun getSplitIndex(findLastNewline: String, nextSplitThreshold: Int, margin: Int): Int {
+    fun getSplitIndex(findLastNewline: String, splitAtLeast: Int, margin: Int): Int {
         var index = findLastNewline.lastIndexOf("\n")
-        if (index < nextSplitThreshold) {
+        if (index < splitAtLeast) {
             index = findLastNewline.lastIndexOf(". ")
         }
-        if (index < nextSplitThreshold) {
+        if (index < splitAtLeast) {
             index = findLastNewline.lastIndexOf(" ")
         }
-        if (index < nextSplitThreshold) {
+        if (index < splitAtLeast) {
             index = findLastNewline.lastIndexOf(",")
         }
-        if (index < nextSplitThreshold) {
+        if (index < splitAtLeast) {
             index = 1999 - margin
         }
 

@@ -17,29 +17,33 @@ class AutoPunishmentGroupWrapper(val taskManager: TaskManager, private val autoP
         })
 
     private fun getPunishGroups(guildId: Long): CompletableFuture<List<PunishGroup>> {
-        val future = CompletableFuture<Pair<Map<PointsTriggerType, Int>, Map<Int, String>>>()
+        val future = CompletableFuture<List<PunishGroup>>()
 
         taskManager.async {
-            val valuePair = autoPunishmentGroupDao.getAll(guildId)
-            val firstEntries = valuePair
-                .first
-                .removeSurrounding("[", "]")
-                .split("],[")
-            val secondEntries = valuePair
-                .second
-                .removeSurrounding("[", "]")
-                .split("],[")
-            val ppTriggerMap = mutableMapOf<PointsTriggerType, Int>()
-            val ppGoalMap = mutableMapOf<Int, String>()
-            for (entry in firstEntries) {
-                val entryParts = entry.split(", ")
-                ppTriggerMap[PointsTriggerType.valueOf(entryParts[0])] = entryParts[1].toInt()
+            val valuePairs = autoPunishmentGroupDao.getAll(guildId)
+            val list = mutableListOf<PunishGroup>()
+            for ((group, valuePair) in valuePairs) {
+                val firstEntries = valuePair
+                    .first
+                    .removeSurrounding("[", "]")
+                    .split("],[")
+                val secondEntries = valuePair
+                    .second
+                    .removeSurrounding("[", "]")
+                    .split("],[")
+                val ppTriggerMap = mutableMapOf<PointsTriggerType, Int>()
+                val ppGoalMap = mutableMapOf<Int, String>()
+                for (entry in firstEntries) {
+                    val entryParts = entry.split(", ")
+                    ppTriggerMap[PointsTriggerType.valueOf(entryParts[0])] = entryParts[1].toInt()
+                }
+                for (entry in secondEntries) {
+                    val entryParts = entry.split(", ")
+                    ppGoalMap[entryParts[0].toInt()] = entryParts[1]
+                }
+                list.add(PunishGroup(group, ppTriggerMap, ppGoalMap))
             }
-            for (entry in secondEntries) {
-                val entryParts = entry.split(", ")
-                ppGoalMap[entryParts[0].toInt()] = entryParts[1]
-            }
-            future.complete(Pair(ppTriggerMap, ppGoalMap))
+            future.complete(list)
         }
 
         return future
@@ -102,5 +106,5 @@ class AutoPunishmentGroupWrapper(val taskManager: TaskManager, private val autoP
 data class PunishGroup(
     val groupName: String,
     val typePointsMap: Map<PointsTriggerType, Int>,
-    val pointGoalMAp: Map<Long, String>
+    val pointGoalMAp: MutableMap<Int, String>
 )

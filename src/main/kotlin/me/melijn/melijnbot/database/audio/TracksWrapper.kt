@@ -2,6 +2,8 @@ package me.melijn.melijnbot.database.audio
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import lavalink.client.LavalinkUtil
+import me.melijn.melijnbot.objects.music.TrackUserData
+import me.melijn.melijnbot.objects.music.toMessage
 import java.util.*
 
 class TracksWrapper(val tracksDao: TracksDao, val lastVoiceChannelDao: LastVoiceChannelDao) {
@@ -10,10 +12,17 @@ class TracksWrapper(val tracksDao: TracksDao, val lastVoiceChannelDao: LastVoice
         val map = tracksDao.getMap()
         val newMap = mutableMapOf<Long, List<AudioTrack>>()
 
-        for ((guildId, list) in map) {
+        for ((guildId, trackMap) in map) {
             val newList = mutableListOf<AudioTrack>()
-            for (string in list.sortedBy { (first) -> first }) {
-                newList.add(LavalinkUtil.toAudioTrack(string.second))
+            val sortedTrackMap = trackMap.toSortedMap(kotlin.Comparator { o1, o2 ->
+                o1.compareTo(o2)
+            })
+            for ((_, pair) in sortedTrackMap) {
+                val track = LavalinkUtil.toAudioTrack(pair.first)
+                if (pair.second.isNotEmpty()) {
+                    track.userData = TrackUserData.fromMessage(pair.second)
+                }
+                newList.add(track)
             }
             newMap[guildId] = newList
         }
@@ -25,15 +34,19 @@ class TracksWrapper(val tracksDao: TracksDao, val lastVoiceChannelDao: LastVoice
         //Concurrent modification don't ask me why
         val newQueue: Queue<AudioTrack> = LinkedList(queue)
         val playing = LavalinkUtil.toMessage(playingTrack)
-        tracksDao.set(guildId, 0, playing)
+        var ud = playingTrack.userData as TrackUserData?
+        var udMessage = ud?.toMessage() ?: ""
+        tracksDao.set(guildId, 0, playing, udMessage)
 
         for ((index, track) in newQueue.withIndex()) {
             val json = LavalinkUtil.toMessage(track)
-            tracksDao.set(guildId, index + 1, json)
+            ud = playingTrack.userData as TrackUserData?
+            udMessage = ud?.toMessage() ?: ""
+            tracksDao.set(guildId, index + 1, json, udMessage)
         }
     }
 
-    suspend fun clear() {
+    fun clear() {
         tracksDao.clear()
     }
 
@@ -45,7 +58,8 @@ class TracksWrapper(val tracksDao: TracksDao, val lastVoiceChannelDao: LastVoice
         return lastVoiceChannelDao.getMap()
     }
 
-    suspend fun clearChannels() {
+    fun clearChannels() {
         lastVoiceChannelDao.clear()
     }
 }
+

@@ -14,18 +14,19 @@ class StatService(val shardManager: ShardManager, val webManager: WebManager) : 
     private val statService = Runnable {
         runBlocking {
             val shards = shardManager.shardCache.size()
-            val serversArray = shardManager.shardCache.map { shard -> shard.userCache.size() }
-            val servers = shardManager.guildCache.size()
+            val guildArray = shardManager.shardCache.map { shard -> shard.guildCache.size() }
+            val usersArray = shardManager.shardCache.map { shard -> shard.userCache.size() }
+            val guilds = shardManager.guildCache.size()
             val users = shardManager.userCache.size()
 
-            webManager.updateTopDotGG(serversArray) // 1s ratelimit
-            webManager.updateBotsOnDiscordXYZ(servers) // 2min ratelimit
-            webManager.updateBotlistSpace(serversArray) // 15s ratelimit
-            webManager.updateDiscordBotListCom(servers, users) // no
-            webManager.updateDivinedDiscordBots(servers, shards) // 1min ratelimit
-            webManager.updateDiscordBotsGG(servers, shards) // 0.05s ratelimit
-            webManager.updateBotsForDiscordCom(servers) // no
-            webManager.updateDiscordBoats(servers) // 1s
+            webManager.updateTopDotGG(guildArray) // 1s ratelimit
+            webManager.updateBotsOnDiscordXYZ(guilds) // 2min ratelimit
+            webManager.updateBotlistSpace(guildArray) // 15s ratelimit
+            webManager.updateDiscordBotListCom(guilds, users) // no
+            webManager.updateDivinedDiscordBots(guilds, shards) // 1min ratelimit
+            webManager.updateDiscordBotsGG(guilds, shards) // 0.05s ratelimit
+            webManager.updateBotsForDiscordCom(guilds) // no
+            webManager.updateDiscordBoats(guilds) // 1s
         }
     }
 

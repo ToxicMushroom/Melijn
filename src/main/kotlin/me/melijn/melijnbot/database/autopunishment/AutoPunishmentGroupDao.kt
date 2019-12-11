@@ -12,7 +12,7 @@ class AutoPunishmentGroupDao(driverManager: DriverManager) : Dao(driverManager) 
     override val primaryKey: String = "guildId, group"
 
     init {
-        driverManager.registerTable(table, tableStructure, primaryKey)
+        //driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     suspend fun setTypePointsMap(guildId: Long, group: String, typePointsMap: String) {

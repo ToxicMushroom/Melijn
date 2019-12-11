@@ -80,7 +80,7 @@ fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String) {
         if (msg.length <= 2000) {
             channel.sendMessage(msg).queue()
         } else {
-            val parts = StringUtils.splitMessage(msg, margin = 8 + lang.length);
+            val parts = StringUtils.splitMessage(msg, maxLength = 2000 - (8 + lang.length))
             parts.forEachIndexed { index, msgPart ->
                 channel.sendMessage(when {
                     index == 0 -> "$msgPart```"
@@ -95,7 +95,7 @@ fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String) {
         if (msg.length <= 2000) {
             privateChannel.sendMessage(msg).queue()
         } else {
-            val parts = StringUtils.splitMessage(msg, margin = 8 + lang.length);
+            val parts = StringUtils.splitMessage(msg, maxLength = 2000 - (8 + lang.length))
             parts.forEachIndexed { index, msgPart ->
                 privateChannel.sendMessage(when {
                     index == 0 -> "$msgPart```"

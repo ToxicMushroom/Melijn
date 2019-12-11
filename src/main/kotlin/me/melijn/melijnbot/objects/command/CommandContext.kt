@@ -6,6 +6,7 @@ import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.web.WebManager
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -85,6 +86,13 @@ class CommandContext(
             "No MESSAGE_WRITE permission"
         }
         messageChannel.sendMessage(something.toString()).queue()
+    }
+
+    fun reply(embed: MessageEmbed) {
+        require(!(isFromGuild && !selfMember.hasPermission(textChannel, Permission.MESSAGE_WRITE))) {
+            "No MESSAGE_WRITE permission"
+        }
+        messageChannel.sendMessage(embed).queue()
     }
 
     suspend fun getLanguage(): String = me.melijn.melijnbot.objects.translation.getLanguage(this)

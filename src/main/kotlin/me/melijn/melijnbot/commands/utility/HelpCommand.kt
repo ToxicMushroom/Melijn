@@ -63,9 +63,7 @@ class HelpCommand : AbstractCommand("command.help") {
             embedder.setDescription(translation)
             if (hasExtra) {
                 val examples = context.getTranslation("$root.embed.examples")
-                for (extra in StringUtils.splitMessage(translationExtra, nextSplitThreshold = 1024)) {
-                    embedder.addField(examples, extra, false)
-                }
+                embedder.addField(examples, translationExtra, false)
             }
             sendEmbed(context, embedder.build())
         }
@@ -212,8 +210,11 @@ class HelpCommand : AbstractCommand("command.help") {
                 val path = matcher.group(1)
                 help = help.replace(og, "*" + context.getTranslation(path))
             }
-            embedder.addField(cmdHelp, help, false)
+            for (helpPart in StringUtils.splitMessage(help, splitAtLeast = 750, maxLength = 1024)) {
+                embedder.addField(cmdHelp, helpPart, false)
+            }
         }
+
         embedder.addField(cmdCategory, command.commandCategory.toLCC(), false)
 
         sendEmbed(context, embedder.build())

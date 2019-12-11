@@ -3,7 +3,12 @@ package me.melijn.melijnbot.commands.developer
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.embed.Embedder
+import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.utils.sendMsg
+import org.jetbrains.kotlin.cli.common.environment.setIdeaIoUseFallback
+import javax.script.ScriptEngine
+import javax.script.ScriptEngineManager
 
 class EvalCommand : AbstractCommand("command.eval") {
 
@@ -11,27 +16,59 @@ class EvalCommand : AbstractCommand("command.eval") {
         id = 22
         name = "eval"
         aliases = arrayOf("evaluate")
-        children = arrayOf()
+        children = arrayOf(
+            KotlinArg(root)
+        )
         commandCategory = CommandCategory.DEVELOPER
-
     }
 
     override suspend fun execute(context: CommandContext) {
         sendMsg(context, "pog no eval")
     }
 
-//
-//    class KotlinEvalCommand(root: String) : AbstractCommand("$root.kotlin") {
-//        init {
-//            name = "kotlin"
-//            //setIdeaIoUseFallback()
-//        }
-//
-//        override suspend fun execute(context: CommandContext) {
-//            val engine = KotlinJsr223JvmLocalScriptEngineFactory().scriptEngine
-//            context.reply(engine.eval("1+1"))
-//        }
-//    }
+
+    class KotlinArg(parent: String) : AbstractCommand("$parent.kotlin") {
+
+
+        init {
+            name = "kotlin"
+            aliases = arrayOf("k", "kt", "kts")
+            setIdeaIoUseFallback()
+        }
+
+        private val seManager = ScriptEngineManager()
+        private val engine: ScriptEngine = seManager.getEngineByExtension("kts")
+        override suspend fun execute(context: CommandContext) {
+
+            val bindings = engine.createBindings()
+            val binds: List<Triple<String, Any, String>> = mutableListOf(
+                Triple("context", context, "me.melijn.melijnbot.objects.command.CommandContext"),
+                Triple("kotlinArg", this, "me.melijn.melijnbot.commands.developer.EvalCommand.KotlinArg"),
+                Triple("eb", Embedder(context), "me.melijn.melijnbot.objects.embed.Embedder")
+            )
+
+            for ((name, any, _) in binds)
+                bindings[name] = any
+
+            try {
+                var preScript = ""
+
+                for ((name, _, path) in binds)
+                    preScript += "val $name = bindings[\"$name\"] as $path\n"
+
+                val result = engine.eval(preScript + context.rawArg, bindings)
+
+                val eb = Embedder(context)
+                eb.setDescription("" +
+                    "**Eval Input**:\n```kotlin\n" + context.rawArg + "```\n" +
+                    "**Eval Output**:\n```${result?.toString()}```"
+                )
+                sendEmbed(context, eb.build())
+            } catch (t: Throwable) {
+                sendMsg(context, "Eval Error:\n```${t.message ?: "empty"}```")
+            }
+        }
+    }
 
 //    class JavaEvalCommand(root: String) : AbstractCommand("$root.java") {
 //
