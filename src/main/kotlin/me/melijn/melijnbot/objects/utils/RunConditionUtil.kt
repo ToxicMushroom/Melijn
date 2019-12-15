@@ -88,7 +88,7 @@ object RunConditionUtil {
     suspend fun checkPlayingTrackNotNull(container: Container, event: MessageReceivedEvent, language: String): Boolean {
         val trackManager = container.lavaManager.musicPlayerManager.getGuildMusicPlayer(event.guild).guildTrackManager
         val cTrack: AudioTrack? = trackManager.iPlayer.playingTrack
-        if (cTrack == null) {
+        if (cTrack == null || event.guild.selfMember.voiceState?.inVoiceChannel() != true) {
             val noSongPlaying = i18n.getTranslation(language, "message.runcondition.failed.playingtracknotnull")
             sendMsg(event.textChannel, noSongPlaying)
             return false

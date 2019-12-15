@@ -198,7 +198,8 @@ object LogUtils {
         val channelId = context.getTranslation("logging.music.pause.channelIdfield.title")
         eb.setTitle(title)
 
-        val vc = context.selfMember.voiceState?.channel ?: throw IllegalArgumentException("NO")
+        val vc = context.lavaManager.getConnectedChannel(context.guild)
+            ?: throw IllegalArgumentException("Not connected to a channel")
         eb.setDescription("[${track.info.title}](${track.info.uri})")
 
         eb.addField(userTitle, context.author.asTag, true)
