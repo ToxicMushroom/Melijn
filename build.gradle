@@ -6,7 +6,7 @@ plugins {
 }
 
 mainClassName = 'me.melijn.melijnbot.MelijnBotKt'
-version = '2.0.0'
+version = '2.0.1'
 sourceCompatibility = JavaVersion.VERSION_12
 
 repositories {
@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
     //https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation('net.dv8tion:JDA:4.0.0_73') {
+    implementation('net.dv8tion:JDA:4.0.0_75') {
         exclude module: 'opus-java'
     }
 
@@ -96,7 +96,7 @@ dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-script-util', version: '1.3.61'
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-scripting-compiler-embeddable
-    runtime group: 'org.jetbrains.kotlin', name: 'kotlin-scripting-compiler-embeddable', version: '1.3.61'
+    runtimeOnly group: 'org.jetbrains.kotlin', name: 'kotlin-scripting-compiler-embeddable', version: '1.3.61'
     // END
 
 }
