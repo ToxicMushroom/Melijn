@@ -5,9 +5,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER_ID
-import me.melijn.melijnbot.objects.utils.asLongLongGMTString
-import me.melijn.melijnbot.objects.utils.retrieveUserByArgsNMessage
-import me.melijn.melijnbot.objects.utils.sendEmbed
+import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
 
@@ -27,7 +25,7 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
             retrieveUserByArgsNMessage(context, 0) ?: return
         }
 
-        val member: Member? = context.guild.getMember(user)
+        val member: Member? = context.guild.retrieveMember(user).await()
 
         val title1 = context.getTranslation("$root.response1.field1.title")
         val yes = context.getTranslation("yes")
@@ -55,8 +53,8 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
         .replace("%isOwner%", if (member.isOwner) yes else no)
         .replace("%joinTime%", member.timeJoined.asLongLongGMTString())
         .replace("%boostTime%", member.timeBoosted?.asLongLongGMTString() ?: "/")
-        .replace("%activities%", member.activities.joinToString { activity -> activity.name })
-        .replace("%onlineStatus%", member.onlineStatus.name)
+        // .replace("%activities%", member.activities.joinToString { activity -> activity.name })
+        .replace("%onlineStatus%", member.onlineStatus.toUCSC())
         .replace("%voiceStatus%", getVoiceStatus(member))
 
 
