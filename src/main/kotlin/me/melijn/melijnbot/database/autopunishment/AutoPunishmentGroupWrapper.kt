@@ -89,7 +89,7 @@ class AutoPunishmentGroupWrapper(val taskManager: TaskManager, private val autoP
         autoPunishmentCache.invalidate(Pair(guildId, group))
     }
 
-    suspend fun setPointGoalMap(guildId: Long, group: String, goals: Map<Long, String>) {
+    suspend fun setPointGoalMap(guildId: Long, group: String, goals: Map<Int, String>) {
         val string = goals
             .map { entry -> "${entry.key}, ${entry.value}" }
             .joinToString("],[", "[", "]")
@@ -106,5 +106,5 @@ class AutoPunishmentGroupWrapper(val taskManager: TaskManager, private val autoP
 data class PunishGroup(
     val groupName: String,
     val typePointsMap: Map<PointsTriggerType, Int>,
-    val pointGoalMAp: MutableMap<Int, String>
+    val pointGoalMap: MutableMap<Int, String>
 )

@@ -11,8 +11,6 @@ import java.util.regex.Pattern
 
 object FilterUtil {
 
-    val matchAllPattern = Pattern.compile(".")
-
     suspend fun handleFilter(container: Container, message: Message) = container.taskManager.async {
         val guild = message.guild
         val channel = message.textChannel
@@ -37,7 +35,7 @@ object FilterUtil {
                 //filterMatch(container, message)
             }
             FilterMode.MUST_MATCH_ALLOWED_FORMAT_EXCLUDE_FILTER -> {
-               // filterMatchNoDenied(container, message)
+                // filterMatchNoDenied(container, message)
             }
             FilterMode.NO_WRAP -> {
                 filterNoWrap(container, message)
