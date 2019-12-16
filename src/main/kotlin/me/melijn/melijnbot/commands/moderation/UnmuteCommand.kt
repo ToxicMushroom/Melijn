@@ -136,7 +136,8 @@ fun getUnmuteMessage(
     mute: Mute,
     lc: Boolean = false,
     isBot: Boolean = false,
-    received: Boolean = true
+    received: Boolean = true,
+    failedCause: String? = null
 ): MessageEmbed {
 
     val eb = EmbedBuilder()
@@ -165,7 +166,7 @@ fun getUnmuteMessage(
         .replace("%startTime%", (mute.startTime.asEpochMillisToDateTime()))
         .replace("%endTime%", (mute.endTime?.asEpochMillisToDateTime() ?: "none"))
 
-    val extraDesc: String = if (!received || isBot) {
+    var extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,
             if (isBot) {
                 "message.punishment.extra.bot"
@@ -176,6 +177,12 @@ fun getUnmuteMessage(
     } else {
         ""
     }
+    if (failedCause != null) {
+        extraDesc += i18n.getTranslation(language,
+            "message.punishment.extra.failed"
+        ).replace("%cause%", failedCause)
+    }
+
     description += extraDesc
     description += "```"
 

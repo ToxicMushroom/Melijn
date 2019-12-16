@@ -1,17 +1,19 @@
 package me.melijn.melijnbot.objects.services.mutes
 
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.commands.moderation.getUnmuteMessage
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
-import me.melijn.melijnbot.database.logchannel.LogChannelWrapper
 import me.melijn.melijnbot.database.mute.Mute
 import me.melijn.melijnbot.database.mute.MuteWrapper
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.services.Service
 import me.melijn.melijnbot.objects.translation.getLanguage
-import me.melijn.melijnbot.objects.utils.await
+import me.melijn.melijnbot.objects.utils.awaitEX
+import me.melijn.melijnbot.objects.utils.awaitOrNull
+import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
+import me.melijn.melijnbot.objects.utils.checks.getAndVerifyRoleByType
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
@@ -22,7 +24,6 @@ import java.util.concurrent.TimeUnit
 class MuteService(
     val shardManager: ShardManager,
     private val muteWrapper: MuteWrapper,
-    private val logChannelWrapper: LogChannelWrapper,
     private val embedDisabledWrapper: EmbedDisabledWrapper,
     val daoManager: DaoManager
 ) : Service("mute") {
@@ -40,22 +41,21 @@ class MuteService(
 
                 muteWrapper.setMute(newMute)
                 val guild = shardManager.getGuildById(mute.guildId) ?: continue
-                try {
-                    val author = shardManager.retrieveUserById(newMute.muteAuthorId ?: -1).await()
-                    try {
-                        val muted = shardManager.retrieveUserById(newMute.mutedId).await()
-                        createAndSendUnmuteMessage(guild, selfUser, muted, author, newMute)
-                    } catch (t: Throwable) {
-                        createAndSendUnmuteMessage(guild, selfUser, null, author, newMute)
-                    }
-                } catch (t: Throwable) {
-                    try {
-                        val muted = shardManager.retrieveUserById(newMute.mutedId).await()
-                        createAndSendUnmuteMessage(guild, selfUser, muted, null, newMute)
-                    } catch (t: Throwable) {
-                        createAndSendUnmuteMessage(guild, selfUser, null, null, newMute)
+
+                val muteRole = guild.getAndVerifyRoleByType(daoManager, RoleType.MUTE, true)
+                val author = shardManager.retrieveUserById(newMute.muteAuthorId ?: -1).awaitOrNull()
+                val muted = shardManager.retrieveUserById(newMute.mutedId).awaitOrNull()
+                val mutedMember = if (muted == null) null else guild.getMember(muted)
+                if (mutedMember != null && muteRole != null && mutedMember.roles.contains(muteRole)) {
+                    val exception = guild.removeRoleFromMember(mutedMember, muteRole).awaitEX()
+                    if (exception != null) {
+                        createAndSendFailedUnmuteMessage(guild, selfUser, muted, author, newMute, exception.message
+                            ?: "/")
+                        return@runBlocking
                     }
                 }
+
+                createAndSendUnmuteMessage(guild, selfUser, muted, author, newMute)
             }
         }
     }
@@ -64,31 +64,41 @@ class MuteService(
     private suspend fun createAndSendUnmuteMessage(guild: Guild, unmuteAuthor: User, mutedUser: User?, muteAuthor: User?, mute: Mute) {
         val language = getLanguage(daoManager, -1, guild.idLong)
         val msg = getUnmuteMessage(language, guild, mutedUser, muteAuthor, unmuteAuthor, mute)
-        val channelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.UNMUTE)).await()
-        val channel = guild.getTextChannelById(channelId)
+        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.UNMUTE) ?: return
 
         var success = false
-        if (mutedUser?.isBot != true) {
-            if (mutedUser?.isFake == true) return
-            try {
-                val privateChannel = mutedUser?.openPrivateChannel()?.await()
-                privateChannel?.let {
-                    sendEmbed(it, msg)
-                }
+        if (mutedUser?.isBot == false) {
+            //if (mutedUser?.isFake == true) return
 
+            val privateChannel = mutedUser.openPrivateChannel().awaitOrNull()
+            if (privateChannel != null) {
+                sendEmbed(privateChannel, msg)
                 success = true
-            } catch (t: Throwable) {
             }
         }
 
         val msgLc = getUnmuteMessage(language, guild, mutedUser, muteAuthor, unmuteAuthor, mute, true, mutedUser?.isBot == true, success)
+        sendEmbed(embedDisabledWrapper, logChannel, msgLc)
+    }
 
-        if (channel == null && channelId != -1L) {
-            logChannelWrapper.removeChannel(guild.idLong, LogChannelType.UNMUTE)
-            return
-        } else if (channel == null) return
+    private suspend fun createAndSendFailedUnmuteMessage(guild: Guild, unmuteAuthor: User, mutedUser: User?, muteAuthor: User?, mute: Mute, cause: String) {
+        val language = getLanguage(daoManager, -1, guild.idLong)
+        val msg = getUnmuteMessage(language, guild, mutedUser, muteAuthor, unmuteAuthor, mute, failedCause = cause)
+        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.UNMUTE) ?: return
 
-        sendEmbed(embedDisabledWrapper, channel, msgLc)
+        var success = false
+        if (mutedUser?.isBot == false) {
+            //if (mutedUser?.isFake == true) return
+
+            val privateChannel = mutedUser.openPrivateChannel().awaitOrNull()
+            if (privateChannel != null) {
+                sendEmbed(privateChannel, msg)
+                success = true
+            }
+        }
+
+        val msgLc = getUnmuteMessage(language, guild, mutedUser, muteAuthor, unmuteAuthor, mute, true, mutedUser?.isBot == true, success, failedCause = cause)
+        sendEmbed(embedDisabledWrapper, logChannel, msgLc)
     }
 
     override fun start() {
