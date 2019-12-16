@@ -39,8 +39,8 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
 
     private suspend fun handleSimpleMelijnPing(event: MessageReceivedEvent) {
         if (event.author.isBot) return
-        val tag = if (event.isFromGuild) event.guild.selfMember.asMention else event.jda.selfUser.asMention
-        if (event.message.contentRaw == tag) {
+        val tags = arrayOf("<@${event.jda.selfUser.idLong}>", "<@!${event.jda.selfUser.idLong}>")
+        if (tags.contains(event.message.contentRaw.trim())) {
             val helpCmd = container.commandMap.values.firstOrNull { cmd -> cmd is HelpCommand } ?: return
             val cmdContext = CommandContext(event, listOf(">", "help"), container, container.commandMap.values.toSet())
             container.taskManager.async {

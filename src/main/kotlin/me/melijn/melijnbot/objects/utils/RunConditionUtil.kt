@@ -35,14 +35,15 @@ object RunConditionUtil {
     }
 
     private fun checkSupporter(container: Container, event: MessageReceivedEvent, language: String): Boolean {
-        val supporters = container.daoManager.supporterWrapper.userSupporterIds
-        return if (!supporters.contains(event.author.idLong)) {
-            val msg = i18n.getTranslation(language, "message.runcondition.failed.supporter")
-            event.channel.sendMessage(msg).queue()
-            false
-        } else {
-            true
-        }
+        return true
+        // val supporters = container.daoManager.supporterWrapper.userSupporterIds
+//        return if (!supporters.contains(event.author.idLong)) {
+//            val msg = i18n.getTranslation(language, "message.runcondition.failed.supporter")
+//            event.channel.sendMessage(msg).queue()
+//            false
+//        } else {
+//            true
+//        }
     }
 
     private suspend fun checkVoted(container: Container, event: MessageReceivedEvent, language: String): Boolean {

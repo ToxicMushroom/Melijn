@@ -255,23 +255,37 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
     }
 
     private suspend fun getPrefixes(event: MessageReceivedEvent): List<String> {
-        var prefixes =
-            if (event.isFromGuild)
-                guildPrefixCache.get(event.guild.idLong).await().toMutableList()
-            else mutableListOf()
+        var prefixes = if (event.isFromGuild) {
+            guildPrefixCache.get(event.guild.idLong).await().toMutableList()
+        } else {
+            mutableListOf()
+        }
 
         //add default prefix if none are set
-        if (prefixes.isEmpty()) prefixes = mutableListOf(container.settings.prefix)
+        if (prefixes.isEmpty()) {
+            prefixes = mutableListOf(container.settings.prefix)
+        }
 
         //registering private prefixes
-        if (container.daoManager.supporterWrapper.userSupporterIds.contains(event.author.idLong))
-            prefixes.addAll(userPrefixCache.get(event.author.idLong).await())
+        prefixes.addAll(userPrefixCache.get(event.author.idLong).await())
+
 
         //mentioning the bot will always work
-        prefixes.add(
-            if (event.isFromGuild) event.guild.selfMember.asMention
-            else event.jda.selfUser.asMention
-        )
+        val tags = arrayOf("<@${event.jda.selfUser.idLong}>", "<@!${event.jda.selfUser.idLong}>")
+        for (tag in tags) {
+            prefixes.add(tag)
+        }
+
+        val jdaMention = if (event.isFromGuild) {
+            event.guild.selfMember.asMention
+        } else {
+            event.jda.selfUser.asMention
+        }
+
+        if (!prefixes.contains(jdaMention)) {
+            prefixes.add(jdaMention)
+        }
+
         return prefixes.toList()
     }
 

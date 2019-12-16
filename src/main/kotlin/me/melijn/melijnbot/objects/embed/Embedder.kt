@@ -11,12 +11,15 @@ class Embedder(daoManager: DaoManager, guildId: Long, userId: Long, embedColor: 
     init {
         val embedColorWrapper = daoManager.embedColorWrapper
         val userEmbedColorWrapper = daoManager.userEmbedColorWrapper
-        var color: Int = embedColorWrapper.embedColorCache.get(guildId).get()
-        if (daoManager.supporterWrapper.userSupporterIds.contains(userId)) {
-            color = userEmbedColorWrapper.userEmbedColorCache.get(userId).get()
+        val guildColor: Int = embedColorWrapper.embedColorCache.get(guildId).get()
+        val userColor = userEmbedColorWrapper.userEmbedColorCache.get(userId).get()
+
+        val color = when {
+            userColor != 0 -> userColor
+            guildColor != 0 -> guildColor
+            else -> embedColor
         }
 
-        if (color == 0) color = embedColor
         setColor(color)
     }
 }
