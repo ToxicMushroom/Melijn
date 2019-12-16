@@ -25,7 +25,6 @@ class MelijnBot {
 
         val container = Container()
 
-
         val jdaLavaLink = if (container.settings.lavalink.enabled) {
             val linkBuilder = JdaLavalink(
                 container.settings.id.toString(),
@@ -33,6 +32,7 @@ class MelijnBot {
             ) { id ->
                 shardManager.getShardById(id)
             }
+
             linkBuilder.autoReconnect = true
 
             for (node in container.settings.lavalink.nodes) {
