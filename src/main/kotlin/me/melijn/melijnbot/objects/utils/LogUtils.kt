@@ -162,10 +162,10 @@ object LogUtils {
 
         val title = context.getTranslation("logging.music.resumed.title")
 
-        val userTitle = context.getTranslation("logging.music.resume.userfield.title")
-        val userIdTitle = context.getTranslation("logging.music.resume.userIdfield.title")
-        val channel = context.getTranslation("logging.music.resume.channelfield.title")
-        val channelId = context.getTranslation("logging.music.resume.channelIdfield.title")
+        val userTitle = context.getTranslation("logging.music.resumed.userfield.title")
+        val userIdTitle = context.getTranslation("logging.music.resumed.userIdfield.title")
+        val channel = context.getTranslation("logging.music.resumed.channelfield.title")
+        val channelId = context.getTranslation("logging.music.resumed.channelIdfield.title")
         eb.setTitle(title)
 
 
@@ -189,13 +189,13 @@ object LogUtils {
         val track = trackManager.iPlayer.playingTrack ?: return
         val eb = EmbedBuilder()
 
-        val title = context.getTranslation("logging.music.pause.title")
+        val title = context.getTranslation("logging.music.paused.title")
 
 
-        val userTitle = context.getTranslation("logging.music.pause.userfield.title")
-        val userIdTitle = context.getTranslation("logging.music.pause.userIdfield.title")
-        val channel = context.getTranslation("logging.music.pause.channelfield.title")
-        val channelId = context.getTranslation("logging.music.pause.channelIdfield.title")
+        val userTitle = context.getTranslation("logging.music.paused.userfield.title")
+        val userIdTitle = context.getTranslation("logging.music.paused.userIdfield.title")
+        val channel = context.getTranslation("logging.music.paused.channelfield.title")
+        val channelId = context.getTranslation("logging.music.paused.channelIdfield.title")
         eb.setTitle(title)
 
         val vc = context.lavaManager.getConnectedChannel(context.guild)
@@ -220,12 +220,12 @@ object LogUtils {
         val language = getLanguage(daoManager, -1, guild.idLong)
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.MUSIC, true)
             ?: return
-        val title = i18n.getTranslation(language, "logging.music.pause.title")
+        val title = i18n.getTranslation(language, "logging.music.exception.title")
 
 
-        val channel = i18n.getTranslation(language, "logging.music.pause.channelfield.title")
-        val channelId = i18n.getTranslation(language, "logging.music.pause.channelIdfield.title")
-        val cause = i18n.getTranslation(language, "logging.music.pause.causefield.title")
+        val channel = i18n.getTranslation(language, "logging.music.exception.channelfield.title")
+        val channelId = i18n.getTranslation(language, "logging.music.exception.channelIdfield.title")
+        val cause = i18n.getTranslation(language, "logging.music.exception.causefield.title")
         eb.setTitle(title)
 
         val vc = Container.instance.lavaManager.getConnectedChannel(guild)
@@ -279,9 +279,9 @@ object LogUtils {
 
 
         val userTitle = i18n.getTranslation(language, "logging.music.newtrack.userfield.title")
-        val userIdTitle = i18n.getTranslation(language, "logging.music.newtrack.useridfield.title")
+        val userIdTitle = i18n.getTranslation(language, "logging.music.newtrack.userIdfield.title")
         val channel = i18n.getTranslation(language, "logging.music.newtrack.channelfield.title")
-        val channelId = i18n.getTranslation(language, "logging.music.newtrack.channelidfield.title")
+        val channelId = i18n.getTranslation(language, "logging.music.newtrack.channelIdfield.title")
         eb.setTitle(title)
 
         eb.setDescription("[${track.info.title}](${track.info.uri})")
