@@ -169,6 +169,7 @@ fun getUnbanMessage(
     } else {
         ""
     }
+
     if (failedCause != null) {
         extraDesc += i18n.getTranslation(language,
             "message.punishment.extra.failed"
