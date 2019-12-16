@@ -19,10 +19,10 @@ class PauseCommand : AbstractCommand("command.pause") {
 
     override suspend fun execute(context: CommandContext) {
         val trackManager = context.guildMusicPlayer.guildTrackManager
-        trackManager.setPaused(true)
 
         //Adds a message to the resumeEventMessageQueue thing so it gets logged to MUSIC logchannel
         LogUtils.addMusicPlayerPaused(context)
+        trackManager.setPaused(true)
 
         val msg = context.getTranslation("$root.success")
         sendMsg(context, msg)

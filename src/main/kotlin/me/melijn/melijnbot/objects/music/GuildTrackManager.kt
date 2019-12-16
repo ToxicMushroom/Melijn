@@ -141,22 +141,22 @@ class GuildTrackManager(
 
     suspend fun getPausedEmbedFromMap(time: Long, nesting: Int = 0, nestCountLimit: Int = 5): MessageEmbed? {
         return pauseMomentMessageMap.getOrElse(time) {
-            delay(500)
+            delay(100)
             return if (nesting >= nestCountLimit) {
                 null
             } else {
-                getStartEmbedFromMap(time, nesting + 1, nestCountLimit)
+                getPausedEmbedFromMap(time, nesting + 1, nestCountLimit)
             }
         }
     }
 
     suspend fun getResumedEmbedFromMap(time: Long, nesting: Int = 0, nestCountLimit: Int = 5): MessageEmbed? {
         return resumeMomentMessageMap.getOrElse(time) {
-            delay(500)
+            delay(100)
             return if (nesting >= nestCountLimit) {
                 null
             } else {
-                getStartEmbedFromMap(time, nesting + 1, nestCountLimit)
+                getResumedEmbedFromMap(time, nesting + 1, nestCountLimit)
             }
         }
     }

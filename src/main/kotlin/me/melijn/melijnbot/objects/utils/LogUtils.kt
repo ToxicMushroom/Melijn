@@ -191,7 +191,6 @@ object LogUtils {
 
         val title = context.getTranslation("logging.music.paused.title")
 
-
         val userTitle = context.getTranslation("logging.music.paused.userfield.title")
         val userIdTitle = context.getTranslation("logging.music.paused.userIdfield.title")
         val channel = context.getTranslation("logging.music.paused.channelfield.title")
@@ -207,10 +206,10 @@ object LogUtils {
         eb.addField(channel, vc.name, true)
         eb.addField(channelId, vc.id, true)
 
-        eb.setColor(Color.decode("#2f3136"))
+        eb.setColor(Color.decode("#c4e667"))
         eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
 
-        trackManager.resumeMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
+        trackManager.pauseMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
     }
 
 
@@ -235,7 +234,7 @@ object LogUtils {
         eb.addField(channelId, vc.id, true)
         eb.addField(cause, exception.message ?: "/", false)
 
-        eb.setColor(Color.decode("#2f3136"))
+        eb.setColor(Color.decode("#cc1010"))
         eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
