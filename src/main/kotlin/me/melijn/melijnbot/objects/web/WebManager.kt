@@ -294,19 +294,18 @@ val jsonMedia = "application/json".toMediaType()
 
     fun updateDiscordBotsGG(servers: Long, shards: Long) {
         val token = settings.tokens.discordBotsGG
-        val url = "$DISCORD_BOTS_GG/bots/${settings.id}/stats"
+        val url = "$DISCORD_BOTS_GG/api/v1/bots/${settings.id}/stats"
         if (token.isBlank()) return
         taskManager.async {
-            val body = MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("guildCount", "$servers")
-                .addFormDataPart("shardCount", "$shards")
-                .build()
+            val body = DataObject.empty()
+                .put("guildCount", servers)
+                .put("shardCount", shards)
+                .toString()
 
             val request = Request.Builder()
                 .addHeader("Authorization", token)
                 .url(url)
-                .post(body)
+                .post(body.toRequestBody(jsonMedia))
                 .build()
 
             httpClient.newCall(request).enqueue(defaultCallbackHandler)
