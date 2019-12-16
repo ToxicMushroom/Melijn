@@ -31,7 +31,7 @@ class UserEmbedColorWrapper(val taskManager: TaskManager, private val userEmbedC
     }
 
     suspend fun removeColor(userId: Long) {
-        userEmbedColorCache.put(userId, CompletableFuture.completedFuture(-1))
+        userEmbedColorCache.put(userId, CompletableFuture.completedFuture(0))
         userEmbedColorDao.remove(userId)
     }
 }

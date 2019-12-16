@@ -15,7 +15,7 @@ class UserEmbedColorDao(driverManager: DriverManager) : Dao(driverManager) {
     fun get(userId: Long, color: (Int) -> Unit) {
         driverManager.executeQuery("SELECT * FROM $table WHERE userId = ?", {
             if (it.next()) color.invoke(it.getInt("color"))
-            else color.invoke(-1)
+            else color.invoke(0)
         }, userId)
     }
 
