@@ -1,0 +1,36 @@
+package me.melijn.melijnbot.commands.music
+
+import me.melijn.melijnbot.objects.command.AbstractCommand
+import me.melijn.melijnbot.objects.command.CommandCategory
+import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.command.RunCondition
+import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.objects.utils.sendMsg
+
+class VolumeCommand : AbstractCommand("command.volume") {
+
+    init {
+        id = 87
+        name = "volume"
+        aliases = arrayOf("vol")
+        runConditions = arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ, RunCondition.PLAYING_TRACK_NOT_NULL, RunCondition.VOTED)
+        commandCategory = CommandCategory.MUSIC
+    }
+
+    override suspend fun execute(context: CommandContext) {
+        val iPlayer = context.guildMusicPlayer.guildTrackManager.iPlayer
+        if (context.args.isEmpty()) {
+            val amount = iPlayer.volume
+            val msg = context.getTranslation("$root.show")
+                .replace("%volume%", amount.toString())
+            sendMsg(context, msg)
+            return
+        }
+        val amount = getIntegerFromArgNMessage(context, 0, 0, 1000) ?: return
+        iPlayer.volume = amount
+
+        val msg = context.getTranslation("$root.set")
+            .replace("%volume%", amount.toString())
+        sendMsg(context, msg)
+    }
+}
