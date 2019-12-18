@@ -7,6 +7,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 
 abstract class Service(name: String) {
+
     private val threadFactory = ThreadFactoryBuilder().setNameFormat("[${name.toUpperWordCase()}-Service] ").build()
     val scheduledExecutor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactory)
     val logger = LoggerFactory.getLogger(name)
