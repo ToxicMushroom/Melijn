@@ -507,16 +507,26 @@ fun getMemberByArgsN(guild: Guild, arg: String): Member? {
     else guild.getMember(user)
 }
 
-suspend fun notEnoughPermissionsAndMessage(context: CommandContext, channel: GuildChannel, vararg perms: Permission): Boolean {
+suspend fun notEnoughPermissionsAndMessage(context: CommandContext, channel: GuildChannel, vararg perms: Permission, checkParent: Boolean = false): Boolean {
     val member = channel.guild.selfMember
-    val result = notEnoughPermissions(member, channel, perms.toList())
-    if (result.first) {
-        val more = if (result.second.size > 1) "s" else ""
+    val result = notEnoughPermissions(member, channel, perms.toList(), checkParent)
+    if (result.first.isNotEmpty()) {
+        val more = if (result.first.size > 1) "s" else ""
         val msg = context.getTranslation("message.discordpermission$more.missing")
-            .replace("%permissions%", result.second.joinToString(separator = "") { perm ->
+            .replace("%permissions%", result.first.joinToString(separator = "") { perm ->
                 "\n    ⁎ `${perm.toUCSC()}`"
             })
             .replace("%channel%", channel.name)
+
+        sendMsg(context, msg)
+        return true
+    } else if (result.second.isNotEmpty()) {
+        val more = if (result.second.size > 1) "s" else ""
+        val msg = context.getTranslation("message.discordcategorypermission$more.missing")
+            .replace("%permissions%", result.second.joinToString(separator = "") { perm ->
+                "\n    ⁎ `${perm.toUCSC()}`"
+            })
+            .replace("%category%", channel.parent?.name ?: "Yhea go to support and report this bug lol")
 
         sendMsg(context, msg)
         return true
@@ -524,12 +534,15 @@ suspend fun notEnoughPermissionsAndMessage(context: CommandContext, channel: Gui
     return false
 }
 
-fun notEnoughPermissions(member: Member, channel: GuildChannel, perms: Collection<Permission>): Pair<Boolean, List<Permission>> {
+fun notEnoughPermissions(member: Member, channel: GuildChannel, perms: Collection<Permission>, checkParent: Boolean = false): Pair<List<Permission>, List<Permission>> {
     val missingPerms = mutableListOf<Permission>()
+    val missingParentPerms = mutableListOf<Permission>()
+    val parent = channel.parent
     for (perm in perms) {
         if (!member.hasPermission(channel, perm)) missingPerms.add(perm)
+        if (parent != null && checkParent && !member.hasPermission(parent, perm)) missingParentPerms.add(perm)
     }
-    return Pair(missingPerms.isNotEmpty(), missingPerms)
+    return Pair(missingPerms, missingParentPerms)
 }
 
 

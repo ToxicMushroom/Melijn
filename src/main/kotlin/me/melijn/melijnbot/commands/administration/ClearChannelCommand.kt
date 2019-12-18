@@ -12,7 +12,9 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
         id = 40
         name = "clearChannel"
         aliases = arrayOf("cChannel")
-        discordPermissions = arrayOf(Permission.MANAGE_CHANNEL)
+        discordPermissions = arrayOf(
+            Permission.MANAGE_CHANNEL
+        )
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
@@ -28,14 +30,19 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
                     sendSyntax(context)
                     return
                 }
+                if (notEnoughPermissionsAndMessage(context, context.textChannel, Permission.MANAGE_CHANNEL, checkParent = true)) return
                 val textChannel = context.textChannel
-                textChannel.createCopy().await()
+                val copy = textChannel.createCopy().await()
+                copy.manager.setPosition(textChannel.position)
+
                 textChannel.delete().queue()
             }
             context.args.size > 1 && context.args[1] == "confirm" -> {
                 val textChannel = getTextChannelByArgsNMessage(context, 0) ?: return
-                if (notEnoughPermissionsAndMessage(context, textChannel, Permission.MANAGE_CHANNEL)) return
-                textChannel.createCopy().await()
+                if (notEnoughPermissionsAndMessage(context, textChannel, Permission.MANAGE_CHANNEL, checkParent = true)) return
+                val copy = textChannel.createCopy().await()
+                copy.manager.setPosition(textChannel.position)
+
                 textChannel.delete().queue()
             }
             else -> {

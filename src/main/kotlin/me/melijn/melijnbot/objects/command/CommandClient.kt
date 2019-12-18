@@ -323,6 +323,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                     val more = if (missingPermissionCount > 1) "s" else ""
                     val msg = i18n.getTranslation(language, "message.discordpermission$more.missing")
                         .replace("%permissions%", missingPermissionMessage)
+                        .replace("%channel%", event.textChannel.asTag)
 
                     sendMsg(event.textChannel, msg)
                     return true
