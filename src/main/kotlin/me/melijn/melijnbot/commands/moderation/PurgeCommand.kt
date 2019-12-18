@@ -1,10 +1,11 @@
 package me.melijn.melijnbot.commands.moderation
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.objects.utils.retrieveUserByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
 import java.util.concurrent.TimeUnit
@@ -28,20 +29,49 @@ class PurgeCommand : AbstractCommand("command.purge") {
         }
 
         // + 1 is to start counting above the .purge command
-        val amount = (getIntegerFromArgNMessage(context, 0, 1, 1000) ?: return) + 1
+        val amount = (getIntegerFromArgNMessage(context, 0, 1, 1000) ?: return)
 
-        val messages = context.textChannel.iterableHistory.takeAsync(amount).await()
-        for (message in messages) {
-            context.container.purgedIds[message.idLong] = context.authorId
+        val targetUser = if (context.args.size == 2) {
+            retrieveUserByArgsNMessage(context, 1) ?: return
+        } else {
+            null
         }
 
+        val messages = mutableListOf(context.message)
+        var counter = 1
+        context.textChannel.iterableHistory
+            .forEachAsync { message ->
+                if (targetUser == null) {
+                    messages.add(message)
+                } else {
+                    if (message.author.idLong == targetUser.idLong) {
+                        messages.add(message)
+                    }
+                }
+                if (amount <= counter) {
+                    false
+                } else {
+                    counter++
+                    true
+                }
+            }
+            .thenRun {
+                context.taskManager.async {
+                    for (message in messages) {
+                        context.container.purgedIds[message.idLong] = context.authorId
+                    }
 
-        context.textChannel.purgeMessages(messages)
-        val more = if (amount > 1) "more" else "one"
-        val msg = context.getTranslation("$root.success.$more")
-            .replace("%amount%", amount.toString())
 
-        if (context.commandParts[0].equals(silentPurgeName, true) || context.commandParts[0].equals(silentPruneName, true))
-            sendMsg(context, msg)[0].delete().queueAfter(5, TimeUnit.SECONDS)
+                    context.textChannel.purgeMessages(messages)
+                    val userMore = if (targetUser == null) "" else ".user"
+                    val more = if (amount > 1) "more" else "one"
+                    val msg = context.getTranslation("$root.success.$userMore$more")
+                        .replace("%amount%", amount.toString())
+                        .replace(PLACEHOLDER_USER, targetUser?.asTag ?: "")
+
+                    if (context.commandParts[0].equals(silentPurgeName, true) || context.commandParts[0].equals(silentPruneName, true))
+                        sendMsg(context, msg)[0].delete().queueAfter(5, TimeUnit.SECONDS)
+                }
+            }
     }
 }
