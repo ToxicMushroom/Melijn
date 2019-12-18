@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
     //https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation('net.dv8tion:JDA:4.0.0_78') {
+    implementation('net.dv8tion:JDA:4.0.0_79') {
         exclude module: 'opus-java'
     }
 
@@ -100,7 +100,6 @@ dependencies {
     // END
 
 }
-
 
 compileJava.options.encoding = 'UTF-8'
 compileKotlin {
