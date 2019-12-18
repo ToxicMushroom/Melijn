@@ -30,13 +30,11 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
 
     private suspend fun sendCurrentEmbedState(context: CommandContext) {
         val dao = context.daoManager.embedDisabledWrapper
-        val state = dao.embedDisabledCache.contains(context.guildId)
+        val disabled = dao.embedDisabledCache.contains(context.guildId)
 
-        val unReplaceMsg = context.getTranslation("$root.currentstateresponse")
-        val msg = replaceState(
-            unReplaceMsg,
-            state
-        )
+        val msg = context.getTranslation("$root.currentstateresponse")
+            .replace("%disabledState%", if (disabled) "disabled" else "enabled")
+
         sendMsg(context, msg)
     }
 
@@ -50,16 +48,8 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
         val dao = context.daoManager.embedDisabledWrapper
         dao.setDisabled(context.guildId, state)
 
-        val unReplaceMsg = context.getTranslation("$root.set.success")
-        val msg = replaceState(
-            unReplaceMsg,
-            state
-        )
+        val msg = context.getTranslation("$root.set.success")
+            .replace("%disabledState%", if (state) "enabled" else "disabled")
         sendMsg(context, msg)
-    }
-
-
-    private fun replaceState(msg: String, state: Boolean): String {
-        return msg.replace("%disabledState%", if (state) "enabled" else "disabled")
     }
 }
