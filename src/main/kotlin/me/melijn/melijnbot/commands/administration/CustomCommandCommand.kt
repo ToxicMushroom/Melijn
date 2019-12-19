@@ -167,7 +167,15 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
             val id = getLongFromArgNMessage(context, 0) ?: return
             val cc = context.daoManager.customCommandWrapper.customCommandCache.get(guildId).await()
-                .first { (ccId) -> ccId == id }
+                .firstOrNull { (ccId) -> ccId == id }
+
+            if (cc == null) {
+                val msg = context.getTranslation("$root.failed")
+                    .replace("%id%", id.toString())
+                    .replace("%prefix%", context.usedPrefix)
+                sendMsg(context, msg)
+                return
+            }
 
             context.daoManager.customCommandWrapper.remove(guildId, id)
 
@@ -255,7 +263,6 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                 sendMsg(context, msg)
             }
-
         }
 
         class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
@@ -292,11 +299,10 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     .replace("%id%", ccSelected.id.toString())
                     .replace("%ccName%", ccSelected.name)
                     .replace("%position%", possibleLong.toString())
-                    .replace("%alias%", alias)
+                    .replace(PLACEHOLDER_ARG, alias)
 
                 sendMsg(context, msg)
             }
-
         }
 
         class ListArg(parent: String) : AbstractCommand("$parent.list") {
@@ -307,11 +313,6 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                if (context.args.isEmpty()) {
-                    sendSyntax(context)
-                    return
-                }
-
                 val ccSelected = getSelectedCCNMessage(context) ?: return
                 val aliases = ccSelected.aliases
 
@@ -334,9 +335,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                 sendMsg(context, msg)
             }
-
         }
-
     }
 
     class SetDescriptionArg(parent: String) : AbstractCommand("$parent.setdescription") {

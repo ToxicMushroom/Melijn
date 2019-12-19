@@ -60,7 +60,7 @@ class WarnCommand : AbstractCommand("command.warn") {
             return
         }
 
-        val message = privateChannel.sendMessage(warning).await()
+        val message = privateChannel.sendMessage(warning).awaitOrNull()
         continueWarning(context, targetMember, warn, message)
     }
 

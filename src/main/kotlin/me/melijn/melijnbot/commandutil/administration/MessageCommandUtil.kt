@@ -221,7 +221,7 @@ object MessageCommandUtil {
         val msg = context.getTranslation("message.attachments.add")
             .replace(PLACEHOLDER_TYPE, type.text)
             .replace("%attachment%", context.args[0])
-            .replace("%file%", context.args[1])
+            .replace("%url%", context.args[1])
 
         sendMsg(context, msg)
     }

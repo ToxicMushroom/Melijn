@@ -82,8 +82,6 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         }
 
         muteRoleAcquired(context, targetUser, reason, muteRole, muteDuration)
-
-
     }
 
     private suspend fun muteRoleAcquired(context: CommandContext, targetUser: User, reason: String, muteRole: Role, muteDuration: Long) {
@@ -99,13 +97,10 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         if (activeMute != null) mute.startTime = activeMute.startTime
 
         val muting = context.getTranslation("message.muting")
-        try {
-            val privateChannel = targetUser.openPrivateChannel().await()
-            val message = privateChannel.sendMessage(muting).await()
-            continueMuting(context, muteRole, targetUser, mute, activeMute, message)
-        } catch (t: Throwable) {
-            continueMuting(context, muteRole, targetUser, mute, activeMute)
-        }
+
+        val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
+        val message = privateChannel?.sendMessage(muting)?.awaitOrNull()
+        continueMuting(context, muteRole, targetUser, mute, activeMute, message)
     }
 
     private suspend fun continueMuting(context: CommandContext, muteRole: Role, targetUser: User, mute: Mute, activeMute: Mute?, mutingMessage: Message? = null) {
@@ -126,6 +121,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         try {
             guild.addRoleToMember(targetMember, muteRole).await()
             death(mutingMessage, mutedMessageDm, context, mutedMessageLc, activeMute, mute, targetUser)
+
         } catch (t: Throwable) {
             val failedMsg = context.getTranslation("message.muting.failed")
             mutingMessage?.editMessage(failedMsg)?.queue()
@@ -135,7 +131,6 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
                 .replace("%cause%", t.message ?: "/")
             sendMsg(context, msg)
         }
-
     }
 
     private suspend fun death(mutingMessage: Message?, mutedMessageDm: MessageEmbed, context: CommandContext, mutedMessageLc: MessageEmbed, activeMute: Mute?, mute: Mute, targetUser: User) {

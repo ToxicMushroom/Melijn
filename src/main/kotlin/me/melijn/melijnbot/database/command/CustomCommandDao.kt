@@ -52,6 +52,10 @@ class CustomCommandDao(driverManager: DriverManager) : Dao(driverManager) {
                     rs.getInt("chance"),
                     rs.getBoolean("prefix")
                 )
+                val aliases = cc.aliases
+                if (aliases?.size == 1 && aliases[0].isEmpty()) {
+                    cc.aliases = emptyList()
+                }
                 list.add(cc)
             }
             it.resume(list)
