@@ -9,7 +9,7 @@ import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.entities.TextChannel
 
-const val UNKNOWN_WRAPPINGMODE_PATH: String = "message.unknown.filtermode"
+const val UNKNOWN_FILTERMODE_PATH: String = "message.unknown.filtermode"
 
 class SetFilterModeCommand : AbstractCommand("command.setfiltermode") {
 
@@ -44,7 +44,7 @@ class SetFilterModeCommand : AbstractCommand("command.setfiltermode") {
                     unSetFilterMode(context, null)
                     return
                 }
-                val mode: FilterMode = getEnumFromArgNMessage(context, 0, UNKNOWN_WRAPPINGMODE_PATH) ?: return
+                val mode: FilterMode = getEnumFromArgNMessage(context, 0, UNKNOWN_FILTERMODE_PATH) ?: return
                 setFilterMode(context, null, mode)
             }
         }
@@ -70,7 +70,7 @@ class SetFilterModeCommand : AbstractCommand("command.setfiltermode") {
                     unSetFilterMode(context, textChannel)
                     return
                 }
-                val mode: FilterMode = getEnumFromArgNMessage(context, 1, UNKNOWN_WRAPPINGMODE_PATH) ?: return
+                val mode: FilterMode = getEnumFromArgNMessage(context, 1, UNKNOWN_FILTERMODE_PATH) ?: return
                 setFilterMode(context, textChannel, mode)
             }
         }

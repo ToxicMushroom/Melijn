@@ -3,12 +3,16 @@ package me.melijn.melijnbot.commands.administration
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.autopunishment.PunishGroup
 import me.melijn.melijnbot.database.autopunishment.Punishment
+import me.melijn.melijnbot.enums.PointsTriggerType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.utils.*
+
+const val UNKNOWN_POINTSTRIGGERTTYPE_PATH: String = "message.unknown.pointstriggertype"
+
 
 class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
 
@@ -160,7 +164,11 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
 
         override suspend fun execute(context: CommandContext) {
             val pg = getSelectedPGroup(context) ?: return
-            // val type = getEnumFromArgNMessage<AutoPunishmentTriggerType>(context, 0)
+            val type = getEnumFromArgNMessage<PointsTriggerType>(context, 0, UNKNOWN_POINTSTRIGGERTTYPE_PATH)
+                ?: return
+            val state = getBooleanFromArgNMessage(context, 1) ?: return
+            pg.enabledTypes
+
             //type and state, can be further configured in other commands
         }
     }

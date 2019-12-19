@@ -22,12 +22,14 @@ suspend fun getIntegerFromArgNMessage(context: CommandContext, index: Int, start
                 .replace(PLACEHOLDER_ARG, arg)
                 .replace("%min%", start.toString())
             sendMsg(context, msg)
+            return null
         }
         int > end -> {
             val msg = i18n.getTranslation(language, "message.tobig.integer")
                 .replace(PLACEHOLDER_ARG, arg)
                 .replace("%max%", end.toString())
             sendMsg(context, msg)
+            return null
         }
     }
 

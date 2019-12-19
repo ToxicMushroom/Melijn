@@ -8,20 +8,20 @@ import kotlin.coroutines.suspendCoroutine
 class AutoPunishmentGroupDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "autoPunishmentGroups"
-    override val tableStructure: String = "guildId bigint, group varchar(64), typePointsMap varchar(512), pointGoalMap varchar(512)"
+    override val tableStructure: String = "guildId bigint, group varchar(64), enabledTypes varchar(512), pointGoalMap varchar(512)"
     override val primaryKey: String = "guildId, group"
 
     init {
         //driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun setTypePointsMap(guildId: Long, group: String, typePointsMap: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, group, typePointsMap, pointGoalMap) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET typePointsMap = ?",
-            guildId, group, typePointsMap, "", typePointsMap)
+    suspend fun setTypePointsMap(guildId: Long, group: String, enabledTypes: String) {
+        driverManager.executeUpdate("INSERT INTO $table (guildId, group, enabledTypes, pointGoalMap) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET typePointsMap = ?",
+            guildId, group, enabledTypes, "", enabledTypes)
     }
 
     suspend fun setPointGoalMap(guildId: Long, group: String, pointGoalMap: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, group, typePointsMap, pointGoalMap) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET pointGoalMap = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, group, enabledTypes, pointGoalMap) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET pointGoalMap = ?",
             guildId, group, "", pointGoalMap, pointGoalMap)
     }
 

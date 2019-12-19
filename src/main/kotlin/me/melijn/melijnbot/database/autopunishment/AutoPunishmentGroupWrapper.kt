@@ -31,17 +31,17 @@ class AutoPunishmentGroupWrapper(val taskManager: TaskManager, private val autoP
                     .second
                     .removeSurrounding("[", "]")
                     .split("],[")
-                val ppTriggerMap = mutableMapOf<PointsTriggerType, Int>()
+                val ppTriggerList = mutableListOf<PointsTriggerType>()
                 val ppGoalMap = mutableMapOf<Int, String>()
                 for (entry in firstEntries) {
                     val entryParts = entry.split(", ")
-                    ppTriggerMap[PointsTriggerType.valueOf(entryParts[0])] = entryParts[1].toInt()
+                    ppTriggerList.add(PointsTriggerType.valueOf(entryParts[0]))
                 }
                 for (entry in secondEntries) {
                     val entryParts = entry.split(", ")
                     ppGoalMap[entryParts[0].toInt()] = entryParts[1]
                 }
-                list.add(PunishGroup(group, ppTriggerMap, ppGoalMap))
+                list.add(PunishGroup(group, ppTriggerList, ppGoalMap))
             }
             future.complete(list)
         }
@@ -105,6 +105,6 @@ class AutoPunishmentGroupWrapper(val taskManager: TaskManager, private val autoP
 
 data class PunishGroup(
     val groupName: String,
-    val typePointsMap: Map<PointsTriggerType, Int>,
+    val enabledTypes: List<PointsTriggerType>,
     val pointGoalMap: MutableMap<Int, String>
 )
