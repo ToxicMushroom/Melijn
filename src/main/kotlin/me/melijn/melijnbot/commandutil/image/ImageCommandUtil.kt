@@ -34,7 +34,9 @@ object ImageCommandUtil {
         val pair = ImageUtils.getImageBytesNMessage(context) ?: return
         val imageByteArray = pair.first ?: return
         val argInt = if (pair.second) 1 else 0
-        val offset = if (hasOffset) (getIntegerFromArgN(context, argInt + 0) ?: defaultOffset) else defaultOffset
+        val offset = if (hasOffset) {
+            (getIntegerFromArgN(context, argInt + 0) ?: defaultOffset)
+        } else defaultOffset
 
         val outputStream = transform(imageByteArray, offset)
         sendFile(context, outputStream.toByteArray(), "png")

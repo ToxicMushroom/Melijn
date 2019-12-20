@@ -69,7 +69,7 @@ object ImageUtils {
         }
     }
 
-    private fun getBrightness(r: Int, g: Int, b: Int): Int {
+    fun getBrightness(r: Int, g: Int, b: Int): Int {
         return sqrt(r * r * .241 + g * g * .691 + b * b * .068).toInt()
     }
 
