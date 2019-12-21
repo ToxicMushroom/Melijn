@@ -12,6 +12,7 @@ class FlipCommand : AbstractCommand("command.flip") {
     init {
         id = 129
         name = "flip"
+        aliases = arrayOf("flipGif")
         discordPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }

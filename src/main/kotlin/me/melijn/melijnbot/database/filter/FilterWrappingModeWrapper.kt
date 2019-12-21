@@ -38,5 +38,4 @@ class FilterWrappingModeWrapper(val taskManager: TaskManager, private val filter
         filterWrappingModeCache.put(Pair(guildId, channelId), CompletableFuture.completedFuture(FilterMode.NO_MODE))
         filterWrappingModeDao.unset(guildId, channelId)
     }
-
 }

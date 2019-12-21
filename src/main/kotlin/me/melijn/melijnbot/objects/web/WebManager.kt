@@ -43,7 +43,8 @@ private val spotifyArtistUri: Pattern = Pattern.compile("spotify:artist:(\\S+)")
 class WebManager(val taskManager: TaskManager, val settings: Settings) {
 
     val logger = LoggerFactory.getLogger(WebManager::class.java.name)
-val jsonMedia = "application/json".toMediaType()
+    val jsonMedia = "application/json".toMediaType()
+    val textMedia = "text/html".toMediaType()
 
     private val httpClient = OkHttpClient()
         .newBuilder()
@@ -348,5 +349,16 @@ val jsonMedia = "application/json".toMediaType()
 
             httpClient.newCall(request).enqueue(defaultCallbackHandler)
         }
+    }
+
+    suspend fun postToHastebin(lang: String, content: String): String? {
+        val request = Request.Builder()
+            .url("https://hasteb.in/documents")
+            .post(content.toByteArray().toRequestBody(textMedia))
+            .build()
+        val req = httpClient.newCall(request).await()
+        val body = req.body ?: return null
+        val json = DataObject.fromJson(body.string())
+        return "https://hasteb.in/" + json.getString("key") + ".$lang"
     }
 }

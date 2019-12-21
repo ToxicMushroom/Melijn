@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
+import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -21,25 +22,40 @@ object ImageUtils {
 
     //ByteArray (imageData)
     //Boolean (if it is from an argument -> true) (attachment or noArgs(author)) -> false)
-    suspend fun getImageBytesNMessage(context: CommandContext): Pair<ByteArray?, Boolean>? = suspendCoroutine {
+    suspend fun getImageBytesNMessage(context: CommandContext): Triple<ByteArray, String, Boolean>? = suspendCoroutine {
         context.taskManager.executorService.launch {
             val args = context.args
             val attachments = context.message.attachments
 
             var arg = false
             var img: ByteArray? = null
-            if (args.isNotEmpty() && args[0].isNotEmpty()) {
+            var url: String? = null
+            if (attachments.isNotEmpty()) {
+                try {
+                    arg = false
+                    url = attachments[0].url + "?size=2048"
+                    withContext(Dispatchers.IO) {
+                        img = URL(url).readBytes()
+                    }
+                } catch (e: Exception) {
+                    val msg = context.getTranslation("message.attachmentnotanimage")
+                        .replace(PLACEHOLDER_ARG, attachments[0].url)
+                    sendMsg(context, msg)
+                }
+            } else if (args.isNotEmpty() && args[0].isNotEmpty()) {
                 val user = retrieveUserByArgsN(context, 0)
                 if (user != null) {
                     arg = true
+                    url = user.effectiveAvatarUrl + "?size=2048"
                     withContext(Dispatchers.IO) {
-                        img = URL(user.effectiveAvatarUrl + "?size=2048").readBytes()
+                        img = URL(url).readBytes()
                     }
                 } else {
                     arg = true
+                    url = args[0]
                     try {
                         withContext(Dispatchers.IO) {
-                            img = URL(args[0]).readBytes()
+                            img = URL(url).readBytes()
                         }
                     } catch (e: Exception) {
                         val msg = context.getTranslation("message.wrong.url")
@@ -47,25 +63,21 @@ object ImageUtils {
                         sendMsg(context, msg)
                     }
                 }
-            } else if (attachments.isNotEmpty()) {
-                try {
-                    arg = false
-                    withContext(Dispatchers.IO) {
-                        img = URL(attachments[0].url + "?size=2048").readBytes()
-                    }
-                } catch (e: Exception) {
-                    val msg = context.getTranslation("message.attachmentnotanimage")
-                        .replace(PLACEHOLDER_ARG, attachments[0].url)
-                    sendMsg(context, msg)
-                }
             } else {
                 arg = false
+                url = context.author.effectiveAvatarUrl + "?size=2048"
                 withContext(Dispatchers.IO) {
-                    img = URL(context.author.effectiveAvatarUrl + "?size=2048").readBytes()
+                    img = URL(url).readBytes()
                 }
             }
-            val pair = Pair(img, arg)
-            it.resume(if (pair.first == null) null else pair)
+
+            if (url == null || img == null) {
+                it.resume(null)
+                return@launch
+            }
+            val nonnullImage: ByteArray = img ?: return@launch
+            val triple = Triple(nonnullImage, url, arg)
+            it.resume(triple)
         }
     }
 
@@ -79,9 +91,9 @@ object ImageUtils {
         val blurpleThreshold = -43 + offset.absoluteValue
         val invertOffset = offset < 0
         return when {
-            brightness >= whiteThreshold -> if (invertOffset) intArrayOf(78, 93, 148) else intArrayOf(255, 255, 255) //wit
+            brightness >= whiteThreshold -> if (invertOffset) intArrayOf(78, 93, 148) else intArrayOf(254, 254, 254) //wit
             brightness >= blurpleThreshold -> intArrayOf(114, 137, 218) //blurple
-            else -> if (invertOffset) intArrayOf(255, 255, 255) else intArrayOf(78, 93, 148) //dark blurple
+            else -> if (invertOffset) intArrayOf(254, 254, 254) else intArrayOf(78, 93, 148) //dark blurple
         }
     }
 
@@ -116,6 +128,7 @@ object ImageUtils {
             decoder.loopCount
         }
         encoder.setRepeat(repeatCount)
+        encoder.setTransparent(Color.WHITE, true)
 
         for (index in 0 until decoder.frameCount) {
             val frameMeta = decoder.getFrameMeta(index)
@@ -167,6 +180,10 @@ object ImageUtils {
     }
 
     fun getInvertedPixel(r: Int, g: Int, b: Int): IntArray {
-        return intArrayOf(255 - r, 255 - g, 255 - b)
+        var arr = intArrayOf(255 - r, 255 - g, 255 - b)
+        if (arr[0] == 255 && arr[1] == 255 && arr[2] == 255) {
+            arr = intArrayOf(254, 254, 254)
+        }
+        return arr
     }
 }

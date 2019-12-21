@@ -9,8 +9,8 @@ import kotlin.coroutines.suspendCoroutine
 class FilterDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "filters"
-    override val tableStructure: String = "guildId bigint, channelId bigint, type varchar(32), filter varchar(2048)"
-    override val primaryKey: String = "guildId, channelId, type, filter"
+    override val tableStructure: String = "guildId bigint, groupId bigint, type varchar(32), filter varchar(2048)"
+    override val primaryKey: String = "guildId, groupId, type, filter"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
@@ -35,5 +35,4 @@ class FilterDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND channelId = ? AND type = ? AND filter = ?",
             guildId, channelId ?: -1, type.toString(), filter)
     }
-
 }

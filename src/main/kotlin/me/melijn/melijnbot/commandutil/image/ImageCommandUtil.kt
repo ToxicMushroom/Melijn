@@ -10,8 +10,8 @@ import java.io.ByteArrayOutputStream
 
 object ImageCommandUtil {
 
-    val defaultOffset = 128
-    val defaultQuality = 5
+    private const val defaultOffset = 128
+    private const val defaultQuality = 5
 
     suspend fun executeNormalRecolor(context: CommandContext, recolor: (ints: IntArray) -> IntArray, hasOffset: Boolean = true) {
         executeNormalEffect(context, { image, offset ->
@@ -31,9 +31,9 @@ object ImageCommandUtil {
 
 
     suspend fun executeNormalTransform(context: CommandContext, transform: (byteArray: ByteArray, offset: Int) -> ByteArrayOutputStream, hasOffset: Boolean = true) {
-        val pair = ImageUtils.getImageBytesNMessage(context) ?: return
-        val imageByteArray = pair.first ?: return
-        val argInt = if (pair.second) 1 else 0
+        val triple = ImageUtils.getImageBytesNMessage(context) ?: return
+        val imageByteArray = triple.first
+        val argInt = if (triple.third) 1 else 0
         val offset = if (hasOffset) {
             (getIntegerFromArgN(context, argInt + 0) ?: defaultOffset)
         } else defaultOffset
@@ -61,9 +61,9 @@ object ImageCommandUtil {
 
 
     suspend fun executeGifTransform(context: CommandContext, transform: (byteArray: ByteArray, fps: Float?, quality: Int, repeat: Boolean?, offset: Int) -> ByteArrayOutputStream, hasOffset: Boolean = true) {
-        val pair = ImageUtils.getImageBytesNMessage(context) ?: return
-        val imageByteArray = pair.first ?: return
-        var argInt = if (pair.second) 1 else 0
+        val triple = ImageUtils.getImageBytesNMessage(context) ?: return
+        val imageByteArray = triple.first
+        var argInt = if (triple.third) 1 else 0
 
         if (!hasOffset) {
             argInt -= 1
@@ -77,6 +77,4 @@ object ImageCommandUtil {
         val outputStream = transform(imageByteArray, fps, quality, repeat, offset)
         sendFile(context, outputStream.toByteArray(), "gif")
     }
-
-
 }

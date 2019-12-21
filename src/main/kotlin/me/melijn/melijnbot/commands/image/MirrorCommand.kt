@@ -7,11 +7,12 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import net.dv8tion.jda.api.Permission
 import java.awt.image.BufferedImage
 
-class MirrorCommand  : AbstractCommand("command.mirror") {
+class MirrorCommand : AbstractCommand("command.mirror") {
 
     init {
         id = 130
         name = "mirror"
+        aliases = arrayOf("mirrorGif")
         discordPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
@@ -40,7 +41,7 @@ class MirrorCommand  : AbstractCommand("command.mirror") {
         val newImage = BufferedImage(image.width, image.height, image.type)
         for (y in 0 until image.height) {
             for (x in 0 until image.width) {
-                val color = image.getRGB(image.width -1 -x,y)
+                val color = image.getRGB(image.width - 1 - x, y)
                 newImage.setRGB(x, y, color)
             }
         }

@@ -11,14 +11,14 @@ class GreyScaleCommand : AbstractCommand("command.greyscale") {
 
     init {
         id = 128
-        name = "greyScale"
-        aliases = arrayOf("greyScaleGif", "greyScale")
+        name = "greyscale"
+        aliases = arrayOf("greyScaleGif")
         discordPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
 
     override suspend fun execute(context: CommandContext) {
-        if (context.commandParts[1].equals("greyScaleGif", true)) {
+        if (context.commandParts[1].equals("greyscaleGif", true)) {
             executeGif(context)
         } else {
             executeNormal(context)
