@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.sharding.ShardManager
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
-class StatService(val shardManager: ShardManager, val webManager: WebManager) : Service("stat") {
+class StatsService(val shardManager: ShardManager, val webManager: WebManager) : Service("stat") {
 
     private var scheduledFuture: ScheduledFuture<*>? = null
 

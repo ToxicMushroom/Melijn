@@ -3,9 +3,7 @@ package me.melijn.melijnbot.objects.services.mutes
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.commands.moderation.getUnmuteMessage
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
 import me.melijn.melijnbot.database.mute.Mute
-import me.melijn.melijnbot.database.mute.MuteWrapper
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.services.Service
@@ -23,8 +21,6 @@ import java.util.concurrent.TimeUnit
 
 class MuteService(
     val shardManager: ShardManager,
-    private val muteWrapper: MuteWrapper,
-    private val embedDisabledWrapper: EmbedDisabledWrapper,
     val daoManager: DaoManager
 ) : Service("mute") {
 
@@ -32,14 +28,14 @@ class MuteService(
 
     private val muteService = Runnable {
         runBlocking {
-            val mutes = muteWrapper.getUnmuteableMutes()
+            val mutes = daoManager.muteWrapper.getUnmuteableMutes()
             for (mute in mutes) {
                 val selfUser = shardManager.shards[0].selfUser
                 val newMute = mute.run {
                     Mute(guildId, mutedId, muteAuthorId, reason, selfUser.idLong, "Mute expired", startTime, endTime, false)
                 }
 
-                muteWrapper.setMute(newMute)
+                daoManager.muteWrapper.setMute(newMute)
                 val guild = shardManager.getGuildById(mute.guildId) ?: continue
 
                 val muteRole = guild.getAndVerifyRoleByType(daoManager, RoleType.MUTE, true)
@@ -78,7 +74,7 @@ class MuteService(
         }
 
         val msgLc = getUnmuteMessage(language, guild, mutedUser, muteAuthor, unmuteAuthor, mute, true, mutedUser?.isBot == true, success)
-        sendEmbed(embedDisabledWrapper, logChannel, msgLc)
+        sendEmbed(daoManager.embedDisabledWrapper, logChannel, msgLc)
     }
 
     private suspend fun createAndSendFailedUnmuteMessage(guild: Guild, unmuteAuthor: User, mutedUser: User?, muteAuthor: User?, mute: Mute, cause: String) {
@@ -98,7 +94,7 @@ class MuteService(
         }
 
         val msgLc = getUnmuteMessage(language, guild, mutedUser, muteAuthor, unmuteAuthor, mute, true, mutedUser?.isBot == true, success, failedCause = cause)
-        sendEmbed(embedDisabledWrapper, logChannel, msgLc)
+        sendEmbed(daoManager.embedDisabledWrapper, logChannel, msgLc)
     }
 
     override fun start() {

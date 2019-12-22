@@ -8,6 +8,7 @@ import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.objects.utils.retrieveUserByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
+import net.dv8tion.jda.api.entities.Message
 import java.util.concurrent.TimeUnit
 
 class PurgeCommand : AbstractCommand("command.purge") {
@@ -29,7 +30,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
         }
 
         // + 1 is to start counting above the .purge command
-        val amount = (getIntegerFromArgNMessage(context, 0, 1, 1000) ?: return)
+        val amount = (getIntegerFromArgNMessage(context, 0, 1, 1000) ?: return) + 1
 
         val targetUser = if (context.args.size == 2) {
             retrieveUserByArgsNMessage(context, 1) ?: return
@@ -37,7 +38,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
             null
         }
 
-        val messages = mutableListOf(context.message)
+        val messages = mutableListOf<Message>()
         var counter = 1
         context.textChannel.iterableHistory
             .forEachAsync { message ->

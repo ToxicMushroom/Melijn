@@ -41,15 +41,16 @@ class GifInfoCommand : AbstractCommand("command.gifinfo") {
         val frames = decoder.frameCount
         val width = decoder.frameSize.width
         val height = decoder.frameSize.height
+        val gct = decoder.gct ?: emptyArray<Int>().toIntArray()
 
 
         val globalDataArray = DataArray.empty()
-        for (i in decoder.gct) {
+        for (i in gct) {
             val color = Color(i)
             globalDataArray.add(color.toHex())
         }
 
-        val globalUrl = if (decoder.gct.isEmpty()) {
+        val globalUrl = if (gct.isEmpty()) {
             null
         } else {
             context.webManager.postToHastebin("json", globalDataArray.toString())
@@ -70,7 +71,7 @@ class GifInfoCommand : AbstractCommand("command.gifinfo") {
         if (frame != null) {
             val frameMeta = decoder.getFrameMeta(frame)
             val lct = if (frameMeta.lct.isEmpty()) {
-                decoder.gct
+                gct
             } else {
                 frameMeta.lct
             }

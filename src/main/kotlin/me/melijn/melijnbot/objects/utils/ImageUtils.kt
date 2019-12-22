@@ -36,11 +36,14 @@ object ImageUtils {
                     url = attachments[0].url + "?size=2048"
                     withContext(Dispatchers.IO) {
                         img = URL(url).readBytes()
+                        if (ImageIO.read(ByteArrayInputStream(img)) == null) img = null
                     }
                 } catch (e: Exception) {
                     val msg = context.getTranslation("message.attachmentnotanimage")
                         .replace(PLACEHOLDER_ARG, attachments[0].url)
                     sendMsg(context, msg)
+                    it.resume(null)
+                    return@launch
                 }
             } else if (args.isNotEmpty() && args[0].isNotEmpty()) {
                 val user = retrieveUserByArgsN(context, 0)
@@ -49,6 +52,7 @@ object ImageUtils {
                     url = user.effectiveAvatarUrl + "?size=2048"
                     withContext(Dispatchers.IO) {
                         img = URL(url).readBytes()
+                        if (ImageIO.read(ByteArrayInputStream(img)) == null) img = null
                     }
                 } else {
                     arg = true
@@ -56,11 +60,16 @@ object ImageUtils {
                     try {
                         withContext(Dispatchers.IO) {
                             img = URL(url).readBytes()
+                            if (ImageIO.read(ByteArrayInputStream(img)) == null) {
+                                img = null
+                            }
                         }
                     } catch (e: Exception) {
                         val msg = context.getTranslation("message.wrong.url")
                             .replace(PLACEHOLDER_ARG, args[0])
                         sendMsg(context, msg)
+                        it.resume(null)
+                        return@launch
                     }
                 }
             } else {
@@ -71,10 +80,14 @@ object ImageUtils {
                 }
             }
 
-            if (url == null || img == null) {
+            if (img == null) {
+                val msg = context.getTranslation("message.notimage")
+                    .replace("%url%", url)
+                sendMsg(context, msg)
                 it.resume(null)
                 return@launch
             }
+
             val nonnullImage: ByteArray = img ?: return@launch
             val triple = Triple(nonnullImage, url, arg)
             it.resume(triple)

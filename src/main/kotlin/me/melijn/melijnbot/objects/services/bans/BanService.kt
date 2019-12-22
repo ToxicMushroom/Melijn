@@ -4,8 +4,6 @@ import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.commands.moderation.getUnbanMessage
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.ban.Ban
-import me.melijn.melijnbot.database.ban.BanWrapper
-import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.services.Service
 import me.melijn.melijnbot.objects.translation.getLanguage
@@ -22,8 +20,6 @@ import java.util.concurrent.TimeUnit
 
 class BanService(
     val shardManager: ShardManager,
-    private val banWrapper: BanWrapper,
-    private val embedDisabledWrapper: EmbedDisabledWrapper,
     val daoManager: DaoManager
 ) : Service("ban") {
 
@@ -31,13 +27,13 @@ class BanService(
 
     private val banService = Runnable {
         runBlocking {
-            val bans = banWrapper.getUnbannableBans()
+            val bans = daoManager.banWrapper.getUnbannableBans()
             for (ban in bans) {
                 val selfUser = shardManager.shards[0].selfUser
                 val newBan = ban.run {
                     Ban(guildId, bannedId, banAuthorId, reason, selfUser.idLong, "Ban expired", startTime, endTime, false)
                 }
-                banWrapper.setBan(newBan)
+                daoManager.banWrapper.setBan(newBan)
                 val guild = shardManager.getGuildById(ban.guildId) ?: continue
 
                 //If ban exists, unban and send log messages
@@ -80,7 +76,7 @@ class BanService(
         }
 
         val msgLc = getUnbanMessage(language, guild, bannedUser, banAuthor, unbanAuthor, ban, true, bannedUser.isBot, success)
-        sendEmbed(embedDisabledWrapper, logChannel, msgLc)
+        sendEmbed(daoManager.embedDisabledWrapper, logChannel, msgLc)
     }
 
     private suspend fun createAndSendFailedUnbanMessage(guild: Guild, unbanAuthor: User, bannedUser: User, banAuthor: User?, ban: Ban, cause: String) {
@@ -100,7 +96,7 @@ class BanService(
         }
 
         val msgLc = getUnbanMessage(language, guild, bannedUser, banAuthor, unbanAuthor, ban, true, bannedUser.isBot, success, failedCause = cause)
-        sendEmbed(embedDisabledWrapper, logChannel, msgLc)
+        sendEmbed(daoManager.embedDisabledWrapper, logChannel, msgLc)
     }
 
     override fun start() {

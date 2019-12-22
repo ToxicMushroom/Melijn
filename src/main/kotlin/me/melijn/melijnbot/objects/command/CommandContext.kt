@@ -49,23 +49,17 @@ class CommandContext(
 
     fun initArgs() {
         args = commandParts.drop(1 + commandOrder.size)
-        var commandPath = ""
+        rawArg = messageReceivedEvent.message.contentRaw
+            .removePrefix(usedPrefix)
+            .trim()
+
         for (i in 1..commandOrder.size) {
-            commandPath += Pattern.quote(commandParts[i])
-            commandPath += if (i == commandOrder.size) {
-                if (args.isEmpty()) {
-                    "\\s*"
-                } else {
-                    "\\s+"
-                }
-            } else {
-                "\\s+"
-            }
-            logger = LoggerFactory.getLogger(commandOrder.first().javaClass.name)
+            rawArg = rawArg
+                .removePrefix(commandParts[i])
+                .trim()
         }
 
-        val regex: Regex = ("${Pattern.quote(usedPrefix)}\\s*$commandPath").toRegex()
-        rawArg = messageReceivedEvent.message.contentRaw.replaceFirst(regex, "")
+        logger = LoggerFactory.getLogger(commandOrder.first().javaClass.name)
     }
 
     private fun retrieveOffset(): Int {
