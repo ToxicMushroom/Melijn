@@ -16,6 +16,7 @@ import javax.imageio.ImageIO
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.math.absoluteValue
+import kotlin.math.min
 import kotlin.math.sqrt
 
 
@@ -41,7 +42,7 @@ object ImageUtils {
                     }
                 } catch (e: Exception) {
                     val msg = context.getTranslation("message.attachmentnotanimage")
-                            .replace(PLACEHOLDER_ARG, attachments[0].url)
+                        .replace(PLACEHOLDER_ARG, attachments[0].url)
                     sendMsg(context, msg)
                     it.resume(null)
                     return@launch
@@ -67,7 +68,7 @@ object ImageUtils {
                         }
                     } catch (e: Exception) {
                         val msg = context.getTranslation("message.wrong.url")
-                                .replace(PLACEHOLDER_ARG, args[0])
+                            .replace(PLACEHOLDER_ARG, args[0])
                         sendMsg(context, msg)
                         it.resume(null)
                         return@launch
@@ -83,7 +84,7 @@ object ImageUtils {
 
             if (img == null) {
                 val msg = context.getTranslation("message.notimage")
-                        .replace("%url%", url)
+                    .replace("%url%", url)
                 sendMsg(context, msg)
                 it.resume(null)
                 return@launch
@@ -124,15 +125,12 @@ object ImageUtils {
         }
     }
 
-    fun addEffectToGifFrames(imageByteArray: ByteArray, fps: Float? = null, quality: Int, repeat: Boolean?, effect: (BufferedImage) -> Unit): ByteArrayOutputStream {
-        val byteArrayInputStream = ByteArrayInputStream(imageByteArray)
-        val decoder = GifDecoder()
+    fun addEffectToGifFrames(decoder: GifDecoder, fps: Float? = null, quality: Int, repeat: Boolean?, effect: (BufferedImage) -> Unit): ByteArrayOutputStream {
         val encoder = AnimatedGifEncoder()
         val outputStream = ByteArrayOutputStream()
 
         encoder.setQuality(quality)
         encoder.start(outputStream)
-        decoder.read(byteArrayInputStream)
 
         val repeatCount = if (repeat != null && repeat == true) {
             0
@@ -201,31 +199,28 @@ object ImageUtils {
         return arr
     }
 
-    fun pixelate(imageToPixelate: BufferedImage, pixelSize: Int): BufferedImage? {
-        val pixelateImage = BufferedImage(
-                imageToPixelate.width,
-                imageToPixelate.height,
-                imageToPixelate.type)
-        var y = 0
-        while (y < imageToPixelate.height) {
-            var x = 0
-            while (x < imageToPixelate.width) {
-                val croppedImage = getCroppedImage(imageToPixelate, x, y, pixelSize, pixelSize)
-                val dominantColor = getDominantColor(croppedImage)
-                var yd = y
-                while (yd < y + pixelSize && yd < pixelateImage.height) {
-                    var xd = x
-                    while (xd < x + pixelSize && xd < pixelateImage.width) {
-                        pixelateImage.setRGB(xd, yd, dominantColor.rgb)
-                        xd++
+    fun pixelate(image: BufferedImage, pixelSize: Int) {
+        // Get the raster data (array of pixels)
+        val src: Raster = image.data
+
+        // Create an identically-sized output raster
+        val dest = src.createCompatibleWritableRaster()
+
+        for (x in 0 until image.width step pixelSize) {
+            for (y in 0 until image.height step pixelSize) {
+
+                val croppedImage = getCroppedImage(image, x, y, pixelSize, pixelSize)
+                val newColor = getDominantColor(croppedImage)
+
+                for (xd in x until min(x + pixelSize, image.width)) {
+                    for (yd in y until min(y + pixelSize, image.height)) {
+                        dest.setPixel(xd, yd, arrayOf(newColor.red, newColor.green, newColor.blue, newColor.alpha).toIntArray())
                     }
-                    yd++
                 }
-                x += pixelSize
             }
-            y += pixelSize
         }
-        return pixelateImage
+
+        image.data = dest
     }
 
     fun getCroppedImage(image: BufferedImage, startx: Int, starty: Int, width: Int, height: Int): BufferedImage {
@@ -233,17 +228,19 @@ object ImageUtils {
         var starty1 = starty
         var width1 = width
         var height1 = height
+
         if (startx1 < 0) startx1 = 0
         if (starty1 < 0) starty1 = 0
         if (startx1 > image.width) startx1 = image.width
         if (starty1 > image.height) starty1 = image.height
+
         if (startx1 + width1 > image.width) width1 = image.width - startx1
         if (starty1 + height1 > image.height) height1 = image.height - starty1
         return image.getSubimage(startx1, starty1, width1, height1)
     }
 
     fun getDominantColor(image: BufferedImage): Color {
-        val colorCounter: MutableMap<Int, Int> = HashMap(100)
+        val colorCounter: MutableMap<Int, Int> = HashMap()
         for (x in 0 until image.width) {
             for (y in 0 until image.height) {
                 val currentRGB = image.getRGB(x, y)
@@ -256,9 +253,9 @@ object ImageUtils {
 
     private fun getDominantColor(colorCounter: Map<Int, Int>): Color {
         val dominantRGB = colorCounter.entries.stream()
-                .max { entry1: Map.Entry<Int, Int>, entry2: Map.Entry<Int, Int> -> if (entry1.value > entry2.value) 1 else -1 }
-                .get()
-                .key
+            .max { entry1: Map.Entry<Int, Int>, entry2: Map.Entry<Int, Int> -> if (entry1.value > entry2.value) 1 else -1 }
+            .get()
+            .key
         return Color(dominantRGB)
     }
 

@@ -6,20 +6,19 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.ImageUtils
 import net.dv8tion.jda.api.Permission
-import java.lang.Integer.max
 
-class PixelateCommand : AbstractCommand("command.pixelate") {
+class SmoothPixelateCommand : AbstractCommand("command.smoothpixelate") {
 
     init {
-        id = 133
-        name = "pixelate"
-        aliases = arrayOf("pixelateGif")
+        id = 134
+        name = "smoothPixelate"
+        aliases = arrayOf("smoothPixelateGif")
         discordPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
 
     override suspend fun execute(context: CommandContext) {
-        if (context.commandParts[1].equals("pixelateGif", true)) {
+        if (context.commandParts[1].equals("smoothPixelateGif", true)) {
             executeGif(context)
         } else {
             executeNormal(context)
@@ -28,26 +27,26 @@ class PixelateCommand : AbstractCommand("command.pixelate") {
 
     private suspend fun executeNormal(context: CommandContext) {
         ImageCommandUtil.executeNormalEffect(context, effect = { image, i ->
-            ImageUtils.pixelatev2(image, i)
+            ImageUtils.pixelate(image, i)
 
         }, hasOffset = true, defaultOffset = { img ->
-            max(img.height, img.width) / 100
+            Integer.max(img.height, img.width) / 100
 
         }, offsetRange = { img ->
-            IntRange(1, max(img.height, img.width))
+            IntRange(1, Integer.max(img.height, img.width))
 
         })
     }
 
     private suspend fun executeGif(context: CommandContext) {
         ImageCommandUtil.executeGifEffect(context, effect = { image, i ->
-            ImageUtils.pixelatev2(image, i)
+            ImageUtils.pixelate(image, i)
 
         }, hasOffset = true, defaultOffset = { img ->
-            max(img.height, img.width) / 100
+            Integer.max(img.height, img.width) / 100
 
         }, offsetRange = { img ->
-            IntRange(1, max(img.height, img.width))
+            IntRange(1, Integer.max(img.height, img.width))
 
         })
     }
