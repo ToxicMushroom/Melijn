@@ -13,7 +13,8 @@ class TestCommand : AbstractCommand("command.test") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        println(context.commandList.filter { cmd -> cmd.commandCategory == CommandCategory.DEVELOPER }.joinToString())
+        context.reply(context.args.joinToString("><", "<", ">"))
+        //println(context.commandList.filter { cmd -> cmd.commandCategory == CommandCategory.DEVELOPER }.joinToString())
 
     }
 

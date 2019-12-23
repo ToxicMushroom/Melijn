@@ -27,9 +27,9 @@ object ImageUtils {
             val args = context.args
             val attachments = context.message.attachments
 
-            var arg = false
+            val arg: Boolean
             var img: ByteArray? = null
-            var url: String? = null
+            val url: String
             if (attachments.isNotEmpty()) {
                 try {
                     arg = false

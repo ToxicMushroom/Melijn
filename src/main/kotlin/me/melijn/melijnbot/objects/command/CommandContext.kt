@@ -59,6 +59,62 @@ class CommandContext(
                 .trim()
         }
 
+
+        //Quot arg support
+        val rearg = rawArg.replace("\\s+".toRegex(), " ") + " " // this last space is needed so I don't need to hack around in the splitter for the last arg
+        val quotationIndexes = mutableListOf<Int>()
+        val slashIndexes = mutableListOf<Int>()
+        val spaceIndexes = mutableListOf<Int>()
+
+        for ((index, c) in rearg.toCharArray().withIndex().sortedBy { (i, _) -> i }) {
+            when (c) {
+                '"' -> quotationIndexes.add(index)
+                '\\' -> slashIndexes.add(index)
+                ' ' -> spaceIndexes.add(index)
+            }
+        }
+
+        for (slashIndex in slashIndexes) {
+            quotationIndexes.remove(slashIndex + 1)
+        }
+
+        for (quotIndex in ArrayList(quotationIndexes)) {
+            if (!spaceIndexes.contains(quotIndex - 1) && !spaceIndexes.contains(quotIndex - 1)){
+                quotationIndexes.remove(quotIndex)
+            }
+        }
+
+        if (quotationIndexes.size % 2 == 1) {
+            quotationIndexes.removeAt(quotationIndexes.size - 1)
+        }
+
+        val newCoolArgs = mutableListOf<String>()
+
+        var lastIndex = 0
+        for (spaceIndex in spaceIndexes) {
+            var ignoreSpace = false
+            for ((index, quotIndex) in quotationIndexes.withIndex()) { // Check if space is within quotes
+                if (index % 2 == 0) {
+                    val nextQuotIndex = quotationIndexes[index + 1]
+                    if (spaceIndex in (quotIndex + 1) until nextQuotIndex) ignoreSpace = true
+                }
+            }
+            if (!ignoreSpace) { // if space is not withing quotes
+                val betterBegin = lastIndex + if (quotationIndexes.contains(lastIndex)) 1 else 0
+                val betterEnd = spaceIndex - if (quotationIndexes.contains(spaceIndex - 1)) 1 else 0
+                val extraArg = rearg
+                    .substring(betterBegin, betterEnd) // don't include the " and the space in the arg
+                    .replace("\\\"", "\"")
+
+                if (extraArg.isNotBlank()) {
+                    newCoolArgs.add(extraArg)
+                }
+                lastIndex = spaceIndex + 1
+            }
+        }
+
+        args = newCoolArgs.toList()
+
         logger = LoggerFactory.getLogger(commandOrder.first().javaClass.name)
     }
 
