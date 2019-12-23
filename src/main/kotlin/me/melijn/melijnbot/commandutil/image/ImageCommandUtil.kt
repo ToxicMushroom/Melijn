@@ -69,7 +69,7 @@ object ImageCommandUtil {
             argInt -= 1
         }
 
-        val offset = (getIntegerFromArgN(context, argInt + 0) ?: defaultOffset)
+        val offset = if (hasOffset) (getIntegerFromArgN(context, argInt + 0) ?: defaultOffset) else defaultOffset
         val quality = getIntegerFromArgN(context, argInt + 1) ?: defaultQuality
         val repeat = getBooleanFromArgN(context, argInt + 2)
         val fps = getIntegerFromArgN(context, argInt + 3)?.toFloat()
