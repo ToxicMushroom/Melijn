@@ -8,6 +8,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import java.awt.Color
 import java.awt.image.BufferedImage
+import java.awt.image.Raster
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.net.URL
@@ -40,7 +41,7 @@ object ImageUtils {
                     }
                 } catch (e: Exception) {
                     val msg = context.getTranslation("message.attachmentnotanimage")
-                        .replace(PLACEHOLDER_ARG, attachments[0].url)
+                            .replace(PLACEHOLDER_ARG, attachments[0].url)
                     sendMsg(context, msg)
                     it.resume(null)
                     return@launch
@@ -66,7 +67,7 @@ object ImageUtils {
                         }
                     } catch (e: Exception) {
                         val msg = context.getTranslation("message.wrong.url")
-                            .replace(PLACEHOLDER_ARG, args[0])
+                                .replace(PLACEHOLDER_ARG, args[0])
                         sendMsg(context, msg)
                         it.resume(null)
                         return@launch
@@ -82,7 +83,7 @@ object ImageUtils {
 
             if (img == null) {
                 val msg = context.getTranslation("message.notimage")
-                    .replace("%url%", url)
+                        .replace("%url%", url)
                 sendMsg(context, msg)
                 it.resume(null)
                 return@launch
@@ -198,5 +199,101 @@ object ImageUtils {
             arr = intArrayOf(254, 254, 254)
         }
         return arr
+    }
+
+    fun pixelate(imageToPixelate: BufferedImage, pixelSize: Int): BufferedImage? {
+        val pixelateImage = BufferedImage(
+                imageToPixelate.width,
+                imageToPixelate.height,
+                imageToPixelate.type)
+        var y = 0
+        while (y < imageToPixelate.height) {
+            var x = 0
+            while (x < imageToPixelate.width) {
+                val croppedImage = getCroppedImage(imageToPixelate, x, y, pixelSize, pixelSize)
+                val dominantColor = getDominantColor(croppedImage)
+                var yd = y
+                while (yd < y + pixelSize && yd < pixelateImage.height) {
+                    var xd = x
+                    while (xd < x + pixelSize && xd < pixelateImage.width) {
+                        pixelateImage.setRGB(xd, yd, dominantColor.rgb)
+                        xd++
+                    }
+                    yd++
+                }
+                x += pixelSize
+            }
+            y += pixelSize
+        }
+        return pixelateImage
+    }
+
+    fun getCroppedImage(image: BufferedImage, startx: Int, starty: Int, width: Int, height: Int): BufferedImage {
+        var startx1 = startx
+        var starty1 = starty
+        var width1 = width
+        var height1 = height
+        if (startx1 < 0) startx1 = 0
+        if (starty1 < 0) starty1 = 0
+        if (startx1 > image.width) startx1 = image.width
+        if (starty1 > image.height) starty1 = image.height
+        if (startx1 + width1 > image.width) width1 = image.width - startx1
+        if (starty1 + height1 > image.height) height1 = image.height - starty1
+        return image.getSubimage(startx1, starty1, width1, height1)
+    }
+
+    fun getDominantColor(image: BufferedImage): Color {
+        val colorCounter: MutableMap<Int, Int> = HashMap(100)
+        for (x in 0 until image.width) {
+            for (y in 0 until image.height) {
+                val currentRGB = image.getRGB(x, y)
+                val count = colorCounter.getOrDefault(currentRGB, 0)
+                colorCounter[currentRGB] = count + 1
+            }
+        }
+        return getDominantColor(colorCounter)
+    }
+
+    private fun getDominantColor(colorCounter: Map<Int, Int>): Color {
+        val dominantRGB = colorCounter.entries.stream()
+                .max { entry1: Map.Entry<Int, Int>, entry2: Map.Entry<Int, Int> -> if (entry1.value > entry2.value) 1 else -1 }
+                .get()
+                .key
+        return Color(dominantRGB)
+    }
+
+    fun pixelatev2(image: BufferedImage, i: Int) {
+        // Get the raster data (array of pixels)
+        val src: Raster = image.data
+
+        // Create an identically-sized output raster
+        val dest = src.createCompatibleWritableRaster()
+
+        // Loop through every i pixels, in both x and y directions
+        var y = 0
+        while (y < src.height) {
+            var x = 0
+            while (x < src.width) {
+                // Copy the pixel
+                var pixel: DoubleArray? = DoubleArray(4)
+                pixel = src.getPixel(x, y, pixel)
+                // "Paste" the pixel onto the surrounding i by i neighbors
+                // Also make sure that our loop never goes outside the bounds of the image
+                var yd = y
+                while (yd < y + i && yd < dest.height) {
+                    var xd = x
+                    while (xd < x + i && xd < dest.width) {
+                        dest.setPixel(xd, yd, pixel)
+                        xd++
+                    }
+                    yd++
+                }
+                x += i
+            }
+            y += i
+        }
+
+        // Save the raster back to the Image
+        image.data = dest
     }
 }

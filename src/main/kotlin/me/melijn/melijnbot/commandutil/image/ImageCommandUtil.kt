@@ -6,12 +6,14 @@ import me.melijn.melijnbot.objects.utils.getBooleanFromArgN
 import me.melijn.melijnbot.objects.utils.getIntegerFromArgN
 import me.melijn.melijnbot.objects.utils.sendFile
 import java.awt.image.BufferedImage
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import javax.imageio.ImageIO
 
 object ImageCommandUtil {
 
-    private const val defaultOffset = 128
-    private const val defaultQuality = 5
+    private const val DEFAULT_OFFSET = 128
+    private const val DEFAULT_QUALITY = 5
 
     suspend fun executeNormalRecolor(context: CommandContext, recolor: (ints: IntArray) -> IntArray, hasOffset: Boolean = true) {
         executeNormalEffect(context, { image, offset ->
@@ -21,21 +23,22 @@ object ImageCommandUtil {
         }, hasOffset)
     }
 
-    suspend fun executeNormalEffect(context: CommandContext, effect: (image: BufferedImage, offset: Int) -> Unit, hasOffset: Boolean = true) {
+    suspend fun executeNormalEffect(context: CommandContext, effect: (image: BufferedImage, offset: Int) -> Unit, hasOffset: Boolean = true, defaultOffset: Int = DEFAULT_OFFSET, offsetRange: (img: BufferedImage) -> IntRange = { IntRange(-255, 255)}) {
         executeNormalTransform(context, { byteArray, offset ->
             ImageUtils.addEffectToStaticImage(byteArray) { image ->
                 effect(image, offset)
             }
-        }, hasOffset)
+        }, hasOffset, defaultOffset, offsetRange)
     }
 
 
-    suspend fun executeNormalTransform(context: CommandContext, transform: (byteArray: ByteArray, offset: Int) -> ByteArrayOutputStream, hasOffset: Boolean = true) {
+    suspend fun executeNormalTransform(context: CommandContext, transform: (byteArray: ByteArray, offset: Int) -> ByteArrayOutputStream, hasOffset: Boolean = true, defaultOffset: Int = DEFAULT_OFFSET, offsetRange: (img: BufferedImage) -> IntRange = { IntRange(-255, 255)}) {
         val triple = ImageUtils.getImageBytesNMessage(context) ?: return
         val imageByteArray = triple.first
         val argInt = if (triple.third) 1 else 0
+        val range = offsetRange(ImageIO.read(ByteArrayInputStream(triple.first)))
         val offset = if (hasOffset) {
-            (getIntegerFromArgN(context, argInt + 0) ?: defaultOffset)
+            (getIntegerFromArgN(context, argInt + 0, range.first, range.last) ?: defaultOffset)
         } else defaultOffset
 
         val outputStream = transform(imageByteArray, offset)
@@ -69,8 +72,8 @@ object ImageCommandUtil {
             argInt -= 1
         }
 
-        val offset = if (hasOffset) (getIntegerFromArgN(context, argInt + 0) ?: defaultOffset) else defaultOffset
-        val quality = getIntegerFromArgN(context, argInt + 1) ?: defaultQuality
+        val offset = if (hasOffset) (getIntegerFromArgN(context, argInt + 0) ?: DEFAULT_OFFSET) else DEFAULT_OFFSET
+        val quality = getIntegerFromArgN(context, argInt + 1) ?: DEFAULT_QUALITY
         val repeat = getBooleanFromArgN(context, argInt + 2)
         val fps = getIntegerFromArgN(context, argInt + 3)?.toFloat()
 

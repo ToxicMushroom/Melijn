@@ -395,6 +395,10 @@ suspend fun getColorFromArgNMessage(context: CommandContext, index: Int): Color?
                 Color(r, g, b)
             }
         }
+        arg.matches("-?\\d+".toRegex()) ->{
+            if (arg.toIntOrNull() == null) null
+            else Color(arg.toInt())
+        }
         else -> {
             Color.getColor(arg)
         }
