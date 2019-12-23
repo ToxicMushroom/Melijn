@@ -78,8 +78,11 @@ class CommandContext(
             quotationIndexes.remove(slashIndex + 1)
         }
 
+        //Loop through copy of quoteIndexes to prevent concurrentmodification
         for (quotIndex in ArrayList(quotationIndexes)) {
-            if (!spaceIndexes.contains(quotIndex - 1) && !spaceIndexes.contains(quotIndex - 1)){
+            //Check if the quote is valid as argument beginning or ending
+            if (quotIndex != 0 && !spaceIndexes.contains(quotIndex - 1) && !spaceIndexes.contains(quotIndex + 1)) {
+                //Remove if not
                 quotationIndexes.remove(quotIndex)
             }
         }
