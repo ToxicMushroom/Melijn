@@ -276,10 +276,10 @@ private fun appendTimePart(timePart: Long, sb: StringBuilder, colon: Boolean = t
     }
 }
 
-fun String.remove(vararg chars: String): String {
-    var s = this
-    for (char in chars) {
-        s = s.replace(char, "")
+fun String.remove(vararg strings: String): String {
+    var newString = this
+    for (string in strings) {
+        newString = newString.replace(string, "")
     }
-    return s
+    return newString
 }
