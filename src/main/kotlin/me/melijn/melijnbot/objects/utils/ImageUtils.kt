@@ -8,6 +8,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import java.awt.Color
 import java.awt.image.BufferedImage
+import java.awt.image.Kernel
 import java.awt.image.Raster
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -16,6 +17,7 @@ import javax.imageio.ImageIO
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.math.absoluteValue
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
 
@@ -40,9 +42,9 @@ object ImageUtils {
                         img = URL(url).readBytes()
                         if (ImageIO.read(ByteArrayInputStream(img)) == null) img = null
                     }
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     val msg = context.getTranslation("message.attachmentnotanimage")
-                        .replace(PLACEHOLDER_ARG, attachments[0].url)
+                            .replace(PLACEHOLDER_ARG, attachments[0].url)
                     sendMsg(context, msg)
                     it.resume(null)
                     return@launch
@@ -68,7 +70,7 @@ object ImageUtils {
                         }
                     } catch (e: Exception) {
                         val msg = context.getTranslation("message.wrong.url")
-                            .replace(PLACEHOLDER_ARG, args[0])
+                                .replace(PLACEHOLDER_ARG, args[0])
                         sendMsg(context, msg)
                         it.resume(null)
                         return@launch
@@ -84,7 +86,7 @@ object ImageUtils {
 
             if (img == null) {
                 val msg = context.getTranslation("message.notimage")
-                    .replace("%url%", url)
+                        .replace("%url%", url)
                 sendMsg(context, msg)
                 it.resume(null)
                 return@launch
@@ -253,9 +255,9 @@ object ImageUtils {
 
     private fun getDominantColor(colorCounter: Map<Int, Int>): Color {
         val dominantRGB = colorCounter.entries.stream()
-            .max { entry1: Map.Entry<Int, Int>, entry2: Map.Entry<Int, Int> -> if (entry1.value > entry2.value) 1 else -1 }
-            .get()
-            .key
+                .max { entry1: Map.Entry<Int, Int>, entry2: Map.Entry<Int, Int> -> if (entry1.value > entry2.value) 1 else -1 }
+                .get()
+                .key
         return Color(dominantRGB)
     }
 
@@ -290,7 +292,90 @@ object ImageUtils {
             y += i
         }
 
-        // Save the raster back to the Image
+        // Save the raster back to the  Image
+        image.data = dest
+    }
+
+    fun blur(image: BufferedImage, i: Int) {
+        val radius = i
+        val size = radius * 2 + 1
+        val weight = 1.0f / (size * size)
+        val data = FloatArray(size * size)
+
+
+        for (index in data.indices) {
+            data[index] = weight
+        }
+
+        val kernel = Kernel(size, size, data)
+        useKernel(image, kernel)
+    }
+
+
+    fun sharpen(image: BufferedImage, i: Int) {
+        val sharpenForce = i.toFloat()
+        val data = FloatArray(3 * 3)
+        data[1] = -1 * sharpenForce
+        data[4] = data[1]
+        data[6] = data[1]
+        data[8] = data[1]
+        data[5] = 4 * sharpenForce + 1
+        val kernel = Kernel(3, 3, data)
+
+        useKernel(image, kernel)
+    }
+
+    fun useKernel(image: BufferedImage, kernel: Kernel) {
+        // Get the raster data (array of pixels)
+        val src: Raster = image.data
+
+
+        // Create an identically-sized output raster
+        val dest = src.createCompatibleWritableRaster()
+
+        for (x in 0 until image.width) {
+            for (y in 0 until image.height) {
+                var newRed = 0f
+                var newGreen = 0f
+                var newBlue = 0f
+                var newAlpha = 0f
+
+                val kData = kernel.getKernelData(null)
+                for (yk in 0 until kernel.height) {
+                    for (xk in 0 until kernel.width) {
+                        val kry = kernel.yOrigin - yk
+                        val krx = kernel.xOrigin - xk
+                        val xCheck = if (x + krx >= image.width || x + krx < 0) x else x + krx
+                        val yCheck = if (y + kry >= image.height || y + kry < 0) y else y + kry
+                        val pixel = src.getPixel(xCheck, yCheck, arrayOf(0f, 0f, 0f, 0f).toFloatArray())
+
+                        val pixelValueR = pixel[0]
+                        val pixelValueG = pixel[1]
+                        val pixelValueB = pixel[2]
+                        val pixelValueA = pixel[3]
+
+                        val kernelModifier = kData[yk * kernel.width + xk]
+                        newRed += kernelModifier * pixelValueR
+                        newGreen += kernelModifier * pixelValueG
+                        newBlue += kernelModifier * pixelValueB
+                        newAlpha += kernelModifier * pixelValueA
+                    }
+                }
+
+                newRed = min(255f, newRed)
+                newRed = max(0f, newRed)
+
+                newGreen = min(255f, newGreen)
+                newGreen = max(0f, newGreen)
+
+                newBlue = min(255f, newBlue)
+                newBlue = max(0f, newBlue)
+
+                newAlpha = min(255f, newAlpha)
+                newAlpha = max(0f, newAlpha)
+                dest.setPixel(x, y, arrayOf(newRed, newGreen, newBlue, newAlpha).toFloatArray())
+            }
+        }
         image.data = dest
     }
 }
