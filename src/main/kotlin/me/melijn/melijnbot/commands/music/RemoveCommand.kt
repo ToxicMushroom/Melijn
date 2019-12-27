@@ -54,8 +54,7 @@ class RemoveCommand : AbstractCommand("command.remove") {
                             val firstInt = first.toInt()
                             val secondInt = second.toInt()
                             for (i in firstInt..secondInt)
-                                if (!ints.contains(i - 1))
-                                    ints.add(i - 1)
+                                ints.addIfNotPresent(i - 1)
                         }
                     } else {
                         val msg = context.getTranslation("message.unknown.intorintrange")

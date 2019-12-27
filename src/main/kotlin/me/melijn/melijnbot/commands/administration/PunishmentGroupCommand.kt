@@ -167,9 +167,17 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             val type = getEnumFromArgNMessage<PointsTriggerType>(context, 0, UNKNOWN_POINTSTRIGGERTTYPE_PATH)
                 ?: return
             val state = getBooleanFromArgNMessage(context, 1) ?: return
-            pg.enabledTypes
+            val types = pg.enabledTypes.toMutableList()
+            if (state) {
+                types.addIfNotPresent(type)
+            } else {
+                types.remove(type)
+            }
 
-            //type and state, can be further configured in other commands
+            pg.enabledTypes = types.toList()
+            context.daoManager.autoPunishmentGroupWrapper.setTriggerTypes(context.guildId, pg.groupName, types)
+
+            //type and state, rest can be further configured in other commands
         }
     }
 

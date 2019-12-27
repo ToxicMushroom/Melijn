@@ -28,7 +28,9 @@ class PunishmentWrapper(val taskManager: TaskManager, val punishmentDao: Punishm
     suspend fun put(guildId: Long, punishment: Punishment) {
         punishmentDao.put(guildId, punishment)
         val list = punishmentCache.get(guildId).await().toMutableList()
-        list.removeIf { (pName) -> pName == punishment.name }
+        list.removeIf { (pName) ->
+            pName == punishment.name
+        }
         list.add(punishment)
         punishmentCache.put(guildId, CompletableFuture.completedFuture(list))
     }
@@ -41,5 +43,4 @@ class PunishmentWrapper(val taskManager: TaskManager, val punishmentDao: Punishm
             }
         ))
     }
-
 }

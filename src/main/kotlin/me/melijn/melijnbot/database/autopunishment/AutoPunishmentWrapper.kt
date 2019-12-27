@@ -7,6 +7,7 @@ import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
+//keep track of who did what and when
 class AutoPunishmentWrapper(val taskManager: TaskManager, private val autoPunishmentDao: AutoPunishmentDao) {
 
     val autoPunishmentCache = CacheBuilder.newBuilder()

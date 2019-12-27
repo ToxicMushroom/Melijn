@@ -8,7 +8,7 @@ import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class AutoPunishmentGroupWrapper(val taskManager: TaskManager, private val autoPunishmentGroupDao: AutoPunishmentGroupDao) {
+class PunishmentGroupWrapper(val taskManager: TaskManager, private val punishmentGroupDao: PunishmentGroupDao) {
 
     val autoPunishmentCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -20,7 +20,7 @@ class AutoPunishmentGroupWrapper(val taskManager: TaskManager, private val autoP
         val future = CompletableFuture<List<PunishGroup>>()
 
         taskManager.async {
-            val valuePairs = autoPunishmentGroupDao.getAll(guildId)
+            val valuePairs = punishmentGroupDao.getAll(guildId)
             val list = mutableListOf<PunishGroup>()
             for ((group, valuePair) in valuePairs) {
                 val firstEntries = valuePair
@@ -50,7 +50,7 @@ class AutoPunishmentGroupWrapper(val taskManager: TaskManager, private val autoP
     }
 
     suspend fun getMapsForGuild(guildId: Long): Map<String, Pair<Map<PointsTriggerType, Int>, Map<Int, String>>> {
-        val maps = autoPunishmentGroupDao.getAll(guildId)
+        val maps = punishmentGroupDao.getAll(guildId)
         val final = mutableMapOf<String, Pair<Map<PointsTriggerType, Int>, Map<Int, String>>>()
         for ((group, pair) in maps) {
             val firstEntries = pair
@@ -77,15 +77,16 @@ class AutoPunishmentGroupWrapper(val taskManager: TaskManager, private val autoP
     }
 
     suspend fun add(guildId: Long, group: String) {
-        autoPunishmentGroupDao.add(guildId, group)
+        punishmentGroupDao.add(guildId, group)
         autoPunishmentCache.invalidate(Pair(guildId, group))
     }
 
-    suspend fun setTypePointsMap(guildId: Long, group: String, types: Map<PointsTriggerType, Int>) {
-        val string = types
-            .map { entry -> "${entry.key}, ${entry.value}" }
-            .joinToString("],[", "[", "]")
-        autoPunishmentGroupDao.setTypePointsMap(guildId, group, string)
+    suspend fun setTriggerTypes(guildId: Long, group: String, types: List<PointsTriggerType>) {
+        val string = types.joinToString(",") { type ->
+            "$type"
+        }
+
+        punishmentGroupDao.setTypePointsMap(guildId, group, string)
         autoPunishmentCache.invalidate(Pair(guildId, group))
     }
 
@@ -93,18 +94,19 @@ class AutoPunishmentGroupWrapper(val taskManager: TaskManager, private val autoP
         val string = goals
             .map { entry -> "${entry.key}, ${entry.value}" }
             .joinToString("],[", "[", "]")
-        autoPunishmentGroupDao.setTypePointsMap(guildId, group, string)
+
+        punishmentGroupDao.setPointGoalMap(guildId, group, string)
         autoPunishmentCache.invalidate(Pair(guildId, group))
     }
 
     suspend fun remove(guildId: Long, group: String) {
-        autoPunishmentGroupDao.remove(guildId, group)
+        punishmentGroupDao.remove(guildId, group)
         autoPunishmentCache.invalidate(Pair(guildId, group))
     }
 }
 
 data class PunishGroup(
     val groupName: String,
-    val enabledTypes: List<PointsTriggerType>,
+    var enabledTypes: List<PointsTriggerType>,
     val pointGoalMap: MutableMap<Int, String>
 )

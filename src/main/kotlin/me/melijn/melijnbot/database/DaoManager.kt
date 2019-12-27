@@ -128,7 +128,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
     val filterWrapper: FilterWrapper
     val filterModeWrapper: FilterWrappingModeWrapper
     val autoPunishmentWrapper: AutoPunishmentWrapper
-    val autoPunishmentGroupWrapper: AutoPunishmentGroupWrapper
+    val autoPunishmentGroupWrapper: PunishmentGroupWrapper
     val punishmentWrapper: PunishmentWrapper
 
     val voteWrapper: VoteWrapper
@@ -201,7 +201,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
         filterWrapper = FilterWrapper(taskManager, FilterDao(driverManager))
         filterModeWrapper = FilterWrappingModeWrapper(taskManager, FilterWrappingModeDao(driverManager))
         autoPunishmentWrapper = AutoPunishmentWrapper(taskManager, AutoPunishmentDao(driverManager))
-        autoPunishmentGroupWrapper = AutoPunishmentGroupWrapper(taskManager, AutoPunishmentGroupDao(driverManager))
+        autoPunishmentGroupWrapper = PunishmentGroupWrapper(taskManager, PunishmentGroupDao(driverManager))
         punishmentWrapper = PunishmentWrapper(taskManager, PunishmentDao(driverManager))
 
         voteWrapper = VoteWrapper(VoteDao(driverManager))

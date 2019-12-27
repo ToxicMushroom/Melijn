@@ -5,9 +5,9 @@ import me.melijn.melijnbot.database.DriverManager
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class AutoPunishmentGroupDao(driverManager: DriverManager) : Dao(driverManager) {
+class PunishmentGroupDao(driverManager: DriverManager) : Dao(driverManager) {
 
-    override val table: String = "autoPunishmentGroups"
+    override val table: String = "punishmentGroups"
     override val tableStructure: String = "guildId bigint, group varchar(64), enabledTypes varchar(512), pointGoalMap varchar(512)"
     override val primaryKey: String = "guildId, group"
 

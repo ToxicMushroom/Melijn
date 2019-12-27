@@ -244,3 +244,6 @@ val positiveNumberRegex = "\\d+".toRegex()
 fun String.isNumber(): Boolean = this.matches(numberRegex)
 fun String.isPositiveNumber(): Boolean = this.matches(positiveNumberRegex)
 fun String.isNegativeNumber(): Boolean = this.matches(negativeNumberRegex)
+fun <E : Any> MutableList<E>.addIfNotPresent(value: E) {
+    if (!this.contains(value)) this.add(value)
+}
