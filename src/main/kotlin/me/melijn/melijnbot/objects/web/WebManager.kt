@@ -17,6 +17,7 @@ import me.duncte123.weebJava.types.TokenType
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.translation.*
+import me.melijn.melijnbot.objects.utils.removeFirst
 import me.melijn.melijnbot.objects.utils.toLCC
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
@@ -126,8 +127,18 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         try {
             //Tracks
             when {
-                spotifyTrackUrl.matcher(songArg).matches() -> track.invoke(spotifyApi.getTrack(songArg.replaceFirst("https://open.spotify.com/track/".toRegex(), "").replaceFirst("\\?\\S+".toRegex(), "")).build().execute())
-                spotifyTrackUri.matcher(songArg).matches() -> track.invoke(spotifyApi.getTrack(songArg.replaceFirst("spotify:track:".toRegex(), "").replaceFirst("\\?\\S+".toRegex(), "")).build().execute())
+                spotifyTrackUrl.matcher(songArg).matches() -> {
+                    val trackId = songArg
+                        .removeFirst("https://open.spotify.com/track/")
+                        .removeFirst("\\?\\S+".toRegex())
+                    track.invoke(spotifyApi.getTrack(trackId).build().executeAsync().await())
+                }
+                spotifyTrackUri.matcher(songArg).matches() -> {
+                    val trackId = songArg
+                        .removeFirst("spotify:track:")
+                        .removeFirst("\\?\\S+".toRegex())
+                    track.invoke(spotifyApi.getTrack(trackId).build().executeAsync().await())
+                }
 
                 //Playlists
                 spotifyPlaylistUrl.matcher(songArg).matches() -> acceptTracksIfMatchesPattern(songArg, trackList, spotifyPlaylistUrl)
@@ -152,7 +163,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         val matcher: Matcher = spotifyArtistUrl.matcher(songArg)
         while (matcher.find()) {
             if (matcher.group(1) != null) {
-                val id = matcher.group(1).replaceFirst("\\?\\S+".toRegex(), "")
+                val id = matcher.group(1).removeFirst("\\?\\S+".toRegex())
                 val tracks = spotifyApi.getArtistsTopTracks(id, CountryCode.US).build().executeAsync().await()
                 trackList(tracks)
             }
@@ -164,7 +175,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         val matcher: Matcher = pattern.matcher(url)
         while (matcher.find()) {
             if (matcher.group(1) != null) {
-                val id = matcher.group(1).replaceFirst("\\?\\S+".toRegex(), "")
+                val id = matcher.group(1).removeFirst("\\?\\S+".toRegex())
                 val tracks = spotifyApi.getPlaylistsTracks(id).build().executeAsync().await().items.map { playlistTrack ->
                     playlistTrack.track
                 }
@@ -177,7 +188,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         val matcher: Matcher = pattern.matcher(url)
         while (matcher.find()) {
             if (matcher.group(1) != null) {
-                val id = matcher.group(1).replaceFirst("\\?\\S+".toRegex(), "")
+                val id = matcher.group(1).removeFirst("\\?\\S+".toRegex())
                 val simpleTracks = spotifyApi.getAlbumsTracks(id).build().executeAsync().await().items
                 simpleTrack(simpleTracks)
             }

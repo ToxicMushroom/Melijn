@@ -37,7 +37,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
 
         var unmuteReason = context.rawArg
-            .replaceFirst(context.args[0], "")
+            .removeFirst(context.args[0])
             .trim()
 
         if (unmuteReason.isBlank()) {

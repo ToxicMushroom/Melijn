@@ -35,7 +35,7 @@ class KickCommand : AbstractCommand("command.kick") {
         }
 
         var reason = context.rawArg
-            .replaceFirst(context.args[0], "")
+            .removeFirst(context.args[0])
             .trim()
         if (reason.isBlank()) reason = "/"
         reason = reason.trim()

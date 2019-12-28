@@ -38,7 +38,7 @@ class DeniedFiltersCommand : AbstractCommand("command.deniedfilters") {
             val denied = if (channel == null) {
                 context.rawArg
             } else {
-                context.rawArg.replaceFirst(context.args[0], "").trim()
+                context.rawArg.removeFirst(context.args[0]).trim()
             }
             val wrapper = context.daoManager.filterWrapper
             wrapper.addFilter(context.guildId, channel?.idLong, FilterType.DENIED, denied)
@@ -88,7 +88,7 @@ class DeniedFiltersCommand : AbstractCommand("command.deniedfilters") {
             val denied = if (channel == null) {
                 context.rawArg
             } else {
-                context.rawArg.replaceFirst(context.args[0], "").trim()
+                context.rawArg.removeFirst(context.args[0]).trim()
             }
 
             val wrapper = context.daoManager.filterWrapper

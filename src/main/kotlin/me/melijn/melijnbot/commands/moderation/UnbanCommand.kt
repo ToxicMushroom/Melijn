@@ -37,7 +37,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
 
         var unbanReason = context.rawArg
-            .replaceFirst(context.args[0], "")
+            .removeFirst(context.args[0])
             .trim()
         if (unbanReason.isBlank()) unbanReason = "/"
 

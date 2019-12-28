@@ -103,7 +103,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             if (!message.contentRaw.startsWith(prefix)) continue
 
             val commandParts: ArrayList<String> = ArrayList(message.contentRaw
-                .replaceFirst(prefix, "")
+                .removeFirst(prefix)
                 .trim()
                 .split(Regex("\\s+")))
 
@@ -194,7 +194,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
 
         val regex = ("${commandParts[0]}\\s*" + if (prefix) "${commandParts[1]}\\s*" else "").toRegex()
-        val rawArg = event.message.contentRaw.replaceFirst(regex, "")
+        val rawArg = event.message.contentRaw.removeFirst(regex)
         val modularMessage = replaceVariablesInCCMessage(member, rawArg, cc)
 
         val message: Message? = modularMessage.toMessage()

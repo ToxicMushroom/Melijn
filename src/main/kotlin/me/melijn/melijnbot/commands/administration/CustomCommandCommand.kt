@@ -645,7 +645,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                             sendSyntax(context)
                         }
                         val title = split[0]
-                        val value = context.rawArg.replaceFirst("$title>", "")
+                        val value = context.rawArg.removeFirst("$title>")
 
                         val inline = context.commandParts[1].equals("addInline", true)
                         val cc = getSelectedCCNMessage(context) ?: return
@@ -666,7 +666,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                         }
                         val index = getIntegerFromArgNMessage(context, 0) ?: return
                         val title = context.rawArg
-                            .replaceFirst("$index", "")
+                            .removeFirst("$index")
                             .trim()
                         val cc = getSelectedCCNMessage(context) ?: return
                         MessageCommandUtil.setEmbedFieldTitleCC(index, title, context, cc)
@@ -686,7 +686,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                         }
                         val index = getIntegerFromArgNMessage(context, 0) ?: return
                         val value = context.rawArg
-                            .replaceFirst("$index", "")
+                            .removeFirst("$index")
                             .trim()
                         val cc = getSelectedCCNMessage(context) ?: return
                         MessageCommandUtil.setEmbedFieldValueCC(index, value, context, cc)

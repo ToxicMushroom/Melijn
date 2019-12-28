@@ -8,6 +8,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.getBooleanFromArgNMessage
 import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.objects.utils.removeFirst
 import me.melijn.melijnbot.objects.utils.sendSyntax
 
 class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
@@ -211,7 +212,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                         sendSyntax(context)
                     }
                     val title = split[0]
-                    val value = context.rawArg.replaceFirst("$title>", "")
+                    val value = context.rawArg.removeFirst("$title>")
 
                     val inline = context.commandParts[1].equals("addInline", true)
                     MessageCommandUtil.addEmbedFieldJoinLeave(title, value, inline, context, type)
@@ -231,7 +232,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                     }
                     val index = getIntegerFromArgNMessage(context, 0) ?: return
                     val title = context.rawArg
-                        .replaceFirst("$index", "")
+                        .removeFirst("$index")
                         .trim()
                     MessageCommandUtil.setEmbedFieldTitleJoinLeave(index, title, context, type)
                 }
@@ -250,7 +251,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
                     }
                     val index = getIntegerFromArgNMessage(context, 0) ?: return
                     val value = context.rawArg
-                        .replaceFirst("$index", "")
+                        .removeFirst("$index")
                         .trim()
                     MessageCommandUtil.setEmbedFieldValueJoinLeave(index, value, context, type)
                 }

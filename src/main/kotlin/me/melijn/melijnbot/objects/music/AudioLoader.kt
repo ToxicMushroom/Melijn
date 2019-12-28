@@ -173,7 +173,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         loaded: ((Boolean) -> Unit)? = null
     ) {
         val player: GuildMusicPlayer = context.guildMusicPlayer
-        val title: String = query.replaceFirst("$SC_SELECTOR|$YT_SELECTOR".toRegex(), "")
+        val title: String = query.removeFirst("$SC_SELECTOR|$YT_SELECTOR".toRegex())
         val source = StringBuilder(query)
         val artistNames = mutableListOf<String>()
         if (player.queueIsFull(context, 1, silent)) {

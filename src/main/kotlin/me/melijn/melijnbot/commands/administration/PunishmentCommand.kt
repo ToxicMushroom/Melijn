@@ -190,7 +190,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             }
 
             val name = context.args[0]
-            val reason = context.rawArg.replaceFirst(name, "").trim()
+            val reason = context.rawArg.removeFirst(name).trim()
             val wrapper = context.daoManager.punishmentWrapper
             val list = wrapper.punishmentCache.get(context.guildId).await()
 
@@ -229,8 +229,8 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 ?: return
             val name = context.args[1]
             val reason = context.rawArg
-                .replaceFirst(context.args[0], "").trim()
-                .replaceFirst(context.args[1], "").trim()
+                .removeFirst(context.args[0]).trim()
+                .removeFirst(context.args[1]).trim()
             val punishment = Punishment(name, punishmentType, DataObject.empty(), reason)
 
             val wrapper = context.daoManager.punishmentWrapper
@@ -259,7 +259,9 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             } else {
                 val punishmentType = getEnumFromArgNMessage<PunishmentType>(context, 0, MESSAGE_UNKNOWN_PERMISSIONTYPE)
                     ?: return
-                list.filter { punishment -> punishment.punishmentType == punishmentType }
+                list.filter { punishment ->
+                    punishment.punishmentType == punishmentType
+                }
             }
 
             val msg = context.getTranslation("$root.title")

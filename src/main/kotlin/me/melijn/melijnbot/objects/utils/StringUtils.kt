@@ -283,3 +283,19 @@ fun String.remove(vararg strings: String): String {
     }
     return newString
 }
+
+fun String.removeFirst(vararg strings: String): String {
+    var newString = this
+    for (string in strings) {
+        newString = newString.removeFirst(string)
+    }
+    return newString
+}
+
+fun String.removeFirst(vararg regexes: Regex): String {
+    var newString = this
+    for (regex in regexes) {
+        newString = newString.removeFirst(regex)
+    }
+    return newString
+}

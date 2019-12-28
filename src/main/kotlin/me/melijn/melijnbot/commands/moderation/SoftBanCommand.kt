@@ -44,12 +44,12 @@ class SoftBanCommand : AbstractCommand("command.softban") {
         val clearDays = getIntegerFromArgN(context, 1, 1, 7)
 
         var reason = context.rawArg
-            .replaceFirst(context.args[0], "")
+            .removeFirst(context.args[0])
             .trim()
 
         if (context.args.size > 1 && clearDays != null) {
             reason = reason
-                .replaceFirst(context.args[1], "")
+                .removeFirst(context.args[1])
                 .trim()
         }
 
