@@ -333,6 +333,7 @@ object ImageUtils {
         // Create an identically-sized output raster
         val dest = src.createCompatibleWritableRaster()
 
+        val rFloatArr = floatArrayOf(0f, 0f, 0f, 0f)
         for (x in 0 until image.width) {
             for (y in 0 until image.height) {
                 var newRed = 0f
@@ -347,7 +348,7 @@ object ImageUtils {
                         val krx = kernel.xOrigin - xk
                         val xCheck = if (x + krx >= image.width || x + krx < 0) x else x + krx
                         val yCheck = if (y + kry >= image.height || y + kry < 0) y else y + kry
-                        val pixel = src.getPixel(xCheck, yCheck, arrayOf(0f, 0f, 0f, 0f).toFloatArray())
+                        val pixel = src.getPixel(xCheck, yCheck, rFloatArr)
 
                         val pixelValueR = pixel[0]
                         val pixelValueG = pixel[1]
@@ -373,7 +374,7 @@ object ImageUtils {
 
                 newAlpha = min(255f, newAlpha)
                 newAlpha = max(0f, newAlpha)
-                dest.setPixel(x, y, arrayOf(newRed, newGreen, newBlue, newAlpha).toFloatArray())
+                dest.setPixel(x, y, floatArrayOf(newRed, newGreen, newBlue, newAlpha))
             }
         }
         image.data = dest

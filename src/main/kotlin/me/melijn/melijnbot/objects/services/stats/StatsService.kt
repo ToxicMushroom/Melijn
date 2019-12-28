@@ -15,7 +15,6 @@ class StatsService(val shardManager: ShardManager, val webManager: WebManager) :
         runBlocking {
             val shards = shardManager.shardCache.size()
             val guildArray = shardManager.shardCache.map { shard -> shard.guildCache.size() }
-            val usersArray = shardManager.shardCache.map { shard -> shard.userCache.size() }
             val guilds = shardManager.guildCache.size()
             val users = shardManager.userCache.size()
 
@@ -32,7 +31,7 @@ class StatsService(val shardManager: ShardManager, val webManager: WebManager) :
 
     override fun start() {
         logger.info("Started StatService")
-        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(statService, 1, 3, TimeUnit.MINUTES)
+        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(statService, 2, 3, TimeUnit.MINUTES)
     }
 
     override fun stop() {

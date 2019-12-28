@@ -64,7 +64,6 @@ class MuteService(
 
         var success = false
         if (mutedUser?.isBot == false) {
-            //if (mutedUser?.isFake == true) return
 
             val privateChannel = mutedUser.openPrivateChannel().awaitOrNull()
             if (privateChannel != null) {
@@ -84,7 +83,6 @@ class MuteService(
 
         var success = false
         if (mutedUser?.isBot == false) {
-            //if (mutedUser?.isFake == true) return
 
             val privateChannel = mutedUser.openPrivateChannel().awaitOrNull()
             if (privateChannel != null) {

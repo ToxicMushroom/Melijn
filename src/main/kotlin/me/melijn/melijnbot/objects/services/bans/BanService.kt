@@ -66,7 +66,6 @@ class BanService(
 
         var success = false
         if (!bannedUser.isBot) {
-            //if (bannedUser.isFake) return
 
             val privateChannel = bannedUser.openPrivateChannel().awaitOrNull()
             if (privateChannel != null) {
@@ -86,7 +85,6 @@ class BanService(
 
         var success = false
         if (!bannedUser.isBot) {
-            //if (bannedUser.isFake) return
 
             val privateChannel = bannedUser.openPrivateChannel().awaitOrNull()
             if (privateChannel != null) {

@@ -221,7 +221,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            if (context.args.size > 2) {
+            if (context.args.size < 3) {
                 sendSyntax(context)
                 return
             }
@@ -229,7 +229,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 ?: return
             val name = context.args[1]
             val reason = context.rawArg
-                .replaceFirst(context.args[0], "")
+                .replaceFirst(context.args[0], "").trim()
                 .replaceFirst(context.args[1], "").trim()
             val punishment = Punishment(name, punishmentType, DataObject.empty(), reason)
 
