@@ -8,8 +8,8 @@ import kotlin.coroutines.suspendCoroutine
 class FilterGroupDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "filterGroups"
-    override val tableStructure: String = "guildId bigint, groupId int, channelIds varchar(2048), enabled boolean, points int"
-    override val primaryKey: String = "guildId, groupId"
+    override val tableStructure: String = "guildId bigint, filterGroupName varchar(32), channelIds varchar(2048), state boolean, points int"
+    override val primaryKey: String = "guildId, filterGroupName"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
@@ -17,8 +17,8 @@ class FilterGroupDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun add(guildId: Long, group: FilterGroup) {
         group.apply {
-            driverManager.executeUpdate("INSERT INTO $table (guildId, groupId, enabled, points) VALUES (?, ?, ?, ?)",
-                guildId, groupId, enabled, points)
+            driverManager.executeUpdate("INSERT INTO $table (guildId, filterGroupName, channelIds, state, points) VALUES (?, ?, ?, ?, ?)",
+                guildId, filterGroupName, group.channels.joinToString(","), state, points)
         }
     }
 
@@ -28,8 +28,14 @@ class FilterGroupDao(driverManager: DriverManager) : Dao(driverManager) {
             while (rs.next()) {
                 list.add(
                     FilterGroup(
-                        rs.getInt("groupId"),
-                        rs.getBoolean("enabled"),
+                        rs.getString("filterName"),
+                        rs.getBoolean("state"),
+                        rs.getString("channelIds")
+                            .split(",")
+                            .map { id ->
+                                id.toLong()
+                            }
+                            .toLongArray(),
                         rs.getInt("points")
                     )
                 )
@@ -39,13 +45,14 @@ class FilterGroupDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun remove(guildId: Long, group: FilterGroup) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND groupId = ?",
-            guildId, group.groupId)
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND filterName = ?",
+            guildId, group.filterGroupName)
     }
 }
 
 data class FilterGroup(
-    val groupId: Int,
-    val enabled: Boolean,
+    val filterGroupName: String,
+    val state: Boolean,
+    val channels: LongArray,
     val points: Int
 )

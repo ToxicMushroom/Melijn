@@ -13,7 +13,12 @@ class AllowedFiltersCommand : AbstractCommand("command.allowedfilters") {
     init {
         id = 114
         name = "allowedFilters"
-        children = arrayOf(AddArg(root), RemoveArg(root), RemoveByIndexArg(root), ListArg(root))
+        children = arrayOf(
+            AddArg(root),
+            RemoveArg(root),
+            RemoveByIndexArg(root),
+            ListArg(root)
+        )
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
