@@ -20,7 +20,7 @@ class PunishmentDao(driverManager: DriverManager) : Dao(driverManager) {
     suspend fun put(guildId: Long, punishment: Punishment) {
         val sql = "INSERT INTO $table (guildId, name, punishmentType, extraMap, reason) VALUES (?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET punishmentType = ?, extraMap = ?, reason = ?"
         punishment.apply {
-            driverManager.executeUpdate(sql, guildId, punishmentType.toString(), extraMap.toString(), reason)
+            driverManager.executeUpdate(sql, guildId, name, punishmentType.toString(), extraMap.toString(), reason, punishmentType.toString(), extraMap.toString(), reason)
         }
     }
 

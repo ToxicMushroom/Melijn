@@ -25,8 +25,7 @@ class PunishmentGroupWrapper(val taskManager: TaskManager, private val punishmen
             for ((group, valuePair) in valuePairs) {
                 val firstEntries = valuePair
                     .first
-                    .removeSurrounding("[", "]")
-                    .split("],[")
+                    .split(",")
                 val secondEntries = valuePair
                     .second
                     .removeSurrounding("[", "]")
@@ -34,8 +33,7 @@ class PunishmentGroupWrapper(val taskManager: TaskManager, private val punishmen
                 val ppTriggerList = mutableListOf<PointsTriggerType>()
                 val ppGoalMap = mutableMapOf<Int, String>()
                 for (entry in firstEntries) {
-                    val entryParts = entry.split(", ")
-                    ppTriggerList.add(PointsTriggerType.valueOf(entryParts[0]))
+                    ppTriggerList.add(PointsTriggerType.valueOf(entry))
                 }
                 for (entry in secondEntries) {
                     val entryParts = entry.split(", ")
@@ -49,29 +47,27 @@ class PunishmentGroupWrapper(val taskManager: TaskManager, private val punishmen
         return future
     }
 
-    suspend fun getMapsForGuild(guildId: Long): Map<String, Pair<Map<PointsTriggerType, Int>, Map<Int, String>>> {
+    suspend fun getMapsForGuild(guildId: Long): Map<String, Pair<List<PointsTriggerType>, Map<Int, String>>> {
         val maps = punishmentGroupDao.getAll(guildId)
-        val final = mutableMapOf<String, Pair<Map<PointsTriggerType, Int>, Map<Int, String>>>()
+        val final = mutableMapOf<String, Pair<List<PointsTriggerType>, Map<Int, String>>>()
         for ((group, pair) in maps) {
             val firstEntries = pair
                 .first
-                .removeSurrounding("[", "]")
-                .split("],[")
+                .split(",")
             val secondEntries = pair
                 .second
                 .removeSurrounding("[", "]")
                 .split("],[")
-            val ppTriggerMap = mutableMapOf<PointsTriggerType, Int>()
+            val ppTriggerList = mutableListOf<PointsTriggerType>()
             val ppGoalMap = mutableMapOf<Int, String>()
             for (entry in firstEntries) {
-                val entryParts = entry.split(", ")
-                ppTriggerMap[PointsTriggerType.valueOf(entryParts[0])] = entryParts[1].toInt()
+                ppTriggerList.add(PointsTriggerType.valueOf(entry))
             }
             for (entry in secondEntries) {
                 val entryParts = entry.split(", ")
                 ppGoalMap[entryParts[0].toInt()] = entryParts[1]
             }
-            final[group] = Pair(ppTriggerMap, ppGoalMap)
+            final[group] = Pair(ppTriggerList, ppGoalMap)
         }
         return final
     }

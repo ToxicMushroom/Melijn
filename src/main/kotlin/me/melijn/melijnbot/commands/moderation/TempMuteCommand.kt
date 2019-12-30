@@ -46,7 +46,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
             .removeFirst(context.args[0])
             .trim()
         val noReasonArgs = noUserArg.split(">")[0].trim().split("\\s+".toRegex())
-        val muteDuration = (getDurationByArgsNMessage(context, noReasonArgs, 0, noReasonArgs.size) ?: return) * 1000
+        val muteDuration = (getDurationByArgsNMessage(context, 0, noReasonArgs.size, noReasonArgs) ?: return) * 1000
 
         var reason = if (noUserArg.contains(">"))
             noUserArg.substring(noUserArg.indexOfFirst { s -> s == '>' } + 1, noUserArg.length)

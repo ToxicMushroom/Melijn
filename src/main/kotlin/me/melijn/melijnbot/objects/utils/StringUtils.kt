@@ -200,7 +200,7 @@ fun getDurationString(milliseconds: Double): String {
     return sb.toString()
 }
 
-suspend fun getDurationByArgsNMessage(context: CommandContext, timeStamps: List<String>, leftBound: Int, rightBound: Int): Long? {
+suspend fun getDurationByArgsNMessage(context: CommandContext, leftBound: Int, rightBound: Int, timeStamps: List<String> = context.args): Long? {
     val corruptTimeStamps = timeStamps.subList(leftBound, rightBound).toMutableList()
     val holyTimeStamps = mutableListOf<String>()
     var totalTime = 0L
@@ -287,7 +287,7 @@ fun String.remove(vararg strings: String): String {
 fun String.removeFirst(vararg strings: String): String {
     var newString = this
     for (string in strings) {
-        newString = newString.removeFirst(string)
+        newString = newString.replaceFirst(string, "")
     }
     return newString
 }
@@ -295,7 +295,7 @@ fun String.removeFirst(vararg strings: String): String {
 fun String.removeFirst(vararg regexes: Regex): String {
     var newString = this
     for (regex in regexes) {
-        newString = newString.removeFirst(regex)
+        newString = newString.replaceFirst(regex, "")
     }
     return newString
 }

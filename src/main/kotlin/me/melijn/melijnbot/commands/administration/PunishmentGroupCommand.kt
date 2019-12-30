@@ -2,7 +2,6 @@ package me.melijn.melijnbot.commands.administration
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.autopunishment.PunishGroup
-import me.melijn.melijnbot.database.autopunishment.Punishment
 import me.melijn.melijnbot.enums.PointsTriggerType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
@@ -26,7 +25,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             SelectArg(root),
             ListArg(root),
             SetPPTriggerArg(root),
-            AddPPGoalArg(root),
+            SetPPGoalArg(root),
             RemovePPGoalArg(root)
         )
         commandCategory = CommandCategory.DEVELOPER
@@ -39,15 +38,18 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             return if (selectionMap.containsKey(pair)) {
                 val id = selectionMap[pair] ?: return null
                 val pList = context.daoManager.autoPunishmentGroupWrapper.autoPunishmentCache.get(context.guildId).await()
-                val punishGroup = pList.firstOrNull { (groupName) -> groupName == id }
+                val punishGroup = pList.firstOrNull { (groupName) ->
+                    groupName == id
+                }
+
                 if (punishGroup == null) {
-                    val msg = context.getTranslation("message.ccremoved")
+                    val msg = context.getTranslation("message.pgremoved")
                         .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
                     sendMsg(context, msg)
                 }
                 punishGroup
             } else {
-                val msg = context.getTranslation("message.noccselected")
+                val msg = context.getTranslation("message.nopgselected")
                     .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
                 sendMsg(context, msg)
                 null
@@ -104,19 +106,19 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             val wrapper = context.daoManager.autoPunishmentGroupWrapper
             val list = wrapper.getMapsForGuild(context.guildId)
 
-            val title = context.getTranslation("$root.list.title")
-            val typePoints = context.getTranslation("$root.typepoints")
-            val pointTriggers = context.getTranslation("$root.pointTriggers")
+            val title = context.getTranslation("$root.title")
+            val ppTrigger = context.getTranslation("$root.pptrigger")
+            val ppGoal = context.getTranslation("$root.ppgoal")
             var content = "```INI"
             for ((name, pair) in list) {
                 val firstMap = pair.first
                 val secondMap = pair.second
                 content += "\n[$name]:"
-                if (firstMap.isNotEmpty()) content += "\n  $typePoints:"
-                for ((type, points) in firstMap) {
-                    content += "\n    [${type.toUCSC()}] - $points"
+                if (firstMap.isNotEmpty()) content += "\n  $ppTrigger:"
+                for (type in firstMap) {
+                    content += "\n    ${type.toUCSC()}"
                 }
-                if (secondMap.isNotEmpty()) content += "\n  $pointTriggers:"
+                if (secondMap.isNotEmpty()) content += "\n  $ppGoal:"
                 for ((amount, punishmentName) in secondMap) {
                     content += "\n    [$amount] -> $punishmentName"
                 }
@@ -177,14 +179,18 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             pg.enabledTypes = types.toList()
             context.daoManager.autoPunishmentGroupWrapper.setTriggerTypes(context.guildId, pg.groupName, types)
 
-            //type and state, rest can be further configured in other commands
+            val extra = if (state) "enabled" else "disabled"
+            val msg = context.getTranslation("$root.set.$extra")
+                .replace("%group%", pg.groupName)
+                .replace("%type%", type.name)
+            sendMsg(context, msg)
         }
     }
 
-    class AddPPGoalArg(parent: String) : AbstractCommand("$parent.addpunishmentpointsgoal") {
+    class SetPPGoalArg(parent: String) : AbstractCommand("$parent.setpunishmentpointsgoal") {
 
         init {
-            name = "addPunishmentPointsGoal"
+            name = "setPunishmentPointsGoal"
             aliases = arrayOf("appg", "appgoal")
         }
 
@@ -195,14 +201,14 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             }
             val pg = getSelectedPGroup(context) ?: return
             val points = getIntegerFromArgNMessage(context, 0, 1) ?: return
-            val punishment = getPunishmentFromArgNMessage(context, 1) ?: return
+            val punishment = getPunishmentNMessage(context, 1) ?: return
 
             val wrapper = context.daoManager.autoPunishmentGroupWrapper
             val map = pg.pointGoalMap
             map[points] = punishment.name
             wrapper.setPointGoalMap(context.guildId, pg.groupName, map)
 
-            val msg = context.getTranslation("$root.added")
+            val msg = context.getTranslation("$root.set")
                 .replace("%groupName%", pg.groupName)
                 .replace("%points%", points.toString())
                 .replace("%punishment%", punishment.name)
@@ -252,25 +258,11 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
     class CopyArg(parent: String) : AbstractCommand("$parent.copy") {
 
         init {
-            name = "add"
+            name = "copy"
         }
 
         override suspend fun execute(context: CommandContext) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            sendMsg(context, "not implemented yet")
         }
     }
-}
-
-
-private suspend fun getPunishmentFromArgNMessage(context: CommandContext, index: Int): Punishment? {
-    val punishes = context.daoManager.punishmentWrapper.punishmentCache.get(context.guildId).await()
-    val arg = context.args[index]
-    //val maybePunishIndex = getIntegerFromArgN(context, index)
-    val punish = punishes.firstOrNull { (pName) -> pName == arg }
-    if (punish == null) {
-        val msg = context.getTranslation("message.unknown.punishmentname")
-            .replace(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg)
-    }
-    return punish
 }
