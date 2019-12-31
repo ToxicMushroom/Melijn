@@ -16,6 +16,7 @@ class SkipCommand : AbstractCommand("command.skip") {
     init {
         id = 83
         name = "skip"
+        aliases = arrayOf("s")
         runConditions = arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ, RunCondition.PLAYING_TRACK_NOT_NULL)
         commandCategory = CommandCategory.MUSIC
     }
