@@ -52,7 +52,7 @@ class FilterGroupDao(driverManager: DriverManager) : Dao(driverManager) {
 
 data class FilterGroup(
     val filterGroupName: String,
-    val state: Boolean,
-    val channels: LongArray,
-    val points: Int
+    var state: Boolean,
+    var channels: LongArray,
+    var points: Int
 )

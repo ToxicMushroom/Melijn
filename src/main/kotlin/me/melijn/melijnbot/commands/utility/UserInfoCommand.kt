@@ -25,7 +25,7 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
             retrieveUserByArgsNMessage(context, 0) ?: return
         }
 
-        val member: Member? = context.guild.retrieveMember(user).await()
+        val member: Member? = context.guild.retrieveMember(user).awaitOrNull()
 
         val title1 = context.getTranslation("$root.response1.field1.title")
         val yes = context.getTranslation("yes")

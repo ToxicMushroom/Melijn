@@ -7,6 +7,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
+import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_LANGUAGE
 import me.melijn.melijnbot.objects.utils.getEnumFromArgNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 
@@ -52,7 +53,7 @@ class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") 
         val language = if (shouldUnset) {
             null
         } else {
-            getEnumFromArgNMessage<Language>(context, 0, "message.unknown.language") ?: return
+            getEnumFromArgNMessage<Language>(context, 0, MESSAGE_UNKNOWN_LANGUAGE) ?: return
         }
 
 

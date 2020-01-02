@@ -2,7 +2,9 @@ package me.melijn.melijnbot.objects.events.eventutil
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.commands.administration.getCacheFromFilterType
 import me.melijn.melijnbot.enums.FilterMode
+import me.melijn.melijnbot.enums.FilterType
 import me.melijn.melijnbot.objects.jagtag.RegexJagTagParser
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
@@ -54,13 +56,8 @@ object FilterUtil {
         val channel = message.textChannel
         if (!selfMember.hasPermission(channel, Permission.MESSAGE_MANAGE)) return
 
-        val filterWrapper = container.daoManager.filterWrapper
-        val globalPair = Pair(guild.idLong, -1L)
-        val specificPair = Pair(guild.idLong, channel.idLong)
-        val globalDeniedFilters = filterWrapper.deniedFilterCache.get(globalPair).await()
-        val specificDeniedFilters = filterWrapper.deniedFilterCache.get(specificPair).await()
 
-        val deniedList = globalDeniedFilters + specificDeniedFilters
+        val deniedList = getFiltersForChannel(container, guild.idLong, channel.idLong, FilterType.DENIED)
         if (deniedList.isEmpty()) return
 
         val messageContent: String = message.contentRaw
@@ -86,16 +83,8 @@ object FilterUtil {
         val channel = message.textChannel
         if (!selfMember.hasPermission(channel, Permission.MESSAGE_MANAGE)) return
 
-        val filterWrapper = container.daoManager.filterWrapper
-        val globalPair = Pair(guild.idLong, -1L)
-        val specificPair = Pair(guild.idLong, channel.idLong)
-        val globalDeniedFilters = filterWrapper.deniedFilterCache.get(globalPair).await()
-        val globalAllowedFilters = filterWrapper.allowedFilterCache.get(globalPair).await()
-        val specificDeniedFilters = filterWrapper.deniedFilterCache.get(specificPair).await()
-        val specificAllowedFilters = filterWrapper.deniedFilterCache.get(specificPair).await()
-
-        val deniedList = globalDeniedFilters + specificDeniedFilters
-        val allowedList = globalAllowedFilters + specificAllowedFilters
+        val deniedList = getFiltersForChannel(container, guild.idLong, channel.idLong, FilterType.DENIED)
+        val allowedList = getFiltersForChannel(container, guild.idLong, channel.idLong, FilterType.ALLOWED)
 
         val messageContent: String = message.contentRaw
         val detectedWord = StringBuilder()
@@ -137,6 +126,17 @@ object FilterUtil {
             container.filteredMap[message.idLong] = detectedWord.toString()
             message.delete().reason("Filter detection").queue()
         }
+    }
+
+    suspend fun getFiltersForChannel(container: Container, guildId: Long, textChannelId: Long, filterType: FilterType): List<String> {
+        val filterGroups = container.daoManager.filterGroupWrapper.filterGroupCache.get(guildId).await()
+        filterGroups.filter { group -> group.channels.contains(textChannelId) }
+        val cache = getCacheFromFilterType(container.daoManager, filterType)
+        val filters = mutableListOf<String>()
+        for ((filterGroupName) in filterGroups) {
+            filters.addAll(cache.get(Pair(guildId, filterGroupName)).await())
+        }
+        return filters
     }
 
     private fun addPositions(message: String, deniedPositions: MutableMap<Int, Int>, deniedList: List<String>) {

@@ -7,7 +7,9 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.objects.utils.*
+import net.dv8tion.jda.api.entities.TextChannel
 
 class FilterGroupCommand : AbstractCommand("command.filtergroup") {
 
@@ -161,7 +163,20 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+
+            val group = getSelectedFilterGroup(context) ?: return
+            val points = getIntegerFromArgNMessage(context, 0) ?: return
+            group.points = points
+
+            context.daoManager.filterGroupWrapper.putGroup(context.guildId, group)
+
+            val msg = context.getTranslation("$root.set")
+                .replace(PLACEHOLDER_ARG, "$points")
+            sendMsg(context, msg)
         }
     }
 
@@ -173,7 +188,25 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+
+            val group = getSelectedFilterGroup(context) ?: return
+            val textChannel = getTextChannelByArgsNMessage(context, 0) ?: return
+
+            val channels = group.channels.toMutableList()
+            channels.addIfNotPresent(textChannel.idLong)
+
+            group.channels = channels.toLongArray()
+
+            context.daoManager.filterGroupWrapper.putGroup(context.guildId, group)
+
+            val msg = context.getTranslation("$root.added")
+                .replace(PLACEHOLDER_CHANNEL, textChannel.asTag)
+
+            sendMsg(context, msg)
         }
     }
 
@@ -185,7 +218,25 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+
+            val group = getSelectedFilterGroup(context) ?: return
+            val textChannel = getTextChannelByArgsNMessage(context, 0) ?: return
+
+            val channels = group.channels.toMutableList()
+            channels.remove(textChannel.idLong)
+
+            group.channels = channels.toLongArray()
+
+            context.daoManager.filterGroupWrapper.putGroup(context.guildId, group)
+
+            val msg = context.getTranslation("$root.removed")
+                .replace(PLACEHOLDER_CHANNEL, textChannel.asTag)
+
+            sendMsg(context, msg)
         }
     }
 
@@ -197,7 +248,29 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+            val group = getSelectedFilterGroup(context) ?: return
+            val channelIds = group.channels.toMutableList()
+            val channels = mutableListOf<TextChannel>()
+
+            val title = context.getTranslation("$root.title")
+            var content = "```INI\n[index] - [channelId] - [channelName]"
+            for (channelId in channelIds) {
+                val textChannel = context.guild.getTextChannelById(channelId) ?: continue
+                channels.add(textChannel)
+            }
+
+            channels.sortBy { it.position }
+
+            for ((index, channel) in channels.withIndex()) {
+                content += "\n$index - [${channel.id}] - [${channel.asTag}]"
+            }
+
+            val msg = title + content
+            sendMsg(context, msg)
         }
     }
 
@@ -209,7 +282,18 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+            val group = getSelectedFilterGroup(context) ?: return
+            val state = getBooleanFromArgNMessage(context, 0) ?: return
+
+            group.state = state
+
+            val statePath = if (state) "enabled" else "disabled"
+            val msg = context.getTranslation("$root.$statePath")
+            sendMsg(context, msg)
         }
     }
 }

@@ -25,19 +25,19 @@ class FilterWrapper(val taskManager: TaskManager, private val filterDao: FilterD
             getFilters(first, second, FilterType.DENIED)
         })
 
-    private fun getFilters(guildId: Long, filterName: String, filterType: FilterType): CompletableFuture<List<String>> {
+    private fun getFilters(guildId: Long, filterGroupName: String, filterType: FilterType): CompletableFuture<List<String>> {
         val future = CompletableFuture<List<String>>()
         taskManager.async {
-            val filters = filterDao.get(guildId, filterName, filterType)
+            val filters = filterDao.get(guildId, filterGroupName, filterType)
             future.complete(filters)
         }
         return future
     }
 
-    suspend fun addFilter(guildId: Long, filterName: String, filterType: FilterType, filter: String) {
-        filterDao.add(guildId, filterName, filterType, filter)
+    suspend fun addFilter(guildId: Long, filterGroupName: String, filterType: FilterType, filter: String) {
+        filterDao.add(guildId, filterGroupName, filterType, filter)
 
-        val pair = Pair(guildId, filterName)
+        val pair = Pair(guildId, filterGroupName)
         when (filterType) {
             FilterType.ALLOWED -> {
                 val newFilters = allowedFilterCache.get(pair).await().toMutableList() + filter
@@ -50,10 +50,10 @@ class FilterWrapper(val taskManager: TaskManager, private val filterDao: FilterD
         }
     }
 
-    suspend fun removeFilter(guildId: Long, filterName: String, type: FilterType, filter: String) {
-        filterDao.remove(guildId, filterName, type, filter)
+    suspend fun removeFilter(guildId: Long, filterGroupName: String, type: FilterType, filter: String) {
+        filterDao.remove(guildId, filterGroupName, type, filter)
 
-        val pair = Pair(guildId, filterName)
+        val pair = Pair(guildId, filterGroupName)
         when (type) {
             FilterType.ALLOWED -> {
                 val newFilters = allowedFilterCache.get(pair).await().toMutableList() - filter
@@ -66,8 +66,8 @@ class FilterWrapper(val taskManager: TaskManager, private val filterDao: FilterD
         }
     }
 
-    suspend fun contains(guildId: Long, filterName: String, type: FilterType, filter: String): Boolean {
-        val pair = Pair(guildId, filterName)
+    suspend fun contains(guildId: Long, filterGroupName: String, type: FilterType, filter: String): Boolean {
+        val pair = Pair(guildId, filterGroupName)
         return when (type) {
             FilterType.ALLOWED -> allowedFilterCache
             FilterType.DENIED -> deniedFilterCache

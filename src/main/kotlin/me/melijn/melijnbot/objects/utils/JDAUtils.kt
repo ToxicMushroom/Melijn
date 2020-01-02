@@ -34,9 +34,9 @@ val TextChannel.asTag: String
 
 suspend fun <T> RestAction<T>.await(failure: ((Throwable) -> Unit)? = null) = suspendCoroutine<T> {
     queue(
-            { success ->
-                it.resume(success)
-            }, { failed ->
+        { success ->
+            it.resume(success)
+        }, { failed ->
         if (failure == null) {
             it.resumeWithException(failed)
         } else {
@@ -47,22 +47,22 @@ suspend fun <T> RestAction<T>.await(failure: ((Throwable) -> Unit)? = null) = su
 
 suspend fun <T> RestAction<T>.awaitOrNull() = suspendCoroutine<T?> {
     queue(
-            { success -> it.resume(success) },
-            { _ -> it.resume(null) }
+        { success -> it.resume(success) },
+        { _ -> it.resume(null) }
     )
 }
 
 suspend fun <T> RestAction<T>.awaitEX() = suspendCoroutine<Throwable?> {
     queue(
-            { _ -> it.resume(null) },
-            { throwable -> it.resume(throwable) }
+        { _ -> it.resume(null) },
+        { throwable -> it.resume(throwable) }
     )
 }
 
 suspend fun <T> RestAction<T>.awaitBool() = suspendCoroutine<Boolean> {
     queue(
-            { _ -> it.resume(true) },
-            { _ -> it.resume(false) }
+        { _ -> it.resume(true) },
+        { _ -> it.resume(false) }
     )
 }
 
@@ -183,7 +183,7 @@ suspend fun retrieveUserByArgsNMessage(context: CommandContext, index: Int): Use
     if (possibleUser == null) {
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, MESSAGE_UNKNOWN_USER)
-                .replace(PLACEHOLDER_ARG, context.args[index])
+            .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg)
     }
     return possibleUser
@@ -195,7 +195,7 @@ suspend fun getUserByArgsNMessage(context: CommandContext, index: Int): User? {
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, MESSAGE_UNKNOWN_USER)
 
-                .replace(PLACEHOLDER_ARG, context.args[index])
+            .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg, null)
     }
     return user
@@ -229,22 +229,22 @@ fun getRoleByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Bool
 }
 
 suspend fun getRoleByArgsNMessage(
-        context: CommandContext,
-        index: Int,
-        sameGuildAsContext: Boolean = true,
-        canInteract: Boolean = false
+    context: CommandContext,
+    index: Int,
+    sameGuildAsContext: Boolean = true,
+    canInteract: Boolean = false
 ): Role? {
     val role = getRoleByArgsN(context, index, sameGuildAsContext)
     if (role == null) {
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.role")
-                .replace(PLACEHOLDER_ARG, context.args[index])
+            .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg, null)
     } else if (canInteract) {
         if (!context.guild.selfMember.canInteract(role)) {
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, "message.cantinteract.role")
-                    .replace(PLACEHOLDER_ARG, context.args[index])
+                .replace(PLACEHOLDER_ARG, context.args[index])
             sendMsg(context, msg, null)
             return null
         }
@@ -253,40 +253,40 @@ suspend fun getRoleByArgsNMessage(
 }
 
 suspend fun getStringFromArgsNMessage(
-        context: CommandContext,
-        index: Int,
-        min: Int,
-        max: Int,
-        mustMatch: Regex? = null,
-        cantContainChars: Array<Char> = emptyArray(),
-        cantContainWords: Array<String> = emptyArray(),
-        ignoreCase: Boolean = false): String? {
+    context: CommandContext,
+    index: Int,
+    min: Int,
+    max: Int,
+    mustMatch: Regex? = null,
+    cantContainChars: Array<Char> = emptyArray(),
+    cantContainWords: Array<String> = emptyArray(),
+    ignoreCase: Boolean = false): String? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     if (arg.length < min) {
         val msg = context.getTranslation("message.string.minfailed")
-                .replace("%min%", min.toString())
+            .replace("%min%", min.toString())
         sendMsg(context, msg)
         return null
     }
     if (arg.length > max) {
         val msg = context.getTranslation("message.string.maxfailed")
-                .replace("%max%", max.toString())
+            .replace("%max%", max.toString())
         sendMsg(context, msg)
         return null
     }
     if (mustMatch != null && !mustMatch.matches(arg)) {
         val msg = context.getTranslation("message.string.matchfailed")
-                .replace("%pattern%", mustMatch.toString())
+            .replace("%pattern%", mustMatch.toString())
         sendMsg(context, msg)
         return null
     }
     for (char in cantContainChars) {
         if (arg.contains(char, ignoreCase)) {
             val msg = context.getTranslation("message.string.cantcontaincharfailed")
-                    .replace("%chars%", cantContainChars.toString())
-                    .replace("%char%", char.toString())
-                    .replace("%ignorecase%", ignoreCase.toString())
+                .replace("%chars%", cantContainChars.toString())
+                .replace("%char%", char.toString())
+                .replace("%ignorecase%", ignoreCase.toString())
             sendMsg(context, msg)
             return null
         }
@@ -294,9 +294,9 @@ suspend fun getStringFromArgsNMessage(
     for (word in cantContainWords) {
         if (arg.contains(word, ignoreCase)) {
             val msg = context.getTranslation("message.string.cantcontainwordfailed")
-                    .replace("%words%", cantContainWords.toString())
-                    .replace("%word%", word.toString())
-                    .replace("%ignorecase%", ignoreCase.toString())
+                .replace("%words%", cantContainWords.toString())
+                .replace("%word%", word.toString())
+                .replace("%ignorecase%", ignoreCase.toString())
             sendMsg(context, msg)
             return null
         }
@@ -310,7 +310,7 @@ suspend fun getEmoteByArgsNMessage(context: CommandContext, index: Int, sameGuil
     if (emote == null) {
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.emote")
-                .replace(PLACEHOLDER_ARG, context.args[index])
+            .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg, null)
     }
     return emote
@@ -331,7 +331,7 @@ suspend fun getEmoteOrEmojiByArgsNMessage(context: CommandContext, index: Int, s
     if (emoji == null && emote == null) {
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.emojioremote")
-                .replace(PLACEHOLDER_ARG, arg)
+            .replace(PLACEHOLDER_ARG, arg)
         sendMsg(context, msg, null)
         return null
     }
@@ -381,21 +381,21 @@ suspend fun getColorFromArgNMessage(context: CommandContext, index: Int): Color?
         arg.matches("\\s*\\d+,\\s*\\d+,\\s*\\d+".toRegex()) -> {
             val parts = arg.split(",")
             val r = parts[0]
-                    .trim()
-                    .toIntOrNull()
+                .trim()
+                .toIntOrNull()
             val g = parts[1]
-                    .trim()
-                    .toIntOrNull()
+                .trim()
+                .toIntOrNull()
             val b = parts[2]
-                    .trim()
-                    .toIntOrNull()
+                .trim()
+                .toIntOrNull()
 
             if (r == null || g == null || b == null) null
             else {
                 Color(r, g, b)
             }
         }
-        arg.matches("-?\\d+".toRegex()) ->{
+        arg.matches("-?\\d+".toRegex()) -> {
             if (arg.toIntOrNull() == null) null
             else Color(arg.toInt())
         }
@@ -406,7 +406,7 @@ suspend fun getColorFromArgNMessage(context: CommandContext, index: Int): Color?
     if (color == null) {
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.color")
-                .replace(PLACEHOLDER_ARG, arg)
+            .replace(PLACEHOLDER_ARG, arg)
         sendMsg(context, msg, null)
     }
     return color
@@ -420,7 +420,7 @@ suspend fun JDA.messageByJSONNMessage(context: CommandContext, json: String): Me
     } catch (e: Exception) {
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.invalidJSONStruct")
-                .replace("%cause%", e.message ?: "unknown")
+            .replace("%cause%", e.message ?: "unknown")
         sendMsg(context, msg, null)
         null
     }
@@ -459,7 +459,7 @@ suspend fun getTextChannelByArgsNMessage(context: CommandContext, index: Int, sa
     if (textChannel == null) {
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.textchannel")
-                .replace(PLACEHOLDER_ARG, context.args[index])
+            .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg, null)
     }
     return textChannel
@@ -474,7 +474,7 @@ fun getVoiceChannelByArgsN(context: CommandContext, index: Int, sameGuildAsConte
 
         channel = if (arg.matches(Regex("\\d+"))) {
             context.jda.shardManager?.getVoiceChannelById(arg)
-        } else if (context.isFromGuild && context.guild.getTextChannelsByName(arg, true).size > 0) {
+        } else if (context.isFromGuild && context.guild.getVoiceChannelsByName(arg, true).size > 0) {
             context.guild.getVoiceChannelsByName(arg, true)[0]
         } else if (arg.matches(Regex("<#\\d+>"))) {
             var voiceChannel1: VoiceChannel? = null
@@ -498,7 +498,7 @@ suspend fun getVoiceChannelByArgNMessage(context: CommandContext, index: Int, sa
     if (voiceChannel == null) {
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.voicechannel")
-                .replace(PLACEHOLDER_ARG, context.args[index])
+            .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg, null)
     }
     return voiceChannel
@@ -507,13 +507,13 @@ suspend fun getVoiceChannelByArgNMessage(context: CommandContext, index: Int, sa
 suspend fun getMemberByArgsNMessage(context: CommandContext, index: Int): Member? {
     val user = getUserByArgsN(context, index)
     val member =
-            if (user == null) null
-            else context.guild.getMember(user)
+        if (user == null) null
+        else context.guild.getMember(user)
 
     if (member == null) {
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.member")
-                .replace(PLACEHOLDER_ARG, context.args[index])
+            .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg, null)
     }
 
@@ -534,20 +534,20 @@ suspend fun notEnoughPermissionsAndMessage(context: CommandContext, channel: Gui
     if (result.first.isNotEmpty()) {
         val more = if (result.first.size > 1) "s" else ""
         val msg = context.getTranslation("message.discordpermission$more.missing")
-                .replace("%permissions%", result.first.joinToString(separator = "") { perm ->
-                    "\n    ⁎ `${perm.toUCSC()}`"
-                })
-                .replace("%channel%", channel.name)
+            .replace("%permissions%", result.first.joinToString(separator = "") { perm ->
+                "\n    ⁎ `${perm.toUCSC()}`"
+            })
+            .replace("%channel%", channel.name)
 
         sendMsg(context, msg)
         return true
     } else if (result.second.isNotEmpty()) {
         val more = if (result.second.size > 1) "s" else ""
         val msg = context.getTranslation("message.discordcategorypermission$more.missing")
-                .replace("%permissions%", result.second.joinToString(separator = "") { perm ->
-                    "\n    ⁎ `${perm.toUCSC()}`"
-                })
-                .replace("%category%", channel.parent?.name ?: "Yhea go to support and report this bug lol")
+            .replace("%permissions%", result.second.joinToString(separator = "") { perm ->
+                "\n    ⁎ `${perm.toUCSC()}`"
+            })
+            .replace("%category%", channel.parent?.name ?: "Yhea go to support and report this bug lol")
 
         sendMsg(context, msg)
         return true
@@ -671,13 +671,13 @@ suspend fun getTimeFromArgsNMessage(context: CommandContext, start: Long = Long.
             "message.unknown.number"
         }
         val msg = context.getTranslation(path)
-                .replace(PLACEHOLDER_ARG, workingPart)
+            .replace(PLACEHOLDER_ARG, workingPart)
         sendMsg(context, msg)
         return null
     }
     if (start > time || end < time) {
         val msg = context.getTranslation("command.seek.notinrange")
-                .replace(PLACEHOLDER_ARG, workingPart)
+            .replace(PLACEHOLDER_ARG, workingPart)
         sendMsg(context, msg)
         return null
     }
