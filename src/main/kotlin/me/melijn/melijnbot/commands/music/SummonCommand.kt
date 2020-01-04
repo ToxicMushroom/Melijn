@@ -21,7 +21,7 @@ class SummonCommand : AbstractCommand("command.summon") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
-            if (!RunConditionUtil.checkOtherOrSameVCBotAloneOrUserDJ(context.container, context.event, this, context.getLanguage())) return
+            if (!RunConditionUtil.checkSameVCBotAloneOrUserDJ(context.container, context.event, this, context.getLanguage())) return
             val vc = context.member.voiceState?.channel ?: throw IllegalStateException("I messed up")
             if (notEnoughPermissionsAndMessage(context, vc, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)) return
             context.lavaManager.openConnection(vc)

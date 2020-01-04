@@ -68,6 +68,10 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
         }
 
         override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
             val name = getStringFromArgsNMessage(context, 0, 1, 32) ?: return
             val points = getIntegerFromArgN(context, 1, 0) ?: 0
             val state = getBooleanFromArgN(context, 2) ?: true
@@ -101,7 +105,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             val wrapper = context.daoManager.filterGroupWrapper
 
             wrapper.deleteGroup(context.guildId, group)
-            val msg = context.getTranslation("$root.deleted")
+            val msg = context.getTranslation("$root.removed")
                 .replace("%filterGroupName%", group.filterGroupName)
             sendMsg(context, msg)
         }
@@ -150,7 +154,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             selectionMap[Pair(context.guildId, context.authorId)] = group.filterGroupName
 
             val msg = context.getTranslation("$root.selected")
-                .replace("%groupName%", group.filterGroupName)
+                .replace("%filterGroupName%", group.filterGroupName)
             sendMsg(context, msg)
         }
     }
@@ -301,7 +305,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
 suspend fun getFilterGroupNMessage(context: CommandContext, position: Int): FilterGroup? {
     val arg = context.args[position]
     val filterGroups = context.daoManager.filterGroupWrapper.filterGroupCache.get(context.guildId).await()
-    val filterGroup = filterGroups.firstOrNull { groups -> groups.filterGroupName == arg }
+    val filterGroup = filterGroups.firstOrNull { (filterGroupName) -> filterGroupName == arg }
     if (filterGroup == null) {
         val msg = context.getTranslation("message.unknown.filtergroup")
             .replace(PLACEHOLDER_ARG, arg)

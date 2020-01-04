@@ -38,6 +38,11 @@ class FilterCommand : AbstractCommand("command.filter") {
         }
 
         override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+
             val filterGroup = getFilterGroupNMessage(context, 0) ?: return
             val filter = context.rawArg.removeFirst(context.args[0]).trim()
 
