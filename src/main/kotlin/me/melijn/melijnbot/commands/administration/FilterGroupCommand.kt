@@ -198,17 +198,23 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             }
 
             val group = getSelectedFilterGroup(context) ?: return
-            val textChannel = getTextChannelByArgsNMessage(context, 0) ?: return
+            val msg = if (context.args[0] == "all") {
+                val textChannels = context.guild.textChannels.map { it.idLong }
+                group.channels += textChannels
+                context.getTranslation("$root.added.all")
 
-            val channels = group.channels.toMutableList()
-            channels.addIfNotPresent(textChannel.idLong)
+            } else {
+                val textChannel = getTextChannelByArgsNMessage(context, 0) ?: return
 
-            group.channels = channels.toLongArray()
+                val channels = group.channels.toMutableList()
+                channels.addIfNotPresent(textChannel.idLong)
+
+                group.channels = channels.toLongArray()
+                context.getTranslation("$root.added")
+                    .replace(PLACEHOLDER_CHANNEL, textChannel.asTag)
+            }
 
             context.daoManager.filterGroupWrapper.putGroup(context.guildId, group)
-
-            val msg = context.getTranslation("$root.added")
-                .replace(PLACEHOLDER_CHANNEL, textChannel.asTag)
 
             sendMsg(context, msg)
         }
