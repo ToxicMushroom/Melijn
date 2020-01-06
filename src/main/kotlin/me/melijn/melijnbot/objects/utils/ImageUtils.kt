@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import java.awt.Color
+import java.awt.Graphics
 import java.awt.image.BufferedImage
 import java.awt.image.Kernel
 import java.awt.image.Raster
@@ -44,7 +45,7 @@ object ImageUtils {
                     }
                 } catch (e: Throwable) {
                     val msg = context.getTranslation("message.attachmentnotanimage")
-                            .replace(PLACEHOLDER_ARG, attachments[0].url)
+                        .replace(PLACEHOLDER_ARG, attachments[0].url)
                     sendMsg(context, msg)
                     it.resume(null)
                     return@launch
@@ -70,7 +71,7 @@ object ImageUtils {
                         }
                     } catch (e: Exception) {
                         val msg = context.getTranslation("message.wrong.url")
-                                .replace(PLACEHOLDER_ARG, args[0])
+                            .replace(PLACEHOLDER_ARG, args[0])
                         sendMsg(context, msg)
                         it.resume(null)
                         return@launch
@@ -86,7 +87,7 @@ object ImageUtils {
 
             if (img == null) {
                 val msg = context.getTranslation("message.notimage")
-                        .replace("%url%", url)
+                    .replace("%url%", url)
                 sendMsg(context, msg)
                 it.resume(null)
                 return@launch
@@ -255,9 +256,9 @@ object ImageUtils {
 
     private fun getDominantColor(colorCounter: Map<Int, Int>): Color {
         val dominantRGB = colorCounter.entries.stream()
-                .max { entry1: Map.Entry<Int, Int>, entry2: Map.Entry<Int, Int> -> if (entry1.value > entry2.value) 1 else -1 }
-                .get()
-                .key
+            .max { entry1: Map.Entry<Int, Int>, entry2: Map.Entry<Int, Int> -> if (entry1.value > entry2.value) 1 else -1 }
+            .get()
+            .key
         return Color(dominantRGB)
     }
 
@@ -378,5 +379,51 @@ object ImageUtils {
             }
         }
         image.data = dest
+    }
+
+    fun putText(bufferedImage: BufferedImage, text: String, startX: Int, endX: Int, startY: Int, graphics: Graphics): BufferedImage {
+        val fontMetrics = graphics.getFontMetrics(graphics.font)
+        val lineWidth = endX - startX
+        val lineHeight = fontMetrics.height
+        if (fontMetrics.stringWidth(text) <= lineWidth) {
+            graphics.drawString(text, startX, startY + lineHeight)
+        } else {
+            val sb = StringBuilder()
+            val parts = text.split("\\s+".toRegex()).toTypedArray()
+            for (part in parts) {
+                val currentLineContent = sb.substring(max(0, sb.lastIndexOf("\n")), sb.length)
+                val possibleFutureLineContent = if (currentLineContent.isEmpty()) part else "$currentLineContent $part"
+                when {
+                    fontMetrics.stringWidth(part) > lineWidth -> {
+                        var contentWidth = fontMetrics.stringWidth("$currentLineContent ")
+                        val dashWidth = fontMetrics.charWidth('-')
+                        sb.append(" ")
+                        for ((partProgress, c) in part.toCharArray().withIndex()) {
+                            val charWidth = fontMetrics.charWidth(c)
+                            if (contentWidth + dashWidth + charWidth > lineWidth) {
+                                if (partProgress != 0) sb.append("-\n") else sb.append("\n")
+                                contentWidth = 0
+                            }
+                            sb.append(c)
+                            contentWidth += fontMetrics.charWidth(c)
+                        }
+                    }
+                    fontMetrics.stringWidth(possibleFutureLineContent) > lineWidth -> {
+                        sb.append("\n").append(part)
+                    }
+                    else -> {
+                        if (sb.isNotEmpty()) sb.append(" ")
+                        sb.append(part)
+                    }
+                }
+            }
+            var i = 0
+            for (line in sb.toString().split("\n".toRegex()).toTypedArray()) {
+                i++
+                graphics.drawString(line, 1133, 82 + lineHeight * i)
+            }
+        }
+        graphics.dispose()
+        return bufferedImage
     }
 }
