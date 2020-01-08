@@ -6,10 +6,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
 import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.getEmoteOrEmojiByArgsNMessage
-import me.melijn.melijnbot.objects.utils.getRoleByArgsNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.*
 
 class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
@@ -77,16 +74,41 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 return
             }
 
-            val pair = getEmoteOrEmojiByArgsNMessage(context, 0)?: return
+
+            val pair = getEmoteOrEmojiByArgsNMessage(context, 0)
+            if (context.args[0].isNumber() && pair == null) {
+                context.daoManager.selfRoleWrapper.remove(context.guildId, context.args[0])
+                val roleId = context.daoManager.selfRoleWrapper.selfRoleCache.get(context.guildId).await()
+                    .getOrElse(context.args[0]) {
+                        null
+                    }
+
+                val msg = context.getTranslation("$root.success")
+                    .replace("%emoteName%", context.args[0])
+                    .replace("%role%", "<@&$roleId>")
+
+                sendMsg(context, msg)
+                return
+            }
+
+            if (pair == null) return
+
             val id = if (pair.first == null) {
                 pair.second
             } else {
                 pair.first?.id
             } ?: return
+
+            val roleId = context.daoManager.selfRoleWrapper.selfRoleCache.get(context.guildId).await()
+                .getOrElse(id) {
+                    null
+                }
+
             context.daoManager.selfRoleWrapper.remove(context.guildId, id)
 
-
             val msg = context.getTranslation("$root.success")
+                .replace("%emoteName%", id)
+                .replace("%role%", "<@&$roleId>")
             sendMsg(context, msg)
         }
 

@@ -36,7 +36,7 @@ class SetVerificationEmotejiCommand : AbstractCommand("command.setverificationem
             wrapper.removeEmoteji(context.guildId)
             context.getTranslation("$root.unset")
         } else {
-            val emoteji = getEmoteOrEmojiByArgsNMessage(context, 0, false) ?: return
+            val emoteji = getEmoteOrEmojiByArgsNMessage(context, 0) ?: return
             val second = emoteji.second
             val first = emoteji.first
             when {

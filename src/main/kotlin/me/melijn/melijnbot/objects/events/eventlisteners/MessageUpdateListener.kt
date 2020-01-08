@@ -7,7 +7,6 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.events.AbstractListener
-import me.melijn.melijnbot.objects.events.eventutil.FilterUtil
 import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
