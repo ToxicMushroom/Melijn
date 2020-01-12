@@ -1,14 +1,15 @@
 package me.melijn.melijnbot.objects.events.eventlisteners
 
 import kotlinx.coroutines.async
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.events.AbstractListener
+import me.melijn.melijnbot.objects.events.eventutil.FilterUtil
 import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.events.GenericEvent
@@ -31,6 +32,7 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
         val newContent = event.message.contentRaw
         val messageWrapper = container.daoManager.messageHistoryWrapper
         val deferredMessage = async { messageWrapper.getMessageById(event.messageIdLong) }
+
         val daoMessage = deferredMessage.await()
             ?: DaoMessage(
                 event.guild.idLong,
@@ -40,16 +42,16 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
                 newContent,
                 message.timeCreated.toInstant().toEpochMilli()
             )
+
         val oldContent = daoMessage.content
         daoMessage.content = newContent
+
         container.taskManager.async {
             messageWrapper.setMessage(daoMessage)
         }
 
-        val channelId = container.daoManager.logChannelWrapper.logChannelCache.get(Pair(event.guild.idLong, LogChannelType.EDITED_MESSAGE)).await()
-        if (channelId == -1L) return@runBlocking
-        val channel = event.guild.getTextChannelById(channelId) ?: return@runBlocking
-
+        val channel = event.guild.getAndVerifyLogChannelByType(container.daoManager, LogChannelType.EDITED_MESSAGE, true)
+            ?: return@runBlocking
         postMessageUpdateLog(event, channel, daoMessage, oldContent)
     }
 
