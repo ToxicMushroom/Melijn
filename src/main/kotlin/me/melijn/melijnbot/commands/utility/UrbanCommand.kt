@@ -9,6 +9,7 @@ import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.utils.remove
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.sendSyntax
 import me.melijn.melijnbot.objects.web.WebManager
 import java.lang.Integer.min
 
@@ -24,6 +25,11 @@ class UrbanCommand : AbstractCommand("command.urban") {
 
     override suspend fun execute(context: CommandContext) {
         val web = context.webManager
+        if (context.args.isEmpty()) {
+            sendSyntax(context)
+            return
+        }
+
         val result = getUrbanResult(web, context.rawArg)
         val first = result?.first
         val second = result?.second
