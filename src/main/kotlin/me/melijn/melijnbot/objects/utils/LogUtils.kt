@@ -6,6 +6,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.enums.PointsTriggerType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
@@ -404,5 +405,9 @@ object LogUtils {
 //        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(), remover.effectiveAvatarUrl)
 //
 //        sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
+    }
+
+    fun sendPPGainedMessage(container: Container, guild: Guild, filteredMessage: PointsTriggerType, causeArg: String) {
+
     }
 }

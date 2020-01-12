@@ -15,7 +15,7 @@ class AutoPunishmentDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun get(guildId: Long, userId: Long): String = suspendCoroutine{
+    suspend fun get(guildId: Long, userId: Long): String = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND userId = ?", { rs ->
             if (rs.next()) {
                 it.resume(rs.getString("pointsMap"))
