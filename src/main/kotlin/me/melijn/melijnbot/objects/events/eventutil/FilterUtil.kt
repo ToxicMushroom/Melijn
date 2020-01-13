@@ -91,7 +91,7 @@ object FilterUtil {
         }
 
         if (detected.isNotEmpty()) {
-            LogUtils.sendPPGainedMessage(container, guild, PointsTriggerType.FILTERED_MESSAGE, onlyDetected.joinToString())
+            LogUtils.sendPPGainedMessage(container, message, PointsTriggerType.FILTERED_MESSAGE, onlyDetected.joinToString(), points)
 
             container.filteredMap[message.idLong] = onlyDetected.joinToString()
             message.delete().reason("Filter detection").queue()

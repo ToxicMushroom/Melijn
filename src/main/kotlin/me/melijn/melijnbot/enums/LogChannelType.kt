@@ -29,7 +29,8 @@ enum class LogChannelType(val text: String = this.toString(), val parentNodes: A
     // OTHER_ROLES("Other-Roles", arrayOf("or", "orlc")),
 
     MUSIC("Music", arrayOf("m", "mlc")),
-    BOT("Bot", arrayOf("b", "blc"));
+    BOT("Bot", arrayOf("b", "blc")),
+    PUNISHMENT_POINTS("PunishmentPoints", arrayOf("punishment", "punishments", "pp", "pplc"));
 
 
     //Messages

@@ -407,7 +407,28 @@ object LogUtils {
 //        sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 
-    fun sendPPGainedMessage(container: Container, guild: Guild, filteredMessage: PointsTriggerType, causeArg: String) {
+    suspend fun sendPPGainedMessage(container: Container, message: Message, pointsTriggerType: PointsTriggerType, causeArg: String, pp: Int) {
+        val guild = message.guild
+        val daoManager = container.daoManager
+        val lc = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.PUNISHMENT_POINTS) ?: return
+        val language = getLanguage(daoManager, -1, guild.idLong)
 
+        val title = i18n.getTranslation(language, "logging.punishmentpoints.title.$pointsTriggerType")
+        val body = i18n.getTranslation(language, "logging.punishmentpoints.description.$pointsTriggerType")
+            .replace("%guild%", message.guild.name)
+            .replace("%guildId%", message.guild.id)
+            .replace("%channel%", message.textChannel.asTag)
+            .replace("%channelId%", message.textChannel.id)
+            .replace("%message%", message.contentRaw)
+            .replace("%messageId%", message.id)
+            .replace("%cause%", causeArg)
+            .replace("%points%", "$pp")
+            .replace("%moment%", System.currentTimeMillis().asEpochMillisToDateTime())
+
+        val eb = EmbedBuilder()
+        eb.setTitle(title)
+        eb.setDescription("```LDIF\n$body```")
+        eb.setColor(Color.decode("#c596ff"))
+        sendEmbed(daoManager.embedDisabledWrapper, lc, eb.build())
     }
 }
