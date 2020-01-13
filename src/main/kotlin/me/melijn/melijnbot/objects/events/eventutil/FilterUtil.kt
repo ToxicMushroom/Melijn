@@ -100,6 +100,7 @@ object FilterUtil {
 
     suspend fun filterDefault(container: Container, message: Message) {
         val guild = message.guild
+        val userId = message.author.idLong
         val selfMember = guild.selfMember
         val channel = message.textChannel
         if (!selfMember.hasPermission(channel, Permission.MESSAGE_MANAGE)) return
@@ -108,10 +109,13 @@ object FilterUtil {
         val allowedMap = getFiltersForChannel(container, guild.idLong, channel.idLong, FilterType.ALLOWED)
 
         val messageContent: String = message.contentRaw
-        val detectedWord = StringBuilder()
-        if (deniedMap.isEmpty()) return
 
-        var ranOnce = false
+        val detected = mutableMapOf<FilterGroup, List<String>>()
+        val onlyDetected = mutableListOf<String>()
+        var points = 0
+        val apWrapper = container.daoManager.autoPunishmentWrapper
+
+        if (deniedMap.isEmpty()) return
 
         val detectedMap = mutableMapOf<FilterGroup, MutableList<String>>()
         if (allowedMap.isEmpty()) { //Allowed words are empty so just check for denied ones
@@ -127,28 +131,48 @@ object FilterUtil {
             val fgAllowedPositions: MutableMap<FilterGroup, Map<Int, Int>> = HashMap()
             addPositions(messageContent, fgDeniedPositions, deniedMap)
             addPositions(messageContent, fgAllowedPositions, allowedMap)
-            if (fgAllowedPositions.isNotEmpty() && fgDeniedPositions.isNotEmpty()) {
-                for (fg in fgDeniedPositions.keys) {
+            for (fg in fgDeniedPositions.keys) {
+                if (fgAllowedPositions.isNotEmpty() && fgDeniedPositions.isNotEmpty()) {
                     for ((beginDeniedIndex, endDeniedIndex) in fgDeniedPositions.getOrDefault(fg, emptyMap())) {
                         for ((beginAllowedIndex, endAllowedIndex) in fgAllowedPositions.getOrDefault(fg, emptyMap())) {
                             if (beginDeniedIndex < beginAllowedIndex || endDeniedIndex > endAllowedIndex) {
-                                detectedWord.append(messageContent, beginDeniedIndex, endDeniedIndex)
+                                val newDetected = messageContent.substring(beginDeniedIndex, endDeniedIndex)
+                                onlyDetected.addIfNotPresent(newDetected)
+                                detected[fg] = detected.getOrDefault(fg, emptyList()) + newDetected
 
+                                points += fg.points
+                                val ppMap = apWrapper.autoPunishmentCache.get(Pair(guild.idLong, userId))
+                                    .await()
+                                    .toMutableMap()
+                                ppMap[fg.filterGroupName] = ppMap.getOrDefault(fg.filterGroupName, 0) + fg.points
+                                apWrapper.set(guild.idLong, userId, ppMap)
                             }
                         }
                     }
-                }
-            } else if (fgDeniedPositions.isNotEmpty()) {
-                for (beginDenied in fgDeniedPositions.keys) {
-                    val endDenied = fgDeniedPositions[beginDenied] ?: return
-                    detectedWord.append(if (ranOnce) ", " else "").append(messageContent, beginDenied, endDenied)
-                    ranOnce = true
+                } else if (fgDeniedPositions.isNotEmpty()) {
+                    for (beginDeniedIndex in fgDeniedPositions.getOrDefault(fg, emptyMap()).keys) {
+                        val endDeniedIndex = fgDeniedPositions.getOrDefault(fg, emptyMap())[beginDeniedIndex]
+                            ?: throw IllegalArgumentException("I messed up")
+
+                        val newDetected = messageContent.substring(beginDeniedIndex, endDeniedIndex)
+                        onlyDetected.addIfNotPresent(newDetected)
+                        detected[fg] = detected.getOrDefault(fg, emptyList()) + newDetected
+
+                        points += fg.points
+                        val ppMap = apWrapper.autoPunishmentCache.get(Pair(guild.idLong, userId))
+                            .await()
+                            .toMutableMap()
+                        ppMap[fg.filterGroupName] = ppMap.getOrDefault(fg.filterGroupName, 0) + fg.points
+                        apWrapper.set(guild.idLong, userId, ppMap)
+                    }
                 }
             }
         }
 
-        if (detectedWord.isNotEmpty()) {
-            container.filteredMap[message.idLong] = detectedWord.toString()
+        if (detected.isNotEmpty()) {
+            LogUtils.sendPPGainedMessage(container, message, PointsTriggerType.FILTERED_MESSAGE, onlyDetected.joinToString(), points)
+
+            container.filteredMap[message.idLong] = onlyDetected.joinToString()
             message.delete().reason("Filter detection").queue()
         }
     }
