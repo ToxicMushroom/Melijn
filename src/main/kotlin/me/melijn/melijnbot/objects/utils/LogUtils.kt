@@ -407,16 +407,14 @@ object LogUtils {
 //        sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 
-    suspend fun sendPPGainedMessage(container: Container, message: Message, pointsTriggerType: PointsTriggerType, causeArg: String, pp: Int) {
+    suspend fun sendPPGainedMessageDMAndLC(container: Container, message: Message, pointsTriggerType: PointsTriggerType, causeArg: String, pp: Int) {
         val guild = message.guild
         val daoManager = container.daoManager
         val lc = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.PUNISHMENT_POINTS) ?: return
         val language = getLanguage(daoManager, -1, guild.idLong)
 
         val title = i18n.getTranslation(language, "logging.punishmentpoints.title.$pointsTriggerType")
-        val body = i18n.getTranslation(language, "logging.punishmentpoints.description.$pointsTriggerType")
-            .replace("%guild%", message.guild.name)
-            .replace("%guildId%", message.guild.id)
+        var lcBody = i18n.getTranslation(language, "logging.punishmentpoints.description.$pointsTriggerType")
             .replace("%channel%", message.textChannel.asTag)
             .replace("%channelId%", message.textChannel.id)
             .replace("%message%", message.contentRaw)
@@ -427,8 +425,27 @@ object LogUtils {
 
         val eb = EmbedBuilder()
         eb.setTitle(title)
-        eb.setDescription("```LDIF\n$body```")
         eb.setColor(Color.decode("#c596ff"))
+
+
+        val dmBody = i18n.getTranslation(language, "logging.punishmentpoints.description.extra.dm")
+            .replace("%guild%", message.guild.name)
+            .replace("%guildId%", message.guild.id) + lcBody
+        eb.setDescription("```LDIF\n$dmBody```")
+
+        val pc = message.author.openPrivateChannel().awaitOrNull()
+        if (pc != null) {
+            val success = pc.sendMessage(eb.build()).awaitBool()
+            if (!success) {
+                val dm = i18n.getTranslation(language, "logging.punishmentpoints.description.extra.dmfailed")
+                lcBody += dm
+            }
+        } else {
+            val pcm = i18n.getTranslation(language, "logging.punishmentpoints.description.extra.openingpcfailed")
+            lcBody += pcm
+        }
+
+        eb.setDescription("```LDIF\n$lcBody```")
         sendEmbed(daoManager.embedDisabledWrapper, lc, eb.build())
     }
 }
