@@ -51,10 +51,11 @@ class PunishmentGroupWrapper(val taskManager: TaskManager, private val punishmen
         val maps = punishmentGroupDao.getAll(guildId)
         val final = mutableMapOf<String, Pair<List<PointsTriggerType>, Map<Int, String>>>()
         for ((group, pair) in maps) {
-            val firstEntries = pair
+            val firstEntries = if (pair.first.isEmpty()) emptyList() else pair
                 .first
                 .split(",")
-            val secondEntries = pair
+
+            val secondEntries = if (pair.first.isEmpty()) emptyList() else pair
                 .second
                 .removeSurrounding("[", "]")
                 .split("],[")

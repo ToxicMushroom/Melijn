@@ -126,9 +126,10 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             val enabled = context.getTranslation("enabled")
             val disabled = context.getTranslation("disabled")
 
-            var content = "```INI\n[name] - [points] - [state]"
-            for ((filterGroupName, state, points) in groups) {
-                content += "\n[${filterGroupName}] - $points - ${if (state) enabled else disabled}"
+
+            var content = "```INI\n[name] - [points] - [state] - [channels]"
+            for ((filterGroupName, state, channels, points) in groups) {
+                content += "\n[${filterGroupName}] - $points - ${if (state) enabled else disabled} - ${if (channels.isEmpty()) "*" else channels.joinToString()}"
             }
             content += "```"
 

@@ -17,8 +17,8 @@ class FilterGroupDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun add(guildId: Long, group: FilterGroup) {
         group.apply {
-            driverManager.executeUpdate("INSERT INTO $table (guildId, filterGroupName, channelIds, state, points) VALUES (?, ?, ?, ?, ?)",
-                guildId, filterGroupName, group.channels.joinToString(","), state, points)
+            driverManager.executeUpdate("INSERT INTO $table (guildId, filterGroupName, channelIds, state, points) VALUES (?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET channelIds = ?, state = ?, points = ?",
+                guildId, filterGroupName, group.channels.joinToString(","), state, points, group.channels.joinToString(","), state, points)
         }
     }
 
@@ -26,12 +26,15 @@ class FilterGroupDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", { rs ->
             val list = mutableListOf<FilterGroup>()
             while (rs.next()) {
+                val channels = rs.getString("channelIds")
+
                 list.add(
                     FilterGroup(
-                        rs.getString("filterName"),
+                        rs.getString("filterGroupName"),
                         rs.getBoolean("state"),
-                        rs.getString("channelIds")
-                            .split(",")
+                        if (channels.isBlank())
+                            longArrayOf()
+                        else channels.split(",")
                             .map { id ->
                                 id.toLong()
                             }
@@ -45,7 +48,7 @@ class FilterGroupDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun remove(guildId: Long, group: FilterGroup) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND filterName = ?",
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND filterGroupName = ?",
             guildId, group.filterGroupName)
     }
 }
