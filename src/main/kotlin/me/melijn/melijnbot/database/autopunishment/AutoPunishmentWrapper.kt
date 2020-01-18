@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder
 import me.melijn.melijnbot.database.NOT_IMPORTANT_CACHE
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.utils.loadingCacheFrom
+import me.melijn.melijnbot.objects.utils.splitIETEL
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -24,7 +25,7 @@ class AutoPunishmentWrapper(val taskManager: TaskManager, private val autoPunish
             val pointsMap = autoPunishmentDao.get(pair.first, pair.second)
                 .removePrefix("[")
                 .removeSuffix("]")
-                .split("],[")
+                .splitIETEL("],[")
 
             val newMap = mutableMapOf<String, Long>()
             for (entry in pointsMap) {
