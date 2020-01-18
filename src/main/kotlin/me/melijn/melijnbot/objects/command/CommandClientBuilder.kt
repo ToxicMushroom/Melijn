@@ -1,13 +1,161 @@
 package me.melijn.melijnbot.objects.command
 
 import me.melijn.melijnbot.Container
-import org.reflections.Reflections
-import java.util.*
+import me.melijn.melijnbot.commands.administration.*
+import me.melijn.melijnbot.commands.animal.*
+import me.melijn.melijnbot.commands.anime.*
+import me.melijn.melijnbot.commands.developer.EvalCommand
+import me.melijn.melijnbot.commands.developer.ShutdownCommand
+import me.melijn.melijnbot.commands.developer.TestCommand
+import me.melijn.melijnbot.commands.image.*
+import me.melijn.melijnbot.commands.moderation.*
+import me.melijn.melijnbot.commands.music.*
+import me.melijn.melijnbot.commands.utility.*
+import org.slf4j.LoggerFactory
 
 
 class CommandClientBuilder(private val container: Container) {
 
-    private val commands = HashSet<AbstractCommand>()
+    private val logger = LoggerFactory.getLogger(this::class.java.name)
+
+    private val commands = hashSetOf(
+        PunishmentCommand(),
+        SetCommandStateCommand(),
+        PunchCommand(),
+        ColorCommand(),
+        LoopCommand(),
+        ShuffleCommand(),
+        KickCommand(),
+        SetLogChannelCommand(),
+        KissCommand(),
+        MirrorCommand(),
+        LickCommand(),
+        NyancatCommand(),
+        SPlayCommand(),
+        ForceRoleCommand(),
+        TestCommand(),
+        BiteCommand(),
+        SetChannelCommand(),
+        VolumeCommand(),
+        GreyScaleCommand(),
+        InfoCommand(),
+        GifInfoCommand(),
+        FilterCommand(),
+        TempBanCommand(),
+        DabCommand(),
+        LoopQueueCommand(),
+        HelpCommand(),
+        PrefixesCommand(),
+        MuteCommand(),
+        StatsCommand(),
+        CatCommand(),
+        KoalaCommand(),
+        ResumeCommand(),
+        SoftBanCommand(),
+        TrackInfoCommand(),
+        RawCommand(),
+        BirdCommand(),
+        AvatarCommand(),
+        SetCooldownCommand(),
+        MetricsCommand(),
+        UnmuteCommand(),
+        PurgeCommand(),
+        SeekCommand(),
+        VoteCommand(),
+        SetVerificationTypeCommand(),
+        PlayCommand(),
+        SetMusicChannelCommand(),
+        FilterGroupCommand(),
+        JoinMessageCommand(),
+        BlushCommand(),
+        LeaveMessageCommand(),
+        StareCommand(),
+        TempMuteCommand(),
+        SummonCommand(),
+        VerifyCommand(),
+        RewindCommand(),
+        SetSlowModeCommand(),
+        GreetCommand(),
+        BanCommand(),
+        InvertCommand(),
+        ShutdownCommand(),
+        UrbanCommand(),
+        HistoryCommand(),
+        RoleInfoCommand(),
+        AwooCommand(),
+        AlpacaCommand(),
+        PermissionCommand(),
+        WarnCommand(),
+        T2eCommand(),
+        FlipCommand(),
+        ClearChannelCommand(),
+        GuildInfoCommand(),
+        PatCommand(),
+        SelfRoleCommand(),
+        PingCommand(),
+        SmoothPixelateCommand(),
+        HighfiveCommand(),
+        InviteCommand(),
+        BlurCommand(),
+        SetEmbedColorCommand(),
+        PandaCommand(),
+        CuddleCommand(),
+        SlapCommand(),
+        EmoteCommand(),
+        ForwardCommand(),
+        BlurpleCommand(),
+        SetMaxUserVerificationFlowRateCommand(),
+        UnicodeCommand(),
+        UnbanCommand(),
+        SpookifyCommand(),
+        HugCommand(),
+        SetPrivateEmbedColorCommand(),
+        StopCommand(),
+        RolesCommand(),
+        VoteInfoCommand(),
+        FoxCommand(),
+        PixelateCommand(),
+        TickleCommand(),
+        SetStreamUrlCommand(),
+        SharpenCommand(),
+        ThinkingCommand(),
+        HandholdingCommand(),
+        ShardsCommand(),
+        SayCommand(),
+        ShootCommand(),
+        SettingsCommand(),
+        RemoveCommand(),
+        PokeCommand(),
+        PauseCommand(),
+        QueueCommand(),
+        PrivatePrefixesCommand(),
+        MeguminCommand(),
+        NowPlayingCommand(),
+        SetBandCommand(),
+        SetFilterModeCommand(),
+        SetEmbedStateCommand(),
+        LewdCommand(),
+        ShrugCommand(),
+        PunishmentGroupCommand(),
+        PoutCommand(),
+        EvalCommand(),
+        OwOCommand(),
+        SmugCommand(),
+        SetVerificationCodeCommand(),
+        DonateCommand(),
+        CryCommand(),
+        DiscordMemeCommand(),
+        SetRoleCommand(),
+        UserInfoCommand(),
+        SetLanguageCommand(),
+        SkipCommand(),
+        SetVerificationEmotejiCommand(),
+        DogCommand(),
+        CustomCommandCommand(),
+        ThumbsupCommand(),
+        NekoCommand(),
+        SetPrivateLanguageCommand()
+    )
 
     init {
         container.daoManager.commandWrapper.clearCommands()
@@ -24,19 +172,11 @@ class CommandClientBuilder(private val container: Container) {
     }
 
     suspend fun loadCommands(): CommandClientBuilder {
-        val reflections = Reflections("me.melijn.melijnbot.commands")
-
-        val commands = reflections.getSubTypesOf(AbstractCommand::class.java)
+        logger.info("Loading ${commands.size} commands...")
         commands.forEach { command ->
-            try {
-                if (!command.isMemberClass) {
-                    val cmd = command.getDeclaredConstructor().newInstance()
-                    addCommand(cmd)
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            addCommand(command)
         }
+        logger.info("Loaded ${commands.size} commands")
         return this
     }
 }

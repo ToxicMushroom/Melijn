@@ -1,14 +1,10 @@
 package me.melijn.melijnbot.commands.developer
 
+//import org.jetbrains.kotlin.cli.common.environment.setIdeaIoUseFallback
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.utils.sendMsg
-import org.jetbrains.kotlin.cli.common.environment.setIdeaIoUseFallback
-import javax.script.ScriptEngine
-import javax.script.ScriptEngineManager
 
 class EvalCommand : AbstractCommand("command.eval") {
 
@@ -33,42 +29,43 @@ class EvalCommand : AbstractCommand("command.eval") {
         init {
             name = "kotlin"
             aliases = arrayOf("k", "kt", "kts")
-            setIdeaIoUseFallback()
+//            setIdeaIoUseFallback()
         }
 
-        private val seManager = ScriptEngineManager()
-        private val engine: ScriptEngine = seManager.getEngineByExtension("kts")
+        //        private val seManager = ScriptEngineManager()
+//        private val engine: ScriptEngine = seManager.getEngineByExtension("kts")
         override suspend fun execute(context: CommandContext) {
 
-            val bindings = engine.createBindings()
-            val binds: List<Triple<String, Any, String>> = mutableListOf(
-                Triple("context", context, "me.melijn.melijnbot.objects.command.CommandContext"),
-                Triple("kotlinArg", this, "me.melijn.melijnbot.commands.developer.EvalCommand.KotlinArg"),
-                Triple("eb", Embedder(context), "me.melijn.melijnbot.objects.embed.Embedder")
-            )
-
-            for ((name, any, _) in binds)
-                bindings[name] = any
-
-            try {
-                var preScript = ""
-
-                for ((name, _, path) in binds)
-                    preScript += "val $name = bindings[\"$name\"] as $path\n"
-
-                val result = engine.eval(preScript + context.rawArg, bindings)
-
-                val eb = Embedder(context)
-                eb.setDescription("" +
-                    "**Eval Input**:\n```kotlin\n" + context.rawArg + "```\n" +
-                    "**Eval Output**:\n```${result?.toString()}```"
-                )
-                sendEmbed(context, eb.build())
-            } catch (t: Throwable) {
-                sendMsg(context, "Eval Error:\n```${t.message ?: "empty"}```")
-            }
+//            val bindings = engine.createBindings()
+//            val binds: List<Triple<String, Any, String>> = mutableListOf(
+//                Triple("context", context, "me.melijn.melijnbot.objects.command.CommandContext"),
+//                Triple("kotlinArg", this, "me.melijn.melijnbot.commands.developer.EvalCommand.KotlinArg"),
+//                Triple("eb", Embedder(context), "me.melijn.melijnbot.objects.embed.Embedder")
+//            )
+//
+//            for ((name, any, _) in binds)
+//                bindings[name] = any
+//
+//            try {
+//                var preScript = ""
+//
+//                for ((name, _, path) in binds)
+//                    preScript += "val $name = bindings[\"$name\"] as $path\n"
+//
+//                val result = engine.eval(preScript + context.rawArg, bindings)
+//
+//                val eb = Embedder(context)
+//                eb.setDescription("" +
+//                    "**Eval Input**:\n```kotlin\n" + context.rawArg + "```\n" +
+//                    "**Eval Output**:\n```${result?.toString()}```"
+//                )
+//                sendEmbed(context, eb.build())
+//            } catch (t: Throwable) {
+//                sendMsg(context, "Eval Error:\n```${t.message ?: "empty"}```")
+//            }
+//        }
+            sendMsg(context, "Not implemented")
         }
-    }
 
 //    class JavaEvalCommand(root: String) : AbstractCommand("$root.java") {
 //
@@ -120,4 +117,5 @@ class EvalCommand : AbstractCommand("command.eval") {
 //            eval.isAccessible = true
 //            eval.invoke(null, context)
 //        }
+    }
 }

@@ -6,14 +6,10 @@ import me.melijn.melijnbot.objects.threading.TaskManager
 class CommandWrapper(private val taskManager: TaskManager, private val commandDao: CommandDao) {
 
     suspend fun insert(command: AbstractCommand) {
-        taskManager.async {
-            commandDao.insert(command)
-        }
+        commandDao.insert(command)
     }
 
     fun clearCommands() {
-        taskManager.async {
-            commandDao.clear()
-        }
+        commandDao.clear()
     }
 }
