@@ -66,14 +66,15 @@ class FilterCommand : AbstractCommand("command.filter") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            if (context.args.isEmpty()) {
+            if (context.args.size < 2) {
                 sendSyntax(context)
                 return
             }
             val filterGroup = getFilterGroupNMessage(context, 0) ?: return
             val wrapper = context.daoManager.filterWrapper
-            val filters = wrapper.allowedFilterCache.get(Pair(context.guildId, filterGroup.filterGroupName)).await()
-            val index = getIntegerFromArgNMessage(context, context.args.size - 1, 0, filters.size - 1) ?: return
+            val cache = getCacheFromFilterType(context.daoManager, filterType)
+            val filters = cache.get(Pair(context.guildId, filterGroup.filterGroupName)).await()
+            val index = getIntegerFromArgNMessage(context, 1, 0, filters.size - 1) ?: return
             val filter = filters[index]
             wrapper.removeFilter(context.guildId, filterGroup.filterGroupName, filterType, filter)
 

@@ -1,7 +1,7 @@
 package me.melijn.melijnbot.enums
 
-enum class RoleType(val text: String) {
-    MUTE("Mute"),
-    UNVERIFIED("Unverified"),
-    JOIN("Join")
+enum class RoleType {
+    MUTE,
+    UNVERIFIED,
+    JOIN
 }

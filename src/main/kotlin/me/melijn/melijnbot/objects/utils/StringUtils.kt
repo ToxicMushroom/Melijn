@@ -299,3 +299,12 @@ fun String.removeFirst(vararg regexes: Regex): String {
     }
     return newString
 }
+
+fun String.splitIETEL(delimiter: String): List<String> {
+    val res = this.split(delimiter)
+    return if (res.first().isEmpty() && res.size == 1) {
+        emptyList()
+    } else {
+        res
+    }
+}

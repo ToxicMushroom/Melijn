@@ -10,6 +10,8 @@ import me.melijn.melijnbot.database.ban.BanDao
 import me.melijn.melijnbot.database.ban.BanWrapper
 import me.melijn.melijnbot.database.ban.SoftBanDao
 import me.melijn.melijnbot.database.ban.SoftBanWrapper
+import me.melijn.melijnbot.database.birthday.BirthdayDao
+import me.melijn.melijnbot.database.birthday.BirthdayWrapper
 import me.melijn.melijnbot.database.channel.*
 import me.melijn.melijnbot.database.command.*
 import me.melijn.melijnbot.database.cooldown.CommandChannelCooldownDao
@@ -129,6 +131,8 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
     val autoPunishmentGroupWrapper: PunishmentGroupWrapper //keeps track of punishment ladders/groups (points -> punishment)
     val punishmentWrapper: PunishmentWrapper //preconfigured punishments
 
+    val birthdayWrapper: BirthdayWrapper
+
     val voteWrapper: VoteWrapper
     var driverManager: DriverManager
 
@@ -202,6 +206,8 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
         autoPunishmentWrapper = AutoPunishmentWrapper(taskManager, AutoPunishmentDao(driverManager))
         autoPunishmentGroupWrapper = PunishmentGroupWrapper(taskManager, PunishmentGroupDao(driverManager))
         punishmentWrapper = PunishmentWrapper(taskManager, PunishmentDao(driverManager))
+
+        birthdayWrapper = BirthdayWrapper(taskManager, BirthdayDao(driverManager))
 
         voteWrapper = VoteWrapper(VoteDao(driverManager))
         //After registering wrappers

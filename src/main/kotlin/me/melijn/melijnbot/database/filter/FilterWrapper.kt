@@ -5,6 +5,7 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.IMPORTANT_CACHE
 import me.melijn.melijnbot.enums.FilterType
 import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.objects.utils.addIfNotPresent
 import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -38,14 +39,17 @@ class FilterWrapper(val taskManager: TaskManager, private val filterDao: FilterD
         filterDao.add(guildId, filterGroupName, filterType, filter)
 
         val pair = Pair(guildId, filterGroupName)
+
         when (filterType) {
             FilterType.ALLOWED -> {
-                val newFilters = allowedFilterCache.get(pair).await().toMutableList() + filter
-                allowedFilterCache.put(pair, CompletableFuture.completedFuture(newFilters))
+                val filters = allowedFilterCache.get(pair).await().toMutableList()
+                filters.addIfNotPresent(filter)
+                allowedFilterCache.put(pair, CompletableFuture.completedFuture(filters))
             }
             FilterType.DENIED -> {
-                val newFilters = deniedFilterCache.get(pair).await().toMutableList() + filter
-                deniedFilterCache.put(pair, CompletableFuture.completedFuture(newFilters))
+                val filters = deniedFilterCache.get(pair).await().toMutableList()
+                filters.addIfNotPresent(filter)
+                deniedFilterCache.put(pair, CompletableFuture.completedFuture(filters))
             }
         }
     }

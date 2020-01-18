@@ -6,11 +6,8 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_ROLETYPE
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
+import me.melijn.melijnbot.objects.utils.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyRoleByType
-import me.melijn.melijnbot.objects.utils.getEnumFromArgNMessage
-import me.melijn.melijnbot.objects.utils.getRoleByArgsNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
 
 class SetRoleCommand : AbstractCommand("command.setrole") {
 
@@ -49,7 +46,7 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
                 .replace(PLACEHOLDER_ROLE, role.name)
         } else {
             context.getTranslation("$root.show.unset")
-        }).replace("%roleType%", roleType.text)
+        }).replace("%roleType%", roleType.toUCC())
 
         sendMsg(context, msg)
     }
@@ -67,13 +64,13 @@ class SetRoleCommand : AbstractCommand("command.setrole") {
             daoWrapper.removeRole(context.guildId, roleType)
 
             context.getTranslation("$root.unset")
-                .replace("%roleType%", roleType.text)
+                .replace("%roleType%", roleType.toUCC())
         } else {
             val role = getRoleByArgsNMessage(context, 1) ?: return
             daoWrapper.setRole(context.guildId, roleType, role.idLong)
 
             context.getTranslation("$root.set")
-                .replace("%roleType%", roleType.text)
+                .replace("%roleType%", roleType.toUCC())
                 .replace(PLACEHOLDER_ROLE, role.name)
 
         }

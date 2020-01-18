@@ -15,8 +15,8 @@ class PunishmentGroupDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun setTypePointsMap(guildId: Long, punishGroup: String, enabledTypes: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, punishGroup, enabledTypes, pointGoalMap) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET typePointsMap = ?",
+    suspend fun setEnabledTypes(guildId: Long, punishGroup: String, enabledTypes: String) {
+        driverManager.executeUpdate("INSERT INTO $table (guildId, punishGroup, enabledTypes, pointGoalMap) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET enabledTypes = ?",
             guildId, punishGroup, enabledTypes, "", enabledTypes)
     }
 

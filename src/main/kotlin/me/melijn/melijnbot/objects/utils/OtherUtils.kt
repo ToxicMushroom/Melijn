@@ -14,6 +14,7 @@ import java.awt.Color
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.text.SimpleDateFormat
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.regex.Pattern
@@ -36,6 +37,12 @@ fun getSystemUptime(): Long {
         -1
     }
 }
+
+fun Calendar.isLeapYear(): Boolean {
+    val cal = this
+    return cal.getActualMaximum(Calendar.DAY_OF_YEAR) > 365
+}
+
 
 //EPIC CODE DO NOT TOUCH
 fun <K, V> loadingCacheFrom(function: (K) -> CompletableFuture<V>): CacheLoader<K, CompletableFuture<V>> {

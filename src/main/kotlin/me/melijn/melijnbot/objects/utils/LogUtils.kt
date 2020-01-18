@@ -315,7 +315,7 @@ object LogUtils {
     fun sendRemovedRoleLog(language: String, roleType: RoleType, logChannel: TextChannel?, causePath: String, causeArg: String) {
         if (logChannel == null) return
         val title = i18n.getTranslation(language, "logging.removed.role.title")
-            .replace("%type%", roleType.text)
+            .replace("%type%", roleType.toUCC())
         val cause = i18n.getTranslation(language, "logging.removed.role.causepath.$causePath")
             .replace("%causeArg%", causeArg)
 

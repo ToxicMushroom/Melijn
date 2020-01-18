@@ -24,7 +24,7 @@ object FilterUtil {
         val channelId = channel.idLong
         val member = message.member ?: return@async
         val daoManager = container.daoManager
-        if (member.hasPermission(channel, Permission.MESSAGE_MANAGE) || member == guild.selfMember) return@async
+        //if (member.hasPermission(channel, Permission.MESSAGE_MANAGE) || member == guild.selfMember) return@async
 
         val channelFilterMode = daoManager.filterModeWrapper.filterWrappingModeCache.get(Pair(guildId, channelId)).await()
         val effectiveMode: FilterMode = if (channelFilterMode == FilterMode.NO_MODE) {

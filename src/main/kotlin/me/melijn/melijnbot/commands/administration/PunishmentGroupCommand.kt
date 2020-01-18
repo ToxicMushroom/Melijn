@@ -116,7 +116,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
                 content += "\n[$name]:"
                 if (firstMap.isNotEmpty()) content += "\n  $ppTrigger:"
                 for (type in firstMap) {
-                    content += "\n    ${type.toUCSC()}"
+                    content += "\n    - ${type.toUCSC()}"
                 }
                 if (secondMap.isNotEmpty()) content += "\n  $ppGoal:"
                 for ((amount, punishmentName) in secondMap) {
@@ -162,6 +162,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
 
         init {
             name = "setPunishmentPointTrigger"
+            aliases = arrayOf("setPPTrigger")
         }
 
         override suspend fun execute(context: CommandContext) {
@@ -191,7 +192,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
 
         init {
             name = "setPunishmentPointsGoal"
-            aliases = arrayOf("appg", "appgoal")
+            aliases = arrayOf("sppg", "sppgoal")
         }
 
         override suspend fun execute(context: CommandContext) {
