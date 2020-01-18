@@ -5,6 +5,7 @@ import me.melijn.melijnbot.database.NOT_IMPORTANT_CACHE
 import me.melijn.melijnbot.enums.PointsTriggerType
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.utils.loadingCacheFrom
+import me.melijn.melijnbot.objects.utils.splitIETEL
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -16,6 +17,7 @@ class PunishmentGroupWrapper(val taskManager: TaskManager, private val punishmen
             getPunishGroups(pair)
         })
 
+
     private fun getPunishGroups(guildId: Long): CompletableFuture<List<PunishGroup>> {
         val future = CompletableFuture<List<PunishGroup>>()
 
@@ -25,11 +27,11 @@ class PunishmentGroupWrapper(val taskManager: TaskManager, private val punishmen
             for ((group, valuePair) in valuePairs) {
                 val firstEntries = valuePair
                     .first
-                    .split(",")
+                    .splitIETEL(",")
                 val secondEntries = valuePair
                     .second
                     .removeSurrounding("[", "]")
-                    .split("],[")
+                    .splitIETEL("],[")
                 val ppTriggerList = mutableListOf<PointsTriggerType>()
                 val ppGoalMap = mutableMapOf<Int, String>()
                 for (entry in firstEntries) {
@@ -53,12 +55,12 @@ class PunishmentGroupWrapper(val taskManager: TaskManager, private val punishmen
         for ((group, pair) in maps) {
             val firstEntries = if (pair.first.isEmpty()) emptyList() else pair
                 .first
-                .split(",")
+                .splitIETEL(",")
 
             val secondEntries = if (pair.first.isEmpty()) emptyList() else pair
                 .second
                 .removeSurrounding("[", "]")
-                .split("],[")
+                .splitIETEL("],[")
             val ppTriggerList = mutableListOf<PointsTriggerType>()
             val ppGoalMap = mutableMapOf<Int, String>()
             for (entry in firstEntries) {
@@ -83,7 +85,7 @@ class PunishmentGroupWrapper(val taskManager: TaskManager, private val punishmen
             "$type"
         }
 
-        punishmentGroupDao.setTypePointsMap(guildId, group, string)
+        punishmentGroupDao.setEnabledTypes(guildId, group, string)
         autoPunishmentCache.invalidate(Pair(guildId, group))
     }
 

@@ -41,7 +41,9 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         if (event.author.isBot) return
         val tags = arrayOf("<@${event.jda.selfUser.idLong}>", "<@!${event.jda.selfUser.idLong}>")
         if (tags.contains(event.message.contentRaw.trim())) {
-            val helpCmd = container.commandMap.values.firstOrNull { cmd -> cmd is HelpCommand } ?: return
+            val helpCmd = container.commandMap.values.firstOrNull { cmd ->
+                cmd is HelpCommand
+            } ?: return
             val cmdContext = CommandContext(event, listOf(">", "help"), container, container.commandMap.values.toSet())
             container.taskManager.async {
                 helpCmd.run(cmdContext)
