@@ -35,7 +35,7 @@ class DriverManager(
         config.validationTimeout = 3_000
         config.connectionTimeout = 30_000
         config.leakDetectionThreshold = 2000
-        config.maximumPoolSize = 60
+        config.maximumPoolSize = 15
 
         this.dataSource = HikariDataSource(config)
 //

@@ -2,13 +2,14 @@ package me.melijn.melijnbot.database.filter
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
+import me.melijn.melijnbot.enums.FilterMode
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class FilterGroupDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "filterGroups"
-    override val tableStructure: String = "guildId bigint, filterGroupName varchar(32), channelIds varchar(2048), state boolean, points int"
+    override val tableStructure: String = "guildId bigint, filterGroupName varchar(32), channelIds varchar(2048), mode varchar(64), state boolean, points int"
     override val primaryKey: String = "guildId, filterGroupName"
 
     init {
@@ -17,8 +18,16 @@ class FilterGroupDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun add(guildId: Long, group: FilterGroup) {
         group.apply {
-            driverManager.executeUpdate("INSERT INTO $table (guildId, filterGroupName, channelIds, state, points) VALUES (?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET channelIds = ?, state = ?, points = ?",
-                guildId, filterGroupName, group.channels.joinToString(","), state, points, group.channels.joinToString(","), state, points)
+            val query = "INSERT INTO $table (guildId, filterGroupName, channelIds, mode, state, points) VALUES (?, ?, ?, ?, ?, ?) " +
+                "ON CONFLICT ($primaryKey) DO UPDATE SET channelIds = ?, mode = ?, state = ?, points = ?"
+            driverManager.executeUpdate(query,
+                guildId,
+                filterGroupName,
+                group.channels.joinToString(","),
+                mode.toString(), state, points,
+                group.channels.joinToString(","),
+                mode.toString(), state, points
+            )
         }
     }
 
@@ -39,6 +48,7 @@ class FilterGroupDao(driverManager: DriverManager) : Dao(driverManager) {
                                 id.toLong()
                             }
                             .toLongArray(),
+                        FilterMode.valueOf(rs.getString("mode")),
                         rs.getInt("points")
                     )
                 )
@@ -57,5 +67,6 @@ data class FilterGroup(
     val filterGroupName: String,
     var state: Boolean,
     var channels: LongArray,
+    var mode: FilterMode,
     var points: Int
 )

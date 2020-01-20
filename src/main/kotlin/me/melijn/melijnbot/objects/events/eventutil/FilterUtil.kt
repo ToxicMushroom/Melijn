@@ -26,15 +26,8 @@ object FilterUtil {
         val daoManager = container.daoManager
         //if (member.hasPermission(channel, Permission.MESSAGE_MANAGE) || member == guild.selfMember) return@async
 
-        val channelFilterMode = daoManager.filterModeWrapper.filterWrappingModeCache.get(Pair(guildId, channelId)).await()
-        val effectiveMode: FilterMode = if (channelFilterMode == FilterMode.NO_MODE) {
-            val guildFilterMode = daoManager.filterModeWrapper.filterWrappingModeCache.get(Pair(guildId, null)).await()
-            if (guildFilterMode == FilterMode.NO_MODE) {
-                FilterMode.DEFAULT
-            } else {
-                guildFilterMode
-            }
-        } else channelFilterMode
+
+        val groups = getFilterGroups(container, guildId, channelId)
 
         when (effectiveMode) {
             FilterMode.MUST_MATCH_ALLOWED_FORMAT -> {

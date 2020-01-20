@@ -2,6 +2,7 @@ package me.melijn.melijnbot.commands.administration
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.filter.FilterGroup
+import me.melijn.melijnbot.enums.FilterMode
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
@@ -26,7 +27,8 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             AddChannelArg(root),
             RemoveChannelArg(root),
             ListChannelsArg(root),
-            SetStateArg(root)
+            SetStateArg(root),
+            SetMode(root)
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }
@@ -72,18 +74,22 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                 sendSyntax(context)
                 return
             }
+
             val name = getStringFromArgsNMessage(context, 0, 1, 32) ?: return
             val points = getIntegerFromArgN(context, 1, 0) ?: 0
-            val state = getBooleanFromArgN(context, 2) ?: true
+            val mode: FilterMode = getEnumFromArgN(context, 2) ?: FilterMode.DEFAULT
+            val state = getBooleanFromArgN(context, 3) ?: true
 
-            val newGroup = FilterGroup(name, state, longArrayOf(), points)
+            val newGroup = FilterGroup(name, state, longArrayOf(), mode, points)
             context.daoManager.filterGroupWrapper.putGroup(context.guildId, newGroup)
 
             val stateM = context.getTranslation(if (state) "enabled" else "disabled")
             val msg = context.getTranslation("$root.added")
                 .replace("%filterGroupName%", newGroup.filterGroupName)
                 .replace("%state%", stateM)
+                .replace("%mode%", "$mode")
                 .replace("%points%", "$points")
+
             sendMsg(context, msg)
         }
     }
@@ -115,7 +121,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
 
         init {
             name = "list"
-            arrayOf("ls")
+            aliases = arrayOf("ls")
         }
 
         override suspend fun execute(context: CommandContext) {
@@ -127,9 +133,16 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             val disabled = context.getTranslation("disabled")
 
 
-            var content = "```INI\n[name] - [points] - [state] - [channels]"
-            for ((filterGroupName, state, channels, points) in groups) {
-                content += "\n[${filterGroupName}] - $points - ${if (state) enabled else disabled} - ${if (channels.isEmpty()) "*" else channels.joinToString()}"
+            var content = "```INI\n[name] - [points] - [state] - [mode]\n  [\n    - channels\n  ]"
+
+            for ((filterGroupName, state, channels, mode, points) in groups) {
+                content += "\n[${filterGroupName}] - $points - ${if (state) enabled else disabled} - $mode\n  [\n" +
+                    if (channels.isEmpty()) {
+                        "    - *"
+                    } else {
+                        channels.joinToString("\n    - ")
+                    } +
+                    "\n  ]"
             }
             content += "```"
 
@@ -302,8 +315,36 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
 
             group.state = state
 
+            context.daoManager.filterGroupWrapper.putGroup(context.guildId, group)
+
             val statePath = if (state) "enabled" else "disabled"
             val msg = context.getTranslation("$root.$statePath")
+            sendMsg(context, msg)
+        }
+    }
+
+    class SetMode(parent: String) : AbstractCommand("$parent.setmode") {
+
+        init {
+            name = "setMode"
+            aliases = arrayOf("sm")
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+            val group = getSelectedFilterGroup(context) ?: return
+            val mode: FilterMode = getEnumFromArgNMessage(context, 0, UNKNOWN_FILTERMODE_PATH) ?: return
+
+            group.mode = mode
+
+            context.daoManager.filterGroupWrapper.putGroup(context.guildId, group)
+
+            val msg = context.getTranslation("$root.set")
+                .replace("%mode%", "$mode")
+
             sendMsg(context, msg)
         }
     }

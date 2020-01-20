@@ -23,7 +23,10 @@ import me.melijn.melijnbot.database.disabled.ChannelCommandStateWrapper
 import me.melijn.melijnbot.database.disabled.DisabledCommandDao
 import me.melijn.melijnbot.database.disabled.DisabledCommandWrapper
 import me.melijn.melijnbot.database.embed.*
-import me.melijn.melijnbot.database.filter.*
+import me.melijn.melijnbot.database.filter.FilterDao
+import me.melijn.melijnbot.database.filter.FilterGroupDao
+import me.melijn.melijnbot.database.filter.FilterGroupWrapper
+import me.melijn.melijnbot.database.filter.FilterWrapper
 import me.melijn.melijnbot.database.kick.KickDao
 import me.melijn.melijnbot.database.kick.KickWrapper
 import me.melijn.melijnbot.database.language.GuildLanguageDao
@@ -126,7 +129,6 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
 
     val filterWrapper: FilterWrapper //All filters
     val filterGroupWrapper: FilterGroupWrapper //Groups of filters with info like state, channels and name
-    val filterModeWrapper: FilterWrappingModeWrapper //How a specific channel should handel filters
     val autoPunishmentWrapper: AutoPunishmentWrapper //keeps track of users
     val autoPunishmentGroupWrapper: PunishmentGroupWrapper //keeps track of punishment ladders/groups (points -> punishment)
     val punishmentWrapper: PunishmentWrapper //preconfigured punishments
@@ -202,7 +204,6 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
 
         filterWrapper = FilterWrapper(taskManager, FilterDao(driverManager))
         filterGroupWrapper = FilterGroupWrapper(taskManager, FilterGroupDao(driverManager))
-        filterModeWrapper = FilterWrappingModeWrapper(taskManager, FilterWrappingModeDao(driverManager))
         autoPunishmentWrapper = AutoPunishmentWrapper(taskManager, AutoPunishmentDao(driverManager))
         autoPunishmentGroupWrapper = PunishmentGroupWrapper(taskManager, PunishmentGroupDao(driverManager))
         punishmentWrapper = PunishmentWrapper(taskManager, PunishmentDao(driverManager))

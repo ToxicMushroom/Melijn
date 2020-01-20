@@ -65,6 +65,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
 
         init {
             name = "add"
+            aliases = arrayOf("a")
         }
 
         override suspend fun execute(context: CommandContext) {
@@ -100,6 +101,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
 
         init {
             name = "list"
+            aliases = arrayOf("ls")
         }
 
         override suspend fun execute(context: CommandContext) {
@@ -134,6 +136,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
 
         init {
             name = "select"
+            aliases = arrayOf("s")
         }
 
         override suspend fun execute(context: CommandContext) {

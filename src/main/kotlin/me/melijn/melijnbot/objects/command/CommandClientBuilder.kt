@@ -132,7 +132,6 @@ class CommandClientBuilder(private val container: Container) {
         MeguminCommand(),
         NowPlayingCommand(),
         SetBandCommand(),
-        SetFilterModeCommand(),
         SetEmbedStateCommand(),
         LewdCommand(),
         ShrugCommand(),
