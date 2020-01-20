@@ -24,66 +24,49 @@ object FilterUtil {
         val channelId = channel.idLong
         val member = message.member ?: return@async
         val daoManager = container.daoManager
-        //if (member.hasPermission(channel, Permission.MESSAGE_MANAGE) || member == guild.selfMember) return@async
+        if (!member.hasPermission(channel, Permission.MESSAGE_MANAGE) || member == guild.selfMember) return@async
 
 
         val groups = getFilterGroups(container, guildId, channelId)
 
-        when (effectiveMode) {
-            FilterMode.MUST_MATCH_ALLOWED_FORMAT -> {
-                //filterMatch(container, message)
-            }
-            FilterMode.MUST_MATCH_ALLOWED_FORMAT_EXCLUDE_FILTER -> {
-                // filterMatchNoDenied(container, message)
-            }
-            FilterMode.NO_WRAP -> {
-                filterNoWrap(container, message)
-            }
-            FilterMode.DEFAULT -> {
-                filterDefault(container, message)
-            }
-            FilterMode.NO_MODE -> throw IllegalArgumentException("Should be DEFAULT rn")
-            FilterMode.DISABLED -> return@async
-        }
-    }
-
-    private suspend fun filterNoWrap(container: Container, message: Message) {
-        val guild = message.guild
-        val selfMember = guild.selfMember
-        val channel = message.textChannel
-        val userId = message.author.idLong
-        if (!selfMember.hasPermission(channel, Permission.MESSAGE_MANAGE)) return
-
-
-        val deniedMap = getFiltersForChannel(container, guild.idLong, channel.idLong, FilterType.DENIED)
-        if (deniedMap.isEmpty()) return
-
-        val messageContent: String = message.contentRaw
-
-        val detected = mutableMapOf<FilterGroup, List<String>>()
-        val onlyDetected = mutableListOf<String>()
         var points = 0
-        val apWrapper = container.daoManager.autoPunishmentWrapper
+        val detectedMap = mutableMapOf<FilterGroup, List<String>>()
+        val onlyDetected = mutableListOf<String>()
+        val apWrapper = daoManager.autoPunishmentWrapper
 
-        for ((fg, deniedList) in deniedMap) {
-            for (denied in deniedList) {
-                val regexJagTag = RegexJagTagParser.makeIntoPattern(denied)
-                val matcher = regexJagTag.matcher(messageContent)
-                if (matcher.matches()) {
-                    detected[fg] = detected.getOrDefault(fg, emptyList()) + denied
-                    onlyDetected.addIfNotPresent(denied)
+        val ppMap = apWrapper.autoPunishmentCache.get(Pair(guild.idLong, member.idLong))
+            .await()
+            .toMutableMap()
 
-                    points += fg.points
-                    val ppMap = apWrapper.autoPunishmentCache.get(Pair(guild.idLong, userId))
-                        .await()
-                        .toMutableMap()
-                    ppMap[fg.filterGroupName] = ppMap.getOrDefault(fg.filterGroupName, 0) + fg.points
-                    apWrapper.set(guild.idLong, userId, ppMap)
+        for (fg in groups) {
+            val detected: List<String> = when (fg.mode) {
+//                FilterMode.MUST_MATCH_ALLOWED_FORMAT -> {
+//                    emptyList()
+//                    //filterMatch(container, message)
+//                }
+//                FilterMode.MUST_MATCH_ALLOWED_FORMAT_EXCLUDE_FILTER -> {
+//                    emptyList()
+//                    // filterMatchNoDenied(container, message)
+//                }
+                FilterMode.NO_WRAP -> {
+                    filterNoWrap(container, message, fg)
                 }
+                FilterMode.DEFAULT -> {
+                    filterDefault(container, message, fg)
+                }
+                FilterMode.NO_MODE -> emptyList()
+                FilterMode.DISABLED -> emptyList()
             }
+            detectedMap[fg] = detected
+            onlyDetected.addAll(detected)
+
+            val extraPoints = (detected.size * fg.points)
+            points += extraPoints
+            ppMap[fg.filterGroupName] = ppMap.getOrDefault(fg.filterGroupName, 0) + extraPoints
         }
 
-        if (detected.isNotEmpty()) {
+        apWrapper.set(guild.idLong, member.idLong, ppMap)
+        if (onlyDetected.isNotEmpty()) {
             LogUtils.sendPPGainedMessageDMAndLC(container, message, PointsTriggerType.FILTERED_MESSAGE, onlyDetected.joinToString(), points)
 
             container.filteredMap[message.idLong] = onlyDetected.joinToString()
@@ -91,125 +74,106 @@ object FilterUtil {
         }
     }
 
-    suspend fun filterDefault(container: Container, message: Message) {
-        val guild = message.guild
-        val userId = message.author.idLong
-        val selfMember = guild.selfMember
-        val channel = message.textChannel
-        if (!selfMember.hasPermission(channel, Permission.MESSAGE_MANAGE)) return
+    private suspend fun getFilterGroups(container: Container, guildId: Long, channelId: Long): List<FilterGroup> {
+        return container.daoManager.filterGroupWrapper.filterGroupCache.get(guildId)
+            .await()
+            .filter { group ->
+                group.channels.contains(channelId) || group.channels.isEmpty()
+            }
+    }
 
-        val deniedMap = getFiltersForChannel(container, guild.idLong, channel.idLong, FilterType.DENIED)
-        val allowedMap = getFiltersForChannel(container, guild.idLong, channel.idLong, FilterType.ALLOWED)
+    private suspend fun filterNoWrap(container: Container, message: Message, fg: FilterGroup): List<String> {
+        val guild = message.guild
+
+        val deniedList = getFiltersForGroup(container, guild.idLong, fg, FilterType.DENIED)
+        if (deniedList.isEmpty())
+            return emptyList()
+
+        val messageContent: String = message.contentRaw
+        val detected = mutableListOf<String>()
+
+        for (denied in deniedList) {
+            val regexJagTag = RegexJagTagParser.makeIntoPattern(denied)
+            val matcher = regexJagTag.matcher(messageContent)
+            if (matcher.matches()) {
+                detected.addIfNotPresent(denied)
+            }
+        }
+
+        return detected
+    }
+
+    private suspend fun filterDefault(container: Container, message: Message, fg: FilterGroup): List<String> {
+        val guild = message.guild
+
+        val deniedList = getFiltersForGroup(container, guild.idLong, fg, FilterType.DENIED)
+        val allowedList = getFiltersForGroup(container, guild.idLong, fg, FilterType.ALLOWED)
 
         val messageContent: String = message.contentRaw
 
-        val detected = mutableMapOf<FilterGroup, List<String>>()
-        val onlyDetected = mutableListOf<String>()
-        var points = 0
-        val apWrapper = container.daoManager.autoPunishmentWrapper
+        val detected = mutableListOf<String>()
+        if (deniedList.isEmpty()) return emptyList()
 
-        if (deniedMap.isEmpty()) return
-
-        val detectedMap = mutableMapOf<FilterGroup, MutableList<String>>()
-        if (allowedMap.isEmpty()) { //Allowed words are empty so just check for denied ones
-            for ((fg, deniedList) in deniedMap) {
-                for (deniedWord in deniedList) {
-                    if (messageContent.contains(deniedWord, true)) {
-                        detectedMap[fg] = (detectedMap.getOrDefault(fg, emptyList<String>()) + deniedWord).toMutableList()
-                    }
+        if (allowedList.isEmpty()) { //Allowed words are empty so just check for denied ones
+            for (deniedWord in deniedList) {
+                if (messageContent.contains(deniedWord, true)) {
+                    detected.addIfNotPresent(deniedWord)
                 }
             }
         } else { //Check if the allowed words are wrappin the denied ones
-            val fgDeniedPositions: MutableMap<FilterGroup, Map<Int, Int>> = HashMap()
-            val fgAllowedPositions: MutableMap<FilterGroup, Map<Int, Int>> = HashMap()
-            addPositions(messageContent, fgDeniedPositions, deniedMap)
-            addPositions(messageContent, fgAllowedPositions, allowedMap)
-            for (fg in fgDeniedPositions.keys) {
-                if (fgAllowedPositions.isNotEmpty() && fgDeniedPositions.isNotEmpty()) {
-                    for ((beginDeniedIndex, endDeniedIndex) in fgDeniedPositions.getOrDefault(fg, emptyMap())) {
-                        for ((beginAllowedIndex, endAllowedIndex) in fgAllowedPositions.getOrDefault(fg, emptyMap())) {
-                            if (beginDeniedIndex < beginAllowedIndex || endDeniedIndex > endAllowedIndex) {
-                                val newDetected = messageContent.substring(beginDeniedIndex, endDeniedIndex)
-                                onlyDetected.addIfNotPresent(newDetected)
-                                detected[fg] = detected.getOrDefault(fg, emptyList()) + newDetected
+            val fgDeniedPositions = HashMap<Int, Int>()
+            val fgAllowedPositions = HashMap<Int, Int>()
+            addPositions(messageContent, fgDeniedPositions, deniedList)
+            addPositions(messageContent, fgAllowedPositions, allowedList)
 
-                                points += fg.points
-                                val ppMap = apWrapper.autoPunishmentCache.get(Pair(guild.idLong, userId))
-                                    .await()
-                                    .toMutableMap()
-                                ppMap[fg.filterGroupName] = ppMap.getOrDefault(fg.filterGroupName, 0) + fg.points
-                                apWrapper.set(guild.idLong, userId, ppMap)
-                            }
+            if (fgAllowedPositions.isNotEmpty() && fgDeniedPositions.isNotEmpty()) {
+                for ((beginDeniedIndex, endDeniedIndex) in fgDeniedPositions) {
+                    for ((beginAllowedIndex, endAllowedIndex) in fgAllowedPositions) {
+                        if (beginDeniedIndex < beginAllowedIndex || endDeniedIndex > endAllowedIndex) {
+                            val newDetected = messageContent.substring(beginDeniedIndex, endDeniedIndex)
+                            detected.addIfNotPresent(newDetected)
                         }
                     }
-                } else if (fgDeniedPositions.isNotEmpty()) {
-                    for (beginDeniedIndex in fgDeniedPositions.getOrDefault(fg, emptyMap()).keys) {
-                        val endDeniedIndex = fgDeniedPositions.getOrDefault(fg, emptyMap())[beginDeniedIndex]
-                            ?: throw IllegalArgumentException("I messed up")
+                }
+            } else if (fgDeniedPositions.isNotEmpty()) {
+                for (beginDeniedIndex in fgDeniedPositions.keys) {
+                    val endDeniedIndex = fgDeniedPositions[beginDeniedIndex]
+                        ?: throw IllegalArgumentException("I messed up")
 
-                        val newDetected = messageContent.substring(beginDeniedIndex, endDeniedIndex)
-                        onlyDetected.addIfNotPresent(newDetected)
-                        detected[fg] = detected.getOrDefault(fg, emptyList()) + newDetected
-
-                        points += fg.points
-                        val ppMap = apWrapper.autoPunishmentCache.get(Pair(guild.idLong, userId))
-                            .await()
-                            .toMutableMap()
-                        ppMap[fg.filterGroupName] = ppMap.getOrDefault(fg.filterGroupName, 0) + fg.points
-                        apWrapper.set(guild.idLong, userId, ppMap)
-                    }
+                    val newDetected = messageContent.substring(beginDeniedIndex, endDeniedIndex)
+                    detected.addIfNotPresent(newDetected)
                 }
             }
         }
 
-        if (detected.isNotEmpty()) {
-            LogUtils.sendPPGainedMessageDMAndLC(container, message, PointsTriggerType.FILTERED_MESSAGE, onlyDetected.joinToString(), points)
-
-            container.filteredMap[message.idLong] = onlyDetected.joinToString()
-            message.delete().reason("Filter detection").queue()
-        }
+        return detected
     }
 
-    private suspend fun getFiltersForChannel(container: Container, guildId: Long, textChannelId: Long, filterType: FilterType): Map<FilterGroup, List<String>> {
-        val filterGroups = container.daoManager.filterGroupWrapper.filterGroupCache.get(guildId).await()
+    private suspend fun getFiltersForGroup(container: Container, guildId: Long, fg: FilterGroup, type: FilterType): List<String> {
+        return getCacheFromFilterType(container.daoManager, type)
+            .get(Pair(guildId, fg.filterGroupName))
+            .await()
 
-        filterGroups.filter { group -> group.channels.contains(textChannelId) }
-
-        val cache = getCacheFromFilterType(container.daoManager, filterType)
-
-        val filterGroupFilters = mutableMapOf<FilterGroup, List<String>>()
-
-        for (filterGroup in filterGroups) {
-            filterGroupFilters[filterGroup] = cache.get(Pair(guildId, filterGroup.filterGroupName)).await()
-        }
-
-        return filterGroupFilters
     }
 
-    private fun addPositions(message: String, positions: MutableMap<FilterGroup, Map<Int, Int>>, detectionMap: Map<FilterGroup, List<String>>) {
-        for ((fg, deniedList) in detectionMap) {
+    private fun addPositions(message: String, positions: MutableMap<Int, Int>, detectionList: List<String>) {
+        for (toFind in detectionList) {
+            val word = Pattern.compile(Pattern.quote(toFind.toLowerCase()))
+            val match = word.matcher(message.toLowerCase())
 
-            for (toFind in deniedList) {
-                val word = Pattern.compile(Pattern.quote(toFind.toLowerCase()))
-                val match = word.matcher(message.toLowerCase())
-
-                while (match.find()) {
-                    val bb = positions
-                        .getOrDefault(fg, emptyMap())
-                        .toMutableMap()
-
-                    val start = match.start()
-                    val end = bb.getOrElse(start) { null }
-                    val newEnd = match.end()
-
-                    if (end != null) {
-                        val actualEnd = max(end, newEnd)
-                        bb[start] = actualEnd
-                    }
-
-                    bb[start] = newEnd
-                    positions[fg] = bb
+            while (match.find()) {
+                val start = match.start()
+                val end = positions.getOrElse(start) {
+                    null
                 }
+                val newEnd = match.end()
+
+                if (end != null) {
+                    val actualEnd = max(end, newEnd)
+                    positions[start] = actualEnd
+                }
+
+                positions[start] = newEnd
             }
         }
     }

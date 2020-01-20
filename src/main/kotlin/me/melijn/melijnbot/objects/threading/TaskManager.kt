@@ -12,18 +12,13 @@ import java.util.concurrent.TimeUnit
 
 class TaskManager {
 
-    val threadFactory = { name: String -> ThreadFactoryBuilder().setNameFormat("[$name-Pool-%d] ").build() }
+    private val threadFactory = { name: String ->
+        ThreadFactoryBuilder().setNameFormat("[$name-Pool-%d] ").build()
+    }
+
     val executorService: ExecutorService = Executors.newCachedThreadPool(threadFactory.invoke("Task"))
     val dispatcher = executorService.asCoroutineDispatcher()
     val scheduledExecutorService: ScheduledExecutorService = Executors.newScheduledThreadPool(15, threadFactory.invoke("Repeater"))
-
-    fun scheduleRepeating(runnable: Runnable, periodMillis: Long) {
-        scheduledExecutorService.scheduleAtFixedRate(Task(runnable), 0, periodMillis, TimeUnit.MILLISECONDS)
-    }
-
-    fun scheduleRepeating(runnable: Runnable, afterMillis: Long, periodMillis: Long) {
-        scheduledExecutorService.scheduleAtFixedRate(Task(runnable), afterMillis, periodMillis, TimeUnit.MILLISECONDS)
-    }
 
     fun async(block: suspend CoroutineScope.() -> Unit) = CoroutineScope(dispatcher).launch {
         val task = Task(Runnable {

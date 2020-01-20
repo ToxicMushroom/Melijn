@@ -21,8 +21,8 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
     override fun onEvent(event: GenericEvent) {
         if (event is GuildMessageUpdateEvent) {
             onMessageUpdate(event)
-            runBlocking {
-                FilterUtil.filterDefault(container, event.message)
+            container.taskManager.async {
+                FilterUtil.handleFilter(container, event.message)
             }
         }
     }
