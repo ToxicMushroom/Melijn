@@ -9,6 +9,7 @@ import me.melijn.melijnbot.enums.FilterType
 import me.melijn.melijnbot.enums.PointsTriggerType
 import me.melijn.melijnbot.objects.jagtag.RegexJagTagParser
 import me.melijn.melijnbot.objects.utils.LogUtils
+import me.melijn.melijnbot.objects.utils.PPUtils
 import me.melijn.melijnbot.objects.utils.addIfNotPresent
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
@@ -65,7 +66,8 @@ object FilterUtil {
             ppMap[fg.filterGroupName] = ppMap.getOrDefault(fg.filterGroupName, 0) + extraPoints
         }
 
-        apWrapper.set(guild.idLong, member.idLong, ppMap)
+        PPUtils.updatePP(member, ppMap, container)
+
         if (onlyDetected.isNotEmpty()) {
             LogUtils.sendPPGainedMessageDMAndLC(container, message, PointsTriggerType.FILTERED_MESSAGE, onlyDetected.joinToString(), points)
 

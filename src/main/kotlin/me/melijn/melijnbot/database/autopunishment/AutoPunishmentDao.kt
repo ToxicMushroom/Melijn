@@ -29,5 +29,4 @@ class AutoPunishmentDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, userId, pointsMap) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET pointsMap = ?",
             guildId, userId, pointsMap, pointsMap)
     }
-
 }
