@@ -413,8 +413,8 @@ object LogUtils {
         val lc = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.PUNISHMENT_POINTS) ?: return
         val language = getLanguage(daoManager, -1, guild.idLong)
 
-        val title = i18n.getTranslation(language, "logging.punishmentpoints.title.$pointsTriggerType")
-        var lcBody = i18n.getTranslation(language, "logging.punishmentpoints.description.$pointsTriggerType")
+        val title = i18n.getTranslation(language, "logging.punishmentpoints.title")
+        var lcBody = i18n.getTranslation(language, "logging.punishmentpoints.description")
             .replace("%channel%", message.textChannel.asTag)
             .replace("%channelId%", message.textChannel.id)
             .replace("%message%", message.contentRaw)
@@ -422,6 +422,7 @@ object LogUtils {
             .replace("%cause%", causeArg)
             .replace("%points%", "$pp")
             .replace("%moment%", System.currentTimeMillis().asEpochMillisToDateTime())
+        //TODO("add ze guild info, put space between words and Id, put who the message was from")
 
         val eb = EmbedBuilder()
         eb.setTitle(title)

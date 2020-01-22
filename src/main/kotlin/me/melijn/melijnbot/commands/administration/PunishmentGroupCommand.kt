@@ -195,7 +195,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
 
         init {
             name = "setPunishmentPointsGoal"
-            aliases = arrayOf("sppg", "sppgoal")
+            aliases = arrayOf("sppg", "sppgoal", "setPPGoal")
         }
 
         override suspend fun execute(context: CommandContext) {
