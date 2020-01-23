@@ -414,6 +414,10 @@ object LogUtils {
         val language = getLanguage(daoManager, -1, guild.idLong)
 
         val title = i18n.getTranslation(language, "logging.punishmentpoints.title")
+        val lcBodyPart = i18n.getTranslation(language, "logging.punishmentpoints.description.extra.lc")
+            .replace("%target%", message.author.asTag)
+            .replace("%targetId%", message.author.id)
+
         var lcBody = i18n.getTranslation(language, "logging.punishmentpoints.description")
             .replace("%channel%", message.textChannel.asTag)
             .replace("%channelId%", message.textChannel.id)
@@ -445,7 +449,7 @@ object LogUtils {
             lcBody += pcm
         }
 
-        eb.setDescription("```LDIF\n$lcBody```")
+        eb.setDescription("```LDIF\n$lcBodyPart$lcBody```")
         sendEmbed(daoManager.embedDisabledWrapper, lc, eb.build())
     }
 }
