@@ -426,7 +426,6 @@ object LogUtils {
             .replace("%cause%", causeArg)
             .replace("%points%", "$pp")
             .replace("%moment%", System.currentTimeMillis().asEpochMillisToDateTime())
-        //TODO("add ze guild info, put space between words and Id, put who the message was from")
 
         val eb = EmbedBuilder()
         eb.setTitle(title)
