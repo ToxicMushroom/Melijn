@@ -153,7 +153,8 @@ class CommandClientBuilder(private val container: Container) {
         CustomCommandCommand(),
         ThumbsupCommand(),
         NekoCommand(),
-        SetPrivateLanguageCommand()
+        SetPrivateLanguageCommand(),
+        SetBirthdayCommand()
     )
 
     init {

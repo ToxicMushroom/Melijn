@@ -20,6 +20,12 @@ class BirthdayWrapper(taskManager: TaskManager, val birthdayDao: BirthdayDao) {
         birthdayDao.set(userId, birthday, birthyear ?: 0)
     }
 
-    suspend fun getBirthday(userId: Long): Pair<Int, Int>? {return birthdayDao.get(userId)}
+    suspend fun getBirthday(userId: Long): Pair<Int, Int>? {
+        return birthdayDao.get(userId)
+    }
+
+    suspend fun unsetBirthday(userId: Long) {
+        birthdayDao.remove(userId)
+    }
 
 }

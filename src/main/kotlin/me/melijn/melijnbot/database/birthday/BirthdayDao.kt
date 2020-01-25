@@ -22,11 +22,11 @@ class BirthdayDao(driverManager: DriverManager) : Dao(driverManager) {
                 map[rs.getLong("userId")] = rs.getInt("birthyear")
             }
             it.resume(map)
-        })
+        }, time)
     }
 
     suspend fun get(userId: Long): Pair<Int, Int>? = suspendCoroutine {
-        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", { rs ->
+        driverManager.executeQuery("SELECT * FROM $table WHERE userId = ?", { rs ->
             if (rs.next()) {
                 it.resume(Pair(rs.getInt("birthday"), rs.getInt("birthyear")))
             } else {
@@ -37,10 +37,12 @@ class BirthdayDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun set(userId: Long, birthday: Int, birthyear: Int) {
         driverManager.executeUpdate("INSERT INTO $table (userId, birthday,birthyear) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET birthday = ? ,birthyear = ?",
-                userId, birthday, birthyear, birthday, birthyear)
+            userId, birthday, birthyear, birthday, birthyear)
     }
 
     suspend fun remove(userId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE userId = ?", userId)
     }
+
+
 }

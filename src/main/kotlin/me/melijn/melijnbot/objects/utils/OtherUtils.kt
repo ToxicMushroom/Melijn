@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
+import me.melijn.melijnbot.enums.MonthFormat
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
@@ -13,11 +14,16 @@ import me.melijn.melijnbot.objects.translation.i18n
 import java.awt.Color
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.lang.Integer
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.Month
+import java.time.Year
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.regex.Pattern
+
 
 val linuxUptimePattern: Pattern = Pattern.compile(
     "(?:\\s+)?\\d+:\\d+:\\d+ up(?: (\\d+) days?,)?(?:\\s+(\\d+):(\\d+)|\\s+?(\\d+)\\s+?min).*"
@@ -119,6 +125,7 @@ suspend inline fun <reified T : Enum<*>> getEnumFromArgNMessage(context: Command
     }
     return enum
 }
+
 suspend inline fun <reified T : Enum<*>> getEnumFromArgN(context: CommandContext, index: Int): T? {
     if (argSizeCheckFailed(context, index, true)) return null
     val enumName = context.args[index]
@@ -209,6 +216,82 @@ suspend fun getLongFromArgNMessage(context: CommandContext, index: Int, min: Lon
     }
     return long
 }
+
+
+//Dayofyear, year
+suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, format: MonthFormat = MonthFormat.DMY): Pair<Int, Int?>? {
+    val list: List<Int> = context.args[0].split("/", "-")
+        .map { value ->
+            val newVal = value.toIntOrNull()
+            if (newVal == null) {
+                val msg = context.getTranslation("message.unknown.number")
+                    .replace(PLACEHOLDER_ARG, value)
+                sendMsg(context, msg)
+                return null
+            } else newVal
+        }
+
+    if (list.size >= 2) {
+        var birthdayIndex = 0
+        var monthIndex = 0
+        var yearIndex = 0
+        when (format) {
+            MonthFormat.DMY -> {
+                birthdayIndex = 0
+                monthIndex = 1
+                yearIndex = 2
+            }
+            MonthFormat.MDY -> {
+                birthdayIndex = 1
+                monthIndex = 0
+                yearIndex = 2
+            }
+            MonthFormat.YMD -> {
+                birthdayIndex = 2
+                monthIndex = 1
+                yearIndex = 0
+            }
+        }
+
+        val birthday = list[birthdayIndex]
+        if (birthday < 1 || birthday > 31) {
+            val msg = context.getTranslation("message.number.notinrange")
+                .replace(PLACEHOLDER_ARG, "$birthday")
+                .replace("%start%", "1")
+                .replace("%end%", "31")
+            sendMsg(context, msg)
+            return null
+        }
+        val birthMonth = list[monthIndex]
+        if (birthMonth < 1 || birthMonth > 12) {
+            val msg = context.getTranslation("message.number.notinrange")
+                .replace(PLACEHOLDER_ARG, "$birthMonth")
+                .replace("%start%", "1")
+                .replace("%end%", "12")
+            sendMsg(context, msg)
+            return null
+        }
+
+        val birthYear = if (list.size > 2) list[yearIndex] else null
+        if (birthYear != null && (birthYear < 1900 || birthYear > Year.now().value - 12)) {
+            val msg = context.getTranslation("message.number.notinrange")
+                .replace(PLACEHOLDER_ARG, "$birthYear")
+                .replace("%start%", "1900")
+                .replace("%end%", "2008")
+            sendMsg(context, msg)
+            return null
+        }
+
+        val localDate = LocalDate.of(2019, Month.of(birthMonth), birthday)
+        return Pair(localDate.dayOfYear, birthYear)
+    } else {
+        val msg = context.getTranslation("message.unknwon.birthday")
+            .replace(PLACEHOLDER_ARG, context.args[index])
+        sendMsg(context, msg)
+        return null
+    }
+}
+
 
 fun getLongFromArgN(context: CommandContext, index: Int): Long? =
     if (context.args.size > index) context.args[index].toLongOrNull() else null
