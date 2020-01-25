@@ -25,7 +25,7 @@ object FilterUtil {
         val channelId = channel.idLong
         val member = message.member ?: return@async
         val daoManager = container.daoManager
-        if (!member.hasPermission(channel, Permission.MESSAGE_MANAGE) || member == guild.selfMember) return@async
+        if (member.hasPermission(channel, Permission.MESSAGE_MANAGE) || member == guild.selfMember) return@async
 
 
         val groups = getFilterGroups(container, guildId, channelId)
@@ -66,13 +66,13 @@ object FilterUtil {
             ppMap[fg.filterGroupName] = ppMap.getOrDefault(fg.filterGroupName, 0) + extraPoints
         }
 
-        PPUtils.updatePP(member, ppMap, container)
 
         if (onlyDetected.isNotEmpty()) {
-            LogUtils.sendPPGainedMessageDMAndLC(container, message, PointsTriggerType.FILTERED_MESSAGE, onlyDetected.joinToString(), points)
-
             container.filteredMap[message.idLong] = onlyDetected.joinToString()
             message.delete().reason("Filter detection").queue()
+
+            LogUtils.sendPPGainedMessageDMAndLC(container, message, PointsTriggerType.FILTERED_MESSAGE, onlyDetected.joinToString(), points)
+            PPUtils.updatePP(member, ppMap, container)
         }
     }
 

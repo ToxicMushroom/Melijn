@@ -46,7 +46,7 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
         }
 
         val dao = context.daoManager.embedDisabledWrapper
-        dao.setDisabled(context.guildId, state)
+        dao.setDisabled(context.guildId, !state)
 
         val msg = context.getTranslation("$root.set.success")
             .replace("%disabledState%", if (state) "enabled" else "disabled")

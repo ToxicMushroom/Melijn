@@ -13,7 +13,7 @@ class SetVerificationEmotejiCommand : AbstractCommand("command.setverificationem
     init {
         id = 44
         name = "setVerificationEmoteji"
-        aliases = arrayOf("sve")
+        aliases = arrayOf("sve", "setVerificationEmoji", "setVerificationEmote")
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
