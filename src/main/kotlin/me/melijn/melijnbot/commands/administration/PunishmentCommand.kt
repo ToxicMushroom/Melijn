@@ -116,12 +116,12 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             }
         }
 
-        class MuteArg(parent: String) : AbstractCommand("$parent.ban") {
+        class MuteArg(parent: String) : AbstractCommand("$parent.mute") {
 
             init {
                 name = "mute"
                 children = arrayOf(
-                    DurationArg(parent)
+                    DurationArg(root)
                 )
             }
 
@@ -160,7 +160,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             }
         }
 
-        class SoftBanArg(parent: String) : AbstractCommand("$parent.ban") {
+        class SoftBanArg(parent: String) : AbstractCommand("$parent.softban") {
 
             init {
                 name = "softBan"

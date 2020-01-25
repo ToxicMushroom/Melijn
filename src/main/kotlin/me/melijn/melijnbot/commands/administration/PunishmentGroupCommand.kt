@@ -195,7 +195,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
 
         init {
             name = "setPunishmentPointsGoal"
-            aliases = arrayOf("sppg", "sppgoal")
+            aliases = arrayOf("sppg", "sppgoal", "setPPGoal")
         }
 
         override suspend fun execute(context: CommandContext) {
@@ -250,7 +250,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             map.remove(points)
             wrapper.setPointGoalMap(context.guildId, pg.groupName, map)
 
-            val msg = context.getTranslation("$root.added")
+            val msg = context.getTranslation("$root.removed")
                 .replace("%groupName%", pg.groupName)
                 .replace("%points%", points.toString())
                 .replace("%punishment%", punishment)
