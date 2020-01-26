@@ -3,5 +3,6 @@ package me.melijn.melijnbot.enums
 enum class RoleType {
     MUTE,
     UNVERIFIED,
-    JOIN
+    JOIN,
+    BIRTHDAY
 }

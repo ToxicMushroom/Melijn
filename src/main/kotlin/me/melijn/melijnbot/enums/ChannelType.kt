@@ -4,5 +4,6 @@ enum class ChannelType {
     JOIN,
     LEAVE,
     SELFROLE,
-    VERIFICATION
+    VERIFICATION,
+    BIRTHDAY
 }

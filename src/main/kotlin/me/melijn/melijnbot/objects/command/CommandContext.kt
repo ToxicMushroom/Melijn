@@ -16,7 +16,8 @@ class CommandContext(
     private val messageReceivedEvent: MessageReceivedEvent,
     val commandParts: List<String>,
     val container: Container,
-    val commandList: Set<AbstractCommand>
+    val commandList: Set<AbstractCommand>,
+    val contentRaw: String = messageReceivedEvent.message.contentRaw
 ) : ICommandContext {
 
     lateinit var logger: Logger
@@ -49,7 +50,7 @@ class CommandContext(
 
     fun initArgs() {
         args = commandParts.drop(1 + commandOrder.size)
-        rawArg = messageReceivedEvent.message.contentRaw
+        rawArg = contentRaw
             .removePrefix(usedPrefix)
             .trim()
 

@@ -54,11 +54,13 @@ class SettingsCommand : AbstractCommand("command.settings") {
             "\n**MuteRole:** " + idToRoleMention(roleCache.get(Pair(guildId, RoleType.MUTE)).await()) +
             "\n**JoinRole:** " + idToRoleMention(roleCache.get(Pair(guildId, RoleType.JOIN)).await()) +
             "\n**UnverifiedRole:** " + idToRoleMention(roleCache.get(Pair(guildId, RoleType.UNVERIFIED)).await()) +
+            "\n**BirthDayRole:** " + idToRoleMention(roleCache.get(Pair(guildId, RoleType.BIRTHDAY)).await()) +
             "\n" +
             "\n**VerificationChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.VERIFICATION)).await()) +
             "\n**JoinChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.JOIN)).await()) +
             "\n**LeaveChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.LEAVE)).await()) +
             "\n**SelfRoleChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.SELFROLE)).await()) +
+            "\n**BirthDayChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.BIRTHDAY)).await()) +
             "\n$logChannels" +
             "\n" +
             "\n**VerificationCode:** " + stringToString(daoManager.verificationCodeWrapper.verificationCodeCache.get(guildId).await()) +

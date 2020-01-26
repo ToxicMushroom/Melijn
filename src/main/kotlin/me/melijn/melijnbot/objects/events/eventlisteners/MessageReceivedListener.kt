@@ -44,8 +44,14 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             val helpCmd = container.commandMap.values.firstOrNull { cmd ->
                 cmd is HelpCommand
             } ?: return
-            val cmdContext = CommandContext(event, listOf(">", "help"), container, container.commandMap.values.toSet())
             container.taskManager.async {
+                val cmdContext = CommandContext(event, listOf(">", "help"), container, container.commandMap.values.toSet(), ">help")
+
+                if (event is GuildMessageReceivedEvent) {
+                    val guildEvent: GuildMessageReceivedEvent = event
+                    if (!guildEvent.guild.selfMember.hasPermission(guildEvent.channel, Permission.MESSAGE_WRITE)) return@async
+                }
+
                 helpCmd.run(cmdContext)
             }
         }
