@@ -19,9 +19,10 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation('net.dv8tion:JDA:4.1.1_101') {
+    implementation('net.dv8tion:JDA:4.1.1_103') {
         exclude module: 'opus-java'
     }
+
 
     // https://bintray.com/sedmelluq/com.sedmelluq/jda-nas
     implementation group: 'com.sedmelluq', name: 'jda-nas', version: '1.1.0'
