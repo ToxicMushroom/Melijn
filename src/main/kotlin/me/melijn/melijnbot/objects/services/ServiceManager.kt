@@ -2,6 +2,7 @@ package me.melijn.melijnbot.objects.services
 
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.services.bans.BanService
+import me.melijn.melijnbot.objects.services.birthday.BirthdayService
 import me.melijn.melijnbot.objects.services.mutes.MuteService
 import me.melijn.melijnbot.objects.services.spotify.SpotifyService
 import me.melijn.melijnbot.objects.services.stats.StatsService
@@ -20,6 +21,7 @@ class ServiceManager(val taskManager: TaskManager, val daoManager: DaoManager, v
         services.add(BanService(shardManager, daoManager))
         services.add(MuteService(shardManager, daoManager))
         services.add(StatsService(shardManager, webManager))
+        services.add(BirthdayService(shardManager, daoManager))
         services.add(SpotifyService(webManager))
     }
 
