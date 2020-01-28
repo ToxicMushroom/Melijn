@@ -97,14 +97,16 @@ suspend fun hasPermission(context: CommandContext, permission: String, required:
     val userMap = context.daoManager.userPermissionWrapper.guildUserPermissionCache.get(Pair(guildId, authorId)).await()
     val channelUserMap = context.daoManager.channelUserPermissionWrapper.channelUserPermissionCache.get(Pair(channelId, authorId)).await()
 
+    val lPermission = permission.toLowerCase()
+
     //permission checking for user specific channel overrides (these override all)
-    if (channelUserMap.containsKey(permission) && channelUserMap[permission] != PermState.DEFAULT) {
-        return channelUserMap[permission] == PermState.ALLOW
+    if (channelUserMap.containsKey(lPermission) && channelUserMap[lPermission] != PermState.DEFAULT) {
+        return channelUserMap[lPermission] == PermState.ALLOW
     }
 
     //permission checking for user specific permissions (these override all role permissions)
-    if (userMap.containsKey(permission) && userMap[permission] != PermState.DEFAULT) {
-        return userMap[permission] == PermState.ALLOW
+    if (userMap.containsKey(lPermission) && userMap[lPermission] != PermState.DEFAULT) {
+        return userMap[lPermission] == PermState.ALLOW
     }
 
     var roleResult = PermState.DEFAULT
@@ -113,7 +115,7 @@ suspend fun hasPermission(context: CommandContext, permission: String, required:
 
     //Permission checking for roles
     for (roleId in (context.member.roles.map { role -> role.idLong } + context.guild.publicRole.idLong)) {
-        channelRoleResult = when (context.daoManager.channelRolePermissionWrapper.channelRolePermissionCache.get(Pair(channelId, roleId)).await()[permission]) {
+        channelRoleResult = when (context.daoManager.channelRolePermissionWrapper.channelRolePermissionCache.get(Pair(channelId, roleId)).await()[lPermission]) {
             PermState.ALLOW -> PermState.ALLOW
             PermState.DENY -> if (channelRoleResult == PermState.DEFAULT) PermState.DENY else channelRoleResult
             else -> channelRoleResult
@@ -121,7 +123,7 @@ suspend fun hasPermission(context: CommandContext, permission: String, required:
         if (channelRoleResult == PermState.ALLOW) break
         if (channelRoleResult != PermState.DEFAULT) continue
         if (roleResult != PermState.ALLOW) {
-            roleResult = when (context.daoManager.rolePermissionWrapper.rolePermissionCache.get(roleId).await()[permission]) {
+            roleResult = when (context.daoManager.rolePermissionWrapper.rolePermissionCache.get(roleId).await()[lPermission]) {
                 PermState.ALLOW -> PermState.ALLOW
                 PermState.DENY -> if (roleResult == PermState.DEFAULT) PermState.DENY else roleResult
                 else -> roleResult
@@ -156,14 +158,16 @@ suspend fun hasPermission(command: AbstractCommand, container: Container, event:
     val userMap = container.daoManager.userPermissionWrapper.guildUserPermissionCache.get(Pair(guildId, authorId)).await()
     val channelUserMap = container.daoManager.channelUserPermissionWrapper.channelUserPermissionCache.get(Pair(channelId, authorId)).await()
 
+    val lPermission = permission.toLowerCase()
+
     //permission checking for user specific channel overrides (these override all)
-    if (channelUserMap.containsKey(permission) && channelUserMap[permission] != PermState.DEFAULT) {
-        return channelUserMap[permission] == PermState.ALLOW
+    if (channelUserMap.containsKey(lPermission) && channelUserMap[lPermission] != PermState.DEFAULT) {
+        return channelUserMap[lPermission] == PermState.ALLOW
     }
 
     //permission checking for user specific permissions (these override all role permissions)
-    if (userMap.containsKey(permission) && userMap[permission] != PermState.DEFAULT) {
-        return userMap[permission] == PermState.ALLOW
+    if (userMap.containsKey(lPermission) && userMap[lPermission] != PermState.DEFAULT) {
+        return userMap[lPermission] == PermState.ALLOW
     }
 
     var roleResult = PermState.DEFAULT
@@ -171,7 +175,7 @@ suspend fun hasPermission(command: AbstractCommand, container: Container, event:
 
     //Permission checking for roles
     for (roleId in (member.roles.map { role -> role.idLong } + guild.publicRole.idLong)) {
-        channelRoleResult = when (container.daoManager.channelRolePermissionWrapper.channelRolePermissionCache.get(Pair(channelId, roleId)).await()[permission]) {
+        channelRoleResult = when (container.daoManager.channelRolePermissionWrapper.channelRolePermissionCache.get(Pair(channelId, roleId)).await()[lPermission]) {
             PermState.ALLOW -> PermState.ALLOW
             PermState.DENY -> if (channelRoleResult == PermState.DEFAULT) PermState.DENY else channelRoleResult
             else -> channelRoleResult
@@ -179,7 +183,7 @@ suspend fun hasPermission(command: AbstractCommand, container: Container, event:
         if (channelRoleResult == PermState.ALLOW) break
         if (channelRoleResult != PermState.DEFAULT) continue
         if (roleResult != PermState.ALLOW) {
-            roleResult = when (container.daoManager.rolePermissionWrapper.rolePermissionCache.get(roleId).await()[permission]) {
+            roleResult = when (container.daoManager.rolePermissionWrapper.rolePermissionCache.get(roleId).await()[lPermission]) {
                 PermState.ALLOW -> PermState.ALLOW
                 PermState.DENY -> if (roleResult == PermState.DEFAULT) PermState.DENY else roleResult
                 else -> roleResult

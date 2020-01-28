@@ -32,6 +32,8 @@ class BanCommand : AbstractCommand("command.ban") {
             sendSyntax(context)
             return
         }
+
+
         val targetUser = getUserByArgsNMessage(context, 0) ?: return
         val member = context.guild.getMember(targetUser)
         if (member != null && !context.guild.selfMember.canInteract(member)) {

@@ -38,7 +38,6 @@ class SoftBanCommand : AbstractCommand("command.softban") {
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
             sendMsg(context, msg)
             return
-
         }
 
         val clearDays = getIntegerFromArgN(context, 1, 1, 7)
@@ -56,19 +55,19 @@ class SoftBanCommand : AbstractCommand("command.softban") {
         if (reason.isBlank()) reason = "/"
         reason = reason.trim()
 
-        val hasActiveBan: Boolean = context.daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong) != null
+        val hasActiveSoftBan: Boolean = context.daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong) != null
         val ban = SoftBan(
             context.guildId,
             targetUser.idLong,
             context.authorId,
             reason)
 
-        val banning = context.getTranslation("message.softbanning")
+        val softBanning = context.getTranslation("message.softbanning")
 
         val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
-        val message = privateChannel?.sendMessage(banning)?.awaitOrNull()
+        val message = privateChannel?.sendMessage(softBanning)?.awaitOrNull()
 
-        continueBanning(context, targetUser, ban, hasActiveBan, clearDays ?: 7, message)
+        continueBanning(context, targetUser, ban, hasActiveSoftBan, clearDays ?: 7, message)
     }
 
     private suspend fun continueBanning(context: CommandContext, targetUser: User, softBan: SoftBan, hasActiveBan: Boolean, clearDays: Int, softBanningMessage: Message? = null) {
