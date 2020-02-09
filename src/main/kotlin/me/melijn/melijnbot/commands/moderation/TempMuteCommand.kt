@@ -107,9 +107,12 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         val guild = context.guild
         val author = context.author
         val language = context.getLanguage()
-        val mutedMessageDm = getMuteMessage(language, guild, targetUser, author, mute)
-        val mutedMessageLc = getMuteMessage(language, guild, targetUser, author, mute, true, targetUser.isBot, mutingMessage != null)
-        context.daoManager.muteWrapper.setMute(mute)
+        val daoManager = context.daoManager
+        val zoneId = getZoneId(daoManager, guild.idLong)
+        val privZoneId = getZoneId(daoManager, guild.idLong, targetUser.idLong)
+        val mutedMessageDm = getMuteMessage(language, privZoneId, guild, targetUser, author, mute)
+        val mutedMessageLc = getMuteMessage(language, zoneId, guild, targetUser, author, mute, true, targetUser.isBot, mutingMessage != null)
+        daoManager.muteWrapper.setMute(mute)
         val targetMember = guild.getMember(targetUser)
 
 
@@ -143,7 +146,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
 
         val msg = context.getTranslation("$root.success" + if (activeMute != null) ".updated" else "")
             .replace(PLACEHOLDER_USER, targetUser.asTag)
-            .replace("%endTime%", mute.endTime?.asEpochMillisToDateTime() ?: "none")
+            .replace("%endTime%", mute.endTime?.asEpochMillisToDateTime(context.getTimeZoneId()) ?: "none")
             .replace("%reason%", mute.reason)
         sendMsg(context, msg)
     }

@@ -12,6 +12,7 @@ import me.melijn.melijnbot.objects.utils.awaitEX
 import me.melijn.melijnbot.objects.utils.awaitOrNull
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyRoleByType
+import me.melijn.melijnbot.objects.utils.getZoneId
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
@@ -59,7 +60,9 @@ class MuteService(
     //Sends unban message to tempban logchannel and the unbanned user
     private suspend fun createAndSendUnmuteMessage(guild: Guild, unmuteAuthor: User, mutedUser: User?, muteAuthor: User?, mute: Mute) {
         val language = getLanguage(daoManager, -1, guild.idLong)
-        val msg = getUnmuteMessage(language, guild, mutedUser, muteAuthor, unmuteAuthor, mute)
+        val zoneId = getZoneId(daoManager, guild.idLong)
+        val privZoneId = getZoneId(daoManager, guild.idLong, mutedUser?.idLong)
+        val msg = getUnmuteMessage(language, zoneId, guild, mutedUser, muteAuthor, unmuteAuthor, mute)
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.UNMUTE) ?: return
 
         var success = false
@@ -72,13 +75,15 @@ class MuteService(
             }
         }
 
-        val msgLc = getUnmuteMessage(language, guild, mutedUser, muteAuthor, unmuteAuthor, mute, true, mutedUser?.isBot == true, success)
+        val msgLc = getUnmuteMessage(language, privZoneId, guild, mutedUser, muteAuthor, unmuteAuthor, mute, true, mutedUser?.isBot == true, success)
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, msgLc)
     }
 
     private suspend fun createAndSendFailedUnmuteMessage(guild: Guild, unmuteAuthor: User, mutedUser: User?, muteAuthor: User?, mute: Mute, cause: String) {
         val language = getLanguage(daoManager, -1, guild.idLong)
-        val msg = getUnmuteMessage(language, guild, mutedUser, muteAuthor, unmuteAuthor, mute, failedCause = cause)
+        val zoneId = getZoneId(daoManager, guild.idLong)
+        val privZoneId = getZoneId(daoManager, guild.idLong, mutedUser?.idLong)
+        val msg = getUnmuteMessage(language, zoneId, guild, mutedUser, muteAuthor, unmuteAuthor, mute, failedCause = cause)
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.UNMUTE) ?: return
 
         var success = false
@@ -91,7 +96,7 @@ class MuteService(
             }
         }
 
-        val msgLc = getUnmuteMessage(language, guild, mutedUser, muteAuthor, unmuteAuthor, mute, true, mutedUser?.isBot == true, success, failedCause = cause)
+        val msgLc = getUnmuteMessage(language, privZoneId, guild, mutedUser, muteAuthor, unmuteAuthor, mute, true, mutedUser?.isBot == true, success, failedCause = cause)
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, msgLc)
     }
 

@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.User
 import java.awt.Color
+import java.time.ZoneId
 
 class UnmuteCommand : AbstractCommand("command.unmute") {
 
@@ -99,9 +100,11 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         val daoManager = context.daoManager
         val language = context.getLanguage()
         daoManager.muteWrapper.setMute(mute)
+        val zoneId = getZoneId(daoManager, guild.idLong)
+        val privZoneId = getZoneId(daoManager, guild.idLong, targetUser.idLong)
 
         //Normal success path
-        val msg = getUnmuteMessage(language, guild, targetUser, muteAuthor, context.author, mute)
+        val msg = getUnmuteMessage(language, zoneId, guild, targetUser, muteAuthor, context.author, mute)
         val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
 
         val success = try {
@@ -113,7 +116,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
             false
         }
 
-        val msgLc = getUnmuteMessage(language, guild, targetUser, muteAuthor, context.author, mute, true, targetUser.isBot, success)
+        val msgLc = getUnmuteMessage(language, privZoneId, guild, targetUser, muteAuthor, context.author, mute, true, targetUser.isBot, success)
 
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.UNMUTE)
         logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, msgLc) }
@@ -129,6 +132,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
 
 fun getUnmuteMessage(
     language: String,
+    zoneId: ZoneId,
     guild: Guild,
     mutedUser: User?,
     muteAuthor: User?,
@@ -163,8 +167,8 @@ fun getUnmuteMessage(
         .replace("%muteReason%", mute.reason)
         .replace("%unmuteReason%", mute.unmuteReason ?: "/")
         .replace("%duration%", muteDuration)
-        .replace("%startTime%", (mute.startTime.asEpochMillisToDateTime()))
-        .replace("%endTime%", (mute.endTime?.asEpochMillisToDateTime() ?: "none"))
+        .replace("%startTime%", (mute.startTime.asEpochMillisToDateTime(zoneId)))
+        .replace("%endTime%", (mute.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
 
     var extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,

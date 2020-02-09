@@ -34,4 +34,14 @@ class RoleDao(driverManager: DriverManager) : Dao(driverManager) {
     suspend fun unset(guildId: Long, roleType: RoleType) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND roleType = ?", guildId, roleType.toString())
     }
+
+    suspend fun getRoles(roleType: RoleType): Map<Long, Long> = suspendCoroutine {
+        driverManager.executeQuery("SELECT * FROM $table WHERE roleType = ?", {rs ->
+            val roleMap = HashMap<Long, Long>()
+            while (rs.next()) {
+                roleMap[rs.getLong("guildId")] = rs.getLong("roleId")
+            }
+            it.resume(roleMap)
+        }, roleType.toString())
+    }
 }

@@ -7,6 +7,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class ChannelDao(driverManager: DriverManager) : Dao(driverManager) {
+
     override val table: String = "channels"
     override val tableStructure: String = "guildId bigint, channelType varchar(32), channelId bigint"
     override val primaryKey: String = "guildId, channelType"
@@ -32,5 +33,16 @@ class ChannelDao(driverManager: DriverManager) : Dao(driverManager) {
                 it.resume(-1L)
             }
         }, guildId, channelType.toString())
+    }
+
+    suspend fun getChannels(channelType: ChannelType): Map<Long, Long> = suspendCoroutine {
+        driverManager.executeQuery("SELECT * FROM $table WHERE channelType = ?", { rs ->
+            val roleMap = HashMap<Long, Long>()
+            while (rs.next()) {
+                roleMap[rs.getLong("guildId")] = rs.getLong("channelId")
+            }
+            it.resume(roleMap)
+
+        }, channelType.toString())
     }
 }

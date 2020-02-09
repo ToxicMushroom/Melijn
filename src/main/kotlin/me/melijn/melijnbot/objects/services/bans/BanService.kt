@@ -7,11 +7,8 @@ import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.services.Service
 import me.melijn.melijnbot.objects.translation.getLanguage
-import me.melijn.melijnbot.objects.utils.await
-import me.melijn.melijnbot.objects.utils.awaitEX
-import me.melijn.melijnbot.objects.utils.awaitOrNull
+import me.melijn.melijnbot.objects.utils.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
-import me.melijn.melijnbot.objects.utils.sendEmbed
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.sharding.ShardManager
@@ -61,7 +58,10 @@ class BanService(
     //Sends unban message to tempban logchannel and the unbanned user
     private suspend fun createAndSendUnbanMessage(guild: Guild, unbanAuthor: User, bannedUser: User, banAuthor: User?, ban: Ban) {
         val language = getLanguage(daoManager, -1, guild.idLong)
-        val msg = getUnbanMessage(language, guild, bannedUser, banAuthor, unbanAuthor, ban)
+        val zoneId = getZoneId(daoManager, guild.idLong)
+        val privZoneId = getZoneId(daoManager, guild.idLong, bannedUser.idLong)
+        val msg = getUnbanMessage(language, privZoneId, guild, bannedUser, banAuthor, unbanAuthor, ban)
+
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.UNBAN) ?: return
 
         var success = false
@@ -74,13 +74,15 @@ class BanService(
             }
         }
 
-        val msgLc = getUnbanMessage(language, guild, bannedUser, banAuthor, unbanAuthor, ban, true, bannedUser.isBot, success)
+        val msgLc = getUnbanMessage(language, zoneId, guild, bannedUser, banAuthor, unbanAuthor, ban, true, bannedUser.isBot, success)
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, msgLc)
     }
 
     private suspend fun createAndSendFailedUnbanMessage(guild: Guild, unbanAuthor: User, bannedUser: User, banAuthor: User?, ban: Ban, cause: String) {
         val language = getLanguage(daoManager, -1, guild.idLong)
-        val msg = getUnbanMessage(language, guild, bannedUser, banAuthor, unbanAuthor, ban, failedCause = cause)
+        val zoneId = getZoneId(daoManager, guild.idLong)
+        val privZoneId = getZoneId(daoManager, guild.idLong, bannedUser.idLong)
+        val msg = getUnbanMessage(language, zoneId, guild, bannedUser, banAuthor, unbanAuthor, ban, failedCause = cause)
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.UNBAN) ?: return
 
         var success = false
@@ -93,7 +95,7 @@ class BanService(
             }
         }
 
-        val msgLc = getUnbanMessage(language, guild, bannedUser, banAuthor, unbanAuthor, ban, true, bannedUser.isBot, success, failedCause = cause)
+        val msgLc = getUnbanMessage(language, privZoneId, guild, bannedUser, banAuthor, unbanAuthor, ban, true, bannedUser.isBot, success, failedCause = cause)
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, msgLc)
     }
 

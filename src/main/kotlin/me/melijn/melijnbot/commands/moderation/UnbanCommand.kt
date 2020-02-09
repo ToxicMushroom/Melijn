@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.User
 import java.awt.Color
+import java.time.ZoneId
 
 class UnbanCommand : AbstractCommand("command.unban") {
 
@@ -29,6 +30,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
 
     override suspend fun execute(context: CommandContext) {
         val guild = context.guild
+        val daoManager = context.daoManager
         if (context.args.isEmpty()) {
             sendSyntax(context)
             return
@@ -43,7 +45,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
 
         unbanReason = unbanReason.trim()
 
-        val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong)
+        val activeBan: Ban? = daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong)
         val ban: Ban = activeBan
             ?: Ban(context.guildId,
                 targetUser.idLong,
@@ -61,10 +63,11 @@ class UnbanCommand : AbstractCommand("command.unban") {
             guild.retrieveBan(targetUser).await()
             try {
                 guild.unban(targetUser).await()
-                context.daoManager.banWrapper.setBan(ban)
+                daoManager.banWrapper.setBan(ban)
+                val zoneId = getZoneId(daoManager, guild.idLong)
 
                 //Normal success path
-                val msgLc = getUnbanMessage(language, context.guild, targetUser, banAuthor, context.author, ban, true)
+                val msgLc = getUnbanMessage(language,zoneId, context.guild, targetUser, banAuthor, context.author, ban, true)
 
 
                 val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
@@ -101,14 +104,15 @@ class UnbanCommand : AbstractCommand("command.unban") {
     private suspend fun continueUnbanning(context: CommandContext, targetUser: User, ban: Ban, banAuthor: User?, unbanningMessage: Message? = null) {
         val guild = context.guild
         val unbanAuthor = context.author
+        val daoManager = context.daoManager
         val language = context.getLanguage()
         val isBot = targetUser.isBot
         val received = unbanningMessage != null
+        val privZoneId = getZoneId(daoManager, guild.idLong, targetUser.idLong)
         val lcMsg = getUnbanMessage(
-            language, guild, targetUser, banAuthor, unbanAuthor, ban, true, isBot, received
+            language, privZoneId, guild, targetUser, banAuthor, unbanAuthor, ban, true, isBot, received
         )
 
-        val daoManager = context.daoManager
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.UNBAN)
         logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, lcMsg) }
 
@@ -122,6 +126,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
 
 fun getUnbanMessage(
     language: String,
+    zoneId: ZoneId,
     guild: Guild,
     bannedUser: User,
     banAuthor: User?,
@@ -155,8 +160,8 @@ fun getUnbanMessage(
         .replace("%banReason%", ban.reason)
         .replace("%unbanReason%", ban.unbanReason ?: "/")
         .replace("%duration%", banDuration)
-        .replace("%startTime%", (ban.startTime.asEpochMillisToDateTime()))
-        .replace("%endTime%", (ban.endTime?.asEpochMillisToDateTime() ?: "none"))
+        .replace("%startTime%", (ban.startTime.asEpochMillisToDateTime(zoneId)))
+        .replace("%endTime%", (ban.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
 
     var extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,

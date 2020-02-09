@@ -12,5 +12,6 @@ enum class ModularMessageProperty(val variableName: String) {
     EMBED_AUTHOR_URL("authorUrl"),
     EMBED_AUTHOR_ICON_URL("authorIcon"),
     EMBED_FOOTER("footer"),
-    EMBED_FOOTER_ICON_URL("footerIcon")
+    EMBED_FOOTER_ICON_URL("footerIcon"),
+    EMBED_TIME_STAMP("timeStamp")
 }

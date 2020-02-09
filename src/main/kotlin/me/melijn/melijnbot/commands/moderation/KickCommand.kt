@@ -12,6 +12,7 @@ import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.*
 import java.awt.Color
+import java.time.ZoneId
 
 class KickCommand : AbstractCommand("command.kick") {
 
@@ -63,9 +64,12 @@ class KickCommand : AbstractCommand("command.kick") {
         val guild = context.guild
         val author = context.author
         val language = context.getLanguage()
+        val daoManager = context.daoManager
+        val zoneId = getZoneId(daoManager, guild.idLong)
+        val privZoneId = getZoneId(daoManager, guild.idLong, targetMember.idLong)
 
-        val kickedMessageDm = getKickMessage(language, guild, targetMember.user, author, kick)
-        val warnedMessageLc = getKickMessage(language, guild, targetMember.user, author, kick, true, targetMember.user.isBot, kickingMessage != null)
+        val kickedMessageDm = getKickMessage(language, privZoneId, guild, targetMember.user, author, kick)
+        val warnedMessageLc = getKickMessage(language, zoneId, guild, targetMember.user, author, kick, true, targetMember.user.isBot, kickingMessage != null)
 
         context.daoManager.kickWrapper.addKick(kick)
         val msg = try {
@@ -98,6 +102,7 @@ class KickCommand : AbstractCommand("command.kick") {
 
 fun getKickMessage(
     language: String,
+    zoneId: ZoneId,
     guild: Guild,
     kickedUser: User,
     kickAuthor: User,
@@ -121,7 +126,7 @@ fun getKickMessage(
         .replace("%kicked%", kickedUser.asTag)
         .replace("%kickedId%", kickedUser.id)
         .replace("%reason%", kick.reason)
-        .replace("%moment%", (kick.moment.asEpochMillisToDateTime()))
+        .replace("%moment%", (kick.moment.asEpochMillisToDateTime(zoneId)))
 
     val extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,

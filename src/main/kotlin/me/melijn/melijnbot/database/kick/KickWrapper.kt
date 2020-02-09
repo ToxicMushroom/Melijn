@@ -34,10 +34,11 @@ class KickWrapper(val taskManager: TaskManager, private val kickDao: KickDao) {
 
     private suspend fun getKickMessage(context: CommandContext, kickAuthor: User?, kick: Kick): String {
         val deletedUser = context.getTranslation("message.deleted.user")
+        val zoneId = context.getTimeZoneId()
         return context.getTranslation("message.punishmenthistory.kick")
             .replace("%kickAuthor%", kickAuthor?.asTag ?: deletedUser)
             .replace("%kickAuthorId%", "${kick.kickAuthorId}")
             .replace("%reason%", kick.reason.substring(0, min(kick.reason.length, 830)))
-            .replace("%moment%", kick.moment.asEpochMillisToDateTime())
+            .replace("%moment%", kick.moment.asEpochMillisToDateTime(zoneId))
     }
 }

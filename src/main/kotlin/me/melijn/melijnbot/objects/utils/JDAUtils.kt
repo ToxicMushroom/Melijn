@@ -365,7 +365,7 @@ fun getEmoteByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boo
 
     }
 
-    return if (sameGuildAsContext && emote?.guild?.idLong != context.guildId) {
+    return if (sameGuildAsContext && (emote?.guild?.idLong != context.guildId)) {
         null
     } else {
         emote

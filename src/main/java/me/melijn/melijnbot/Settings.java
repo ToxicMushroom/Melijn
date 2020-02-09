@@ -56,14 +56,5 @@ public class Settings {
         public String user;
         public String host;
         public int port;
-        public MySQL mySQL;
-
-        public static class MySQL {
-            public String database;
-            public String password;
-            public String user;
-            public String host;
-            public int port;
-        }
     }
 }

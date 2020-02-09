@@ -44,7 +44,7 @@ class VoteInfoCommand : AbstractCommand("command.voteinfo") {
             .replace(PLACEHOLDER_USER_ID, target.id)
             .replace("%votes%", userVote.votes.toString())
             .replace("%streak%", userVote.streak.toString())
-            .replace("%lastTime%", userVote.lastTime.asEpochMillisToDateTime())
+            .replace("%lastTime%", userVote.lastTime.asEpochMillisToDateTime(context.getTimeZoneId()))
 
         val eb = Embedder(context)
         eb.setThumbnail(target.effectiveAvatarUrl)

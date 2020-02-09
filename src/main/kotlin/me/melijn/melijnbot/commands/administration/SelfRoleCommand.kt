@@ -13,7 +13,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
     init {
         id = 37
         name = "selfRole"
-        aliases = arrayOf("selfr")
+        aliases = arrayOf("sr")
         children = arrayOf(
             AddArg(root),
             RemoveArg(root),

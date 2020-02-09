@@ -126,6 +126,25 @@ suspend inline fun <reified T : Enum<*>> getEnumFromArgNMessage(context: Command
     return enum
 }
 
+suspend inline fun <T> getObjectFromArgNMessage(context: CommandContext, index: Int, mapper: (String) -> T?, path: String): T? {
+    if (argSizeCheckFailed(context, index)) return null
+    val arg = context.args[index]
+    val newObj = mapper(arg)
+    if (newObj == null) {
+        val msg = context.getTranslation(path)
+            .replace(PLACEHOLDER_ARG, arg)
+        sendMsg(context, msg)
+    }
+    return newObj
+}
+
+suspend inline fun <T> getObjectFromArgN(context: CommandContext, index: Int, mapper: (String) -> T?): T? {
+    if (argSizeCheckFailed(context, index)) return null
+    val arg = context.args[index]
+    return mapper(arg)
+}
+
+
 suspend inline fun <reified T : Enum<*>> getEnumFromArgN(context: CommandContext, index: Int): T? {
     if (argSizeCheckFailed(context, index, true)) return null
     val enumName = context.args[index]

@@ -79,8 +79,12 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         val guild = context.guild
         val author = context.author
         val language = context.getLanguage()
-        val bannedMessageDm = getBanMessage(language, guild, targetUser, author, ban)
-        val bannedMessageLc = getBanMessage(language, guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
+        val daoManager = context.daoManager
+        val zoneId = getZoneId(daoManager, guild.idLong)
+        val privZoneId = getZoneId(daoManager, guild.idLong, targetUser.idLong)
+
+        val bannedMessageDm = getBanMessage(language, privZoneId, guild, targetUser, author, ban)
+        val bannedMessageLc = getBanMessage(language, zoneId, guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
         context.daoManager.banWrapper.setBan(ban)
 
         try {
@@ -89,15 +93,16 @@ class TempBanCommand : AbstractCommand("command.tempban") {
                 bannedMessageDm
             )?.override(true)?.queue()
 
-            val logChannelWrapper = context.daoManager.logChannelWrapper
+            val logChannelWrapper = daoManager.logChannelWrapper
             val logChannelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.TEMP_BAN)).await()
             val logChannel = guild.getTextChannelById(logChannelId)
-            logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
+            logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
 
 
+            val endTime = ban.endTime?.asEpochMillisToDateTime(zoneId)
             val msg = context.getTranslation("$root.success" + if (activeBan != null) ".updated" else "")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
-                .replace("%endTime%", ban.endTime?.asEpochMillisToDateTime() ?: "none")
+                .replace("%endTime%", endTime ?: "none")
                 .replace("%reason%", ban.reason)
             sendMsg(context, msg)
         } catch (t: Throwable) {

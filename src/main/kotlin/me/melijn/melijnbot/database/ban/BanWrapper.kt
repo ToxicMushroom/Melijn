@@ -53,6 +53,7 @@ class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
     private suspend fun getBanMessage(context: CommandContext, banAuthor: User?, unbanAuthor: User?, ban: Ban): String {
         val deletedUser = context.getTranslation("message.deleted.user")
         val unbanReason = ban.unbanReason
+        val zoneId = context.getTimeZoneId()
         return context.getTranslation("message.punishmenthistory.ban")
             .replace("%banAuthor%", banAuthor?.asTag ?: deletedUser)
             .replace("%banAuthorId%", "${ban.banAuthorId}")
@@ -60,8 +61,8 @@ class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
             .replace("%unbanAuthorId%", ban.unbanAuthorId?.toString() ?: "/")
             .replace("%banReason%", ban.reason.substring(0, min(ban.reason.length, 830)))
             .replace("%unbanReason%", unbanReason?.substring(0, min(unbanReason.length, 830)) ?: "/")
-            .replace("%startTime%", ban.startTime.asEpochMillisToDateTime())
-            .replace("%endTime%", ban.endTime?.asEpochMillisToDateTime() ?: "/")
+            .replace("%startTime%", ban.startTime.asEpochMillisToDateTime(zoneId))
+            .replace("%endTime%", ban.endTime?.asEpochMillisToDateTime(zoneId) ?: "/")
             .replace("%active%", "${ban.active}")
     }
 }

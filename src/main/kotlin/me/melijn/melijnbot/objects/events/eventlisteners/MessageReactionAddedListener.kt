@@ -138,6 +138,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
     private suspend fun postReactionAddedLog(event: GuildMessageReactionAddEvent) {
         val dao = container.daoManager
+        val zoneId = getZoneId(dao, event.guild.idLong)
         val logChannel = event.guild.getAndVerifyLogChannelByType(dao, LogChannelType.REACTION)
             ?: return
 
@@ -153,7 +154,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             .replace("%messageId%", event.messageId)
             .replace("%emoteName%", event.reactionEmote.name)
             .replace("%emoteId%", if (isEmote) event.reactionEmote.id else "/")
-            .replace("%moment%", System.currentTimeMillis().asEpochMillisToDateTime())
+            .replace("%moment%", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
             .replace("%messageUrl%", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.messageId}")
             .replace("%emoteUrl%", if (isEmote) event.reactionEmote.emote.imageUrl else "/")
 

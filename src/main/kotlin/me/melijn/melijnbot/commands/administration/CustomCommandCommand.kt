@@ -490,7 +490,8 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     SetImageArg(root),
                     FieldArg(root),
                     SetFooterArg(root),
-                    SetFooterIconArg(root)
+                    SetFooterIconArg(root),
+                    SetTimeStampArg(root)
                     //What even is optimization
                 )
             }
@@ -802,6 +803,22 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                 override suspend fun execute(context: CommandContext) {
                     val property = ModularMessageProperty.EMBED_FOOTER_ICON_URL
+                    val cc = getSelectedCCNMessage(context) ?: return
+                    when {
+                        context.rawArg.isBlank() -> MessageCommandUtil.showMessageCC(context, property, cc)
+                        else -> MessageCommandUtil.setMessageCC(context, property, cc)
+                    }
+                }
+            }
+
+            class SetTimeStampArg(parent: String) : AbstractCommand("$parent.settimestamp") {
+
+                init {
+                    name = "setTimeStamp"
+                }
+
+                override suspend fun execute(context: CommandContext) {
+                    val property = ModularMessageProperty.EMBED_TIME_STAMP
                     val cc = getSelectedCCNMessage(context) ?: return
                     when {
                         context.rawArg.isBlank() -> MessageCommandUtil.showMessageCC(context, property, cc)

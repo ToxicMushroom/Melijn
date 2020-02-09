@@ -57,7 +57,9 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
 
     private suspend fun postMessageUpdateLog(event: GuildMessageUpdateEvent, logChannel: TextChannel, daoMessage: DaoMessage, oldContent: String) {
         val embedBuilder = EmbedBuilder()
-        val language = getLanguage(container.daoManager, -1, event.guild.idLong)
+        val daoManager = container.daoManager
+        val zoneId = getZoneId(daoManager, event.guild.idLong)
+        val language = getLanguage(daoManager, -1, event.guild.idLong)
         val title = i18n.getTranslation(language, "listener.message.update.log.title")
             .replace(PLACEHOLDER_CHANNEL, event.channel.asTag)
 
@@ -67,7 +69,7 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
             .replace(PLACEHOLDER_USER, event.author.asTag)
             .replace(PLACEHOLDER_USER_ID, event.author.id)
             .replace("%sentTime%", event.message.timeCreated.asLongLongGMTString())
-            .replace("%editedTime%", System.currentTimeMillis().asEpochMillisToDateTime())
+            .replace("%editedTime%", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
             .replace("%link%", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.message.id}")
 
         embedBuilder.setColor(Color.decode("#A1DAC3"))
@@ -78,18 +80,18 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
         if (description.length > 2048) {
             val parts = StringUtils.splitMessageWithCodeBlocks(description, lang = "LDIF").toMutableList()
             embedBuilder.setDescription(parts[0])
-            sendEmbed(container.daoManager.embedDisabledWrapper, logChannel, embedBuilder.build())
+            sendEmbed(daoManager.embedDisabledWrapper, logChannel, embedBuilder.build())
             embedBuilder.setThumbnail(null)
             parts.removeAt(0)
 
             for (part in parts) {
                 embedBuilder.setDescription(part)
-                sendEmbed(container.daoManager.embedDisabledWrapper, logChannel, embedBuilder.build())
+                sendEmbed(daoManager.embedDisabledWrapper, logChannel, embedBuilder.build())
             }
         } else {
             embedBuilder.setDescription(description)
 
-            sendEmbed(container.daoManager.embedDisabledWrapper, logChannel, embedBuilder.build())
+            sendEmbed(daoManager.embedDisabledWrapper, logChannel, embedBuilder.build())
         }
     }
 }

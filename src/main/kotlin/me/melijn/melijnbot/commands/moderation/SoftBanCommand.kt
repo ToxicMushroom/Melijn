@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.User
 import java.awt.Color
+import java.time.ZoneId
 
 class SoftBanCommand : AbstractCommand("command.softban") {
 
@@ -74,10 +75,13 @@ class SoftBanCommand : AbstractCommand("command.softban") {
         val guild = context.guild
         val author = context.author
         val language = context.getLanguage()
-        val softBannedMessageDm = getSoftBanMessage(language, guild, targetUser, author, softBan)
-        val softBannedMessageLc = getSoftBanMessage(language, guild, targetUser, author, softBan, true, targetUser.isBot, softBanningMessage != null)
+        val daoManager = context.daoManager
+        val zoneId = getZoneId(daoManager, guild.idLong)
+        val privZoneId = getZoneId(daoManager, guild.idLong, targetUser.idLong)
+        val softBannedMessageDm = getSoftBanMessage(language, privZoneId, guild, targetUser, author, softBan)
+        val softBannedMessageLc = getSoftBanMessage(language, zoneId, guild, targetUser, author, softBan, true, targetUser.isBot, softBanningMessage != null)
 
-        context.daoManager.softBanWrapper.addSoftBan(softBan)
+        daoManager.softBanWrapper.addSoftBan(softBan)
 
         val msg = try {
             guild.ban(targetUser, clearDays).reason("softbanned").await()
@@ -85,10 +89,10 @@ class SoftBanCommand : AbstractCommand("command.softban") {
                 softBannedMessageDm
             )?.override(true)?.queue()
 
-            val logChannelWrapper = context.daoManager.logChannelWrapper
+            val logChannelWrapper = daoManager.logChannelWrapper
             val logChannelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.SOFT_BAN)).await()
             val logChannel = guild.getTextChannelById(logChannelId)
-            logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, softBannedMessageLc) }
+            logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, softBannedMessageLc) }
 
             if (!hasActiveBan) {
                 guild.unban(targetUser).reason("softbanned").await()
@@ -113,6 +117,7 @@ class SoftBanCommand : AbstractCommand("command.softban") {
 
 fun getSoftBanMessage(
     language: String,
+    zoneId: ZoneId,
     guild: Guild,
     softBannedUser: User,
     softBanAuthor: User,
@@ -136,7 +141,7 @@ fun getSoftBanMessage(
         .replace("%softBanned%", softBannedUser.asTag)
         .replace("%softBannedId%", softBannedUser.id)
         .replace("%reason%", softBan.reason)
-        .replace("%moment%", (softBan.moment.asEpochMillisToDateTime()))
+        .replace("%moment%", (softBan.moment.asEpochMillisToDateTime(zoneId)))
 
     val extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,

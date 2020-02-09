@@ -209,7 +209,10 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         messageDeleterId: Long
     ): EmbedBuilder {
         val embedBuilder = EmbedBuilder()
+        val daoManager = container.daoManager
+        val zoneId = getZoneId(daoManager, event.guild.idLong)
         val channel = event.guild.getTextChannelById(msg.textChannelId)
+
 
         val language = getLanguage(container.daoManager, -1, event.guild.idLong)
         val title = i18n.getTranslation(language, "listener.message.deletion.log.title")
@@ -221,8 +224,8 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
             .replace("%messageContent%", escapeForLog(msg.content))
             .replace("%messageAuthorId%", msg.authorId.toString())
             .replace("%messageDeleterId%", messageDeleterId.toString())
-            .replace("%sentTime%", msg.moment.asEpochMillisToDateTime())
-            .replace("%deletedTime%", System.currentTimeMillis().asEpochMillisToDateTime())
+            .replace("%sentTime%", msg.moment.asEpochMillisToDateTime(zoneId))
+            .replace("%deletedTime%", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         embedBuilder.setTitle(title)
         embedBuilder.setDescription(description)

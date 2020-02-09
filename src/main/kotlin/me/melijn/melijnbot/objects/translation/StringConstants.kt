@@ -2,6 +2,7 @@ package me.melijn.melijnbot.objects.translation
 
 //Introduction to constants
 const val MESSAGE_UNKNOWN_USER = "message.unknown.user"
+const val MESSAGE_UNKNOWN_TIMEZONE = "message.unknown.timezone"
 const val MESSAGE_UNKNOWN_PERMISSIONNODE = "message.unknown.permissionnode"
 const val MESSAGE_UNKNOWN_PERMISSIONTYPE = "message.unknown.permissiontype"
 const val MESSAGE_UNKNOWN_PERMSTATE = "message.unknown.permstate"

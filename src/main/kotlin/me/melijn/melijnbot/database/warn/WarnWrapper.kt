@@ -35,10 +35,11 @@ class WarnWrapper(val taskManager: TaskManager, private val warnDao: WarnDao) {
 
     private suspend fun getWarnMessage(context: CommandContext, warnAuthor: User?, warn: Warn): String {
         val deletedUser = context.getTranslation("message.deleted.user")
+        val zoneId = context.getTimeZoneId()
         return context.getTranslation("message.punishmenthistory.warn")
             .replace("%warnAuthor%", warnAuthor?.asTag ?: deletedUser)
             .replace("%warnAuthorId%", "${warn.warnAuthorId}")
             .replace("%reason%", warn.reason.substring(0, min(warn.reason.length, 830)))
-            .replace("%moment%", warn.moment.asEpochMillisToDateTime())
+            .replace("%moment%", warn.moment.asEpochMillisToDateTime(zoneId))
     }
 }

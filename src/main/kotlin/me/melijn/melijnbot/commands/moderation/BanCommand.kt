@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.User
 import java.awt.Color
+import java.time.ZoneId
 
 class BanCommand : AbstractCommand("command.ban") {
 
@@ -75,8 +76,11 @@ class BanCommand : AbstractCommand("command.ban") {
         val guild = context.guild
         val author = context.author
         val language = context.getLanguage()
-        val bannedMessageDm = getBanMessage(language, guild, targetUser, author, ban)
-        val bannedMessageLc = getBanMessage(language, guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
+        val daoManager = context.daoManager
+        val zoneId = getZoneId(daoManager, guild.idLong)
+        val privZoneId = getZoneId(daoManager, guild.idLong, targetUser.idLong)
+        val bannedMessageDm = getBanMessage(language, privZoneId, guild, targetUser, author, ban)
+        val bannedMessageLc = getBanMessage(language, zoneId, guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
 
         context.daoManager.banWrapper.setBan(ban)
 
@@ -86,10 +90,10 @@ class BanCommand : AbstractCommand("command.ban") {
                 bannedMessageDm
             )?.override(true)?.queue()
 
-            val logChannelWrapper = context.daoManager.logChannelWrapper
+            val logChannelWrapper = daoManager.logChannelWrapper
             val logChannelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.PERMANENT_BAN)).await()
             val logChannel = guild.getTextChannelById(logChannelId)
-            logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
+            logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
 
             context.getTranslation("$root.success" + if (activeBan != null) ".updated" else "")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
@@ -109,6 +113,7 @@ class BanCommand : AbstractCommand("command.ban") {
 
 fun getBanMessage(
     language: String,
+    zoneId: ZoneId,
     guild: Guild,
     bannedUser: User,
     banAuthor: User,
@@ -137,8 +142,8 @@ fun getBanMessage(
         .replace("%bannedId%", bannedUser.id)
         .replace("%reason%", ban.reason)
         .replace("%duration%", banDuration)
-        .replace("%startTime%", (ban.startTime.asEpochMillisToDateTime()))
-        .replace("%endTime%", (ban.endTime?.asEpochMillisToDateTime() ?: "none"))
+        .replace("%startTime%", (ban.startTime.asEpochMillisToDateTime(zoneId)))
+        .replace("%endTime%", (ban.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
 
     val extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,

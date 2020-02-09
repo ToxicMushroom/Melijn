@@ -7,6 +7,7 @@ import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.utils.LogUtils
+import me.melijn.melijnbot.objects.utils.getZoneId
 import me.melijn.melijnbot.objects.utils.toUCSC
 import me.melijn.melijnbot.objects.utils.toUpperWordCase
 import net.dv8tion.jda.api.Permission
@@ -43,7 +44,8 @@ suspend fun Guild.getAndVerifyLogChannelByType(daoManager: DaoManager, type: Log
         if (logIfInvalid) {
             val logChannel = this.getAndVerifyLogChannelByType(daoManager, LogChannelType.BOT, false)
             val language = getLanguage(daoManager, -1, this.idLong)
-            LogUtils.sendRemovedLogChannelLog(language, type, logChannel, cause, causeArg)
+            val zoneId = getZoneId(daoManager, textChannel.guild.idLong)
+            LogUtils.sendRemovedLogChannelLog(language, zoneId, type, logChannel, cause, causeArg)
         }
         return null
     }
@@ -57,14 +59,25 @@ suspend fun Guild.getAndVerifyChannelByType(
 ): TextChannel? {
     val channelWrapper = daoManager.channelWrapper
     val channelId = channelWrapper.channelCache.get(Pair(idLong, type)).await()
+
+    return this.getAndVerifyChannelById(daoManager, type, channelId, requiredPerms.toSet())
+}
+
+suspend fun Guild.getAndVerifyChannelById(
+    daoManager: DaoManager,
+    type: ChannelType,
+    channelId: Long,
+    requiredPerms: Set<Permission> = emptySet()
+): TextChannel? {
     val textChannel = getTextChannelById(channelId)
     val selfMember = this.selfMember
     var shouldRemove = false
+    val zoneId = getZoneId(daoManager, this.idLong)
 
     if (channelId != -1L && textChannel == null) {
         val logChannel = this.getAndVerifyLogChannelByType(daoManager, LogChannelType.BOT)
         val language = getLanguage(daoManager, -1, this.idLong)
-        LogUtils.sendRemovedChannelLog(language, type, logChannel, UNKNOWN_ID_CAUSE, channelId.toString())
+        LogUtils.sendRemovedChannelLog(language, zoneId, type, logChannel, UNKNOWN_ID_CAUSE, channelId.toString())
         shouldRemove = true
     }
 
@@ -73,13 +86,13 @@ suspend fun Guild.getAndVerifyChannelByType(
         if (!selfMember.hasPermission(textChannel, perm)) {
             val logChannel = this.getAndVerifyLogChannelByType(daoManager, LogChannelType.BOT)
             val language = getLanguage(daoManager, -1, this.idLong)
-            LogUtils.sendRemovedChannelLog(language, type, logChannel, NO_PERM_CAUSE, perm.toUCSC())
+            LogUtils.sendRemovedChannelLog(language, zoneId, type, logChannel, NO_PERM_CAUSE, perm.toUCSC())
             shouldRemove = true
         }
     }
 
     if (shouldRemove) {
-        channelWrapper.removeChannel(this.idLong, type)
+        daoManager.channelWrapper.removeChannel(this.idLong, type)
         return null
     }
 
@@ -91,6 +104,7 @@ suspend fun Guild.getAndVerifyMusicChannel(
     vararg requiredPerms: Permission
 ): VoiceChannel? {
     val channelWrapper = daoManager.musicChannelWrapper
+    val zoneId = getZoneId(daoManager, this.idLong)
     val channelId = channelWrapper.musicChannelCache.get(idLong).await()
     val voiceChannel = getVoiceChannelById(channelId)
     val selfMember = this.selfMember
@@ -101,7 +115,7 @@ suspend fun Guild.getAndVerifyMusicChannel(
         shouldRemove = true
         val logChannel = this.getAndVerifyLogChannelByType(daoManager, LogChannelType.BOT)
         val language = getLanguage(daoManager, -1, this.idLong)
-        LogUtils.sendRemovedMusicChannelLog(language, logChannel, UNKNOWN_ID_CAUSE, channelId.toString())
+        LogUtils.sendRemovedMusicChannelLog(language, zoneId, logChannel, UNKNOWN_ID_CAUSE, channelId.toString())
     }
 
     for (perm in requiredPerms) {
@@ -110,7 +124,7 @@ suspend fun Guild.getAndVerifyMusicChannel(
             shouldRemove = true
             val logChannel = this.getAndVerifyLogChannelByType(daoManager, LogChannelType.BOT)
             val language = getLanguage(daoManager, -1, this.idLong)
-            LogUtils.sendRemovedMusicChannelLog(language, logChannel, NO_PERM_CAUSE, perm.toString().toUpperWordCase())
+            LogUtils.sendRemovedMusicChannelLog(language, zoneId, logChannel, NO_PERM_CAUSE, perm.toString().toUpperWordCase())
         }
     }
 
@@ -124,16 +138,20 @@ suspend fun Guild.getAndVerifyMusicChannel(
 
 suspend fun Guild.getAndVerifyRoleByType(daoManager: DaoManager, type: RoleType, shouldBeInteractable: Boolean = false): Role? {
     val roleWrapper = daoManager.roleWrapper
-    val channelId = roleWrapper.roleCache.get(Pair(idLong, type)).await()
-    if (channelId == -1L) return null
+    val roleId = roleWrapper.roleCache.get(Pair(idLong, type)).await()
+    if (roleId == -1L) return null
 
-    val role = getRoleById(channelId)
+    return this.getAndVerifyRoleById(daoManager, type, roleId, shouldBeInteractable)
+}
+
+suspend fun Guild.getAndVerifyRoleById(daoManager: DaoManager, roleType: RoleType, roleId: Long, shouldBeInteractable: Boolean = false): Role? {
+    val role = getRoleById(roleId)
     var shouldRemove = false
     var cause = ""
     var causeArg = ""
     if (role == null) {
         cause = UNKNOWN_ID_CAUSE
-        causeArg = channelId.toString()
+        causeArg = roleId.toString()
         shouldRemove = true
     } else if (shouldBeInteractable && !selfMember.canInteract(role)) {
         cause = CANNOT_INTERACT_CAUSE
@@ -143,8 +161,9 @@ suspend fun Guild.getAndVerifyRoleByType(daoManager: DaoManager, type: RoleType,
     if (shouldRemove) {
         val language = getLanguage(daoManager, -1, this.idLong)
         val logChannel = this.getAndVerifyLogChannelByType(daoManager, LogChannelType.BOT)
-        LogUtils.sendRemovedRoleLog(language, type, logChannel, cause, causeArg)
-        roleWrapper.removeRole(this.idLong, type)
+        val zoneId = getZoneId(daoManager, this.idLong)
+        LogUtils.sendRemovedRoleLog(language, zoneId, roleType, logChannel, cause, causeArg)
+        daoManager.roleWrapper.removeRole(this.idLong, roleType)
         return null
     }
 

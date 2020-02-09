@@ -12,8 +12,8 @@ class ChannelWrapper(private val taskManager: TaskManager, private val channelDa
 
     val channelCache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Pair<Long, ChannelType>, Long> { key ->
-            getChannelId(key.first, key.second)
+        .build(loadingCacheFrom<Pair<Long, ChannelType>, Long> { (first, second) ->
+            getChannelId(first, second)
         })
 
     private fun getChannelId(guildId: Long, channelType: ChannelType): CompletableFuture<Long> {
@@ -35,5 +35,9 @@ class ChannelWrapper(private val taskManager: TaskManager, private val channelDa
     suspend fun setChannel(guildId: Long, channelType: ChannelType, channelId: Long) {
         channelDao.set(guildId, channelType, channelId)
         channelCache.put(Pair(guildId, channelType), CompletableFuture.completedFuture(channelId))
+    }
+
+    suspend fun getChannels(channelType: ChannelType): Map<Long, Long> {
+        return channelDao.getChannels(channelType)
     }
 }

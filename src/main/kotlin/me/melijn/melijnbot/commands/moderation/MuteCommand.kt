@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import java.awt.Color
+import java.time.ZoneId
 
 class MuteCommand : AbstractCommand("command.mute") {
 
@@ -100,8 +101,11 @@ class MuteCommand : AbstractCommand("command.mute") {
         val guild = context.guild
         val author = context.author
         val language = context.getLanguage()
-        val mutedMessageDm = getMuteMessage(language, guild, targetUser, author, mute)
-        val mutedMessageLc = getMuteMessage(language, guild, targetUser, author, mute, true, targetUser.isBot, mutingMessage != null)
+        val daoManager = context.daoManager
+        val zoneId = getZoneId(daoManager, guild.idLong)
+        val privZoneId = getZoneId(daoManager, guild.idLong, targetUser.idLong)
+        val mutedMessageDm = getMuteMessage(language, privZoneId, guild, targetUser, author, mute)
+        val mutedMessageLc = getMuteMessage(language, zoneId, guild, targetUser, author, mute, true, targetUser.isBot, mutingMessage != null)
 
         context.daoManager.muteWrapper.setMute(mute)
         val targetMember = guild.getMember(targetUser) ?: return
@@ -135,6 +139,7 @@ class MuteCommand : AbstractCommand("command.mute") {
 
 fun getMuteMessage(
     language: String,
+    zoneId: ZoneId,
     guild: Guild,
     mutedUser: User,
     muteAuthor: User,
@@ -163,8 +168,8 @@ fun getMuteMessage(
         .replace("%mutedId%", mutedUser.id)
         .replace("%reason%", mute.reason)
         .replace("%duration%", muteDuration)
-        .replace("%startTime%", (mute.startTime.asEpochMillisToDateTime()))
-        .replace("%endTime%", (mute.endTime?.asEpochMillisToDateTime() ?: "none"))
+        .replace("%startTime%", (mute.startTime.asEpochMillisToDateTime(zoneId)))
+        .replace("%endTime%", (mute.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
 
     val extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,

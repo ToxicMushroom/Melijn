@@ -33,6 +33,10 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
         }
 
         override suspend fun execute(context: CommandContext) {
+            if (context.args.size < 2) {
+                sendSyntax(context)
+                return
+            }
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
             val role = getRoleByArgsNMessage(context, 1, sameGuildAsContext = true, canInteract = true) ?: return
             val member = context.guild.getMember(user)
@@ -58,6 +62,10 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
         }
 
         override suspend fun execute(context: CommandContext) {
+            if (context.args.size < 2) {
+                sendSyntax(context)
+                return
+            }
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
             val role = getRoleByArgsNMessage(context, 1) ?: return
             val member = context.guild.getMember(user)
@@ -83,6 +91,10 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
         }
 
         override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
 
             val roleIds = context.daoManager.forceRoleWrapper.forceRoleCache.get(context.guildId).await()

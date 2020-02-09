@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.objects.command
 
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.music.GuildMusicPlayer
 import me.melijn.melijnbot.objects.translation.i18n
@@ -10,6 +11,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.ZoneId
 import java.util.regex.Pattern
 
 class CommandContext(
@@ -174,6 +176,21 @@ class CommandContext(
     }
 
     suspend fun getTranslation(path: String): String = i18n.getTranslation(this, path)
+    suspend fun getTimeZoneId(): ZoneId {
+        val guildTimezone = guildId.let {
+            val zoneId = daoManager.timeZoneWrapper.timeZoneCache.get(it).await()
+            if (zoneId?.isBlank() == true) null
+            else ZoneId.of(zoneId)
+        }
+
+        val userTimezone = authorId.let {
+            val zoneId = daoManager.timeZoneWrapper.timeZoneCache.get(it).await()
+            if (zoneId?.isBlank() == true) null
+            else ZoneId.of(zoneId)
+        }
+
+        return userTimezone ?: guildTimezone ?: ZoneId.of("GMT")
+    }
 
     val guildMusicPlayer: GuildMusicPlayer
         get() = musicPlayerManager.getGuildMusicPlayer(guild)

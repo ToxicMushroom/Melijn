@@ -11,6 +11,8 @@ import me.melijn.melijnbot.database.ban.BanWrapper
 import me.melijn.melijnbot.database.ban.SoftBanDao
 import me.melijn.melijnbot.database.ban.SoftBanWrapper
 import me.melijn.melijnbot.database.birthday.BirthdayDao
+import me.melijn.melijnbot.database.birthday.BirthdayHistoryDao
+import me.melijn.melijnbot.database.birthday.BirthdayHistoryWrapper
 import me.melijn.melijnbot.database.birthday.BirthdayWrapper
 import me.melijn.melijnbot.database.channel.*
 import me.melijn.melijnbot.database.command.*
@@ -49,6 +51,8 @@ import me.melijn.melijnbot.database.prefix.UserPrefixWrapper
 import me.melijn.melijnbot.database.role.*
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.database.supporter.UserSupporterDao
+import me.melijn.melijnbot.database.time.TimeZoneDao
+import me.melijn.melijnbot.database.time.TimeZoneWrapper
 import me.melijn.melijnbot.database.verification.*
 import me.melijn.melijnbot.database.votes.VoteDao
 import me.melijn.melijnbot.database.votes.VoteWrapper
@@ -134,6 +138,8 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
     val punishmentWrapper: PunishmentWrapper //preconfigured punishments
 
     val birthdayWrapper: BirthdayWrapper
+    val birthdayHistoryWrapper: BirthdayHistoryWrapper
+    val timeZoneWrapper: TimeZoneWrapper
 
     val voteWrapper: VoteWrapper
     var driverManager: DriverManager
@@ -209,6 +215,8 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
         punishmentWrapper = PunishmentWrapper(taskManager, PunishmentDao(driverManager))
 
         birthdayWrapper = BirthdayWrapper(taskManager, BirthdayDao(driverManager))
+        birthdayHistoryWrapper = BirthdayHistoryWrapper(BirthdayHistoryDao(driverManager))
+        timeZoneWrapper = TimeZoneWrapper(taskManager, TimeZoneDao(driverManager))
 
         voteWrapper = VoteWrapper(VoteDao(driverManager))
         //After registering wrappers

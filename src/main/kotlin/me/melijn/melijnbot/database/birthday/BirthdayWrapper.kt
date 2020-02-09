@@ -7,8 +7,9 @@ import java.util.*
 
 class BirthdayWrapper(taskManager: TaskManager, val birthdayDao: BirthdayDao) {
 
-    suspend fun getBirthdaysToday(): Map<Long, Int> {
-        val calendar = Calendar.getInstance()
+    //userId -> birthYear, birthDay, time
+    suspend fun getBirthdaysToday(): Map<Long, Triple<Int, Int, Int>> {
+        val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
         val isleap = calendar.isLeapYear()
         val dayOfYear = if (isleap && calendar[Calendar.DAY_OF_YEAR] >= 60) {
             calendar[Calendar.DAY_OF_YEAR] - 1

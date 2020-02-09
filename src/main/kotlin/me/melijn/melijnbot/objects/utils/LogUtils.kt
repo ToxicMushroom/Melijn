@@ -17,18 +17,21 @@ import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.*
 import java.awt.Color
+import java.time.ZoneId
 
 object LogUtils {
-    fun sendRemovedChannelLog(language: String, channelType: ChannelType, logChannel: TextChannel?, causePath: String, causeArg: String) {
-        sendRemovedChannelLog(language, channelType.toUCC(), logChannel, causePath, causeArg)
+
+    fun sendRemovedChannelLog(language: String, zoneId: ZoneId, channelType: ChannelType, logChannel: TextChannel?, causePath: String, causeArg: String) {
+        sendRemovedChannelLog(language, zoneId, channelType.toUCC(), logChannel, causePath, causeArg)
     }
 
-    fun sendRemovedMusicChannelLog(language: String, logChannel: TextChannel?, causePath: String, causeArg: String) {
-        sendRemovedChannelLog(language, "Music", logChannel, causePath, causeArg)
+    fun sendRemovedMusicChannelLog(language: String, zoneId: ZoneId, logChannel: TextChannel?, causePath: String, causeArg: String) {
+        sendRemovedChannelLog(language, zoneId, "Music", logChannel, causePath, causeArg)
     }
 
-    fun sendRemovedChannelLog(language: String, type: String, logChannel: TextChannel?, causePath: String, causeArg: String) {
+    fun sendRemovedChannelLog(language: String, zoneId: ZoneId, type: String, logChannel: TextChannel?, causePath: String, causeArg: String) {
         if (logChannel == null) return
+
         val title = i18n.getTranslation(language, "logging.removed.channel.title")
             .replace("%type%", type)
         val cause = i18n.getTranslation(language, "logging.removed.channel.causepath.$causePath")
@@ -39,13 +42,14 @@ object LogUtils {
         eb.setTitle(title)
         eb.setColor(Color.decode("#7289DA"))
         eb.setDescription(cause)
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         logChannel.sendMessage(eb.build())
     }
 
     suspend fun sendHitVerificationThroughputLimitLog(daoManager: DaoManager, member: Member) {
         val guild = member.guild
+        val zoneId = getZoneId(daoManager, member.guild.idLong)
         val language = getLanguage(daoManager, -1, guild.idLong)
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.VERIFICATION)
             ?: return
@@ -60,7 +64,7 @@ object LogUtils {
         eb.setColor(Color.ORANGE)
         eb.setDescription(cause)
         eb.setThumbnail(member.user.effectiveAvatarUrl)
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
@@ -68,6 +72,7 @@ object LogUtils {
 
     suspend fun sendMessageFailedToAddRoleToMember(daoManager: DaoManager, member: Member, role: Role) {
         val guild = member.guild
+        val zoneId = getZoneId(daoManager, guild.idLong)
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.VERIFICATION)
             ?: return
 
@@ -84,13 +89,14 @@ object LogUtils {
         eb.setColor(Color.RED)
         eb.setDescription(description)
         eb.setThumbnail(member.user.effectiveAvatarUrl)
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 
     suspend fun sendFailedVerificationLog(daoManager: DaoManager, member: Member) {
         val guild = member.guild
+        val zoneId = getZoneId(daoManager, member.guild.idLong)
         val language = getLanguage(daoManager, -1, guild.idLong)
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.VERIFICATION)
             ?: return
@@ -105,13 +111,14 @@ object LogUtils {
         eb.setColor(Color.RED)
         eb.setDescription(description)
         eb.setThumbnail(member.user.effectiveAvatarUrl)
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 
     suspend fun sendVerifiedUserLog(daoManager: DaoManager, author: User, member: Member) {
         val guild = member.guild
+        val zoneId = getZoneId(daoManager, guild.idLong)
         val language = getLanguage(daoManager, -1, guild.idLong)
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.VERIFICATION)
             ?: return
@@ -127,7 +134,7 @@ object LogUtils {
         eb.setColor(Color.GREEN)
         eb.setDescription(description)
         eb.setThumbnail(member.user.effectiveAvatarUrl)
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
@@ -139,6 +146,7 @@ object LogUtils {
 
     suspend fun sendFailedLoadStreamTrackLog(daoManager: DaoManager, guild: Guild, source: String, exception: FriendlyException) {
         val language = getLanguage(daoManager, -1, guild.idLong)
+        val zoneId = getZoneId(daoManager, guild.idLong)
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.MUSIC)
             ?: return
 
@@ -151,13 +159,14 @@ object LogUtils {
         eb.setTitle(title)
         eb.setColor(Color.RED)
         eb.setDescription(description)
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 
     suspend fun addMusicPlayerResumed(context: CommandContext) {
         val trackManager = context.guildMusicPlayer.guildTrackManager
+        val zoneId = getZoneId(context.daoManager, context.guild.idLong)
         val track = trackManager.iPlayer.playingTrack ?: return
         val eb = EmbedBuilder()
 
@@ -180,13 +189,14 @@ object LogUtils {
         eb.addField(channelId, vc.id, true)
 
         eb.setColor(Color.decode("#43b581"))
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         trackManager.resumeMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
     }
 
     suspend fun addMusicPlayerPaused(context: CommandContext) {
         val trackManager = context.guildMusicPlayer.guildTrackManager
+        val zoneId = getZoneId(context.daoManager, context.guild.idLong)
         val track = trackManager.iPlayer.playingTrack ?: return
         val eb = EmbedBuilder()
 
@@ -208,7 +218,7 @@ object LogUtils {
         eb.addField(channelId, vc.id, true)
 
         eb.setColor(Color.decode("#c4e667"))
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         trackManager.pauseMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
     }
@@ -216,7 +226,7 @@ object LogUtils {
 
     suspend fun sendMusicPlayerException(daoManager: DaoManager, guild: Guild, track: AudioTrack, exception: FriendlyException) {
         val eb = EmbedBuilder()
-
+        val zoneId = getZoneId(daoManager, guild.idLong)
         val language = getLanguage(daoManager, -1, guild.idLong)
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.MUSIC, true)
             ?: return
@@ -236,7 +246,7 @@ object LogUtils {
         eb.addField(cause, exception.message ?: "/", false)
 
         eb.setColor(Color.decode("#cc1010"))
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
@@ -244,7 +254,7 @@ object LogUtils {
     suspend fun addMusicPlayerNewTrack(context: CommandContext, track: AudioTrack) {
         val trackManager = context.guildMusicPlayer.guildTrackManager
         val eb = Embedder(context.daoManager, context.guildId, -1, Color.decode("#2f3136").rgb)
-
+        val zoneId = getZoneId(context.daoManager, context.guild.idLong)
         val title = context.getTranslation("logging.music.newtrack.title")
 
 
@@ -263,7 +273,7 @@ object LogUtils {
         eb.addField(channelId, vc.id, true)
 
         eb.setColor(Color.decode("#2f3136"))
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         trackManager.startMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
     }
@@ -271,6 +281,7 @@ object LogUtils {
     suspend fun addMusicPlayerNewTrack(daoManager: DaoManager, lavaManager: LavaManager, vc: VoiceChannel, author: User, track: AudioTrack) {
         val guild = vc.guild
         val language = getLanguage(daoManager, -1, guild.idLong)
+        val zoneId = getZoneId(daoManager, guild.idLong)
 
         val trackManager = lavaManager.musicPlayerManager.getGuildMusicPlayer(guild).guildTrackManager
         val eb = Embedder(daoManager, guild.idLong, -1, Color.decode("#2f3136").rgb)
@@ -290,12 +301,12 @@ object LogUtils {
         eb.addField(channel, vc.name, true)
         eb.addField(channelId, vc.id, true)
 
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         trackManager.startMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
     }
 
-    fun sendRemovedLogChannelLog(language: String, logChannelType: LogChannelType, logChannel: TextChannel?, causePath: String, causeArg: String) {
+    fun sendRemovedLogChannelLog(language: String, zoneId: ZoneId, logChannelType: LogChannelType, logChannel: TextChannel?, causePath: String, causeArg: String) {
         if (logChannel == null) return
         val title = i18n.getTranslation(language, "logging.removed.logchannel.title")
             .replace("%type%", logChannelType.text)
@@ -307,12 +318,12 @@ object LogUtils {
         eb.setTitle(title)
         eb.setColor(Color.decode("#CC0000"))
         eb.setDescription(cause)
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         logChannel.sendMessage(eb.build())
     }
 
-    fun sendRemovedRoleLog(language: String, roleType: RoleType, logChannel: TextChannel?, causePath: String, causeArg: String) {
+    fun sendRemovedRoleLog(language: String, zoneId: ZoneId, roleType: RoleType, logChannel: TextChannel?, causePath: String, causeArg: String) {
         if (logChannel == null) return
         val title = i18n.getTranslation(language, "logging.removed.role.title")
             .replace("%type%", roleType.toUCC())
@@ -324,7 +335,7 @@ object LogUtils {
         eb.setTitle(title)
         eb.setColor(Color.decode("#CC0000"))
         eb.setDescription(cause)
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         logChannel.sendMessage(eb.build())
     }
@@ -333,6 +344,7 @@ object LogUtils {
         val guild = member.guild
         val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.VERIFICATION)
             ?: return
+        val zoneId = getZoneId(daoManager, member.guild.idLong)
 
         val language = getLanguage(daoManager, -1, guild.idLong)
         val title = i18n.getTranslation(language, "logging.verification.failedremovingrole.title")
@@ -347,7 +359,7 @@ object LogUtils {
         eb.setColor(Color.RED)
         eb.setDescription(description)
         eb.setThumbnail(member.user.effectiveAvatarUrl)
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime())
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
@@ -409,6 +421,7 @@ object LogUtils {
 
     suspend fun sendPPGainedMessageDMAndLC(container: Container, message: Message, pointsTriggerType: PointsTriggerType, causeArg: String, pp: Int) {
         val guild = message.guild
+        val zoneId = getZoneId(container.daoManager, guild.idLong)
         val daoManager = container.daoManager
         val lc = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.PUNISHMENT_POINTS) ?: return
         val language = getLanguage(daoManager, -1, guild.idLong)
@@ -425,7 +438,7 @@ object LogUtils {
             .replace("%messageId%", message.id)
             .replace("%cause%", causeArg)
             .replace("%points%", "$pp")
-            .replace("%moment%", System.currentTimeMillis().asEpochMillisToDateTime())
+            .replace("%moment%", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         val eb = EmbedBuilder()
         eb.setTitle(title)
@@ -450,5 +463,13 @@ object LogUtils {
 
         eb.setDescription("```LDIF\n$lcBodyPart$lcBody```")
         sendEmbed(daoManager.embedDisabledWrapper, lc, eb.build())
+    }
+
+    suspend fun sendBirthdayMessage(daoManager: DaoManager, textChannel: TextChannel, member: Member) {
+        val language = getLanguage(daoManager, member.guild.idLong)
+        val msg = i18n.getTranslation(language, "logging.birthday")
+            .replace("%user%", member.asTag)
+
+        sendMsg(textChannel, msg)
     }
 }

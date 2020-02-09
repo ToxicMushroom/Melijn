@@ -12,6 +12,7 @@ import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.*
 import java.awt.Color
+import java.time.ZoneId
 
 class WarnCommand : AbstractCommand("command.warn") {
 
@@ -68,10 +69,11 @@ class WarnCommand : AbstractCommand("command.warn") {
         val guild = context.guild
         val author = context.author
         val daoManager = context.daoManager
-
+        val zoneId = getZoneId(daoManager, guild.idLong)
+        val privZoneId = getZoneId(daoManager, guild.idLong, targetMember.idLong)
         val language = context.getLanguage()
-        val warnedMessageDm = getWarnMessage(language, guild, targetMember.user, author, warn)
-        val warnedMessageLc = getWarnMessage(language, guild, targetMember.user, author, warn, true, targetMember.user.isBot, warningMessage != null)
+        val warnedMessageDm = getWarnMessage(language, privZoneId, guild, targetMember.user, author, warn)
+        val warnedMessageLc = getWarnMessage(language, zoneId, guild, targetMember.user, author, warn, true, targetMember.user.isBot, warningMessage != null)
 
         context.daoManager.warnWrapper.addWarn(warn)
 
@@ -93,6 +95,7 @@ class WarnCommand : AbstractCommand("command.warn") {
 
 fun getWarnMessage(
     language: String,
+    zoneId: ZoneId,
     guild: Guild,
     warnedUser: User,
     warnAuthor: User,
@@ -116,7 +119,7 @@ fun getWarnMessage(
         .replace("%warned%", warnedUser.asTag)
         .replace("%warnedId%", warnedUser.id)
         .replace("%reason%", warn.reason)
-        .replace("%moment%", (warn.moment.asEpochMillisToDateTime()))
+        .replace("%moment%", (warn.moment.asEpochMillisToDateTime(zoneId)))
 
     val extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,

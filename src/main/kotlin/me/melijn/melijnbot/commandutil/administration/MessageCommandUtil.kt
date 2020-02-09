@@ -12,6 +12,7 @@ import me.melijn.melijnbot.objects.translation.PLACEHOLDER_TYPE
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.utils.data.DataObject
+import java.time.Instant
 
 object MessageCommandUtil {
 
@@ -59,6 +60,7 @@ object MessageCommandUtil {
             ModularMessageProperty.EMBED_FOOTER -> setEmbedFooterAndMessage(context, message, type)
             ModularMessageProperty.EMBED_FOOTER_ICON_URL -> setEmbedFooterIconUrlAndMessage(context, message, type)
             ModularMessageProperty.EMBED_COLOR -> setEmbedColorAndMessage(context, message, type)
+            ModularMessageProperty.EMBED_TIME_STAMP -> setEmbedTimeStampMessage(context, message, type)
         }
     }
 
@@ -125,6 +127,10 @@ object MessageCommandUtil {
             ModularMessageProperty.EMBED_COLOR -> {
                 path = "message.embed.color.show"
                 message?.embed?.color?.toHex()
+            }
+            ModularMessageProperty.EMBED_TIME_STAMP -> {
+                path = "message.embed.timestamp.show"
+                message?.embed?.timestamp.toString()
             }
         }
 
@@ -309,6 +315,25 @@ object MessageCommandUtil {
         } else {
             eb.setColor(color)
             context.getTranslation("message.embed.color.set")
+                .replace(PLACEHOLDER_ARG, arg)
+        }.replace(PLACEHOLDER_TYPE, type.text)
+
+        message.embed = eb.build()
+        sendMsg(context, msg)
+    }
+
+    private suspend fun setEmbedTimeStampMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
+        val state = getBooleanFromArgNMessage(context, 0) ?: return
+        val timeStamp = if (state) Instant.now() else null
+        val arg = context.rawArg
+        val eb = EmbedBuilder(message.embed)
+
+        val msg = if (arg.equals("null", true)) {
+            eb.setTimestamp(timeStamp)
+            context.getTranslation("message.embed.timestamp.unset")
+        } else {
+            eb.setTimestamp(timeStamp)
+            context.getTranslation("message.embed.timestamp.set")
                 .replace(PLACEHOLDER_ARG, arg)
         }.replace(PLACEHOLDER_TYPE, type.text)
 

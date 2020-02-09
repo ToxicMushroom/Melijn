@@ -52,6 +52,7 @@ class MuteWrapper(val taskManager: TaskManager, private val muteDao: MuteDao) {
     private suspend fun getMuteMessage(context: CommandContext, muteAuthor: User?, unmuteAuthor: User?, mute: Mute): String {
         val deletedUser = context.getTranslation("message.deleted.user")
         val unmuteReason = mute.unmuteReason
+        val zoneId = context.getTimeZoneId()
 
         return context.getTranslation("message.punishmenthistory.mute")
             .replace("%muteAuthor%", muteAuthor?.asTag ?: deletedUser)
@@ -60,8 +61,8 @@ class MuteWrapper(val taskManager: TaskManager, private val muteDao: MuteDao) {
             .replace("%unmuteAuthorId%", mute.unmuteAuthorId?.toString() ?: "/")
             .replace("%muteReason%", mute.reason.substring(0, min(mute.reason.length, 830)))
             .replace("%unmuteReason%", unmuteReason?.substring(0, min(unmuteReason.length, 830)) ?: "/")
-            .replace("%startTime%", mute.startTime.asEpochMillisToDateTime())
-            .replace("%endTime%", mute.endTime?.asEpochMillisToDateTime() ?: "/")
+            .replace("%startTime%", mute.startTime.asEpochMillisToDateTime(zoneId))
+            .replace("%endTime%", mute.endTime?.asEpochMillisToDateTime(zoneId) ?: "/")
             .replace("%active%", "${mute.active}")
     }
 }

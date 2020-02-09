@@ -34,4 +34,9 @@ class RoleWrapper(private val taskManager: TaskManager, private val roleDao: Rol
         roleDao.set(guildId, roleType, roleId)
         roleCache.put(Pair(guildId, roleType), CompletableFuture.completedFuture(roleId))
     }
+
+    //guildId -> roleId
+    suspend fun getRoles(birthday: RoleType): Map<Long, Long> {
+        return roleDao.getRoles(birthday)
+    }
 }
