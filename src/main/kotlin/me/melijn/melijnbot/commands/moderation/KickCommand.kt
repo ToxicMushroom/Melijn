@@ -27,7 +27,7 @@ class KickCommand : AbstractCommand("command.kick") {
             sendSyntax(context)
             return
         }
-        val targetMember = getMemberByArgsNMessage(context, 0) ?: return
+        val targetMember = getMemberByArgsNMessage(context, 0, true, botAllowed = false) ?: return
         if (!context.guild.selfMember.canInteract(targetMember)) {
             val msg = context.getTranslation("message.interact.member.hierarchyexception")
                 .replace(PLACEHOLDER_USER, targetMember.asTag)
@@ -50,14 +50,12 @@ class KickCommand : AbstractCommand("command.kick") {
 
 
         val kicking = context.getTranslation("message.kicking")
-        try {
-            val privateChannel = targetMember.user.openPrivateChannel().await()
-            val message = privateChannel.sendMessage(kicking).await()
+        val privateChannel = targetMember.user.openPrivateChannel().awaitOrNull()
+        val message: Message? = privateChannel?.let {
+            sendMsgEL(it, kicking)
+        }?.firstOrNull()
 
-            continueKicking(context, targetMember, kick, message)
-        } catch (t: Throwable) {
-            continueKicking(context, targetMember, kick)
-        }
+        continueKicking(context, targetMember, kick, message)
     }
 
     private suspend fun continueKicking(context: CommandContext, targetMember: Member, kick: Kick, kickingMessage: Message? = null) {

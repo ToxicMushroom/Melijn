@@ -23,7 +23,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         name = "tempmute"
         aliases = arrayOf("tm")
         commandCategory = CommandCategory.MODERATION
-        discordPermissions = arrayOf(Permission.MANAGE_ROLES)
+        discordChannelPermissions = arrayOf(Permission.MANAGE_ROLES)
     }
 
     override suspend fun execute(context: CommandContext) {
@@ -99,11 +99,13 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         val muting = context.getTranslation("message.muting")
 
         val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
-        val message = privateChannel?.sendMessage(muting)?.awaitOrNull()
+        val message: Message? = privateChannel?.let {
+            sendMsgEL(it, muting)
+        }?.firstOrNull()
         continueMuting(context, muteRole, targetUser, mute, activeMute, message)
     }
 
-    private suspend fun continueMuting(context: CommandContext, muteRole: Role, targetUser: User, mute: Mute, activeMute: Mute?, mutingMessage: Message? = null) {
+    private suspend fun continueMuting(context: CommandContext, muteRole: Role, targetUser: User, mute: Mute, activeMute: Mute?, mutingMessage: Message?) {
         val guild = context.guild
         val author = context.author
         val language = context.getLanguage()

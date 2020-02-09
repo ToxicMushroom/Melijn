@@ -13,7 +13,7 @@ class SharpenCommand : AbstractCommand("command.sharpen") {
         id = 136
         name = "sharpen"
         aliases = arrayOf("sharpenGif")
-        discordPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
 

@@ -15,7 +15,7 @@ class DiscordMemeCommand : AbstractCommand("command.discordmeme") {
         id = 102
         name = "discordMeme"
         aliases = arrayOf("dmeme")
-        discordPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
 

@@ -156,7 +156,8 @@ class CommandClientBuilder(private val container: Container) {
         SetPrivateLanguageCommand(),
         SetBirthdayCommand(),
         SetPrivateTimeZoneCommand(),
-        SetTimeZoneCommand()
+        SetTimeZoneCommand(),
+        BirthdayMessageCommand()
     )
 
     init {

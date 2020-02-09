@@ -25,7 +25,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
         name = "unban"
         aliases = arrayOf("pardon")
         commandCategory = CommandCategory.MODERATION
-        discordPermissions = arrayOf(Permission.BAN_MEMBERS)
+        discordChannelPermissions = arrayOf(Permission.BAN_MEMBERS)
     }
 
     override suspend fun execute(context: CommandContext) {

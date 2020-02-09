@@ -5,7 +5,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.utils.getEmoteOrEmojiByArgsNMessage
+import me.melijn.melijnbot.objects.utils.getEmotejiByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 
 class SetVerificationEmotejiCommand : AbstractCommand("command.setverificationemoteji") {
@@ -36,7 +36,7 @@ class SetVerificationEmotejiCommand : AbstractCommand("command.setverificationem
             wrapper.removeEmoteji(context.guildId)
             context.getTranslation("$root.unset")
         } else {
-            val emoteji = getEmoteOrEmojiByArgsNMessage(context, 0) ?: return
+            val emoteji = getEmotejiByArgsNMessage(context, 0) ?: return
             val second = emoteji.second
             val first = emoteji.first
             when {

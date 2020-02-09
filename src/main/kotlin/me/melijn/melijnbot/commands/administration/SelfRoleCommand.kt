@@ -39,7 +39,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 return
             }
 
-            val pair = getEmoteOrEmojiByArgsNMessage(context, 0) ?: return
+            val pair = getEmotejiByArgsNMessage(context, 0) ?: return
             var rname: String? = null
             val id = if (pair.first == null) {
                 pair.second?.let { rname = it }
@@ -75,13 +75,13 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
 
-            val pair = getEmoteOrEmojiByArgsNMessage(context, 0)
+            val pair = getEmotejiByArgsN(context, 0)
             if (context.args[0].isNumber() && pair == null) {
-                context.daoManager.selfRoleWrapper.remove(context.guildId, context.args[0])
                 val roleId = context.daoManager.selfRoleWrapper.selfRoleCache.get(context.guildId).await()
                     .getOrElse(context.args[0]) {
                         null
                     }
+                context.daoManager.selfRoleWrapper.remove(context.guildId, context.args[0])
 
                 val msg = context.getTranslation("$root.success")
                     .replace("%emoteName%", context.args[0])

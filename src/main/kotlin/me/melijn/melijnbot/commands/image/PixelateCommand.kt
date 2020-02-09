@@ -14,7 +14,7 @@ class PixelateCommand : AbstractCommand("command.pixelate") {
         id = 133
         name = "pixelate"
         aliases = arrayOf("pixelateGif")
-        discordPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
 

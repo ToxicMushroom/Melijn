@@ -23,9 +23,9 @@ class BanCommand : AbstractCommand("command.ban") {
     init {
         id = 24
         name = "ban"
-        aliases = arrayOf("permBan")
+        aliases = arrayOf("permBan", "hackBan")
         commandCategory = CommandCategory.MODERATION
-        discordPermissions = arrayOf(Permission.BAN_MEMBERS)
+        discordChannelPermissions = arrayOf(Permission.BAN_MEMBERS)
     }
 
     override suspend fun execute(context: CommandContext) {
@@ -33,7 +33,6 @@ class BanCommand : AbstractCommand("command.ban") {
             sendSyntax(context)
             return
         }
-
 
         val targetUser = getUserByArgsNMessage(context, 0) ?: return
         val member = context.guild.getMember(targetUser)
@@ -63,13 +62,12 @@ class BanCommand : AbstractCommand("command.ban") {
         }
 
         val banning = context.getTranslation("message.banning")
-        try {
-            val privateChannel = targetUser.openPrivateChannel().await()
-            val message = privateChannel.sendMessage(banning).await()
-            continueBanning(context, targetUser, ban, activeBan, message)
-        } catch (t: Throwable) {
-            continueBanning(context, targetUser, ban, activeBan)
-        }
+        val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
+        val message: Message? = privateChannel?.let {
+            sendMsgEL(it, banning)
+        }?.firstOrNull()
+
+        continueBanning(context, targetUser, ban, activeBan, message)
     }
 
     private suspend fun continueBanning(context: CommandContext, targetUser: User, ban: Ban, activeBan: Ban?, banningMessage: Message? = null) {

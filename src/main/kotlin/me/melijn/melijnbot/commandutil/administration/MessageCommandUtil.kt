@@ -25,7 +25,7 @@ object MessageCommandUtil {
         }
     }
 
-    suspend fun setMessageJoinLeave(context: CommandContext, property: ModularMessageProperty, type: MessageType) {
+    suspend fun setMessage(context: CommandContext, property: ModularMessageProperty, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
         val guildId = context.guildId
         val message = messageWrapper.messageCache.get(Pair(guildId, type)).await() ?: ModularMessage()
@@ -65,7 +65,7 @@ object MessageCommandUtil {
     }
 
 
-    suspend fun showMessageJoinLeave(context: CommandContext, property: ModularMessageProperty, type: MessageType) {
+    suspend fun showMessage(context: CommandContext, property: ModularMessageProperty, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
         val guildId = context.guildId
         val message = messageWrapper.messageCache.get(Pair(guildId, type)).await()
@@ -145,7 +145,7 @@ object MessageCommandUtil {
     }
 
 
-    suspend fun clearEmbedJoinLeave(context: CommandContext, type: MessageType) {
+    suspend fun clearEmbed(context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.messageCache.get(Pair(context.guildId, type)).await()
             ?: ModularMessage()
@@ -171,7 +171,7 @@ object MessageCommandUtil {
     }
 
 
-    suspend fun listAttachmentsJoinLeave(context: CommandContext, type: MessageType) {
+    suspend fun listAttachments(context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.messageCache.get(Pair(context.guildId, type)).await()
         listAttachmentsAndMessage(context, modularMessage, type)
@@ -200,7 +200,7 @@ object MessageCommandUtil {
         sendMsg(context, msg)
     }
 
-    suspend fun addAttachmentJoinLeave(context: CommandContext, type: MessageType) {
+    suspend fun addAttachment(context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.messageCache.get(Pair(context.guildId, type)).await()
             ?: ModularMessage()
@@ -232,7 +232,7 @@ object MessageCommandUtil {
         sendMsg(context, msg)
     }
 
-    suspend fun removeAttachmentJoinLeave(context: CommandContext, type: MessageType) {
+    suspend fun removeAttachment(context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.messageCache.get(Pair(context.guildId, type)).await()
             ?: ModularMessage()
@@ -563,7 +563,7 @@ object MessageCommandUtil {
     }
 
 
-    suspend fun addEmbedFieldJoinLeave(title: String, value: String, inline: Boolean, context: CommandContext, type: MessageType) {
+    suspend fun addEmbedField(title: String, value: String, inline: Boolean, context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.messageCache.get(Pair(context.guildId, type)).await()
             ?: ModularMessage()
@@ -617,15 +617,15 @@ object MessageCommandUtil {
         messageWrapper.update(context.guildId, cc)
     }
 
-    suspend fun setEmbedFieldTitleJoinLeave(index: Int, title: String, context: CommandContext, type: MessageType) {
+    suspend fun setEmbedFieldTitle(index: Int, title: String, context: CommandContext, type: MessageType) {
         setEmbedFieldPartJoinLeave(index, "title", title, context, type)
     }
 
-    suspend fun setEmbedFieldValueJoinLeave(index: Int, value: String, context: CommandContext, type: MessageType) {
+    suspend fun setEmbedFieldValue(index: Int, value: String, context: CommandContext, type: MessageType) {
         setEmbedFieldPartJoinLeave(index, "value", value, context, type)
     }
 
-    suspend fun setEmbedFieldInlineJoinLeave(index: Int, inline: Boolean, context: CommandContext, type: MessageType) {
+    suspend fun setEmbedFieldInline(index: Int, inline: Boolean, context: CommandContext, type: MessageType) {
         setEmbedFieldPartJoinLeave(index, "inline", inline, context, type)
     }
 
@@ -664,7 +664,7 @@ object MessageCommandUtil {
         sendMsg(context, msg)
     }
 
-    suspend fun removeEmbedFieldJoinLeave(index: Int, context: CommandContext, type: MessageType) {
+    suspend fun removeEmbedField(index: Int, context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.messageCache.get(Pair(context.guildId, type)).await()
             ?: ModularMessage()
@@ -706,7 +706,7 @@ object MessageCommandUtil {
     }
 
 
-    suspend fun showEmbedFieldsJoinLeave(context: CommandContext, type: MessageType) {
+    suspend fun showEmbedFields(context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
         val modularMessage = messageWrapper.messageCache.get(Pair(context.guildId, type)).await()
             ?: ModularMessage()

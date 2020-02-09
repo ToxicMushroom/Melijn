@@ -13,7 +13,7 @@ class SpookifyCommand : AbstractCommand("command.spookify") {
         id = 55
         name = "spookify"
         aliases = arrayOf("spookifyGif")
-        discordPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
 

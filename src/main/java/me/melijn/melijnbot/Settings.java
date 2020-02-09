@@ -27,7 +27,8 @@ public class Settings {
     }
 
     public static class Lavalink {
-        public Node[] nodes;
+        public Node[] http_nodes;
+        public Node[] verified_nodes;
         public boolean enabled;
 
         public static class Node {

@@ -6,17 +6,17 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.sendSyntax
 
-class JoinMessageCommand : AbstractCommand("command.joinmessage") {
+class BirthdayMessageCommand : AbstractCommand("command.birthdaymessage") {
 
     init {
-        id = 34
-        name = "joinMessage"
-        aliases = arrayOf("jm")
+        id = 142
+        name = "birthdayMessage"
+        aliases = arrayOf("bm")
         children = arrayOf(
-            LeaveMessageCommand.SetContentArg(root, MessageType.JOIN),
-            LeaveMessageCommand.EmbedArg(root, MessageType.JOIN),
-            LeaveMessageCommand.AttachmentsArg(root, MessageType.JOIN),
-            LeaveMessageCommand.ViewArg(root, MessageType.JOIN)
+            LeaveMessageCommand.SetContentArg(root, MessageType.BIRTHDAY),
+            LeaveMessageCommand.EmbedArg(root, MessageType.BIRTHDAY),
+            LeaveMessageCommand.AttachmentsArg(root, MessageType.BIRTHDAY),
+            LeaveMessageCommand.ViewArg(root, MessageType.BIRTHDAY)
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }

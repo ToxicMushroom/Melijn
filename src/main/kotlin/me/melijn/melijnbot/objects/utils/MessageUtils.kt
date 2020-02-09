@@ -231,7 +231,6 @@ suspend fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed, succe
         val msg = privateChannel.sendMessage(embed).await()
         success?.invoke(listOf(msg))
     } catch (t: Throwable) {
-        t.printStackTrace()
         failed?.invoke(t)
     }
 }
@@ -239,6 +238,10 @@ suspend fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed, succe
 suspend fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed): List<Message> = suspendCoroutine {
     runBlocking {
         try {
+            if (privateChannel.user.isBot) {
+                it.resume(emptyList())
+                return@runBlocking
+            }
             val msg = privateChannel.sendMessage(embed).await()
             it.resume(listOf(msg))
         } catch (t: Throwable) {
@@ -506,6 +509,24 @@ suspend fun sendMsg(context: CommandContext, msg: String): List<Message> = suspe
     }
 }
 
+suspend fun sendMsg(privateChannel: PrivateChannel, msg: String): List<Message> = suspendCoroutine {
+    val success = { success: List<Message> -> it.resume(success) }
+    val failed = { failed: Throwable -> it.resumeWithException(failed) }
+    runBlocking {
+        sendMsg(privateChannel, msg, success, failed)
+    }
+}
+
+//Returns empty message list on failures
+suspend fun sendMsgEL(privateChannel: PrivateChannel, msg: String): List<Message> = suspendCoroutine {
+    val success = { success: List<Message> -> it.resume(success) }
+    val failed = { _: Throwable -> it.resume(emptyList()) }
+    runBlocking {
+        sendMsg(privateChannel, msg, success, failed)
+    }
+}
+
+
 suspend fun sendMsg(privateChannel: PrivateChannel, msg: String, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
     try {
         val messageList = mutableListOf<Message>()
@@ -520,7 +541,6 @@ suspend fun sendMsg(privateChannel: PrivateChannel, msg: String, success: ((mess
         }
         success?.invoke(messageList)
     } catch (t: Throwable) {
-        t.printStackTrace()
         failed?.invoke(t)
         return
     }

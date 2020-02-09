@@ -25,86 +25,90 @@ class BirthdayService(
 
     private val birthdayService = Runnable {
         runBlocking {
-            val birthdayHistory = daoManager.birthdayHistoryWrapper
-            val birthdays = daoManager.birthdayWrapper.getBirthdaysToday()
-            val birthDaysToRemove = daoManager.birthdayHistoryWrapper.getBirthdaysToDeactivate()
+            try {
+                val birthdayHistory = daoManager.birthdayHistoryWrapper
+                val birthdays = daoManager.birthdayWrapper.getBirthdaysToday()
+                val birthDaysToRemove = daoManager.birthdayHistoryWrapper.getBirthdaysToDeactivate()
 
-            val roles = daoManager.roleWrapper.getRoles(RoleType.BIRTHDAY)
-            val channels = daoManager.channelWrapper.getChannels(ChannelType.BIRTHDAY).toMutableMap()
+                val roles = daoManager.roleWrapper.getRoles(RoleType.BIRTHDAY)
+                val channels = daoManager.channelWrapper.getChannels(ChannelType.BIRTHDAY).toMutableMap()
 
-            val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-            val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
-            val currentDay = calendar.get(Calendar.HOUR_OF_DAY)
+                val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+                val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
+                val currentDay = calendar.get(Calendar.HOUR_OF_DAY)
 
-            for (guildId in roles.keys) {
-                val guild = shardManager.getGuildById(guildId)
-                if (guild == null) {
-                    daoManager.roleWrapper.removeRole(guildId, RoleType.BIRTHDAY)
-                    continue
-                }
+                for (guildId in roles.keys) {
+                    val guild = shardManager.getGuildById(guildId)
+                    if (guild == null) {
+                        daoManager.roleWrapper.removeRole(guildId, RoleType.BIRTHDAY)
+                        continue
+                    }
 
-                val role = roles[guildId]?.let {
-                    guild.getAndVerifyRoleById(daoManager, RoleType.BIRTHDAY, it, true)
-                } ?: continue
+                    val role = roles[guildId]?.let {
+                        guild.getAndVerifyRoleById(daoManager, RoleType.BIRTHDAY, it, true)
+                    } ?: continue
 
-                //Add birthday role (maybe channel message)
-                for ((userId, triple) in birthdays) {
-                    val member = guild.getMemberById(userId) ?: return@runBlocking
-                    if ((currentDay == 1 && (triple.third < currentHour || triple.second < currentDay)) || triple.second < currentDay || triple.third < currentHour) {
-                        if (birthdayHistory.contains(calendar.get(Calendar.YEAR), guildId, userId)) continue
-                        val ex = guild.addRoleToMember(member, role)
-                            .reason("Birthday begins")
-                            .awaitEX()
+                    //Add birthday role (maybe channel message)
+                    for ((userId, triple) in birthdays) {
+                        val member = guild.getMemberById(userId) ?: return@runBlocking
+                        if ((currentDay == 1 && (triple.third < currentHour || triple.second < currentDay)) || triple.second < currentDay || triple.third < currentHour) {
+                            if (birthdayHistory.contains(calendar.get(Calendar.YEAR), guildId, userId)) continue
+                            val ex = guild.addRoleToMember(member, role)
+                                .reason("Birthday begins")
+                                .awaitEX()
 
-                        if (ex == null)
-                            birthdayHistory.add(calendar.get(Calendar.YEAR), guildId, userId)
+                            if (ex == null)
+                                birthdayHistory.add(calendar.get(Calendar.YEAR), guildId, userId)
 
 
-                        val channelId = channels.getOrElse(guildId) { null } ?: continue
-                        val textChannel = guild.getAndVerifyChannelById(daoManager, ChannelType.BIRTHDAY, channelId, setOf(Permission.MESSAGE_WRITE))
-                        if (textChannel == null) {
+                            val channelId = channels.getOrElse(guildId) { null } ?: continue
+                            val textChannel = guild.getAndVerifyChannelById(daoManager, ChannelType.BIRTHDAY, channelId, setOf(Permission.MESSAGE_WRITE))
+                            if (textChannel == null) {
+                                channels.remove(guildId)
+                                continue
+                            }
+
+                            LogUtils.sendBirthdayMessage(daoManager, textChannel, member)
                             channels.remove(guildId)
-                            continue
                         }
+                    }
 
-                        LogUtils.sendBirthdayMessage(daoManager, textChannel, member)
-                        channels.remove(guildId)
+                    //Birthdays to remove
+                    for ((userId, pair) in birthDaysToRemove) {
+                        val member = guild.getMemberById(userId) ?: return@runBlocking
+                        guild.removeRoleFromMember(member, role)
+                            .reason("Birthday is over")
+                            .awaitBool()
+
+                        birthdayHistory.deactivate(pair.first, guildId, userId)
                     }
                 }
 
-                //Birthdays to remove
-                for ((userId, pair) in birthDaysToRemove) {
-                    val member = guild.getMemberById(userId) ?: return@runBlocking
-                    guild.removeRoleFromMember(member, role)
-                        .reason("Birthday is over")
-                        .awaitBool()
-
-                    birthdayHistory.deactivate(pair.first, guildId, userId)
-                }
-            }
-
-            //Send birthday channel message
-            for (guildId in channels.keys) {
-                val guild = shardManager.getGuildById(guildId)
-                if (guild == null) {
-                    daoManager.roleWrapper.removeRole(guildId, RoleType.BIRTHDAY)
-                    continue
-                }
+                //Send birthday channel message
+                for (guildId in channels.keys) {
+                    val guild = shardManager.getGuildById(guildId)
+                    if (guild == null) {
+                        daoManager.roleWrapper.removeRole(guildId, RoleType.BIRTHDAY)
+                        continue
+                    }
 
 
-                val textChannel = channels[guildId]?.let {
-                    guild.getAndVerifyChannelById(daoManager, ChannelType.BIRTHDAY, it, setOf(Permission.MESSAGE_WRITE))
-                } ?: continue
+                    val textChannel = channels[guildId]?.let {
+                        guild.getAndVerifyChannelById(daoManager, ChannelType.BIRTHDAY, it, setOf(Permission.MESSAGE_WRITE))
+                    } ?: continue
 
-                for ((userId, triple) in birthdays) {
-                    val member = guild.getMemberById(userId) ?: return@runBlocking
-                    if ((currentDay == 1 && (triple.third < currentHour || triple.second < currentDay)) || triple.second < currentDay || triple.third < currentHour) {
-                        if (birthdayHistory.contains(calendar.get(Calendar.YEAR), guildId, userId)) continue
+                    for ((userId, triple) in birthdays) {
+                        val member = guild.getMemberById(userId) ?: return@runBlocking
+                        if ((currentDay == 1 && (triple.third < currentHour || triple.second < currentDay)) || triple.second < currentDay || triple.third < currentHour) {
+                            if (birthdayHistory.contains(calendar.get(Calendar.YEAR), guildId, userId)) continue
 
-                        LogUtils.sendBirthdayMessage(daoManager, textChannel, member)
-                        birthdayHistory.add(calendar.get(Calendar.YEAR), guildId, userId)
+                            LogUtils.sendBirthdayMessage(daoManager, textChannel, member)
+                            birthdayHistory.add(calendar.get(Calendar.YEAR), guildId, userId)
+                        }
                     }
                 }
+            } catch (t: Throwable) {
+                t.printStackTrace()
             }
         }
     }

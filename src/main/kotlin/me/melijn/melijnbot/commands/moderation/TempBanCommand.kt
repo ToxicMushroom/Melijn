@@ -19,7 +19,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         name = "tempBan"
         aliases = arrayOf("temporaryBan")
         commandCategory = CommandCategory.MODERATION
-        discordPermissions = arrayOf(Permission.BAN_MEMBERS)
+        discordChannelPermissions = arrayOf(Permission.BAN_MEMBERS)
     }
 
     override suspend fun execute(context: CommandContext) {
@@ -66,16 +66,16 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         }
 
         val banning = context.getTranslation("message.banning")
-        try {
-            val privateChannel = targetUser.openPrivateChannel().await()
-            val message = privateChannel.sendMessage(banning).await()
-            continueBanning(context, targetUser, ban, activeBan, message)
-        } catch (t: Throwable) {
-            continueBanning(context, targetUser, ban, activeBan)
-        }
+
+        val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
+        val message: Message? = privateChannel?.let {
+            sendMsgEL(it, banning)
+        }?.firstOrNull()
+
+        continueBanning(context, targetUser, ban, activeBan, message)
     }
 
-    private suspend fun continueBanning(context: CommandContext, targetUser: User, ban: Ban, activeBan: Ban?, banningMessage: Message? = null) {
+    private suspend fun continueBanning(context: CommandContext, targetUser: User, ban: Ban, activeBan: Ban?, banningMessage: Message?) {
         val guild = context.guild
         val author = context.author
         val language = context.getLanguage()

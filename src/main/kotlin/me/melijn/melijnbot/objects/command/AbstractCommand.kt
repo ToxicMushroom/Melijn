@@ -19,6 +19,7 @@ abstract class AbstractCommand(val root: String) {
     var help = "$root.help"
     var commandCategory: CommandCategory = CommandCategory.DEVELOPER
     var aliases: Array<String> = arrayOf()
+    var discordChannelPermissions: Array<Permission> = arrayOf()
     var discordPermissions: Array<Permission> = arrayOf()
     var runConditions: Array<RunCondition> = arrayOf()
     var children: Array<AbstractCommand> = arrayOf()

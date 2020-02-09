@@ -13,7 +13,7 @@ class MirrorCommand : AbstractCommand("command.mirror") {
         id = 130
         name = "mirror"
         aliases = arrayOf("mirrorGif")
-        discordPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
 

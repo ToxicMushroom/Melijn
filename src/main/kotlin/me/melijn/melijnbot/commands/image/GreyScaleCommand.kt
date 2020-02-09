@@ -13,7 +13,7 @@ class GreyScaleCommand : AbstractCommand("command.greyscale") {
         id = 128
         name = "greyscale"
         aliases = arrayOf("greyScaleGif")
-        discordPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
 

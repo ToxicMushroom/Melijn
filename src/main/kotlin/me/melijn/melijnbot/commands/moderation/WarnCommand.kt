@@ -27,14 +27,8 @@ class WarnCommand : AbstractCommand("command.warn") {
             sendSyntax(context)
             return
         }
-        val targetMember = getMemberByArgsNMessage(context, 0) ?: return
 
-        if (!context.guild.selfMember.canInteract(targetMember)) {
-            val msg = context.getTranslation("message.interact.member.hierarchyexception")
-                .replace(PLACEHOLDER_USER, targetMember.asTag)
-            sendMsg(context, msg)
-            return
-        }
+        val targetMember = getMemberByArgsNMessage(context, 0, true, botAllowed = false) ?: return
 
         var reason = context.rawArg
             .removeFirst(context.args[0])
@@ -56,12 +50,10 @@ class WarnCommand : AbstractCommand("command.warn") {
 
 
         val privateChannel = targetMember.user.openPrivateChannel().awaitOrNull()
-        if (privateChannel == null) {
-            continueWarning(context, targetMember, warn)
-            return
-        }
+        val message: Message? = privateChannel?.let {
+            sendMsgEL(it, warning)
+        }?.firstOrNull()
 
-        val message = privateChannel.sendMessage(warning).awaitOrNull()
         continueWarning(context, targetMember, warn, message)
     }
 

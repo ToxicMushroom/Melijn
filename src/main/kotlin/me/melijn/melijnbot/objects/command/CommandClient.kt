@@ -308,7 +308,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
 
         if (event.isFromGuild) {
-            command.discordPermissions.forEach { permission ->
+            command.discordChannelPermissions.forEach { permission ->
                 val botMember = event.guild.selfMember
                 var missingPermissionCount = 0
                 var missingPermissionMessage = ""
@@ -321,9 +321,30 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 if (missingPermissionCount > 0) {
                     val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
                     val more = if (missingPermissionCount > 1) "s" else ""
-                    val msg = i18n.getTranslation(language, "message.discordpermission$more.missing")
+                    val msg = i18n.getTranslation(language, "message.discordchannelpermission$more.missing")
                         .replace("%permissions%", missingPermissionMessage)
                         .replace("%channel%", event.textChannel.asTag)
+
+                    sendMsg(event.textChannel, msg)
+                    return true
+                }
+            }
+
+            command.discordPermissions.forEach { permission ->
+                val botMember = event.guild.selfMember
+                var missingPermissionCount = 0
+                var missingPermissionMessage = ""
+
+                if (!botMember.hasPermission(permission)) {
+                    missingPermissionMessage += "\n    ⁎ `${permission.toUCSC()}`"
+                    missingPermissionCount++
+                }
+
+                if (missingPermissionCount > 0) {
+                    val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
+                    val more = if (missingPermissionCount > 1) "s" else ""
+                    val msg = i18n.getTranslation(language, "message.discordpermission$more.missing")
+                        .replace("%permissions%", missingPermissionMessage)
 
                     sendMsg(event.textChannel, msg)
                     return true

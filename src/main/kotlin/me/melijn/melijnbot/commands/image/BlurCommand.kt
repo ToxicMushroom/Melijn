@@ -14,7 +14,7 @@ class BlurCommand : AbstractCommand("command.blur") {
         id = 135
         name = "blur"
         aliases = arrayOf("blurGif")
-        discordPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
 

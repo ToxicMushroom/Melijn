@@ -2,12 +2,13 @@ package me.melijn.melijnbot.objects.utils
 
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
 import me.melijn.melijnbot.database.DaoManager
+import me.melijn.melijnbot.enums.*
 import me.melijn.melijnbot.enums.ChannelType
-import me.melijn.melijnbot.enums.LogChannelType
-import me.melijn.melijnbot.enums.PointsTriggerType
-import me.melijn.melijnbot.enums.RoleType
+import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.music.LavaManager
@@ -466,10 +467,27 @@ object LogUtils {
     }
 
     suspend fun sendBirthdayMessage(daoManager: DaoManager, textChannel: TextChannel, member: Member) {
-        val language = getLanguage(daoManager, member.guild.idLong)
-        val msg = i18n.getTranslation(language, "logging.birthday")
-            .replace("%user%", member.asTag)
+        val guildId = textChannel.guild.idLong
+        val messageType = MessageType.BIRTHDAY
+        val language = getLanguage(daoManager, guildId)
+        val messageWrapper = daoManager.messageWrapper
+        var message = messageWrapper.messageCache.get(Pair(guildId, messageType)).await()
+        if (message == null) {
+            val msg = i18n.getTranslation(language, "logging.birthday")
+                .replace("%user%", member.asTag)
 
-        sendMsg(textChannel, msg)
+            sendMsg(textChannel, msg)
+        } else {
+            if (MessageCommandUtil.removeMessageIfEmpty(guildId, messageType, message, messageWrapper)) return
+
+            message = BirthdayUtil.replaceVariablesInBirthdayMessage(daoManager, member, message)
+
+            val msg: Message? = message.toMessage()
+            when {
+                msg == null -> sendAttachments(textChannel, message.attachments)
+                message.attachments.isNotEmpty() -> sendMsgWithAttachments(textChannel, msg, message.attachments)
+                else -> sendMsg(textChannel, msg, failed = { t -> t.printStackTrace() })
+            }
+        }
     }
 }

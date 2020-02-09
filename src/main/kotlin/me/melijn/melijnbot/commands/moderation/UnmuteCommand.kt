@@ -25,7 +25,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         id = 26
         name = "unmute"
         commandCategory = CommandCategory.MODERATION
-        discordPermissions = arrayOf(Permission.MANAGE_ROLES)
+        discordChannelPermissions = arrayOf(Permission.MANAGE_ROLES)
     }
 
     override suspend fun execute(context: CommandContext) {

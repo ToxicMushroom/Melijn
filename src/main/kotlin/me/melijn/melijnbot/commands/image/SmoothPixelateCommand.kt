@@ -13,7 +13,7 @@ class SmoothPixelateCommand : AbstractCommand("command.smoothpixelate") {
         id = 134
         name = "smoothPixelate"
         aliases = arrayOf("smoothPixelateGif")
-        discordPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
 

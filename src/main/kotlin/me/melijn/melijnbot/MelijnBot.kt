@@ -35,9 +35,14 @@ class MelijnBot {
 
             linkBuilder.autoReconnect = true
 
-            for (node in container.settings.lavalink.nodes) {
+            for (node in container.settings.lavalink.http_nodes) {
                 linkBuilder.addNode(URI.create("ws://${node.host}"), node.password)
             }
+
+            for (node in container.settings.lavalink.verified_nodes) {
+                linkBuilder.addNode(URI.create("ws://${node.host}"), node.password)
+            }
+
             linkBuilder
         } else {
             null
@@ -68,6 +73,6 @@ class MelijnBot {
     }
 }
 
-fun main(args: Array<String>) {
+fun main() {
     MelijnBot()
 }

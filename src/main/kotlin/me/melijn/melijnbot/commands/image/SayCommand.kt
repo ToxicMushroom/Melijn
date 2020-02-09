@@ -16,7 +16,7 @@ class SayCommand : AbstractCommand("command.say") {
         id = 115
         name = "say"
         aliases = arrayOf("zeg")
-        discordPermissions = arrayOf(
+        discordChannelPermissions = arrayOf(
             Permission.MESSAGE_ATTACH_FILES
         )
         commandCategory = CommandCategory.IMAGE

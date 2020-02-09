@@ -14,7 +14,7 @@ class InvertCommand : AbstractCommand("command.invert") {
         id = 56
         name = "invert"
         aliases = arrayOf("invertGif", "inverse", "inverseGif")
-        discordPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE
     }
 

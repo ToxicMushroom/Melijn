@@ -18,15 +18,16 @@ class BirthdayDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun getBirthdays(day: Int): Map<Long, Triple<Int, Int, Int>> = suspendCoroutine {
         val prevDay = if (day == 1) 365 else day - 1
+        val nextDay = if (day == 365) 1 else day + 1
         driverManager.executeQuery(
-            "SELECT *, $table.startTime FROM $table LEFT JOIN $tableT ON $table.userId = $tableT.id WHERE ($table.birthday = ? OR $table.birthday = ?)"
+            "SELECT *, $table.startTime FROM $table LEFT JOIN $tableT ON $table.userId = $tableT.id WHERE ($table.birthday = ? OR $table.birthday = ? OR $table.birthday = ?)"
             , { rs ->
             val map = mutableMapOf<Long, Triple<Int, Int, Int>>()
             while (rs.next()) {
                 map[rs.getLong("userId")] = Triple(rs.getInt("birthyear"), rs.getInt("birthday"), rs.getInt("startTime"))
             }
             it.resume(map)
-        }, day, prevDay)
+        }, day, prevDay, nextDay)
     }
 
     suspend fun get(userId: Long): Pair<Int, Int>? = suspendCoroutine {

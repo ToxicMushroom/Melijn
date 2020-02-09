@@ -24,7 +24,7 @@ class SoftBanCommand : AbstractCommand("command.softban") {
         id = 111
         name = "softBan"
         commandCategory = CommandCategory.MODERATION
-        discordPermissions = arrayOf(Permission.BAN_MEMBERS)
+        discordChannelPermissions = arrayOf(Permission.BAN_MEMBERS)
     }
 
     override suspend fun execute(context: CommandContext) {
@@ -66,7 +66,9 @@ class SoftBanCommand : AbstractCommand("command.softban") {
         val softBanning = context.getTranslation("message.softbanning")
 
         val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
-        val message = privateChannel?.sendMessage(softBanning)?.awaitOrNull()
+        val message: Message? = privateChannel?.let {
+            sendMsgEL(it, softBanning)
+        }?.firstOrNull()
 
         continueBanning(context, targetUser, ban, hasActiveSoftBan, clearDays ?: 7, message)
     }

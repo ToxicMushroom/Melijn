@@ -3,6 +3,7 @@ package me.melijn.melijnbot.objects.utils
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_USER
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.i18n
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
@@ -47,8 +48,12 @@ suspend fun <T> RestAction<T>.await(failure: ((Throwable) -> Unit)? = null) = su
 
 suspend fun <T> RestAction<T>.awaitOrNull() = suspendCoroutine<T?> {
     queue(
-        { success -> it.resume(success) },
-        { _ -> it.resume(null) }
+        { success ->
+            it.resume(success)
+        },
+        { _ ->
+            it.resume(null)
+        }
     )
 }
 
@@ -316,7 +321,20 @@ suspend fun getEmoteByArgsNMessage(context: CommandContext, index: Int, sameGuil
     return emote
 }
 
-suspend fun getEmoteOrEmojiByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = false): Pair<Emote?, String?>? {
+suspend fun getEmotejiByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = false): Pair<Emote?, String?>? {
+    val emoteji = getEmotejiByArgsN(context, index, sameGuildAsContext)
+    if (emoteji == null) {
+        val language = context.getLanguage()
+        val msg = i18n.getTranslation(language, "message.unknown.emojioremote")
+            .replace(PLACEHOLDER_ARG, context.args[0])
+        sendMsg(context, msg, null)
+    }
+
+    return emoteji
+}
+
+
+fun getEmotejiByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean = false): Pair<Emote?, String?>? {
     val arg = context.args[0]
     val emoji = if (SupportedDiscordEmoji.helpMe.contains(arg)) {
         arg
@@ -329,14 +347,12 @@ suspend fun getEmoteOrEmojiByArgsNMessage(context: CommandContext, index: Int, s
     } else null
 
     if (emoji == null && emote == null) {
-        val language = context.getLanguage()
-        val msg = i18n.getTranslation(language, "message.unknown.emojioremote")
-            .replace(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg, null)
         return null
     }
     return Pair(emote, emoji)
 }
+
+
 
 fun getEmoteByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean): Emote? {
     val arg = context.args[index]
@@ -504,7 +520,7 @@ suspend fun getVoiceChannelByArgNMessage(context: CommandContext, index: Int, sa
     return voiceChannel
 }
 
-suspend fun getMemberByArgsNMessage(context: CommandContext, index: Int): Member? {
+suspend fun getMemberByArgsNMessage(context: CommandContext, index: Int, interactable: Boolean = false, botAllowed: Boolean = true): Member? {
     val user = getUserByArgsN(context, index)
     val member =
         if (user == null) null
@@ -515,7 +531,23 @@ suspend fun getMemberByArgsNMessage(context: CommandContext, index: Int): Member
         val msg = i18n.getTranslation(language, "message.unknown.member")
             .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg, null)
+        return null
     }
+
+    if (interactable && !member.guild.selfMember.canInteract(member)) {
+        val msg = context.getTranslation("message.interact.member.hierarchyexception")
+            .replace(PLACEHOLDER_USER, member.asTag)
+        sendMsg(context, msg)
+        return null
+    }
+
+    if (!botAllowed && member.user.isBot) {
+        val msg = context.getTranslation("message.interact.member.isbot")
+            .replace(PLACEHOLDER_USER, member.asTag)
+        sendMsg(context, msg)
+        return null
+    }
+
 
     return member
 }
@@ -557,13 +589,13 @@ suspend fun notEnoughPermissionsAndMessage(context: CommandContext, channel: Gui
 
 fun notEnoughPermissions(member: Member, channel: GuildChannel, perms: Collection<Permission>, checkParent: Boolean = false): Pair<List<Permission>, List<Permission>> {
     val missingPerms = mutableListOf<Permission>()
-    val missingParentPerms = mutableListOf<Permission>()
-    val parent = channel.parent
+    //val missingParentPerms = mutableListOf<Permission>()
+    //val parent = channel.parent
     for (perm in perms) {
         if (!member.hasPermission(channel, perm)) missingPerms.add(perm)
-        if (parent != null && checkParent && !member.hasPermission(parent, perm)) missingParentPerms.add(perm)
+        //  if (parent != null && checkParent && !member.hasPermission(parent, perm)) missingParentPerms.add(perm)
     }
-    return Pair(missingPerms, missingParentPerms)
+    return Pair(missingPerms, emptyList())
 }
 
 
