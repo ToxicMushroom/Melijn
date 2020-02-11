@@ -26,9 +26,10 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             ListArg(root),
             SetPPTriggerArg(root),
             SetPPGoalArg(root),
-            RemovePPGoalArg(root)
+            RemovePPGoalArg(root),
+            CopyArg(root)
         )
-        commandCategory = CommandCategory.DEVELOPER
+        commandCategory = CommandCategory.ADMINISTRATION
     }
 
     companion object {
@@ -140,23 +141,11 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            val wrapper = context.daoManager.autoPunishmentGroupWrapper
-            val group = getStringFromArgsNMessage(context, 0, 1, 64, cantContainChars = arrayOf('[', ',', ']'))
-                ?: return
-            val punishGroup = wrapper.autoPunishmentCache[context.guildId].await().firstOrNull { (groupName) ->
-                groupName == group
-            }
-            if (punishGroup == null) {
-                val msg = context.getTranslation("message.unknown.punishgroup")
-                    .replace(PLACEHOLDER_ARG, group)
-                sendMsg(context, msg)
-                return
-            }
-
-            selectionMap[Pair(context.guildId, context.authorId)] = group
+            val group = getPunishmentGroupByArgNMessage(context, 0) ?: return
+            selectionMap[Pair(context.guildId, context.authorId)] = group.groupName
 
             val msg = context.getTranslation("$root.selected")
-                .replace("%group%", group)
+                .replace("%group%", group.groupName)
             sendMsg(context, msg)
         }
     }
@@ -260,13 +249,58 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
     }
 
     class CopyArg(parent: String) : AbstractCommand("$parent.copy") {
-
         init {
             name = "copy"
+            aliases = arrayOf("cp")
         }
 
         override suspend fun execute(context: CommandContext) {
-            sendMsg(context, "not implemented yet")
+            if (context.args.size < 2) {
+                sendSyntax(context)
+                return
+            }
+
+            val group = getPunishmentGroupByArgNMessage(context, 0) ?: return
+            val newName = getStringFromArgsNMessage(context, 1, 1, 64, cantContainChars = arrayOf('[', ',', ']'))
+                ?: return
+
+            val wrapper = context.daoManager.autoPunishmentGroupWrapper
+            val exists = wrapper.autoPunishmentCache[context.guildId].await().any { (groupName) ->
+                groupName == newName
+            }
+
+            if (exists) {
+                val msg = context.getTranslation("$root.exists")
+                    .replace(PLACEHOLDER_ARG, newName)
+                    .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
+                sendMsg(context, msg)
+                return
+            }
+
+            wrapper.add(context.guildId, newName)
+            wrapper.setPointGoalMap(context.guildId, newName, group.pointGoalMap)
+            wrapper.setTriggerTypes(context.guildId, newName, group.enabledTypes)
+
+            val msg = context.getTranslation("$root.copied")
+                .replace("%source%", group.groupName)
+                .replace(PLACEHOLDER_ARG, newName)
+
+            sendMsg(context, msg)
         }
     }
+}
+
+suspend fun getPunishmentGroupByArgNMessage(context: CommandContext, index: Int): PunishGroup? {
+    val wrapper = context.daoManager.autoPunishmentGroupWrapper
+    val group = getStringFromArgsNMessage(context, index, 1, 64, cantContainChars = arrayOf('[', ',', ']'))
+        ?: return null
+    val punishGroup = wrapper.autoPunishmentCache[context.guildId].await().firstOrNull { (groupName) ->
+        groupName == group
+    }
+    if (punishGroup == null) {
+        val msg = context.getTranslation("message.unknown.punishgroup")
+            .replace(PLACEHOLDER_ARG, group)
+        sendMsg(context, msg)
+    }
+    return punishGroup
 }
