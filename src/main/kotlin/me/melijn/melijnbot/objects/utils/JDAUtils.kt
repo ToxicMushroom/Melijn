@@ -134,8 +134,8 @@ suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? = su
 
             when {
                 idMatcher.matches() -> context.jda.shardManager?.retrieveUserById(arg)
-                mentionMatcher.matches() -> {
-                    val id = arg.substring(2, arg.lastIndex - 1).toLong()
+                mentionMatcher.find() -> {
+                    val id = mentionMatcher.group(1).toLong()
                     context.jda.shardManager?.retrieveUserById(id)
                 }
                 else -> null
