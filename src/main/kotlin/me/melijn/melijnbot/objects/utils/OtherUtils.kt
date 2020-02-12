@@ -14,7 +14,6 @@ import me.melijn.melijnbot.objects.translation.i18n
 import java.awt.Color
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import java.lang.Integer
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.Month
@@ -29,7 +28,8 @@ val linuxUptimePattern: Pattern = Pattern.compile(
     "(?:\\s+)?\\d+:\\d+:\\d+ up(?: (\\d+) days?,)?(?:\\s+(\\d+):(\\d+)|\\s+?(\\d+)\\s+?min).*"
 )
 
-val linuxRamPattern: Pattern = Pattern.compile(".*(\\d+)")
+//Thx xavin
+val linuxRamPattern: Pattern = Pattern.compile("([0-9]+$)")
 
 fun getSystemUptime(): Long {
     return try {
@@ -85,14 +85,13 @@ fun getUnixUptime(): Long {
 fun getUnixRam(): Int {
     val uptimeProc = Runtime.getRuntime().exec("free -m") //Parse time to groups if possible
     val `in` = BufferedReader(InputStreamReader(uptimeProc.inputStream))
-    val lineOne = `in`.readLine() ?: return -1
+    `in`.readLine() ?: return -1
     val lineTwo = `in`.readLine() ?: return -1
-    println(lineTwo)
+
     val matcher = linuxRamPattern.matcher(lineTwo)
 
     if (!matcher.find()) return -1 //Extract ints out of groups
     val group = matcher.group(1)
-    println(group)
     return group.toInt()
 }
 

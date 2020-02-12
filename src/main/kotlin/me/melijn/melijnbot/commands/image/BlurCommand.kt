@@ -28,10 +28,7 @@ class BlurCommand : AbstractCommand("command.blur") {
 
     private suspend fun executeNormal(context: CommandContext) {
         ImageCommandUtil.executeNormalEffect(context, effect = { image, i ->
-            val timeStamp = System.currentTimeMillis()
             ImageUtils.blur(image, i)
-            println(System.currentTimeMillis() - timeStamp)
-
 
         }, hasOffset = true, defaultOffset = {
             max(max(it.width, it.height) / 75, 1)
@@ -44,9 +41,7 @@ class BlurCommand : AbstractCommand("command.blur") {
 
     private suspend fun executeGif(context: CommandContext) {
         ImageCommandUtil.executeGifEffect(context, effect = { image, i ->
-            val timeStamp = System.currentTimeMillis()
             ImageUtils.blur(image, i)
-            println(System.currentTimeMillis() - timeStamp)
 
         }, hasOffset = true, defaultOffset = {
             max(max(it.width, it.height) / 75, 1)

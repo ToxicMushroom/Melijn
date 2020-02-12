@@ -94,8 +94,12 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 return@async
             }
             withContext(Dispatchers.IO) {
-                val responseString = responseBody.string()
-                it.resume(DataObject.fromJson(responseString))
+                try {
+                    val responseString = responseBody.string()
+                    it.resume(DataObject.fromJson(responseString))
+                } catch (t: Throwable) {
+                    it.resume(null)
+                }
             }
             response.close()
         }
