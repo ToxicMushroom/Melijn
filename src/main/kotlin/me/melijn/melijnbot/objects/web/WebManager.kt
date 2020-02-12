@@ -32,13 +32,13 @@ import java.util.regex.Pattern
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-private val spotifyTrackUrl: Pattern = Pattern.compile("https://open.spotify.com/track/(\\S+)")
+private val spotifyTrackUrl: Pattern = Pattern.compile("https://open\\.spotify\\.com/track/(\\S+)")
 private val spotifyTrackUri: Pattern = Pattern.compile("spotify:track:(\\S+)")
-private val spotifyPlaylistUrl: Pattern = Pattern.compile("https://open.spotify.com(?:/user/\\S+)?/playlist/(\\S+)")
+private val spotifyPlaylistUrl: Pattern = Pattern.compile("https://open\\.spotify\\.com(?:/user/\\S+)?/playlist/(\\S+)")
 private val spotifyPlaylistUri: Pattern = Pattern.compile("spotify:(?:user:\\S+:)?playlist:(\\S+)")
-private val spotifyAlbumUrl: Pattern = Pattern.compile("https://open.spotify.com/album/(\\S+)")
+private val spotifyAlbumUrl: Pattern = Pattern.compile("https://open\\.spotify\\.com/album/(\\S+)")
 private val spotifyAlbumUri: Pattern = Pattern.compile("spotify:album:(\\S+)")
-private val spotifyArtistUrl: Pattern = Pattern.compile("https://open.spotify.com/artist/(\\S+)")
+private val spotifyArtistUrl: Pattern = Pattern.compile("https://open\\.spotify\\.com/artist/(\\S+)")
 private val spotifyArtistUri: Pattern = Pattern.compile("spotify:artist:(\\S+)")
 
 class WebManager(val taskManager: TaskManager, val settings: Settings) {
@@ -179,6 +179,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
                 val tracks = spotifyApi.getPlaylistsTracks(id).build().executeAsync().await().items.map { playlistTrack ->
                     playlistTrack.track
                 }
+
                 trackList(tracks.toTypedArray())
             }
         }

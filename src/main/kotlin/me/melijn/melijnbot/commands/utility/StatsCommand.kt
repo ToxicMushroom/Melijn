@@ -6,9 +6,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
-import me.melijn.melijnbot.objects.utils.getDurationString
-import me.melijn.melijnbot.objects.utils.getSystemUptime
-import me.melijn.melijnbot.objects.utils.sendEmbed
+import me.melijn.melijnbot.objects.utils.*
 import java.lang.management.ManagementFactory
 import java.text.DecimalFormat
 import java.util.concurrent.ThreadPoolExecutor
@@ -27,7 +25,8 @@ class StatsCommand : AbstractCommand("command.stats") {
     override suspend fun execute(context: CommandContext) {
         val bean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean::class.java)
         val totalMem = bean.totalPhysicalMemorySize shr 20
-        val usedMem = totalMem - (bean.freePhysicalMemorySize shr 20)
+
+        val usedMem = if (OSValidator.isUnix) totalMem - getUnixRam() else totalMem - (bean.freeSwapSpaceSize shr 20)
         val totalJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.max shr 20
         val usedJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.used shr 20
         val shardManager = context.shardManager
@@ -80,7 +79,6 @@ class StatsCommand : AbstractCommand("command.stats") {
         sendEmbed(context, embed)
     }
 
-
     private fun replaceValue1Vars(
         value: String,
         shardCount: Int,
@@ -109,5 +107,4 @@ class StatsCommand : AbstractCommand("command.stats") {
         .replace("%jvmCPUUsage%", cpuUsage)
         .replace("%ramUsage%", ramUsage)
         .replace("%threadCount%", threadCount)
-
 }

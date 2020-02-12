@@ -29,6 +29,8 @@ val linuxUptimePattern: Pattern = Pattern.compile(
     "(?:\\s+)?\\d+:\\d+:\\d+ up(?: (\\d+) days?,)?(?:\\s+(\\d+):(\\d+)|\\s+?(\\d+)\\s+?min).*"
 )
 
+val linuxRamPattern: Pattern = Pattern.compile(".*(\\d+)")
+
 fun getSystemUptime(): Long {
     return try {
         var uptime: Long = -1
@@ -79,6 +81,21 @@ fun getUnixUptime(): Long {
     val minutes = if (minutes2 != null) Integer.parseInt(minutes2) else 0
     return (minutes * 60000 + hours * 60000 * 60 + days * 60000 * 60 * 24).toLong()
 }
+
+fun getUnixRam(): Int {
+    val uptimeProc = Runtime.getRuntime().exec("free -m") //Parse time to groups if possible
+    val `in` = BufferedReader(InputStreamReader(uptimeProc.inputStream))
+    val lineOne = `in`.readLine() ?: return -1
+    val lineTwo = `in`.readLine() ?: return -1
+    println(lineTwo)
+    val matcher = linuxRamPattern.matcher(lineTwo)
+
+    if (!matcher.find()) return -1 //Extract ints out of groups
+    val group = matcher.group(1)
+    println(group)
+    return group.toInt()
+}
+
 
 fun getWindowsUptime(): Long {
     val uptimeProc = Runtime.getRuntime().exec("net stats workstation")
