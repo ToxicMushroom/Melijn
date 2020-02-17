@@ -91,12 +91,17 @@ object ImageCommandUtil {
         effect: (image: BufferedImage, offset: Int) -> Unit,
         hasOffset: Boolean = true,
         defaultOffset: (img: BufferedImage) -> Int = { DEFAULT_OFFSET },
-        offsetRange: (img: BufferedImage) -> IntRange = { IntRange(-255, 255) }
+        offsetRange: (img: BufferedImage) -> IntRange = { IntRange(-255, 255) },
+        debug: Boolean = false
     ) {
         executeGifTransform(context, { gifDecoder, fps, quality, repeat, offset ->
-            ImageUtils.addEffectToGifFrames(gifDecoder, fps, quality, repeat) { image ->
+            if (debug) ImageUtils.addEffectToGifFrames(gifDecoder, fps, quality, repeat, { image ->
                 effect(image, offset)
-            }
+            }, context)
+            else ImageUtils.addEffectToGifFrames(gifDecoder, fps, quality, repeat, { image ->
+                effect(image, offset)
+            })
+
         }, hasOffset, defaultOffset, offsetRange)
     }
 

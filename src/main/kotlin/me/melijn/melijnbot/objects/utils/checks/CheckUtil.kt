@@ -23,6 +23,12 @@ private const val NO_PERM_CAUSE = "nopermission"
 suspend fun Guild.getAndVerifyLogChannelByType(daoManager: DaoManager, type: LogChannelType, logIfInvalid: Boolean = true): TextChannel? {
     val logChannelWrapper = daoManager.logChannelWrapper
     val channelId = logChannelWrapper.logChannelCache.get(Pair(idLong, type)).await()
+
+    return this.getAndVerifyLogChannelById(daoManager, type, channelId, logIfInvalid)
+}
+
+suspend fun Guild.getAndVerifyLogChannelById(daoManager: DaoManager, type: LogChannelType, channelId: Long, logIfInvalid: Boolean = true): TextChannel? {
+    val logChannelWrapper = daoManager.logChannelWrapper
     val textChannel = getTextChannelById(channelId)
     var shouldRemove = false
     var cause = ""

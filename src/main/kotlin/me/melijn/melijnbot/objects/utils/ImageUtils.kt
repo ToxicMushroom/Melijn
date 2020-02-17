@@ -3,6 +3,7 @@ package me.melijn.melijnbot.objects.utils
 import com.madgag.gif.fmsware.AnimatedGifEncoder
 import com.madgag.gif.fmsware.GifDecoder
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
@@ -128,7 +129,14 @@ object ImageUtils {
         }
     }
 
-    fun addEffectToGifFrames(decoder: GifDecoder, fps: Float? = null, quality: Int, repeat: Boolean?, effect: (BufferedImage) -> Unit): ByteArrayOutputStream {
+    fun addEffectToGifFrames(
+        decoder: GifDecoder,
+        fps: Float? = null,
+        quality: Int,
+        repeat: Boolean?,
+        effect: (BufferedImage) -> Unit,
+        frameDebug: CommandContext? = null
+    ): ByteArrayOutputStream {
         val encoder = AnimatedGifEncoder()
         val outputStream = ByteArrayOutputStream()
 
@@ -142,23 +150,52 @@ object ImageUtils {
         } else {
             decoder.loopCount
         }
-        encoder.setRepeat(repeatCount)
-        encoder.setTransparent(Color.WHITE, true)
 
+        encoder.setRepeat(repeatCount)
+
+        encoder.setBackground(Color.WHITE)
+        encoder.setTransparent(Color.WHITE, false)
+
+        val gct = decoder.gct ?: emptyArray<Int>().toIntArray()
         for (index in 0 until decoder.frameCount) {
             val frameMeta = decoder.getFrameMeta(index)
             val gifFrame = frameMeta.image
 
-
             effect(gifFrame)
+
             encoder.setDelay(frameMeta.delay)
             if (fps != null) encoder.setFrameRate(fps)
+            frameDebug?.let {
+                runBlocking {
+                    val lct = if (frameMeta.lct.isEmpty()) {
+                        gct
+                    } else {
+                        frameMeta.lct
+                    }
+
+                    val bgColor = if (lct.size > frameMeta.bgIndex && frameMeta.bgIndex != -1) {
+                        Color(lct[frameMeta.bgIndex])
+                    } else {
+                        null
+                    }
+
+                    val transColor = if (lct.size > frameMeta.transIndex && frameMeta.transIndex != -1) {
+                        Color(lct[frameMeta.transIndex])
+                    } else {
+                        null
+                    }
+
+                    sendMsg(it, "bg: $bgColor, trans: $transColor", gifFrame, "gif")
+                }
+            }
+
             encoder.addFrame(gifFrame)
         }
 
         encoder.finish()
         return outputStream
     }
+
 
     fun recolorPixel(image: BufferedImage, offset: Int = 128, colorPicker: (IntArray) -> IntArray) {
         for (y in 0 until image.height) {
@@ -283,7 +320,15 @@ object ImageUtils {
                 while (yd < y + i && yd < dest.height) {
                     var xd = x
                     while (xd < x + i && xd < dest.width) {
-                        dest.setPixel(xd, yd, pixel)
+                        val alpha = pixel[3]
+                        val newAlpha: Double = if (alpha < 255.0 / 2) 0.0 else 255.0
+
+                        if (newAlpha < 255.0)
+                            dest.setPixel(xd, yd, doubleArrayOf(255.0, 255.0, 255.0, 255.0))
+                        else if (pixel[0] == 255.0 && pixel[1] == 255.0 && pixel[2] == 255.0)
+                            dest.setPixel(xd, yd, doubleArrayOf(254.0, 254.0, 254.0, 255.0))
+                        else
+                            dest.setPixel(xd, yd, pixel)
                         xd++
                     }
                     yd++

@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.objects.utils
 
+import com.wrapper.spotify.Base64
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -8,6 +9,7 @@ import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
+import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.StringUtils.humanReadableByteCountBin
 import net.dv8tion.jda.api.Permission
@@ -42,7 +44,15 @@ suspend fun Throwable.sendInGuildSuspend(guild: Guild? = null, channel: MessageC
     val channelId = Container.instance.settings.exceptionChannel
     val textChannel = MelijnBot.shardManager.getTextChannelById(channelId) ?: return
 
+    val caseId = Base64.encode(
+        ByteUtils.longToBytes(
+            System.currentTimeMillis()
+        )
+    )
+
     val sb = StringBuilder()
+
+    sb.appendln("**CaseID**: $caseId")
     if (guild != null) {
         sb.appendln("**Guild**: " + guild.name + " | " + guild.id)
     }
@@ -53,6 +63,7 @@ suspend fun Throwable.sendInGuildSuspend(guild: Guild? = null, channel: MessageC
         sb.appendln("**User**: " + author.asTag + " | " + author.id)
     }
     sb.appendln("**Thread**: " + thread.name)
+
     val writer = StringWriter()
     val printWriter = PrintWriter(writer)
     this.printStackTrace(printWriter)
@@ -64,6 +75,17 @@ suspend fun Throwable.sendInGuildSuspend(guild: Guild? = null, channel: MessageC
         sb.appendln(it)
     }
     sendMsg(textChannel, sb.toString())
+
+    if (channel != null && (channel !is TextChannel || channel.canTalk()) && (channel is TextChannel || channel is PrivateChannel)) {
+        val lang = getLanguage(Container.instance.daoManager, author?.idLong ?: -1, guild?.idLong ?: -1)
+        val msg = i18n.getTranslation(lang, "message.exception")
+            .replace("%caseId%", caseId)
+
+        if (channel is TextChannel)
+            sendMsg(channel, msg)
+        else if (channel is PrivateChannel)
+            sendMsg(channel, msg)
+    }
 }
 
 suspend fun sendSyntax(context: CommandContext, translationPath: String = context.commandOrder.last().syntax) {
@@ -599,6 +621,63 @@ fun sendMsg(channel: TextChannel, msg: Message, success: ((messages: Message) ->
         else action.embed(embed)
     }
     action?.queue(success, failed)
+}
+
+suspend fun sendMsg(context: CommandContext, msg: String, bufferedImage: BufferedImage?, extension: String): List<Message> = suspendCoroutine {
+    runBlocking {
+        it.resume(if (context.isFromGuild) {
+            sendMsg(context.textChannel, msg, bufferedImage, extension)
+        } else {
+            sendMsg(context.privateChannel, msg, bufferedImage, extension)
+        })
+    }
+}
+
+suspend fun sendMsg(textChannel: TextChannel, msg: String, image: BufferedImage?, extension: String): List<Message> = suspendCoroutine {
+    require(textChannel.canTalk()) { "Cannot talk in this channel " + textChannel.name }
+    try {
+        val messageList = mutableListOf<Message>()
+        val byteArrayOutputStream = ByteArrayOutputStream()
+
+        ImageIO.write(image, extension, byteArrayOutputStream)
+
+        runBlocking {
+            messageList.add(
+                textChannel
+                    .sendMessage(msg)
+                    .addFile(byteArrayOutputStream.toByteArray(), "finished.$extension")
+                    .await()
+            )
+        }
+
+        it.resume(messageList)
+    } catch (t: Throwable) {
+        t.printStackTrace()
+        it.resumeWithException(t)
+    }
+}
+
+suspend fun sendMsg(privateChannel: PrivateChannel, msg: String, image: BufferedImage?, extension: String): List<Message> = suspendCoroutine {
+    try {
+        val messageList = mutableListOf<Message>()
+        val byteArrayOutputStream = ByteArrayOutputStream()
+
+        ImageIO.write(image, extension, byteArrayOutputStream)
+
+        runBlocking {
+            messageList.add(
+                privateChannel
+                    .sendMessage(msg)
+                    .addFile(byteArrayOutputStream.toByteArray(), "finished.$extension")
+                    .await()
+            )
+        }
+
+        it.resume(messageList)
+    } catch (t: Throwable) {
+        t.printStackTrace()
+        it.resumeWithException(t)
+    }
 }
 
 fun String.toUpperWordCase(): String {

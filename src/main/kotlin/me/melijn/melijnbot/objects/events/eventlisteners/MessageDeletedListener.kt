@@ -10,6 +10,7 @@ import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.events.AbstractListener
 import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelById
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.audit.ActionType
@@ -38,8 +39,8 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
     private fun onGuildMessageDelete(event: GuildMessageDeleteEvent) = CoroutineScope(Dispatchers.Default).launch {
         val guild = event.guild
         val guildId = event.guild.idLong
-        val logChannelWrapper = container.daoManager.logChannelWrapper
-        val logChannelCache = logChannelWrapper.logChannelCache
+        val daoManager = container.daoManager
+        val logChannelCache = daoManager.logChannelWrapper.logChannelCache
         if (!guild.selfMember.hasPermission(Permission.VIEW_AUDIT_LOGS)) return@launch
 
         val odmId = logChannelCache.get(Pair(guildId, LogChannelType.OTHER_DELETED_MESSAGE)).await()
@@ -48,33 +49,13 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         val fmId = logChannelCache.get(Pair(guildId, LogChannelType.FILTERED_MESSAGE)).await()
         if (odmId == -1L && sdmId == -1L && pmId == -1L && fmId == -1L) return@launch
 
-        val odmLogChannel = getNLogChannel(event, odmId, LogChannelType.OTHER_DELETED_MESSAGE)
-        val sdmLogChannel = getNLogChannel(event, sdmId, LogChannelType.SELF_DELETED_MESSAGE)
-        val pmLogChannel = getNLogChannel(event, pmId, LogChannelType.PURGED_MESSAGE)
-        val fmLogChannel = getNLogChannel(event, fmId, LogChannelType.FILTERED_MESSAGE)
+        val odmLogChannel = guild.getAndVerifyLogChannelById(daoManager, LogChannelType.OTHER_DELETED_MESSAGE, odmId)
+        val sdmLogChannel = guild.getAndVerifyLogChannelById(daoManager, LogChannelType.SELF_DELETED_MESSAGE, sdmId)
+        val pmLogChannel = guild.getAndVerifyLogChannelById(daoManager, LogChannelType.PURGED_MESSAGE, pmId)
+        val fmLogChannel = guild.getAndVerifyLogChannelById(daoManager, LogChannelType.FILTERED_MESSAGE, fmId)
         if (odmLogChannel == null && sdmLogChannel == null && pmLogChannel == null && fmLogChannel == null) return@launch
 
         selectCorrectLogType(event, odmLogChannel, sdmLogChannel, pmLogChannel, fmLogChannel)
-    }
-
-    private suspend fun getNLogChannel(
-        event: GuildMessageDeleteEvent,
-        logChannelId: Long?,
-        logChannelType: LogChannelType,
-        handleDeletedChannel: Boolean = true
-    ): TextChannel? {
-        val channel = if (logChannelId != null) {
-            event.guild.getTextChannelById(logChannelId)
-        } else {
-            null
-        }
-        if (handleDeletedChannel &&
-            ((channel == null && logChannelId != -1L) ||
-                (channel != null && !event.guild.selfMember.hasPermission(channel, Permission.MESSAGE_WRITE)))
-        ) {
-            container.daoManager.logChannelWrapper.removeChannel(event.guild.idLong, logChannelType)
-        }
-        return channel
     }
 
     private suspend fun selectCorrectLogType(
@@ -181,7 +162,6 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         eb.setFooter(footer, deleterMember.user.effectiveAvatarUrl)
 
         sendEmbed(container.daoManager.embedDisabledWrapper, odmLogChannel, eb.build())
-
     }
 
     private suspend fun postDeletedByFilterLog(fmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent, cause: String?) {

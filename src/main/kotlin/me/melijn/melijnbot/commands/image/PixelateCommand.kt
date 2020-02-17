@@ -49,6 +49,6 @@ class PixelateCommand : AbstractCommand("command.pixelate") {
         }, offsetRange = { img ->
             IntRange(1, max(img.height, img.width))
 
-        })
+        }, debug = false)
     }
 }

@@ -18,7 +18,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
     init {
         id = 124
         name = "punishmentGroup"
-        aliases = arrayOf("pg", "PGroup", "punishmentG", "punishG")
+        aliases = arrayOf("pg", "PGroup", "punishmentG", "punishG", "punishGroup")
         children = arrayOf(
             AddArg(root),
             RemoveArg(root),
