@@ -74,6 +74,7 @@ suspend fun Throwable.sendInGuildSuspend(guild: Guild? = null, channel: MessageC
         sb.appendln("**Extra**")
         sb.appendln(it)
     }
+    if (Container.instance.logToDiscord)
     sendMsg(textChannel, sb.toString())
 
     if (channel != null && (channel !is TextChannel || channel.canTalk()) && (channel is TextChannel || channel is PrivateChannel)) {

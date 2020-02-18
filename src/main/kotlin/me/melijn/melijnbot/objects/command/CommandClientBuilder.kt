@@ -6,6 +6,7 @@ import me.melijn.melijnbot.commands.animal.*
 import me.melijn.melijnbot.commands.anime.*
 import me.melijn.melijnbot.commands.developer.EvalCommand
 import me.melijn.melijnbot.commands.developer.ShutdownCommand
+import me.melijn.melijnbot.commands.developer.SpamCommand
 import me.melijn.melijnbot.commands.developer.TestCommand
 import me.melijn.melijnbot.commands.image.*
 import me.melijn.melijnbot.commands.moderation.*
@@ -157,7 +158,8 @@ class CommandClientBuilder(private val container: Container) {
         SetBirthdayCommand(),
         SetPrivateTimeZoneCommand(),
         SetTimeZoneCommand(),
-        BirthdayMessageCommand()
+        BirthdayMessageCommand(),
+        SpamCommand()
     )
 
     init {

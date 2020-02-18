@@ -1,10 +1,13 @@
 package me.melijn.melijnbot.commands.developer
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.getUnixRam
 import me.melijn.melijnbot.objects.utils.sendMsg
+
 
 class TestCommand : AbstractCommand("command.test") {
 
@@ -15,7 +18,12 @@ class TestCommand : AbstractCommand("command.test") {
     }
 
     override suspend fun execute(context: CommandContext) {
+        ffmPegFlushed(context)
         sendMsg(context, getUnixRam().toString())
+    }
+
+    private suspend fun ffmPegFlushed(context: CommandContext) = withContext(Dispatchers.IO) {
+        
     }
 
 

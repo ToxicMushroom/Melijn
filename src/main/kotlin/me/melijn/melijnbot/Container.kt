@@ -18,6 +18,7 @@ import java.io.File
 
 class Container {
 
+    var logToDiscord: Boolean = true
     // userId, roleId, cause
     val roleAddedMap = mutableMapOf<Pair<Long, Long>, RoleUpdateCause>()
     val roleRemovedMap = mutableMapOf<Pair<Long, Long>, RoleUpdateCause>()
