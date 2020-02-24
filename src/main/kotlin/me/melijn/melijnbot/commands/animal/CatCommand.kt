@@ -23,12 +23,23 @@ class CatCommand : AbstractCommand("command.cat") {
 
         val web = context.webManager
         eb.setTitle(title)
-        eb.setImage(getRandomCatUrl(web))
+        eb.setImage(getRandomCatUrl(web, context.container.settings.tokens.randomCatApi))
         sendEmbed(context, eb.build())
     }
 
-    private suspend fun getRandomCatUrl(webManager: WebManager): String {
-        val reply = webManager.getJsonFromUrl("http://aws.random.cat/meow") ?: return MISSING_IMAGE_URL
-        return reply.getString("file")
+    private suspend fun getRandomCatUrl(webManager: WebManager, apiKey: String): String {
+        val headers = mapOf(
+            Pair("x-api-key", apiKey)
+        )
+
+        val params = mapOf(
+            Pair("limit", "1"),
+            Pair("format", "json"),
+            Pair("order", "RANDOM")
+        )
+
+        val reply = webManager.getJsonAFromUrl("https://api.thecatapi.com/v1/images/search", params, headers)
+            ?: return MISSING_IMAGE_URL
+        return reply.getObject(0).getString("url", MISSING_IMAGE_URL)
     }
 }

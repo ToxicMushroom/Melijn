@@ -74,17 +74,22 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         }
     }
 
-    suspend fun getJsonFromUrl(url: String, parameters: Map<String, String> = emptyMap()): DataObject? = suspendCoroutine {
+    suspend fun getResponseFromUrl(url: String, params: Map<String, String> = emptyMap(), headers: Map<String, String>): String? = suspendCoroutine {
         taskManager.async {
-            val fullUrlWithParams = url + parameters.entries.joinToString("&", "?",
+            val fullUrlWithParams = url + params.entries.joinToString("&", "?",
                 transform = { entry ->
                     entry.key + "=" + entry.value
                 }
             )
-            val request = Request.Builder()
+            val requestBuilder = Request.Builder()
                 .url(fullUrlWithParams)
                 .get()
-                .build()
+
+            for ((key, value) in headers) {
+                requestBuilder.addHeader(key, value)
+            }
+
+            val request = requestBuilder.build()
 
             val response = httpClient.newCall(request).await()
             val responseBody = response.body
@@ -96,13 +101,26 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
             withContext(Dispatchers.IO) {
                 try {
                     val responseString = responseBody.string()
-                    it.resume(DataObject.fromJson(responseString))
+                    it.resume(responseString)
                 } catch (t: Throwable) {
                     it.resume(null)
                 }
             }
             response.close()
         }
+    }
+
+
+    suspend fun getJsonFromUrl(url: String, params: Map<String, String> = emptyMap(), headers: Map<String, String> = emptyMap()): DataObject? {
+        val response = getResponseFromUrl(url, params, headers) ?: return null
+
+        return DataObject.fromJson(response)
+    }
+
+    suspend fun getJsonAFromUrl(url: String, params: Map<String, String> = emptyMap(), headers: Map<String, String> = emptyMap()): DataArray? {
+        val response = getResponseFromUrl(url, params, headers) ?: return null
+
+        return DataArray.fromJson(response)
     }
 
     suspend fun getWeebJavaUrl(type: String): String = suspendCoroutine {
@@ -377,4 +395,6 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         val json = DataObject.fromJson(body.string())
         return "https://hasteb.in/" + json.getString("key") + ".$lang"
     }
+
+
 }

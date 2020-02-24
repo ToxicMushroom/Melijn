@@ -49,6 +49,7 @@ public class Settings {
         public String discordBotsGG;
         public String botsForDiscordCom;
         public String discordBoats;
+        public String randomCatApi;
     }
 
     public static class Database {
