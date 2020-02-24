@@ -15,6 +15,7 @@ import net.dv8tion.jda.internal.JDAImpl
 import org.jooby.Jooby
 import org.jooby.json.Jackson
 import java.lang.management.ManagementFactory
+import java.util.*
 import java.util.concurrent.ThreadPoolExecutor
 
 
@@ -172,6 +173,10 @@ class RestServer(container: Container) : Jooby() {
 
         get("/commands") { _, rsp ->
             rsp.send(container.commandMap)
+        }
+
+        get("/timezones") { _, rsp ->
+            rsp.send(TimeZone.getAvailableIDs())
         }
 
         //Has to be registered last to not override other paths

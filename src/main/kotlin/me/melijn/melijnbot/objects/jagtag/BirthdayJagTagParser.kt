@@ -22,6 +22,7 @@ object BirthdayJagTagParser {
             .put("member", args.member)
             .put("daoManager", args.daoManager)
             .put("guild", args.member.guild)
+            .put("birthYear", args.birthYear ?: 0)
         val parsed = parser.parse(input)
         parser.clear()
         return parsed
@@ -30,5 +31,6 @@ object BirthdayJagTagParser {
 
 data class BirthdayParserArgs(
     val daoManager: DaoManager,
-    val member: Member
+    val member: Member,
+    val birthYear: Int?
 )

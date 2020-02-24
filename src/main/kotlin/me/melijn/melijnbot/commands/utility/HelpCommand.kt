@@ -4,6 +4,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
+import me.melijn.melijnbot.objects.jagtag.BirthdayMethods
 import me.melijn.melijnbot.objects.jagtag.CCMethods
 import me.melijn.melijnbot.objects.jagtag.DiscordMethods
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
@@ -140,10 +141,12 @@ class HelpCommand : AbstractCommand("command.help") {
             override suspend fun execute(context: CommandContext) {
                 val dList = DiscordMethods.getMethods().map { method -> method.name }
                 val ccList = CCMethods.getMethods().map { method -> method.name }
+                val bList = BirthdayMethods.getMethods().map { method -> method.name }
                 val eb = Embedder(context)
 
                 eb.addField("CustomCommand", ccList.joinToString("}`, `{", "`{", "}`"), false)
                 eb.addField("Discord", dList.joinToString("}`, `{", "`{", "}`"), false)
+                eb.addField("Birthday", bList.joinToString("}`, `{", "`{", "}`"), false)
                 sendEmbed(context, eb.build())
             }
         }

@@ -214,7 +214,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
         autoPunishmentGroupWrapper = PunishmentGroupWrapper(taskManager, PunishmentGroupDao(driverManager))
         punishmentWrapper = PunishmentWrapper(taskManager, PunishmentDao(driverManager))
 
-        birthdayWrapper = BirthdayWrapper(taskManager, BirthdayDao(driverManager))
+        birthdayWrapper = BirthdayWrapper(BirthdayDao(driverManager))
         birthdayHistoryWrapper = BirthdayHistoryWrapper(BirthdayHistoryDao(driverManager))
         timeZoneWrapper = TimeZoneWrapper(taskManager, TimeZoneDao(driverManager))
 

@@ -466,7 +466,7 @@ object LogUtils {
         sendEmbed(daoManager.embedDisabledWrapper, lc, eb.build())
     }
 
-    suspend fun sendBirthdayMessage(daoManager: DaoManager, textChannel: TextChannel, member: Member) {
+    suspend fun sendBirthdayMessage(daoManager: DaoManager, textChannel: TextChannel, member: Member, birthYear: Int?) {
         val guildId = textChannel.guild.idLong
         val messageType = MessageType.BIRTHDAY
         val language = getLanguage(daoManager, guildId)
@@ -480,7 +480,7 @@ object LogUtils {
         } else {
             if (MessageCommandUtil.removeMessageIfEmpty(guildId, messageType, message, messageWrapper)) return
 
-            message = BirthdayUtil.replaceVariablesInBirthdayMessage(daoManager, member, message)
+            message = BirthdayUtil.replaceVariablesInBirthdayMessage(daoManager, member, message, birthYear)
 
             val msg: Message? = message.toMessage()
             when {

@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.utils.data.DataArray
 import java.awt.Color
 import java.io.ByteArrayInputStream
 
+
 class GifInfoCommand : AbstractCommand("command.gifinfo") {
 
     init {
@@ -110,6 +111,24 @@ class GifInfoCommand : AbstractCommand("command.gifinfo") {
             eb.addField(frameInfoTitle, frameInfoValue, false)
         }
 
+
+//        val pb = ProcessBuilder("ffmpeg.exe -f image2pipe -i - -framerate 24 -".split(" "))
+//        pb.redirectInput(ProcessBuilder.Redirect.PIPE)
+//        pb.redirectOutput(ProcessBuilder.Redirect.PIPE)
+//        val p = pb.start()
+//        for (i in 0 until decoder.frameCount) {
+//            //val pb = ProcessBuilder("ffmpeg.exe -f image2 -framerate 24 -i 0%03d.png -vf scale=256x256 boo.mp4".split(" "))
+//
+//
+//            val frame1 = decoder.getFrame(i)
+//            ImageIO.write(frame1, "png", p.outputStream)
+//        }
+//
+//        delay(2000)
+//        p.destroy()
+//
+//        val output = p.inputStream.readAllBytes()
+//        sendFile(context, output, "mp4")
         sendEmbed(context, eb.build())
     }
 }

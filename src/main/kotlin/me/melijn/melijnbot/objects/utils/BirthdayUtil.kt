@@ -10,10 +10,10 @@ import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
 
 object BirthdayUtil {
-    suspend fun replaceVariablesInBirthdayMessage(daoManager: DaoManager, member: Member, modularMessage: ModularMessage): ModularMessage {
+    suspend fun replaceVariablesInBirthdayMessage(daoManager: DaoManager, member: Member, modularMessage: ModularMessage, birthYear: Int?): ModularMessage {
         val newMessage = ModularMessage()
 
-        val args = BirthdayParserArgs(daoManager, member)
+        val args = BirthdayParserArgs(daoManager, member, birthYear)
         newMessage.messageContent = modularMessage.messageContent?.let {
             BirthdayJagTagParser.parseJagTag(args, it)
         }

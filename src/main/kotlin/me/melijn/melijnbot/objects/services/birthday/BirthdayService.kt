@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.objects.services.birthday
 
+import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelType
@@ -34,33 +35,52 @@ class BirthdayService(
                 val channels = daoManager.channelWrapper.getChannels(ChannelType.BIRTHDAY).toMutableMap()
 
                 val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-                val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
-                val currentDay = calendar.get(Calendar.HOUR_OF_DAY)
+                val currentMinuteOfDay = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)
+                val currentDay = calendar.get(Calendar.DAY_OF_YEAR)
 
                 for (guildId in roles.keys) {
-                    val guild = shardManager.getGuildById(guildId)
-                    if (guild == null) {
-                        daoManager.roleWrapper.removeRole(guildId, RoleType.BIRTHDAY)
-                        continue
-                    }
+                    val guild = shardManager.getGuildById(guildId) ?: continue
 
+                    //Get birthday role
                     val role = roles[guildId]?.let {
                         guild.getAndVerifyRoleById(daoManager, RoleType.BIRTHDAY, it, true)
                     } ?: continue
 
+                    val guildZone = daoManager.timeZoneWrapper.timeZoneCache.get(guild.idLong).await()
+                    val guildTZ = TimeZone.getTimeZone(if (guildZone.isBlank()) "GMT" else guildZone)
+
                     //Add birthday role (maybe channel message)
-                    for ((userId, triple) in birthdays) {
+                    for ((userId, info) in HashMap(birthdays)) {
                         val member = guild.getMemberById(userId) ?: return@runBlocking
-                        if ((currentDay == 1 && (triple.third < currentHour || triple.second < currentDay)) || triple.second < currentDay || triple.third < currentHour) {
+                        val userTZ = info.zoneId?.let { TimeZone.getTimeZone(it) } ?: guildTZ
+
+                        var actualBirthday = info.birthday
+                        info.startMinute = userTZ.rawOffset / 60_000.0
+                        if (info.startMinute < 0) { //Transform birthday to utc
+                            actualBirthday -= 1
+                            info.startMinute = 24.0 * 60.0 + info.startMinute
+                        }
+
+                        println("${info.startMinute} $currentMinuteOfDay")
+
+
+                        //Cool checks to see if birthday should happen
+                        if (
+                            (currentDay == 1 && (info.startMinute <= currentMinuteOfDay || actualBirthday <= currentDay)) ||
+                            actualBirthday < currentDay ||
+                            (info.startMinute <= currentMinuteOfDay && actualBirthday == currentDay)
+                        ) {
+                            //Check if birthday already happened
                             if (birthdayHistory.contains(calendar.get(Calendar.YEAR), guildId, userId)) continue
                             val ex = guild.addRoleToMember(member, role)
                                 .reason("Birthday begins")
                                 .awaitEX()
 
+                            //If role was added add birthday to history
                             if (ex == null)
                                 birthdayHistory.add(calendar.get(Calendar.YEAR), guildId, userId)
 
-
+                            //Get birthday log channel
                             val channelId = channels.getOrElse(guildId) { null } ?: continue
                             val textChannel = guild.getAndVerifyChannelById(daoManager, ChannelType.BIRTHDAY, channelId, setOf(Permission.MESSAGE_WRITE))
                             if (textChannel == null) {
@@ -68,8 +88,8 @@ class BirthdayService(
                                 continue
                             }
 
-                            LogUtils.sendBirthdayMessage(daoManager, textChannel, member)
-                            channels.remove(guildId)
+                            //send birthday message
+                            LogUtils.sendBirthdayMessage(daoManager, textChannel, member, info.birthYear)
                         }
                     }
 
@@ -86,23 +106,38 @@ class BirthdayService(
 
                 //Send birthday channel message
                 for (guildId in channels.keys) {
-                    val guild = shardManager.getGuildById(guildId)
-                    if (guild == null) {
-                        daoManager.roleWrapper.removeRole(guildId, RoleType.BIRTHDAY)
-                        continue
-                    }
+                    val guild = shardManager.getGuildById(guildId) ?: continue
 
+                    //Get guild timezone (GMT if none set)
+                    val guildZone = daoManager.timeZoneWrapper.timeZoneCache.get(guild.idLong).await()
+                    val guildTZ = TimeZone.getTimeZone(if (guildZone.isBlank()) "GMT" else guildZone)
 
+                    //Get birthday channel
                     val textChannel = channels[guildId]?.let {
                         guild.getAndVerifyChannelById(daoManager, ChannelType.BIRTHDAY, it, setOf(Permission.MESSAGE_WRITE))
                     } ?: continue
 
-                    for ((userId, triple) in birthdays) {
+                    for ((userId, info) in birthdays) {
                         val member = guild.getMemberById(userId) ?: return@runBlocking
-                        if ((currentDay == 1 && (triple.third < currentHour || triple.second < currentDay)) || triple.second < currentDay || triple.third < currentHour) {
+                        val userTZ = info.zoneId?.let { TimeZone.getTimeZone(it) } ?: guildTZ
+
+                        var actualBirthday = info.birthday
+
+                        info.startMinute = userTZ.rawOffset / 60_000.0
+                        if (info.startMinute < 0) { //Transform birthday to utc
+                            actualBirthday -= 1
+                            info.startMinute = 24.0 * 60.0 + info.startMinute
+                        }
+
+                        //Cool checks to see if birthday should happen
+                        if (
+                            (currentDay == 1 && (info.startMinute <= currentMinuteOfDay || actualBirthday <= currentDay)) ||
+                            actualBirthday < currentDay ||
+                            (info.startMinute <= currentMinuteOfDay && actualBirthday == currentDay)
+                        ) {
                             if (birthdayHistory.contains(calendar.get(Calendar.YEAR), guildId, userId)) continue
 
-                            LogUtils.sendBirthdayMessage(daoManager, textChannel, member)
+                            LogUtils.sendBirthdayMessage(daoManager, textChannel, member, info.birthYear)
                             birthdayHistory.add(calendar.get(Calendar.YEAR), guildId, userId)
                         }
                     }
@@ -115,7 +150,7 @@ class BirthdayService(
 
     override fun start() {
         logger.info("Started BirthdayService")
-        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(birthdayService, 1_100, 1_000, TimeUnit.MILLISECONDS)
+        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(birthdayService, 2, 5, TimeUnit.MINUTES)
     }
 
     override fun stop() {
