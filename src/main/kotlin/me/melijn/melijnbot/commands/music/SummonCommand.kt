@@ -24,7 +24,9 @@ class SummonCommand : AbstractCommand("command.summon") {
             if (!RunConditionUtil.checkSameVCBotAloneOrUserDJ(context.container, context.event, this, context.getLanguage())) return
             val vc = context.member.voiceState?.channel ?: throw IllegalStateException("I messed up")
             if (notEnoughPermissionsAndMessage(context, vc, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)) return
-            context.lavaManager.openConnection(vc)
+
+            val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
+            context.lavaManager.openConnection(vc, premium)
             val msg = context.getTranslation("$root.summoned")
             sendMsg(context, msg)
         } else {
@@ -35,7 +37,9 @@ class SummonCommand : AbstractCommand("command.summon") {
             }
             if (notEnoughPermissionsAndMessage(context, vc, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)) return
             if (!RunConditionUtil.checkBotAloneOrUserDJ(context.container, context.event, this, context.getLanguage())) return
-            context.lavaManager.openConnection(vc)
+
+            val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
+            context.lavaManager.openConnection(vc, premium)
             val msg = context.getTranslation("$root.summoned")
             sendMsg(context, msg)
         }

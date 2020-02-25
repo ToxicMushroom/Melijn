@@ -18,7 +18,7 @@ object VoiceUtil {
         val musicChannel = guild.getAndVerifyMusicChannel(daoManager, Permission.VOICE_CONNECT, Permission.VOICE_SPEAK)
             ?: return
 
-        val musicUrl = container.daoManager.streamUrlWrapper.streamUrlCache.get(guild.idLong).await()
+        val musicUrl = daoManager.streamUrlWrapper.streamUrlCache.get(guild.idLong).await()
         if (musicUrl == "") return
 
 
@@ -33,7 +33,9 @@ object VoiceUtil {
         } else if (musicChannel.id == botChannel?.id && channelJoined.id == botChannel.id) {
             audioLoader.loadNewTrack(daoManager, container.lavaManager, channelJoined, guild.jda.selfUser, musicUrl)
         } else if (botChannel == null && musicChannel.id == channelJoined.id) {
-            if (container.lavaManager.tryToConnectToVCSilent(musicChannel)) {
+
+            val premium = daoManager.musicNodeWrapper.isPremium(guild.idLong)
+            if (container.lavaManager.tryToConnectToVCSilent(musicChannel, premium)) {
                 audioLoader.loadNewTrack(daoManager, container.lavaManager, channelJoined, guild.jda.selfUser, musicUrl)
             }
         }
@@ -63,7 +65,8 @@ object VoiceUtil {
             val guild = shardManager.getGuildById(guildId) ?: continue
             val channel = channelMap[guildId]?.let { guild.getVoiceChannelById(it) } ?: continue
 
-            if (container.lavaManager.tryToConnectToVCSilent(channel)) {
+            val premium = container.daoManager.musicNodeWrapper.isPremium(guild.idLong)
+            if (container.lavaManager.tryToConnectToVCSilent(channel, premium)) {
                 val mp = mpm.getGuildMusicPlayer(guild)
                 for (track in tracks) {
                     mp.safeQueueSilent(container.daoManager, track)

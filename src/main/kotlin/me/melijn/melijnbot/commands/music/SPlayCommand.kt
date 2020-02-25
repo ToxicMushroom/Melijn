@@ -41,7 +41,9 @@ class SPlayCommand : AbstractCommand("command.splay") {
             sendMissingPermissionMessage(context, "$root.yt")
             return
         }
-        if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel)) return
+
+        val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
+        if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
 
         context.audioLoader.loadNewTrackPickerNMessage(context, "$YT_SELECTOR$songArg")
     }
@@ -63,7 +65,8 @@ class SPlayCommand : AbstractCommand("command.splay") {
 
             val songArg = context.rawArg.trim()
 
-            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel)) return
+            val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
+            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
             context.audioLoader.loadNewTrackPickerNMessage(context, "$YT_SELECTOR$songArg")
         }
 
@@ -86,7 +89,8 @@ class SPlayCommand : AbstractCommand("command.splay") {
 
             val songArg = context.rawArg.trim()
 
-            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel)) return
+            val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
+            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
             context.audioLoader.loadNewTrackPickerNMessage(context, "$SC_SELECTOR$songArg")
         }
     }

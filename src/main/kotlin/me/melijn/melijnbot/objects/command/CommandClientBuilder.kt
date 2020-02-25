@@ -160,7 +160,9 @@ class CommandClientBuilder(private val container: Container) {
         SetTimeZoneCommand(),
         BirthdayMessageCommand(),
         SpamCommand(),
-        LoadGainProfileCommand()
+        LoadGainProfileCommand(),
+        MusicNodeCommand(),
+        DuckCommand()
     )
 
     init {

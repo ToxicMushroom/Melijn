@@ -2,9 +2,7 @@ package me.melijn.melijnbot.database
 
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Settings
-import me.melijn.melijnbot.database.audio.LastVoiceChannelDao
-import me.melijn.melijnbot.database.audio.TracksDao
-import me.melijn.melijnbot.database.audio.TracksWrapper
+import me.melijn.melijnbot.database.audio.*
 import me.melijn.melijnbot.database.autopunishment.*
 import me.melijn.melijnbot.database.ban.BanDao
 import me.melijn.melijnbot.database.ban.BanWrapper
@@ -77,6 +75,8 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
     }
 
     val tracksWrapper: TracksWrapper
+    val gainProfileWrapper: GainProfileWrapper
+    val musicNodeWrapper: MusicNodeWrapper
     val streamUrlWrapper: StreamUrlWrapper
     val musicChannelWrapper: MusicChannelWrapper
     val commandWrapper: CommandWrapper
@@ -155,6 +155,8 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
         }
 
         tracksWrapper = TracksWrapper(TracksDao(driverManager), LastVoiceChannelDao(driverManager))
+        gainProfileWrapper = GainProfileWrapper(taskManager, GainProfileDao(driverManager))
+        musicNodeWrapper = MusicNodeWrapper(taskManager, MusicNodeDao(driverManager))
 
         streamUrlWrapper = StreamUrlWrapper(taskManager, StreamUrlDao(driverManager))
 

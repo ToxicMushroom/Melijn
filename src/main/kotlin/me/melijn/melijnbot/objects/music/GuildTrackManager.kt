@@ -51,7 +51,12 @@ class GuildTrackManager(
                 iPlayer.playTrack(lastTrack.makeClone())
                 return
             }
-            lavaManager.closeConnection(guildId)
+
+            val mNodeWrapper = daoManager.musicNodeWrapper
+            runBlocking {
+                val isPremium = mNodeWrapper.isPremium(guildId)
+                lavaManager.closeConnection(guildId, isPremium)
+            }
             return
         }
 
@@ -182,7 +187,10 @@ class GuildTrackManager(
     fun stopAndDestroy() {
         iPlayer.stopTrack()
         clear()
-        lavaManager.closeConnection(guildId)
+        runBlocking {
+            val isPremium = daoManager.musicNodeWrapper.isPremium(guildId)
+            lavaManager.closeConnection(guildId, isPremium)
+        }
     }
 
     fun skip(amount: Int) {

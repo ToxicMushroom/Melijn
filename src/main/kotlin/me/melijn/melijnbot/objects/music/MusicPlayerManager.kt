@@ -37,10 +37,14 @@ class MusicPlayerManager(
             if (!lavaManager.lavalinkEnabled) {
                 guild.audioManager.sendingHandler = newMusicPlayer.getSendHandler()
             }
+
             return newMusicPlayer
         }
         return cachedMusicPlayer
     }
 
     fun getPlayers() = guildMusicPlayers
+    fun setGuildNode(guildId: Long, nodeId: Int) {
+
+    }
 }

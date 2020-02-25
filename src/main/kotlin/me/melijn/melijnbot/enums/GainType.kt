@@ -1,27 +1,29 @@
 package me.melijn.melijnbot.enums
 
+import me.melijn.melijnbot.database.audio.GainProfile
+
 enum class GainType(
-    val band0: Float = 0.0f,
-    val band1: Float = 0.0f,
-    val band2: Float = 0.0f,
-    val band3: Float = 0.0f,
-    val band4: Float = 0.0f,
-    val band5: Float = 0.0f,
-    val band6: Float = 0.0f,
-    val band7: Float = 0.0f,
-    val band8: Float = 0.0f,
-    val band9: Float = 0.0f,
-    val band10: Float = 0.0f,
-    val band11: Float = 0.0f,
-    val band12: Float = 0.0f,
-    val band13: Float = 0.0f,
-    val band14: Float = 0.0f
+    val gainProfile: GainProfile = GainProfile()
 ) {
+
     BASS(
-        band0 = 1f,
-        band1 = 1f,
-        band2 = 1f,
-        band3 = 1f,
-        band4 = 0.25f
-    ),DEFAULT()
+        GainProfile(
+            band0 = 0.40f,
+            band1 = 0.40f,
+            band2 = 0.40f,
+            band3 = 0.40f,
+            band4 = 0.40f,
+            band5 = 0.40f,
+            band6 = 0.30f,
+            band7 = 0.25f,
+            band8 = 0.25f,
+            band9 = 0.25f,
+            band10 = 0.20f,
+            band11 = 0.20f,
+            band12 = 0.20f,
+            band13 = 0.20f,
+            band14 = 0.20f
+        )
+    ),
+    DEFAULT()
 }

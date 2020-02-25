@@ -25,30 +25,10 @@ class MelijnBot {
 
         val container = Container()
 
-        val jdaLavaLink = if (container.settings.lavalink.enabled) {
-            val linkBuilder = JdaLavalink(
-                container.settings.id.toString(),
-                container.settings.shardCount
-            ) { id ->
-                shardManager.getShardById(id)
-            }
+        val jdaLavaLink = generateJdaLinkFromNodes(container, container.settings.lavalink.verified_nodes)
+        val premiumJdaLavaLink = generateJdaLinkFromNodes(container, container.settings.lavalink.http_nodes)
 
-            linkBuilder.autoReconnect = true
-
-            for (node in container.settings.lavalink.http_nodes) {
-                linkBuilder.addNode(URI.create("ws://${node.host}"), node.password)
-            }
-
-            for (node in container.settings.lavalink.verified_nodes) {
-                linkBuilder.addNode(URI.create("ws://${node.host}"), node.password)
-            }
-
-            linkBuilder
-        } else {
-            null
-        }
-
-        container.initLava(jdaLavaLink)
+        container.initLava(jdaLavaLink, premiumJdaLavaLink)
 
         val eventManager = EventManager(container)
 
@@ -70,6 +50,26 @@ class MelijnBot {
         shardManager = defaultShardManagerBuilder.build()
         container.initShardManager(shardManager)
         eventManager.start()
+    }
+
+    private fun generateJdaLinkFromNodes(container: Container, httpNodes: Array<Settings.Lavalink.Node>): JdaLavalink? {
+        return if (container.settings.lavalink.enabled) {
+            val linkBuilder = JdaLavalink(
+                container.settings.id.toString(),
+                container.settings.shardCount
+            ) { id ->
+                shardManager.getShardById(id)
+            }
+
+            linkBuilder.autoReconnect = true
+
+            for (node in httpNodes) {
+                linkBuilder.addNode(URI.create("ws://${node.host}"), node.password)
+            }
+            linkBuilder
+        } else {
+            null
+        }
     }
 }
 
