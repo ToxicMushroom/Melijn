@@ -61,8 +61,6 @@ class BirthdayService(
                             info.startMinute = 24.0 * 60.0 + info.startMinute
                         }
 
-                        println("${info.startMinute} $currentMinuteOfDay")
-
 
                         //Cool checks to see if birthday should happen
                         if (
