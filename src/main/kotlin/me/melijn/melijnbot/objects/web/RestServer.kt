@@ -60,11 +60,13 @@ class RestServer(container: Container) : Jooby() {
 
 
         get("/shards") { _, rsp ->
-            val dataObject = DataObject.empty()
-            val shardManager = MelijnBot.shardManager
-            for (shard in shardManager.shardCache) {
 
-                dataObject.put(shard.shardInfo.shardId.toString(), DataObject.empty()
+            val shardManager = MelijnBot.shardManager
+            val dataArray = DataArray.empty()
+
+            for (shard in shardManager.shardCache) {
+                val dataObject = DataObject.empty()
+                dataObject
                     .put("guildCount", shard.guildCache.size())
                     .put("userCount", shard.userCache.size())
                     .put("connectedVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shardManager))
@@ -72,9 +74,11 @@ class RestServer(container: Container) : Jooby() {
                     .put("status", shard.status)
                     .put("queuedMessages", queueSize(shard))
                     .put("responses", shard.responseTotal)
-                )
+                    .put("id", shard.shardInfo.shardId)
+
+                dataArray.add(dataObject)
             }
-            rsp.send(dataObject.toMap())
+            rsp.send(dataArray.toList())
         }
 
 
