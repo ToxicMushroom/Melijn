@@ -17,7 +17,7 @@ class SPlayCommand : AbstractCommand("command.splay") {
             YTArg(root),
             SCArg(root)
         )
-        runConditions = arrayOf(RunCondition.VC_BOT_OR_USER_DJ)
+        runConditions = arrayOf(RunCondition.VC_BOT_OR_USER_DJ, RunCondition.VOTED)
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ADD_REACTION)
         commandCategory = CommandCategory.MUSIC
     }

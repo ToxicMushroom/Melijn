@@ -4,6 +4,7 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.music.GuildMusicPlayer
 import me.melijn.melijnbot.objects.translation.i18n
+import me.melijn.melijnbot.objects.utils.USER_MENTION
 import me.melijn.melijnbot.objects.web.WebManager
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
@@ -35,8 +36,19 @@ class CommandContext(
 
 
     val webManager: WebManager = container.webManager
-    val usedPrefix: String = commandParts[0]
+
+    val usedPrefix: String = getNicerUsedPrefix()
     val mentionOffset: Int = retrieveOffset()
+
+    private fun getNicerUsedPrefix(): String {
+        val prefix = commandParts[0]
+        return if (prefix.contains(container.settings.id.toString()) && USER_MENTION.matcher(prefix).matches()) {
+            "@${container.settings.name} "
+        } else {
+            prefix
+        }
+    }
+
     val embedColor: Int = container.settings.embedColor
     val prefix: String = container.settings.prefix
     var commandOrder: List<AbstractCommand> = emptyList()
@@ -53,7 +65,7 @@ class CommandContext(
     fun initArgs() {
         args = commandParts.drop(1 + commandOrder.size)
         rawArg = contentRaw
-            .removePrefix(usedPrefix)
+            .removePrefix(commandParts[0])
             .trim()
 
         for (i in 1..commandOrder.size) {

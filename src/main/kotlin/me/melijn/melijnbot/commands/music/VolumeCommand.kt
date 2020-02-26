@@ -26,6 +26,7 @@ class VolumeCommand : AbstractCommand("command.volume") {
             sendMsg(context, msg)
             return
         }
+
         val amount = getIntegerFromArgNMessage(context, 0, 0, 1000) ?: return
         iPlayer.volume = amount
 

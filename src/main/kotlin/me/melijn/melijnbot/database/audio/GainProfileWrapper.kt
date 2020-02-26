@@ -28,7 +28,7 @@ class GainProfileWrapper(val taskManager: TaskManager, private val gainProfileDa
     }
 
     suspend fun add(id: Long, name: String, bands: FloatArray) {
-        gainProfileDao.insert(id, name, bands.joinToString())
+        gainProfileDao.insert(id, name, bands.joinToString(","))
     }
 
     suspend fun remove(guildId: Long, profileName: String) {

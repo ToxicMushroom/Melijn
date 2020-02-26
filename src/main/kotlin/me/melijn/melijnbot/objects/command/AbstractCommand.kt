@@ -23,6 +23,7 @@ abstract class AbstractCommand(val root: String) {
     var discordPermissions: Array<Permission> = arrayOf()
     var runConditions: Array<RunCondition> = arrayOf()
     var children: Array<AbstractCommand> = arrayOf()
+    var permissionRequired: Boolean = false
     //var args: Array<CommandArg> = arrayOf() cannot put extra information after global definitions with this
 
     init {
@@ -90,13 +91,14 @@ suspend fun hasPermission(context: CommandContext, permission: String, required:
     if (context.member.isOwner || context.member.hasPermission(Permission.ADMINISTRATOR)) return true
     val guildId = context.guildId
     val authorId = context.authorId
+    val daoManager = context.daoManager
     //Gives me better ability to help
     if (context.botDevIds.contains(authorId)) return true
 
 
     val channelId = context.channelId
-    val userMap = context.daoManager.userPermissionWrapper.guildUserPermissionCache.get(Pair(guildId, authorId)).await()
-    val channelUserMap = context.daoManager.channelUserPermissionWrapper.channelUserPermissionCache.get(Pair(channelId, authorId)).await()
+    val userMap = daoManager.userPermissionWrapper.guildUserPermissionCache.get(Pair(guildId, authorId)).await()
+    val channelUserMap = daoManager.channelUserPermissionWrapper.channelUserPermissionCache.get(Pair(channelId, authorId)).await()
 
     val lPermission = permission.toLowerCase()
 
@@ -116,9 +118,17 @@ suspend fun hasPermission(context: CommandContext, permission: String, required:
 
     //Permission checking for roles
     for (roleId in (context.member.roles.map { role -> role.idLong } + context.guild.publicRole.idLong)) {
-        channelRoleResult = when (context.daoManager.channelRolePermissionWrapper.channelRolePermissionCache.get(Pair(channelId, roleId)).await()[lPermission]) {
+        channelRoleResult = when (
+            daoManager.channelRolePermissionWrapper.channelRolePermissionCache
+                .get(Pair(channelId, roleId))
+                .await()[lPermission]
+            ) {
             PermState.ALLOW -> PermState.ALLOW
-            PermState.DENY -> if (channelRoleResult == PermState.DEFAULT) PermState.DENY else channelRoleResult
+            PermState.DENY -> if (channelRoleResult == PermState.DEFAULT) {
+                PermState.DENY
+            } else {
+                channelRoleResult
+            }
             else -> channelRoleResult
         }
         if (channelRoleResult == PermState.ALLOW) break
@@ -131,12 +141,17 @@ suspend fun hasPermission(context: CommandContext, permission: String, required:
             }
         }
     }
-    if (channelRoleResult != PermState.DEFAULT) roleResult = channelRoleResult
+
+    if (channelRoleResult != PermState.DEFAULT) {
+        roleResult = channelRoleResult
+    }
 
 
     return if (
         context.commandOrder[0].commandCategory == CommandCategory.ADMINISTRATION ||
         context.commandOrder[0].commandCategory == CommandCategory.MODERATION ||
+        context.commandOrder[0].permissionRequired ||
+        context.commandOrder.last().permissionRequired ||
         required
     ) {
         roleResult == PermState.ALLOW

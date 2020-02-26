@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 class TaskManager {
 
     private val threadFactory = { name: String ->
-        ThreadFactoryBuilder().setNameFormat("[$name-Pool-%d] ").build()
+        ThreadFactoryBuilder().setNameFormat("[$name-Pool-%d]").build()
     }
 
     val executorService: ExecutorService = Executors.newCachedThreadPool(threadFactory.invoke("Task"))

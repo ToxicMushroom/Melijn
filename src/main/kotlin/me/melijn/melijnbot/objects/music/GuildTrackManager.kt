@@ -31,7 +31,7 @@ class GuildTrackManager(
     val playingTrack: AudioTrack?
         get() = iPlayer.playingTrack
 
-    val logger = LoggerFactory.getLogger(this::class.java.name + " - $guildId")
+    private val logger = LoggerFactory.getLogger(this::class.java.name + " - $guildId")
 
     val resumeMomentMessageMap = mutableMapOf<Long, MessageEmbed>()
     val pauseMomentMessageMap = mutableMapOf<Long, MessageEmbed>()

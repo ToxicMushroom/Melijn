@@ -3,6 +3,7 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.jagtag.BirthdayMethods
 import me.melijn.melijnbot.objects.jagtag.CCMethods
@@ -157,7 +158,7 @@ class HelpCommand : AbstractCommand("command.help") {
         if (args.isEmpty()) {
             val title = context.getTranslation("$root.embed.title")
             val description = context.getTranslation("$root.embed.description")
-                .replace("%prefix%", context.usedPrefix)
+                .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
                 .replace("%melijnMention%", if (context.isFromGuild) context.selfMember.asMention else context.selfUser.asMention)
             val embedder = Embedder(context)
             embedder.setTitle(title)
@@ -191,7 +192,7 @@ class HelpCommand : AbstractCommand("command.help") {
             cmdSyntax,
             MarkdownSanitizer.escape(
                 context.getTranslation(command.syntax)
-                    .replace("%prefix%", context.usedPrefix)
+                    .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
             )
             , false
         )
@@ -201,11 +202,11 @@ class HelpCommand : AbstractCommand("command.help") {
         embedder.addField(
             cmdDesc,
             context.getTranslation(command.description)
-                .replace("%prefix%", context.usedPrefix)
+                .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
             , false
         )
         if (command.help != cmdHelpValue) {
-            var help = cmdHelpValue.replace("%prefix%", context.usedPrefix)
+            var help = cmdHelpValue.replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
 
             val matcher = Pattern.compile("%(help\\.arg\\..+)%").matcher(help)
             while (matcher.find()) {

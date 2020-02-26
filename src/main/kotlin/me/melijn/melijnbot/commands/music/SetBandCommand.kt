@@ -19,7 +19,7 @@ class SetBandCommand : AbstractCommand("command.setband") {
         children = arrayOf(
             AllArg(root)
         )
-        runConditions = arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ, RunCondition.PLAYING_TRACK_NOT_NULL, RunCondition.SUPPORTER)
+        runConditions = arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ, RunCondition.PLAYING_TRACK_NOT_NULL, RunCondition.VOTED)
     }
 
     override suspend fun execute(context: CommandContext) {
@@ -74,7 +74,7 @@ class SetBandCommand : AbstractCommand("command.setband") {
                 sendMsg(context, msg)
 
             } else {
-                val gain = getIntegerFromArgNMessage(context, 1, 0, 500) ?: return
+                val gain = getIntegerFromArgNMessage(context, 0, 0, 500) ?: return
                 val actualGain = (gain / 400f - 0.25f)
 
                 for (i in 0..14) {

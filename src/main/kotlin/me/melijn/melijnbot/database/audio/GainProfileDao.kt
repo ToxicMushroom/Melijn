@@ -57,6 +57,10 @@ data class GainProfile(
     val band14: Float = 0.0f
 ) {
 
+    fun toFloatArray(): FloatArray = floatArrayOf(
+        band0, band1, band2, band3, band4, band5, band6, band7, band8, band9, band10, band11, band12, band13, band14
+    )
+
     companion object {
         fun fromString(string: String): GainProfile {
             val floats = string.split(",").map { it.toFloat() }

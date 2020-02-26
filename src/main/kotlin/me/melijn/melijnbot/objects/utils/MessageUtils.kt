@@ -92,7 +92,7 @@ suspend fun Throwable.sendInGuildSuspend(guild: Guild? = null, channel: MessageC
 suspend fun sendSyntax(context: CommandContext, translationPath: String = context.commandOrder.last().syntax) {
     val syntax = context.getTranslation("message.command.usage")
         .replace("%syntax%", context.getTranslation(translationPath)
-            .replace("%prefix%", context.usedPrefix))
+            .replace(PREFIX_PLACE_HOLDER, context.usedPrefix))
     sendMsg(context.textChannel, syntax)
 }
 

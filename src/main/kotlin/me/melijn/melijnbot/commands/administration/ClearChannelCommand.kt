@@ -3,6 +3,7 @@ package me.melijn.melijnbot.commands.administration
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.Permission
 
@@ -48,7 +49,7 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
             else -> {
                 val msg = context.getTranslation("$root.notconfirm")
                     .replace("%syntax%", context.getTranslation(syntax)
-                        .replace("%prefix%", context.usedPrefix)
+                        .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
                     )
                 sendMsg(context, msg)
             }

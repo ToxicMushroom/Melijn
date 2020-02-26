@@ -4,7 +4,9 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.sendSyntax
 
 class MusicNodeCommand : AbstractCommand("command.musicnode") {
 
@@ -12,6 +14,7 @@ class MusicNodeCommand : AbstractCommand("command.musicnode") {
         id = 143
         name = "musicNode"
         aliases = arrayOf("mn")
+        runConditions = arrayOf(RunCondition.SUPPORTER)
         commandCategory = CommandCategory.MUSIC
     }
 
@@ -22,6 +25,16 @@ class MusicNodeCommand : AbstractCommand("command.musicnode") {
     //Should support things like usa nodes and many more, should save in db, all connects should check cache
     override suspend fun execute(context: CommandContext) {
         when {
+            context.args.isEmpty() -> {
+                val currentNode = if (context.daoManager.musicNodeWrapper.isPremium(context.guildId)) {
+                    "premium"
+                } else {
+                    "default"
+                }
+                val msg = context.getTranslation("$root.current")
+                    .replace("%node%", currentNode)
+                sendMsg(context, msg)
+            }
             context.args[0] == "premium" -> {
                 switchToPremiumNode(context)
 
@@ -37,9 +50,7 @@ class MusicNodeCommand : AbstractCommand("command.musicnode") {
                 sendMsg(context, msg)
             }
             else -> {
-                val msg = context.getTranslation("$root.current")
-                    .replace("%node%", if (context.daoManager.musicNodeWrapper.isPremium(context.guildId)) "premium" else "default")
-                sendMsg(context, msg)
+                sendSyntax(context)
             }
         }
     }

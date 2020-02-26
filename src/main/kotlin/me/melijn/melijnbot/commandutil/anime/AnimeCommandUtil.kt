@@ -2,6 +2,7 @@ package me.melijn.melijnbot.commandutil.anime
 
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.utils.getRoleByArgsN
 import me.melijn.melijnbot.objects.utils.getUserByArgsN
 import me.melijn.melijnbot.objects.utils.sendEmbed
@@ -30,7 +31,7 @@ object AnimeCommandUtil {
                     target != null -> executeAbs(context, type, author, target)
                     else -> {
                         val msg = context.getTranslation("message.unknown.userorrole")
-                            .replace("%arg%", context.args[0])
+                            .replace(PLACEHOLDER_ARG, context.args[0])
                         sendMsg(context, msg)
                     }
                 }
@@ -51,7 +52,7 @@ object AnimeCommandUtil {
                             }
                             else -> {
                                 val msg = context.getTranslation("message.unknown.userorrole")
-                                    .replace("%arg%", context.args[1])
+                                    .replace(PLACEHOLDER_ARG, context.args[1])
                                 sendMsg(context, msg)
                             }
                         }
@@ -66,14 +67,14 @@ object AnimeCommandUtil {
                             }
                             else -> {
                                 val msg = context.getTranslation("message.unknown.userorrole")
-                                    .replace("%arg%", context.args[1])
+                                    .replace(PLACEHOLDER_ARG, context.args[1])
                                 sendMsg(context, msg)
                             }
                         }
                     }
                     else -> {
                         val msg = context.getTranslation("message.unknown.userorrole")
-                            .replace("%arg%", context.args[0])
+                            .replace(PLACEHOLDER_ARG, context.args[0])
                         sendMsg(context, msg)
                     }
                 }

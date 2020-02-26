@@ -172,7 +172,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             if (cc == null) {
                 val msg = context.getTranslation("$root.failed")
                     .replace("%id%", id.toString())
-                    .replace("%prefix%", context.usedPrefix)
+                    .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
                 sendMsg(context, msg)
                 return
             }

@@ -6,6 +6,7 @@ import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
@@ -64,7 +65,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         val muteRole = guild.getAndVerifyRoleByType(daoManager, RoleType.MUTE)
         if (muteRole == null) {
             val msg = context.getTranslation("$root.nomuterole")
-                .replace("%prefix%", context.usedPrefix)
+                .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
             sendMsg(context, msg)
             return
         }

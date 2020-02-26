@@ -4,6 +4,8 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
+import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
 
@@ -14,9 +16,10 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
         name = "prefixes"
         commandCategory = CommandCategory.ADMINISTRATION
         children = arrayOf(
-            ListCommand(root),
-            AddCommand(root),
-            RemoveCommand(root)
+            ListArg(root),
+            AddArg(root),
+            RemoveArg(root),
+            RemoveAtArg(root)
         )
     }
 
@@ -24,7 +27,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
         sendSyntax(context)
     }
 
-    class ListCommand(parent: String) : AbstractCommand("$parent.list") {
+    class ListArg(parent: String) : AbstractCommand("$parent.list") {
 
         init {
             name = "list"
@@ -34,6 +37,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
         override suspend fun execute(context: CommandContext) {
             val title = context.getTranslation("$root.response1.title")
             val prefixes = context.daoManager.guildPrefixWrapper.prefixCache.get(context.guildId).await()
+                .sortedBy { it }
 
             var content = "```INI"
             for ((index, prefix) in prefixes.withIndex()) {
@@ -46,7 +50,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
         }
     }
 
-    class AddCommand(parent: String) : AbstractCommand("$parent.add") {
+    class AddArg(parent: String) : AbstractCommand("$parent.add") {
 
         init {
             name = "add"
@@ -63,12 +67,12 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             context.daoManager.guildPrefixWrapper.addPrefix(context.guildId, prefix)
 
             val msg = context.getTranslation("$root.response1")
-                .replace("%prefix%", prefix)
+                .replace(PREFIX_PLACE_HOLDER, prefix)
             sendMsg(context, msg)
         }
     }
 
-    class RemoveCommand(parent: String) : AbstractCommand("$parent.remove") {
+    class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
 
         init {
             name = "remove"
@@ -85,7 +89,33 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             context.daoManager.guildPrefixWrapper.removePrefix(context.guildId, prefix)
 
             val msg = context.getTranslation("$root.response1")
-                .replace("%prefix%", prefix)
+                .replace(PREFIX_PLACE_HOLDER, prefix)
+            sendMsg(context, msg)
+        }
+    }
+
+    class RemoveAtArg(parent: String) : AbstractCommand("$parent.removeat") {
+
+        init {
+            name = "removeAt"
+            aliases = arrayOf("rma", "deleteAt", "dat")
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.rawArg.isBlank()) {
+                sendSyntax(context)
+                return
+            }
+
+            val wrapper = context.daoManager.guildPrefixWrapper
+            val list = wrapper.prefixCache.get(context.guildId).await()
+            val index = getIntegerFromArgNMessage(context, 0, 0, list.size - 1) ?: return
+
+            val toRemove = list[index]
+            wrapper.removePrefix(context.guildId, toRemove)
+
+            val msg = context.getTranslation("$root.removed")
+                .replace(PREFIX_PLACE_HOLDER, toRemove)
             sendMsg(context, msg)
         }
     }

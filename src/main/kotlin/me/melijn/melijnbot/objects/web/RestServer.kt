@@ -70,6 +70,7 @@ class RestServer(container: Container) : Jooby() {
                     .put("guildCount", shard.guildCache.size())
                     .put("userCount", shard.userCache.size())
                     .put("connectedVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shardManager))
+                    .put("listeningVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shardManager, true))
                     .put("ping", shard.gatewayPing)
                     .put("status", shard.status)
                     .put("queuedMessages", queueSize(shard))

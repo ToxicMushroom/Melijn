@@ -50,8 +50,8 @@ object RunConditionUtil {
         return if (container.settings.developerIds.contains(event.author.idLong)) {
             true
         } else {
-            val vote = container.daoManager.voteWrapper.getUserVote(event.author.idLong) ?: return false
-            if ((System.currentTimeMillis() - vote.lastTime) < 86_400_000) {
+            val vote = container.daoManager.voteWrapper.getUserVote(event.author.idLong)
+            if (vote != null && (System.currentTimeMillis() - vote.lastTime) < 86_400_000) {
                 true
             } else {
                 val msg = i18n.getTranslation(language, "message.runcondition.failed.voted")
