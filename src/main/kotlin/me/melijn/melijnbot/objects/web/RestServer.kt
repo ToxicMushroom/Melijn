@@ -7,6 +7,7 @@ import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.objects.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.OSValidator
+import me.melijn.melijnbot.objects.utils.getSystemUptime
 import me.melijn.melijnbot.objects.utils.getUnixRam
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
@@ -51,11 +52,11 @@ class RestServer(container: Container) : Jooby() {
                 .put("ramUsage", usedJVMMem)
                 .put("ramTotal", totalJVMMem)
                 .put("jvmThreads", Thread.activeCount())
-                .put("cpuUsage", bean.processCpuLoad)
+                .put("cpuUsage", bean.processCpuLoad * 100)
             )
 
             dataObject.put("server", DataObject.empty()
-                .put("uptime", container.uptimeMillis)
+                .put("uptime", getSystemUptime())
                 .put("ramUsage", usedMem)
                 .put("ramTotal", totalMem)
             )
