@@ -4,6 +4,7 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyMusicChannel
 import me.melijn.melijnbot.objects.utils.listeningMembers
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.events.StatusChangeEvent
@@ -43,16 +44,20 @@ object VoiceUtil {
 
     fun getConnectedChannelsAmount(shardManager: ShardManager, andHasListeners: Boolean = false): Long {
         return shardManager.shards.stream().mapToLong { shard ->
-            shard.voiceChannels.stream().filter { vc ->
-                val contains = vc.members.contains(vc.guild.selfMember)
-                val lm = listeningMembers(vc)
-                if (andHasListeners) {
-                    contains && lm > 0
-                } else {
-                    contains
-                }
-            }.count()
+            getConnectedChannelsAmount(shard, andHasListeners)
         }?.sum() ?: 0
+    }
+
+    fun getConnectedChannelsAmount(inShard: JDA, andHasListeners: Boolean = false): Long {
+        return inShard.voiceChannels.stream().filter { vc ->
+            val contains = vc.members.contains(vc.guild.selfMember)
+            val lm = listeningMembers(vc)
+            if (andHasListeners) {
+                contains && lm > 0
+            } else {
+                contains
+            }
+        }.count()
     }
 
     suspend fun resumeMusic(event: StatusChangeEvent, container: Container) {

@@ -162,7 +162,8 @@ class CommandClientBuilder(private val container: Container) {
         SpamCommand(),
         GainProfileCommand(),
         MusicNodeCommand(),
-        DuckCommand()
+        DuckCommand(),
+        AIWaifuCommand()
     )
 
     init {

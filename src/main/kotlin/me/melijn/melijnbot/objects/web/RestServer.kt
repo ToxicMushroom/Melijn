@@ -63,16 +63,29 @@ class RestServer(container: Container) : Jooby() {
 
             val shardManager = MelijnBot.shardManager
             val dataArray = DataArray.empty()
+            val players = container.lavaManager.musicPlayerManager.getPlayers()
 
             for (shard in shardManager.shardCache) {
+                var queuedTracks = 0
+                var musicPlayers = 0
+                for (player in players.values) {
+                    if (shard.guildCache.getElementById(player.guildId) != null) {
+                        if (player.guildTrackManager.iPlayer.playingTrack != null) {
+                            musicPlayers++
+                        }
+                        queuedTracks += player.guildTrackManager.trackSize()
+                    }
+                }
                 val dataObject = DataObject.empty()
                 dataObject
                     .put("guildCount", shard.guildCache.size())
                     .put("userCount", shard.userCache.size())
-                    .put("connectedVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shardManager))
-                    .put("listeningVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shardManager, true))
+                    .put("connectedVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shard))
+                    .put("listeningVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shard, true))
                     .put("ping", shard.gatewayPing)
                     .put("status", shard.status)
+                    .put("queuedTracks", queuedTracks)
+                    .put("musicPlayers", musicPlayers)
                     .put("queuedMessages", queueSize(shard))
                     .put("responses", shard.responseTotal)
                     .put("id", shard.shardInfo.shardId)
