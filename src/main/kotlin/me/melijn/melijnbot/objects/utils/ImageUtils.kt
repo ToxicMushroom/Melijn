@@ -296,7 +296,7 @@ object ImageUtils {
             .max { entry1: Map.Entry<Int, Int>, entry2: Map.Entry<Int, Int> -> if (entry1.value > entry2.value) 1 else -1 }
             .get()
             .key
-        return Color(dominantRGB)
+        return Color(dominantRGB, true)
     }
 
     fun pixelatev2(image: BufferedImage, i: Int) {

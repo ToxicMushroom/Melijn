@@ -6,7 +6,8 @@ import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.objects.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.getDurationString
+import me.melijn.melijnbot.objects.utils.OSValidator
+import me.melijn.melijnbot.objects.utils.getUnixRam
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.utils.data.DataArray
@@ -31,8 +32,13 @@ class RestServer(container: Container) : Jooby() {
 
         get("/stats") { _, rsp ->
             val bean: OperatingSystemMXBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean::class.java)
-            val totalMem: Long = bean.totalPhysicalMemorySize shr 20
-            val usedMem: Long = totalMem - (bean.freePhysicalMemorySize shr 20)
+            val totalMem = bean.totalPhysicalMemorySize shr 20
+
+            val usedMem = if (OSValidator.isUnix) {
+                totalMem - getUnixRam()
+            } else {
+                totalMem - (bean.freeSwapSpaceSize shr 20)
+            }
             val totalJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.max shr 20
             val usedJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.used shr 20
             val threadPoolExecutor = container.taskManager.executorService as ThreadPoolExecutor
@@ -40,7 +46,7 @@ class RestServer(container: Container) : Jooby() {
 
             val dataObject = DataObject.empty()
             dataObject.put("bot", DataObject.empty()
-                .put("uptime", getDurationString(ManagementFactory.getRuntimeMXBean().uptime))
+                .put("uptime", ManagementFactory.getRuntimeMXBean().uptime)
                 .put("melijnThreads", threadPoolExecutor.activeCount + scheduledExecutorService.activeCount + scheduledExecutorService.queue.size)
                 .put("ramUsage", usedJVMMem)
                 .put("ramTotal", totalJVMMem)
@@ -76,6 +82,7 @@ class RestServer(container: Container) : Jooby() {
                         queuedTracks += player.guildTrackManager.trackSize()
                     }
                 }
+
                 val dataObject = DataObject.empty()
                 dataObject
                     .put("guildCount", shard.guildCache.size())

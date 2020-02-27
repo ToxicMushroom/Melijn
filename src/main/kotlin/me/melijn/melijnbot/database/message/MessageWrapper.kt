@@ -1,8 +1,6 @@
 package me.melijn.melijnbot.database.message
 
 import com.google.common.cache.CacheBuilder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import me.melijn.melijnbot.database.IMPORTANT_CACHE
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.objects.threading.TaskManager
@@ -22,11 +20,11 @@ class MessageWrapper(val taskManager: TaskManager, private val messageDao: Messa
 
     private fun getMessage(pair: Pair<Long, MessageType>): CompletableFuture<ModularMessage?> {
         val future = CompletableFuture<ModularMessage?>()
-        CoroutineScope(taskManager.dispatcher).launch {
+        taskManager.async {
             val json = messageDao.get(pair.first, pair.second)
             if (json == null) {
                 future.complete(null)
-                return@launch
+                return@async
             }
 
             try {
