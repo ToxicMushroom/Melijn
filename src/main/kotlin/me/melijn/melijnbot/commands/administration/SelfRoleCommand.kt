@@ -17,15 +17,111 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         children = arrayOf(
             AddArg(root),
             RemoveArg(root),
-            ListArg(root)
+            ListArg(root),
+            GroupArg(root),
+            SetMode(root),  //Manual, Auto | Auto will ignore selfRoleMessageIds and selfRoleChannelIds and use the internal cached ones
+            SendGroup(root) // Internal cached ones are messageIds created by the >sr sendGroup <channel> command
         )
         commandCategory = CommandCategory.ADMINISTRATION
+    }
+
+    class SendGroup(parent: String) : AbstractCommand("$parent.sendgroup") {
+
+        init {
+            name = "sendGroup"
+            aliases = arrayOf("sg")
+        }
+
+        override suspend fun execute(context: CommandContext) {
+
+        }
+    }
+
+    class SetMode(parent: String) : AbstractCommand("$parent.setmode") {
+
+        init {
+            name = "setMode"
+            aliases = arrayOf("sm")
+        }
+
+        override suspend fun execute(context: CommandContext) {
+
+        }
+    }
+
+    class GroupArg(parent: String) : AbstractCommand("$parent.group") {
+
+        init {
+            name = "group"
+            children = arrayOf(
+                //Groups will have ids, the arg for add will be the displayname
+                AddArg(root),     //Adds a group
+                RemoveArg(root),  //Removes a group
+                ListArg(root),    //Lists all roles in group
+                ChangeNameArg(root)
+            )
+        }
+
+        class AddArg(parent: String) : AbstractCommand("$parent.add") {
+
+            init {
+                name = "add"
+                aliases = arrayOf("a")
+            }
+
+            override suspend fun execute(context: CommandContext) {
+
+            }
+        }
+
+        class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
+
+            init {
+                name = "remove"
+                aliases = arrayOf("r", "d", "rm", "delete")
+            }
+
+            override suspend fun execute(context: CommandContext) {
+
+            }
+        }
+
+        class ListArg(parent: String) : AbstractCommand("$parent.list") {
+
+            init {
+                name = "list"
+                aliases = arrayOf("l", "ls")
+            }
+
+            override suspend fun execute(context: CommandContext) {
+
+            }
+        }
+
+        class ChangeNameArg(parent: String) : AbstractCommand("$parent.changename") {
+
+            init {
+                name = "changeName"
+                aliases = arrayOf("cn")
+            }
+
+            override suspend fun execute(context: CommandContext) {
+
+            }
+        }
+
+
+        override suspend fun execute(context: CommandContext) {
+            sendSyntax(context)
+        }
     }
 
     override suspend fun execute(context: CommandContext) {
         sendSyntax(context)
     }
 
+
+    //TODO("rewrite")
     class AddArg(parent: String) : AbstractCommand("$parent.add") {
 
         init {
@@ -62,6 +158,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
     }
 
+    //TODO("rewrite")
     class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
 
         init {
@@ -114,6 +211,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
     }
 
+    //TODO("rewrite")
     class ListArg(parent: String) : AbstractCommand("$parent.list") {
 
         init {
