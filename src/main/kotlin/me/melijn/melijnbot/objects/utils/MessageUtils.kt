@@ -28,7 +28,7 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 fun Throwable.sendInGuild(context: CommandContext, thread: Thread = Thread.currentThread(), extra: String? = null) = runBlocking {
-    sendInGuildSuspend(context.guild, context.messageChannel, context.author, thread, "Message: ${MarkdownSanitizer.escape(context.message.contentRaw)}\n" + (extra
+    sendInGuildSuspend(context.guildN, context.messageChannel, context.author, thread, "Message: ${MarkdownSanitizer.escape(context.message.contentRaw)}\n" + (extra
         ?: "")
     )
 }

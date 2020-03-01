@@ -143,12 +143,10 @@ suspend inline fun <reified T : Enum<*>> getEnumFromArgNMessage(context: Command
 }
 
 suspend inline fun <T> getObjectFromArgNMessage(context: CommandContext, index: Int, mapper: (String) -> T?, path: String): T? {
-    if (argSizeCheckFailed(context, index)) return null
-    val arg = context.args[index]
-    val newObj = mapper(arg)
+    val newObj = getObjectFromArgN(context, index, mapper)
     if (newObj == null) {
         val msg = context.getTranslation(path)
-            .replace(PLACEHOLDER_ARG, arg)
+            .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg)
     }
     return newObj

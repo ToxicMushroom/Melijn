@@ -49,7 +49,11 @@ class SetPrivateTimeZoneCommand : AbstractCommand("command.setprivatetimezone") 
             null
         } else {
             getObjectFromArgNMessage(context, 0, { s ->
-                TimeZone.getTimeZone(ZoneId.of(s))
+                try {
+                    TimeZone.getTimeZone(ZoneId.of(s))
+                } catch (t: Throwable) {
+                    null
+                }
             }, MESSAGE_UNKNOWN_TIMEZONE) ?: return
         }
 
