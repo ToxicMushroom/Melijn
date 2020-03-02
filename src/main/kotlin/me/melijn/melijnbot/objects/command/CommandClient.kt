@@ -95,11 +95,12 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         if (event.channelType == ChannelType.TEXT) {
             if (!event.guild.selfMember.hasPermission(event.textChannel, Permission.MESSAGE_WRITE)) return
         }
-        val ccsWithPrefixMatches = mutableMapOf<CustomCommand, String>()
+
+        val ccsWithPrefixMatches = mutableListOf<CustomCommand>()
         val ccsWithoutPrefixMatches = mutableListOf<CustomCommand>()
+        var commandPartsGlobal: List<String> = emptyList()
+
         for (prefix in prefixes) {
-
-
             if (!message.contentRaw.startsWith(prefix)) continue
 
             val commandParts: ArrayList<String> = ArrayList(message.contentRaw
@@ -112,11 +113,13 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             for (cc in ccsWithPrefix) {
                 val aliases = cc.aliases
                 if (cc.name.equals(commandParts[1], true)) {
-                    ccsWithPrefixMatches[cc] = prefix
+                    commandPartsGlobal = commandParts
+                    ccsWithPrefixMatches.add(cc)
                 } else if (aliases != null) {
                     for (alias in aliases) {
                         if (alias.equals(commandParts[1], true)) {
-                            ccsWithPrefixMatches[cc] = prefix
+                            commandPartsGlobal = commandParts
+                            ccsWithPrefixMatches.add(cc)
                         }
                     }
                 }
@@ -128,19 +131,19 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             return
         }
 
-        val commandParts = message.contentRaw.split(Regex("\\s+")).toList()
 
         if (ccsWithPrefixMatches.isNotEmpty()) {
-            runCustomCommandByChance(event, commandParts, ccsWithPrefixMatches)
+
+            runCustomCommandByChance(event, commandPartsGlobal, ccsWithPrefixMatches, true)
             return
         } else {
             for (cc in ccsWithoutPrefix) {
                 val aliases = cc.aliases
-                if (commandParts[0].equals(cc.name, true)) {
+                if (commandPartsGlobal[0].equals(cc.name, true)) {
                     ccsWithoutPrefixMatches.add(cc)
                 } else if (aliases != null) {
                     for (alias in aliases) {
-                        if (alias.equals(commandParts[0], true)) {
+                        if (alias.equals(commandPartsGlobal[0], true)) {
                             ccsWithoutPrefixMatches.add(cc)
                         }
                     }
@@ -149,32 +152,26 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             }
         }
         if (ccsWithoutPrefixMatches.isNotEmpty()) {
-            val mapje: Map<CustomCommand, String?> = ccsWithoutPrefixMatches.map { cc -> cc to null }.toMap()
-            runCustomCommandByChance(event, commandParts, mapje)
+            runCustomCommandByChance(event, commandPartsGlobal, ccsWithoutPrefixMatches, false)
             return
         }
 
     }
 
-    private suspend fun runCustomCommandByChance(event: MessageReceivedEvent, commandParts: List<String>, ccs: Map<CustomCommand, String?>) {
-        val cc: CustomCommand = if (ccs.keys.size == 1) {
-            ccs.keys.first()
+    private suspend fun runCustomCommandByChance(event: MessageReceivedEvent, commandParts: List<String>, ccs: List<CustomCommand>, hasPrefix: Boolean) {
+        val cc: CustomCommand = if (ccs.size == 1) {
+            ccs.first()
         } else {
-            getCustomCommandByChance(ccs.keys.toList())
+            getCustomCommandByChance(ccs)
         }
 
         if (checksFailed(cc, event)) return
 
         val cParts = commandParts.toMutableList()
-        val prefix = ccs[cc]
-        if (prefix != null) {
-            cParts.add(0, prefix)
-        }
-
-        executeCC(cc, event, cParts, prefix != null)
+        executeCC(cc, event, cParts, hasPrefix)
     }
 
-    private suspend fun executeCC(cc: CustomCommand, event: MessageReceivedEvent, commandParts: List<String>, prefix: Boolean) {
+    private suspend fun executeCC(cc: CustomCommand, event: MessageReceivedEvent, commandParts: List<String>, hasPrefix: Boolean) {
         val member = event.member ?: return
         val channel = event.textChannel
         if (!channel.canTalk()) return
@@ -192,9 +189,11 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         map2["cc." + cc.id] = System.currentTimeMillis()
         container.daoManager.commandChannelCoolDownWrapper.executions[pair2] = map2
 
-
-        val regex = ("${commandParts[0]}\\s*" + if (prefix) "${commandParts[1]}\\s*" else "").toRegex()
-        val rawArg = event.message.contentRaw.removeFirst(regex)
+        val rawArg = event.message.contentRaw
+            .removeFirst(commandParts[0])
+            .trim()
+            .removeFirst(if (hasPrefix) commandParts[1] else "")
+            .trim()
         val modularMessage = replaceVariablesInCCMessage(member, rawArg, cc)
 
         val message: Message? = modularMessage.toMessage()
