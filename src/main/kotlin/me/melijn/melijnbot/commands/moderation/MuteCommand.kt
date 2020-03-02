@@ -169,6 +169,7 @@ fun getMuteMessage(
         .replace("%duration%", muteDuration)
         .replace("%startTime%", (mute.startTime.asEpochMillisToDateTime(zoneId)))
         .replace("%endTime%", (mute.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
+        .replace("%muteId%", mute.muteId)
 
     val extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,

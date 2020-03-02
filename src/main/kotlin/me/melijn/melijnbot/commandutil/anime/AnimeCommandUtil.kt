@@ -124,9 +124,12 @@ object AnimeCommandUtil {
         sendEmbed(context, eb.build())
     }
 
-    suspend fun executeShow(context: CommandContext, type: String) {
+    suspend fun executeShow(context: CommandContext, type: String, nsfw: Boolean = false) {
         val eb = Embedder(context)
-        eb.setImage(context.webManager.getWeebJavaUrl(type))
+        if (nsfw && context.isFromGuild && context.textChannel.isNSFW)
+            eb.setImage(context.webManager.getWeebJavaUrl(type, nsfw))
+        else
+            eb.setImage(context.webManager.getWeebJavaUrl(type))
         sendEmbed(context, eb.build())
     }
 }

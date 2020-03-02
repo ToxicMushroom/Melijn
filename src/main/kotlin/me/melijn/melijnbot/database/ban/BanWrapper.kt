@@ -36,6 +36,21 @@ class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
         return map
     }
 
+    suspend fun getBanMap(context: CommandContext, banId: String): Map<Long, String> {
+        val map = hashMapOf<Long, String>()
+        val bans = banDao.getBans(context.guildId, banId)
+        if (bans.isEmpty()) {
+            return emptyMap()
+        }
+
+        bans.forEach { ban ->
+            val message = convertBanInfoToMessage(context, ban)
+            map[ban.startTime] = message
+        }
+
+        return map
+    }
+
     private suspend fun convertBanInfoToMessage(context: CommandContext, ban: Ban): String {
         val banAuthorId = ban.banAuthorId ?: return continueConvertingInfoToMessage(context, null, ban)
         val banAuthor = context.shardManager.retrieveUserById(banAuthorId).awaitOrNull()

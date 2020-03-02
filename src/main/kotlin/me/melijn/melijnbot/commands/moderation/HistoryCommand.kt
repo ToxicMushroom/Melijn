@@ -17,6 +17,10 @@ class HistoryCommand : AbstractCommand("command.history") {
         id = 31
         name = "history"
         commandCategory = CommandCategory.MODERATION
+        children = arrayOf(
+            //TODO("Add id arg")
+            //IdArg(root)
+        )
     }
 
     override suspend fun execute(context: CommandContext) {
@@ -24,6 +28,7 @@ class HistoryCommand : AbstractCommand("command.history") {
             sendSyntax(context)
             return
         }
+
         val types = PunishmentType.getMatchingTypesFromNode(context.args[0])
         if (types.isEmpty()) {
             val msg = context.getTranslation("message.unknown.punishmenttype")
@@ -72,16 +77,17 @@ class HistoryCommand : AbstractCommand("command.history") {
             var readableList = types.subList(0, types.size - 1).joinToString(", ", transform = { type ->
                 type.name.toLowerCase()
             })
+
             if (readableList.isBlank()) {
                 readableList = types.last().name.toLowerCase()
             } else {
                 readableList += " $or " + types.last().name.toLowerCase()
             }
 
-
             val noHistory = context.getTranslation("$root.nohistory")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
                 .replace("%typeList%", readableList)
+
             sendMsg(context, noHistory)
         } else {
             sendMsgCodeBlocks(context, msg, "INI")

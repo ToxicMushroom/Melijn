@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.duncte123.weebJava.WeebApiBuilder
 import me.duncte123.weebJava.models.WeebApi
+import me.duncte123.weebJava.types.NSFWMode
 import me.duncte123.weebJava.types.TokenType
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.objects.threading.TaskManager
@@ -123,8 +124,8 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         return DataArray.fromJson(response)
     }
 
-    suspend fun getWeebJavaUrl(type: String): String = suspendCoroutine {
-        weebApi.getRandomImage(type).async({ image ->
+    suspend fun getWeebJavaUrl(type: String, nsfw: Boolean = false): String = suspendCoroutine {
+        weebApi.getRandomImage(type, if (nsfw) NSFWMode.ONLY_NSFW else NSFWMode.DISALLOW_NSFW).async({ image ->
             it.resume(image.url)
         }, { _ ->
             it.resume(MISSING_IMAGE_URL)

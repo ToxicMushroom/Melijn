@@ -144,6 +144,7 @@ fun getSoftBanMessage(
         .replace("%softBannedId%", softBannedUser.id)
         .replace("%reason%", softBan.reason)
         .replace("%moment%", (softBan.moment.asEpochMillisToDateTime(zoneId)))
+        .replace("%softBanId%", softBan.softBanId)
 
     val extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,

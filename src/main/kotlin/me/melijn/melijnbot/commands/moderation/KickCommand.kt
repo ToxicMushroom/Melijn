@@ -125,6 +125,7 @@ fun getKickMessage(
         .replace("%kickedId%", kickedUser.id)
         .replace("%reason%", kick.reason)
         .replace("%moment%", (kick.moment.asEpochMillisToDateTime(zoneId)))
+        .replace("%kickId%", kick.kickId)
 
     val extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,

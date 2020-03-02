@@ -14,6 +14,8 @@ class NekoCommand : AbstractCommand("command.neko") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        AnimeCommandUtil.executeShow(context, "neko")
+        if (context.args.isNotEmpty() && context.args[0] == "nsfw") {
+            AnimeCommandUtil.executeShow(context, "neko", true)
+        } else AnimeCommandUtil.executeShow(context, "neko")
     }
 }

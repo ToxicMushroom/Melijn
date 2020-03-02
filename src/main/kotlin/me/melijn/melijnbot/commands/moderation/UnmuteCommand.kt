@@ -170,6 +170,7 @@ fun getUnmuteMessage(
         .replace("%duration%", muteDuration)
         .replace("%startTime%", (mute.startTime.asEpochMillisToDateTime(zoneId)))
         .replace("%endTime%", (mute.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
+        .replace("%muteId%", mute.muteId)
 
     var extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,

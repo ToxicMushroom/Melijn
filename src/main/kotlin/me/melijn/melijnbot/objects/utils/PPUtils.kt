@@ -204,8 +204,7 @@ object PPUtils {
             guild.idLong,
             member.idLong,
             jda.selfUser.idLong,
-            punishment.reason,
-            System.currentTimeMillis()
+            punishment.reason
         )
 
         daoManager.kickWrapper.addKick(kick)
@@ -232,12 +231,12 @@ object PPUtils {
         val privZoneId = getZoneId(daoManager, guild.idLong, member.idLong)
         val lang = getLanguage(daoManager, member.idLong, guild.idLong)
 
+
         val warn = Warn(
             guild.idLong,
             member.idLong,
             jda.selfUser.idLong,
-            punishment.reason,
-            System.currentTimeMillis()
+            punishment.reason
         )
 
         daoManager.warnWrapper.addWarn(warn)

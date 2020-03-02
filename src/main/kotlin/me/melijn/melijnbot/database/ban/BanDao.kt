@@ -1,18 +1,22 @@
 package me.melijn.melijnbot.database.ban
 
+import com.wrapper.spotify.Base64
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
+import me.melijn.melijnbot.objects.utils.remove
+import java.nio.ByteBuffer
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class BanDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "bans"
-    override val tableStructure: String = "" +
+    override val tableStructure: String = "banId varchar(16), " +
         "guildId bigint, bannedId bigint, banAuthorId bigint, " +
         "unbanAuthorId bigint, reason varchar(2048), startTime bigint, endTime bigint," +
         " unbanReason varchar(2048), active boolean"
-    override val primaryKey: String = "guildId, bannedId, startTime"
+    override val primaryKey: String = "banId"
+    override val uniqueKey: String = "guildId, bannedId, startTime"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
@@ -20,9 +24,9 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun setBan(ban: Ban) {
         ban.apply {
-            driverManager.executeUpdate("INSERT INTO $table (guildId, bannedId, banAuthorId, unbanAuthorId, reason, startTime, endTime, unbanReason, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)" +
+            driverManager.executeUpdate("INSERT INTO $table (banId, guildId, bannedId, banAuthorId, unbanAuthorId, reason, startTime, endTime, unbanReason, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
                 " ON CONFLICT ($primaryKey) DO UPDATE SET endTime = ?, banAuthorId = ?, reason = ?, unbanAuthorId = ?, unbanReason = ?, active = ?",
-                guildId, bannedId, banAuthorId, unbanAuthorId, reason, startTime, endTime, unbanReason, active,
+                banId, guildId, bannedId, banAuthorId, unbanAuthorId, reason, startTime, endTime, unbanReason, active,
                 endTime, banAuthorId, reason, unbanAuthorId, unbanReason, active)
         }
     }
@@ -41,7 +45,8 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
                     rs.getString("unbanReason"),
                     rs.getLong("startTime"),
                     rs.getLong("endTime"),
-                    true
+                    true,
+                    rs.getString("banId")
                 ))
             }
             it.resume(bans)
@@ -62,7 +67,8 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
                     rs.getString("unbanReason"),
                     rs.getLong("startTime"),
                     rs.getLong("endTime"),
-                    true
+                    true,
+                    rs.getString("banId")
                 )
             }
             it.resume(ban)
@@ -83,11 +89,34 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
                     rs.getString("unbanReason"),
                     rs.getLong("startTime"),
                     rs.getLong("endTime"),
-                    rs.getBoolean("active")
+                    rs.getBoolean("active"),
+                    rs.getString("banId")
                 ))
             }
             it.resume(bans)
         }, guildId, bannedId)
+    }
+
+    suspend fun getBans(guildId: Long, banId: String): List<Ban> = suspendCoroutine {
+        driverManager.executeQuery(
+            "SELECT * FROM $table WHERE guildId = ? AND banId = ?", { rs ->
+            val bans = ArrayList<Ban>()
+            while (rs.next()) {
+                bans.add(Ban(
+                    guildId,
+                    rs.getLong("bannedId"),
+                    rs.getLong("banAuthorId"),
+                    rs.getString("reason"),
+                    rs.getLong("unbanAuthorId"),
+                    rs.getString("unbanReason"),
+                    rs.getLong("startTime"),
+                    rs.getLong("endTime"),
+                    rs.getBoolean("active"),
+                    banId
+                ))
+            }
+            it.resume(bans)
+        }, guildId, banId)
     }
 }
 
@@ -100,5 +129,10 @@ data class Ban(
     var unbanReason: String? = null,
     var startTime: Long = System.currentTimeMillis(),
     var endTime: Long? = null,
-    var active: Boolean = true
+    var active: Boolean = true,
+    var banId: String = Base64.encode(ByteBuffer
+        .allocate(Long.SIZE_BYTES)
+        .putLong(System.nanoTime())
+        .array())
+        .remove("=")
 )

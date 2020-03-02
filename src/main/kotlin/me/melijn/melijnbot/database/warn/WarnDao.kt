@@ -1,13 +1,18 @@
 package me.melijn.melijnbot.database.warn
 
+import com.wrapper.spotify.Base64
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
+import me.melijn.melijnbot.objects.utils.remove
+import java.nio.ByteBuffer
 
 class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "warns"
-    override val tableStructure: String = "guildId bigint, warnedId bigint, warnAuthorId bigint, warnReason varchar(2000), warnMoment bigint"
-    override val primaryKey: String = "guildId, warnedId, warnMoment"
+    override val tableStructure: String = "warnId varchar(16), " +
+        "guildId bigint, warnedId bigint, warnAuthorId bigint, warnReason varchar(2000), warnMoment bigint"
+    override val primaryKey: String = "warnId"
+    override val uniqueKey: String = "guildId, warnedId, warnMoment"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
@@ -15,10 +20,9 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun add(warn: Warn) {
         warn.apply {
-            driverManager.executeUpdate("INSERT INTO $table (guildId, warnedId, warnAuthorId, warnReason, warnMoment) VALUES (?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
-                guildId, warnedId, warnAuthorId, reason, moment)
+            driverManager.executeUpdate("INSERT INTO $table (warnId, guildId, warnedId, warnAuthorId, warnReason, warnMoment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
+                warnId, guildId, warnedId, warnAuthorId, reason, moment)
         }
-
     }
 
     fun get(guildId: Long, warnedId: Long, warnMoment: Long, kick: (Warn) -> Unit) {
@@ -28,7 +32,8 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
                 rs.getLong("warnedId"),
                 rs.getLong("warnAuthorId"),
                 rs.getString("warnReason"),
-                rs.getLong("warnMoment")
+                rs.getLong("warnMoment"),
+                rs.getString("warnId")
             ))
         }, guildId, warnedId, warnMoment)
     }
@@ -43,7 +48,8 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
                     warnedId,
                     rs.getLong("warnAuthorId"),
                     rs.getString("warnReason"),
-                    rs.getLong("warnMoment")
+                    rs.getLong("warnMoment"),
+                    rs.getString("warnId")
                 ))
             }
         }, guildId, warnedId)
@@ -56,5 +62,10 @@ data class Warn(
     val warnedId: Long,
     val warnAuthorId: Long,
     val reason: String,
-    val moment: Long = System.currentTimeMillis()
+    val moment: Long = System.currentTimeMillis(),
+    val warnId: String = Base64.encode(ByteBuffer
+        .allocate(Long.SIZE_BYTES)
+        .putLong(System.nanoTime())
+        .array())
+        .remove("=")
 )

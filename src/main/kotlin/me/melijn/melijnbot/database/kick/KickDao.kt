@@ -1,13 +1,18 @@
 package me.melijn.melijnbot.database.kick
 
+import com.wrapper.spotify.Base64
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
+import me.melijn.melijnbot.objects.utils.remove
+import java.nio.ByteBuffer
 
 class KickDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "kicks"
-    override val tableStructure: String = "guildId bigint, kickedId bigint, kickAuthorId bigint, kickReason varchar(2000), kickMoment bigint"
-    override val primaryKey: String = "guildId, kickedId, kickMoment"
+    override val tableStructure: String = "kickId varchar(16), " +
+        "guildId bigint, kickedId bigint, kickAuthorId bigint, kickReason varchar(2000), kickMoment bigint"
+    override val primaryKey: String = "kickId"
+    override val uniqueKey: String = "guildId, kickedId, kickMoment"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
@@ -15,10 +20,9 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun add(kick: Kick) {
         kick.apply {
-            driverManager.executeUpdate("INSERT INTO $table (guildId, kickedId, kickAuthorId, kickReason, kickMoment) VALUES (?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
-                guildId, kickedId, kickAuthorId, reason, moment)
+            driverManager.executeUpdate("INSERT INTO $table (kickId, guildId, kickedId, kickAuthorId, kickReason, kickMoment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
+                kickId, guildId, kickedId, kickAuthorId, reason, moment)
         }
-
     }
 
     fun get(guildId: Long, kickedId: Long, kickMoment: Long, kick: (Kick) -> Unit) {
@@ -28,7 +32,8 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
                 rs.getLong("kickedId"),
                 rs.getLong("kickAuthorId"),
                 rs.getString("kickReason"),
-                rs.getLong("kickMoment")
+                rs.getLong("kickMoment"),
+                rs.getString("kickId")
             ))
         }, guildId, kickedId, kickMoment)
     }
@@ -43,7 +48,8 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
                     kickedId,
                     rs.getLong("kickAuthorId"),
                     rs.getString("kickReason"),
-                    rs.getLong("kickMoment")
+                    rs.getLong("kickMoment"),
+                    rs.getString("kickId")
                 ))
             }
         }, guildId, kickedId)
@@ -56,5 +62,10 @@ data class Kick(
     val kickedId: Long,
     val kickAuthorId: Long,
     val reason: String,
-    val moment: Long = System.currentTimeMillis()
+    val moment: Long = System.currentTimeMillis(),
+    val kickId: String = Base64.encode(ByteBuffer
+        .allocate(Long.SIZE_BYTES)
+        .putLong(System.nanoTime())
+        .array())
+        .remove("=")
 )

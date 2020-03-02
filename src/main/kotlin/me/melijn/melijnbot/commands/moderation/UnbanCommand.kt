@@ -162,6 +162,7 @@ fun getUnbanMessage(
         .replace("%duration%", banDuration)
         .replace("%startTime%", (ban.startTime.asEpochMillisToDateTime(zoneId)))
         .replace("%endTime%", (ban.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
+        .replace("%banId%", ban.banId)
 
     var extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,

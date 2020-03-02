@@ -112,6 +112,7 @@ fun getWarnMessage(
         .replace("%warnedId%", warnedUser.id)
         .replace("%reason%", warn.reason)
         .replace("%moment%", (warn.moment.asEpochMillisToDateTime(zoneId)))
+        .replace("%warnId%", warn.warnId)
 
     val extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,
