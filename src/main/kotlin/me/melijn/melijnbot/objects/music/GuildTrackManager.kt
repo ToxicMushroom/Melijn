@@ -45,7 +45,7 @@ class GuildTrackManager(
     fun trackSize() = tracks.size
 
 
-    fun nextTrack(lastTrack: AudioTrack) {
+    private fun nextTrack(lastTrack: AudioTrack) {
         if (tracks.isEmpty()) {
             if (loopedQueue || loopedTrack) {
                 iPlayer.playTrack(lastTrack.makeClone())
@@ -66,7 +66,12 @@ class GuildTrackManager(
         }
 
         val track: AudioTrack = tracks.poll()
-        if (track == lastTrack) iPlayer.playTrack(track.makeClone()) else iPlayer.playTrack(track)
+        if (track == lastTrack) {
+            iPlayer.playTrack(track.makeClone())
+        } else {
+            iPlayer.playTrack(track)
+        }
+
         if (loopedQueue) {
             tracks.add(lastTrack)
         }

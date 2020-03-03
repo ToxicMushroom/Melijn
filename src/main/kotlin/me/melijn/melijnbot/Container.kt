@@ -8,6 +8,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.music.LavaManager
 import me.melijn.melijnbot.objects.services.ServiceManager
 import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.objects.utils.PaginationInfo
 import me.melijn.melijnbot.objects.web.RestServer
 import me.melijn.melijnbot.objects.web.WebManager
 import net.dv8tion.jda.api.OnlineStatus
@@ -22,6 +23,9 @@ class Container {
     // userId, roleId, cause
     val roleAddedMap = mutableMapOf<Pair<Long, Long>, RoleUpdateCause>()
     val roleRemovedMap = mutableMapOf<Pair<Long, Long>, RoleUpdateCause>()
+
+    //millis, info
+    val paginationMap = mutableMapOf<Long, PaginationInfo>()
 
     var restServer: RestServer? = null
     var shuttingDown: Boolean = false

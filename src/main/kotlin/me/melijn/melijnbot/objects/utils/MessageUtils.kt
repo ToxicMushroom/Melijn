@@ -75,7 +75,7 @@ suspend fun Throwable.sendInGuildSuspend(guild: Guild? = null, channel: MessageC
         sb.appendln(it)
     }
     if (Container.instance.logToDiscord)
-    sendMsg(textChannel, sb.toString())
+        sendMsg(textChannel, sb.toString())
 
     if (channel != null && (channel !is TextChannel || channel.canTalk()) && (channel is TextChannel || channel is PrivateChannel)) {
         val lang = getLanguage(Container.instance.daoManager, author?.idLong ?: -1, guild?.idLong ?: -1)
@@ -530,6 +530,37 @@ suspend fun sendMsg(context: CommandContext, msg: String): List<Message> = suspe
             sendMsg(context.privateChannel, msg, success, failed)
         }
     }
+}
+
+
+suspend fun sendPaginationMsg(context: CommandContext, msgList: MutableList<String>, index: Int): List<Message> = suspendCoroutine {
+    val msg = msgList[index]
+    if (msg.length > 2000) throw IllegalArgumentException("No splitting here :angry:")
+
+    runBlocking {
+        val message = if (context.isFromGuild) {
+            sendMsg(context.textChannel, msg).first()
+        } else {
+            sendMsg(context.privateChannel, msg).first()
+        }
+
+        registerPaginationMessage(context, message, msgList, index)
+    }
+}
+
+suspend fun registerPaginationMessage(context: CommandContext, message: Message, msgList: MutableList<String>, index: Int) {
+    context.container.paginationMap[System.nanoTime()] = PaginationInfo(
+        context.guildId,
+        context.channelId,
+        message.idLong,
+        msgList,
+        index
+    )
+
+    message.addReaction("⏪").await()
+    message.addReaction("◀️").await()
+    message.addReaction("▶️").await()
+    message.addReaction("⏩").await()
 }
 
 suspend fun sendMsg(privateChannel: PrivateChannel, msg: String): List<Message> = suspendCoroutine {

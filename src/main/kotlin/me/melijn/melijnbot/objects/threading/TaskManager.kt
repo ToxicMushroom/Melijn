@@ -29,7 +29,6 @@ class TaskManager {
         task.run()
     }
 
-
     fun asyncAfter(afterMillis: Long, func: () -> Unit) {
         scheduledExecutorService.schedule(Task(Runnable(func)), afterMillis, TimeUnit.MILLISECONDS)
     }

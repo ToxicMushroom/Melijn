@@ -22,6 +22,8 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent
 import java.awt.Color
+import java.lang.Integer.max
+import java.lang.Integer.min
 
 class MessageReactionAddedListener(container: Container) : AbstractListener(container) {
 
@@ -34,6 +36,48 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         postReactionAddedLog(event)
         verificationHandler(event)
         searchMenuHandler(event)
+        paginationHandler(event)
+    }
+
+    var lastCheck = System.nanoTime()
+    private suspend fun paginationHandler(event: GuildMessageReactionAddEvent) {
+        val guild = event.guild
+        if (event.reactionEmote.isEmote || event.user.isBot) return
+        val emoji = event.reactionEmote.emoji
+        if (!listOf("⏪", "◀️", "▶️", "⏩").contains(emoji)) return
+        val entry = container.paginationMap.entries.firstOrNull { (_, info) ->
+            info.messageId == event.messageIdLong
+        } ?: return
+        val pagination = entry.value
+
+        val channel = guild.getTextChannelById(pagination.channelId) ?: return
+        val message = channel.retrieveMessageById(pagination.messageId).await()
+        val newIndex = min(pagination.messageList.size - 1, max(0, when (emoji) {
+            "⏪" -> 0
+            "⏩" -> pagination.messageList.size - 1
+            "◀️" -> pagination.currentPage - 1
+            "▶️" -> pagination.currentPage + 1
+            else -> return
+        }))
+
+        if (newIndex != pagination.currentPage)
+            message.editMessage(pagination.messageList[newIndex]).queue()
+
+        pagination.currentPage = newIndex
+        container.paginationMap[entry.key] = pagination
+
+        event.reaction.removeReaction(event.user).queue()
+
+
+        val time = System.nanoTime()
+        if (time.minus(lastCheck) > 60_000_000_000) {
+            for (i in ArrayList(container.paginationMap.keys)) {
+                if (i < time - 3_600_000_000_000) {
+                    container.paginationMap.remove(i)
+                }
+            }
+            lastCheck = time
+        }
     }
 
     private suspend fun searchMenuHandler(event: GuildMessageReactionAddEvent) {
@@ -41,7 +85,10 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         if (event.reactionEmote.isEmote) return
         val guildPlayer = container.lavaManager.musicPlayerManager.getGuildMusicPlayer(guild)
         val menus = guildPlayer.searchMenus
-        val menu = menus.getOrElse(event.messageIdLong, { return })
+        val menu = menus.getOrElse(event.messageIdLong, {
+            return
+        })
+
         if (event.user.idLong != (menu.first().userData as TrackUserData).userId) return
 
         val track: AudioTrack? = when (event.reactionEmote.emoji) {
