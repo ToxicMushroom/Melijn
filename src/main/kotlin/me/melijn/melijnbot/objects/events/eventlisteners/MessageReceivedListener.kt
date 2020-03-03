@@ -133,7 +133,8 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         val sdmId = logChannelCache.get(Pair(guildId, LogChannelType.SELF_DELETED_MESSAGE))
         val pmId = logChannelCache.get(Pair(guildId, LogChannelType.PURGED_MESSAGE))
         val fmId = logChannelCache.get(Pair(guildId, LogChannelType.FILTERED_MESSAGE))
-        if (odmId.await() == -1L && sdmId.await() == -1L && pmId.await() == -1L && fmId.await() == -1L) return@runBlocking
+        val emId = logChannelCache.get(Pair(guildId, LogChannelType.EDITED_MESSAGE))
+        if (odmId.await() == -1L && sdmId.await() == -1L && pmId.await() == -1L && fmId.await() == -1L && emId.await() == -1L) return@runBlocking
 
         val messageWrapper = container.daoManager.messageHistoryWrapper
         var content = event.message.contentRaw
@@ -141,7 +142,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             content += "\n${embed.toMessage()}"
         }
 
-        GlobalScope.launch {
+        container.taskManager.async {
             messageWrapper.addMessage(DaoMessage(
                 guildId,
                 event.channel.idLong,

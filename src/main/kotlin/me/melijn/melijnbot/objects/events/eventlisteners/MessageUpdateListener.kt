@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.objects.events.eventlisteners
 
-import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.message.DaoMessage
@@ -31,9 +30,9 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
         val message = event.message
         val newContent = event.message.contentRaw
         val messageWrapper = container.daoManager.messageHistoryWrapper
-        val deferredMessage = async { messageWrapper.getMessageById(event.messageIdLong) }
+        val deferredMessage = messageWrapper.getMessageById(event.messageIdLong)
 
-        val daoMessage = deferredMessage.await()
+        val daoMessage = deferredMessage
             ?: DaoMessage(
                 event.guild.idLong,
                 event.channel.idLong,
