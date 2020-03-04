@@ -2,6 +2,7 @@ package me.melijn.melijnbot.objects.events.eventutil
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyMusicChannel
 import me.melijn.melijnbot.objects.utils.listeningMembers
 import net.dv8tion.jda.api.JDA
@@ -21,16 +22,8 @@ object VoiceUtil {
         val daoManager = container.daoManager
 
         // Leave channel timer stuff
-        if (botChannel != null) {
-            if (
-                listeningMembers(botChannel) == 0 &&
-                !(daoManager.music247Wrapper.music247Cache.get(guild.idLong).await() &&
-                    daoManager.supporterWrapper.guildSupporterIds.contains(guild.idLong))
-            ) {
-                disconnectQueue[guild.idLong] = System.currentTimeMillis() + 600_000
-            } else {
-                disconnectQueue.remove(guild.idLong)
-            }
+        botChannel?.let {
+            checkShouldDisconnectAndApply(it, daoManager)
         }
 
 
@@ -56,6 +49,20 @@ object VoiceUtil {
             if (container.lavaManager.tryToConnectToVCSilent(musicChannel, premium)) {
                 audioLoader.loadNewTrack(daoManager, container.lavaManager, channelJoined, guild.jda.selfUser, musicUrl)
             }
+        }
+    }
+
+    suspend fun checkShouldDisconnectAndApply(botChannel: VoiceChannel, daoManager: DaoManager) {
+        val guild = botChannel.guild
+        if (
+            !disconnectQueue.containsKey(guild.idLong) &&
+            listeningMembers(botChannel) == 0 &&
+            !(daoManager.music247Wrapper.music247Cache.get(guild.idLong).await() &&
+                daoManager.supporterWrapper.guildSupporterIds.contains(guild.idLong))
+        ) {
+            disconnectQueue[guild.idLong] = System.currentTimeMillis() + 600_000
+        } else {
+            disconnectQueue.remove(guild.idLong)
         }
     }
 
