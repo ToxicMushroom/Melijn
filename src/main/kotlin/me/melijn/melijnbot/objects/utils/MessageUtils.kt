@@ -106,7 +106,11 @@ suspend fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String,
             val parts = StringUtils.splitMessage(msg, maxLength = 2000 - (8 + lang.length) - if (shouldPaginate) 100 else 0)
             if (shouldPaginate && parts.size > 1) {
                 val paginatedParts = parts.mapIndexed { index, s ->
-                    s + "\n\nPage ${index + 1}/${parts.size}"
+                    when {
+                        index == 0 -> "$s```\nPage ${index + 1}/${parts.size}"
+                        index + 1 == parts.size -> "```$lang\n$s\nPage ${index + 1}/${parts.size}"
+                        else -> "```$lang\n$s```\nPage ${index + 1}/${parts.size}"
+                    }
                 }.toMutableList()
 
                 val message = channel.sendMessage(paginatedParts[0]).await()
@@ -130,7 +134,11 @@ suspend fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String,
             val parts = StringUtils.splitMessage(msg, maxLength = 2000 - (8 + lang.length))
             if (shouldPaginate && parts.size > 1) {
                 val paginatedParts = parts.mapIndexed { index, s ->
-                    s + "\n\nPage ${index + 1}/${parts.size}"
+                    when {
+                        index == 0 -> "$s```\nPage ${index + 1}/${parts.size}"
+                        index + 1 == parts.size -> "```$lang\n$s\nPage ${index + 1}/${parts.size}"
+                        else -> "```$lang\n$s```\nPage ${index + 1}/${parts.size}"
+                    }
                 }.toMutableList()
 
                 val message = privateChannel.sendMessage(paginatedParts[0]).await()

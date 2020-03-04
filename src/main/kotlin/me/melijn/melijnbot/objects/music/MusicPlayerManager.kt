@@ -15,7 +15,7 @@ class MusicPlayerManager(
 
     val audioPlayerManager: AudioPlayerManager = DefaultAudioPlayerManager()
     val audioLoader = AudioLoader(this)
-    private val guildMusicPlayers: HashMap<Long, GuildMusicPlayer> = HashMap()
+    val guildMusicPlayers: HashMap<Long, GuildMusicPlayer> = HashMap()
 
     init {
         audioPlayerManager.configuration.isFilterHotSwapEnabled = true

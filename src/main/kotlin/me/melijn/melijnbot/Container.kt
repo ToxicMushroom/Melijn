@@ -20,6 +20,7 @@ import java.io.File
 class Container {
 
     var logToDiscord: Boolean = true
+
     // userId, roleId, cause
     val roleAddedMap = mutableMapOf<Pair<Long, Long>, RoleUpdateCause>()
     val roleRemovedMap = mutableMapOf<Pair<Long, Long>, RoleUpdateCause>()
@@ -47,16 +48,20 @@ class Container {
     //Used by events
     val daoManager = DaoManager(taskManager, settings.database)
     val webManager = WebManager(taskManager, settings)
+
     //enabled on event
     val serviceManager = ServiceManager(taskManager, daoManager, webManager)
 
     lateinit var lavaManager: LavaManager
 
     var commandMap = emptyMap<Int, AbstractCommand>()
+
     //messageId, reason
     val filteredMap = mutableMapOf<Long, String>()
+
     //messageId, purgerId
     val purgedIds = mutableMapOf<Long, Long>()
+
     //messageId
     val botDeletedMessageIds = mutableSetOf<Long>()
 

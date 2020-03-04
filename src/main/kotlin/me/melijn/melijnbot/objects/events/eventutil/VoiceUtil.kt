@@ -12,22 +12,39 @@ import net.dv8tion.jda.api.sharding.ShardManager
 
 object VoiceUtil {
 
+    //guildId, timeOfLeave
+    var disconnectQueue = mutableMapOf<Long, Long>()
+
     suspend fun channelUpdate(container: Container, channelJoined: VoiceChannel) {
         val guild = channelJoined.guild
+        val botChannel = container.lavaManager.getConnectedChannel(guild)
         val daoManager = container.daoManager
 
+        // Leave channel timer stuff
+        if (botChannel != null) {
+            if (
+                listeningMembers(botChannel) == 0 &&
+                !(daoManager.music247Wrapper.music247Cache.get(guild.idLong).await() &&
+                    daoManager.supporterWrapper.guildSupporterIds.contains(guild.idLong))
+            ) {
+                disconnectQueue[guild.idLong] = System.currentTimeMillis() + 600_000
+            } else {
+                disconnectQueue.remove(guild.idLong)
+            }
+        }
+
+
+        // Radio stuff
         val musicChannel = guild.getAndVerifyMusicChannel(daoManager, Permission.VOICE_CONNECT, Permission.VOICE_SPEAK)
             ?: return
 
         val musicUrl = daoManager.streamUrlWrapper.streamUrlCache.get(guild.idLong).await()
-        if (musicUrl == "") return
-
+        if (musicUrl.isBlank()) return
 
         val musicPlayerManager = container.lavaManager.musicPlayerManager
         val trackManager = musicPlayerManager.getGuildMusicPlayer(guild).guildTrackManager
         val audioLoader = musicPlayerManager.audioLoader
         val iPlayer = trackManager.iPlayer
-        val botChannel = container.lavaManager.getConnectedChannel(guild)
 
         if (musicChannel.id == botChannel?.id && channelJoined.id == botChannel.id && iPlayer.playingTrack != null) {
             return

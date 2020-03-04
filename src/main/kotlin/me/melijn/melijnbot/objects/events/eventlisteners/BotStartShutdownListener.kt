@@ -29,6 +29,7 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
                 logger.info("$readyShards shard(s) ready")
                 return
             }
+
             logger.info("All shards ready")
             if (!container.serviceManager.started) {
                 container.taskManager.async {
@@ -38,7 +39,7 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
                 }
                 container.startTime = System.currentTimeMillis()
                 logger.info("Starting services..")
-                container.serviceManager.init(shardManager)
+                container.serviceManager.init(container, shardManager)
                 container.serviceManager.startServices()
                 logger.info("Services ready")
                 logger.info("Starting Jooby rest server..")
