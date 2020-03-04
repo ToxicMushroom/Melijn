@@ -96,20 +96,29 @@ suspend fun sendSyntax(context: CommandContext, translationPath: String = contex
     sendMsg(context.textChannel, syntax)
 }
 
-fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String) {
+suspend fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String, shouldPaginate: Boolean = false) {
     if (context.isFromGuild) {
         val channel = context.textChannel
         if (!channel.canTalk()) return
         if (msg.length <= 2000) {
             channel.sendMessage(msg).queue()
         } else {
-            val parts = StringUtils.splitMessage(msg, maxLength = 2000 - (8 + lang.length))
-            parts.forEachIndexed { index, msgPart ->
-                channel.sendMessage(when {
-                    index == 0 -> "$msgPart```"
-                    index + 1 == parts.size -> "```$lang\n$msgPart"
-                    else -> "```$lang\n$msgPart```"
-                }).queue()
+            val parts = StringUtils.splitMessage(msg, maxLength = 2000 - (8 + lang.length) - if (shouldPaginate) 100 else 0)
+            if (shouldPaginate && parts.size > 1) {
+                val paginatedParts = parts.mapIndexed { index, s ->
+                    s + "\n\nPage ${index + 1}/${parts.size}"
+                }.toMutableList()
+
+                val message = channel.sendMessage(paginatedParts[0]).await()
+                registerPaginationMessage(context, message, paginatedParts, 0)
+            } else {
+                parts.forEachIndexed { index, msgPart ->
+                    channel.sendMessage(when {
+                        index == 0 -> "$msgPart```"
+                        index + 1 == parts.size -> "```$lang\n$msgPart"
+                        else -> "```$lang\n$msgPart```"
+                    }).queue()
+                }
             }
         }
 
@@ -119,12 +128,21 @@ fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String) {
             privateChannel.sendMessage(msg).queue()
         } else {
             val parts = StringUtils.splitMessage(msg, maxLength = 2000 - (8 + lang.length))
-            parts.forEachIndexed { index, msgPart ->
-                privateChannel.sendMessage(when {
-                    index == 0 -> "$msgPart```"
-                    index + 1 == parts.size -> "```$lang\n$msgPart"
-                    else -> "```$lang\n$msgPart```"
-                }).queue()
+            if (shouldPaginate && parts.size > 1) {
+                val paginatedParts = parts.mapIndexed { index, s ->
+                    s + "\n\nPage ${index + 1}/${parts.size}"
+                }.toMutableList()
+
+                val message = privateChannel.sendMessage(paginatedParts[0]).await()
+                registerPaginationMessage(context, message, paginatedParts, 0)
+            } else {
+                parts.forEachIndexed { index, msgPart ->
+                    privateChannel.sendMessage(when {
+                        index == 0 -> "$msgPart```"
+                        index + 1 == parts.size -> "```$lang\n$msgPart"
+                        else -> "```$lang\n$msgPart```"
+                    }).queue()
+                }
             }
         }
     }

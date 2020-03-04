@@ -41,6 +41,6 @@ class RolesCommand : AbstractCommand("command.roles") {
         content += "```"
 
         val msg = title + content
-        sendMsgCodeBlock(context, msg, "INI")
+        sendMsgCodeBlock(context, msg, "INI", true)
     }
 }
