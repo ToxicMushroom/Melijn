@@ -19,12 +19,12 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
     override val uniqueKey: String = "guildId, mutedId, startTime"
 
     init {
-        driverManager.registerTable(table, tableStructure, primaryKey)
+        driverManager.registerTable(table, tableStructure, primaryKey, uniqueKey)
     }
 
     suspend fun setMute(mute: Mute) {
         mute.apply {
-            driverManager.executeUpdate("INSERT INTO $table (muteId, guildId, mutedId, muteAuthorId, unmuteAuthorId, reason, startTime, endTime, unmuteReason, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)" +
+            driverManager.executeUpdate("INSERT INTO $table (muteId, guildId, mutedId, muteAuthorId, unmuteAuthorId, reason, startTime, endTime, unmuteReason, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" +
                 " ON CONFLICT ($primaryKey) DO UPDATE SET endTime = ?, muteAuthorId = ?, reason = ?, unmuteAuthorId = ?, unmuteReason = ?, active = ?",
                 muteId, guildId, mutedId, muteAuthorId, unmuteAuthorId, reason, startTime, endTime, unmuteReason, active,
                 endTime, muteAuthorId, reason, unmuteAuthorId, unmuteReason, active)
@@ -91,6 +91,27 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
                 ))
             }
         }, guildId, mutedId)
+        return mutes
+    }
+
+    fun getMutes(muteId: String): List<Mute> {
+        val mutes = ArrayList<Mute>()
+        driverManager.executeQuery("SELECT * FROM $table WHERE muteId = ?", { rs ->
+            while (rs.next()) {
+                mutes.add(Mute(
+                    rs.getLong("guildId"),
+                    rs.getLong("mutedId"),
+                    rs.getLong("muteAuthorId"),
+                    rs.getString("reason"),
+                    rs.getLong("unmuteAuthorId"),
+                    rs.getString("unmuteReason"),
+                    rs.getLong("startTime"),
+                    rs.getLong("endTime"),
+                    rs.getBoolean("active"),
+                    muteId
+                ))
+            }
+        }, muteId)
         return mutes
     }
 }

@@ -22,13 +22,13 @@ class WarnWrapper(val taskManager: TaskManager, private val warnDao: WarnDao) {
         }
 
         warns.forEach { warn ->
-            val message = convertKickInfoToMessage(context, warn)
+            val message = convertWarnInfoToMessage(context, warn)
             map[warn.moment] = message
         }
         return map
     }
 
-    private suspend fun convertKickInfoToMessage(context: CommandContext, warn: Warn): String {
+    private suspend fun convertWarnInfoToMessage(context: CommandContext, warn: Warn): String {
         val warnAuthor = context.shardManager.retrieveUserById(warn.warnAuthorId).awaitOrNull()
         return getWarnMessage(context, warnAuthor, warn)
     }
@@ -41,5 +41,22 @@ class WarnWrapper(val taskManager: TaskManager, private val warnDao: WarnDao) {
             .replace("%warnAuthorId%", "${warn.warnAuthorId}")
             .replace("%reason%", warn.reason.substring(0, min(warn.reason.length, 830)))
             .replace("%moment%", warn.moment.asEpochMillisToDateTime(zoneId))
+            .replace("%warnId%", warn.warnId)
+
+    }
+
+    suspend fun getWarnMap(context: CommandContext, warnId: String): Map<Long, String> {
+        val map = hashMapOf<Long, String>()
+        val warns = warnDao.getWarns(warnId)
+        if (warns.isEmpty()) {
+            return emptyMap()
+        }
+
+        warns.forEach { warn ->
+            val message = convertWarnInfoToMessage(context, warn)
+            map[warn.moment] = message
+        }
+
+        return map
     }
 }

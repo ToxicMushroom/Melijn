@@ -17,7 +17,7 @@ class SoftBanDao(driverManager: DriverManager) : Dao(driverManager) {
     override val uniqueKey: String = "guildId, softBannedId, moment"
 
     init {
-        driverManager.registerTable(table, tableStructure, primaryKey)
+        driverManager.registerTable(table, tableStructure, primaryKey, uniqueKey)
     }
 
     suspend fun addSoftBan(ban: SoftBan) {
@@ -31,9 +31,9 @@ class SoftBanDao(driverManager: DriverManager) : Dao(driverManager) {
     suspend fun getSoftBans(guildId: Long, bannedId: Long): List<SoftBan> = suspendCoroutine {
         driverManager.executeQuery(
             "SELECT * FROM $table WHERE guildId = ? AND softBannedId = ?", { rs ->
-            val bans = ArrayList<SoftBan>()
+            val softBans = ArrayList<SoftBan>()
             while (rs.next()) {
-                bans.add(SoftBan(
+                softBans.add(SoftBan(
                     guildId,
                     bannedId,
                     rs.getLong("softBanAuthorId"),
@@ -42,9 +42,28 @@ class SoftBanDao(driverManager: DriverManager) : Dao(driverManager) {
                     rs.getString("softBanId")
                 ))
             }
-            it.resume(bans)
+            it.resume(softBans)
         }, guildId, bannedId)
     }
+
+    suspend fun getSoftBans(softbanId: String): List<SoftBan> = suspendCoroutine {
+        driverManager.executeQuery(
+            "SELECT * FROM $table WHERE softbanId = ?", { rs ->
+            val softBans = ArrayList<SoftBan>()
+            while (rs.next()) {
+                softBans.add(SoftBan(
+                    rs.getLong("guildId"),
+                    rs.getLong("bannedId"),
+                    rs.getLong("softBanAuthorId"),
+                    rs.getString("reason"),
+                    rs.getLong("moment"),
+                    softbanId
+                ))
+            }
+            it.resume(softBans)
+        }, softbanId)
+    }
+
 }
 
 data class SoftBan(
@@ -54,8 +73,8 @@ data class SoftBan(
     var reason: String = "/",
     var moment: Long = System.currentTimeMillis(),
     val softBanId: String = Base64.encode(ByteBuffer
-        .allocate(Long.SIZE_BYTES)
-        .putLong(System.nanoTime())
-        .array())
+            .allocate(Long.SIZE_BYTES)
+            .putLong(System.nanoTime())
+            .array())
         .remove("=")
 )

@@ -4,6 +4,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.objects.utils.awaitOrNull
+import me.melijn.melijnbot.objects.utils.getDurationString
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
@@ -38,7 +39,7 @@ class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
 
     suspend fun getBanMap(context: CommandContext, banId: String): Map<Long, String> {
         val map = hashMapOf<Long, String>()
-        val bans = banDao.getBans(context.guildId, banId)
+        val bans = banDao.getBans(banId)
         if (bans.isEmpty()) {
             return emptyMap()
         }
@@ -69,6 +70,11 @@ class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
         val deletedUser = context.getTranslation("message.deleted.user")
         val unbanReason = ban.unbanReason
         val zoneId = context.getTimeZoneId()
+
+        val banDuration = ban.endTime?.let { endTime ->
+            getDurationString((endTime - ban.startTime))
+        } ?: context.getTranslation("infinite")
+
         return context.getTranslation("message.punishmenthistory.ban")
             .replace("%banAuthor%", banAuthor?.asTag ?: deletedUser)
             .replace("%banAuthorId%", "${ban.banAuthorId}")
@@ -78,6 +84,8 @@ class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
             .replace("%unbanReason%", unbanReason?.substring(0, min(unbanReason.length, 830)) ?: "/")
             .replace("%startTime%", ban.startTime.asEpochMillisToDateTime(zoneId))
             .replace("%endTime%", ban.endTime?.asEpochMillisToDateTime(zoneId) ?: "/")
+            .replace("%duration%", banDuration)
+            .replace("%banId%", ban.banId)
             .replace("%active%", "${ban.active}")
     }
 }

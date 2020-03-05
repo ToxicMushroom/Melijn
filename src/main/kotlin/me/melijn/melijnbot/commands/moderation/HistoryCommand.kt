@@ -6,21 +6,65 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.utils.retrieveUserByArgsNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendMsgCodeBlocks
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.*
 
 class HistoryCommand : AbstractCommand("command.history") {
 
     init {
         id = 31
         name = "history"
+        aliases = arrayOf("punishmentHistory", "ph")
         commandCategory = CommandCategory.MODERATION
         children = arrayOf(
-            //TODO("Add id arg")
-            //IdArg(root)
+            FindByCaseIdArg(root)
         )
+    }
+
+    class FindByCaseIdArg(parent: String) : AbstractCommand("$parent.findbycaseid") {
+
+        init {
+            name = "findByCaseId"
+            aliases = arrayOf("find")
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+
+            val id = getStringFromArgsNMessage(context, 0, 6, 15) ?: return
+            val dao = context.daoManager
+
+            val unorderedMap: MutableMap<Long, String> = hashMapOf()
+            //put info inside maps
+
+            val banMap = dao.banWrapper.getBanMap(context, id)
+            unorderedMap.putAll(banMap)
+
+
+            val kickMap = dao.kickWrapper.getKickMap(context, id)
+            unorderedMap.putAll(kickMap)
+
+
+            val warnMap = dao.warnWrapper.getWarnMap(context, id)
+            unorderedMap.putAll(warnMap)
+
+
+            val muteMap = dao.muteWrapper.getMuteMap(context, id)
+            unorderedMap.putAll(muteMap)
+
+
+            val softbanMap = dao.softBanWrapper.getSoftBanMap(context, id)
+            unorderedMap.putAll(softbanMap)
+
+
+            val orderedMap = unorderedMap.toSortedMap().toMap()
+
+            //Collected all punishments
+            val msg = orderedMap.values.joinToString("")
+            sendMsgCodeBlocks(context, msg, "INI")
+        }
     }
 
     override suspend fun execute(context: CommandContext) {

@@ -375,11 +375,11 @@ object ImageUtils {
         // Get the raster data (array of pixels)
         val src: Raster = image.data
 
-
         // Create an identically-sized output raster
         val dest = src.createCompatibleWritableRaster()
 
         val rFloatArr = floatArrayOf(0f, 0f, 0f, 0f)
+        val kData = kernel.getKernelData(null)
         for (x in 0 until image.width) {
             for (y in 0 until image.height) {
                 var newRed = 0f
@@ -387,40 +387,38 @@ object ImageUtils {
                 var newBlue = 0f
                 var newAlpha = 0f
 
-                val kData = kernel.getKernelData(null)
+
                 for (yk in 0 until kernel.height) {
                     for (xk in 0 until kernel.width) {
                         val kry = kernel.yOrigin - yk
                         val krx = kernel.xOrigin - xk
-                        val xCheck = if (x + krx >= image.width || x + krx < 0) x else x + krx
-                        val yCheck = if (y + kry >= image.height || y + kry < 0) y else y + kry
-                        val pixel = src.getPixel(xCheck, yCheck, rFloatArr)
-
-                        val pixelValueR = pixel[0]
-                        val pixelValueG = pixel[1]
-                        val pixelValueB = pixel[2]
-                        val pixelValueA = pixel[3]
+                        val pixel = src.getPixel(
+                            if (x + krx >= image.width || x + krx < 0) {
+                                x
+                            } else {
+                                x + krx
+                            },
+                            if (y + kry >= image.height || y + kry < 0) {
+                                y
+                            } else {
+                                y + kry
+                            }, rFloatArr)
 
                         val kernelModifier = kData[yk * kernel.width + xk]
-                        newRed += kernelModifier * pixelValueR
-                        newGreen += kernelModifier * pixelValueG
-                        newBlue += kernelModifier * pixelValueB
-                        newAlpha += kernelModifier * pixelValueA
+                        newRed += kernelModifier * pixel[0]
+                        newGreen += kernelModifier * pixel[1]
+                        newBlue += kernelModifier * pixel[2]
+                        newAlpha += kernelModifier * pixel[3]
                     }
                 }
 
-                newRed = min(255f, newRed)
-                newRed = max(0f, newRed)
-
-                newGreen = min(255f, newGreen)
-                newGreen = max(0f, newGreen)
-
-                newBlue = min(255f, newBlue)
-                newBlue = max(0f, newBlue)
-
-                newAlpha = min(255f, newAlpha)
-                newAlpha = max(0f, newAlpha)
-                dest.setPixel(x, y, floatArrayOf(newRed, newGreen, newBlue, newAlpha))
+                dest.setPixel(x, y,
+                    floatArrayOf(
+                        max(0f, min(255f, newRed)),
+                        max(0f, min(255f, newGreen)),
+                        max(0f, min(255f, newBlue)),
+                        max(0f, min(255f, newAlpha))
+                    ))
             }
         }
         image.data = dest

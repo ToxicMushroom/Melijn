@@ -27,6 +27,21 @@ class KickWrapper(val taskManager: TaskManager, private val kickDao: KickDao) {
         return map
     }
 
+    suspend fun getKickMap(context: CommandContext, kickId: String): Map<Long, String> {
+        val map = hashMapOf<Long, String>()
+        val kicks = kickDao.getKicks(kickId)
+        if (kicks.isEmpty()) {
+            return emptyMap()
+        }
+
+        kicks.forEach { kick ->
+            val message = convertKickInfoToMessage(context, kick)
+            map[kick.moment] = message
+        }
+
+        return map
+    }
+
     private suspend fun convertKickInfoToMessage(context: CommandContext, kick: Kick): String {
         val kickAuthor = context.shardManager.retrieveUserById(kick.kickAuthorId).awaitOrNull()
         return getKickMessage(context, kickAuthor, kick)
@@ -40,5 +55,6 @@ class KickWrapper(val taskManager: TaskManager, private val kickDao: KickDao) {
             .replace("%kickAuthorId%", "${kick.kickAuthorId}")
             .replace("%reason%", kick.reason.substring(0, min(kick.reason.length, 830)))
             .replace("%moment%", kick.moment.asEpochMillisToDateTime(zoneId))
+            .replace("%kickId%", kick.kickId)
     }
 }

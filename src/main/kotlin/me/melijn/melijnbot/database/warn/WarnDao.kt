@@ -15,7 +15,7 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
     override val uniqueKey: String = "guildId, warnedId, warnMoment"
 
     init {
-        driverManager.registerTable(table, tableStructure, primaryKey)
+        driverManager.registerTable(table, tableStructure, primaryKey, uniqueKey)
     }
 
     suspend fun add(warn: Warn) {
@@ -55,6 +55,23 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId, warnedId)
         return kicks
     }
+
+    fun getWarns(warnId: String): List<Warn> {
+        val kicks = ArrayList<Warn>()
+        driverManager.executeQuery("SELECT * FROM $table WHERE warnId = ?", { rs ->
+            while (rs.next()) {
+                kicks.add(Warn(
+                    rs.getLong("guildId"),
+                    rs.getLong("warnedId"),
+                    rs.getLong("warnAuthorId"),
+                    rs.getString("warnReason"),
+                    rs.getLong("warnMoment"),
+                    warnId
+                ))
+            }
+        }, warnId)
+        return kicks
+    }
 }
 
 data class Warn(
@@ -64,8 +81,8 @@ data class Warn(
     val reason: String,
     val moment: Long = System.currentTimeMillis(),
     val warnId: String = Base64.encode(ByteBuffer
-        .allocate(Long.SIZE_BYTES)
-        .putLong(System.nanoTime())
-        .array())
+            .allocate(Long.SIZE_BYTES)
+            .putLong(System.nanoTime())
+            .array())
         .remove("=")
 )

@@ -15,7 +15,7 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
     override val uniqueKey: String = "guildId, kickedId, kickMoment"
 
     init {
-        driverManager.registerTable(table, tableStructure, primaryKey)
+        driverManager.registerTable(table, tableStructure, primaryKey, uniqueKey)
     }
 
     suspend fun add(kick: Kick) {
@@ -55,6 +55,23 @@ class KickDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId, kickedId)
         return kicks
     }
+
+    fun getKicks(kickId: String): List<Kick> {
+        val kicks = ArrayList<Kick>()
+        driverManager.executeQuery("SELECT * FROM $table WHERE kickId = ?", { rs ->
+            while (rs.next()) {
+                kicks.add(Kick(
+                    rs.getLong("guildId"),
+                    rs.getLong("kickedId"),
+                    rs.getLong("kickAuthorId"),
+                    rs.getString("kickReason"),
+                    rs.getLong("kickMoment"),
+                    kickId
+                ))
+            }
+        }, kickId)
+        return kicks
+    }
 }
 
 data class Kick(
@@ -64,8 +81,8 @@ data class Kick(
     val reason: String,
     val moment: Long = System.currentTimeMillis(),
     val kickId: String = Base64.encode(ByteBuffer
-        .allocate(Long.SIZE_BYTES)
-        .putLong(System.nanoTime())
-        .array())
+            .allocate(Long.SIZE_BYTES)
+            .putLong(System.nanoTime())
+            .array())
         .remove("=")
 )

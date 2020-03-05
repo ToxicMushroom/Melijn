@@ -33,7 +33,7 @@ class MuteService(
             for (mute in mutes) {
                 val selfUser = shardManager.shards[0].selfUser
                 val newMute = mute.run {
-                    Mute(guildId, mutedId, muteAuthorId, reason, selfUser.idLong, "Mute expired", startTime, endTime, false)
+                    Mute(guildId, mutedId, muteAuthorId, reason, selfUser.idLong, "Mute expired", startTime, endTime, false, muteId)
                 }
 
                 daoManager.muteWrapper.setMute(newMute)

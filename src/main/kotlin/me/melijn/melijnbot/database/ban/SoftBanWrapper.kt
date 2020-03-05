@@ -40,5 +40,22 @@ class SoftBanWrapper(val taskManager: TaskManager, private val softBanDao: SoftB
             .replace("%softBanAuthorId%", "${softBan.softBanAuthorId}")
             .replace("%reason%", softBan.reason.substring(0, min(softBan.reason.length, 830)))
             .replace("%moment%", softBan.moment.asEpochMillisToDateTime(zoneId))
+            .replace("%softbanId%", softBan.softBanId)
+
+    }
+
+    suspend fun getSoftBanMap(context: CommandContext, softbanId: String): Map<Long, String> {
+        val map = hashMapOf<Long, String>()
+        val softBans = softBanDao.getSoftBans(softbanId)
+        if (softBans.isEmpty()) {
+            return emptyMap()
+        }
+
+        softBans.forEach { softban ->
+            val message = convertSoftBanInfoToMessage(context, softban)
+            map[softban.moment] = message
+        }
+
+        return map
     }
 }

@@ -4,6 +4,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.objects.utils.awaitOrNull
+import me.melijn.melijnbot.objects.utils.getDurationString
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
@@ -53,6 +54,9 @@ class MuteWrapper(val taskManager: TaskManager, private val muteDao: MuteDao) {
         val deletedUser = context.getTranslation("message.deleted.user")
         val unmuteReason = mute.unmuteReason
         val zoneId = context.getTimeZoneId()
+        val muteDuration = mute.endTime?.let { endTime ->
+            getDurationString((endTime - mute.startTime))
+        } ?: context.getTranslation("infinite")
 
         return context.getTranslation("message.punishmenthistory.mute")
             .replace("%muteAuthor%", muteAuthor?.asTag ?: deletedUser)
@@ -63,6 +67,23 @@ class MuteWrapper(val taskManager: TaskManager, private val muteDao: MuteDao) {
             .replace("%unmuteReason%", unmuteReason?.substring(0, min(unmuteReason.length, 830)) ?: "/")
             .replace("%startTime%", mute.startTime.asEpochMillisToDateTime(zoneId))
             .replace("%endTime%", mute.endTime?.asEpochMillisToDateTime(zoneId) ?: "/")
+            .replace("%duration%", muteDuration)
+            .replace("%muteId%", mute.muteId)
             .replace("%active%", "${mute.active}")
+    }
+
+    suspend fun getMuteMap(context: CommandContext, muteId: String): Map<Long, String> {
+        val map = hashMapOf<Long, String>()
+        val mutes = muteDao.getMutes(muteId)
+        if (mutes.isEmpty()) {
+            return emptyMap()
+        }
+
+        mutes.forEach { mute ->
+            val message = convertMuteInfoToMessage(context, mute)
+            map[mute.startTime] = message
+        }
+
+        return map
     }
 }

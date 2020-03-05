@@ -28,7 +28,7 @@ class BanService(
             for (ban in bans) {
                 val selfUser = shardManager.shards[0].selfUser
                 val newBan = ban.run {
-                    Ban(guildId, bannedId, banAuthorId, reason, selfUser.idLong, "Ban expired", startTime, endTime, false)
+                    Ban(guildId, bannedId, banAuthorId, reason, selfUser.idLong, "Ban expired", startTime, endTime, false, banId)
                 }
                 daoManager.banWrapper.setBan(newBan)
                 val guild = shardManager.getGuildById(ban.guildId) ?: continue
