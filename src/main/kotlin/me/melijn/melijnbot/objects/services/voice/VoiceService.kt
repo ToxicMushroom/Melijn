@@ -4,6 +4,7 @@ import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.objects.services.Service
+import me.melijn.melijnbot.objects.utils.listeningMembers
 import net.dv8tion.jda.api.sharding.ShardManager
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -20,8 +21,20 @@ class VoiceService(val container: Container, val shardManager: ShardManager) : S
                 .map { it.key }
 
             for (guildId in disconnect) {
-                val guildMPlayer = container.lavaManager.musicPlayerManager.guildMusicPlayers.getOrElse(guildId) { null }
-                guildMPlayer?.guildTrackManager?.stopAndDestroy()
+                val guild = shardManager.getGuildById(guildId) ?: return@runBlocking
+                val guildMPlayer = container.lavaManager.musicPlayerManager.guildMusicPlayers.getOrElse(guildId) {
+                    null
+                } ?: return@runBlocking
+
+                val connectedChannel = guild.selfMember.voiceState?.channel
+                connectedChannel?.let {
+                    if (listeningMembers(connectedChannel) > 0) {
+                        VoiceUtil.disconnectQueue.remove(guildId)
+                        return@runBlocking
+                    }
+                }
+
+                guildMPlayer.guildTrackManager.stopAndDestroy()
                 VoiceUtil.disconnectQueue.remove(guildId)
             }
         }
