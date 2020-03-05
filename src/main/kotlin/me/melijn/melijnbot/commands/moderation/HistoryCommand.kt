@@ -20,53 +20,6 @@ class HistoryCommand : AbstractCommand("command.history") {
         )
     }
 
-    class FindByCaseIdArg(parent: String) : AbstractCommand("$parent.findbycaseid") {
-
-        init {
-            name = "findByCaseId"
-            aliases = arrayOf("find")
-        }
-
-        override suspend fun execute(context: CommandContext) {
-            if (context.args.isEmpty()) {
-                sendSyntax(context)
-                return
-            }
-
-            val id = getStringFromArgsNMessage(context, 0, 6, 15) ?: return
-            val dao = context.daoManager
-
-            val unorderedMap: MutableMap<Long, String> = hashMapOf()
-            //put info inside maps
-
-            val banMap = dao.banWrapper.getBanMap(context, id)
-            unorderedMap.putAll(banMap)
-
-
-            val kickMap = dao.kickWrapper.getKickMap(context, id)
-            unorderedMap.putAll(kickMap)
-
-
-            val warnMap = dao.warnWrapper.getWarnMap(context, id)
-            unorderedMap.putAll(warnMap)
-
-
-            val muteMap = dao.muteWrapper.getMuteMap(context, id)
-            unorderedMap.putAll(muteMap)
-
-
-            val softbanMap = dao.softBanWrapper.getSoftBanMap(context, id)
-            unorderedMap.putAll(softbanMap)
-
-
-            val orderedMap = unorderedMap.toSortedMap().toMap()
-
-            //Collected all punishments
-            val msg = orderedMap.values.joinToString("")
-            sendMsgCodeBlocks(context, msg, "INI")
-        }
-    }
-
     override suspend fun execute(context: CommandContext) {
         if (context.args.size < 2) {
             sendSyntax(context)
@@ -134,6 +87,56 @@ class HistoryCommand : AbstractCommand("command.history") {
 
             sendMsg(context, noHistory)
         } else {
+            sendMsgCodeBlocks(context, msg, "INI")
+        }
+    }
+
+    class FindByCaseIdArg(parent: String) : AbstractCommand("$parent.findbycaseid") {
+
+        init {
+            name = "findByCaseId"
+            aliases = arrayOf("find")
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+
+            val id = getStringFromArgsNMessage(context, 0, 6, 15) ?: return
+            val dao = context.daoManager
+
+            //timestamp, message
+            val unorderedMap: MutableMap<Long, String> = hashMapOf()
+            //put info inside maps
+
+            val banMap = dao.banWrapper.getBanMap(context, id)
+            unorderedMap.putAll(banMap)
+
+            if (unorderedMap.isEmpty()) {
+                val kickMap = dao.kickWrapper.getKickMap(context, id)
+                unorderedMap.putAll(kickMap)
+            }
+
+            if (unorderedMap.isEmpty()) {
+                val warnMap = dao.warnWrapper.getWarnMap(context, id)
+                unorderedMap.putAll(warnMap)
+            }
+
+            if (unorderedMap.isEmpty()) {
+                val muteMap = dao.muteWrapper.getMuteMap(context, id)
+                unorderedMap.putAll(muteMap)
+            }
+
+            if (unorderedMap.isEmpty()) {
+                val softbanMap = dao.softBanWrapper.getSoftBanMap(context, id)
+                unorderedMap.putAll(softbanMap)
+            }
+
+
+            //Collected all punishments
+            val msg = unorderedMap.values.joinToString("")
             sendMsgCodeBlocks(context, msg, "INI")
         }
     }

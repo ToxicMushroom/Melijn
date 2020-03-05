@@ -19,7 +19,7 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
     override val uniqueKey: String = "guildId, bannedId, startTime"
 
     init {
-        driverManager.registerTable(table, tableStructure, primaryKey)
+        driverManager.registerTable(table, tableStructure, primaryKey, uniqueKey)
     }
 
     suspend fun setBan(ban: Ban) {
@@ -97,13 +97,13 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId, bannedId)
     }
 
-    suspend fun getBans(guildId: Long, banId: String): List<Ban> = suspendCoroutine {
+    suspend fun getBans(banId: String): List<Ban> = suspendCoroutine {
         driverManager.executeQuery(
-            "SELECT * FROM $table WHERE guildId = ? AND banId = ?", { rs ->
+            "SELECT * FROM $table WHERE banId = ?", { rs ->
             val bans = ArrayList<Ban>()
             while (rs.next()) {
                 bans.add(Ban(
-                    guildId,
+                    rs.getLong("guildId"),
                     rs.getLong("bannedId"),
                     rs.getLong("banAuthorId"),
                     rs.getString("reason"),
@@ -116,7 +116,7 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
                 ))
             }
             it.resume(bans)
-        }, guildId, banId)
+        }, banId)
     }
 }
 
@@ -131,8 +131,8 @@ data class Ban(
     var endTime: Long? = null,
     var active: Boolean = true,
     var banId: String = Base64.encode(ByteBuffer
-        .allocate(Long.SIZE_BYTES)
-        .putLong(System.nanoTime())
-        .array())
+            .allocate(Long.SIZE_BYTES)
+            .putLong(System.nanoTime())
+            .array())
         .remove("=")
 )
