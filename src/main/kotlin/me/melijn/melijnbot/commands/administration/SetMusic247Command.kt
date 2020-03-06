@@ -14,7 +14,7 @@ class SetMusic247Command : AbstractCommand("command.setmusic247") {
         id = 146
         name = "setMusic247Mode"
         aliases = arrayOf("sm247m", "setRadioMode", "srm")
-        runConditions = arrayOf(RunCondition.SUPPORTER)
+        runConditions = arrayOf(RunCondition.USER_SUPPORTER)
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
