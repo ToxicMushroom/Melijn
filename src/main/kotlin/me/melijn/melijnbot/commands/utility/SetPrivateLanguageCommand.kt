@@ -20,7 +20,7 @@ class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") 
         children = arrayOf(
             SetLanguageCommand.ListArg("command.setlanguage")
         )
-        runConditions = arrayOf(RunCondition.SUPPORTER)
+        runConditions = arrayOf(RunCondition.USER_SUPPORTER)
         commandCategory = CommandCategory.UTILITY
     }
 

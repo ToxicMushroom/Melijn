@@ -30,20 +30,31 @@ object RunConditionUtil {
             RunCondition.DEV_ONLY -> checkDevOnly(container, event, language)
             RunCondition.CHANNEL_NSFW -> checkChannelNSFW(container, event, language)
             RunCondition.VOTED -> checkVoted(container, event, language)
-            RunCondition.SUPPORTER -> checkSupporter(container, event, language)
+            RunCondition.USER_SUPPORTER -> checkUserSupporter(container, event, language)
+            RunCondition.GUILD_SUPPORTER -> checkGuildSupporter(container, event, language)
         }
     }
 
-    private fun checkSupporter(container: Container, event: MessageReceivedEvent, language: String): Boolean {
-        return true
-        // val supporters = container.daoManager.supporterWrapper.userSupporterIds
-//        return if (!supporters.contains(event.author.idLong)) {
-//            val msg = i18n.getTranslation(language, "message.runcondition.failed.supporter")
-//            event.channel.sendMessage(msg).queue()
-//            false
-//        } else {
-//            true
-//        }
+    private fun checkGuildSupporter(container: Container, event: MessageReceivedEvent, language: String): Boolean {
+        val supporterGuilds = container.daoManager.supporterWrapper.guildSupporterIds
+        return if (!supporterGuilds.contains(event.guild.idLong)) {
+            val msg = i18n.getTranslation(language, "message.runcondition.failed.guild.supporter")
+            event.channel.sendMessage(msg).queue()
+            false
+        } else {
+            true
+        }
+    }
+
+    private fun checkUserSupporter(container: Container, event: MessageReceivedEvent, language: String): Boolean {
+        val supporters = container.daoManager.supporterWrapper.userSupporterIds
+        return if (!supporters.contains(event.author.idLong)) {
+            val msg = i18n.getTranslation(language, "message.runcondition.failed.user.supporter")
+            event.channel.sendMessage(msg).queue()
+            false
+        } else {
+            true
+        }
     }
 
     private suspend fun checkVoted(container: Container, event: MessageReceivedEvent, language: String): Boolean {

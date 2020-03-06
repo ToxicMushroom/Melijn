@@ -10,5 +10,6 @@ enum class RunCondition(val preRequired: Array<RunCondition> = emptyArray()) {
     BOT_ALONE_OR_USER_DJ(arrayOf(GUILD)),
     CHANNEL_NSFW(arrayOf(GUILD)),
     VOTED,
-    SUPPORTER
+    USER_SUPPORTER,
+    GUILD_SUPPORTER(arrayOf(GUILD))
 }
