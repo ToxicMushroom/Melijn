@@ -114,7 +114,8 @@ suspend fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String,
                 }.toMutableList()
 
                 val message = channel.sendMessage(paginatedParts[0]).await()
-                registerPaginationMessage(context, message, paginatedParts, 0)
+                registerPaginationMessage(channel
+                    , message, paginatedParts, 0)
             } else {
                 parts.forEachIndexed { index, msgPart ->
                     channel.sendMessage(when {
@@ -142,7 +143,7 @@ suspend fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String,
                 }.toMutableList()
 
                 val message = privateChannel.sendMessage(paginatedParts[0]).await()
-                registerPaginationMessage(context, message, paginatedParts, 0)
+                registerPaginationMessage(privateChannel, message, paginatedParts, 0)
             } else {
                 parts.forEachIndexed { index, msgPart ->
                     privateChannel.sendMessage(when {
@@ -156,64 +157,51 @@ suspend fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String,
     }
 }
 
-fun sendMsgCodeBlocks(
+suspend fun sendMsgCodeBlocks(
     context: CommandContext,
     msg: String,
     lang: String,
     success: ((message: Message) -> Unit)? = null,
-    failed: ((ex: Throwable) -> Unit)? = null,
-    multicallback: Boolean = false
+    failed: ((ex: Throwable) -> Unit)? = null
 ) {
-    if (context.isFromGuild) sendMsgCodeBlocks(context.textChannel, msg, lang, success, failed, multicallback)
-    else sendMsgCodeBlocks(context.privateChannel, msg, lang, success, failed, multicallback)
+    if (context.isFromGuild) sendMsgCodeBlocks(context.textChannel, msg, lang, success, failed)
+    else sendMsgCodeBlocks(context.privateChannel, msg, lang, success, failed)
 }
 
-fun sendMsgCodeBlocks(
+suspend fun sendMsgCodeBlocks(
     channel: PrivateChannel,
     msg: String,
     lang: String,
     success: ((message: Message) -> Unit)? = null,
-    failed: ((ex: Throwable) -> Unit)? = null,
-    multicallback: Boolean = false
+    failed: ((ex: Throwable) -> Unit)? = null
 ) {
     if (msg.length <= 2000) {
         channel.sendMessage(msg).queue(success, failed)
     } else {
-        var executedOnce = false
-        StringUtils.splitMessageWithCodeBlocks(msg, 1600, 20 + lang.length, lang).forEach {
-            val future = channel.sendMessage(it)
-            if (executedOnce && !multicallback) {
-                future.queue()
-            } else {
-                future.queue(success, failed)
-            }
-            executedOnce = true
-        }
+
+        val list = StringUtils.splitMessageWithCodeBlocks(msg, 1600, 20 + lang.length, lang)
+            .toMutableList()
+        val rsp = sendPaginationMsg(channel, list, 0)
+        success?.invoke(rsp)
     }
 }
 
-fun sendMsgCodeBlocks(
+suspend fun sendMsgCodeBlocks(
     channel: TextChannel,
     msg: String,
     lang: String,
     success: ((message: Message) -> Unit)? = null,
-    failed: ((ex: Throwable) -> Unit)? = null,
-    multicallback: Boolean = false
+    failed: ((ex: Throwable) -> Unit)? = null
 ) {
     if (channel.canTalk()) {
         if (msg.length <= 2000) {
             channel.sendMessage(msg).queue(success, failed)
         } else {
-            var executedOnce = false
-            StringUtils.splitMessageWithCodeBlocks(msg, 1600, 20 + lang.length, lang).forEach {
-                val future = channel.sendMessage(it)
-                if (executedOnce && !multicallback) {
-                    future.queue()
-                } else {
-                    future.queue(success, failed)
-                }
-                executedOnce = true
-            }
+
+            val list = StringUtils.splitMessageWithCodeBlocks(msg, 1600, 20 + lang.length, lang)
+                .toMutableList()
+            val rsp = sendPaginationMsg(channel, list, 0)
+            success?.invoke(rsp)
         }
     }
 }
@@ -564,25 +552,63 @@ suspend fun sendPaginationMsg(context: CommandContext, msgList: MutableList<Stri
     if (msg.length > 2000) throw IllegalArgumentException("No splitting here :angry:")
 
     runBlocking {
-        val message = if (context.isFromGuild) {
-            sendMsg(context.textChannel, msg).first()
+        if (context.isFromGuild) {
+            val message = sendMsg(context.textChannel, msg).first()
+            registerPaginationMessage(context.textChannel, message, msgList, index)
         } else {
-            sendMsg(context.privateChannel, msg).first()
+            val message = sendMsg(context.privateChannel, msg).first()
+            registerPaginationMessage(context.privateChannel, message, msgList, index)
         }
-
-        registerPaginationMessage(context, message, msgList, index)
     }
 }
 
-suspend fun registerPaginationMessage(context: CommandContext, message: Message, msgList: MutableList<String>, index: Int) {
-    context.container.paginationMap[System.nanoTime()] = PaginationInfo(
-        context.guildId,
-        context.channelId,
+suspend fun sendPaginationMsg(textChannel: TextChannel, msgList: MutableList<String>, index: Int): Message = suspendCoroutine {
+    val msg = msgList[index]
+    if (msg.length > 2000) throw IllegalArgumentException("No splitting here :angry:")
+
+    runBlocking {
+        val message = sendMsg(textChannel, msg).first()
+        it.resume(message)
+        registerPaginationMessage(textChannel, message, msgList, index)
+    }
+}
+
+suspend fun sendPaginationMsg(privateChannel: PrivateChannel, msgList: MutableList<String>, index: Int): Message = suspendCoroutine {
+    val msg = msgList[index]
+    if (msg.length > 2000) throw IllegalArgumentException("No splitting here :angry:")
+
+    runBlocking {
+        val message = sendMsg(privateChannel, msg).first()
+        it.resume(message)
+        registerPaginationMessage(privateChannel, message, msgList, index)
+    }
+}
+
+suspend fun registerPaginationMessage(textChannel: TextChannel, message: Message, msgList: MutableList<String>, index: Int) {
+    Container.instance.paginationMap[System.nanoTime()] = PaginationInfo(
+        textChannel.guild.idLong,
+        textChannel.idLong,
         message.idLong,
         msgList,
         index
     )
 
+    addPaginationEmotes(message)
+}
+
+suspend fun registerPaginationMessage(privateChannel: PrivateChannel, message: Message, msgList: MutableList<String>, index: Int) {
+    Container.instance.paginationMap[System.nanoTime()] = PaginationInfo(
+        -1,
+        privateChannel.idLong,
+        message.idLong,
+        msgList,
+        index
+    )
+
+    addPaginationEmotes(message)
+}
+
+suspend fun addPaginationEmotes(message: Message) {
     message.addReaction("⏪").await()
     message.addReaction("◀️").await()
     message.addReaction("▶️").await()

@@ -1,10 +1,8 @@
 package me.melijn.melijnbot.database.ban
 
-import com.wrapper.spotify.Base64
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
-import me.melijn.melijnbot.objects.utils.remove
-import java.nio.ByteBuffer
+import me.melijn.melijnbot.objects.utils.StringUtils.toBase64
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -72,9 +70,5 @@ data class SoftBan(
     var softBanAuthorId: Long,
     var reason: String = "/",
     var moment: Long = System.currentTimeMillis(),
-    val softBanId: String = Base64.encode(ByteBuffer
-            .allocate(Long.SIZE_BYTES)
-            .putLong(System.nanoTime())
-            .array())
-        .remove("=")
+    val softBanId: String = System.nanoTime().toBase64()
 )

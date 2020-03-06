@@ -5,5 +5,6 @@ enum class ChannelType {
     LEAVE,
     SELFROLE,
     VERIFICATION,
-    BIRTHDAY
+    BIRTHDAY,
+    PRE_VERIFICATION
 }

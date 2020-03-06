@@ -40,7 +40,7 @@ class SoftBanWrapper(val taskManager: TaskManager, private val softBanDao: SoftB
             .replace("%softBanAuthorId%", "${softBan.softBanAuthorId}")
             .replace("%reason%", softBan.reason.substring(0, min(softBan.reason.length, 830)))
             .replace("%moment%", softBan.moment.asEpochMillisToDateTime(zoneId))
-            .replace("%softbanId%", softBan.softBanId)
+            .replace("%softBanId%", softBan.softBanId)
 
     }
 

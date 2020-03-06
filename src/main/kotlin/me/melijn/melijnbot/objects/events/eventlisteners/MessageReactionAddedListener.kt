@@ -21,6 +21,7 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent
+import net.dv8tion.jda.api.events.message.priv.react.PrivateMessageReactionAddEvent
 import java.awt.Color
 import java.lang.Integer.max
 import java.lang.Integer.min
@@ -29,6 +30,48 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
     override fun onEvent(event: GenericEvent) {
         if (event is GuildMessageReactionAddEvent) onGuildMessageReactionAdd(event)
+        if (event is PrivateMessageReactionAddEvent) onPrivateMessageReactionAdd(event)
+    }
+
+    private fun onPrivateMessageReactionAdd(event: PrivateMessageReactionAddEvent) = runBlocking {
+        paginationHandler(event)
+    }
+
+    private suspend fun paginationHandler(event: PrivateMessageReactionAddEvent) {
+        val user = event.user ?: return
+        if (event.reactionEmote.isEmote || user.isBot) return
+        val emoji = event.reactionEmote.emoji
+        if (!listOf("⏪", "◀️", "▶️", "⏩").contains(emoji)) return
+        val entry = container.paginationMap.entries.firstOrNull { (_, info) ->
+            info.messageId == event.messageIdLong
+        } ?: return
+        val pagination = entry.value
+
+        val channel = event.channel
+        val message = channel.retrieveMessageById(pagination.messageId).await()
+        val newIndex = min(pagination.messageList.size - 1, max(0, when (emoji) {
+            "⏪" -> 0
+            "⏩" -> pagination.messageList.size - 1
+            "◀️" -> pagination.currentPage - 1
+            "▶️" -> pagination.currentPage + 1
+            else -> return
+        }))
+
+        if (newIndex != pagination.currentPage)
+            message.editMessage(pagination.messageList[newIndex]).queue()
+
+        pagination.currentPage = newIndex
+        container.paginationMap[entry.key] = pagination
+
+        val time = System.nanoTime()
+        if (time.minus(lastCheck) > 60_000_000_000) {
+            for (i in ArrayList(container.paginationMap.keys)) {
+                if (i < time - 3_600_000_000_000) {
+                    container.paginationMap.remove(i)
+                }
+            }
+            lastCheck = time
+        }
     }
 
     private fun onGuildMessageReactionAdd(event: GuildMessageReactionAddEvent) = runBlocking {

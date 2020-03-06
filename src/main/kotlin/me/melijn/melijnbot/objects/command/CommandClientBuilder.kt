@@ -164,7 +164,8 @@ class CommandClientBuilder(private val container: Container) {
         MusicNodeCommand(),
         DuckCommand(),
         AIWaifuCommand(),
-        SetMusic247Command()
+        SetMusic247Command(),
+        PreVerificationMessageCommand()
     )
 
     init {

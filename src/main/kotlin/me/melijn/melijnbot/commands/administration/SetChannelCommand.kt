@@ -37,14 +37,14 @@ class SetChannelCommand : AbstractCommand("command.setchannel") {
         val channel = context.guild.getAndVerifyChannelByType(context.daoManager, type)
         if (channel == null) {
             val msg = context.getTranslation("$root.show.unset")
-                .replace("%channelType%", type.toString().toUpperWordCase())
+                .replace("%channelType%", type.toUCC())
 
             sendMsg(context, msg)
             return
         }
 
         val msg = context.getTranslation("$root.show.set")
-            .replace("%channelType%", type.toString().toUpperWordCase())
+            .replace("%channelType%", type.toUCC())
             .replace(PLACEHOLDER_CHANNEL, channel.asTag)
 
         sendMsg(context, msg)
@@ -68,7 +68,7 @@ class SetChannelCommand : AbstractCommand("command.setchannel") {
             channelWrapper.setChannel(context.guildId, type, channel.idLong)
             context.getTranslation("$root.set")
                 .replace(PLACEHOLDER_CHANNEL, channel.asTag)
-        }.replace("%channelType%", type.toString().toUpperWordCase())
+        }.replace("%channelType%", type.toUCC())
 
         sendMsg(context, msg)
     }

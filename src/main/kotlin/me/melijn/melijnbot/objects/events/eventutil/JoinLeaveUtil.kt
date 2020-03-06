@@ -21,6 +21,7 @@ import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
 
 object JoinLeaveUtil {
+
     suspend fun postWelcomeMessage(daoManager: DaoManager, member: Member, channelType: ChannelType, messageType: MessageType) {
         val guild = member.guild
         val guildId = guild.idLong

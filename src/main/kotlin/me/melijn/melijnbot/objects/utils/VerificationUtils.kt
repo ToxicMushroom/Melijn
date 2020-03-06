@@ -95,6 +95,8 @@ object VerificationUtils {
 
     suspend fun addUnverified(member: Member, daoManager: DaoManager) {
         val guild = member.guild
+        JoinLeaveUtil.postWelcomeMessage(daoManager, member, ChannelType.PRE_VERIFICATION, MessageType.PRE_VERIFICATION_MESSAGE)
+
         val role = guild.getAndVerifyRoleByType(daoManager, RoleType.UNVERIFIED, true) ?: return
 
         val result = if (role.idLong != guild.idLong) {

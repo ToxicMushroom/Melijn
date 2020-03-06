@@ -1,10 +1,8 @@
 package me.melijn.melijnbot.database.warn
 
-import com.wrapper.spotify.Base64
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
-import me.melijn.melijnbot.objects.utils.remove
-import java.nio.ByteBuffer
+import me.melijn.melijnbot.objects.utils.StringUtils.toBase64
 
 class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
 
@@ -80,9 +78,5 @@ data class Warn(
     val warnAuthorId: Long,
     val reason: String,
     val moment: Long = System.currentTimeMillis(),
-    val warnId: String = Base64.encode(ByteBuffer
-            .allocate(Long.SIZE_BYTES)
-            .putLong(System.nanoTime())
-            .array())
-        .remove("=")
+    val warnId: String = System.nanoTime().toBase64()
 )

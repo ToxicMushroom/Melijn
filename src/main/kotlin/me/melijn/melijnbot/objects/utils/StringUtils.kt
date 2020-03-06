@@ -1,5 +1,7 @@
 package me.melijn.melijnbot.objects.utils
 
+import com.wrapper.spotify.Base64
+import java.nio.ByteBuffer
 import java.util.*
 import javax.annotation.Nullable
 import kotlin.math.pow
@@ -122,6 +124,14 @@ object StringUtils {
         }
 
         return index
+    }
+
+    fun Long.toBase64(): String {
+        return Base64.encode(ByteBuffer
+                .allocate(Long.SIZE_BYTES)
+                .putLong(this)
+                .array())
+            .remove("=")
     }
 }
 

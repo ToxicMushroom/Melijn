@@ -1,10 +1,8 @@
 package me.melijn.melijnbot.database.mute
 
-import com.wrapper.spotify.Base64
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
-import me.melijn.melijnbot.objects.utils.remove
-import java.nio.ByteBuffer
+import me.melijn.melijnbot.objects.utils.StringUtils.toBase64
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -126,9 +124,5 @@ data class Mute(
     var startTime: Long = System.currentTimeMillis(),
     var endTime: Long? = null,
     var active: Boolean = true,
-    var muteId: String = Base64.encode(ByteBuffer
-        .allocate(Long.SIZE_BYTES)
-        .putLong(System.nanoTime())
-        .array())
-        .remove("=")
+    var muteId: String = System.nanoTime().toBase64()
 )
