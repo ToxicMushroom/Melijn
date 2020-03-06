@@ -12,8 +12,8 @@ class SetMusic247Command : AbstractCommand("command.setmusic247") {
 
     init {
         id = 146
-        name = "setMusic247Mode"
-        aliases = arrayOf("sm247m", "setRadioMode", "srm")
+        name = "setMusic247"
+        aliases = arrayOf("sm247", "setRadioMode", "srm")
         runConditions = arrayOf(RunCondition.SUPPORTER)
         commandCategory = CommandCategory.ADMINISTRATION
     }
@@ -37,7 +37,8 @@ class SetMusic247Command : AbstractCommand("command.setmusic247") {
             wrapper.remove(context.guildId)
         }
 
-        val msg = context.getTranslation("$root.set.$newState")
+        val extra = if (newState) "enabled" else "disabled"
+        val msg = context.getTranslation("$root.set.$extra")
         sendMsg(context, msg)
     }
 }

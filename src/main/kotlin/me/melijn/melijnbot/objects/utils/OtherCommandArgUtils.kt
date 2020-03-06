@@ -70,8 +70,8 @@ suspend fun getBooleanFromArgN(context: CommandContext, index: Int): Boolean?{
     val arg = context.args[index]
 
     return when (arg.toLowerCase()) {
-        "true", "yes", "on", "enable", "positive", "+" -> true
-        "false", "no", "off", "disable", "negative", "-" -> false
+        "true", "yes", "on", "enable", "enabled", "positive", "+" -> true
+        "false", "no", "off", "disable", "disabled", "negative", "-" -> false
         else -> null
     }
 }
