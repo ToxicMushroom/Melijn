@@ -11,6 +11,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.i18n
+import net.dv8tion.jda.api.entities.User
 import java.awt.Color
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -323,6 +324,14 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
         sendMsg(context, msg)
         return null
     }
+}
+
+fun isPremiumUser(context: CommandContext, user: User = context.author): Boolean {
+    return context.daoManager.supporterWrapper.userSupporterIds.contains(user.idLong)
+}
+
+fun isPremiumGuild(context: CommandContext): Boolean {
+    return context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
 }
 
 

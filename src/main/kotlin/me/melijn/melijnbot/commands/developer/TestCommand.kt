@@ -17,7 +17,9 @@ class TestCommand : AbstractCommand("command.test") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        sendPagination(context)
+        for (service in context.container.serviceManager.services) {
+            println(service.scheduledExecutor.isShutdown.toString() + " - " + service.scheduledExecutor.isTerminated)
+        }
     }
 
     private suspend fun sendPagination(context: CommandContext) {

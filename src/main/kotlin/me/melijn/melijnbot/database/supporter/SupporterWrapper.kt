@@ -18,4 +18,18 @@ class SupporterWrapper(val taskManager: TaskManager, private val userSupporterDa
             }
         }
     }
+
+    suspend fun add(userId: Long) {
+        if (!userSupporterIds.contains(userId)) {
+            userSupporterIds = userSupporterIds + userId
+            userSupporterDao.addUser(userId)
+        }
+    }
+
+    suspend fun remove(userId: Long) {
+        if (userSupporterIds.contains(userId)) {
+            userSupporterIds = userSupporterIds - userId
+            userSupporterDao.removeUser(userId)
+        }
+    }
 }

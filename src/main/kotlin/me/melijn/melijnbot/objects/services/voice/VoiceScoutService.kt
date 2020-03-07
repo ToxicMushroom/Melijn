@@ -4,6 +4,7 @@ import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil.checkShouldDisconnectAndApply
 import me.melijn.melijnbot.objects.services.Service
+import me.melijn.melijnbot.objects.threading.Task
 import net.dv8tion.jda.api.sharding.ShardManager
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -12,7 +13,7 @@ class VoiceScoutService(val container: Container, val shardManager: ShardManager
 
     private var scheduledFuture: ScheduledFuture<*>? = null
 
-    private val statService = Runnable {
+    private val statService = Task(Runnable {
         runBlocking {
             val gmp = container.lavaManager.musicPlayerManager.guildMusicPlayers
             gmp.values.forEach { guildMusicPlayer ->
@@ -32,7 +33,7 @@ class VoiceScoutService(val container: Container, val shardManager: ShardManager
                 }
             }
         }
-    }
+    })
 
     override fun start() {
         logger.info("Started VoiceScoutService")

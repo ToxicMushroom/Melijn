@@ -43,6 +43,8 @@ class LavaManager(
         } else {
             ll.getLink(channel.guild).connect(channel)
         }
+
+        musicPlayerManager.getGuildMusicPlayer(channel.guild)
     }
 
     /**
@@ -83,6 +85,8 @@ class LavaManager(
         } else {
             ll.getLink(guild).disconnect()
         }
+
+        musicPlayerManager.guildMusicPlayers.remove(guild.idLong)
     }
 
     fun closeConnection(guildId: Long, premium: Boolean = false) {
@@ -94,6 +98,8 @@ class LavaManager(
         } else {
             ll.getLink(guild).disconnect()
         }
+
+        musicPlayerManager.guildMusicPlayers.remove(guildId)
     }
 
     fun isConnected(guild: Guild, premium: Boolean = false): Boolean {

@@ -6,6 +6,7 @@ import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.services.Service
+import me.melijn.melijnbot.objects.threading.Task
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.utils.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
@@ -22,7 +23,7 @@ class BanService(
 
     private var scheduledFuture: ScheduledFuture<*>? = null
 
-    private val banService = Runnable {
+    private val banService = Task(Runnable {
         runBlocking {
             val bans = daoManager.banWrapper.getUnbannableBans()
             for (ban in bans) {
@@ -53,7 +54,7 @@ class BanService(
                 createAndSendUnbanMessage(guild, selfUser, bannedUser, banAuthor, newBan)
             }
         }
-    }
+    })
 
     //Sends unban message to tempban logchannel and the unbanned user
     private suspend fun createAndSendUnbanMessage(guild: Guild, unbanAuthor: User, bannedUser: User, banAuthor: User?, ban: Ban) {

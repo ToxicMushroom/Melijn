@@ -4,6 +4,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.services.bans.BanService
 import me.melijn.melijnbot.objects.services.birthday.BirthdayService
+import me.melijn.melijnbot.objects.services.donator.DonatorService
 import me.melijn.melijnbot.objects.services.mutes.MuteService
 import me.melijn.melijnbot.objects.services.spotify.SpotifyService
 import me.melijn.melijnbot.objects.services.stats.StatsService
@@ -17,7 +18,7 @@ class ServiceManager(val taskManager: TaskManager, val daoManager: DaoManager, v
 
     var started = false
     var shardManager: ShardManager? = null
-    private val services = mutableListOf<Service>()
+    val services = mutableListOf<Service>()
 
     fun init(container: Container, shardManager: ShardManager) {
         this.shardManager = shardManager
@@ -28,6 +29,8 @@ class ServiceManager(val taskManager: TaskManager, val daoManager: DaoManager, v
         services.add(SpotifyService(webManager))
         services.add(VoiceService(container, shardManager))
         services.add(VoiceScoutService(container, shardManager))
+        services.add(DonatorService(container, shardManager))
+        //services.add(BrokenService(container, shardManager))
     }
 
     fun startServices() {

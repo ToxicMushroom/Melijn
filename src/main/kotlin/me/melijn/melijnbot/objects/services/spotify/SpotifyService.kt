@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.objects.services.spotify
 
 import me.melijn.melijnbot.objects.services.Service
+import me.melijn.melijnbot.objects.threading.Task
 import me.melijn.melijnbot.objects.web.WebManager
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -9,9 +10,9 @@ class SpotifyService(val webManager: WebManager) : Service("spotify") {
 
     private var scheduledFuture: ScheduledFuture<*>? = null
 
-    private val spotifyService = Runnable {
+    private val spotifyService = Task(Runnable {
         webManager.updateSpotifyCredentials()
-    }
+    })
 
     override fun start() {
         logger.info("Started MuteService")

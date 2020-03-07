@@ -14,7 +14,7 @@ class MusicNodeCommand : AbstractCommand("command.musicnode") {
         id = 143
         name = "musicNode"
         aliases = arrayOf("mn")
-        runConditions = arrayOf(RunCondition.USER_SUPPORTER)
+        runConditions = arrayOf(RunCondition.GUILD_SUPPORTER)
         commandCategory = CommandCategory.MUSIC
     }
 

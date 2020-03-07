@@ -7,6 +7,7 @@ import me.melijn.melijnbot.database.mute.Mute
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.services.Service
+import me.melijn.melijnbot.objects.threading.Task
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.utils.awaitEX
 import me.melijn.melijnbot.objects.utils.awaitOrNull
@@ -27,7 +28,7 @@ class MuteService(
 
     private var scheduledFuture: ScheduledFuture<*>? = null
 
-    private val muteService = Runnable {
+    private val muteService = Task(Runnable {
         runBlocking {
             val mutes = daoManager.muteWrapper.getUnmuteableMutes()
             for (mute in mutes) {
@@ -55,7 +56,7 @@ class MuteService(
                 createAndSendUnmuteMessage(guild, selfUser, muted, author, newMute)
             }
         }
-    }
+    })
 
     //Sends unban message to tempban logchannel and the unbanned user
     private suspend fun createAndSendUnmuteMessage(guild: Guild, unmuteAuthor: User, mutedUser: User?, muteAuthor: User?, mute: Mute) {

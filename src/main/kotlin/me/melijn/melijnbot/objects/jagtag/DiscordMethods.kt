@@ -3,7 +3,10 @@ package me.melijn.melijnbot.objects.jagtag
 import com.jagrosh.jagtag.Environment
 import com.jagrosh.jagtag.Method
 import com.jagrosh.jagtag.ParseException
+import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.objects.utils.getMemberByArgsN
+import me.melijn.melijnbot.objects.utils.getUserByArgsN
 import me.melijn.melijnbot.objects.utils.retrieveUserByArgsN
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
@@ -89,6 +92,20 @@ object DiscordMethods {
         Method("memberCount", { env ->
             val guild: Guild = env.getReifiedX("guild")
             guild.memberCache.size().toString()
+        }),
+        Method("currentTimeMillis", { env ->
+            System.currentTimeMillis().toString()
+        }),
+        Method("currentDateTime", { env ->
+            val guild: Guild = env.getReifiedX("guild")
+            val user: User = env.getReifiedX("user")
+            System.currentTimeMillis().asEpochMillisToDateTime(Container.instance.daoManager, guild.idLong, user.idLong)
+        }, { env, args ->
+            val guild: Guild = env.getReifiedX("guild")
+            val arg = args[0]
+            val user: User = getUserByArgsN(guild.jda.shardManager ?: return@Method "null", guild, arg) ?: return@Method "null"
+
+            System.currentTimeMillis().asEpochMillisToDateTime(Container.instance.daoManager, guild.idLong, user.idLong)
         })
     )
 }
