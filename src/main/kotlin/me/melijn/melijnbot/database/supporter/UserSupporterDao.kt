@@ -7,7 +7,7 @@ import me.melijn.melijnbot.database.DriverManager
 class UserSupporterDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "supporters"
-    override val tableStructure: String = "userId bigint, guildId bigint, startDate bigint"
+    override val tableStructure: String = "userId bigint, guildId bigint, startDate bigint, lastServerPickTime bigint"
     override val primaryKey: String = "userId"
 
     init {
@@ -21,7 +21,8 @@ class UserSupporterDao(driverManager: DriverManager) : Dao(driverManager) {
                 list.add(Supporter(
                     resultset.getLong("userId"),
                     resultset.getLong("guildId"),
-                    resultset.getLong("startDate")
+                    resultset.getLong("startDate"),
+                    resultset.getLong("lastServerPickTime")
                 ))
             }
             supporters.invoke(list)
@@ -43,14 +44,24 @@ class UserSupporterDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun addUser(userId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (userId, guildId, startDate) VALUES (?, ?, ?)",
-            userId, -1, System.currentTimeMillis())
+        driverManager.executeUpdate("INSERT INTO $table (userId, guildId, startDate, lastServerPickTime) VALUES (?, ?, ?, ?)",
+            userId, -1, System.currentTimeMillis(), 0)
     }
 
     suspend fun removeUser(userId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE userId = ?",
             userId)
     }
+
+    suspend fun setGuild(authorId: Long, guildId: Long, lastServerPickTime: Long) {
+        driverManager.executeUpdate("UPDATE $table SET guildId = ?, lastServerPickTime = ? WHERE userId = ?",
+        guildId, lastServerPickTime, authorId)
+    }
 }
 
-class Supporter(val userId: Long, val guildId: Long, val startMillis: Long)
+class Supporter(
+    val userId: Long,
+    val guildId: Long,
+    val startMillis: Long,
+    val lastServerPickTime: Long
+)

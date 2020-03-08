@@ -44,33 +44,70 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         if (!listOf("⏪", "◀️", "▶️", "⏩").contains(emoji)) return
         val entry = container.paginationMap.entries.firstOrNull { (_, info) ->
             info.messageId == event.messageIdLong
-        } ?: return
-        val pagination = entry.value
+        }
+        val modularEntry = container.modularPaginationMap.entries.firstOrNull { (_, info) ->
+            info.messageId == event.messageIdLong
+        }
 
-        val channel = event.channel
-        val message = channel.retrieveMessageById(pagination.messageId).await()
-        val newIndex = min(pagination.messageList.size - 1, max(0, when (emoji) {
-            "⏪" -> 0
-            "⏩" -> pagination.messageList.size - 1
-            "◀️" -> pagination.currentPage - 1
-            "▶️" -> pagination.currentPage + 1
-            else -> return
-        }))
+        if (entry != null) {
+            val pagination = entry.value
 
-        if (newIndex != pagination.currentPage)
-            message.editMessage(pagination.messageList[newIndex]).queue()
+            val channel = event.channel
+            val message = channel.retrieveMessageById(pagination.messageId).await()
+            val newIndex = min(pagination.messageList.size - 1, max(0, when (emoji) {
+                "⏪" -> 0
+                "⏩" -> pagination.messageList.size - 1
+                "◀️" -> pagination.currentPage - 1
+                "▶️" -> pagination.currentPage + 1
+                else -> return
+            }))
 
-        pagination.currentPage = newIndex
-        container.paginationMap[entry.key] = pagination
+            if (newIndex != pagination.currentPage)
+                message.editMessage(pagination.messageList[newIndex]).queue()
 
-        val time = System.nanoTime()
-        if (time.minus(lastCheck) > 60_000_000_000) {
-            for (i in ArrayList(container.paginationMap.keys)) {
-                if (i < time - 3_600_000_000_000) {
-                    container.paginationMap.remove(i)
+            pagination.currentPage = newIndex
+            container.paginationMap[entry.key] = pagination
+
+            val time = System.nanoTime()
+            if (time.minus(lastCheck) > 60_000_000_000) {
+                for (i in ArrayList(container.paginationMap.keys)) {
+                    if (i < time - 3_600_000_000_000) {
+                        container.paginationMap.remove(i)
+                    }
                 }
+                lastCheck = time
             }
-            lastCheck = time
+        } else if (modularEntry != null) {
+            val pagination = modularEntry.value
+
+            val channel = event.channel
+            val message = channel.retrieveMessageById(pagination.messageId).await()
+            val newIndex = min(pagination.messageList.size - 1, max(0, when (emoji) {
+                "⏪" -> 0
+                "⏩" -> pagination.messageList.size - 1
+                "◀️" -> pagination.currentPage - 1
+                "▶️" -> pagination.currentPage + 1
+                else -> return
+            }))
+
+            if (newIndex != pagination.currentPage) {
+                val msg = pagination.messageList[newIndex].toMessage()
+                    ?: throw IllegalArgumentException("cannot transform message")
+                message.editMessage(msg).queue()
+            }
+
+            pagination.currentPage = newIndex
+            container.modularPaginationMap[modularEntry.key] = pagination
+
+            val time = System.nanoTime()
+            if (time.minus(lastCheck) > 60_000_000_000) {
+                for (i in ArrayList(container.modularPaginationMap.keys)) {
+                    if (i < time - 3_600_000_000_000) {
+                        container.modularPaginationMap.remove(i)
+                    }
+                }
+                lastCheck = time
+            }
         }
     }
 
@@ -84,42 +121,76 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
     var lastCheck = System.nanoTime()
     private suspend fun paginationHandler(event: GuildMessageReactionAddEvent) {
-        val guild = event.guild
         if (event.reactionEmote.isEmote || event.user.isBot) return
         val emoji = event.reactionEmote.emoji
         if (!listOf("⏪", "◀️", "▶️", "⏩").contains(emoji)) return
         val entry = container.paginationMap.entries.firstOrNull { (_, info) ->
             info.messageId == event.messageIdLong
-        } ?: return
-        val pagination = entry.value
+        }
+        val modularEntry = container.modularPaginationMap.entries.firstOrNull { (_, info) ->
+            info.messageId == event.messageIdLong
+        }
 
-        val channel = guild.getTextChannelById(pagination.channelId) ?: return
-        val message = channel.retrieveMessageById(pagination.messageId).await()
-        val newIndex = min(pagination.messageList.size - 1, max(0, when (emoji) {
-            "⏪" -> 0
-            "⏩" -> pagination.messageList.size - 1
-            "◀️" -> pagination.currentPage - 1
-            "▶️" -> pagination.currentPage + 1
-            else -> return
-        }))
+        if (entry != null) {
+            val pagination = entry.value
 
-        if (newIndex != pagination.currentPage)
-            message.editMessage(pagination.messageList[newIndex]).queue()
+            val channel = event.channel
+            val message = channel.retrieveMessageById(pagination.messageId).await()
+            val newIndex = min(pagination.messageList.size - 1, max(0, when (emoji) {
+                "⏪" -> 0
+                "⏩" -> pagination.messageList.size - 1
+                "◀️" -> pagination.currentPage - 1
+                "▶️" -> pagination.currentPage + 1
+                else -> return
+            }))
 
-        pagination.currentPage = newIndex
-        container.paginationMap[entry.key] = pagination
+            if (newIndex != pagination.currentPage)
+                message.editMessage(pagination.messageList[newIndex]).queue()
 
-        event.reaction.removeReaction(event.user).queue()
+            pagination.currentPage = newIndex
+            container.paginationMap[entry.key] = pagination
 
-
-        val time = System.nanoTime()
-        if (time.minus(lastCheck) > 60_000_000_000) {
-            for (i in ArrayList(container.paginationMap.keys)) {
-                if (i < time - 3_600_000_000_000) {
-                    container.paginationMap.remove(i)
+            val time = System.nanoTime()
+            if (time.minus(lastCheck) > 60_000_000_000) {
+                for (i in ArrayList(container.paginationMap.keys)) {
+                    if (i < time - 3_600_000_000_000) {
+                        container.paginationMap.remove(i)
+                    }
                 }
+                lastCheck = time
             }
-            lastCheck = time
+        } else if (modularEntry != null) {
+            val pagination = modularEntry.value
+
+            val channel = event.channel
+            val message = channel.retrieveMessageById(pagination.messageId).await()
+            val newIndex = min(pagination.messageList.size - 1, max(0, when (emoji) {
+                "⏪" -> 0
+                "⏩" -> pagination.messageList.size - 1
+                "◀️" -> pagination.currentPage - 1
+                "▶️" -> pagination.currentPage + 1
+                else -> return
+            }))
+
+            if (newIndex != pagination.currentPage) {
+                val msg = pagination.messageList[newIndex].toMessage()
+                    ?: throw IllegalArgumentException("cannot transform message")
+                message.editMessage(msg).queue()
+            }
+
+            pagination.currentPage = newIndex
+            container.modularPaginationMap[modularEntry.key] = pagination
+
+            val time = System.nanoTime()
+            if (time.minus(lastCheck) > 60_000_000_000) {
+                for (i in ArrayList(container.modularPaginationMap.keys)) {
+                    if (i < time - 3_600_000_000_000) {
+                        container.modularPaginationMap.remove(i)
+                    }
+                }
+                lastCheck = time
+            }
+
         }
     }
 

@@ -1,17 +1,18 @@
 package me.melijn.melijnbot.objects.utils
 
-import com.wrapper.spotify.Base64
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
+import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.StringUtils.humanReadableByteCountBin
+import me.melijn.melijnbot.objects.utils.StringUtils.toBase64
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.requests.restaction.MessageAction
@@ -44,11 +45,7 @@ suspend fun Throwable.sendInGuildSuspend(guild: Guild? = null, channel: MessageC
     val channelId = Container.instance.settings.exceptionChannel
     val textChannel = MelijnBot.shardManager.getTextChannelById(channelId) ?: return
 
-    val caseId = Base64.encode(
-        ByteUtils.longToBytes(
-            System.currentTimeMillis()
-        )
-    )
+    val caseId = System.currentTimeMillis().toBase64()
 
     val sb = StringBuilder()
 
@@ -212,7 +209,7 @@ fun escapeForLog(string: String): String {
         .replace("\n", " ")
 }
 
-suspend fun sendAttachments(textChannel: TextChannel, urls: Map<String, String>): Message = suspendCoroutine {
+suspend fun sendAttachments(textChannel: MessageChannel, urls: Map<String, String>): Message = suspendCoroutine {
     val success = { success: Message -> it.resume(success) }
     val failed = { failed: Throwable -> it.resumeWithException(failed) }
     var messageAction: MessageAction? = null
@@ -227,7 +224,7 @@ suspend fun sendAttachments(textChannel: TextChannel, urls: Map<String, String>)
     messageAction?.queue(success, failed)
 }
 
-suspend fun sendMsgWithAttachments(channel: TextChannel, message: Message, attachments: Map<String, String>): Message = suspendCoroutine {
+suspend fun sendMsgWithAttachments(channel: MessageChannel, message: Message, attachments: Map<String, String>): Message = suspendCoroutine {
     val success = { success: Message -> it.resume(success) }
     val failed = { failed: Throwable -> it.resumeWithException(failed) }
     var messageAction: MessageAction? = null
@@ -547,6 +544,25 @@ suspend fun sendMsg(context: CommandContext, msg: String): List<Message> = suspe
 }
 
 
+suspend fun sendMsg(privateChannel: PrivateChannel, msg: ModularMessage): Message? {
+    val message: Message? = msg.toMessage()
+    return when {
+        message == null -> sendAttachments(privateChannel, msg.attachments)
+        msg.attachments.isNotEmpty() -> sendMsgWithAttachments(privateChannel, message, msg.attachments)
+        else -> sendMsg(privateChannel, message)
+    }
+}
+
+suspend fun sendMsg(textChannel: TextChannel, msg: ModularMessage): Message? {
+    val message: Message? = msg.toMessage()
+    return when {
+        message == null -> sendAttachments(textChannel, msg.attachments)
+        msg.attachments.isNotEmpty() -> sendMsgWithAttachments(textChannel, message, msg.attachments)
+        else -> sendMsg(textChannel, message)
+    }
+}
+
+
 suspend fun sendPaginationMsg(context: CommandContext, msgList: MutableList<String>, index: Int): List<Message> = suspendCoroutine {
     val msg = msgList[index]
     if (msg.length > 2000) throw IllegalArgumentException("No splitting here :angry:")
@@ -582,6 +598,69 @@ suspend fun sendPaginationMsg(privateChannel: PrivateChannel, msgList: MutableLi
         it.resume(message)
         registerPaginationMessage(privateChannel, message, msgList, index)
     }
+}
+
+suspend fun sendPaginationModularMsg(context: CommandContext, msgList: MutableList<ModularMessage>, index: Int): List<Message> = suspendCoroutine {
+    val msg = msgList[index]
+
+    runBlocking {
+        if (context.isFromGuild) {
+            val message = sendMsg(context.textChannel, msg)
+                ?: throw IllegalArgumentException("Couldn't send the message")
+            registerPaginationModularMessage(context.textChannel, message, msgList, index)
+        } else {
+            val message = sendMsg(context.privateChannel, msg)
+                ?: throw IllegalArgumentException("Couldn't send the message")
+            registerPaginationModularMessage(context.privateChannel, message, msgList, index)
+        }
+    }
+}
+
+suspend fun sendPaginationModularMsg(textChannel: TextChannel, modularList: MutableList<ModularMessage>, index: Int): Message = suspendCoroutine {
+    val msg = modularList[index]
+
+    runBlocking {
+        val message = sendMsg(textChannel, msg)
+            ?: throw IllegalArgumentException("Couldn't send the message")
+        it.resume(message)
+        registerPaginationModularMessage(textChannel, message, modularList, index)
+    }
+}
+
+suspend fun sendPaginationModularMsg(privateChannel: PrivateChannel, msgList: MutableList<ModularMessage>, index: Int): Message = suspendCoroutine {
+    val msg = msgList[index]
+
+    runBlocking {
+        val message = sendMsg(privateChannel, msg)
+            ?: throw IllegalArgumentException("Couldn't send the message")
+        it.resume(message)
+        registerPaginationModularMessage(privateChannel, message, msgList, index)
+    }
+}
+
+
+suspend fun registerPaginationModularMessage(textChannel: TextChannel, message: Message, msgList: MutableList<ModularMessage>, index: Int) {
+    Container.instance.modularPaginationMap[System.nanoTime()] = ModularPaginationInfo(
+        textChannel.guild.idLong,
+        textChannel.idLong,
+        message.idLong,
+        msgList,
+        index
+    )
+
+    addPaginationEmotes(message)
+}
+
+suspend fun registerPaginationModularMessage(privateChannel: PrivateChannel, message: Message, msgList: MutableList<ModularMessage>, index: Int) {
+    Container.instance.modularPaginationMap[System.nanoTime()] = ModularPaginationInfo(
+        -1,
+        privateChannel.idLong,
+        message.idLong,
+        msgList,
+        index
+    )
+
+    addPaginationEmotes(message)
 }
 
 suspend fun registerPaginationMessage(textChannel: TextChannel, message: Message, msgList: MutableList<String>, index: Int) {
@@ -705,6 +784,50 @@ fun sendMsg(channel: TextChannel, msg: Message, success: ((messages: Message) ->
         else action.embed(embed)
     }
     action?.queue(success, failed)
+}
+
+fun sendMsg(channel: PrivateChannel, msg: Message, success: ((messages: Message) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
+    var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(msg.contentRaw) else null
+    for (embed in msg.embeds) {
+        if (action == null) action = channel.sendMessage(embed)
+        else action.embed(embed)
+    }
+    action?.queue(success, failed)
+}
+
+suspend fun sendMsg(channel: TextChannel, msg: Message): Message? = suspendCoroutine {
+    require(channel.canTalk()) {
+        "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
+    }
+    var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(msg.contentRaw) else null
+    for (embed in msg.embeds) {
+        if (action == null) action = channel.sendMessage(embed)
+        else action.embed(embed)
+    }
+    if (action == null) {
+        it.resume(null)
+    }
+    action?.queue({ msg ->
+        it.resume(msg)
+    }, { _ ->
+        it.resume(null)
+    })
+}
+
+suspend fun sendMsg(channel: PrivateChannel, msg: Message): Message? = suspendCoroutine {
+    var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(msg.contentRaw) else null
+    for (embed in msg.embeds) {
+        if (action == null) action = channel.sendMessage(embed)
+        else action.embed(embed)
+    }
+    if (action == null) {
+        it.resume(null)
+    }
+    action?.queue({ msg ->
+        it.resume(msg)
+    }, { _ ->
+        it.resume(null)
+    })
 }
 
 suspend fun sendMsg(context: CommandContext, msg: String, bufferedImage: BufferedImage?, extension: String): List<Message> = suspendCoroutine {

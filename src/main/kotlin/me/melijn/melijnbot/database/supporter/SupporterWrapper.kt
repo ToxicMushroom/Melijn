@@ -32,4 +32,22 @@ class SupporterWrapper(val taskManager: TaskManager, private val userSupporterDa
             userSupporterDao.removeUser(userId)
         }
     }
+
+    suspend fun setGuild(authorId: Long, guildId: Long) {
+        guildSupporterIds = guildSupporterIds + guildId
+        val lastGuildPickTime = System.currentTimeMillis()
+        val supportersInstance = supporters.toMutableList()
+
+        val aSupporter = supportersInstance.first { it.userId == authorId }
+        supportersInstance.remove(aSupporter)
+        supportersInstance.add(Supporter(
+            authorId,
+            guildId,
+            aSupporter.startMillis,
+            lastGuildPickTime
+        ))
+        supporters = supportersInstance.toSet()
+
+        userSupporterDao.setGuild(authorId, guildId, lastGuildPickTime)
+    }
 }

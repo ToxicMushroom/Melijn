@@ -19,7 +19,9 @@ class DonatorService(val container: Container, val shardManager: ShardManager) :
             val wrapper = container.daoManager.supporterWrapper
             val guild = shardManager.getGuildById(340081887265685504)
             for (member in guild?.memberCache ?: emptyList<Member>()) {
-                val isPremium = member.roles.any { it.idLong == 488579500427313208 }
+                val isPremium = member.roles.any {
+                    it.idLong == 488579500427313208 || it.idLong == 686243026384715796
+                }
                 if (isPremium) {
                     wrapper.add(member.idLong)
 

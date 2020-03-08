@@ -13,10 +13,10 @@ class VoiceScoutService(val container: Container, val shardManager: ShardManager
 
     private var scheduledFuture: ScheduledFuture<*>? = null
 
-    private val statService = Task(Runnable {
+    private val voiceScoutService = Task(Runnable {
         runBlocking {
             val gmp = container.lavaManager.musicPlayerManager.guildMusicPlayers
-            gmp.values.forEach { guildMusicPlayer ->
+            ArrayList(gmp.values).forEach { guildMusicPlayer ->
                 val guild = shardManager.getGuildById(guildMusicPlayer.guildId)
                 if (guild == null) {
                     guildMusicPlayer.guildTrackManager.stopAndDestroy()
@@ -37,7 +37,7 @@ class VoiceScoutService(val container: Container, val shardManager: ShardManager
 
     override fun start() {
         logger.info("Started VoiceScoutService")
-        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(statService, 10, 10, TimeUnit.MINUTES)
+        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(voiceScoutService, 10, 10, TimeUnit.MINUTES)
     }
 
     override fun stop() {

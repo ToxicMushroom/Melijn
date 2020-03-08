@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.command.CustomCommand
 import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.enums.ChannelCommandState
@@ -29,12 +30,6 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
     private val guildPrefixCache = container.daoManager.guildPrefixWrapper.prefixCache
     private val userPrefixCache = container.daoManager.userPrefixWrapper.prefixCache
-
-    private val commandCooldownCache = container.daoManager.commandCooldownWrapper.commandCooldownCache
-    private val channelCommandCooldownCache = container.daoManager.commandChannelCoolDownWrapper.commandChannelCooldownCache
-
-    private val disabledCommandCache = container.daoManager.disabledCommandWrapper.disabledCommandsCache
-    private val channelCommandStateCache = container.daoManager.channelCommandStateWrapper.channelCommandsStateCache
 
 
     private val commandMap: HashMap<String, AbstractCommand> = HashMap()
@@ -126,7 +121,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             }
 
             val command = commandMap.getOrElse(commandParts[1].toLowerCase(), { null }) ?: continue
-            if (checksFailed(command, event)) return
+            if (checksFailed(container, command, event)) return
             command.run(CommandContext(event, commandParts, container, commandList))
             return
         }
@@ -165,7 +160,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             getCustomCommandByChance(ccs)
         }
 
-        if (checksFailed(cc, event)) return
+        if (checksFailed(container.daoManager, cc, event)) return
 
         val cParts = commandParts.toMutableList()
         executeCC(cc, event, cParts, hasPrefix)
@@ -288,181 +283,190 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         return prefixes.toList()
     }
 
-    /**
-     * [@return] returns true if the check failed
-     *
-     * **/
-    private suspend fun checksFailed(command: AbstractCommand, event: MessageReceivedEvent): Boolean {
-        val cmdId = command.id.toString()
-        if (event.isFromGuild && commandIsDisabled(cmdId, event)) {
-            return true
-        }
+    companion object {
 
-        val conditions = mutableListOf<RunCondition>()
-        addConditions(conditions, command.commandCategory.runCondition)
-        addConditions(conditions, command.runConditions)
+        /**
+         * [@return] returns true if the check failed
+         *
+         * **/
+        suspend fun checksFailed(container: Container, command: AbstractCommand, event: MessageReceivedEvent, isSubCommand: Boolean = false): Boolean {
+            val cmdId = command.id.toString()
+            if (event.isFromGuild && commandIsDisabled(container.daoManager, cmdId, event)) {
+                return true
+            }
 
-        conditions.forEach {
-            if (!RunConditionUtil.runConditionCheckPassed(container, it, event, command)) return true
-        }
+            val conditions = mutableListOf<RunCondition>()
+            if (!isSubCommand) addConditions(conditions, command.commandCategory.runCondition)
+            addConditions(conditions, command.runConditions)
 
-        if (event.isFromGuild) {
-            command.discordChannelPermissions.forEach { permission ->
-                val botMember = event.guild.selfMember
-                var missingPermissionCount = 0
-                var missingPermissionMessage = ""
+            conditions.forEach {
+                if (!RunConditionUtil.runConditionCheckPassed(container, it, event, command)) return true
+            }
 
-                if (!botMember.hasPermission(event.textChannel, permission)) {
-                    missingPermissionMessage += "\n    ⁎ `${permission.toUCSC()}`"
-                    missingPermissionCount++
+            if (event.isFromGuild && !isSubCommand) {
+                command.discordChannelPermissions.forEach { permission ->
+                    val botMember = event.guild.selfMember
+                    var missingPermissionCount = 0
+                    var missingPermissionMessage = ""
+
+                    if (!botMember.hasPermission(event.textChannel, permission)) {
+                        missingPermissionMessage += "\n    ⁎ `${permission.toUCSC()}`"
+                        missingPermissionCount++
+                    }
+
+                    if (missingPermissionCount > 0) {
+                        val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
+                        val more = if (missingPermissionCount > 1) "s" else ""
+                        val msg = i18n.getTranslation(language, "message.discordchannelpermission$more.missing")
+                            .replace("%permissions%", missingPermissionMessage)
+                            .replace("%channel%", event.textChannel.asTag)
+
+                        sendMsg(event.textChannel, msg)
+                        return true
+                    }
                 }
 
-                if (missingPermissionCount > 0) {
-                    val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
-                    val more = if (missingPermissionCount > 1) "s" else ""
-                    val msg = i18n.getTranslation(language, "message.discordchannelpermission$more.missing")
-                        .replace("%permissions%", missingPermissionMessage)
-                        .replace("%channel%", event.textChannel.asTag)
+                command.discordPermissions.forEach { permission ->
+                    val botMember = event.guild.selfMember
+                    var missingPermissionCount = 0
+                    var missingPermissionMessage = ""
 
-                    sendMsg(event.textChannel, msg)
+                    if (!botMember.hasPermission(permission)) {
+                        missingPermissionMessage += "\n    ⁎ `${permission.toUCSC()}`"
+                        missingPermissionCount++
+                    }
+
+                    if (missingPermissionCount > 0) {
+                        val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
+                        val more = if (missingPermissionCount > 1) "s" else ""
+                        val msg = i18n.getTranslation(language, "message.discordpermission$more.missing")
+                            .replace("%permissions%", missingPermissionMessage)
+
+                        sendMsg(event.textChannel, msg)
+                        return true
+                    }
+                }
+
+                if (commandIsOnCooldown(container.daoManager, cmdId, event)) {
                     return true
                 }
             }
 
-            command.discordPermissions.forEach { permission ->
-                val botMember = event.guild.selfMember
-                var missingPermissionCount = 0
-                var missingPermissionMessage = ""
-
-                if (!botMember.hasPermission(permission)) {
-                    missingPermissionMessage += "\n    ⁎ `${permission.toUCSC()}`"
-                    missingPermissionCount++
-                }
-
-                if (missingPermissionCount > 0) {
-                    val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
-                    val more = if (missingPermissionCount > 1) "s" else ""
-                    val msg = i18n.getTranslation(language, "message.discordpermission$more.missing")
-                        .replace("%permissions%", missingPermissionMessage)
-
-                    sendMsg(event.textChannel, msg)
-                    return true
-                }
-            }
-
-            if (commandIsOnCooldown(cmdId, event)) {
-                return true
-            }
-        }
-
-        return false
-    }
-
-    private fun addConditions(conditionList: MutableList<RunCondition>, list: Array<RunCondition>) {
-        for (runCondition in list) {
-            addConditions(conditionList, runCondition.preRequired)
-            if (!conditionList.contains(runCondition)) {
-                conditionList.add(runCondition)
-            }
-        }
-    }
-
-    /**
-     * [@return] returns true if the check failed
-     *
-     * **/
-    private suspend fun checksFailed(command: CustomCommand, event: MessageReceivedEvent): Boolean {
-        val cmdId = "cc.${command.id}"
-        if (commandIsDisabled(cmdId, event)) {
-            return true
-        }
-
-        if (commandIsOnCooldown(cmdId, event)) {
-            return true
-        }
-
-        return false
-    }
-
-
-    private suspend fun commandIsDisabled(id: String, event: MessageReceivedEvent): Boolean {
-        val disabledChannelCommands = channelCommandStateCache.get(event.channel.idLong).await()
-        if (disabledChannelCommands.contains(id)) {
-            if (disabledChannelCommands[id] == ChannelCommandState.ENABLED) {
-                return false
-            } else if (disabledChannelCommands[id] == ChannelCommandState.DISABLED) {
-                return true
-            }
-        }
-
-        val disabledCommands = disabledCommandCache.get(event.guild.idLong).await()
-        if (disabledCommands.contains(id)) return true
-
-        return false
-    }
-
-    private suspend fun commandIsOnCooldown(id: String, event: MessageReceivedEvent): Boolean {
-        val guildId = event.guild.idLong
-        val userId = event.author.idLong
-        val channelId = event.channel.idLong
-
-        if (!container.daoManager.commandChannelCoolDownWrapper.executions.contains(Pair(guildId, userId))) {
             return false
         }
 
-        var lastExecution = 0L
-        var lastExecutionChannel = 0L
-        var bool = false
-        var cooldownResult = 0L
-
-        val commandChannelCooldowns = channelCommandCooldownCache.get(channelId).await()
-        if (commandChannelCooldowns.containsKey(id)) {
-
-            //init lastExecutionChannel
-            container.daoManager.commandChannelCoolDownWrapper.executions[Pair(channelId, userId)]
-                ?.filter { entry -> entry.key == id }
-                ?.forEach { entry ->
-                    if (entry.value > lastExecutionChannel) lastExecutionChannel = entry.value
+        private fun addConditions(conditionList: MutableList<RunCondition>, list: Array<RunCondition>) {
+            for (runCondition in list) {
+                addConditions(conditionList, runCondition.preRequired)
+                if (!conditionList.contains(runCondition)) {
+                    conditionList.add(runCondition)
                 }
-
-            val cooldown = commandChannelCooldowns[id] ?: 0L
-
-            if (System.currentTimeMillis() - cooldown < lastExecutionChannel) {
-                cooldownResult = cooldown
-                bool = true
             }
         }
-        val commandCooldowns = commandCooldownCache.get(guildId).await()
-        if (commandCooldowns.containsKey(id)) {
 
-            //init lastExecution
-            container.daoManager.commandChannelCoolDownWrapper.executions[Pair(guildId, userId)]
-                ?.filter { entry -> entry.key == id }
-                ?.forEach { entry ->
-                    if (entry.value > lastExecution) lastExecution = entry.value
-                }
-
-            val cooldown = commandCooldowns[id] ?: 0L
-
-            if (System.currentTimeMillis() - cooldown < lastExecution) {
-                if (cooldownResult < cooldown) cooldownResult = cooldown
-                bool = true
+        /**
+         * [@return] returns true if the check failed
+         *
+         * **/
+        private suspend fun checksFailed(daoManager: DaoManager, command: CustomCommand, event: MessageReceivedEvent): Boolean {
+            val cmdId = "cc.${command.id}"
+            if (commandIsDisabled(daoManager, cmdId, event)) {
+                return true
             }
-        }
-        val lastExecutionBiggest = if (lastExecution > lastExecutionChannel) {
-            lastExecution
-        } else {
-            lastExecutionChannel
+
+            if (commandIsOnCooldown(daoManager, cmdId, event)) {
+                return true
+            }
+
+            return false
         }
 
-        if (bool && cooldownResult != 0L) {
 
-            val language = getLanguage(container.daoManager, userId, guildId)
-            val unReplacedCooldown = i18n.getTranslation(language, "message.cooldown")
-            val msg = unReplacedCooldown
-                .replace("%cooldown%", ((cooldownResult - (System.currentTimeMillis() - lastExecutionBiggest)) / 1000.0).toString())
-            sendMsg(event.textChannel, msg)
+        private suspend fun commandIsDisabled(daoManager: DaoManager, id: String, event: MessageReceivedEvent): Boolean {
+            val disabledCommandCache = daoManager.disabledCommandWrapper.disabledCommandsCache
+            val channelCommandStateCache = daoManager.channelCommandStateWrapper.channelCommandsStateCache
+
+            val disabledChannelCommands = channelCommandStateCache.get(event.channel.idLong).await()
+            if (disabledChannelCommands.contains(id)) {
+                if (disabledChannelCommands[id] == ChannelCommandState.ENABLED) {
+                    return false
+                } else if (disabledChannelCommands[id] == ChannelCommandState.DISABLED) {
+                    return true
+                }
+            }
+
+            val disabledCommands = disabledCommandCache.get(event.guild.idLong).await()
+            if (disabledCommands.contains(id)) return true
+
+            return false
         }
-        return bool
+
+        private suspend fun commandIsOnCooldown(daoManager: DaoManager, id: String, event: MessageReceivedEvent): Boolean {
+            val guildId = event.guild.idLong
+            val userId = event.author.idLong
+            val channelId = event.channel.idLong
+
+            val commandCooldownCache = daoManager.commandCooldownWrapper.commandCooldownCache
+            val channelCommandCooldownCache = daoManager.commandChannelCoolDownWrapper.commandChannelCooldownCache
+
+            if (!daoManager.commandChannelCoolDownWrapper.executions.contains(Pair(guildId, userId))) {
+                return false
+            }
+
+            var lastExecution = 0L
+            var lastExecutionChannel = 0L
+            var bool = false
+            var cooldownResult = 0L
+
+            val commandChannelCooldowns = channelCommandCooldownCache.get(channelId).await()
+            if (commandChannelCooldowns.containsKey(id)) {
+
+                //init lastExecutionChannel
+                daoManager.commandChannelCoolDownWrapper.executions[Pair(channelId, userId)]
+                    ?.filter { entry -> entry.key == id }
+                    ?.forEach { entry ->
+                        if (entry.value > lastExecutionChannel) lastExecutionChannel = entry.value
+                    }
+
+                val cooldown = commandChannelCooldowns[id] ?: 0L
+
+                if (System.currentTimeMillis() - cooldown < lastExecutionChannel) {
+                    cooldownResult = cooldown
+                    bool = true
+                }
+            }
+            val commandCooldowns = commandCooldownCache.get(guildId).await()
+            if (commandCooldowns.containsKey(id)) {
+
+                //init lastExecution
+                daoManager.commandChannelCoolDownWrapper.executions[Pair(guildId, userId)]
+                    ?.filter { entry -> entry.key == id }
+                    ?.forEach { entry ->
+                        if (entry.value > lastExecution) lastExecution = entry.value
+                    }
+
+                val cooldown = commandCooldowns[id] ?: 0L
+
+                if (System.currentTimeMillis() - cooldown < lastExecution) {
+                    if (cooldownResult < cooldown) cooldownResult = cooldown
+                    bool = true
+                }
+            }
+            val lastExecutionBiggest = if (lastExecution > lastExecutionChannel) {
+                lastExecution
+            } else {
+                lastExecutionChannel
+            }
+
+            if (bool && cooldownResult != 0L) {
+
+                val language = getLanguage(daoManager, userId, guildId)
+                val unReplacedCooldown = i18n.getTranslation(language, "message.cooldown")
+                val msg = unReplacedCooldown
+                    .replace("%cooldown%", ((cooldownResult - (System.currentTimeMillis() - lastExecutionBiggest)) / 1000.0).toString())
+                sendMsg(event.textChannel, msg)
+            }
+            return bool
+        }
     }
 }
