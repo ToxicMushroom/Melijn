@@ -44,7 +44,4 @@ class MusicPlayerManager(
     }
 
     fun getPlayers() = guildMusicPlayers
-    fun setGuildNode(guildId: Long, nodeId: Int) {
-
-    }
 }

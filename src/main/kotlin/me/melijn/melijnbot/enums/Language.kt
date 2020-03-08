@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.enums
 
 enum class Language {
-    EN,
+    EN
     //NL_BE
 }

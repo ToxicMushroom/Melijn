@@ -3,6 +3,7 @@ package me.melijn.melijnbot.objects.utils
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.utility.VOTE_URL
+import me.melijn.melijnbot.enums.Environment
 import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.RunCondition
@@ -48,17 +49,24 @@ object RunConditionUtil {
 
     private fun checkUserSupporter(container: Container, event: MessageReceivedEvent, language: String): Boolean {
         val supporters = container.daoManager.supporterWrapper.userSupporterIds
-        return if (!supporters.contains(event.author.idLong)) {
+        return if (
+            supporters.contains(event.author.idLong) ||
+            container.settings.developerIds.contains(event.author.idLong)
+        ) {
+            true
+        } else {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.user.supporter")
             event.channel.sendMessage(msg).queue()
             false
-        } else {
-            true
         }
     }
 
     private suspend fun checkVoted(container: Container, event: MessageReceivedEvent, language: String): Boolean {
-        return if (container.settings.developerIds.contains(event.author.idLong)) {
+        return if (
+            container.settings.developerIds.contains(event.author.idLong) ||
+            container.daoManager.supporterWrapper.userSupporterIds.contains(event.author.idLong) ||
+            container.settings.environment == Environment.TESTING
+        ) {
             true
         } else {
             val vote = container.daoManager.voteWrapper.getUserVote(event.author.idLong)

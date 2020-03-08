@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
+import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.MonthFormat
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
@@ -327,11 +328,16 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
 }
 
 fun isPremiumUser(context: CommandContext, user: User = context.author): Boolean {
-    return context.daoManager.supporterWrapper.userSupporterIds.contains(user.idLong)
+    return context.daoManager.supporterWrapper.userSupporterIds.contains(user.idLong) ||
+        context.container.settings.developerIds.contains(user.idLong)
 }
 
 fun isPremiumGuild(context: CommandContext): Boolean {
-    return context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
+    return isPremiumGuild(context.daoManager, context.guildId)
+}
+
+fun isPremiumGuild(daoManager: DaoManager, guildId: Long): Boolean {
+    return daoManager.supporterWrapper.guildSupporterIds.contains(guildId)
 }
 
 

@@ -26,13 +26,14 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
         }
 
         val member: Member? = context.guild.retrieveMember(user).awaitOrNull()
+        val isSupporter = context.daoManager.supporterWrapper.userSupporterIds.contains(user.idLong)
 
         val title1 = context.getTranslation("$root.response1.field1.title")
         val yes = context.getTranslation("yes")
         val no = context.getTranslation("no")
 
         val unReplacedValue1 = context.getTranslation("$root.response1.field1.value")
-        val value1 = replaceUserVar(unReplacedValue1, user, yes, no)
+        val value1 = replaceUserVar(unReplacedValue1, user, isSupporter, yes, no)
 
         val eb = Embedder(context)
         eb.setThumbnail(user.effectiveAvatarUrl)
@@ -76,11 +77,12 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
 
     }
 
-    private fun replaceUserVar(string: String, user: User, yes: String, no: String): String = string
+    private fun replaceUserVar(string: String, user: User, isSupporter: Boolean, yes: String, no: String): String = string
         .replace("%name%", user.name)
         .replace(PLACEHOLDER_USER_ID, user.id)
         .replace("%discrim%", user.discriminator)
         .replace("%isBot%", if (user.isBot) yes else no)
+        .replace("%supportsMelijn%", if (isSupporter) yes else no)
         .replace("%avatarUrl%", user.effectiveAvatarUrl)
         .replace("%creationTime%", user.timeCreated.asLongLongGMTString())
 }
