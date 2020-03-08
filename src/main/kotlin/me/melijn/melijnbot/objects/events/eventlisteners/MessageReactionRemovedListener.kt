@@ -26,7 +26,7 @@ class MessageReactionRemovedListener(container: Container) : AbstractListener(co
         val role = SelfRoleUtil.getSelectedSelfRoleNByReactionEvent(event, container) ?: return
 
         if (member.roles.contains(role)) {
-            val removed = guild.removeRoleFromMember(member, role).awaitBool()
+            val removed = guild.removeRoleFromMember(member, role).reason("unselfroled").awaitBool()
             if (!removed) {
                 LogUtils.sendMessageFailedToRemoveRoleFromMember(container.daoManager, member, role)
             }

@@ -13,7 +13,6 @@ class ShutdownCommand : AbstractCommand("command.shutdown") {
     init {
         id = 123
         name = "shutdown"
-
         commandCategory = CommandCategory.DEVELOPER
     }
 
@@ -23,7 +22,7 @@ class ShutdownCommand : AbstractCommand("command.shutdown") {
         val players = context.lavaManager.musicPlayerManager.getPlayers()
         val wrapper = context.daoManager.tracksWrapper
 
-        for ((guildId, player) in players) {
+        for ((guildId, player) in HashMap(players)) {
             val guild = context.shardManager.getGuildById(guildId) ?: continue
             val channel = context.lavaManager.getConnectedChannel(guild) ?: continue
             val trackManager = player.guildTrackManager

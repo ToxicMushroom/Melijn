@@ -265,6 +265,8 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         val verificationChannel = guild.getAndVerifyChannelByType(dao, ChannelType.VERIFICATION, Permission.MESSAGE_MANAGE)
             ?: return
         if (verificationChannel.idLong != textChannel.idLong) return
+        val verificationType = dao.verificationTypeWrapper.verificationTypeCache[guild.idLong].await()
+        if (verificationType != VerificationType.REACTION) return
 
         val unverifiedRole = VerificationUtils.getUnverifiedRoleN(event.channel, dao) ?: return
         if (!dao.unverifiedUsersWrapper.contains(guild.idLong, member.idLong) && !member.roles.contains(unverifiedRole)) {
@@ -276,14 +278,14 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             return
         }
 
-        val verificationType = dao.verificationTypeWrapper.verificationTypeCache[guild.idLong].await()
-        verificationType?.let {
+        verificationType.let {
             when (it) {
                 VerificationType.REACTION -> {
                     val code = dao.verificationEmotejiWrapper.verificationEmotejiCache[guild.idLong].await()
                     if (
                         (event.reactionEmote.isEmoji && event.reactionEmote.emoji == code) ||
-                        (event.reactionEmote.isEmote && event.reactionEmote.emote.id == code)) {
+                        (event.reactionEmote.isEmote && event.reactionEmote.emote.id == code)
+                    ) {
                         VerificationUtils.verify(dao, unverifiedRole, guild.selfMember.user, member)
                     } else {
                         VerificationUtils.failedVerification(dao, member)
@@ -337,7 +339,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
         if (!member.roles.contains(role)) {
             val added = try {
-                guild.addRoleToMember(member, role).awaitBool()
+                guild.addRoleToMember(member, role).reason("SelfRole").awaitBool()
             } catch (t: Throwable) {
                 false
             }

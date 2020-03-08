@@ -28,16 +28,14 @@ class SelfRoleWrapper(val taskManager: TaskManager, private val selfRoleDao: Sel
     suspend fun set(guildId: Long, emoteji: String, roleId: Long) {
         val map = selfRoleCache.get(guildId).await().toMutableMap()
         map[emoteji] = roleId
-        selfRoleCache.put(guildId, CompletableFuture.completedFuture(map))
         selfRoleDao.set(guildId, emoteji, roleId)
+        selfRoleCache.put(guildId, CompletableFuture.completedFuture(map))
     }
 
     suspend fun remove(guildId: Long, emoteji: String) {
         val map = selfRoleCache.get(guildId).await().toMutableMap()
         map.remove(emoteji)
-        selfRoleCache.put(guildId, CompletableFuture.completedFuture(map))
         selfRoleDao.remove(guildId, emoteji)
+        selfRoleCache.put(guildId, CompletableFuture.completedFuture(map))
     }
-
-
 }
