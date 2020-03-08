@@ -5,9 +5,11 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
-import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.*
+
+const val PREFIXES_LIMIT = 2
+const val PREMIUM_PREFIXES_LIMIT = 10
+const val PREFIXES_LIMIT_PATH = "premium.feature.prefix.limit"
 
 class PrefixesCommand : AbstractCommand("command.prefixes") {
 
@@ -60,6 +62,23 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
         override suspend fun execute(context: CommandContext) {
             if (context.rawArg.isBlank()) {
                 sendSyntax(context)
+                return
+            }
+
+            val wrapper = context.daoManager.guildPrefixWrapper
+            val ppList = wrapper.prefixCache[context.guildId].await()
+            if (ppList.size >= PREFIXES_LIMIT && !isPremiumGuild(context)) {
+                val replaceMap = mapOf(
+                    Pair("limit", "$PREFIXES_LIMIT"),
+                    Pair("premiumLimit", "$PREMIUM_PREFIXES_LIMIT")
+                )
+
+                sendFeatureRequiresGuildPremiumMessage(context, PREFIXES_LIMIT_PATH, replaceMap)
+                return
+            } else if (ppList.size >= PREMIUM_PREFIXES_LIMIT) {
+                val msg = context.getTranslation("$root.limit")
+                    .replace("%limit%", "$PREMIUM_PREFIXES_LIMIT")
+                sendMsg(context, msg)
                 return
             }
 

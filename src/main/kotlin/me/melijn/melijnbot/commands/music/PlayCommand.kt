@@ -66,7 +66,7 @@ class PlayCommand : AbstractCommand("command.play") {
                 sendMissingPermissionMessage(context, "$root.attachment")
                 return
             }
-            if (botChannel == null && senderVoiceChannel != null &&  !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
+            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
             for (url in tracks) {
                 context.audioLoader.loadNewTrackNMessage(context, url, false)
             }

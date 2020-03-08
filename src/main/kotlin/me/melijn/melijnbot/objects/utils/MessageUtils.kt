@@ -764,15 +764,25 @@ suspend fun sendMsg(privateChannel: PrivateChannel, msg: String, image: Buffered
     }
 }
 
-suspend fun sendFeatureRequiresPremiumMessage(context: CommandContext, featurePath: String) {
+suspend fun sendFeatureRequiresPremiumMessage(context: CommandContext, featurePath: String, featureReplaceMap: Map<String, String> = emptyMap()) {
+    var feature = context.getTranslation(featurePath)
+    for ((key, replacement) in featureReplaceMap) {
+        feature = feature.replace("%$key%", replacement)
+    }
+
     val baseMsg = context.getTranslation("message.feature.requires.premium")
-        .replace("%feature%", context.getTranslation(featurePath))
+        .replace("%feature%", feature)
     sendMsg(context, baseMsg)
 }
 
-suspend fun sendFeatureRequiresGuildPremiumMessage(context: CommandContext, featurePath: String) {
+suspend fun sendFeatureRequiresGuildPremiumMessage(context: CommandContext, featurePath: String, featureReplaceMap: Map<String, String> = emptyMap()) {
+    var feature = context.getTranslation(featurePath)
+    for ((key, replacement) in featureReplaceMap) {
+        feature = feature.replace("%$key%", replacement)
+    }
+
     val baseMsg = context.getTranslation("message.feature.requires.premium.guild")
-        .replace("%feature%", context.getTranslation(featurePath))
+        .replace("%feature%", feature)
     sendMsg(context, baseMsg)
 }
 

@@ -2,11 +2,14 @@ package me.melijn.melijnbot.commands.utility
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.objects.command.*
-import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.*
+
+const val PRIVATE_PREFIXES_LIMIT = 1
+const val PREMIUM_PRIVATE_PREFIXES_LIMIT = 10
+const val PRIVATE_PREFIXES_LIMIT_PATH = "premium.feature.privateprefix.limit"
 
 class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
+
     init {
         id = 19
         name = "privatePrefixes"
@@ -58,6 +61,23 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
         override suspend fun execute(context: CommandContext) {
             if (context.rawArg.isBlank()) {
                 sendSyntax(context)
+                return
+            }
+
+            val wrapper = context.daoManager.userPrefixWrapper
+            val ppList = wrapper.prefixCache[context.guildId].await()
+            if (ppList.size >= PRIVATE_PREFIXES_LIMIT && !isPremiumUser(context)) {
+                val replaceMap = mapOf(
+                    Pair("limit", "$PRIVATE_PREFIXES_LIMIT"),
+                    Pair("premiumLimit", "$PREMIUM_PRIVATE_PREFIXES_LIMIT")
+                )
+
+                sendFeatureRequiresPremiumMessage(context, PRIVATE_PREFIXES_LIMIT_PATH, replaceMap)
+                return
+            } else if (ppList.size >= PREMIUM_PRIVATE_PREFIXES_LIMIT) {
+                val msg = context.getTranslation("$root.limit")
+                    .replace("%limit%", "$PREMIUM_PRIVATE_PREFIXES_LIMIT")
+                sendMsg(context, msg)
                 return
             }
 

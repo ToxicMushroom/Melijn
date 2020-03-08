@@ -17,7 +17,6 @@ const val CUSTOM_COMMAND_LIMIT = 10
 const val PREMIUM_CUSTOM_COMMAND_LIMIT = 100
 const val PREMIUM_CC_LIMIT_PATH = "premium.feature.cc.limit"
 
-
 class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
     init {

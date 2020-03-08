@@ -17,9 +17,7 @@ class TestCommand : AbstractCommand("command.test") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        for (service in context.container.serviceManager.services) {
-            println(service.scheduledExecutor.isShutdown.toString() + " - " + service.scheduledExecutor.isTerminated)
-        }
+
     }
 
     private suspend fun sendPagination(context: CommandContext) {
@@ -35,6 +33,4 @@ class TestCommand : AbstractCommand("command.test") {
     private suspend fun ffmPegFlushed(context: CommandContext) = withContext(Dispatchers.IO) {
 
     }
-
-
 }

@@ -117,7 +117,6 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
 
     private fun sendMessageLoadFailed(context: CommandContext, exception: FriendlyException) = runBlocking {
-        exception.printStackTrace()
         val msg = context.getTranslation("$root.loadfailed")
             .replace("%cause%", exception.message ?: "/")
         sendMsg(context, msg)
