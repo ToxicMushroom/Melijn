@@ -265,7 +265,11 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         val role = SelfRoleUtil.getSelectedSelfRoleNByReactionEvent(event, container) ?: return
 
         if (!member.roles.contains(role)) {
-            val added = guild.addRoleToMember(member, role).awaitBool()
+            val added = try {
+                guild.addRoleToMember(member, role).awaitBool()
+            } catch (t: Throwable) {
+                false
+            }
             if (!added) {
                 LogUtils.sendMessageFailedToAddRoleToMember(container.daoManager, member, role)
             }

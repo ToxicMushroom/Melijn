@@ -414,7 +414,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                if (context.args.isEmpty()) {
+                if (context.args.size < 2) {
                     sendSyntax(context, syntax)
                     return
                 }

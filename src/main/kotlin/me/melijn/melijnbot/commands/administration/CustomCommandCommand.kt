@@ -894,7 +894,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                 override suspend fun execute(context: CommandContext) {
                     val cc = getSelectedCCNMessage(context) ?: return
-                    if (context.args.isEmpty()) {
+                    if (context.args.size < 2) {
                         sendSyntax(context)
                         return
                     }
