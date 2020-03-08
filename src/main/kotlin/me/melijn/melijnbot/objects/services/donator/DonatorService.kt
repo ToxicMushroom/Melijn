@@ -14,7 +14,7 @@ class DonatorService(val container: Container, val shardManager: ShardManager) :
 
     private var scheduledFuture: ScheduledFuture<*>? = null
 
-    private val statService = Task(Runnable {
+    private val donatorService = Task {
         runBlocking {
             val wrapper = container.daoManager.supporterWrapper
             val guild = shardManager.getGuildById(340081887265685504)
@@ -31,11 +31,11 @@ class DonatorService(val container: Container, val shardManager: ShardManager) :
                 }
             }
         }
-    })
+    }
 
     override fun start() {
         logger.info("Started DonatorService")
-        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(statService, 2, 2, TimeUnit.MINUTES)
+        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(donatorService, 2, 2, TimeUnit.MINUTES)
     }
 
     override fun stop() {

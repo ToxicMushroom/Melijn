@@ -12,7 +12,7 @@ class StatsService(val shardManager: ShardManager, val webManager: WebManager) :
 
     private var scheduledFuture: ScheduledFuture<*>? = null
 
-    private val statService = Task(Runnable {
+    private val statService = Task {
         runBlocking {
             val shards = shardManager.shardCache.size()
             val guildArray = shardManager.shardCache.map { shard -> shard.guildCache.size() }
@@ -28,7 +28,7 @@ class StatsService(val shardManager: ShardManager, val webManager: WebManager) :
             webManager.updateBotsForDiscordCom(guilds) // no
             webManager.updateDiscordBoats(guilds) // 1s
         }
-    })
+    }
 
     override fun start() {
         logger.info("Started StatService")

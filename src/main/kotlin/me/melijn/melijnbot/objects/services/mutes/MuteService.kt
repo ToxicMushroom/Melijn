@@ -28,7 +28,7 @@ class MuteService(
 
     private var scheduledFuture: ScheduledFuture<*>? = null
 
-    private val muteService = Task(Runnable {
+    private val muteService = Task {
         runBlocking {
             val mutes = daoManager.muteWrapper.getUnmuteableMutes()
             for (mute in mutes) {
@@ -56,7 +56,7 @@ class MuteService(
                 createAndSendUnmuteMessage(guild, selfUser, muted, author, newMute)
             }
         }
-    })
+    }
 
     //Sends unban message to tempban logchannel and the unbanned user
     private suspend fun createAndSendUnmuteMessage(guild: Guild, unmuteAuthor: User, mutedUser: User?, muteAuthor: User?, mute: Mute) {

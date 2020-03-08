@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.objects.services.bans
 
-import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.commands.moderation.getUnbanMessage
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.ban.Ban
@@ -23,38 +22,37 @@ class BanService(
 
     private var scheduledFuture: ScheduledFuture<*>? = null
 
-    private val banService = Task(Runnable {
-        runBlocking {
-            val bans = daoManager.banWrapper.getUnbannableBans()
-            for (ban in bans) {
-                val selfUser = shardManager.shards[0].selfUser
-                val newBan = ban.run {
-                    Ban(guildId, bannedId, banAuthorId, reason, selfUser.idLong, "Ban expired", startTime, endTime, false, banId)
-                }
-                daoManager.banWrapper.setBan(newBan)
-                val guild = shardManager.getGuildById(ban.guildId) ?: continue
-
-                //If ban exists, unban and send log messages
-                val guildBan = guild.retrieveBanById(ban.bannedId).await()
-                val bannedUser = shardManager.retrieveUserById(guildBan.user.idLong).awaitOrNull() ?: return@runBlocking
-                val banAuthorId = ban.banAuthorId
-                val banAuthor = if (banAuthorId == null) {
-                    null
-                } else {
-                    shardManager.retrieveUserById(banAuthorId).awaitOrNull()
-                }
-
-                val exception = guild.unban(bannedUser).awaitEX()
-                if (exception != null) {
-                    createAndSendFailedUnbanMessage(guild, selfUser, bannedUser, banAuthor, newBan, exception.message
-                        ?: "")
-                    return@runBlocking
-                }
-
-                createAndSendUnbanMessage(guild, selfUser, bannedUser, banAuthor, newBan)
+    private val banService = Task {
+        val bans = daoManager.banWrapper.getUnbannableBans()
+        for (ban in bans) {
+            val selfUser = shardManager.shards[0].selfUser
+            val newBan = ban.run {
+                Ban(guildId, bannedId, banAuthorId, reason, selfUser.idLong, "Ban expired", startTime, endTime, false, banId)
             }
+            daoManager.banWrapper.setBan(newBan)
+            val guild = shardManager.getGuildById(ban.guildId) ?: continue
+
+            //If ban exists, unban and send log messages
+            val guildBan = guild.retrieveBanById(ban.bannedId).await()
+            val bannedUser = shardManager.retrieveUserById(guildBan.user.idLong).awaitOrNull() ?: return@Task
+            val banAuthorId = ban.banAuthorId
+            val banAuthor = if (banAuthorId == null) {
+                null
+            } else {
+                shardManager.retrieveUserById(banAuthorId).awaitOrNull()
+            }
+
+            val exception = guild.unban(bannedUser).awaitEX()
+            if (exception != null) {
+                createAndSendFailedUnbanMessage(guild, selfUser, bannedUser, banAuthor, newBan, exception.message
+                    ?: "")
+                return@Task
+            }
+
+            createAndSendUnbanMessage(guild, selfUser, bannedUser, banAuthor, newBan)
         }
-    })
+
+    }
 
     //Sends unban message to tempban logchannel and the unbanned user
     private suspend fun createAndSendUnbanMessage(guild: Guild, unbanAuthor: User, bannedUser: User, banAuthor: User?, ban: Ban) {

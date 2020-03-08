@@ -10,12 +10,12 @@ class SpotifyService(val webManager: WebManager) : Service("spotify") {
 
     private var scheduledFuture: ScheduledFuture<*>? = null
 
-    private val spotifyService = Task(Runnable {
+    private val spotifyService = Task {
         webManager.updateSpotifyCredentials()
-    })
+    }
 
     override fun start() {
-        logger.info("Started MuteService")
+        logger.info("Started SpotifyService")
         scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(spotifyService, 1_800_000, 1_800_000, TimeUnit.MILLISECONDS)
     }
 

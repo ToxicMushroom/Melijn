@@ -21,15 +21,13 @@ class TaskManager {
     val scheduledExecutorService: ScheduledExecutorService = Executors.newScheduledThreadPool(15, threadFactory.invoke("Repeater"))
 
     fun async(block: suspend CoroutineScope.() -> Unit) = CoroutineScope(dispatcher).launch {
-        val task = Task(Runnable {
-            CoroutineScope(dispatcher).launch {
-                block.invoke(this)
-            }
-        })
+        val task = Task {
+            block.invoke(this)
+        }
         task.run()
     }
 
     fun asyncAfter(afterMillis: Long, func: () -> Unit) {
-        scheduledExecutorService.schedule(Task(Runnable(func)), afterMillis, TimeUnit.MILLISECONDS)
+        scheduledExecutorService.schedule(Task { func() }, afterMillis, TimeUnit.MILLISECONDS)
     }
 }

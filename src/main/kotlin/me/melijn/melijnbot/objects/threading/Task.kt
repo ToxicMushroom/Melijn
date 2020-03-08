@@ -1,16 +1,20 @@
 package me.melijn.melijnbot.objects.threading
 
+import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.objects.utils.sendInGuild
 
 
-class Task(private val runnable: Runnable) : Runnable {
+class Task(private val func: suspend () -> Unit) : Runnable {
+
 
     override fun run() {
-        try {
-            runnable.run()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            e.sendInGuild()
+        runBlocking {
+            try {
+                func()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                e.sendInGuild()
+            }
         }
     }
 }
