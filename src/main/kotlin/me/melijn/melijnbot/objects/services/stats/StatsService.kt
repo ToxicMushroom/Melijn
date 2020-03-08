@@ -2,6 +2,7 @@ package me.melijn.melijnbot.objects.services.stats
 
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.objects.services.Service
+import me.melijn.melijnbot.objects.threading.Task
 import me.melijn.melijnbot.objects.web.WebManager
 import net.dv8tion.jda.api.sharding.ShardManager
 import java.util.concurrent.ScheduledFuture
@@ -11,7 +12,7 @@ class StatsService(val shardManager: ShardManager, val webManager: WebManager) :
 
     private var scheduledFuture: ScheduledFuture<*>? = null
 
-    private val statService = Runnable {
+    private val statService = Task(Runnable {
         runBlocking {
             val shards = shardManager.shardCache.size()
             val guildArray = shardManager.shardCache.map { shard -> shard.guildCache.size() }
@@ -27,7 +28,7 @@ class StatsService(val shardManager: ShardManager, val webManager: WebManager) :
             webManager.updateBotsForDiscordCom(guilds) // no
             webManager.updateDiscordBoats(guilds) // 1s
         }
-    }
+    })
 
     override fun start() {
         logger.info("Started StatService")

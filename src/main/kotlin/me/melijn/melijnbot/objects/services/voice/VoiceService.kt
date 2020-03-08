@@ -4,6 +4,7 @@ import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.objects.services.Service
+import me.melijn.melijnbot.objects.threading.Task
 import me.melijn.melijnbot.objects.utils.listeningMembers
 import net.dv8tion.jda.api.sharding.ShardManager
 import java.util.concurrent.ScheduledFuture
@@ -13,7 +14,7 @@ class VoiceService(val container: Container, val shardManager: ShardManager) : S
 
     private var scheduledFuture: ScheduledFuture<*>? = null
 
-    private val statService = Runnable {
+    private val statService = Task(Runnable {
         runBlocking {
             val currentTime = System.currentTimeMillis()
             val disconnect = ArrayList(VoiceUtil.disconnectQueue.entries)
@@ -44,7 +45,7 @@ class VoiceService(val container: Container, val shardManager: ShardManager) : S
                 VoiceUtil.disconnectQueue.remove(guildId)
             }
         }
-    }
+    })
 
     override fun start() {
         logger.info("Started VoiceService")

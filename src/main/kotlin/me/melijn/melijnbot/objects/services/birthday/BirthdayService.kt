@@ -6,6 +6,7 @@ import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.services.Service
+import me.melijn.melijnbot.objects.threading.Task
 import me.melijn.melijnbot.objects.utils.LogUtils
 import me.melijn.melijnbot.objects.utils.awaitBool
 import me.melijn.melijnbot.objects.utils.awaitEX
@@ -24,7 +25,7 @@ class BirthdayService(
 
     private var scheduledFuture: ScheduledFuture<*>? = null
 
-    private val birthdayService = Runnable {
+    private val birthdayService = Task(Runnable {
         runBlocking {
             try {
                 val birthdayHistory = daoManager.birthdayHistoryWrapper
@@ -144,7 +145,7 @@ class BirthdayService(
                 t.printStackTrace()
             }
         }
-    }
+    })
 
     override fun start() {
         logger.info("Started BirthdayService")

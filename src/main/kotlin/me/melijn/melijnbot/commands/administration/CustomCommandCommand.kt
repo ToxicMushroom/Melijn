@@ -13,6 +13,11 @@ import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.utils.*
 
+const val CUSTOM_COMMAND_LIMIT = 10
+const val PREMIUM_CUSTOM_COMMAND_LIMIT = 100
+const val PREMIUM_CC_LIMIT_PATH = "premium.feature.cc.limit"
+
+
 class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
     init {
@@ -130,6 +135,18 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 return
             }
 
+            val wrapper = context.daoManager.customCommandWrapper
+            val size = wrapper.customCommandCache[context.guildId].await().size
+            if (size >= CUSTOM_COMMAND_LIMIT && !isPremiumGuild(context)) {
+                sendFeatureRequiresGuildPremiumMessage(context, PREMIUM_CC_LIMIT_PATH)
+                return
+            }
+
+            if (size >= PREMIUM_CUSTOM_COMMAND_LIMIT) {
+                val msg = context.getTranslation("$root.limit")
+                    .replace("%limit%", PREMIUM_CUSTOM_COMMAND_LIMIT.toString())
+                sendMsg(context, msg)
+            }
 
             val name = args[0]
             val content = if (args[1].isBlank()) {
@@ -137,6 +154,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             } else {
                 args[1]
             }
+
             val cc = CustomCommand(0, name, ModularMessage(content))
 
             val ccId = context.daoManager.customCommandWrapper.add(context.guildId, cc)
@@ -148,7 +166,6 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 .replace("%content%", cc.content.messageContent ?: "error")
             sendMsg(context, msg)
         }
-
     }
 
     class RemoveArg(parent: String) : AbstractCommand("$parent.remove") {
@@ -295,7 +312,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                 context.daoManager.customCommandWrapper.update(context.guildId, ccSelected)
 
-                val msg = context.getTranslation( "$root.success")
+                val msg = context.getTranslation("$root.success")
                     .replace("%id%", ccSelected.id.toString())
                     .replace("%ccName%", ccSelected.name)
                     .replace("%position%", possibleLong.toString())
@@ -444,7 +461,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
         class ViewArg(parent: String) : AbstractCommand("$parent.view") {
             init {
-                name ="view"
+                name = "view"
                 aliases = arrayOf("preview", "show", "info")
             }
 

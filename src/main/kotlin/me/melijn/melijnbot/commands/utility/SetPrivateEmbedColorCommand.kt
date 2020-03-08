@@ -16,7 +16,7 @@ class SetPrivateEmbedColorCommand : AbstractCommand("command.setprivateembedcolo
         id = 76
         name = "setPrivateEmbedColor"
         aliases = arrayOf("spec")
-        runConditions = arrayOf(RunCondition.SUPPORTER)
+        runConditions = arrayOf(RunCondition.USER_SUPPORTER)
         commandCategory = CommandCategory.UTILITY
     }
 

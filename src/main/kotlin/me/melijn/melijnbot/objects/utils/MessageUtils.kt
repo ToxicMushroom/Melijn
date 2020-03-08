@@ -764,6 +764,18 @@ suspend fun sendMsg(privateChannel: PrivateChannel, msg: String, image: Buffered
     }
 }
 
+suspend fun sendFeatureRequiresPremiumMessage(context: CommandContext, featurePath: String) {
+    val baseMsg = context.getTranslation("message.feature.requires.premium")
+        .replace("%feature%", context.getTranslation(featurePath))
+    sendMsg(context, baseMsg)
+}
+
+suspend fun sendFeatureRequiresGuildPremiumMessage(context: CommandContext, featurePath: String) {
+    val baseMsg = context.getTranslation("message.feature.requires.premium.guild")
+        .replace("%feature%", context.getTranslation(featurePath))
+    sendMsg(context, baseMsg)
+}
+
 fun String.toUpperWordCase(): String {
     var previous = ' '
     var newString = ""

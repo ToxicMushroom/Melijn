@@ -10,7 +10,7 @@ public enum Environment {
     @JsonCreator
     public static Environment forValue(String value) {
         if ("production".equalsIgnoreCase(value)) {
-            return Environment.PRODUCTION;
-        } else return Environment.TESTING;
+            return PRODUCTION;
+        } else return TESTING;
     }
 }

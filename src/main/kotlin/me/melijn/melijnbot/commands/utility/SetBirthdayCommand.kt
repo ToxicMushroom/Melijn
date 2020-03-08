@@ -15,7 +15,7 @@ class SetBirthdayCommand : AbstractCommand("command.setbirthday") {
     init {
         id = 139
         name = "setBirthDay"
-        runConditions = arrayOf(RunCondition.SUPPORTER)
+        runConditions = arrayOf(RunCondition.USER_SUPPORTER)
         children = arrayOf(
             DMYArg(root),
             YMDArg(root),

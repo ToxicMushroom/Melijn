@@ -41,6 +41,16 @@ class UserSupporterDao(driverManager: DriverManager) : Dao(driverManager) {
             }
         }, userId)
     }
+
+    suspend fun addUser(userId: Long) {
+        driverManager.executeUpdate("INSERT INTO $table (userId, guildId, startDate) VALUES (?, ?, ?)",
+            userId, -1, System.currentTimeMillis())
+    }
+
+    suspend fun removeUser(userId: Long) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ?",
+            userId)
+    }
 }
 
 class Supporter(val userId: Long, val guildId: Long, val startMillis: Long)

@@ -5,8 +5,11 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.objects.utils.isPremiumUser
+import me.melijn.melijnbot.objects.utils.sendFeatureRequiresPremiumMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 
+const val VOLUME_OVER_150 = "premium.feature.volume.over.150"
 class VolumeCommand : AbstractCommand("command.volume") {
 
     init {
@@ -28,6 +31,11 @@ class VolumeCommand : AbstractCommand("command.volume") {
         }
 
         val amount = getIntegerFromArgNMessage(context, 0, 0, 1000) ?: return
+        if (amount > 150 && !isPremiumUser(context)) {
+            sendFeatureRequiresPremiumMessage(context, VOLUME_OVER_150)
+            return
+        }
+
         iPlayer.volume = amount
 
         val msg = context.getTranslation("$root.set")

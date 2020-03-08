@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import lavalink.client.player.IPlayer
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.utils.isPremiumGuild
 import me.melijn.melijnbot.objects.utils.sendMsg
 
 
@@ -20,8 +21,10 @@ class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val gui
 
     fun getSendHandler(): AudioPlayerSendHandler = AudioPlayerSendHandler(iPlayer)
     fun safeQueueSilent(daoManager: DaoManager, track: AudioTrack): Boolean {
-        if (daoManager.supporterWrapper.guildSupporterIds.contains(guildId) ||
-            guildTrackManager.tracks.size + 1 <= QUEUE_LIMIT) {
+        if (
+            (guildTrackManager.trackSize() <= DONATE_QUEUE_LIMIT && isPremiumGuild(daoManager, guildId)) ||
+            guildTrackManager.tracks.size + 1 <= QUEUE_LIMIT
+        ) {
             guildTrackManager.queue(track)
             return true
         }
@@ -43,9 +46,9 @@ class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val gui
     }
 
     fun queueIsFull(context: CommandContext, add: Int, silent: Boolean = false): Boolean {
-        if ((guildTrackManager.tracks.size + add > QUEUE_LIMIT &&
-                !context.daoManager.supporterWrapper.guildSupporterIds.contains(guildId)) ||
-            guildTrackManager.tracks.size + add > DONATE_QUEUE_LIMIT
+        if (
+            guildTrackManager.tracks.size + add > QUEUE_LIMIT ||
+            (guildTrackManager.tracks.size + add > DONATE_QUEUE_LIMIT && isPremiumGuild(context))
         ) {
             if (!silent) {
                 context.taskManager.async {
