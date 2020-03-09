@@ -46,7 +46,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 //        override fun playlistLoaded(playlist: AudioPlaylist) = playListLoaded(playlist)
 //    }
 
-    fun loadNewTrackNMessage(context: CommandContext, source: String, isPlaylist: Boolean = false) {
+    suspend fun loadNewTrackNMessage(context: CommandContext, source: String, isPlaylist: Boolean = false) {
         val guild = context.guild
         val guildMusicPlayer = musicPlayerManager.getGuildMusicPlayer(guild)
         val rawInput = source
@@ -54,6 +54,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             .replace(SC_SELECTOR, "")
 
         if (guildMusicPlayer.queueIsFull(context, 1)) return
+        val wrapper = context.daoManager.songCacheWrapper
         val resultHandler = object : AudioLoadResultHandler {
             override fun loadFailed(exception: FriendlyException) {
                 sendMessageLoadFailed(context, exception)
@@ -65,6 +66,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                     sendMessageAddedTrack(context, track)
                     runBlocking {
                         LogUtils.addMusicPlayerNewTrack(context, track)
+                        wrapper.addTrack(rawInput, track) // add new track hit
                     }
                 }
             }
@@ -103,6 +105,20 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
 
         if (source.startsWith(YT_SELECTOR)) {
+
+            val audioTrack = wrapper.getTrackInfo(rawInput)
+            if (audioTrack != null) { // track found and made from cache
+                wrapper.addTrack(rawInput, audioTrack) // add new track hit
+
+                audioTrack.userData = TrackUserData(context.author)
+                if (guildMusicPlayer.safeQueue(context, audioTrack)) {
+                    sendMessageAddedTrack(context, audioTrack)
+
+                    LogUtils.addMusicPlayerNewTrack(context, audioTrack)
+                }
+                return
+            }
+
             ytSearch.search(rawInput) { videoId ->
                 if (videoId == null) {
                     sendMessageNoMatches(context, rawInput)

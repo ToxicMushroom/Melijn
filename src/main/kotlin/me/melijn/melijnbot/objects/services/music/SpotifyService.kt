@@ -1,4 +1,4 @@
-package me.melijn.melijnbot.objects.services.spotify
+package me.melijn.melijnbot.objects.services.music
 
 import me.melijn.melijnbot.objects.services.Service
 import me.melijn.melijnbot.objects.threading.Task

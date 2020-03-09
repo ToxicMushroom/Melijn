@@ -10,7 +10,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.duncte123.weebJava.WeebApiBuilder
 import me.duncte123.weebJava.models.WeebApi
 import me.duncte123.weebJava.types.NSFWMode
@@ -75,39 +74,36 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         }
     }
 
-    suspend fun getResponseFromUrl(url: String, params: Map<String, String> = emptyMap(), headers: Map<String, String>): String? = suspendCoroutine {
-        taskManager.async {
-            val fullUrlWithParams = url + params.entries.joinToString("&", "?",
-                transform = { entry ->
-                    entry.key + "=" + entry.value
-                }
-            )
-            val requestBuilder = Request.Builder()
-                .url(fullUrlWithParams)
-                .get()
-
-            for ((key, value) in headers) {
-                requestBuilder.addHeader(key, value)
+    suspend fun getResponseFromUrl(url: String, params: Map<String, String> = emptyMap(), headers: Map<String, String>): String? {
+        val fullUrlWithParams = url + params.entries.joinToString("&", "?",
+            transform = { entry ->
+                entry.key + "=" + entry.value
             }
+        )
+        val requestBuilder = Request.Builder()
+            .url(fullUrlWithParams)
+            .get()
 
-            val request = requestBuilder.build()
+        for ((key, value) in headers) {
+            requestBuilder.addHeader(key, value)
+        }
 
-            val response = httpClient.newCall(request).await()
-            val responseBody = response.body
-            if (responseBody == null) {
-                it.resume(null)
-                response.close()
-                return@async
-            }
-            withContext(Dispatchers.IO) {
-                try {
-                    val responseString = responseBody.string()
-                    it.resume(responseString)
-                } catch (t: Throwable) {
-                    it.resume(null)
-                }
-            }
+        val request = requestBuilder.build()
+
+        val response = httpClient.newCall(request).await()
+        val responseBody = response.body
+        if (responseBody == null) {
             response.close()
+            return null
+        }
+
+        try {
+            val responseString = responseBody.string()
+            response.close()
+            return responseString
+        } catch (t: Throwable) {
+            response.close()
+            return null
         }
     }
 

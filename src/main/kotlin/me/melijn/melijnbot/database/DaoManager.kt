@@ -75,6 +75,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
     }
 
     val tracksWrapper: TracksWrapper
+    val songCacheWrapper: SongCacheWrapper
     val gainProfileWrapper: GainProfileWrapper
     val music247Wrapper: Music247Wrapper
     val musicNodeWrapper: MusicNodeWrapper
@@ -156,6 +157,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
         }
 
         tracksWrapper = TracksWrapper(TracksDao(driverManager), LastVoiceChannelDao(driverManager))
+        songCacheWrapper = SongCacheWrapper(SongCacheDao(driverManager))
         gainProfileWrapper = GainProfileWrapper(taskManager, GainProfileDao(driverManager))
         musicNodeWrapper = MusicNodeWrapper(taskManager, MusicNodeDao(driverManager))
         music247Wrapper = Music247Wrapper(taskManager, Music247Dao(driverManager))

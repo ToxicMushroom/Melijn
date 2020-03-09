@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.objects.services.voice
 
-import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil.checkShouldDisconnectAndApply
 import me.melijn.melijnbot.objects.services.Service
@@ -14,16 +13,14 @@ class VoiceScoutService(val container: Container, val shardManager: ShardManager
     private var scheduledFuture: ScheduledFuture<*>? = null
 
     private val voiceScoutService = Task {
-        runBlocking {
-            val gmp = container.lavaManager.musicPlayerManager.guildMusicPlayers
-            ArrayList(gmp.values).forEach { guildMusicPlayer ->
-                val guild = shardManager.getGuildById(guildMusicPlayer.guildId)
-                if (guild == null) {
-                    guildMusicPlayer.guildTrackManager.stopAndDestroy()
-                    gmp.remove(guildMusicPlayer.guildId)
-                    return@forEach
-                }
-
+        val gmp = container.lavaManager.musicPlayerManager.guildMusicPlayers
+        ArrayList(gmp.values).forEach { guildMusicPlayer ->
+            val guild = shardManager.getGuildById(guildMusicPlayer.guildId)
+            if (guild == null) {
+                guildMusicPlayer.guildTrackManager.iPlayer.stopTrack()
+                guildMusicPlayer.guildTrackManager.clear()
+                gmp.remove(guildMusicPlayer.guildId)
+            } else {
                 val botChannel = container.lavaManager.getConnectedChannel(guild)
                 val daoManager = container.daoManager
 
