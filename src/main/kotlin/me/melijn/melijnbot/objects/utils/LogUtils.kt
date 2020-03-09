@@ -265,13 +265,13 @@ object LogUtils {
         val channelId = context.getTranslation("logging.music.newtrack.channelIdfield.title")
         eb.setTitle(title)
 
-        val vc = context.lavaManager.getConnectedChannel(context.guild) ?: throw IllegalArgumentException("NO")
+        val vc = context.lavaManager.getConnectedChannel(context.guild)
 
         eb.setDescription("[${track.info.title}](${track.info.uri})")
         eb.addField(userTitle, context.author.asTag, true)
         eb.addField(userIdTitle, context.author.id, true)
-        eb.addField(channel, vc.name, true)
-        eb.addField(channelId, vc.id, true)
+        eb.addField(channel, vc?.name ?: "null", true)
+        eb.addField(channelId, vc?.id ?: "null", true)
 
         eb.setColor(Color.decode("#2f3136"))
         eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
