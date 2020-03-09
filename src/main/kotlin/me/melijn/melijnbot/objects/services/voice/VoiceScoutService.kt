@@ -17,9 +17,9 @@ class VoiceScoutService(val container: Container, val shardManager: ShardManager
         ArrayList(gmp.values).forEach { guildMusicPlayer ->
             val guild = shardManager.getGuildById(guildMusicPlayer.guildId)
             if (guild == null) {
-                guildMusicPlayer.guildTrackManager.iPlayer.stopTrack()
                 guildMusicPlayer.guildTrackManager.clear()
-                gmp.remove(guildMusicPlayer.guildId)
+                guildMusicPlayer.guildTrackManager.iPlayer.stopTrack()
+                container.lavaManager.musicPlayerManager.guildMusicPlayers.remove(guildMusicPlayer.guildId)
             } else {
                 val botChannel = container.lavaManager.getConnectedChannel(guild)
                 val daoManager = container.daoManager
@@ -27,6 +27,12 @@ class VoiceScoutService(val container: Container, val shardManager: ShardManager
                 // Leave channel timer stuff
                 botChannel?.let {
                     checkShouldDisconnectAndApply(it, daoManager)
+                }
+
+                if (botChannel == null) {
+                    guildMusicPlayer.guildTrackManager.clear()
+                    guildMusicPlayer.guildTrackManager.iPlayer.stopTrack()
+                    container.lavaManager.musicPlayerManager.guildMusicPlayers.remove(guildMusicPlayer.guildId)
                 }
             }
         }

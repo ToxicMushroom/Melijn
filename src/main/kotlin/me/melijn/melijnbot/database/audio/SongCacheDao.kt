@@ -8,7 +8,7 @@ import kotlin.coroutines.suspendCoroutine
 class SongCacheDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "songCache"
-    override val tableStructure: String = "song varchar(256), track varchar(256), hits int, time bigint"
+    override val tableStructure: String = "song varchar(512), track varchar(512), hits int, time bigint"
     override val primaryKey: String = "song"
 
     init {

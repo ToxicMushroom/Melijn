@@ -240,10 +240,9 @@ object LogUtils {
         eb.setTitle(title)
 
         val vc = Container.instance.lavaManager.getConnectedChannel(guild)
-            ?: throw IllegalArgumentException("Not connected to a channel")
         eb.setDescription("[${track.info.title}](${track.info.uri})")
-        eb.addField(channel, vc.name, true)
-        eb.addField(channelId, vc.id, true)
+        eb.addField(channel, vc?.name ?: "null", true)
+        eb.addField(channelId, vc?.id ?: "null", true)
         eb.addField(cause, exception.message ?: "/", false)
 
         eb.setColor(Color.decode("#cc1010"))

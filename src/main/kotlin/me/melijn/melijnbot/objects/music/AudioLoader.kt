@@ -50,8 +50,8 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         val guild = context.guild
         val guildMusicPlayer = musicPlayerManager.getGuildMusicPlayer(guild)
         val rawInput = source
-            .replace(YT_SELECTOR, "")
-            .replace(SC_SELECTOR, "")
+            .remove(YT_SELECTOR)
+            .remove(SC_SELECTOR)
 
         if (guildMusicPlayer.queueIsFull(context, 1)) return
         val wrapper = context.daoManager.songCacheWrapper
@@ -104,21 +104,20 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             }
         }
 
-        if (source.startsWith(YT_SELECTOR)) {
+        val audioTrack = wrapper.getTrackInfo(rawInput)
+        if (audioTrack != null) { // track found and made from cache
+            wrapper.addTrack(rawInput, audioTrack) // add new track hit
 
-            val audioTrack = wrapper.getTrackInfo(rawInput)
-            if (audioTrack != null) { // track found and made from cache
-                wrapper.addTrack(rawInput, audioTrack) // add new track hit
+            audioTrack.userData = TrackUserData(context.author)
+            if (guildMusicPlayer.safeQueue(context, audioTrack)) {
+                sendMessageAddedTrack(context, audioTrack)
 
-                audioTrack.userData = TrackUserData(context.author)
-                if (guildMusicPlayer.safeQueue(context, audioTrack)) {
-                    sendMessageAddedTrack(context, audioTrack)
-
-                    LogUtils.addMusicPlayerNewTrack(context, audioTrack)
-                }
-                return
+                LogUtils.addMusicPlayerNewTrack(context, audioTrack)
             }
+            return
+        }
 
+        if (source.startsWith(YT_SELECTOR)) {
             ytSearch.search(rawInput) { videoId ->
                 if (videoId == null) {
                     sendMessageNoMatches(context, rawInput)
