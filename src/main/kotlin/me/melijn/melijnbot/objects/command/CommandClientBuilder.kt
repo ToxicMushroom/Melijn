@@ -166,7 +166,8 @@ class CommandClientBuilder(private val container: Container) {
         AIWaifuCommand(),
         SetMusic247Command(),
         PreVerificationMessageCommand(),
-        SupportCommand()
+        SupportCommand(),
+        VoteSkipCommand()
     )
 
     init {
