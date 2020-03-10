@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.objects.services.stats
 
-import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.objects.services.Service
 import me.melijn.melijnbot.objects.threading.Task
 import me.melijn.melijnbot.objects.web.WebManager
@@ -13,21 +12,19 @@ class StatsService(val shardManager: ShardManager, val webManager: WebManager) :
     private var scheduledFuture: ScheduledFuture<*>? = null
 
     private val statService = Task {
-        runBlocking {
-            val shards = shardManager.shardCache.size()
-            val guildArray = shardManager.shardCache.map { shard -> shard.guildCache.size() }
-            val guilds = shardManager.guildCache.size()
-            val users = shardManager.userCache.size()
+        val shards = shardManager.shardCache.size()
+        val guildArray = shardManager.shardCache.map { shard -> shard.guildCache.size() }
+        val guilds = shardManager.guildCache.size()
+        val users = shardManager.userCache.size()
 
-            webManager.updateTopDotGG(guildArray) // 1s ratelimit
-            webManager.updateBotsOnDiscordXYZ(guilds) // 2min ratelimit
-            webManager.updateBotlistSpace(guildArray) // 15s ratelimit
-            webManager.updateDiscordBotListCom(guilds, users) // no
-            webManager.updateDivinedDiscordBots(guilds, shards) // 1min ratelimit
-            webManager.updateDiscordBotsGG(guilds, shards) // 0.05s ratelimit
-            webManager.updateBotsForDiscordCom(guilds) // no
-            webManager.updateDiscordBoats(guilds) // 1s
-        }
+        webManager.updateTopDotGG(guildArray) // 1s ratelimit
+        webManager.updateBotsOnDiscordXYZ(guilds) // 2min ratelimit
+        webManager.updateBotlistSpace(guildArray) // 15s ratelimit
+        webManager.updateDiscordBotListCom(guilds, users) // no
+        webManager.updateDivinedDiscordBots(guilds, shards) // 1min ratelimit
+        webManager.updateDiscordBotsGG(guilds, shards) // 0.05s ratelimit
+        webManager.updateBotsForDiscordCom(guilds) // no
+        webManager.updateDiscordBoats(guilds) // 1s
     }
 
     override fun start() {

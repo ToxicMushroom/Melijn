@@ -21,7 +21,7 @@ class VoiceService(val container: Container, val shardManager: ShardManager) : S
 
         val musicPlayerManager = container.lavaManager.musicPlayerManager
         for (guildId in disconnect) {
-            val guild = shardManager.getGuildById(guildId) ?: return@Task
+            val guild = shardManager.getGuildById(guildId) ?: continue
             val guildMPlayer = musicPlayerManager.guildMusicPlayers.getOrElse(guildId) {
                 null
             }
@@ -30,7 +30,7 @@ class VoiceService(val container: Container, val shardManager: ShardManager) : S
             connectedChannel?.let {
                 if (listeningMembers(connectedChannel) > 0) {
                     VoiceUtil.disconnectQueue.remove(guildId)
-                    return@Task
+                    return@let
                 }
             }
 

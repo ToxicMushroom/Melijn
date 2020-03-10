@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.objects.services.mutes
 
-import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.commands.moderation.getUnmuteMessage
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.mute.Mute
@@ -29,32 +28,30 @@ class MuteService(
     private var scheduledFuture: ScheduledFuture<*>? = null
 
     private val muteService = Task {
-        runBlocking {
-            val mutes = daoManager.muteWrapper.getUnmuteableMutes()
-            for (mute in mutes) {
-                val selfUser = shardManager.shards[0].selfUser
-                val newMute = mute.run {
-                    Mute(guildId, mutedId, muteAuthorId, reason, selfUser.idLong, "Mute expired", startTime, endTime, false, muteId)
-                }
-
-                daoManager.muteWrapper.setMute(newMute)
-                val guild = shardManager.getGuildById(mute.guildId) ?: continue
-
-                val muteRole = guild.getAndVerifyRoleByType(daoManager, RoleType.MUTE, true)
-                val author = shardManager.retrieveUserById(newMute.muteAuthorId ?: -1).awaitOrNull()
-                val muted = shardManager.retrieveUserById(newMute.mutedId).awaitOrNull()
-                val mutedMember = if (muted == null) null else guild.getMember(muted)
-                if (mutedMember != null && muteRole != null && mutedMember.roles.contains(muteRole)) {
-                    val exception = guild.removeRoleFromMember(mutedMember, muteRole).awaitEX()
-                    if (exception != null) {
-                        createAndSendFailedUnmuteMessage(guild, selfUser, muted, author, newMute, exception.message
-                            ?: "/")
-                        return@runBlocking
-                    }
-                }
-
-                createAndSendUnmuteMessage(guild, selfUser, muted, author, newMute)
+        val mutes = daoManager.muteWrapper.getUnmuteableMutes()
+        for (mute in mutes) {
+            val selfUser = shardManager.shards[0].selfUser
+            val newMute = mute.run {
+                Mute(guildId, mutedId, muteAuthorId, reason, selfUser.idLong, "Mute expired", startTime, endTime, false, muteId)
             }
+
+            daoManager.muteWrapper.setMute(newMute)
+            val guild = shardManager.getGuildById(mute.guildId) ?: continue
+
+            val muteRole = guild.getAndVerifyRoleByType(daoManager, RoleType.MUTE, true)
+            val author = shardManager.retrieveUserById(newMute.muteAuthorId ?: -1).awaitOrNull()
+            val muted = shardManager.retrieveUserById(newMute.mutedId).awaitOrNull()
+            val mutedMember = if (muted == null) null else guild.getMember(muted)
+            if (mutedMember != null && muteRole != null && mutedMember.roles.contains(muteRole)) {
+                val exception = guild.removeRoleFromMember(mutedMember, muteRole).awaitEX()
+                if (exception != null) {
+                    createAndSendFailedUnmuteMessage(guild, selfUser, muted, author, newMute, exception.message
+                        ?: "/")
+                    continue
+                }
+            }
+
+            createAndSendUnmuteMessage(guild, selfUser, muted, author, newMute)
         }
     }
 
