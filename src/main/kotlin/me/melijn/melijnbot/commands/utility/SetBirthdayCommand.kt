@@ -4,7 +4,6 @@ import me.melijn.melijnbot.enums.MonthFormat
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.utils.getBirthdayByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
@@ -15,7 +14,6 @@ class SetBirthdayCommand : AbstractCommand("command.setbirthday") {
     init {
         id = 139
         name = "setBirthDay"
-        runConditions = arrayOf(RunCondition.USER_SUPPORTER)
         children = arrayOf(
             DMYArg(root),
             YMDArg(root),

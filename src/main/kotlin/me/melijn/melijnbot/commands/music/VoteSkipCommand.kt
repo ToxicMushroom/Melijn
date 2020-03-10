@@ -33,8 +33,26 @@ class VoteSkipCommand : AbstractCommand("command.voteskip") {
         val listening = listeningMembers(vc)
 
         guildMusicPlayer.votes++
-        if (guildMusicPlayer.votes == (floor(listening / 2.0) + 1).toInt()) {
+        val requiredVotes = (floor(listening / 2.0) + 1).toInt()
+        if (guildMusicPlayer.votes == requiredVotes) {
             doSkip(context, guildMusicPlayer.votes)
+        } else {
+            val eb = Embedder(context)
+            val title = context.getTranslation("$root.progress.title")
+                .replace("%votesRequired%", "$requiredVotes")
+                .replace("%votes%", "${guildMusicPlayer.votes}")
+            eb.setTitle(title)
+
+            val iPlayer = context.guildMusicPlayer.guildTrackManager.iPlayer
+            val cTrack = iPlayer.playingTrack ?: return
+            val desc = context.getTranslation("$root.playing")
+                .replace("%track%", cTrack.info.title)
+                .replace("%url%", cTrack.info.uri)
+                .replace("%position%", getDurationString(iPlayer.trackPosition))
+                .replace("%duration%", getDurationString(cTrack.duration))
+            eb.setDescription(desc)
+            sendEmbed(context, eb.build())
+
         }
     }
 
