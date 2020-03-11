@@ -95,7 +95,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
             endTime = System.currentTimeMillis() + muteDuration
         )
         if (activeMute != null) {
-            mute.muteId = mute.muteId
+            mute.muteId = activeMute.muteId
             mute.startTime = activeMute.startTime
         }
 
