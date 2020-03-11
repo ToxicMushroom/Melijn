@@ -56,8 +56,10 @@ class BanCommand : AbstractCommand("command.ban") {
             targetUser.idLong,
             context.authorId,
             reason,
-            null)
+            null
+        )
         if (activeBan != null) {
+            ban.banId = activeBan.banId
             ban.startTime = activeBan.startTime
         }
 

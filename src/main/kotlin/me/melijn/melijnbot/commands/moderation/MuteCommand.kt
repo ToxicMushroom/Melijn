@@ -84,7 +84,10 @@ class MuteCommand : AbstractCommand("command.mute") {
             endTime = null
         )
 
-        if (activeMute != null) mute.startTime = activeMute.startTime
+        if (activeMute != null) {
+            mute.muteId = activeMute.muteId
+            mute.startTime = activeMute.startTime
+        }
 
         val muting = context.getTranslation("message.muting")
 

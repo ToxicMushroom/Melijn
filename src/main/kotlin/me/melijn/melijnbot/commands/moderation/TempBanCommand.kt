@@ -62,6 +62,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
             endTime = System.currentTimeMillis() + banDuration
         )
         if (activeBan != null) {
+            ban.banId = activeBan.banId
             ban.startTime = activeBan.startTime
         }
 

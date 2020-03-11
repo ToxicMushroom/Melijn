@@ -94,7 +94,10 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
             null,
             endTime = System.currentTimeMillis() + muteDuration
         )
-        if (activeMute != null) mute.startTime = activeMute.startTime
+        if (activeMute != null) {
+            mute.muteId = mute.muteId
+            mute.startTime = activeMute.startTime
+        }
 
         val muting = context.getTranslation("message.muting")
 
