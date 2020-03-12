@@ -15,12 +15,11 @@ class StatsService(val shardManager: ShardManager, val webManager: WebManager) :
         val shards = shardManager.shardCache.size()
         val guildArray = shardManager.shardCache.map { shard -> shard.guildCache.size() }
         val guilds = shardManager.guildCache.size()
-        val users = shardManager.userCache.size()
 
         webManager.updateTopDotGG(guildArray) // 1s ratelimit
         webManager.updateBotsOnDiscordXYZ(guilds) // 2min ratelimit
         webManager.updateBotlistSpace(guildArray) // 15s ratelimit
-        webManager.updateDiscordBotListCom(guilds, users) // no
+        webManager.updateDiscordBotListCom(guilds) // no
         webManager.updateDivinedDiscordBots(guilds, shards) // 1min ratelimit
         webManager.updateDiscordBotsGG(guilds, shards) // 0.05s ratelimit
         webManager.updateBotsForDiscordCom(guilds) // no

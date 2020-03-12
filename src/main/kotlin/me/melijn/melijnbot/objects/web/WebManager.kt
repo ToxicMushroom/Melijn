@@ -282,7 +282,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         }
     }
 
-    fun updateDiscordBotListCom(servers: Long, users: Long) {
+    fun updateDiscordBotListCom(servers: Long) {
         val token = settings.tokens.discordBotListCom
         val url = "$DISCORD_BOT_LIST_COM/api/bots/${settings.id}/stats"
         if (token.isBlank()) return
@@ -290,7 +290,6 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
             val body = MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("guilds", "$servers")
-                .addFormDataPart("users", "$users")
                 .build()
 
             val request = Request.Builder()

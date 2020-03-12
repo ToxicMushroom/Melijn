@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory
 import lavalink.client.io.jda.JdaLavalink
 import me.melijn.melijnbot.objects.events.EventManager
 import net.dv8tion.jda.api.entities.Activity
+import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
 import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.ChunkingFilter
@@ -32,7 +33,17 @@ class MelijnBot {
 
         val eventManager = EventManager(container)
 
-        val defaultShardManagerBuilder = DefaultShardManagerBuilder()
+        val defaultShardManagerBuilder = DefaultShardManagerBuilder
+            .create(
+                GatewayIntent.DIRECT_MESSAGES,
+                GatewayIntent.DIRECT_MESSAGE_REACTIONS,
+                GatewayIntent.GUILD_BANS,
+                GatewayIntent.GUILD_EMOJIS,
+                GatewayIntent.GUILD_MEMBERS,
+                GatewayIntent.GUILD_MESSAGES,
+                GatewayIntent.GUILD_MESSAGE_REACTIONS,
+                GatewayIntent.GUILD_VOICE_STATES
+            )
             .setShardsTotal(container.settings.shardCount)
             .setToken(container.settings.tokens.discord)
             .setActivity(Activity.listening("commands | ${container.settings.prefix}help"))
