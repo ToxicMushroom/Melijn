@@ -13,24 +13,28 @@ import me.melijn.melijnbot.objects.utils.VerificationUtils
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelByType
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
-import net.dv8tion.jda.api.events.guild.member.GuildMemberLeaveEvent
+import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent
 
 class JoinLeaveListener(container: Container) : AbstractListener(container) {
 
     override fun onEvent(event: GenericEvent) {
         if (event is GuildMemberJoinEvent) onGuildMemberJoin(event)
-        else if (event is GuildMemberLeaveEvent) onGuildMemberLeave(event)
+        else if (event is GuildMemberRemoveEvent) onGuildMemberLeave(event)
     }
 
     private fun onGuildMemberJoin(event: GuildMemberJoinEvent) = CoroutineScope(Dispatchers.Default).launch {
         val daoManager = container.daoManager
         val member = event.member
+        JoinLeaveUtil.reAddMute(daoManager, event)
+
         if (guildHasNoVerification(event)) {
-            JoinLeaveUtil.postWelcomeMessage(daoManager, member, ChannelType.JOIN, MessageType.JOIN)
+            JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, member.user, ChannelType.JOIN, MessageType.JOIN)
             JoinLeaveUtil.forceRole(daoManager, member)
             joinRole(daoManager, member)
+
         } else {
             VerificationUtils.addUnverified(member, daoManager)
+
         }
     }
 
@@ -39,11 +43,12 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
         return channel == null
     }
 
-    private fun onGuildMemberLeave(event: GuildMemberLeaveEvent) = CoroutineScope(Dispatchers.Default).launch {
+    private fun onGuildMemberLeave(event: GuildMemberRemoveEvent) = CoroutineScope(Dispatchers.Default).launch {
         val daoManager = container.daoManager
+        val user = event.user
 
-        if (VerificationUtils.isVerified(daoManager, event.member)) {
-            JoinLeaveUtil.postWelcomeMessage(daoManager, event.member, ChannelType.LEAVE, MessageType.LEAVE)
+        if (daoManager.unverifiedUsersWrapper.contains(event.guild.idLong, user.idLong)) {
+            JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, user, ChannelType.LEAVE, MessageType.LEAVE)
         }
     }
 }

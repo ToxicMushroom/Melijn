@@ -524,7 +524,7 @@ suspend fun getMemberByArgsNMessage(context: CommandContext, index: Int, interac
     val user = getUserByArgsN(context, index)
     val member =
         if (user == null) null
-        else context.guild.getMember(user)
+        else context.guild.retrieveMember(user).await()
 
     if (member == null) {
         val language = context.getLanguage()
@@ -552,12 +552,12 @@ suspend fun getMemberByArgsNMessage(context: CommandContext, index: Int, interac
     return member
 }
 
-fun getMemberByArgsN(guild: Guild, arg: String): Member? {
+suspend fun getMemberByArgsN(guild: Guild, arg: String): Member? {
     val shardManager = guild.jda.shardManager ?: return null
     val user = getUserByArgsN(shardManager, guild, arg)
 
     return if (user == null) null
-    else guild.getMember(user)
+    else guild.retrieveMember(user).await()
 }
 
 suspend fun notEnoughPermissionsAndMessage(context: CommandContext, channel: GuildChannel, vararg perms: Permission, checkParent: Boolean = false): Boolean {

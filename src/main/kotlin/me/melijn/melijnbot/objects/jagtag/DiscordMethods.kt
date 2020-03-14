@@ -58,20 +58,20 @@ object DiscordMethods {
             user.name
         }),
         Method("voiceChannelId", { env ->
-            val member: Member = env.getReifiedX("member")
-            member.voiceState?.channel?.id ?: "null"
+            val member: Member? = env.getReified("member")
+            member?.voiceState?.channel?.id ?: "null"
         }),
         Method("nickname", { env ->
-            val member: Member = env.getReifiedX("member")
-            member.nickname ?: throw ParseException("no nickname")
+            val member: Member? = env.getReified("member")
+            member?.nickname ?: throw ParseException("no nickname")
         }),
         Method("hasNickname", { env ->
-            val member: Member = env.getReifiedX("member")
-            (member.nickname != null).toString()
+            val member: Member? = env.getReified("member")
+            (member?.nickname != null).toString()
         }),
         Method("effectiveName", { env ->
-            val member: Member = env.getReifiedX("member")
-            member.effectiveName
+            val member: Member? = env.getReified("member")
+            member?.effectiveName ?: "null"
         }),
         Method("effectiveAvatarUrl", { env ->
             val user: User = env.getReifiedX("user")
@@ -93,7 +93,7 @@ object DiscordMethods {
             val guild: Guild = env.getReifiedX("guild")
             guild.memberCache.size().toString()
         }),
-        Method("currentTimeMillis", { env ->
+        Method("currentTimeMillis", {
             System.currentTimeMillis().toString()
         }),
         Method("currentDateTime", { env ->
@@ -103,7 +103,8 @@ object DiscordMethods {
         }, { env, args ->
             val guild: Guild = env.getReifiedX("guild")
             val arg = args[0]
-            val user: User = getUserByArgsN(guild.jda.shardManager ?: return@Method "null", guild, arg) ?: return@Method "null"
+            val user: User = getUserByArgsN(guild.jda.shardManager ?: return@Method "null", guild, arg
+            ) ?: return@Method "null"
 
             System.currentTimeMillis().asEpochMillisToDateTime(Container.instance.daoManager, guild.idLong, user.idLong)
         })

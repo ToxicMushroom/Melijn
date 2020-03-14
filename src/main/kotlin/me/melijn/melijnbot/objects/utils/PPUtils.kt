@@ -176,7 +176,7 @@ object PPUtils {
 
         daoManager.muteWrapper.setMute(mute)
         val muteRole = guild.getAndVerifyRoleByType(daoManager, RoleType.MUTE, true) ?: return
-        guild.addRoleToMember(member, muteRole).await()
+        guild.addRoleToMember(member, muteRole).reason("muted").await()
 
         val muteMessageDM = getMuteMessage(lang, privZoneId, guild, member.user, jda.selfUser, mute)
         val pc = member.user.openPrivateChannel().awaitOrNull()

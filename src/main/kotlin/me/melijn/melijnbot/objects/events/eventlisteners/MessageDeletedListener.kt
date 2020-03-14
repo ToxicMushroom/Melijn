@@ -110,7 +110,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
                 if (entry != null) {
                     val user = entry.user ?: return
-                    val member = event.guild.getMember(user) ?: return
+                    val member = event.guild.retrieveMember(user).await() ?: return
 
                     postDeletedByOtherLog(odmLogChannel, msg, event, member)
                 } else {

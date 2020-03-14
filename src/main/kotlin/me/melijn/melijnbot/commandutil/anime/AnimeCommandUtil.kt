@@ -3,10 +3,7 @@ package me.melijn.melijnbot.commandutil.anime
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.utils.getRoleByArgsN
-import me.melijn.melijnbot.objects.utils.getUserByArgsN
-import me.melijn.melijnbot.objects.utils.sendEmbed
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.User
 
@@ -84,8 +81,8 @@ object AnimeCommandUtil {
 
     private suspend fun executeAbs(context: CommandContext, type: String, author: User, target: User?) {
         if (context.isFromGuild) {
-            val authorMember = context.guild.getMember(author) ?: return
-            val targetMember = target?.let { context.guild.getMember(it) }
+            val authorMember = context.guild.retrieveMember(author).await() ?: return
+            val targetMember = target?.let { context.guild.retrieveMember(it).await() }
             executeAbs(context, type, authorMember.effectiveName, targetMember?.effectiveName ?: target?.name ?: "")
         } else {
             executeAbs(context, type, author.name, target?.name ?: "")
@@ -93,12 +90,12 @@ object AnimeCommandUtil {
     }
 
     private suspend fun executeAbs(context: CommandContext, type: String, author: Role, target: User?) {
-        val targetMember = target?.let { context.guild.getMember(it) }
+        val targetMember = target?.let { context.guild.retrieveMember(it).await() }
         executeAbs(context, type, author.asMention, targetMember?.effectiveName ?: target?.name ?: "")
     }
 
     private suspend fun executeAbs(context: CommandContext, type: String, author: User, target: Role) {
-        val authorMember = context.guild.getMember(author) ?: return
+        val authorMember = context.guild.retrieveMember(author).await() ?: return
         executeAbs(context, type, authorMember.effectiveName, target.asMention)
     }
 

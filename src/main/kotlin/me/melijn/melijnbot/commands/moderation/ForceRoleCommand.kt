@@ -39,11 +39,11 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             }
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
             val role = getRoleByArgsNMessage(context, 1, sameGuildAsContext = true, canInteract = true) ?: return
-            val member = context.guild.getMember(user)
+            val member = context.guild.retrieveMember(user).await()
 
             context.daoManager.forceRoleWrapper.add(context.guildId, user.idLong, role.idLong)
             if (member != null && !member.roles.contains(role)) {
-                if (!context.guild.addRoleToMember(member, role).awaitBool()) {
+                if (!context.guild.addRoleToMember(member, role).reason("forcerole").awaitBool()) {
                     LogUtils.sendMessageFailedToAddRoleToMember(context.daoManager, member, role)
                 }
             }
@@ -68,11 +68,11 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             }
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
             val role = getRoleByArgsNMessage(context, 1) ?: return
-            val member = context.guild.getMember(user)
+            val member = context.guild.retrieveMember(user).await()
 
             context.daoManager.forceRoleWrapper.remove(context.guildId, user.idLong, role.idLong)
             if (member != null && member.roles.contains(role)) {
-                if (context.guild.removeRoleFromMember(member, role).awaitBool()) {
+                if (context.guild.removeRoleFromMember(member, role).reason("deforceroled").awaitBool()) {
                     LogUtils.sendMessageFailedToRemoveRoleFromMember(context.daoManager, member, role)
                 }
             }

@@ -1,12 +1,14 @@
 package me.melijn.melijnbot.objects.web
 
 import com.sun.management.OperatingSystemMXBean
+import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.objects.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.OSValidator
+import me.melijn.melijnbot.objects.utils.await
 import me.melijn.melijnbot.objects.utils.getSystemUptime
 import me.melijn.melijnbot.objects.utils.getUnixRam
 import net.dv8tion.jda.api.JDA
@@ -155,6 +157,7 @@ class RestServer(container: Container) : Jooby() {
 
 
         get("/member/{guildId:\\d+}/{userId:\\d+}") { req, rsp ->
+
             val shardManager = MelijnBot.shardManager
             val guild = shardManager.getGuildById(req.param("guildId").longValue())
             if (guild == null) {
@@ -166,7 +169,11 @@ class RestServer(container: Container) : Jooby() {
             }
 
             val user = shardManager.getUserById(req.param("userId").longValue())
-            val member = user?.let { guild.getMember(it) }
+
+            val member = runBlocking {
+                user?.let { guild.retrieveMember(it).await() }
+            }
+
             if (member == null) {
                 rsp.send(DataObject.empty()
                     .put("error", "Member not found")

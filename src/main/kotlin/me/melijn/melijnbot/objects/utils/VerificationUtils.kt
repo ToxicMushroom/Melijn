@@ -100,7 +100,9 @@ object VerificationUtils {
         val role = guild.getAndVerifyRoleByType(daoManager, RoleType.UNVERIFIED, true) ?: return
 
         val result = if (role.idLong != guild.idLong) {
-            guild.addRoleToMember(member, role).awaitBool()
+            guild.addRoleToMember(member, role)
+                .reason("unverified")
+                .awaitBool()
         } else {
             true
         }
@@ -112,6 +114,7 @@ object VerificationUtils {
     }
 
     suspend fun isVerified(daoManager: DaoManager, member: Member): Boolean {
+
         val guild = member.guild
         val role = guild.getAndVerifyRoleByType(daoManager, RoleType.UNVERIFIED, true) ?: return true
         return !(member.roles.contains(role))
