@@ -33,7 +33,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         }
 
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
-        val member = context.guild.retrieveMember(targetUser).await()
+        val member = context.guild.retrieveMember(targetUser).awaitOrNull()
         if (member != null && !context.guild.selfMember.canInteract(member)) {
 
             val msg = context.getTranslation("message.interact.member.hierarchyexception")
@@ -119,7 +119,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         val mutedMessageDm = getMuteMessage(language, privZoneId, guild, targetUser, author, mute)
         val mutedMessageLc = getMuteMessage(language, zoneId, guild, targetUser, author, mute, true, targetUser.isBot, mutingMessage != null)
         daoManager.muteWrapper.setMute(mute)
-        val targetMember = guild.retrieveMember(targetUser).await()
+        val targetMember = guild.retrieveMember(targetUser).awaitOrNull()
 
 
         if (targetMember == null) {

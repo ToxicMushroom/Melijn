@@ -8,7 +8,7 @@ import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.objects.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.OSValidator
-import me.melijn.melijnbot.objects.utils.await
+import me.melijn.melijnbot.objects.utils.awaitOrNull
 import me.melijn.melijnbot.objects.utils.getSystemUptime
 import me.melijn.melijnbot.objects.utils.getUnixRam
 import net.dv8tion.jda.api.JDA
@@ -171,7 +171,7 @@ class RestServer(container: Container) : Jooby() {
             val user = shardManager.getUserById(req.param("userId").longValue())
 
             val member = runBlocking {
-                user?.let { guild.retrieveMember(it).await() }
+                user?.let { guild.retrieveMember(it).awaitOrNull() }
             }
 
             if (member == null) {

@@ -8,9 +8,12 @@ import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.services.Service
 import me.melijn.melijnbot.objects.threading.Task
 import me.melijn.melijnbot.objects.translation.getLanguage
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.awaitEX
+import me.melijn.melijnbot.objects.utils.awaitOrNull
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyRoleByType
+import me.melijn.melijnbot.objects.utils.getZoneId
+import me.melijn.melijnbot.objects.utils.sendEmbed
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.sharding.ShardManager
@@ -38,7 +41,7 @@ class MuteService(
             val muteRole = guild.getAndVerifyRoleByType(daoManager, RoleType.MUTE, true)
             val author = shardManager.retrieveUserById(newMute.muteAuthorId ?: -1).awaitOrNull()
             val muted = shardManager.retrieveUserById(newMute.mutedId).awaitOrNull()
-            val mutedMember = if (muted == null) null else guild.retrieveMember(muted).await()
+            val mutedMember = if (muted == null) null else guild.retrieveMember(muted).awaitOrNull()
             if (mutedMember != null && muteRole != null && mutedMember.roles.contains(muteRole)) {
                 val exception = guild.removeRoleFromMember(mutedMember, muteRole).reason("unmuted").awaitEX()
                 if (exception != null) {

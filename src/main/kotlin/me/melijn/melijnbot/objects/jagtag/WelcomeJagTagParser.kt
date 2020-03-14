@@ -2,7 +2,7 @@ package me.melijn.melijnbot.objects.jagtag
 
 import com.jagrosh.jagtag.JagTag
 import com.jagrosh.jagtag.Parser
-import me.melijn.melijnbot.objects.utils.await
+import me.melijn.melijnbot.objects.utils.awaitOrNull
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import java.util.function.Supplier
@@ -22,7 +22,7 @@ object WelcomeJagTagParser {
             .put("user", args.user)
             .put("guild", args.guild)
 
-        args.guild.retrieveMember(args.user).await()?.let {
+        args.guild.retrieveMember(args.user).awaitOrNull()?.let {
             parser.put("member", it)
         }
 

@@ -32,7 +32,7 @@ class MuteCommand : AbstractCommand("command.mute") {
             return
         }
         val targetUser = getUserByArgsNMessage(context, 0) ?: return
-        val member = context.guild.retrieveMember(targetUser).await()
+        val member = context.guild.retrieveMember(targetUser).awaitOrNull()
         if (member != null && !context.guild.selfMember.canInteract(member)) {
             val msg = context.getTranslation("message.interact.member.hierarchyexception")
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
@@ -110,7 +110,7 @@ class MuteCommand : AbstractCommand("command.mute") {
         val mutedMessageLc = getMuteMessage(language, zoneId, guild, targetUser, author, mute, true, targetUser.isBot, mutingMessage != null)
 
         context.daoManager.muteWrapper.setMute(mute)
-        val targetMember = guild.retrieveMember(targetUser).await() ?: return
+        val targetMember = guild.retrieveMember(targetUser).awaitOrNull() ?: return
 
         val msg = try {
             guild.addRoleToMember(targetMember, muteRole).reason("muted").await()

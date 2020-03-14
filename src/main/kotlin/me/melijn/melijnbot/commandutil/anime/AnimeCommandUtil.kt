@@ -81,8 +81,8 @@ object AnimeCommandUtil {
 
     private suspend fun executeAbs(context: CommandContext, type: String, author: User, target: User?) {
         if (context.isFromGuild) {
-            val authorMember = context.guild.retrieveMember(author).await() ?: return
-            val targetMember = target?.let { context.guild.retrieveMember(it).await() }
+            val authorMember = context.guild.retrieveMember(author).awaitOrNull() ?: return
+            val targetMember = target?.let { context.guild.retrieveMember(it).awaitOrNull() }
             executeAbs(context, type, authorMember.effectiveName, targetMember?.effectiveName ?: target?.name ?: "")
         } else {
             executeAbs(context, type, author.name, target?.name ?: "")
@@ -90,12 +90,12 @@ object AnimeCommandUtil {
     }
 
     private suspend fun executeAbs(context: CommandContext, type: String, author: Role, target: User?) {
-        val targetMember = target?.let { context.guild.retrieveMember(it).await() }
+        val targetMember = target?.let { context.guild.retrieveMember(it).awaitOrNull() }
         executeAbs(context, type, author.asMention, targetMember?.effectiveName ?: target?.name ?: "")
     }
 
     private suspend fun executeAbs(context: CommandContext, type: String, author: User, target: Role) {
-        val authorMember = context.guild.retrieveMember(author).await() ?: return
+        val authorMember = context.guild.retrieveMember(author).awaitOrNull() ?: return
         executeAbs(context, type, authorMember.effectiveName, target.asMention)
     }
 

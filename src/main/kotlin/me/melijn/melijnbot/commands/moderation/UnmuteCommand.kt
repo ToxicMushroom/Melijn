@@ -60,7 +60,7 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         mute.active = false
 
         val muteAuthor = mute.muteAuthorId?.let { context.shardManager.getUserById(it) }
-        val targetMember = guild.retrieveMember(targetUser).await()
+        val targetMember = guild.retrieveMember(targetUser).awaitOrNull()
 
         val muteRole = guild.getAndVerifyRoleByType(daoManager, RoleType.MUTE)
         if (muteRole == null) {
