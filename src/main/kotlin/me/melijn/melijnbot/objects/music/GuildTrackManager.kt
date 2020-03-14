@@ -48,7 +48,7 @@ class GuildTrackManager(
 
     private fun nextTrack(lastTrack: AudioTrack) {
         votes = 0
-
+        logger.info("Checking tracks: ${tracks.size}")
         if (tracks.isEmpty()) {
             if (loopedQueue || loopedTrack) {
                 iPlayer.playTrack(lastTrack.makeClone())
@@ -59,6 +59,7 @@ class GuildTrackManager(
             runBlocking {
                 val isPremium = mNodeWrapper.isPremium(guildId)
                 lavaManager.closeConnection(guildId, isPremium)
+                logger.info("Tracks were empty so I left")
             }
             return
         }

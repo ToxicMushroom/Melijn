@@ -61,6 +61,10 @@ class QueueCommand : AbstractCommand("command.queue") {
             ))
         }
 
-        sendPaginationModularMsg(context, modularMessages, 0)
+        if (modularMessages.size > 1) {
+            sendPaginationModularMsg(context, modularMessages, 0)
+        } else {
+            sendMsg(context.textChannel, modularMessages.first())
+        }
     }
 }

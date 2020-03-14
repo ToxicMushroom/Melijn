@@ -2,6 +2,7 @@ package me.melijn.melijnbot.objects.services.voice
 
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
+import me.melijn.melijnbot.objects.music.MusicPlayerManager
 import me.melijn.melijnbot.objects.services.Service
 import me.melijn.melijnbot.objects.threading.Task
 import me.melijn.melijnbot.objects.utils.listeningMembers
@@ -19,10 +20,9 @@ class VoiceService(val container: Container, val shardManager: ShardManager) : S
             .filter { (_, time) -> time < currentTime }
             .map { it.key }
 
-        val musicPlayerManager = container.lavaManager.musicPlayerManager
         for (guildId in disconnect) {
             val guild = shardManager.getGuildById(guildId) ?: continue
-            val guildMPlayer = musicPlayerManager.guildMusicPlayers.getOrElse(guildId) {
+            val guildMPlayer = MusicPlayerManager.guildMusicPlayers.getOrElse(guildId) {
                 null
             }
 
@@ -34,7 +34,7 @@ class VoiceService(val container: Container, val shardManager: ShardManager) : S
 
             if (guildMPlayer?.guildTrackManager != null) {
                 guildMPlayer.guildTrackManager.stopAndDestroy()
-                musicPlayerManager.guildMusicPlayers.remove(guildMPlayer.guildId)
+                MusicPlayerManager.guildMusicPlayers.remove(guildMPlayer.guildId)
 
             } else {
                 val isPremium = container.daoManager.musicNodeWrapper.isPremium(guildId)

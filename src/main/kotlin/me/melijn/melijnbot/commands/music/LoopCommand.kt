@@ -25,6 +25,7 @@ class LoopCommand : AbstractCommand("command.loop") {
         } else {
             "unlooped"
         }
+
         val msg = context.getTranslation("$root.$extra")
         sendMsg(context, msg)
     }

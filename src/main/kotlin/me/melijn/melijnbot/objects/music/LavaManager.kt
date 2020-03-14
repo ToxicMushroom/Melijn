@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.objects.music
 
-import lavalink.client.io.Link
 import lavalink.client.io.jda.JdaLavalink
 import lavalink.client.player.IPlayer
 import lavalink.client.player.LavaplayerPlayerWrapper
@@ -79,19 +78,6 @@ class LavaManager(
         }
     }
 
-    fun closeConnection(guild: Guild, premium: Boolean) {
-        val ll = if (premium) premiumLavaLink else jdaLavaLink
-
-        if (ll == null) {
-            guild.audioManager.closeAudioConnection()
-            println("oof size > 9000")
-        } else {
-            ll.getLink(guild).disconnect()
-        }
-
-        musicPlayerManager.guildMusicPlayers.remove(guild.idLong)
-    }
-
     fun closeConnection(guildId: Long, premium: Boolean) {
         val ll = if (premium) premiumLavaLink else jdaLavaLink
         val guild = shardManager.getGuildById(guildId)
@@ -103,17 +89,7 @@ class LavaManager(
             guild?.let { ll.getLink(it).disconnect() }
         }
 
-        musicPlayerManager.guildMusicPlayers.remove(guildId)
-    }
-
-    fun isConnected(guild: Guild, premium: Boolean): Boolean {
-        val ll = if (premium) premiumLavaLink else jdaLavaLink
-        return if (ll == null) {
-            println("oof size > 9000")
-            guild.audioManager.isConnected
-        } else {
-            ll.getLink(guild).state == Link.State.CONNECTED
-        }
+        MusicPlayerManager.guildMusicPlayers.remove(guildId)
     }
 
     fun getConnectedChannel(guild: Guild): VoiceChannel? = guild.selfMember.voiceState?.channel

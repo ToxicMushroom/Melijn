@@ -2,6 +2,7 @@ package me.melijn.melijnbot.objects.services.voice
 
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil.checkShouldDisconnectAndApply
+import me.melijn.melijnbot.objects.music.MusicPlayerManager
 import me.melijn.melijnbot.objects.services.Service
 import me.melijn.melijnbot.objects.threading.Task
 import net.dv8tion.jda.api.sharding.ShardManager
@@ -13,13 +14,13 @@ class VoiceScoutService(val container: Container, val shardManager: ShardManager
     private var scheduledFuture: ScheduledFuture<*>? = null
 
     private val voiceScoutService = Task {
-        val gmp = container.lavaManager.musicPlayerManager.guildMusicPlayers
+        val gmp = MusicPlayerManager.guildMusicPlayers
         ArrayList(gmp.values).forEach { guildMusicPlayer ->
             val guild = shardManager.getGuildById(guildMusicPlayer.guildId)
             if (guild == null) {
                 guildMusicPlayer.guildTrackManager.clear()
                 guildMusicPlayer.guildTrackManager.iPlayer.stopTrack()
-                container.lavaManager.musicPlayerManager.guildMusicPlayers.remove(guildMusicPlayer.guildId)
+                MusicPlayerManager.guildMusicPlayers.remove(guildMusicPlayer.guildId)
             } else {
                 val botChannel = container.lavaManager.getConnectedChannel(guild)
                 val daoManager = container.daoManager
@@ -32,7 +33,7 @@ class VoiceScoutService(val container: Container, val shardManager: ShardManager
                 if (botChannel == null) {
                     guildMusicPlayer.guildTrackManager.clear()
                     guildMusicPlayer.guildTrackManager.iPlayer.stopTrack()
-                    container.lavaManager.musicPlayerManager.guildMusicPlayers.remove(guildMusicPlayer.guildId)
+                    MusicPlayerManager.guildMusicPlayers.remove(guildMusicPlayer.guildId)
                 }
             }
         }
