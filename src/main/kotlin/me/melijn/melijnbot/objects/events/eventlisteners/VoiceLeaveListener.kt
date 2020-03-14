@@ -22,6 +22,7 @@ class VoiceLeaveListener(container: Container) : AbstractListener(container) {
     private suspend fun musicNodeSwitchCheck(container: Container, event: GuildVoiceLeaveEvent) {
         val guildId = event.guild.idLong
         if (MusicNodeCommand.map.isEmpty()) return
+
         HashMap(MusicNodeCommand.map).forEach {
             if (it.value.millis < (System.currentTimeMillis() - 60_000L) && it.key != guildId) {
                 MusicNodeCommand.map.remove(it.key)

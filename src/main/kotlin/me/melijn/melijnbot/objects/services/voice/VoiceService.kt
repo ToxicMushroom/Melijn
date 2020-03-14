@@ -27,21 +27,19 @@ class VoiceService(val container: Container, val shardManager: ShardManager) : S
             }
 
             val connectedChannel = guild.selfMember.voiceState?.channel
-            connectedChannel?.let {
-                if (listeningMembers(connectedChannel) > 0) {
-                    VoiceUtil.disconnectQueue.remove(guildId)
-                    return@let
-                }
+            if (connectedChannel != null && listeningMembers(connectedChannel) > 0) {
+                VoiceUtil.disconnectQueue.remove(guildId)
+                continue
             }
 
             if (guildMPlayer?.guildTrackManager != null) {
                 guildMPlayer.guildTrackManager.stopAndDestroy()
                 musicPlayerManager.guildMusicPlayers.remove(guildMPlayer.guildId)
+
             } else {
                 val isPremium = container.daoManager.musicNodeWrapper.isPremium(guildId)
                 container.lavaManager.closeConnection(guildId, isPremium)
             }
-
 
             VoiceUtil.disconnectQueue.remove(guildId)
         }

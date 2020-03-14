@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.objects.music
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import kotlinx.coroutines.runBlocking
 import lavalink.client.player.IPlayer
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.command.CommandContext
@@ -12,7 +13,7 @@ class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val gui
 
     val guildTrackManager: GuildTrackManager
     val searchMenus: MutableMap<Long, List<AudioTrack>> = mutableMapOf()
-    private val iPlayer: IPlayer = lavaManager.getIPlayer(guildId)
+    private val iPlayer: IPlayer = lavaManager.getIPlayer(guildId, runBlocking { daoManager.musicNodeWrapper.isPremium(guildId) })
 
     init {
         guildTrackManager = GuildTrackManager(guildId, daoManager, lavaManager, iPlayer)

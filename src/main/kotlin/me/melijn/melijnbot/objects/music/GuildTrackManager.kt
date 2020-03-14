@@ -193,8 +193,8 @@ class GuildTrackManager(
         }
 
     fun stopAndDestroy() {
-        iPlayer.stopTrack()
         clear()
+        iPlayer.stopTrack()
         runBlocking {
             val isPremium = daoManager.musicNodeWrapper.isPremium(guildId)
             lavaManager.closeConnection(guildId, isPremium)
