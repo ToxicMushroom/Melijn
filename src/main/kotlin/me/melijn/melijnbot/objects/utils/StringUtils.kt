@@ -148,18 +148,18 @@ fun boolFromStateArg(state: String): Boolean? {
     }
 }
 
-fun String.remove(vararg strings: String): String {
+fun String.remove(vararg strings: String, ignoreCase: Boolean = false): String {
     var newString = this
     for (string in strings) {
-        newString = newString.replace(string, "")
+        newString = newString.replace(string, "", ignoreCase)
     }
     return newString
 }
 
-fun String.removeFirst(vararg strings: String): String {
+fun String.removeFirst(vararg strings: String, ignoreCase: Boolean = false): String {
     var newString = this
     for (string in strings) {
-        newString = newString.replaceFirst(string, "")
+        newString = newString.replaceFirst(string, "", ignoreCase)
     }
     return newString
 }

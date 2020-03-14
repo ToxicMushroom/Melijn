@@ -96,10 +96,10 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         var commandPartsGlobal: List<String> = emptyList()
 
         for (prefix in prefixes) {
-            if (!message.contentRaw.startsWith(prefix)) continue
+            if (!message.contentRaw.startsWith(prefix, true)) continue
 
             val commandParts: ArrayList<String> = ArrayList(message.contentRaw
-                .removeFirst(prefix)
+                .removeFirst(prefix, ignoreCase = true)
                 .trim()
                 .split(Regex("\\s+")))
 
