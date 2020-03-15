@@ -266,16 +266,25 @@ object LogUtils {
 
         val vc = context.lavaManager.getConnectedChannel(context.guild)
 
+
         eb.setDescription("[${track.info.title}](${track.info.uri})")
         eb.addField(userTitle, context.author.asTag, true)
         eb.addField(userIdTitle, context.author.id, true)
-        eb.addField(channel, vc?.name ?: "null", true)
-        eb.addField(channelId, vc?.id ?: "null", true)
-
         eb.setColor(Color.decode("#2f3136"))
         eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
-        trackManager.startMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
+        if (vc == null) {
+            context.taskManager.asyncAfter(2000) {
+                val vc2 = context.lavaManager.getConnectedChannel(context.guild)
+                eb.addField(channel, vc2?.name ?: "null", true)
+                eb.addField(channelId, vc2?.id ?: "null", true)
+                trackManager.startMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
+            }
+        } else {
+            eb.addField(channel, vc.name, true)
+            eb.addField(channelId, vc.id, true)
+            trackManager.startMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
+        }
     }
 
     suspend fun addMusicPlayerNewTrack(daoManager: DaoManager, lavaManager: LavaManager, vc: VoiceChannel, author: User, track: AudioTrack) {

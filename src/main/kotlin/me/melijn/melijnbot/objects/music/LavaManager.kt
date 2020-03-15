@@ -16,8 +16,8 @@ class LavaManager(
     val lavalinkEnabled: Boolean,
     val daoManager: DaoManager,
     val shardManager: ShardManager,
-    private val jdaLavaLink: JdaLavalink?,
-    private val premiumLavaLink: JdaLavalink?
+    val jdaLavaLink: JdaLavalink?,
+    val premiumLavaLink: JdaLavalink?
 ) {
 
     val musicPlayerManager: MusicPlayerManager = MusicPlayerManager(daoManager, this)
@@ -27,7 +27,6 @@ class LavaManager(
         return if (lavalinkEnabled && ll != null) {
             ll.getLink(guildId.toString()).player
         } else {
-            println("oof size > 9000")
             LavaplayerPlayerWrapper(musicPlayerManager.getLPPlayer())
         }
     }
@@ -40,7 +39,6 @@ class LavaManager(
                 channel.guild.audioManager.sendingHandler = AudioPlayerSendHandler(getIPlayer(channel.guild.idLong, premium))
                 channel.guild.audioManager.openAudioConnection(channel)
             }
-            println("oof size > 9000")
         } else {
             ll.getLink(channel.guild).connect(channel)
         }
@@ -84,7 +82,6 @@ class LavaManager(
 
         if (ll == null) {
             guild?.audioManager?.closeAudioConnection()
-            println("oof size > 9000")
         } else {
             guild?.let { ll.getLink(it).disconnect() }
         }
@@ -94,5 +91,4 @@ class LavaManager(
     }
 
     fun getConnectedChannel(guild: Guild): VoiceChannel? = guild.selfMember.voiceState?.channel
-
 }

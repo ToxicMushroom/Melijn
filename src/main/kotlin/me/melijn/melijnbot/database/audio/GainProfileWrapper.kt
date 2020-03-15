@@ -28,6 +28,10 @@ class GainProfileWrapper(val taskManager: TaskManager, private val gainProfileDa
     }
 
     suspend fun add(id: Long, name: String, bands: FloatArray) {
+        val map = gainProfileCache[id].await().toMutableMap()
+        map[name] = GainProfile.fromString(bands.joinToString(","))
+
+        gainProfileCache.put(id, CompletableFuture.completedFuture(map))
         gainProfileDao.insert(id, name, bands.joinToString(","))
     }
 

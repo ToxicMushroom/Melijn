@@ -8,6 +8,10 @@ import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.youtube.YouTube
 import com.google.api.services.youtube.model.SearchListResponse
 import com.google.api.services.youtube.model.SearchResult
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import kotlinx.coroutines.future.await
+import me.melijn.melijnbot.Container
+import net.dv8tion.jda.api.entities.Guild
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.util.*
@@ -42,8 +46,24 @@ class YTSearch {
         ).setApplicationName("youtube-search").build()
     }
 
-    fun search(query: String?, videoCallback: (videoId: String?) -> Unit) {
-        youtubeService.submit {
+
+    fun search(
+        guild: Guild, query: String, isYTSearch: Boolean,
+        videoCallback: (videoId: String?) -> Unit,
+        audioTrackCallBack: (audioTrack: List<AudioTrack>) -> Unit,
+        llDisabledAndNotYT: () -> Unit
+    ) = youtubeService.launch {
+        val lManager = Container.instance.lavaManager
+        if (lManager.lavalinkEnabled) {
+            val restClient = lManager.jdaLavaLink?.getLink(guild)?.getNode(true)?.restClient
+            val tracks = restClient?.getYoutubeSearchResult(query)?.await()
+            if (tracks != null) {
+                audioTrackCallBack(tracks)
+                return@launch
+            }
+        }
+
+        if (isYTSearch) {
             try {
                 val search: YouTube.Search.List = youtube.search().list("id")
 
@@ -68,11 +88,12 @@ class YTSearch {
                 val searchResultList: List<SearchResult> = searchResponse.items
                 if (searchResultList.isEmpty()) {
                     videoCallback.invoke(null)
-                    return@submit
+                    return@launch
                 }
+
                 val id: String = searchResultList[0].id.videoId
                 videoCallback.invoke(id)
-                return@submit
+                return@launch
             } catch (e: GoogleJsonResponseException) {
                 logger.error("There was a service error: ${e.details.code} : ${e.details.message}")
                 e.sendInGuild()
@@ -84,6 +105,9 @@ class YTSearch {
                 t.printStackTrace()
             }
             videoCallback.invoke(null)
+            return@launch
         }
+
+        llDisabledAndNotYT()
     }
 }

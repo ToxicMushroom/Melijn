@@ -9,6 +9,7 @@ import com.wrapper.spotify.model_objects.specification.Track
 import com.wrapper.spotify.model_objects.specification.TrackSimplified
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.database.DaoManager
+import me.melijn.melijnbot.database.audio.SongCacheWrapper
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
@@ -46,6 +47,37 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 //        override fun playlistLoaded(playlist: AudioPlaylist) = playListLoaded(playlist)
 //    }
 
+    fun foundSingleTrack(context: CommandContext, guildMusicPlayer: GuildMusicPlayer, wrapper: SongCacheWrapper, track: AudioTrack, rawInput: String) {
+        track.userData = TrackUserData(context.author)
+        if (guildMusicPlayer.safeQueue(context, track)) {
+            sendMessageAddedTrack(context, track)
+            runBlocking {
+                LogUtils.addMusicPlayerNewTrack(context, track)
+                wrapper.addTrack(rawInput, track) // add new track hit
+            }
+        }
+    }
+
+    fun foundTracks(context: CommandContext, guildMusicPlayer: GuildMusicPlayer, wrapper: SongCacheWrapper, tracks: List<AudioTrack>, rawInput: String, isPlaylist: Boolean) {
+        if (isPlaylist) {
+            var notAdded = 0
+
+            for (track in tracks) {
+                track.userData = TrackUserData(context.author)
+
+                if (!guildMusicPlayer.safeQueueSilent(context.daoManager, track)) notAdded++
+                else {
+                    runBlocking {
+                        LogUtils.addMusicPlayerNewTrack(context, track)
+                    }
+                }
+            }
+            sendMessageAddedTracks(context, tracks.subList(0, tracks.size - notAdded))
+        } else {
+            foundSingleTrack(context, guildMusicPlayer, wrapper, tracks[0], rawInput)
+        }
+    }
+
     suspend fun loadNewTrackNMessage(context: CommandContext, source: String, isPlaylist: Boolean = false) {
         val guild = context.guild
         val guildMusicPlayer = musicPlayerManager.getGuildMusicPlayer(guild)
@@ -61,14 +93,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             }
 
             override fun trackLoaded(track: AudioTrack) {
-                track.userData = TrackUserData(context.author)
-                if (guildMusicPlayer.safeQueue(context, track)) {
-                    sendMessageAddedTrack(context, track)
-                    runBlocking {
-                        LogUtils.addMusicPlayerNewTrack(context, track)
-                        wrapper.addTrack(rawInput, track) // add new track hit
-                    }
-                }
+                foundSingleTrack(context, guildMusicPlayer, wrapper, track, rawInput)
             }
 
             override fun noMatches() {
@@ -76,62 +101,39 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             }
 
             override fun playlistLoaded(playlist: AudioPlaylist) {
-                val tracks = playlist.tracks
-                if (isPlaylist) {
-                    var notAdded = 0
-
-                    for (track in tracks) {
-                        track.userData = TrackUserData(context.author)
-
-                        if (!guildMusicPlayer.safeQueueSilent(context.daoManager, track)) notAdded++
-                        else {
-                            runBlocking {
-                                LogUtils.addMusicPlayerNewTrack(context, track)
-                            }
-                        }
-                    }
-                    sendMessageAddedTracks(context, tracks.subList(0, tracks.size - notAdded))
-                } else {
-                    val track = tracks[0]
-                    track.userData = TrackUserData(context.author)
-                    if (guildMusicPlayer.safeQueue(context, track)) {
-                        sendMessageAddedTrack(context, track)
-                        runBlocking {
-                            LogUtils.addMusicPlayerNewTrack(context, track)
-                        }
-                    }
-                }
+                foundTracks(context, guildMusicPlayer, wrapper, playlist.tracks, rawInput, isPlaylist)
             }
         }
 
         val audioTrack = wrapper.getTrackInfo(rawInput)
         if (audioTrack != null) { // track found and made from cache
-            wrapper.addTrack(rawInput, audioTrack) // add new track hit
-
-            audioTrack.userData = TrackUserData(context.author)
-            if (guildMusicPlayer.safeQueue(context, audioTrack)) {
-                sendMessageAddedTrack(context, audioTrack)
-
-                LogUtils.addMusicPlayerNewTrack(context, audioTrack)
-            }
+            foundSingleTrack(context, guildMusicPlayer, wrapper, audioTrack, rawInput)
             return
         }
 
-        if (source.startsWith(YT_SELECTOR)) {
-            ytSearch.search(rawInput) { videoId ->
+        try {
+            ytSearch.search(context.guild, rawInput, source.startsWith(YT_SELECTOR), { videoId ->
                 if (videoId == null) {
                     sendMessageNoMatches(context, rawInput)
                 } else {
                     audioPlayerManager.loadItemOrdered(guildMusicPlayer, YT_VID_URL_BASE + videoId, resultHandler)
                 }
-            }
-        } else {
-            audioPlayerManager.loadItemOrdered(guildMusicPlayer, source, resultHandler)
+            }, { tracks ->
+                if (tracks.isNotEmpty()) {
+                    foundTracks(context, guildMusicPlayer, wrapper, tracks, rawInput, isPlaylist)
+                } else {
+                    sendMessageNoMatches(context, rawInput)
+                }
+            }, { //LLDisabledAndNotYTSearch
+                audioPlayerManager.loadItemOrdered(guildMusicPlayer, source, resultHandler)
+            })
+        } catch (t: Throwable) {
+            sendMessageLoadFailed(context, t)
         }
     }
 
 
-    private fun sendMessageLoadFailed(context: CommandContext, exception: FriendlyException) = runBlocking {
+    private fun sendMessageLoadFailed(context: CommandContext, exception: Throwable) = runBlocking {
         val msg = context.getTranslation("$root.loadfailed")
             .replace("%cause%", exception.message ?: "/")
         sendMsg(context, msg)
