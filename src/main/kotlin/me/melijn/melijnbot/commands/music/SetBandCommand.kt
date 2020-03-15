@@ -14,12 +14,16 @@ class SetBandCommand : AbstractCommand("command.setband") {
     init {
         id = 112
         name = "setBand"
-        aliases = arrayOf("setGain")
+        aliases = arrayOf("setGain", "setBands")
         commandCategory = CommandCategory.MUSIC
         children = arrayOf(
             AllArg(root)
         )
-        runConditions = arrayOf(RunCondition.VC_BOT_ALONE_OR_USER_DJ, RunCondition.PLAYING_TRACK_NOT_NULL, RunCondition.VOTED)
+        runConditions = arrayOf(
+            RunCondition.VC_BOT_ALONE_OR_USER_DJ,
+            RunCondition.PLAYING_TRACK_NOT_NULL,
+            RunCondition.VOTED
+        )
     }
 
     override suspend fun execute(context: CommandContext) {
@@ -28,6 +32,7 @@ class SetBandCommand : AbstractCommand("command.setband") {
             return
         }
         val bandId = getIntegerFromArgNMessage(context, 0, 0, BAND_COUNT - 1) ?: return
+
         val iPlayer = context.guildMusicPlayer.guildTrackManager.iPlayer
         if (context.args.size == 1) {
             val bandVal = iPlayer.bands.getOrElse(bandId) { 0.0f }

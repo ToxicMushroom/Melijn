@@ -10,6 +10,7 @@ import com.wrapper.spotify.model_objects.specification.TrackSimplified
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.audio.SongCacheWrapper
+import me.melijn.melijnbot.enums.SearchType
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
@@ -81,6 +82,12 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     suspend fun loadNewTrackNMessage(context: CommandContext, source: String, isPlaylist: Boolean = false) {
         val guild = context.guild
         val guildMusicPlayer = musicPlayerManager.getGuildMusicPlayer(guild)
+        val searchType = when {
+            source.startsWith(YT_SELECTOR) -> SearchType.YT
+            source.startsWith(SC_SELECTOR) -> SearchType.SC
+            else -> SearchType.LINK
+        }
+
         val rawInput = source
             .remove(YT_SELECTOR)
             .remove(SC_SELECTOR)
@@ -106,13 +113,13 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
 
         val audioTrack = wrapper.getTrackInfo(rawInput)
-        if (audioTrack != null) { // track found and made from cache
+        if (audioTrack != null && !source.startsWith(SC_SELECTOR)) { // track found and made from cache
             foundSingleTrack(context, guildMusicPlayer, wrapper, audioTrack, rawInput)
             return
         }
 
         try {
-            ytSearch.search(context.guild, rawInput, source.startsWith(YT_SELECTOR), { videoId ->
+            ytSearch.search(context.guild, rawInput, searchType, { videoId ->
                 if (videoId == null) {
                     sendMessageNoMatches(context, rawInput)
                 } else {
@@ -126,7 +133,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 }
             }, { //LLDisabledAndNotYTSearch
                 audioPlayerManager.loadItemOrdered(guildMusicPlayer, source, resultHandler)
-            })
+            }, resultHandler)
         } catch (t: Throwable) {
             sendMessageLoadFailed(context, t)
         }
@@ -137,6 +144,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         val msg = context.getTranslation("$root.loadfailed")
             .replace("%cause%", exception.message ?: "/")
         sendMsg(context, msg)
+        exception.printStackTrace()
     }
 
     fun sendMessageNoMatches(context: CommandContext, input: String) = runBlocking {

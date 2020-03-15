@@ -8,9 +8,11 @@ import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.youtube.YouTube
 import com.google.api.services.youtube.model.SearchListResponse
 import com.google.api.services.youtube.model.SearchResult
+import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.enums.SearchType
 import net.dv8tion.jda.api.entities.Guild
 import org.slf4j.LoggerFactory
 import java.io.IOException
@@ -48,22 +50,34 @@ class YTSearch {
 
 
     fun search(
-        guild: Guild, query: String, isYTSearch: Boolean,
+        guild: Guild, query: String, searchType: SearchType,
         videoCallback: (videoId: String?) -> Unit,
         audioTrackCallBack: (audioTrack: List<AudioTrack>) -> Unit,
-        llDisabledAndNotYT: () -> Unit
+        llDisabledAndNotYT: () -> Unit,
+        lpCallback: AudioLoadResultHandler
     ) = youtubeService.launch {
         val lManager = Container.instance.lavaManager
         if (lManager.lavalinkEnabled) {
             val restClient = lManager.jdaLavaLink?.getLink(guild)?.getNode(true)?.restClient
-            val tracks = restClient?.getYoutubeSearchResult(query)?.await()
+            val tracks = when (searchType) {
+                SearchType.SC -> {
+                    restClient?.getSoundCloudSearchResult(query)?.await()
+                }
+                SearchType.YT -> {
+                    restClient?.getYoutubeSearchResult(query)?.await()
+                }
+                else -> {
+                    restClient?.loadItem(query, lpCallback)
+                    return@launch
+                }
+            }
             if (tracks != null) {
                 audioTrackCallBack(tracks)
                 return@launch
             }
         }
 
-        if (isYTSearch) {
+        if (searchType == SearchType.YT) {
             try {
                 val search: YouTube.Search.List = youtube.search().list("id")
 
