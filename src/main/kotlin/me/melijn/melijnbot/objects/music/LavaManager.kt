@@ -89,6 +89,7 @@ class LavaManager(
             guild?.let { ll.getLink(it).disconnect() }
         }
 
+        MusicPlayerManager.guildMusicPlayers[guildId]?.destroyTrackManager()
         MusicPlayerManager.guildMusicPlayers.remove(guildId)
     }
 

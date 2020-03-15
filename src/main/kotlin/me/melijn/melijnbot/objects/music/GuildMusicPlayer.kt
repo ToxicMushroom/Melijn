@@ -19,6 +19,10 @@ class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val gui
         iPlayer.addListener(guildTrackManager)
     }
 
+    fun destroyTrackManager() {
+        iPlayer.removeListener(guildTrackManager)
+    }
+
     fun getSendHandler(): AudioPlayerSendHandler = AudioPlayerSendHandler(iPlayer)
     fun safeQueueSilent(daoManager: DaoManager, track: AudioTrack): Boolean {
         if (

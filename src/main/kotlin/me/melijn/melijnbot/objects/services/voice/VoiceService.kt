@@ -34,6 +34,7 @@ class VoiceService(val container: Container, val shardManager: ShardManager) : S
 
             if (guildMPlayer?.guildTrackManager != null) {
                 guildMPlayer.guildTrackManager.stopAndDestroy()
+                guildMPlayer.destroyTrackManager()
                 MusicPlayerManager.guildMusicPlayers.remove(guildMPlayer.guildId)
 
             } else {

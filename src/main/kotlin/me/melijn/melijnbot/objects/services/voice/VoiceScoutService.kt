@@ -20,6 +20,7 @@ class VoiceScoutService(val container: Container, val shardManager: ShardManager
             if (guild == null) {
                 guildMusicPlayer.guildTrackManager.clear()
                 guildMusicPlayer.guildTrackManager.iPlayer.stopTrack()
+                guildMusicPlayer.destroyTrackManager()
                 MusicPlayerManager.guildMusicPlayers.remove(guildMusicPlayer.guildId)
             } else {
                 val botChannel = container.lavaManager.getConnectedChannel(guild)
@@ -33,6 +34,7 @@ class VoiceScoutService(val container: Container, val shardManager: ShardManager
                 if (botChannel == null) {
                     guildMusicPlayer.guildTrackManager.clear()
                     guildMusicPlayer.guildTrackManager.iPlayer.stopTrack()
+                    guildMusicPlayer.destroyTrackManager()
                     MusicPlayerManager.guildMusicPlayers.remove(guildMusicPlayer.guildId)
                 }
             }
