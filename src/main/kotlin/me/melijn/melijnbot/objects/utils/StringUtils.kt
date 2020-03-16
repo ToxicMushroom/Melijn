@@ -18,7 +18,8 @@ object StringUtils {
             var findLastNewline = msg.substring(0, 1999 - margin)
             if (shouldPrependBackTicks) {
                 findLastNewline = "```$lang\n$findLastNewline"
-                shouldPrependBackTicks = false
+            } else {
+                shouldPrependBackTicks = true
             }
 
             if (findLastNewline.contains("```")) {
@@ -36,18 +37,21 @@ object StringUtils {
                     previousIndex
                 }
 
+                shouldPrependBackTicks = true
+
                 if (lastEvenIndex > (nextSplitThreshold - margin)) {
                     val subMsg = msg.substring(0, lastEvenIndex)
                     messages.add(subMsg)
                     msg = msg.substring(lastEvenIndex)
+                    shouldAppendBackTicks = false
                     continue
                 } else {
                     shouldAppendBackTicks = true
-                    shouldPrependBackTicks = true
                 }
             }
+
             val index = getSplitIndex(findLastNewline, nextSplitThreshold, margin)
-            messages.add(msg.substring(0, index) +
+            messages.add(findLastNewline.substring(0, index) +
                 if (shouldAppendBackTicks) {
                     "```"
                 } else {
@@ -55,12 +59,10 @@ object StringUtils {
                 }
             )
 
+
             msg = msg.substring(index)
         }
 
-        if (shouldAppendBackTicks) {
-            msg += "```"
-        }
         if (shouldPrependBackTicks) {
             msg = "```$lang\n$msg"
         }

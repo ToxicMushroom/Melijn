@@ -123,63 +123,78 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
     private suspend fun postDeletedByPurgeLog(pmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent, purgeRequesterId: Long) {
         if (pmLogChannel == null) return
         val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull() ?: return
-        val eb = getGeneralEmbedBuilder(msg, event, messageAuthor, event.jda.selfUser.idLong)
-        eb.setColor(Color.decode("#551A8B"))
+        val ebs = getGeneralEmbedBuilder(msg, event, messageAuthor, event.jda.selfUser.idLong)
+        for ((index, eb) in ebs.withIndex()) {
+            eb.setColor(Color.decode("#551A8B"))
 
-        val language = getLanguage(container.daoManager, -1, event.guild.idLong)
-        val footer = i18n.getTranslation(language, "listener.message.deletion.log.purged.footer")
-            .replace(PLACEHOLDER_USER, messageAuthor.asTag)
-            .replace(PLACEHOLDER_USER_ID, purgeRequesterId.toString())
-        eb.setFooter(footer, messageAuthor.effectiveAvatarUrl)
+            if (index == ebs.size - 1) {
+                val language = getLanguage(container.daoManager, -1, event.guild.idLong)
+                val footer = i18n.getTranslation(language, "listener.message.deletion.log.purged.footer")
+                    .replace(PLACEHOLDER_USER, messageAuthor.asTag)
+                    .replace(PLACEHOLDER_USER_ID, purgeRequesterId.toString())
+                eb.setFooter(footer, messageAuthor.effectiveAvatarUrl)
+            }
 
-        sendEmbed(container.daoManager.embedDisabledWrapper, pmLogChannel, eb.build())
+            sendEmbed(container.daoManager.embedDisabledWrapper, pmLogChannel, eb.build())
+        }
     }
 
     private suspend fun postDeletedBySelfLog(sdmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent) {
         if (sdmLogChannel == null) return
         val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull() ?: return
-        val eb = getGeneralEmbedBuilder(msg, event, messageAuthor, messageAuthor.idLong)
-        eb.setColor(Color.decode("#000001"))
+        val ebs = getGeneralEmbedBuilder(msg, event, messageAuthor, messageAuthor.idLong)
+        for ((index, eb) in ebs.withIndex()) {
+            eb.setColor(Color.decode("#000001"))
 
-        val language = getLanguage(container.daoManager, -1, event.guild.idLong)
-        val footer = i18n.getTranslation(language, "listener.message.deletion.log.footer")
-            .replace(PLACEHOLDER_USER, messageAuthor.asTag)
-        eb.setFooter(footer, messageAuthor.effectiveAvatarUrl)
-
-        sendEmbed(container.daoManager.embedDisabledWrapper, sdmLogChannel, eb.build())
+            if (index == ebs.size - 1) {
+                val language = getLanguage(container.daoManager, -1, event.guild.idLong)
+                val footer = i18n.getTranslation(language, "listener.message.deletion.log.footer")
+                    .replace(PLACEHOLDER_USER, messageAuthor.asTag)
+                eb.setFooter(footer, messageAuthor.effectiveAvatarUrl)
+            }
+            sendEmbed(container.daoManager.embedDisabledWrapper, sdmLogChannel, eb.build())
+        }
     }
 
     private suspend fun postDeletedByOtherLog(odmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent, deleterMember: Member) {
         if (odmLogChannel == null) return
         val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull() ?: return
 
-        val eb = getGeneralEmbedBuilder(msg, event, messageAuthor, deleterMember.idLong)
-        eb.setColor(Color.decode("#000001"))
+        val ebs = getGeneralEmbedBuilder(msg, event, messageAuthor, deleterMember.idLong)
+        for ((index, eb) in ebs.withIndex()) {
+            eb.setColor(Color.decode("#000001"))
+            if (index == ebs.size - 1) {
+                val language = getLanguage(container.daoManager, -1, event.guild.idLong)
+                val footer = i18n.getTranslation(language, "listener.message.deletion.log.footer")
+                    .replace(PLACEHOLDER_USER, deleterMember.asTag)
+                eb.setFooter(footer, deleterMember.user.effectiveAvatarUrl)
+            }
 
-        val language = getLanguage(container.daoManager, -1, event.guild.idLong)
-        val footer = i18n.getTranslation(language, "listener.message.deletion.log.footer")
-            .replace(PLACEHOLDER_USER, deleterMember.asTag)
-        eb.setFooter(footer, deleterMember.user.effectiveAvatarUrl)
-
-        sendEmbed(container.daoManager.embedDisabledWrapper, odmLogChannel, eb.build())
+            sendEmbed(container.daoManager.embedDisabledWrapper, odmLogChannel, eb.build())
+        }
     }
 
     private suspend fun postDeletedByFilterLog(fmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent, cause: String?) {
         if (fmLogChannel == null) return
         val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull() ?: return
 
-        val eb = getGeneralEmbedBuilder(msg, event, messageAuthor, event.jda.selfUser.idLong)
-        eb.setColor(Color.YELLOW)
+        val ebs = getGeneralEmbedBuilder(msg, event, messageAuthor, event.jda.selfUser.idLong)
+        for ((index, eb) in ebs.withIndex()) {
+            eb.setColor(Color.YELLOW)
 
-        val language = getLanguage(container.daoManager, -1, event.guild.idLong)
-        val fieldTitle = i18n.getTranslation(language, "detected") + ":"
-        eb.addField(fieldTitle, cause, false)
+            if (index == ebs.size - 1) {
+                val language = getLanguage(container.daoManager, -1, event.guild.idLong)
+                val fieldTitle = i18n.getTranslation(language, "detected") + ":"
+                eb.addField(fieldTitle, cause, false)
 
-        val footer = i18n.getTranslation(language, "listener.message.deletion.log.footer")
-            .replace(PLACEHOLDER_USER, event.jda.selfUser.asTag)
-        eb.setFooter(footer, event.jda.selfUser.effectiveAvatarUrl)
+                val footer = i18n.getTranslation(language, "listener.message.deletion.log.footer")
+                    .replace(PLACEHOLDER_USER, event.jda.selfUser.asTag)
+                eb.setFooter(footer, event.jda.selfUser.effectiveAvatarUrl)
+            }
+            sendEmbed(container.daoManager.embedDisabledWrapper, fmLogChannel, eb.build())
+        }
 
-        sendEmbed(container.daoManager.embedDisabledWrapper, fmLogChannel, eb.build())
+
     }
 
     private suspend fun getGeneralEmbedBuilder(
@@ -187,8 +202,8 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         event: GuildMessageDeleteEvent,
         messageAuthor: User,
         messageDeleterId: Long
-    ): EmbedBuilder {
-        val embedBuilder = EmbedBuilder()
+    ): List<EmbedBuilder> {
+
         val daoManager = container.daoManager
         val zoneId = getZoneId(daoManager, event.guild.idLong)
         val channel = event.guild.getTextChannelById(msg.textChannelId)
@@ -207,9 +222,24 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
             .replace("%sentTime%", msg.moment.asEpochMillisToDateTime(zoneId))
             .replace("%deletedTime%", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
+        val ebs = mutableListOf<EmbedBuilder>()
+
+        val embedBuilder = EmbedBuilder()
         embedBuilder.setTitle(title)
-        embedBuilder.setDescription(description)
         embedBuilder.setThumbnail(messageAuthor.effectiveAvatarUrl)
-        return embedBuilder
+        if (description.length > 2048) {
+            val parts = StringUtils.splitMessageWithCodeBlocks(description, lang = "LDIF")
+            embedBuilder.setDescription(parts[0])
+            ebs.add(embedBuilder)
+            for (part in parts.subList(1, parts.size)) {
+                val embedBuilder2 = EmbedBuilder()
+                embedBuilder2.setDescription(part)
+                ebs.add(embedBuilder2)
+            }
+        } else {
+            embedBuilder.setDescription(description)
+            ebs.add(embedBuilder)
+        }
+        return ebs
     }
 }

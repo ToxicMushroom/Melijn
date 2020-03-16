@@ -8,6 +8,7 @@ import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.objects.utils.retrieveUserByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import java.util.concurrent.TimeUnit
 
@@ -20,6 +21,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
         id = 39
         name = "purge"
         aliases = arrayOf(silentPurgeName, silentPruneName, "prune")
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_MANAGE)
         commandCategory = CommandCategory.MODERATION
     }
 

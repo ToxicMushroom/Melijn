@@ -80,6 +80,7 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
             val parts = StringUtils.splitMessageWithCodeBlocks(description, lang = "LDIF").toMutableList()
             embedBuilder.setDescription(parts[0])
             sendEmbed(daoManager.embedDisabledWrapper, logChannel, embedBuilder.build())
+            embedBuilder.setTitle(null)
             embedBuilder.setThumbnail(null)
             parts.removeAt(0)
 
