@@ -27,7 +27,7 @@ class SmoothPixelateCommand : AbstractCommand("command.smoothpixelate") {
 
     private suspend fun executeNormal(context: CommandContext) {
         ImageCommandUtil.executeNormalEffect(context, effect = { image, i ->
-            ImageUtils.pixelate(image, i)
+            ImageUtils.smoothPixelate(image, i)
 
         }, hasOffset = true, defaultOffset = { img ->
             Integer.max(img.height, img.width) / 100
@@ -40,7 +40,7 @@ class SmoothPixelateCommand : AbstractCommand("command.smoothpixelate") {
 
     private suspend fun executeGif(context: CommandContext) {
         ImageCommandUtil.executeGifEffect(context, effect = { image, i ->
-            ImageUtils.pixelate(image, i)
+            ImageUtils.smoothPixelate(image, i)
 
         }, hasOffset = true, defaultOffset = { img ->
             Integer.max(img.height, img.width) / 100

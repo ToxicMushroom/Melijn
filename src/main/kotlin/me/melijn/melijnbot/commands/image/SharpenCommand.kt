@@ -39,10 +39,10 @@ class SharpenCommand : AbstractCommand("command.sharpen") {
 
     private suspend fun executeGif(context: CommandContext) {
         ImageCommandUtil.executeGifEffect(context, effect = { image, i ->
-            ImageUtils.sharpen(image, i)
+            ImageUtils.sharpen(image, i, true)
 
-        }, hasOffset = true, defaultOffset = { 1
-
+        }, hasOffset = true, defaultOffset = {
+            1
         }, offsetRange = { img ->
             IntRange(1, Integer.max(img.height, img.width))
 

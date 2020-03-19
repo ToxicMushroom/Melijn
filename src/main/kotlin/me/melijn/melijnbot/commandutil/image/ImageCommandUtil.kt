@@ -47,7 +47,7 @@ object ImageCommandUtil {
     }
 
 
-    suspend fun executeNormalTransform(
+    private suspend fun executeNormalTransform(
         context: CommandContext,
         transform: (byteArray: ByteArray, offset: Int) -> ByteArrayOutputStream,
         hasOffset: Boolean = true,
@@ -74,16 +74,17 @@ object ImageCommandUtil {
 
     suspend fun executeGifRecolor(
         context: CommandContext,
-        recolor: (ints: IntArray) -> IntArray,
+        recolor: (ints: IntArray) -> IntArray, // ints: r, g, b, offset (def: 128)
         hasOffset: Boolean = true,
         defaultOffset: (img: BufferedImage) -> Int = { DEFAULT_OFFSET },
-        offsetRange: (img: BufferedImage) -> IntRange = { IntRange(-255, 255) }
+        offsetRange: (img: BufferedImage) -> IntRange = { IntRange(-255, 255) },
+        debug: Boolean = false
     ) {
         executeGifEffect(context, { image, offset ->
             ImageUtils.recolorPixel(image, offset) { ints ->
                 recolor(ints)
             }
-        }, hasOffset, defaultOffset, offsetRange)
+        }, hasOffset, defaultOffset, offsetRange, debug)
     }
 
     suspend fun executeGifEffect(
@@ -99,6 +100,7 @@ object ImageCommandUtil {
                 effect(image, offset)
             }, context)
             else ImageUtils.addEffectToGifFrames(gifDecoder, fps, quality, repeat, { image ->
+                println("new frame begins")
                 effect(image, offset)
             })
 
@@ -106,19 +108,21 @@ object ImageCommandUtil {
     }
 
 
-    suspend fun executeGifTransform(
+    private suspend fun executeGifTransform(
         context: CommandContext,
         transform: (decoder: GifDecoder, fps: Float?, quality: Int, repeat: Boolean?, offset: Int) -> ByteArrayOutputStream,
         hasOffset: Boolean = true,
         defaultOffset: (img: BufferedImage) -> Int = { DEFAULT_OFFSET },
         offsetRange: (img: BufferedImage) -> IntRange = { IntRange(-255, 255) }
     ) {
-        val triple = ImageUtils.getImageBytesNMessage(context) ?: return
+        val triple = ImageUtils.getImageBytesNMessage(context, "gif") ?: return
         var argInt = if (triple.third) 1 else 0
 
         if (!hasOffset) {
             argInt -= 1
         }
+
+        //╯︿╰
 
         val decoder = GifDecoder()
         val inputStream = ByteArrayInputStream(triple.first)

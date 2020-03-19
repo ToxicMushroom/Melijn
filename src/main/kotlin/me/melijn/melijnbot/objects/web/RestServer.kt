@@ -11,11 +11,9 @@ import me.melijn.melijnbot.objects.utils.OSValidator
 import me.melijn.melijnbot.objects.utils.awaitOrNull
 import me.melijn.melijnbot.objects.utils.getSystemUptime
 import me.melijn.melijnbot.objects.utils.getUnixRam
-import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
-import net.dv8tion.jda.internal.JDAImpl
 import org.jooby.Jooby
 import org.jooby.json.Jackson
 import java.lang.management.ManagementFactory
@@ -97,7 +95,6 @@ class RestServer(container: Container) : Jooby() {
                     .put("status", shard.status)
                     .put("queuedTracks", queuedTracks)
                     .put("musicPlayers", musicPlayers)
-                    .put("queuedMessages", queueSize(shard))
                     .put("responses", shard.responseTotal)
                     .put("id", shard.shardInfo.shardId)
 
@@ -215,13 +212,5 @@ class RestServer(container: Container) : Jooby() {
 
         //Has to be registered last to not override other paths
         get("*") { -> "blub" }
-    }
-
-    private fun queueSize(jda: JDA): Long {
-        var sum = 0
-        for (bucket in (jda as JDAImpl).requester.rateLimiter.routeBuckets) {
-            sum += bucket.requests.size
-        }
-        return sum.toLong()
     }
 }

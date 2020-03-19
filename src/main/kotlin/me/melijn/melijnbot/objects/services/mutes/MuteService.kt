@@ -17,17 +17,14 @@ import me.melijn.melijnbot.objects.utils.sendEmbed
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.sharding.ShardManager
-import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 class MuteService(
     val shardManager: ShardManager,
     val daoManager: DaoManager
-) : Service("mute") {
+) : Service("Mute", 1000, 1100, TimeUnit.MILLISECONDS) {
 
-    private var scheduledFuture: ScheduledFuture<*>? = null
-
-    private val muteService = Task {
+    override val service = Task {
         val mutes = daoManager.muteWrapper.getUnmuteableMutes()
         for (mute in mutes) {
             val selfUser = shardManager.shards[0].selfUser
@@ -96,15 +93,5 @@ class MuteService(
 
         val msgLc = getUnmuteMessage(language, privZoneId, guild, mutedUser, muteAuthor, unmuteAuthor, mute, true, mutedUser?.isBot == true, success, failedCause = cause)
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, msgLc)
-    }
-
-    override fun start() {
-        logger.info("Started MuteService")
-        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(muteService, 1_100, 1_000, TimeUnit.MILLISECONDS)
-    }
-
-    override fun stop() {
-        logger.info("Stopping MuteService")
-        scheduledFuture?.cancel(false)
     }
 }

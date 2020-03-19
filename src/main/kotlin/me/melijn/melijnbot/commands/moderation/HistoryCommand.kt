@@ -61,6 +61,9 @@ class HistoryCommand : AbstractCommand("command.history") {
                     val banMap = dao.softBanWrapper.getSoftBanMap(context, targetUser)
                     unorderedMap.putAll(banMap)
                 }
+                else -> {
+
+                }
             }
         }
 

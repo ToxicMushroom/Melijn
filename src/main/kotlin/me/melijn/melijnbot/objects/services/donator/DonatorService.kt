@@ -5,15 +5,14 @@ import me.melijn.melijnbot.objects.services.Service
 import me.melijn.melijnbot.objects.threading.Task
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.sharding.ShardManager
-import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
-class DonatorService(val container: Container, val shardManager: ShardManager) : Service("donator") {
+class DonatorService(
+    val container: Container,
+    val shardManager: ShardManager
+) : Service("Donator", 2, 2, TimeUnit.MINUTES) {
 
-
-    private var scheduledFuture: ScheduledFuture<*>? = null
-
-    private val donatorService = Task {
+    override val service = Task {
         val wrapper = container.daoManager.supporterWrapper
         val guild = shardManager.getGuildById(340081887265685504)
 
@@ -28,15 +27,5 @@ class DonatorService(val container: Container, val shardManager: ShardManager) :
                 wrapper.remove(member.idLong)
             }
         }
-    }
-
-    override fun start() {
-        logger.info("Started DonatorService")
-        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(donatorService, 2, 2, TimeUnit.MINUTES)
-    }
-
-    override fun stop() {
-        logger.info("Stopping DonatorService")
-        scheduledFuture?.cancel(false)
     }
 }

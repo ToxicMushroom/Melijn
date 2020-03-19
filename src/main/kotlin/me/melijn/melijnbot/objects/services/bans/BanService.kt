@@ -12,17 +12,14 @@ import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.sharding.ShardManager
-import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 class BanService(
     val shardManager: ShardManager,
     val daoManager: DaoManager
-) : Service("ban") {
+) : Service("Ban", 1_000, 1_200, TimeUnit.MILLISECONDS) {
 
-    private var scheduledFuture: ScheduledFuture<*>? = null
-
-    private val banService = Task {
+    override val service = Task {
         val bans = daoManager.banWrapper.getUnbannableBans()
         for (ban in bans) {
             val selfUser = shardManager.shards[0].selfUser
@@ -96,15 +93,5 @@ class BanService(
 
         val msgLc = getUnbanMessage(language, privZoneId, guild, bannedUser, banAuthor, unbanAuthor, ban, true, bannedUser.isBot, success, failedCause = cause)
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, msgLc)
-    }
-
-    override fun start() {
-        logger.info("Started BanService")
-        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(banService, 1_000, 1_000, TimeUnit.MILLISECONDS)
-    }
-
-    override fun stop() {
-        logger.info("Stopping BanService")
-        scheduledFuture?.cancel(false)
     }
 }

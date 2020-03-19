@@ -112,6 +112,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
     val channelWrapper: ChannelWrapper
 
     val roleWrapper: RoleWrapper
+    val tempRoleWrapper: TempRoleWrapper
     val selfRoleWrapper: SelfRoleWrapper
 
     lateinit var dbVersion: String
@@ -197,6 +198,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
         musicChannelWrapper = MusicChannelWrapper(taskManager, MusicChannelDao(driverManager))
         roleWrapper = RoleWrapper(taskManager, RoleDao(driverManager))
         selfRoleWrapper = SelfRoleWrapper(taskManager, SelfRoleDao(driverManager))
+        tempRoleWrapper = TempRoleWrapper(taskManager, TempRoleDao(driverManager))
 
         banWrapper = BanWrapper(taskManager, BanDao(driverManager))
         muteWrapper = MuteWrapper(taskManager, MuteDao(driverManager))

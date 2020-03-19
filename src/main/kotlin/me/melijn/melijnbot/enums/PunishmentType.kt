@@ -6,7 +6,9 @@ enum class PunishmentType(val aliases: Array<String>) {
     MUTE(arrayOf("mute", "mutes")),
     KICK(arrayOf("kick", "kicks")),
     WARN(arrayOf("warn", "warns")),
-    SOFTBAN(arrayOf("softban", "softbans"));
+    SOFTBAN(arrayOf("softban", "softbans")),
+    ADDROLE(arrayOf("addRole")),
+    REMOVEROLE(arrayOf("removeRole"));
 
     companion object {
         fun getMatchingTypesFromNode(node: String): List<PunishmentType> {

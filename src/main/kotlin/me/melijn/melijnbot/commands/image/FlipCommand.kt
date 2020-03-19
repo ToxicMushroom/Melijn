@@ -4,6 +4,7 @@ import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.utils.ImageUtils
 import net.dv8tion.jda.api.Permission
 import java.awt.image.BufferedImage
 
@@ -33,22 +34,23 @@ class FlipCommand : AbstractCommand("command.flip") {
 
     private suspend fun executeGif(context: CommandContext) {
         ImageCommandUtil.executeGifEffect(context, { image, _ ->
-            flipFrame(image)
+            flipFrame(image, true)
         }, false)
     }
 
-    private fun flipFrame(image: BufferedImage) {
-        val newImage = BufferedImage(image.width, image.height, image.type)
-        for (y in 0 until image.height) {
+    private fun flipFrame(image: BufferedImage, isGif: Boolean = false) {
+        for (y in 0 until image.height / 2) {
             for (x in 0 until image.width) {
-                val color = image.getRGB(x, image.height - 1 - y)
-                newImage.setRGB(x, y, color)
-            }
-        }
-        for (y in 0 until newImage.height) {
-            for (x in 0 until newImage.width) {
-                val color = newImage.getRGB(x, y)
-                image.setRGB(x, y, color)
+                var topColor = image.getRGB(x, y)
+                var bottomColor = image.getRGB(x, image.height - y - 1)
+
+                if (isGif) {
+                    topColor = ImageUtils.suiteColorForGif(topColor)
+                    bottomColor = ImageUtils.suiteColorForGif(bottomColor)
+                }
+
+                image.setRGB(x, y, bottomColor)
+                image.setRGB(x, image.height - y - 1, topColor)
             }
         }
     }

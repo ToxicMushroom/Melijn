@@ -8,6 +8,7 @@ import me.melijn.melijnbot.objects.services.donator.DonatorService
 import me.melijn.melijnbot.objects.services.music.SongCacheCleanerService
 import me.melijn.melijnbot.objects.services.music.SpotifyService
 import me.melijn.melijnbot.objects.services.mutes.MuteService
+import me.melijn.melijnbot.objects.services.roles.RolesService
 import me.melijn.melijnbot.objects.services.stats.StatsService
 import me.melijn.melijnbot.objects.services.voice.VoiceScoutService
 import me.melijn.melijnbot.objects.services.voice.VoiceService
@@ -27,11 +28,13 @@ class ServiceManager(val taskManager: TaskManager, val daoManager: DaoManager, v
         services.add(MuteService(shardManager, daoManager))
         services.add(StatsService(shardManager, webManager))
         services.add(BirthdayService(shardManager, daoManager))
+        //services.add(MemSpammerService())
         services.add(SpotifyService(webManager))
         services.add(SongCacheCleanerService(daoManager.songCacheWrapper))
         services.add(VoiceService(container, shardManager))
         services.add(VoiceScoutService(container, shardManager))
         services.add(DonatorService(container, shardManager))
+        services.add(RolesService(daoManager.tempRoleWrapper, shardManager))
         //services.add(BrokenService(container, shardManager))
     }
 

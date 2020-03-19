@@ -28,7 +28,7 @@ class PixelateCommand : AbstractCommand("command.pixelate") {
 
     private suspend fun executeNormal(context: CommandContext) {
         ImageCommandUtil.executeNormalEffect(context, effect = { image, i ->
-            ImageUtils.pixelatev2(image, i)
+            ImageUtils.pixelate(image, i)
 
         }, hasOffset = true, defaultOffset = { img ->
             max(img.height, img.width) / 100
@@ -41,7 +41,7 @@ class PixelateCommand : AbstractCommand("command.pixelate") {
 
     private suspend fun executeGif(context: CommandContext) {
         ImageCommandUtil.executeGifEffect(context, effect = { image, i ->
-            ImageUtils.pixelatev2(image, i)
+            ImageUtils.pixelate(image, i, true)
 
         }, hasOffset = true, defaultOffset = { img ->
             max(img.height, img.width) / 100

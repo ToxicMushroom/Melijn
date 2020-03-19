@@ -17,7 +17,6 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
     init {
         id = 125
         name = "punishment"
-        aliases = arrayOf("punish")
         children = arrayOf(
             AddArg(root),
             ListArg(root),
@@ -36,11 +35,104 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
 
         init {
             name = "setExtra"
+            aliases = arrayOf("se")
             children = arrayOf(
                 BanArg(root),
                 MuteArg(root),
-                SoftBanArg(root)
+                SoftBanArg(root),
+                AddRoleArg(root),
+                RemoveRoleArg(root)
             )
+        }
+
+        class DurationArg(parent: String, private val pType: PunishmentType) : AbstractCommand("$parent.duration") {
+
+            init {
+                name = "duration"
+                aliases = arrayOf("d")
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                if (context.args.size < 2) {
+                    sendSyntax(context)
+                    return
+                }
+
+                val name = context.args[0]
+                val item = getPunishmentNMessage(context, 0, pType) ?: return
+                val wrapper = context.daoManager.punishmentWrapper
+
+                val seconds = getDurationByArgsNMessage(context, 1, context.args.size)
+                    ?: return
+                item.extraMap = item.extraMap.put("duration", seconds)
+
+                wrapper.put(context.guildId, item)
+                val extra = if (seconds == 0L) ".infinite" else ""
+
+                val msg = context.getTranslation("$root.set$extra")
+                    .replace("%name%", name)
+                    .replace("%duration%", "$seconds")
+                sendMsg(context, msg)
+            }
+        }
+
+        class RoleArg(parent: String, private val pType: PunishmentType) : AbstractCommand("$parent.role") {
+
+            init {
+                name = "role"
+                aliases = arrayOf("r")
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                if (context.args.size < 2) {
+                    sendSyntax(context)
+                    return
+                }
+
+                val name = context.args[0]
+
+                val item = getPunishmentNMessage(context, 0, pType) ?: return
+                val role = getRoleByArgsNMessage(context, 1, canInteract = true) ?: return
+                val wrapper = context.daoManager.punishmentWrapper
+
+                item.extraMap = item.extraMap.put("role", role.idLong)
+
+                wrapper.put(context.guildId, item)
+
+                val msg = context.getTranslation("$root.set")
+                    .replace("%name%", name)
+                    .replace("%role%", role.name)
+                sendMsg(context, msg)
+            }
+        }
+
+        class AddRoleArg(parent: String) : AbstractCommand("$parent.addrole") {
+
+            init {
+                name = "addRole"
+                aliases = arrayOf("ar")
+                children = arrayOf(
+                    DurationArg(root, PunishmentType.ADDROLE),
+                    RoleArg(root, PunishmentType.ADDROLE)
+                )
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                sendSyntax(context)
+            }
+        }
+
+        class RemoveRoleArg(parent: String) : AbstractCommand("$parent.removerole") {
+
+            init {
+                name = "removeRole"
+                aliases = arrayOf("rr")
+                DurationArg(root, PunishmentType.REMOVEROLE)
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                sendSyntax(context)
+            }
         }
 
         class BanArg(parent: String) : AbstractCommand("$parent.ban") {
@@ -48,43 +140,13 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             init {
                 name = "ban"
                 children = arrayOf(
-                    DurationArg(root),
+                    DurationArg(root, PunishmentType.BAN),
                     DelDaysArg(root)
                 )
             }
 
             override suspend fun execute(context: CommandContext) {
                 sendSyntax(context)
-            }
-
-            class DurationArg(parent: String) : AbstractCommand("$parent.duration") {
-
-                init {
-                    name = "duration"
-                }
-
-                override suspend fun execute(context: CommandContext) {
-                    if (context.args.size < 2) {
-                        sendSyntax(context)
-                        return
-                    }
-
-                    val name = context.args[0]
-                    val item = getPunishmentNMessage(context, 0, PunishmentType.BAN) ?: return
-                    val wrapper = context.daoManager.punishmentWrapper
-
-                    val seconds = getDurationByArgsNMessage(context, 1, context.args.size)
-                        ?: return
-                    item.extraMap = item.extraMap.put("duration", seconds)
-
-                    wrapper.put(context.guildId, item)
-                    val extra = if (seconds == 0L) ".infinite" else ""
-
-                    val msg = context.getTranslation("$root.set$extra")
-                        .replace("%name%", name)
-                        .replace("%duration%", "$seconds")
-                    sendMsg(context, msg)
-                }
             }
 
             class DelDaysArg(parent: String) : AbstractCommand("$parent.deldays") {
@@ -121,42 +183,12 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             init {
                 name = "mute"
                 children = arrayOf(
-                    DurationArg(root)
+                    DurationArg(root, PunishmentType.MUTE)
                 )
             }
 
             override suspend fun execute(context: CommandContext) {
                 sendSyntax(context)
-            }
-
-            class DurationArg(parent: String) : AbstractCommand("$parent.duration") {
-
-                init {
-                    name = "duration"
-                }
-
-                override suspend fun execute(context: CommandContext) {
-                    if (context.args.size < 2) {
-                        sendSyntax(context)
-                        return
-                    }
-
-                    val name = context.args[0]
-                    val item = getPunishmentNMessage(context, 0, PunishmentType.MUTE) ?: return
-                    val wrapper = context.daoManager.punishmentWrapper
-
-                    val seconds = getDurationByArgsNMessage(context, 1, context.args.size)
-                        ?: return
-                    item.extraMap = item.extraMap.put("duration", seconds)
-
-                    wrapper.put(context.guildId, item)
-                    val extra = if (seconds == 0L) ".infinite" else ""
-
-                    val msg = context.getTranslation("$root.set$extra")
-                        .replace("%name%", name)
-                        .replace("%duration%", "$seconds")
-                    sendMsg(context, msg)
-                }
             }
         }
 
@@ -187,14 +219,14 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
 
                     val item = getPunishmentNMessage(context, 0, PunishmentType.SOFTBAN) ?: return
                     val wrapper = context.daoManager.punishmentWrapper
-                    val days = getLongFromArgNMessage(context, 0, 7) ?: return
+                    val days = getLongFromArgNMessage(context, 1, 7) ?: return
                     item.extraMap = item.extraMap.put("delDays", days)
 
                     wrapper.put(context.guildId, item)
 
 
                     val msg = context.getTranslation("$root.deldays")
-                        .replace("%name%", name)
+                        .replace("%name%", item.name)
                         .replace("%deldays%", "$days")
                     sendMsg(context, msg)
                 }
@@ -346,7 +378,7 @@ suspend fun getPunishmentNMessage(context: CommandContext, position: Int, punish
 
     if (item == null || (punishmentType != null && item.punishmentType != punishmentType)) {
         val extra = if (punishmentType == null) "" else ".typed"
-        val msg = context.getTranslation("${context.commandOrder.first().root}.nomatch$extra")
+        val msg = context.getTranslation("command.punishment.nomatch$extra")
             .replace(PLACEHOLDER_ARG, name)
             .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
             .replace("%type%", item?.punishmentType?.toUCC() ?: "error")

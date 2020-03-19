@@ -7,14 +7,14 @@ import me.melijn.melijnbot.objects.services.Service
 import me.melijn.melijnbot.objects.threading.Task
 import me.melijn.melijnbot.objects.utils.listeningMembers
 import net.dv8tion.jda.api.sharding.ShardManager
-import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
-class VoiceService(val container: Container, val shardManager: ShardManager) : Service("voice") {
+class VoiceService(
+    val container: Container,
+    val shardManager: ShardManager
+) : Service("Voice", 1, 1, TimeUnit.MINUTES) {
 
-    private var scheduledFuture: ScheduledFuture<*>? = null
-
-    private val voiceService = Task {
+    override val service = Task {
         val currentTime = System.currentTimeMillis()
         val disconnect = ArrayList(VoiceUtil.disconnectQueue.entries)
             .filter { (_, time) -> time < currentTime }
@@ -44,15 +44,5 @@ class VoiceService(val container: Container, val shardManager: ShardManager) : S
 
             VoiceUtil.disconnectQueue.remove(guildId)
         }
-    }
-
-    override fun start() {
-        logger.info("Started VoiceService")
-        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(voiceService, 1, 1, TimeUnit.MINUTES)
-    }
-
-    override fun stop() {
-        logger.info("Stopping VoiceService")
-        scheduledFuture?.cancel(false)
     }
 }

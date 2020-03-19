@@ -14,17 +14,14 @@ import me.melijn.melijnbot.objects.utils.checks.getAndVerifyRoleById
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.sharding.ShardManager
 import java.util.*
-import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 class BirthdayService(
     val shardManager: ShardManager,
     val daoManager: DaoManager
-) : Service("birthday") {
+) : Service("Birthday", 2, 5, TimeUnit.MINUTES) {
 
-    private var scheduledFuture: ScheduledFuture<*>? = null
-
-    private val birthdayService = Task {
+    override val service = Task {
         val birthdayHistory = daoManager.birthdayHistoryWrapper
         val birthdays = daoManager.birthdayWrapper.getBirthdaysToday()
         val birthDaysToRemove = daoManager.birthdayHistoryWrapper.getBirthdaysToDeactivate()
@@ -139,15 +136,5 @@ class BirthdayService(
                 }
             }
         }
-    }
-
-    override fun start() {
-        logger.info("Started BirthdayService")
-        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(birthdayService, 2, 5, TimeUnit.MINUTES)
-    }
-
-    override fun stop() {
-        logger.info("Stopping BirthdayService")
-        scheduledFuture?.cancel(false)
     }
 }

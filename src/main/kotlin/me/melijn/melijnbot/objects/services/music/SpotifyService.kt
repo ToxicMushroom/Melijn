@@ -3,24 +3,13 @@ package me.melijn.melijnbot.objects.services.music
 import me.melijn.melijnbot.objects.services.Service
 import me.melijn.melijnbot.objects.threading.Task
 import me.melijn.melijnbot.objects.web.WebManager
-import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
-class SpotifyService(val webManager: WebManager) : Service("spotify") {
+class SpotifyService(
+    val webManager: WebManager
+) : Service("Spotify", 30, 30, TimeUnit.MINUTES) {
 
-    private var scheduledFuture: ScheduledFuture<*>? = null
-
-    private val spotifyService = Task {
+    override val service = Task {
         webManager.updateSpotifyCredentials()
-    }
-
-    override fun start() {
-        logger.info("Started SpotifyService")
-        scheduledFuture = scheduledExecutor.scheduleWithFixedDelay(spotifyService, 1_800_000, 1_800_000, TimeUnit.MILLISECONDS)
-    }
-
-    override fun stop() {
-        logger.info("Stopping SpotifyService")
-        scheduledFuture?.cancel(false)
     }
 }

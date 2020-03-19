@@ -28,14 +28,18 @@ class GreyScaleCommand : AbstractCommand("command.greyscale") {
     private suspend fun executeNormal(context: CommandContext) {
         ImageCommandUtil.executeNormalRecolor(context, { ints ->
             val value = ImageUtils.getBrightness(ints[0], ints[1], ints[2])
-            arrayOf(value, value, value).toIntArray()
+            intArrayOf(value, value, value, ints[3])
         }, false)
     }
 
     private suspend fun executeGif(context: CommandContext) {
         ImageCommandUtil.executeGifRecolor(context, { ints ->
-            val value = ImageUtils.getBrightness(ints[0], ints[1], ints[2])
-            arrayOf(value, value, value).toIntArray()
+            var value = ImageUtils.getBrightness(ints[0], ints[1], ints[2])
+            if (value == 255) {
+                value = 254
+            }
+            if (ints[3] < 128) intArrayOf(255, 255, 255, 255)
+            else intArrayOf(value, value, value, 255)
         }, false)
     }
 }

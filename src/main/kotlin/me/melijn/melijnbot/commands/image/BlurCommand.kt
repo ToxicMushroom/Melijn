@@ -4,6 +4,7 @@ import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.utils.ImageUtils
 import net.dv8tion.jda.api.Permission
 import java.lang.Integer.max
@@ -15,6 +16,7 @@ class BlurCommand : AbstractCommand("command.blur") {
         name = "blur"
         aliases = arrayOf("blurGif")
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
+        runConditions = arrayOf(RunCondition.USER_SUPPORTER)
         commandCategory = CommandCategory.IMAGE
     }
 
@@ -41,7 +43,7 @@ class BlurCommand : AbstractCommand("command.blur") {
 
     private suspend fun executeGif(context: CommandContext) {
         ImageCommandUtil.executeGifEffect(context, effect = { image, i ->
-            ImageUtils.blur(image, i)
+            ImageUtils.blur(image, i, true)
 
         }, hasOffset = true, defaultOffset = {
             max(max(it.width, it.height) / 75, 1)

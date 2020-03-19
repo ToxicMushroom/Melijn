@@ -35,11 +35,11 @@ object PPUtils {
             val key = ppMap.keys.firstOrNull { key -> key == pg.groupName } ?: continue
             val newPoints = ppMap[key] ?: continue
             val oldPoints = oldPPMap.getOrDefault(pg.groupName, 0)
-            val entries = pg.pointGoalMap.filter { (tp, _) -> tp > oldPoints && newPoints >= tp }
+            val entries = pg.pointGoalMap.filter { (tp, _) -> tp in (oldPoints + 1)..newPoints }
 
 
             for (entry in entries) {
-                val punishment = punishments.first { punish -> punish.name == entry.value }
+                val punishment = punishments.first { (name) -> name == entry.value }
                 applyPunishment(member, punishment, container)
                 punishment.punishmentType
             }
@@ -75,6 +75,46 @@ object PPUtils {
             PunishmentType.WARN -> {
                 applyWarn(member, punishment, container)
             }
+            PunishmentType.ADDROLE -> {
+                val duration = punishment.extraMap.getLong("duration", -1)
+                val dull = if (duration == -1L) null else duration
+                val roleId = punishment.extraMap.getLong("role", -1)
+                if (roleId == -1L) return
+
+                applyAddRole(member, punishment, container, dull, roleId)
+            }
+            PunishmentType.REMOVEROLE -> {
+                val duration = punishment.extraMap.getLong("duration", -1)
+                val dull = if (duration == -1L) null else duration
+                val roleId = punishment.extraMap.getLong("role", -1)
+                if (roleId == -1L) return
+
+                applyRemoveRole(member, punishment, container, dull, roleId)
+            }
+        }
+    }
+
+    private suspend fun applyRemoveRole(member: Member, punishment: Punishment, container: Container, duration: Long?, roleId: Long) {
+        val guild = member.guild
+        val daoManager = container.daoManager
+        val wrapper = daoManager.tempRoleWrapper
+        val role = guild.getRoleById(roleId) ?: return
+
+        val success = guild.removeRoleFromMember(member, role).reason("punish role").awaitBool()
+        if (duration != null && success) {
+            wrapper.addTempRole(guild.idLong, member.idLong, roleId, duration, false)
+        }
+    }
+
+    private suspend fun applyAddRole(member: Member, punishment: Punishment, container: Container, duration: Long?, roleId: Long) {
+        val guild = member.guild
+        val daoManager = container.daoManager
+        val wrapper = daoManager.tempRoleWrapper
+        val role = guild.getRoleById(roleId) ?: return
+
+        val success = guild.addRoleToMember(member, role).reason("punish role").awaitBool()
+        if (duration != null && success) {
+            wrapper.addTempRole(guild.idLong, member.idLong, roleId, duration, true)
         }
     }
 
@@ -100,7 +140,7 @@ object PPUtils {
         )
 
         daoManager.banWrapper.setBan(ban)
-        val ex = member.ban(delDays, punishment.reason).awaitEX()
+        val ex = member.ban(delDays, punishment.reason).reason("punish ban").awaitEX()
         if (ex != null) {
             val failed = i18n.getTranslation(lang, "message.banning.failed")
             banningMessage?.editMessage(failed)?.queue()

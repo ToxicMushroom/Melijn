@@ -1,7 +1,7 @@
 package me.melijn.melijnbot.objects.utils
 
-import com.madgag.gif.fmsware.AnimatedGifEncoder
 import com.madgag.gif.fmsware.GifDecoder
+import com.squareup.gifencoder.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -15,9 +15,8 @@ import java.awt.image.Raster
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.net.URL
+import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
@@ -28,104 +27,128 @@ object ImageUtils {
 
     //ByteArray (imageData)
     //Boolean (if it is from an argument -> true) (attachment or noArgs(author)) -> false)
-    suspend fun getImageBytesNMessage(context: CommandContext): Triple<ByteArray, String, Boolean>? = suspendCoroutine {
-        context.taskManager.executorService.launch {
-            val args = context.args
-            val attachments = context.message.attachments
+    suspend fun getImageBytesNMessage(context: CommandContext, reqFormat: String? = null): Triple<ByteArray, String, Boolean>? {
+        val args = context.args
+        val attachments = context.message.attachments
 
-            val arg: Boolean
-            var img: ByteArray? = null
-            val url: String
-            if (attachments.isNotEmpty()) {
-                try {
-                    arg = false
-                    url = attachments[0].url + "?size=2048"
-                    withContext(Dispatchers.IO) {
-                        img = URL(url).readBytes()
-                        if (ImageIO.read(ByteArrayInputStream(img)) == null) img = null
-                    }
-                } catch (e: Throwable) {
-                    val msg = context.getTranslation("message.attachmentnotanimage")
-                        .replace(PLACEHOLDER_ARG, attachments[0].url)
-                    sendMsg(context, msg)
-                    it.resume(null)
-                    return@launch
-                }
-            } else if (args.isNotEmpty() && args[0].isNotEmpty()) {
-                val user = retrieveUserByArgsN(context, 0)
-                if (user != null) {
-                    arg = true
-                    url = user.effectiveAvatarUrl + "?size=2048"
-                    withContext(Dispatchers.IO) {
-                        img = URL(url).readBytes()
-                        if (ImageIO.read(ByteArrayInputStream(img)) == null) img = null
-                    }
-                } else {
-                    arg = true
-                    url = args[0]
-                    try {
-                        withContext(Dispatchers.IO) {
-                            img = URL(url).readBytes()
-                            if (ImageIO.read(ByteArrayInputStream(img)) == null) {
-                                img = null
-                            }
-                        }
-                    } catch (e: Exception) {
-                        val msg = context.getTranslation("message.wrong.url")
-                            .replace(PLACEHOLDER_ARG, args[0])
-                        sendMsg(context, msg)
-                        it.resume(null)
-                        return@launch
-                    }
-                }
-            } else {
+        val arg: Boolean
+        var img: ByteArray? = null
+        val url: String
+        if (attachments.isNotEmpty()) {
+            try {
                 arg = false
-                url = context.author.effectiveAvatarUrl + "?size=2048"
+                url = attachments[0].url + "?size=2048"
+
+                if (!checkFormat(context, attachments[0].url, reqFormat)) return null
                 withContext(Dispatchers.IO) {
                     img = URL(url).readBytes()
+                    if (ImageIO.read(ByteArrayInputStream(img)) == null) img = null
+                }
+            } catch (e: Throwable) {
+                val msg = context.getTranslation("message.attachmentnotanimage")
+                    .replace(PLACEHOLDER_ARG, attachments[0].url)
+                sendMsg(context, msg)
+                return null
+            }
+        } else if (args.isNotEmpty() && args[0].isNotEmpty()) {
+            val user = retrieveUserByArgsN(context, 0)
+            if (user != null) {
+                arg = true
+                url = user.effectiveAvatarUrl + "?size=2048"
+                if (!checkFormat(context, user.effectiveAvatarUrl, reqFormat)) return null
+                withContext(Dispatchers.IO) {
+                    img = URL(url).readBytes()
+                    if (ImageIO.read(ByteArrayInputStream(img)) == null) img = null
+                }
+            } else {
+                arg = true
+                url = args[0]
+                try {
+                    if (!checkFormat(context, args[0], reqFormat)) return null
+                    withContext(Dispatchers.IO) {
+                        img = URL(url).readBytes()
+                        if (ImageIO.read(ByteArrayInputStream(img)) == null) {
+                            img = null
+                        }
+                    }
+                } catch (e: Exception) {
+                    val msg = context.getTranslation("message.wrong.url")
+                        .replace(PLACEHOLDER_ARG, args[0])
+                    sendMsg(context, msg)
+                    return null
                 }
             }
+        } else {
+            arg = false
+            url = context.author.effectiveAvatarUrl + "?size=2048"
+            if (!checkFormat(context, context.author.effectiveAvatarUrl, reqFormat)) return null
+            withContext(Dispatchers.IO) {
+                img = URL(url).readBytes()
+            }
+        }
 
-            if (img == null) {
-                val msg = context.getTranslation("message.notimage")
-                    .replace("%url%", url)
-                sendMsg(context, msg)
-                it.resume(null)
-                return@launch
+        if (img == null) {
+            val msg = context.getTranslation("message.notimage")
+                .replace("%url%", url)
+            sendMsg(context, msg)
+            return null
+        }
+
+        val nonnullImage: ByteArray = img ?: return null
+        return Triple(nonnullImage, url, arg)
+    }
+
+    private suspend fun checkFormat(context: CommandContext, url: String, reqFormat: String?): Boolean {
+        if (reqFormat != null && !url.contains(reqFormat)) {
+            if (context.authorId == 223456683337318402) {
+                sendMsg(context, "<:cough:676177448290746379>")
+                return false
             }
 
-            val nonnullImage: ByteArray = img ?: return@launch
-            val triple = Triple(nonnullImage, url, arg)
-            it.resume(triple)
+            val msg = context.getTranslation("message.notagif")
+                .replace("%url%", url)
+            sendMsg(context, msg)
+            return false
         }
+        return true
     }
 
     fun getBrightness(r: Int, g: Int, b: Int): Int {
         return sqrt(r * r * .241 + g * g * .691 + b * b * .068).toInt()
     }
 
-    fun getBlurpleForPixel(r: Int, g: Int, b: Int, offset: Int = 128): IntArray {
+    fun getBlurpleForPixel(r: Int, g: Int, b: Int, a: Int, offset: Int = 128, isGif: Boolean = false): IntArray {
         val brightness = getBrightness(r, g, b)
         val whiteThreshold = 24 + offset.absoluteValue
         val blurpleThreshold = -43 + offset.absoluteValue
         val invertOffset = offset < 0
+
+
+        if (isGif && a < 128) {
+            return intArrayOf(255, 255, 255, 255)
+        }
+
         return when {
-            brightness >= whiteThreshold -> if (invertOffset) intArrayOf(78, 93, 148) else intArrayOf(254, 254, 254) //wit
-            brightness >= blurpleThreshold -> intArrayOf(114, 137, 218) //blurple
-            else -> if (invertOffset) intArrayOf(254, 254, 254) else intArrayOf(78, 93, 148) //dark blurple
+            brightness >= whiteThreshold -> if (invertOffset) intArrayOf(78, 93, 148, a) else intArrayOf(254, 254, 254, a) //wit
+            brightness >= blurpleThreshold -> intArrayOf(114, 137, 218, a) //blurple
+            else -> if (invertOffset) intArrayOf(254, 254, 254, a) else intArrayOf(78, 93, 148, a) //dark blurple
         }
     }
 
-    fun getSpookyForPixel(r: Int, g: Int, b: Int, offset: Int): IntArray {
+    fun getSpookyForPixel(r: Int, g: Int, b: Int, a: Int, offset: Int, isGif: Boolean = false): IntArray {
         val brightness = getBrightness(r, g, b)
 
+        if (isGif && a < 128) {
+            return intArrayOf(255, 255, 255, 255)
+        }
+
         return if (offset >= 0) {
-            if (brightness >= offset) intArrayOf(255, 128, 0) //ORANGE #FF8000
-            else intArrayOf(50, 50, 50) //DARK #323232
+            if (brightness >= offset) intArrayOf(255, 128, 0, a) //ORANGE #FF8000
+            else intArrayOf(50, 50, 50, a) //DARK #323232
         } else {
             val i = offset.absoluteValue
-            if (brightness >= i) intArrayOf(50, 50, 50) //DARK #323232
-            else intArrayOf(255, 128, 0) //ORANGE #FF8000
+            if (brightness >= i) intArrayOf(50, 50, 50, a) //DARK #323232
+            else intArrayOf(255, 128, 0, a) //ORANGE #FF8000
         }
     }
 
@@ -137,12 +160,7 @@ object ImageUtils {
         effect: (BufferedImage) -> Unit,
         frameDebug: CommandContext? = null
     ): ByteArrayOutputStream {
-        val encoder = AnimatedGifEncoder()
         val outputStream = ByteArrayOutputStream()
-
-        encoder.setQuality(quality)
-        encoder.start(outputStream)
-
         val repeatCount = if (repeat != null && repeat == true) {
             0
         } else if (repeat != null && repeat == false) {
@@ -151,20 +169,28 @@ object ImageUtils {
             decoder.loopCount
         }
 
-        encoder.setRepeat(repeatCount)
+        val width = decoder.getFrame(0).width
+        val height = decoder.getFrame(0).height
+        val encoder = GifEncoder(outputStream, width, height, repeatCount)
 
-        encoder.setBackground(Color.WHITE)
-        encoder.setTransparent(Color.WHITE, false)
 
         val gct = decoder.gct ?: emptyArray<Int>().toIntArray()
         for (index in 0 until decoder.frameCount) {
+            val options = ImageOptions()
+            options.setColorQuantizer(MedianCutQuantizer.INSTANCE)
+            options.setDitherer(FloydSteinbergDitherer.INSTANCE)
+            options.setTransparencyColor(Color.WHITE.rgb)
+            options.setDisposalMethod(DisposalMethod.DO_NOT_DISPOSE)
+
+
             val frameMeta = decoder.getFrameMeta(index)
             val gifFrame = frameMeta.image
 
             effect(gifFrame)
 
-            encoder.setDelay(frameMeta.delay)
-            if (fps != null) encoder.setFrameRate(fps)
+            val delay = fps?.let { (1.0 / it * 1000.0).toLong() } ?: frameMeta.delay.toLong()
+            options.setDelay(delay, TimeUnit.MILLISECONDS)
+
             frameDebug?.let {
                 runBlocking {
                     val lct = if (frameMeta.lct.isEmpty()) {
@@ -189,10 +215,13 @@ object ImageUtils {
                 }
             }
 
-            encoder.addFrame(gifFrame)
+            encoder.addImage(
+                gifFrame.getRGB(0, 0, width, height, Array(width * height) { 0 }.toIntArray(), 0, width),
+                width, options)
         }
 
-        encoder.finish()
+        encoder.finishEncoding()
+
         return outputStream
     }
 
@@ -207,14 +236,15 @@ object ImageUtils {
                 val g: Int = color shr 8 and 0xff
                 val b: Int = color and 0xff
 
-                val arr = IntArray(4)
+                val arr = IntArray(5)
                 arr[0] = r
                 arr[1] = g
                 arr[2] = b
-                arr[3] = offset
+                arr[3] = a
+                arr[4] = offset
 
                 val newColor: IntArray = colorPicker(arr)
-                color = a shl 24 or (newColor[0] shl 16) or (newColor[1] shl 8) or newColor[2]
+                color = newColor[3] shl 24 or (newColor[0] shl 16) or (newColor[1] shl 8) or newColor[2]
 
                 image.setRGB(x, y, color)
             }
@@ -231,15 +261,20 @@ object ImageUtils {
         return outputStream
     }
 
-    fun getInvertedPixel(r: Int, g: Int, b: Int): IntArray {
-        var arr = intArrayOf(255 - r, 255 - g, 255 - b)
-        if (arr[0] == 255 && arr[1] == 255 && arr[2] == 255) {
-            arr = intArrayOf(254, 254, 254)
+    fun getInvertedPixel(r: Int, g: Int, b: Int, a: Int, isGif: Boolean = false): IntArray {
+        val ir = 255 - r
+        val ig = 255 - g
+        val ia = 255 - a
+        return if (isGif && a < 128) {
+            intArrayOf(255, 255, 255, 255)
+        } else if (isGif && ir == 255 && ig == 255 && ia == 255) {
+            intArrayOf(254, 254, 254, 255)
+        } else {
+            intArrayOf(ir, ig, ia, a)
         }
-        return arr
     }
 
-    fun pixelate(image: BufferedImage, pixelSize: Int) {
+    fun smoothPixelate(image: BufferedImage, pixelSize: Int, isGif: Boolean = false) {
         // Get the raster data (array of pixels)
         val src: Raster = image.data
 
@@ -251,10 +286,11 @@ object ImageUtils {
 
                 val croppedImage = getCroppedImage(image, x, y, pixelSize, pixelSize)
                 val newColor = getDominantColor(croppedImage)
+                val cArr = suiteColorArrForGif(newColor.rgb)
 
                 for (xd in x until min(x + pixelSize, image.width)) {
                     for (yd in y until min(y + pixelSize, image.height)) {
-                        dest.setPixel(xd, yd, arrayOf(newColor.red, newColor.green, newColor.blue, newColor.alpha).toIntArray())
+                        dest.setPixel(xd, yd, cArr)
                     }
                 }
             }
@@ -263,7 +299,28 @@ object ImageUtils {
         image.data = dest
     }
 
-    fun getCroppedImage(image: BufferedImage, startx: Int, starty: Int, width: Int, height: Int): BufferedImage {
+    private fun suiteColorArrForGif(bgra: Int): IntArray = when {
+        (bgra shr 24 and 0xff) < 128 -> { // Checks if alpha is almost invisible
+            intArrayOf(255, 255, 255, 255) // Sets to transparent gif color
+        }
+        bgra and 0x00ffffff == 16777215 -> { //Cuts off the alpha of the int and compares it with white
+            intArrayOf(254, 254, 254, 255)
+        }
+        else -> {
+            intArrayOf(
+//                rgba shr 24 and 0xff,
+//                rgba shr 16 and 0xff,
+//                rgba shr 8 and 0xff,
+//                rgba and 0xff
+                bgra shr 16 and 0xff,
+                bgra shr 8 and 0xff,
+                bgra and 0xff,
+                bgra shr 24 and 0xff
+            )
+        }
+    }
+
+    private fun getCroppedImage(image: BufferedImage, startx: Int, starty: Int, width: Int, height: Int): BufferedImage {
         var startx1 = startx
         var starty1 = starty
         var width1 = width
@@ -279,7 +336,7 @@ object ImageUtils {
         return image.getSubimage(startx1, starty1, width1, height1)
     }
 
-    fun getDominantColor(image: BufferedImage): Color {
+    private fun getDominantColor(image: BufferedImage): Color {
         val colorCounter: MutableMap<Int, Int> = HashMap()
         for (x in 0 until image.width) {
             for (y in 0 until image.height) {
@@ -299,51 +356,41 @@ object ImageUtils {
         return Color(dominantRGB, true)
     }
 
-    fun pixelatev2(image: BufferedImage, i: Int) {
+    fun pixelate(image: BufferedImage, size: Int, isGif: Boolean = false) {
         // Get the raster data (array of pixels)
         val src: Raster = image.data
 
         // Create an identically-sized output raster
         val dest = src.createCompatibleWritableRaster()
-
+        val rFloatArr = intArrayOf(0, 0, 0, 0)
         // Loop through every i pixels, in both x and y directions
-        var y = 0
-        while (y < src.height) {
-            var x = 0
-            while (x < src.width) {
+        for (y in 0 until src.height step size) {
+            for (x in 0 until src.width step size) {
                 // Copy the pixel
-                var pixel: DoubleArray? = DoubleArray(4)
-                pixel = src.getPixel(x, y, pixel)
+                val pixel = src.getPixel(x, y, rFloatArr)
+
+                val cArr = if (isGif && pixel[3] < 128)
+                    intArrayOf(255, 255, 255, 255)
+                else if (isGif && pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255)
+                    intArrayOf(254, 254, 254, 255)
+                else pixel
+
+
                 // "Paste" the pixel onto the surrounding i by i neighbors
                 // Also make sure that our loop never goes outside the bounds of the image
-                var yd = y
-                while (yd < y + i && yd < dest.height) {
-                    var xd = x
-                    while (xd < x + i && xd < dest.width) {
-                        val alpha = pixel[3]
-                        val newAlpha: Double = if (alpha < 255.0 / 2) 0.0 else 255.0
-
-                        if (newAlpha < 255.0)
-                            dest.setPixel(xd, yd, doubleArrayOf(255.0, 255.0, 255.0, 255.0))
-                        else if (pixel[0] == 255.0 && pixel[1] == 255.0 && pixel[2] == 255.0)
-                            dest.setPixel(xd, yd, doubleArrayOf(254.0, 254.0, 254.0, 255.0))
-                        else
-                            dest.setPixel(xd, yd, pixel)
-                        xd++
+                for (xd in x until min(x + size, image.width)) {
+                    for (yd in y until min(y + size, image.height)) {
+                        dest.setPixel(xd, yd, cArr)
                     }
-                    yd++
                 }
-                x += i
             }
-            y += i
         }
 
         // Save the raster back to the  Image
         image.data = dest
     }
 
-    fun blur(image: BufferedImage, i: Int) {
-        val radius = i
+    fun blur(image: BufferedImage, radius: Int, isGif: Boolean = false) {
         val size = radius * 2 + 1
         val weight = 1.0f / (size * size)
         val data = FloatArray(size * size)
@@ -354,11 +401,11 @@ object ImageUtils {
         }
 
         val kernel = Kernel(size, size, data)
-        useKernel(image, kernel)
+        useKernel(image, kernel, isGif)
     }
 
 
-    fun sharpen(image: BufferedImage, i: Int) {
+    fun sharpen(image: BufferedImage, i: Int, isGif: Boolean = false) {
         val sharpenForce = i.toFloat()
         val data = FloatArray(3 * 3)
         data[1] = -1 * sharpenForce
@@ -368,10 +415,10 @@ object ImageUtils {
         data[5] = 4 * sharpenForce + 1
         val kernel = Kernel(3, 3, data)
 
-        useKernel(image, kernel)
+        useKernel(image, kernel, isGif)
     }
 
-    fun useKernel(image: BufferedImage, kernel: Kernel) {
+    private fun useKernel(image: BufferedImage, kernel: Kernel, shouldMakeGifAlphaSupport: Boolean = false) {
         // Get the raster data (array of pixels)
         val src: Raster = image.data
 
@@ -412,13 +459,23 @@ object ImageUtils {
                     }
                 }
 
-                dest.setPixel(x, y,
+                newAlpha = max(0f, min(255f, newAlpha))
+                val intArr = if (shouldMakeGifAlphaSupport && newAlpha < 128) {
+                    floatArrayOf(255f, 255f, 255f, 255f)
+                } else if (shouldMakeGifAlphaSupport && newRed >= 255f && newGreen >= 255f && newBlue >= 255f) {
+                    floatArrayOf(254f, 254f, 254f, 255f)
+                } else {
                     floatArrayOf(
                         max(0f, min(255f, newRed)),
                         max(0f, min(255f, newGreen)),
                         max(0f, min(255f, newBlue)),
-                        max(0f, min(255f, newAlpha))
-                    ))
+                        newAlpha
+                    )
+                }
+
+                dest.setPixel(x, y,
+                    intArr
+                )
             }
         }
         image.data = dest
@@ -468,5 +525,18 @@ object ImageUtils {
         }
         graphics.dispose()
         return bufferedImage
+    }
+
+    fun suiteColorForGif(rgba: Int): Int = when {
+        (rgba shr 24 and 0xff) < 128 -> { // Checks if alpha is almost invisible
+            -1 // Sets to transparent gif color
+        }
+        rgba and 0x00ffffff == 16777215 -> { //Cuts off the alpha of the int and compares it with white
+            ((rgba shr 24 and 0xff shl 24) // Only the alpha is visible here
+                or (254 shl 16) // integrates other values into the int
+                or (254 shl 8)
+                or (254 shl 0))
+        }
+        else -> rgba
     }
 }
