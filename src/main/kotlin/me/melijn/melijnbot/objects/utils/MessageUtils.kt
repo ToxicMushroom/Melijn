@@ -352,6 +352,7 @@ fun MessageEmbed.toMessage(): String {
     if (this.timestamp != null) {
         sb.append(this.timestamp?.format(DateTimeFormatter.ISO_DATE_TIME)).append("*")
     }
+
     return sb.toString()
 }
 

@@ -11,7 +11,7 @@ class Task(private val func: suspend () -> Unit) : Runnable {
         runBlocking {
             try {
                 func()
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 e.printStackTrace()
                 e.sendInGuild()
             }

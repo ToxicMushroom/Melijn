@@ -53,16 +53,17 @@ object VoiceUtil {
     }
 
     suspend fun checkShouldDisconnectAndApply(botChannel: VoiceChannel, daoManager: DaoManager) {
-        val guild = botChannel.guild
+        val guildId = botChannel.guild.idLong
         if (
-            !disconnectQueue.containsKey(guild.idLong) &&
             listeningMembers(botChannel) == 0 &&
-            !(daoManager.music247Wrapper.music247Cache.get(guild.idLong).await() &&
-                daoManager.supporterWrapper.guildSupporterIds.contains(guild.idLong))
+            !(daoManager.music247Wrapper.music247Cache.get(guildId).await() &&
+                daoManager.supporterWrapper.guildSupporterIds.contains(guildId))
         ) {
-            disconnectQueue[guild.idLong] = System.currentTimeMillis() + 600_000
+            if (!disconnectQueue.containsKey(guildId)) {
+                disconnectQueue[guildId] = System.currentTimeMillis() + 600_000
+            }
         } else {
-            disconnectQueue.remove(guild.idLong)
+            disconnectQueue.remove(guildId)
         }
     }
 

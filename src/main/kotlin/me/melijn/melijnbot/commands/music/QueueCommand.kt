@@ -6,10 +6,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.utils.StringUtils
-import me.melijn.melijnbot.objects.utils.getDurationString
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendPaginationModularMsg
+import me.melijn.melijnbot.objects.utils.*
 
 class QueueCommand : AbstractCommand("command.queue") {
 
@@ -48,6 +45,7 @@ class QueueCommand : AbstractCommand("command.queue") {
         description += context.getTranslation("$root.fakefooter")
             .replace("%duration%", getDurationString(totalDuration - trackManager.iPlayer.trackPosition))
             .replace("%amount%", (allTracks.size + 1).toString())
+        val footerPagination = context.getTranslation("$root.pagination")
 
         val modularMessages = mutableListOf<ModularMessage>()
 
@@ -56,6 +54,13 @@ class QueueCommand : AbstractCommand("command.queue") {
         for ((index, queue) in queueParts.withIndex()) {
             eb.setTitle(if (index == 0) title else null)
             eb.setDescription(queue)
+            if (queueParts.size > 1) {
+                eb.setFooter(
+                    footerPagination
+                        .replace("%pos%", index + 1)
+                        .replace("%pages%", queueParts.size)
+                )
+            }
             modularMessages.add(index, ModularMessage(
                 embed = eb.build()
             ))

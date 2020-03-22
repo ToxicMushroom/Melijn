@@ -428,7 +428,7 @@ object LogUtils {
 //        sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 
-    suspend fun sendPPGainedMessageDMAndLC(container: Container, message: Message, pointsTriggerType: PointsTriggerType, causeArg: String, pp: Int) {
+    suspend fun sendPPGainedMessageDMAndLC(container: Container, message: Message, pointsTriggerType: PointsTriggerType, causeArgs: Map<String, List<String>>, pp: Int) {
         val guild = message.guild
         val zoneId = getZoneId(container.daoManager, guild.idLong)
         val daoManager = container.daoManager
@@ -445,9 +445,17 @@ object LogUtils {
             .replace("%channelId%", message.textChannel.id)
             .replace("%message%", message.contentRaw)
             .replace("%messageId%", message.id)
-            .replace("%cause%", causeArg)
             .replace("%points%", "$pp")
             .replace("%moment%", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+
+        var extra = ""
+        for ((key, value) in causeArgs) {
+            if (value.isEmpty()) continue
+            extra += i18n.getTranslation(language, "logging.punishmentpoints.cause.${key}")
+                .replace("%word%", value.joinToString()) + "\n"
+        }
+
+        lcBody = lcBody.replace("%extra%", extra)
 
         val eb = EmbedBuilder()
         eb.setTitle(title)

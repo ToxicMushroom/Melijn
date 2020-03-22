@@ -20,6 +20,7 @@ import net.dv8tion.jda.api.entities.Member
 
 object PPUtils {
 
+    // Updates the punishment points of the user and checks for new punishment point goal hits, then applies the goals if hit
     suspend fun updatePP(member: Member, ppMap: Map<String, Long>, container: Container) {
         val guildId = member.guild.idLong
         val daoManager = container.daoManager
@@ -48,6 +49,7 @@ object PPUtils {
         }
     }
 
+    // Applies the correct punishment to the member
     private suspend fun applyPunishment(member: Member, punishment: Punishment, container: Container) {
         when (punishment.punishmentType) {
             //TODO ("Permission checks and logging in case of missing stuff")

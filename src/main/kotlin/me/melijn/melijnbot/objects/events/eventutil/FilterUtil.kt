@@ -23,57 +23,122 @@ object FilterUtil {
         val channel = message.textChannel
         val guildId = guild.idLong
         val channelId = channel.idLong
+        if (message.author.isBot) return@async
         val member = message.member ?: return@async
         val daoManager = container.daoManager
         if (member.hasPermission(channel, Permission.MESSAGE_MANAGE) || member == guild.selfMember) return@async
 
-
+        // Filter groups for this channel
         val groups = getFilterGroups(container, guildId, channelId)
 
-        var points = 0
-        val detectedMap = mutableMapOf<FilterGroup, List<String>>()
-        val onlyDetected = mutableListOf<String>()
+        var points = 0 // Points total of this message
+        val filterGroupTriggerInfoMap = mutableMapOf<FilterGroup, Map<String, List<String>>>() // Map of filtergroup -> Map of <infotype -> info>
+        val onlyTriggerInfoMap = mutableMapOf<String, List<String>>() // Map of <infotype -> info> not bound by filtergroup
         val apWrapper = daoManager.autoPunishmentWrapper
 
+        // Punish points map for a user (guildId, member) -> Map<filtergroupname, points>
         val ppMap = apWrapper.autoPunishmentCache.get(Pair(guild.idLong, member.idLong))
             .await()
             .toMutableMap()
 
+        // Loop through the filter groups
         for (fg in groups) {
-            val detected: List<String> = when (fg.mode) {
-//                FilterMode.MUST_MATCH_ALLOWED_FORMAT -> {
-//                    emptyList()
-//                    //filterMatch(container, message)
-//                }
-//                FilterMode.MUST_MATCH_ALLOWED_FORMAT_EXCLUDE_FILTER -> {
-//                    emptyList()
-//                    // filterMatchNoDenied(container, message)
-//                }
+            // Detected stuff returned from the case from mode of the filtergroup
+            val map = mutableMapOf<String, List<String>>()
+            var extraPoints = 0
+            when (fg.mode) {
+                FilterMode.MUST_CONTAIN_ANY_ALLOWED -> {
+                    map["contain.any"] = mustContainAny(container, message, fg)
+                    if (map.getValue("contain.any").isNotEmpty()) {
+                        extraPoints = fg.points
+                    }
+                }
+                FilterMode.MUST_CONTAIN_ALL_ALLOWED -> {
+                    map["contain.all"] = mustContainAll(container, message, fg)
+                    if (map.getValue("contain.all").isNotEmpty()) {
+                        extraPoints = fg.points
+                    }
+                }
+                FilterMode.MUST_MATCH_ALLOWED_FORMAT -> {
+                    map["must.match"] = filterMatch(container, message, fg)
+                    map["mustnot.contain"] = filterNoWrap(container, message, fg)
+                    if (map.getValue("mustnot.contain").isNotEmpty()) {
+                        extraPoints = fg.points * map.getValue("mustnot.contain").size
+                    }
+                    if (map.getValue("must.match").isNotEmpty()) {
+                        extraPoints = fg.points
+                    }
+                }
                 FilterMode.NO_WRAP -> {
-                    filterNoWrap(container, message, fg)
+                    map["mustnot.contain"] = filterNoWrap(container, message, fg)
                 }
                 FilterMode.DEFAULT -> {
-                    filterDefault(container, message, fg)
+                    map["mustnot.contain"] = filterDefault(container, message, fg)
                 }
-                FilterMode.NO_MODE -> emptyList()
-                FilterMode.DISABLED -> emptyList()
+                FilterMode.NO_MODE, FilterMode.DISABLED -> {
+                }
             }
-            detectedMap[fg] = detected
-            onlyDetected.addAll(detected)
+            filterGroupTriggerInfoMap[fg] = map // Put info in a map bound to its filter group for later use
+            for ((key, value) in map) { // Merge the total info with new info
+                val currentInfo = onlyTriggerInfoMap.getOrElse(key, { emptyList() })
+                onlyTriggerInfoMap[key] = currentInfo + value
+            }
 
-            val extraPoints = (detected.size * fg.points)
-            points += extraPoints
-            ppMap[fg.filterGroupName] = ppMap.getOrDefault(fg.filterGroupName, 0) + extraPoints
+            points += extraPoints // add extra points to points total of this filter check
+            ppMap[fg.filterGroupName] = ppMap.getOrDefault(fg.filterGroupName, 0) + extraPoints // save extra points to the ppMap
         }
 
+        // If something is detected
+        if (onlyTriggerInfoMap.isNotEmpty()) {
+            container.filteredMap[message.idLong] = onlyTriggerInfoMap // Store detected and notMatched reason in the filteredMap for logging the deletion reason
+            message.delete().reason("Filter detection").queue()  // delete the message
 
-        if (onlyDetected.isNotEmpty()) {
-            container.filteredMap[message.idLong] = onlyDetected.joinToString()
-            message.delete().reason("Filter detection").queue()
-
-            LogUtils.sendPPGainedMessageDMAndLC(container, message, PointsTriggerType.FILTERED_MESSAGE, onlyDetected.joinToString(), points)
-            PPUtils.updatePP(member, ppMap, container)
+            LogUtils.sendPPGainedMessageDMAndLC(container, message, PointsTriggerType.FILTERED_MESSAGE, onlyTriggerInfoMap, points) // send a dm and log the violation
+            PPUtils.updatePP(member, ppMap, container) // Update the punishment points of the user
         }
+    }
+
+    private suspend fun mustContainAll(container: Container, message: Message, fg: FilterGroup): List<String> {
+        val guild = message.guild
+
+        val allMatchList = getFiltersForGroup(container, guild.idLong, fg, FilterType.ALLOWED).toMutableList()
+        val noMatch = mutableListOf<String>()
+
+        allMatchList.forEach {
+            if (!message.contentRaw.contains(it)) {
+                noMatch.add(it)
+            }
+        }
+
+        return noMatch
+    }
+
+    private suspend fun mustContainAny(container: Container, message: Message, fg: FilterGroup): List<String> {
+        val guild = message.guild
+
+        val anyMatchList = getFiltersForGroup(container, guild.idLong, fg, FilterType.ALLOWED)
+
+        return if (anyMatchList.any { message.contentRaw.contains(it) }) {
+            emptyList()
+        } else {
+            anyMatchList
+        }
+    }
+
+    // Returns failed mustMatch patterns
+    private suspend fun filterMatch(container: Container, message: Message, fg: FilterGroup): List<String> {
+        val guild = message.guild
+
+        val mustMatchList = getFiltersForGroup(container, guild.idLong, fg, FilterType.ALLOWED)
+
+        val noMatch = mutableListOf<String>()
+        for (mustMatch in mustMatchList) {
+            if (!RegexJagTagParser.makeIntoPattern(mustMatch).matcher(message.contentRaw).matches()) {
+                noMatch.add(mustMatch)
+            }
+        }
+
+        return noMatch
     }
 
     private suspend fun getFilterGroups(container: Container, guildId: Long, channelId: Long): List<FilterGroup> {
@@ -116,13 +181,13 @@ object FilterUtil {
         val detected = mutableListOf<String>()
         if (deniedList.isEmpty()) return emptyList()
 
-        if (allowedList.isEmpty()) { //Allowed words are empty so just check for denied ones
+        if (allowedList.isEmpty()) { // Allowed words are empty so just check for denied ones
             for (deniedWord in deniedList) {
                 if (messageContent.contains(deniedWord, true)) {
                     detected.addIfNotPresent(deniedWord)
                 }
             }
-        } else { //Check if the allowed words are wrappin the denied ones
+        } else { // Check if the allowed words are wrapping the denied ones
             val fgDeniedPositions = HashMap<Int, Int>()
             val fgAllowedPositions = HashMap<Int, Int>()
             addPositions(messageContent, fgDeniedPositions, deniedList)

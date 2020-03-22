@@ -24,6 +24,7 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.regex.Pattern
+import kotlin.math.min
 
 
 val linuxUptimePattern: Pattern = Pattern.compile(
@@ -384,4 +385,16 @@ fun String.isPositiveNumber(): Boolean = this.matches(positiveNumberRegex)
 fun String.isNegativeNumber(): Boolean = this.matches(negativeNumberRegex)
 fun <E : Any> MutableList<E>.addIfNotPresent(value: E) {
     if (!this.contains(value)) this.add(value)
+}
+
+fun String.maxLength(length: Int): String {
+    return this.substring(0, min(length, this.length))
+}
+
+fun String.replace(oldValue: String, newValue: Int): String {
+    return this.replace(oldValue, "$newValue")
+}
+
+fun String.replace(oldValue: String, newValue: Long): String {
+    return this.replace(oldValue, "$newValue")
 }

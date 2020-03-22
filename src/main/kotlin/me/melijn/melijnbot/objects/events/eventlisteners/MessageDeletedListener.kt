@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.audit.ActionType
 import net.dv8tion.jda.api.audit.AuditLogOption
 import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.GenericEvent
@@ -174,7 +175,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         }
     }
 
-    private suspend fun postDeletedByFilterLog(fmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent, cause: String?) {
+    private suspend fun postDeletedByFilterLog(fmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent, causeArgs: Map<String, List<String>>?) {
         if (fmLogChannel == null) return
         val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull() ?: return
 
@@ -185,7 +186,16 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
             if (index == ebs.size - 1) {
                 val language = getLanguage(container.daoManager, -1, event.guild.idLong)
                 val fieldTitle = i18n.getTranslation(language, "detected") + ":"
-                eb.addField(fieldTitle, cause, false)
+                var extra = ""
+                causeArgs?.let {
+                    for ((key, value) in it) {
+                        if (value.isEmpty()) continue
+                        extra += i18n.getTranslation(language, "logging.punishmentpoints.cause.${key}")
+                            .replace("%word%", value.joinToString()) + "\n"
+                    }
+                }
+
+                eb.addField(fieldTitle, extra.maxLength(MessageEmbed.VALUE_MAX_LENGTH), false)
 
                 val footer = i18n.getTranslation(language, "listener.message.deletion.log.footer")
                     .replace(PLACEHOLDER_USER, event.jda.selfUser.asTag)
@@ -193,8 +203,6 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
             }
             sendEmbed(container.daoManager.embedDisabledWrapper, fmLogChannel, eb.build())
         }
-
-
     }
 
     private suspend fun getGeneralEmbedBuilder(
@@ -227,7 +235,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         val embedBuilder = EmbedBuilder()
         embedBuilder.setTitle(title)
         embedBuilder.setThumbnail(messageAuthor.effectiveAvatarUrl)
-        if (description.length > 2048) {
+        if (description.length > MessageEmbed.TEXT_MAX_LENGTH) {
             val parts = StringUtils.splitMessageWithCodeBlocks(description, lang = "LDIF")
             embedBuilder.setDescription(parts[0])
             ebs.add(embedBuilder)
