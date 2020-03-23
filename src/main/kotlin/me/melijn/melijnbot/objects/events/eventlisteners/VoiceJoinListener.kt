@@ -9,9 +9,9 @@ import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent
 
 class VoiceJoinListener(container: Container) : AbstractListener(container) {
 
-    override fun onEvent(event: GenericEvent) {
+    override fun onEvent(event: GenericEvent) = runBlocking {
         if (event is GuildVoiceJoinEvent) {
-            runBlocking {
+            if (!event.member.user.isBot || event.member.user.idLong == container.settings.id) {
                 VoiceUtil.channelUpdate(container, event.channelJoined)
             }
         }

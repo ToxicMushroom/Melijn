@@ -9,9 +9,9 @@ import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent
 
 class VoiceMoveListener(container: Container) : AbstractListener(container) {
 
-    override fun onEvent(event: GenericEvent) {
+    override fun onEvent(event: GenericEvent) = runBlocking {
         if (event is GuildVoiceMoveEvent) {
-            runBlocking {
+            if (!event.member.user.isBot || event.member.user.idLong == container.settings.id) {
                 VoiceUtil.channelUpdate(container, event.channelJoined)
                 VoiceUtil.channelUpdate(container, event.channelLeft)
             }

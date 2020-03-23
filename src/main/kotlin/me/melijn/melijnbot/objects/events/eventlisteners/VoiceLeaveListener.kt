@@ -10,10 +10,10 @@ import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent
 
 class VoiceLeaveListener(container: Container) : AbstractListener(container) {
 
-    override fun onEvent(event: GenericEvent) {
+    override fun onEvent(event: GenericEvent) = runBlocking {
         if (event is GuildVoiceLeaveEvent) {
-            runBlocking {
-                musicNodeSwitchCheck(container, event)
+            musicNodeSwitchCheck(container, event)
+            if (!event.member.user.isBot || event.member.user.idLong == container.settings.id) {
                 VoiceUtil.channelUpdate(container, event.channelLeft)
             }
         }

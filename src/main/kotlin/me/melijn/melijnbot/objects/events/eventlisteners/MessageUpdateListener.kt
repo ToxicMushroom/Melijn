@@ -17,24 +17,25 @@ import java.awt.Color
 
 class MessageUpdateListener(container: Container) : AbstractListener(container) {
 
-    override fun onEvent(event: GenericEvent) {
+    override fun onEvent(event: GenericEvent) = runBlocking {
         if (event is GuildMessageUpdateEvent) {
             onMessageUpdate(event)
-            container.taskManager.async {
-                FilterUtil.handleFilter(container, event.message)
-            }
+            FilterUtil.handleFilter(container, event.message)
         }
     }
 
-    private fun onMessageUpdate(event: GuildMessageUpdateEvent) = runBlocking {
+    private suspend fun onMessageUpdate(event: GuildMessageUpdateEvent) {
+        if (event.author.isBot) return
         val message = event.message
         val newContent = event.message.contentRaw
-        val messageWrapper = container.daoManager.messageHistoryWrapper
+        val guild = event.guild
+        val daoManager = container.daoManager
+        val messageWrapper = daoManager.messageHistoryWrapper
         val deferredMessage = messageWrapper.getMessageById(event.messageIdLong)
 
         val daoMessage = deferredMessage
             ?: DaoMessage(
-                event.guild.idLong,
+                guild.idLong,
                 event.channel.idLong,
                 event.author.idLong,
                 message.idLong,
@@ -47,11 +48,11 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
 
         container.taskManager.async {
             messageWrapper.setMessage(daoMessage)
-        }
 
-        val channel = event.guild.getAndVerifyLogChannelByType(container.daoManager, LogChannelType.EDITED_MESSAGE, true)
-            ?: return@runBlocking
-        postMessageUpdateLog(event, channel, daoMessage, oldContent)
+            val channel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.EDITED_MESSAGE, true)
+                ?: return@async
+            postMessageUpdateLog(event, channel, daoMessage, oldContent)
+        }
     }
 
     private suspend fun postMessageUpdateLog(event: GuildMessageUpdateEvent, logChannel: TextChannel, daoMessage: DaoMessage, oldContent: String) {

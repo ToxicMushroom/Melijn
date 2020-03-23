@@ -5,7 +5,6 @@ import me.melijn.melijnbot.database.IMPORTANT_CACHE
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.utils.loadingCacheFrom
-import net.dv8tion.jda.api.AccountType
 import net.dv8tion.jda.api.entities.MessageEmbed
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -63,11 +62,11 @@ class MessageWrapper(val taskManager: TaskManager, private val messageDao: Messa
 
         return content == null &&
             attachments.isEmpty() &&
-            (embed == null || embed.isEmpty || !embed.isSendable(AccountType.BOT))
+            (embed == null || embed.isEmpty || !embed.isSendable)
     }
 
     private fun validateEmbedOrNull(embed: MessageEmbed): MessageEmbed? =
-        if (embed.isEmpty || !embed.isSendable(AccountType.BOT)) {
+        if (embed.isEmpty || !embed.isSendable) {
             null
         } else {
             embed

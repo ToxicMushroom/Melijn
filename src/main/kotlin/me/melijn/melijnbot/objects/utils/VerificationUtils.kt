@@ -119,6 +119,4 @@ object VerificationUtils {
         val role = guild.getAndVerifyRoleByType(daoManager, RoleType.UNVERIFIED, true) ?: return true
         return !(member.roles.contains(role))
     }
-
-
 }

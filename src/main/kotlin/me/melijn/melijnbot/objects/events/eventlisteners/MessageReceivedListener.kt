@@ -31,6 +31,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             handleAttachmentLog(event)
             handleVerification(event)
             FilterUtil.handleFilter(container, event.message)
+            // SpammingUtil.handleSpam(container, event.message)
         }
         if (event is MessageReceivedEvent) {
             handleSimpleMelijnPing(event)
@@ -58,6 +59,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
     }
 
     private suspend fun handleVerification(event: GuildMessageReceivedEvent) {
+        if (event.author.isBot) return
         if (!event.message.isFromGuild) return
         val textChannel = event.channel
         val guild = event.guild
@@ -111,6 +113,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
 
 
     private fun handleAttachmentLog(event: GuildMessageReceivedEvent) {
+        if (event.author.isBot) return
         if (event.message.attachments.isEmpty()) return
         val logChannelWrapper = container.daoManager.logChannelWrapper
         val logChannelCache = logChannelWrapper.logChannelCache
@@ -124,7 +127,8 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         }
     }
 
-    private fun handleMessageReceivedStoring(event: GuildMessageReceivedEvent) = runBlocking {
+    private suspend fun handleMessageReceivedStoring(event: GuildMessageReceivedEvent) {
+        if (event.author.isBot && event.author.idLong != container.settings.id) return
         val guildId = event.guild.idLong
         val logChannelWrapper = container.daoManager.logChannelWrapper
         val logChannelCache = logChannelWrapper.logChannelCache
@@ -134,7 +138,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         val pmId = logChannelCache.get(Pair(guildId, LogChannelType.PURGED_MESSAGE))
         val fmId = logChannelCache.get(Pair(guildId, LogChannelType.FILTERED_MESSAGE))
         val emId = logChannelCache.get(Pair(guildId, LogChannelType.EDITED_MESSAGE))
-        if (odmId.await() == -1L && sdmId.await() == -1L && pmId.await() == -1L && fmId.await() == -1L && emId.await() == -1L) return@runBlocking
+        if (odmId.await() == -1L && sdmId.await() == -1L && pmId.await() == -1L && fmId.await() == -1L && emId.await() == -1L) return
 
         val messageWrapper = container.daoManager.messageHistoryWrapper
         var content = event.message.contentRaw

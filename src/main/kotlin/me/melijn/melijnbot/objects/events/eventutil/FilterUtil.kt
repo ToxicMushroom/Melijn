@@ -19,14 +19,14 @@ import java.util.regex.Pattern
 object FilterUtil {
 
     suspend fun handleFilter(container: Container, message: Message) = container.taskManager.async {
+        if (message.author.isBot) return@async
         val guild = message.guild
+        val member = message.member ?: return@async
         val channel = message.textChannel
+        if (member.hasPermission(channel, Permission.MESSAGE_MANAGE)) return@async
         val guildId = guild.idLong
         val channelId = channel.idLong
-        if (message.author.isBot) return@async
-        val member = message.member ?: return@async
         val daoManager = container.daoManager
-        if (member.hasPermission(channel, Permission.MESSAGE_MANAGE) || member == guild.selfMember) return@async
 
         // Filter groups for this channel
         val groups = getFilterGroups(container, guildId, channelId)
@@ -71,9 +71,15 @@ object FilterUtil {
                 }
                 FilterMode.NO_WRAP -> {
                     map["mustnot.contain"] = filterNoWrap(container, message, fg)
+                    if (map.getValue("mustnot.contain").isNotEmpty()) {
+                        extraPoints = fg.points * map.getValue("mustnot.contain").size
+                    }
                 }
                 FilterMode.DEFAULT -> {
                     map["mustnot.contain"] = filterDefault(container, message, fg)
+                    if (map.getValue("mustnot.contain").isNotEmpty()) {
+                        extraPoints = fg.points * map.getValue("mustnot.contain").size
+                    }
                 }
                 FilterMode.NO_MODE, FilterMode.DISABLED -> {
                 }

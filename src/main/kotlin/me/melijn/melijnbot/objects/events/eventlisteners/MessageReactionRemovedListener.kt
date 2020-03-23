@@ -13,7 +13,9 @@ import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemove
 class MessageReactionRemovedListener(container: Container) : AbstractListener(container) {
 
     override fun onEvent(event: GenericEvent) {
-        if (event is GuildMessageReactionRemoveEvent) onGuildMessageReactionRemove(event)
+        if (event is GuildMessageReactionRemoveEvent) {
+            onGuildMessageReactionRemove(event)
+        }
     }
 
     private fun onGuildMessageReactionRemove(event: GuildMessageReactionRemoveEvent) = runBlocking {
@@ -23,6 +25,7 @@ class MessageReactionRemovedListener(container: Container) : AbstractListener(co
     private suspend fun selfRoleHandler(event: GuildMessageReactionRemoveEvent) {
         val guild = event.guild
         val member = event.member ?: guild.retrieveMemberById(event.userIdLong).awaitOrNull() ?: return
+        if (member.user.isBot) return
         val role = SelfRoleUtil.getSelectedSelfRoleNByReactionEvent(event, container) ?: return
 
         if (member.roles.contains(role)) {
