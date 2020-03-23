@@ -48,7 +48,7 @@ class MelijnBot {
             .setToken(container.settings.tokens.discord)
             .setActivity(Activity.listening("commands | ${container.settings.prefix}help"))
             .setAutoReconnect(true)
-            .setDisabledCacheFlags(EnumSet.of(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY))
+            .disableCache(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY)
             .setChunkingFilter(ChunkingFilter.NONE)
             .setEventManagerProvider { eventManager }
 
