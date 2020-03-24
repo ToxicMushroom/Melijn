@@ -17,8 +17,10 @@ import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.sharding.ShardManager
 import java.io.File
 
+val objectMapper = ObjectMapper()
 
 class Container {
+
 
     var logToDiscord: Boolean = true
 
@@ -44,7 +46,7 @@ class Container {
 
     var startTime = System.currentTimeMillis()
 
-    var settings: Settings = ObjectMapper().readValue(File("config.json"), Settings::class.java)
+    var settings: Settings = objectMapper.readValue(File("config.json"), Settings::class.java)
     val taskManager = TaskManager()
 
     //Used by events

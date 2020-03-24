@@ -32,7 +32,7 @@ class MusicNodeWrapper(val taskManager: TaskManager, private val musicNodeDao: M
         musicNodeCache.put(guildId, CompletableFuture.completedFuture(node))
     }
 
-    suspend fun isPremium(guildId: Long): Boolean{
+    suspend fun isPremium(guildId: Long): Boolean {
         return musicNodeCache.get(guildId).await() == "premium"
     }
 

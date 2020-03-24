@@ -12,7 +12,7 @@ class SetSlowModeCommand : AbstractCommand("command.setslowmode") {
     init {
         id = 78
         name = "setSlowMode"
-        aliases = arrayOf("ss")
+        aliases = arrayOf("ssm")
         commandCategory = CommandCategory.ADMINISTRATION
     }
 

@@ -58,7 +58,14 @@ class YTSearch {
     ) = youtubeService.launch {
         val lManager = Container.instance.lavaManager
         if (lManager.lavalinkEnabled) {
-            val restClient = lManager.jdaLavaLink?.getLink(guild)?.getNode(true)?.restClient
+            val prem = Container.instance.daoManager.musicNodeWrapper.isPremium(guild.idLong)
+            val llink = if (prem && lManager.premiumLavaLink != null) {
+                lManager.premiumLavaLink
+            } else {
+                lManager.jdaLavaLink
+            }
+
+            val restClient = llink?.getLink(guild)?.getNode(true)?.restClient
             val tracks = when (searchType) {
                 SearchType.SC -> {
                     restClient?.getSoundCloudSearchResult(query)?.await()

@@ -136,6 +136,9 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
 
     val filterWrapper: FilterWrapper //All filters
     val filterGroupWrapper: FilterGroupWrapper //Groups of filters with info like state, channels and name
+    val spamWrapper: SpamWrapper // Settings for spam
+    val spamGroupWrapper: SpamGroupWrapper //Groups of spams with info like state, channels and name
+
     val autoPunishmentWrapper: AutoPunishmentWrapper //keeps track of users
     val autoPunishmentGroupWrapper: PunishmentGroupWrapper //keeps track of punishment ladders/groups (points -> punishment)
     val punishmentWrapper: PunishmentWrapper //preconfigured punishments
@@ -218,6 +221,8 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
 
         filterWrapper = FilterWrapper(taskManager, FilterDao(driverManager))
         filterGroupWrapper = FilterGroupWrapper(taskManager, FilterGroupDao(driverManager))
+        spamWrapper = SpamWrapper(taskManager, SpamDao(driverManager))
+        spamGroupWrapper = SpamGroupWrapper(taskManager, SpamGroupDao(driverManager))
         autoPunishmentWrapper = AutoPunishmentWrapper(taskManager, AutoPunishmentDao(driverManager))
         autoPunishmentGroupWrapper = PunishmentGroupWrapper(taskManager, PunishmentGroupDao(driverManager))
         punishmentWrapper = PunishmentWrapper(taskManager, PunishmentDao(driverManager))

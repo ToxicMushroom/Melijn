@@ -41,8 +41,6 @@ class VoiceService(
 
             if (guildMPlayer?.guildTrackManager != null) {
                 guildMPlayer.guildTrackManager.stopAndDestroy()
-                guildMPlayer.destroyTrackManager()
-                MusicPlayerManager.guildMusicPlayers.remove(guildMPlayer.guildId)
                 logger.info("$guildId stopped player & left")
 
             } else {
