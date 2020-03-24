@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'com.github.johnrengelman.shadow' version '5.2.0'
-    id 'org.jetbrains.kotlin.jvm' version '1.3.70'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.71'
 }
 
 mainClassName = 'me.melijn.melijnbot.MelijnBotKt'
@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation('net.dv8tion:JDA:4.1.1_123') {
+    implementation('net.dv8tion:JDA:4.1.1_124') {
         exclude module: 'opus-java'
     }
 
@@ -34,7 +34,7 @@ dependencies {
     implementation group: 'com.github.ToxicMushroom', name: 'Lavalink-Client', version: 'cf9a8f9cef'
 
     // https://github.com/ToxicMushroom/JagTag-Kotlin
-    implementation group: 'com.github.ToxicMushroom', name: 'JagTag-Kotlin', version: '34d39c7ba7'
+    implementation group: 'com.github.ToxicMushroom', name: 'JagTag-Kotlin', version: 'c0f01bae27'
 
     // https://search.maven.org/artifact/com.zaxxer/HikariCP
     implementation group: 'com.zaxxer', name: 'HikariCP', version: '3.4.2'
@@ -63,6 +63,9 @@ dependencies {
 
     implementation group: 'org.jooby', name: 'jooby-jackson', version: '1.6.6'
 
+    // https://github.com/FasterXML/jackson-module-kotlin
+    implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.10.2'
+
     // https://mvnrepository.com/artifact/com.google.guava/guava
     implementation group: 'com.google.guava', name: 'guava', version: '28.2-jre'
 
@@ -82,21 +85,21 @@ dependencies {
     implementation group: 'com.github.ToxicMushroom', name: 'gifencoder', version: '10a95a4c97'
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib-jdk8
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.3.70'
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.3.71'
 
 
     // START | https://github.com/JetBrains/kotlin/blob/master/libraries/examples/kotlin-jsr223-local-example/build.gradle.kts
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-script-runtime
-    // implementation group: 'org.jetbrains.kotlin', name: 'kotlin-script-runtime', version: '1.3.70'
+    // implementation group: 'org.jetbrains.kotlin', name: 'kotlin-script-runtime', version: '1.3.71'
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-compiler-embeddable
-    // implementation group: 'org.jetbrains.kotlin', name: 'kotlin-compiler-embeddable', version: '1.3.70'
+    // implementation group: 'org.jetbrains.kotlin', name: 'kotlin-compiler-embeddable', version: '1.3.71'
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-script-util
-    // implementation group: 'org.jetbrains.kotlin', name: 'kotlin-script-util', version: '1.3.70'
+    // implementation group: 'org.jetbrains.kotlin', name: 'kotlin-script-util', version: '1.3.71'
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-scripting-compiler-embeddable
-    // runtimeOnly group: 'org.jetbrains.kotlin', name: 'kotlin-scripting-compiler-embeddable', version: '1.3.70'
+    // runtimeOnly group: 'org.jetbrains.kotlin', name: 'kotlin-scripting-compiler-embeddable', version: '1.3.71'
     // END
 
 }
