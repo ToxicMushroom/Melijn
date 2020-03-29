@@ -21,7 +21,7 @@ object AnimeCommandUtil {
             }
             context.args.size == 1 -> {
                 author = context.author
-                target = getUserByArgsN(context, 0)
+                target = retrieveUserByArgsN(context, 0)
                 targetRole = getRoleByArgsN(context, 0)
                 when {
                     targetRole != null -> executeAbs(context, type, author, targetRole)
@@ -34,9 +34,9 @@ object AnimeCommandUtil {
                 }
             }
             else -> {
-                author = getUserByArgsN(context, 0)
+                author = retrieveUserByArgsN(context, 0)
                 authorRole = getRoleByArgsN(context, 0)
-                target = getUserByArgsN(context, 1)
+                target = retrieveUserByArgsN(context, 1)
                 targetRole = getRoleByArgsN(context, 1)
                 when {
                     author != null -> {

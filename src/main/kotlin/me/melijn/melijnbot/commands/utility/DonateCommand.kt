@@ -28,7 +28,7 @@ class DonateCommand : AbstractCommand("command.donate") {
         override suspend fun execute(context: CommandContext) {
             val wrapper = context.daoManager.supporterWrapper
             val supporter = wrapper.supporters.firstOrNull { s -> s.userId == context.authorId } ?: return
-            if (supporter.lastServerPickTime <= System.currentTimeMillis() - 1_209_600_000) {
+            if (supporter.lastServerPickTime <= System.currentTimeMillis() - 1_209_600_000 || context.container.settings.developerIds.contains(supporter.userId)) {
                 wrapper.setGuild(context.authorId, context.guildId)
 
                 val msg = context.getTranslation("$root.selected")

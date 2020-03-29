@@ -44,8 +44,11 @@ class VoiceLeaveListener(container: Container) : AbstractListener(container) {
         container.lavaManager.tryToConnectToVCSilent(channel, premium)
 
         trackManager.iPlayer.playTrack(track)
-        trackManager.iPlayer.seekTo(pos)
-
+        try {
+            trackManager.iPlayer.seekTo(pos)
+        } catch (t: Throwable) {
+            // might be a live stream
+        }
         MusicNodeCommand.map.remove(guildId)
     }
 }
