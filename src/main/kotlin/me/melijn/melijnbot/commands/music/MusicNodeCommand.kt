@@ -20,6 +20,7 @@ class MusicNodeCommand : AbstractCommand("command.musicnode") {
 
     companion object {
         val map = mutableMapOf<Long, MusicNodeInfo>()
+        val connectionMap = mutableMapOf<Long, Boolean>()
     }
 
     //Should support things like usa nodes and many more, should save in db, all connects should check cache
@@ -60,7 +61,7 @@ class MusicNodeCommand : AbstractCommand("command.musicnode") {
         val mNodeWrapper = context.daoManager.musicNodeWrapper
         val isPremium = mNodeWrapper.isPremium(context.guildId)
         if (isPremium) return
-
+        connectionMap[context.guildId] = false
         mNodeWrapper.setNode(context.guildId, "premium")
 
 
@@ -68,9 +69,11 @@ class MusicNodeCommand : AbstractCommand("command.musicnode") {
 
         val pos = trackManager.iPlayer.trackPosition
         val channel = context.lavaManager.getConnectedChannel(context.guild) ?: return
+        context.guildMusicPlayer.removeTrackManagerListener()
+        trackManager.iPlayer = context.lavaManager.getIPlayer(context.guildId, true)
+        context.guildMusicPlayer.addTrackManagerListener()
 
-        context.lavaManager.closeConnection(context.guildId, false)
-
+        context.lavaManager.closeConnectionLite(context.guildId, false)
         map[context.guildId] = MusicNodeInfo(channel.idLong, track, pos, System.currentTimeMillis())
     }
 
@@ -79,7 +82,7 @@ class MusicNodeCommand : AbstractCommand("command.musicnode") {
         val mNodeWrapper = context.daoManager.musicNodeWrapper
         val isPremium = mNodeWrapper.isPremium(context.guildId)
         if (!isPremium) return
-
+        connectionMap[context.guildId] = true
         mNodeWrapper.setNode(context.guildId, "default")
 
         val track = trackManager.playingTrack ?: return
@@ -87,8 +90,7 @@ class MusicNodeCommand : AbstractCommand("command.musicnode") {
         val pos = trackManager.iPlayer.trackPosition
         val channel = context.lavaManager.getConnectedChannel(context.guild) ?: return
 
-        context.lavaManager.closeConnection(context.guildId, true)
-
+        context.lavaManager.closeConnectionLite(context.guildId, true)
         map[context.guildId] = MusicNodeInfo(channel.idLong, track, pos, System.currentTimeMillis())
     }
 }

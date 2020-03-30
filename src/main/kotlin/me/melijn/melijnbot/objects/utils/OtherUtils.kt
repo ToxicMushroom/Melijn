@@ -391,6 +391,13 @@ fun String.maxLength(length: Int): String {
     return this.substring(0, min(length, this.length))
 }
 
+// Any space surrounded sequence of characters is considered a word
+fun String.countWords(): Int {
+    val splitted = this.split("\\S+".toRegex())
+    if (splitted.size == 1 && splitted[0].isBlank()) return 0
+    return splitted.size
+}
+
 fun String.replace(oldValue: String, newValue: Int): String {
     return this.replace(oldValue, "$newValue")
 }

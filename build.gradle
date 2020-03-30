@@ -6,7 +6,7 @@ plugins {
 }
 
 mainClassName = 'me.melijn.melijnbot.MelijnBotKt'
-version = '2.0.3'
+version = '2.0.4'
 sourceCompatibility = JavaVersion.VERSION_12
 
 repositories {
@@ -22,7 +22,6 @@ dependencies {
     implementation('net.dv8tion:JDA:4.1.1_127') {
         exclude module: 'opus-java'
     }
-
 
     // https://bintray.com/sedmelluq/com.sedmelluq/jda-nas
     implementation group: 'com.sedmelluq', name: 'jda-nas', version: '1.1.0'

@@ -27,7 +27,7 @@ object RunConditionUtil {
             RunCondition.SAME_VC_BOT_ALONE_OR_USER_DJ -> checkSameVCBotAloneOrUserDJ(container, event, command, language)
             RunCondition.VC_BOT_OR_USER_DJ -> checkVCBotOrUserDJ(container, event, command, language)
             RunCondition.BOT_ALONE_OR_USER_DJ -> checkBotAloneOrUserDJ(container, event, command, language)
-            RunCondition.PLAYING_TRACK_NOT_NULL -> checkPlayingTrackNotNull(container, event, language)
+            RunCondition.PLAYING_TRACK_NOT_NULL -> checkPlayingTrackNotNullMessage(container, event, language)
             RunCondition.DEV_ONLY -> checkDevOnly(container, event, language)
             RunCondition.CHANNEL_NSFW -> checkChannelNSFW(container, event, language)
             RunCondition.VOTED -> checkVoted(container, event, language)
@@ -105,12 +105,21 @@ object RunConditionUtil {
         }
     }
 
-    suspend fun checkPlayingTrackNotNull(container: Container, event: MessageReceivedEvent, language: String): Boolean {
+    suspend fun checkPlayingTrackNotNullMessage(container: Container, event: MessageReceivedEvent, language: String): Boolean {
+        if (checkPlayingTrackNotNull(container, event, language)) {
+            return true
+        }
+
+        val noSongPlaying = i18n.getTranslation(language, "message.runcondition.failed.playingtracknotnull")
+        sendMsg(event.textChannel, noSongPlaying)
+        return false
+    }
+
+
+    fun checkPlayingTrackNotNull(container: Container, event: MessageReceivedEvent, language: String): Boolean {
         val trackManager = container.lavaManager.musicPlayerManager.getGuildMusicPlayer(event.guild).guildTrackManager
         val cTrack: AudioTrack? = trackManager.iPlayer.playingTrack
         if (cTrack == null || event.guild.selfMember.voiceState?.inVoiceChannel() != true) {
-            val noSongPlaying = i18n.getTranslation(language, "message.runcondition.failed.playingtracknotnull")
-            sendMsg(event.textChannel, noSongPlaying)
             return false
         }
         return true

@@ -50,6 +50,7 @@ public class Settings {
         public String botsForDiscordCom;
         public String discordBoats;
         public String randomCatApi;
+        public String kSoftApi;
     }
 
     public static class Database {

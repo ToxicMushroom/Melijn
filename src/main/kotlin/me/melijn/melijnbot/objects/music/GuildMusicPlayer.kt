@@ -2,7 +2,6 @@ package me.melijn.melijnbot.objects.music
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import kotlinx.coroutines.runBlocking
-import lavalink.client.player.IPlayer
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.isPremiumGuild
@@ -12,18 +11,21 @@ import me.melijn.melijnbot.objects.utils.sendMsg
 class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val guildId: Long) {
 
     val searchMenus: MutableMap<Long, List<AudioTrack>> = mutableMapOf()
-    private val iPlayer: IPlayer = lavaManager.getIPlayer(guildId, runBlocking { daoManager.musicNodeWrapper.isPremium(guildId) })
-    val guildTrackManager: GuildTrackManager = GuildTrackManager(guildId, daoManager, lavaManager, iPlayer)
+    val guildTrackManager: GuildTrackManager = GuildTrackManager(guildId, daoManager, lavaManager, lavaManager.getIPlayer(guildId, runBlocking { daoManager.musicNodeWrapper.isPremium(guildId) }))
 
     init {
-        iPlayer.addListener(guildTrackManager)
+        guildTrackManager.iPlayer.addListener(guildTrackManager)
     }
 
-    fun destroyTrackManager() {
-        iPlayer.removeListener(guildTrackManager)
+    fun addTrackManagerListener() {
+        guildTrackManager.iPlayer.removeListener(guildTrackManager)
     }
 
-    fun getSendHandler(): AudioPlayerSendHandler = AudioPlayerSendHandler(iPlayer)
+    fun removeTrackManagerListener() {
+        guildTrackManager.iPlayer.removeListener(guildTrackManager)
+    }
+
+    fun getSendHandler(): AudioPlayerSendHandler = AudioPlayerSendHandler(guildTrackManager.iPlayer)
     fun safeQueueSilent(daoManager: DaoManager, track: AudioTrack): Boolean {
         if (
             (guildTrackManager.trackSize() <= DONATE_QUEUE_LIMIT && isPremiumGuild(daoManager, guildId)) ||

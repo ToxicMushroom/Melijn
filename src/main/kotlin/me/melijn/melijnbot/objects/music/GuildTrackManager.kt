@@ -25,7 +25,7 @@ class GuildTrackManager(
     val guildId: Long,
     val daoManager: DaoManager,
     val lavaManager: LavaManager,
-    val iPlayer: IPlayer
+    var iPlayer: IPlayer
 ) : AudioEventAdapterWrapped() {
 
     var votes: Int = 0

@@ -77,6 +77,13 @@ class LavaManager(
     }
 
     fun closeConnection(guildId: Long, premium: Boolean) {
+        closeConnectionLite(guildId, premium)
+
+        MusicPlayerManager.guildMusicPlayers[guildId]?.removeTrackManagerListener()
+        MusicPlayerManager.guildMusicPlayers.remove(guildId)
+    }
+
+    fun closeConnectionLite(guildId: Long, premium: Boolean) {
         val ll = if (premium) premiumLavaLink else jdaLavaLink
         val guild = shardManager.getGuildById(guildId)
 
@@ -85,9 +92,6 @@ class LavaManager(
         } else {
             guild?.let { ll.getLink(it).disconnect() }
         }
-
-        MusicPlayerManager.guildMusicPlayers[guildId]?.destroyTrackManager()
-        MusicPlayerManager.guildMusicPlayers.remove(guildId)
     }
 
     fun getConnectedChannel(guild: Guild): VoiceChannel? = guild.selfMember.voiceState?.channel

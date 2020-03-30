@@ -20,7 +20,7 @@ class VoiceScoutService(
             if (guild == null) {
                 guildMusicPlayer.guildTrackManager.clear()
                 guildMusicPlayer.guildTrackManager.iPlayer.stopTrack()
-                guildMusicPlayer.destroyTrackManager()
+                guildMusicPlayer.removeTrackManagerListener()
                 MusicPlayerManager.guildMusicPlayers.remove(guildMusicPlayer.guildId)
             } else {
                 val botChannel = container.lavaManager.getConnectedChannel(guild)
@@ -34,7 +34,7 @@ class VoiceScoutService(
                 if (botChannel == null) {
                     guildMusicPlayer.guildTrackManager.clear()
                     guildMusicPlayer.guildTrackManager.iPlayer.stopTrack()
-                    guildMusicPlayer.destroyTrackManager()
+                    guildMusicPlayer.removeTrackManagerListener()
                     MusicPlayerManager.guildMusicPlayers.remove(guildMusicPlayer.guildId)
                 }
             }

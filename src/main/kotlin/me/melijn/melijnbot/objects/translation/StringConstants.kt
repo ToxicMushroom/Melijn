@@ -34,6 +34,7 @@ const val DIVINE_DISCORD_BOTS_COM = "https://divinediscordbots.com"
 const val DISCORD_BOTS_GG = "https://discord.bots.gg"
 const val BOTS_FOR_DISCORD_COM = "https://botsfordiscord.com"
 const val DISCORD_BOATS = "https://discord.boats"
+const val KSOFT_SI = "https://api.ksoft.si"
 
 class StringConstants
 

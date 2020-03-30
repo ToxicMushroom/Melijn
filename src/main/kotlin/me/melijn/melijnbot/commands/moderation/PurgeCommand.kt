@@ -21,7 +21,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
         id = 39
         name = "purge"
         aliases = arrayOf(silentPurgeName, silentPruneName, "prune")
-        discordChannelPermissions = arrayOf(Permission.MESSAGE_MANAGE)
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_MANAGE, Permission.MESSAGE_HISTORY)
         commandCategory = CommandCategory.MODERATION
     }
 
