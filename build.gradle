@@ -63,7 +63,7 @@ dependencies {
     implementation group: 'org.jooby', name: 'jooby-jackson', version: '1.6.6'
 
     // https://github.com/FasterXML/jackson-module-kotlin
-    implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.10.2'
+    implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.10.3'
 
     // https://mvnrepository.com/artifact/com.google.guava/guava
     implementation group: 'com.google.guava', name: 'guava', version: '28.2-jre'

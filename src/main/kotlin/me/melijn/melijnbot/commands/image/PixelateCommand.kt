@@ -31,7 +31,7 @@ class PixelateCommand : AbstractCommand("command.pixelate") {
             ImageUtils.pixelate(image, i)
 
         }, hasOffset = true, defaultOffset = { img ->
-            max(img.height, img.width) / 100
+            max(1, max(img.height, img.width) / 100)
 
         }, offsetRange = { img ->
             IntRange(1, max(img.height, img.width))
@@ -44,7 +44,7 @@ class PixelateCommand : AbstractCommand("command.pixelate") {
             ImageUtils.pixelate(image, i, true)
 
         }, hasOffset = true, defaultOffset = { img ->
-            max(img.height, img.width) / 100
+            max(1, max(img.height, img.width) / 100)
 
         }, offsetRange = { img ->
             IntRange(1, max(img.height, img.width))
