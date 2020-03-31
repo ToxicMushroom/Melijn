@@ -47,7 +47,7 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
         val daoManager = container.daoManager
         val user = event.user
 
-        if (daoManager.unverifiedUsersWrapper.contains(event.guild.idLong, user.idLong)) {
+        if (!daoManager.unverifiedUsersWrapper.contains(event.guild.idLong, user.idLong)) {
             JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, user, ChannelType.LEAVE, MessageType.LEAVE)
         }
     }
