@@ -506,4 +506,20 @@ object LogUtils {
             }
         }
     }
+
+    fun sendRemovedSelfRoleLog(language: String, zoneId: ZoneId, emoteji: String, logChannel: TextChannel?, causePath: String, causeArg: String) {
+        if (logChannel == null) return
+        val title = i18n.getTranslation(language, "logging.removed.selfrole.title")
+            .replace("%emoteji%", emoteji)
+        val cause = i18n.getTranslation(language, "logging.removed.selfrole.causepath.$causePath")
+            .replace("%causeArg%", causeArg)
+
+        val eb = EmbedBuilder()
+        eb.setTitle(title)
+        eb.setColor(Color.decode("#CC0000"))
+        eb.setDescription(cause)
+        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+
+        logChannel.sendMessage(eb.build())
+    }
 }
