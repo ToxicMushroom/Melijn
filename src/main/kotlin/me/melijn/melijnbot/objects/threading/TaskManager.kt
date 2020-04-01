@@ -27,7 +27,14 @@ class TaskManager {
         task.run()
     }
 
-    fun asyncAfter(afterMillis: Long, func: () -> Unit) {
-        scheduledExecutorService.schedule(Task { func() }, afterMillis, TimeUnit.MILLISECONDS)
+    inline fun asyncInline(crossinline block: CoroutineScope.() -> Unit) = CoroutineScope(dispatcher).launch {
+        val task = TaskInline {
+            block.invoke(this)
+        }
+        task.run()
+    }
+
+    inline fun asyncAfter(afterMillis: Long, crossinline func: () -> Unit) {
+        scheduledExecutorService.schedule(TaskInline { func() }, afterMillis, TimeUnit.MILLISECONDS)
     }
 }

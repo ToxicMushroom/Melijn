@@ -18,3 +18,18 @@ class Task(private val func: suspend () -> Unit) : Runnable {
         }
     }
 }
+
+class TaskInline(private inline val func: () -> Unit) : Runnable {
+
+
+    override fun run() {
+        runBlocking {
+            try {
+                func()
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                e.sendInGuild()
+            }
+        }
+    }
+}

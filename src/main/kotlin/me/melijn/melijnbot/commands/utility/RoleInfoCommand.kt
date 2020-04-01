@@ -49,6 +49,7 @@ class RoleInfoCommand : AbstractCommand("command.roleinfo") {
         .replace("%isHoisted%", if (role.isHoisted) yes else no)
         .replace("%isManaged%", if (role.isManaged) yes else no)
         .replace("%color%", getColorString(role))
+        .replace("%canMelijnInteract%", if (role.guild.selfMember.canInteract(role)) yes else no)
 
     private fun getColorString(role: Role): String {
         if (role.color == null) return "none"

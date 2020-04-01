@@ -68,13 +68,14 @@ class MusicNodeCommand : AbstractCommand("command.musicnode") {
         val track = trackManager.playingTrack ?: return
 
         val pos = trackManager.iPlayer.trackPosition
+        val volume = trackManager.iPlayer.volume
         val channel = context.lavaManager.getConnectedChannel(context.guild) ?: return
         context.guildMusicPlayer.removeTrackManagerListener()
         trackManager.iPlayer = context.lavaManager.getIPlayer(context.guildId, true)
         context.guildMusicPlayer.addTrackManagerListener()
 
         context.lavaManager.closeConnectionLite(context.guildId, false)
-        map[context.guildId] = MusicNodeInfo(channel.idLong, track, pos, System.currentTimeMillis())
+        map[context.guildId] = MusicNodeInfo(channel.idLong, track, pos, volume, System.currentTimeMillis())
     }
 
     private suspend fun switchToDefaultNode(context: CommandContext) {
@@ -88,10 +89,11 @@ class MusicNodeCommand : AbstractCommand("command.musicnode") {
         val track = trackManager.playingTrack ?: return
 
         val pos = trackManager.iPlayer.trackPosition
+        val volume = trackManager.iPlayer.volume
         val channel = context.lavaManager.getConnectedChannel(context.guild) ?: return
 
         context.lavaManager.closeConnectionLite(context.guildId, true)
-        map[context.guildId] = MusicNodeInfo(channel.idLong, track, pos, System.currentTimeMillis())
+        map[context.guildId] = MusicNodeInfo(channel.idLong, track, pos, volume, System.currentTimeMillis())
     }
 }
 
@@ -99,5 +101,6 @@ data class MusicNodeInfo(
     val channelId: Long,
     val track: AudioTrack,
     val position: Long,
+    val volume: Int,
     val millis: Long
 )

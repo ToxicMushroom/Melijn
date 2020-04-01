@@ -71,6 +71,7 @@ suspend fun Throwable.sendInGuildSuspend(guild: Guild? = null, channel: MessageC
         sb.appendln("**Extra**")
         sb.appendln(it)
     }
+
     if (Container.instance.logToDiscord)
         sendMsg(textChannel, sb.toString())
 
@@ -640,7 +641,7 @@ suspend fun sendPaginationModularMsg(privateChannel: PrivateChannel, msgList: Mu
 }
 
 
-suspend fun registerPaginationModularMessage(textChannel: TextChannel, message: Message, msgList: MutableList<ModularMessage>, index: Int) {
+fun registerPaginationModularMessage(textChannel: TextChannel, message: Message, msgList: MutableList<ModularMessage>, index: Int) {
     Container.instance.modularPaginationMap[System.nanoTime()] = ModularPaginationInfo(
         textChannel.guild.idLong,
         textChannel.idLong,
@@ -652,7 +653,7 @@ suspend fun registerPaginationModularMessage(textChannel: TextChannel, message: 
     addPaginationEmotes(message)
 }
 
-suspend fun registerPaginationModularMessage(privateChannel: PrivateChannel, message: Message, msgList: MutableList<ModularMessage>, index: Int) {
+fun registerPaginationModularMessage(privateChannel: PrivateChannel, message: Message, msgList: MutableList<ModularMessage>, index: Int) {
     Container.instance.modularPaginationMap[System.nanoTime()] = ModularPaginationInfo(
         -1,
         privateChannel.idLong,
@@ -664,7 +665,7 @@ suspend fun registerPaginationModularMessage(privateChannel: PrivateChannel, mes
     addPaginationEmotes(message)
 }
 
-suspend fun registerPaginationMessage(textChannel: TextChannel, message: Message, msgList: MutableList<String>, index: Int) {
+fun registerPaginationMessage(textChannel: TextChannel, message: Message, msgList: MutableList<String>, index: Int) {
     Container.instance.paginationMap[System.nanoTime()] = PaginationInfo(
         textChannel.guild.idLong,
         textChannel.idLong,
@@ -676,7 +677,7 @@ suspend fun registerPaginationMessage(textChannel: TextChannel, message: Message
     addPaginationEmotes(message)
 }
 
-suspend fun registerPaginationMessage(privateChannel: PrivateChannel, message: Message, msgList: MutableList<String>, index: Int) {
+fun registerPaginationMessage(privateChannel: PrivateChannel, message: Message, msgList: MutableList<String>, index: Int) {
     Container.instance.paginationMap[System.nanoTime()] = PaginationInfo(
         -1,
         privateChannel.idLong,
@@ -688,11 +689,11 @@ suspend fun registerPaginationMessage(privateChannel: PrivateChannel, message: M
     addPaginationEmotes(message)
 }
 
-suspend fun addPaginationEmotes(message: Message) {
-    message.addReaction("⏪").await()
-    message.addReaction("◀️").await()
-    message.addReaction("▶️").await()
-    message.addReaction("⏩").await()
+fun addPaginationEmotes(message: Message) {
+    message.addReaction("⏪").queue()
+    message.addReaction("◀️").queue()
+    message.addReaction("▶️").queue()
+    message.addReaction("⏩").queue()
 }
 
 suspend fun sendMsg(privateChannel: PrivateChannel, msg: String): List<Message> = suspendCoroutine {

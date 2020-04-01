@@ -10,7 +10,6 @@ import net.dv8tion.jda.api.hooks.VoiceDispatchInterceptor
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
 import net.dv8tion.jda.api.sharding.ShardManager
-import net.dv8tion.jda.api.utils.ChunkingFilter
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import java.net.URI
 import java.util.*
@@ -52,7 +51,6 @@ class MelijnBot {
             .setActivity(Activity.listening("commands | ${container.settings.prefix}help"))
             .setAutoReconnect(true)
             .disableCache(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY)
-            .setChunkingFilter(ChunkingFilter.NONE)
             .setEventManagerProvider { eventManager }
 
         if (!container.settings.lavalink.enabled) {

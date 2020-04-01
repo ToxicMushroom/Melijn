@@ -16,8 +16,8 @@ import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.VoiceChannel
 
-private const val UNKNOWN_ID_CAUSE = "unknownid"
-private const val CANNOT_INTERACT_CAUSE = "cannotinteract"
+const val UNKNOWN_ID_CAUSE = "unknownid"
+const val CANNOT_INTERACT_CAUSE = "cannotinteract"
 private const val NO_PERM_CAUSE = "nopermission"
 
 suspend fun Guild.getAndVerifyLogChannelByType(daoManager: DaoManager, type: LogChannelType, logIfInvalid: Boolean = true): TextChannel? {

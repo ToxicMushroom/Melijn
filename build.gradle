@@ -27,7 +27,7 @@ dependencies {
     implementation group: 'com.sedmelluq', name: 'jda-nas', version: '1.1.0'
 
     // https://bintray.com/sedmelluq/com.sedmelluq/lavaplayer
-    implementation group: 'com.sedmelluq', name: 'lavaplayer', version: '1.3.40'
+    implementation group: 'com.sedmelluq', name: 'lavaplayer', version: '1.3.42'
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Client
     implementation group: 'com.github.ToxicMushroom', name: 'Lavalink-Client', version: '85a3c69932'

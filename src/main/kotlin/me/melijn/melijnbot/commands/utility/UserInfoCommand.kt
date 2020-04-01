@@ -54,9 +54,9 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
         .replace("%isOwner%", if (member.isOwner) yes else no)
         .replace("%joinTime%", member.timeJoined.asLongLongGMTString())
         .replace("%boostTime%", member.timeBoosted?.asLongLongGMTString() ?: "/")
-        // .replace("%activities%", member.activities.joinToString { activity -> activity.name })
         .replace("%onlineStatus%", member.onlineStatus.toUCSC())
         .replace("%voiceStatus%", getVoiceStatus(member))
+        .replace("%canMelijnInteract%", if (member.guild.selfMember.canInteract(member)) yes else no)
 
 
     private fun getVoiceStatus(member: Member): String {

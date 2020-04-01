@@ -3,7 +3,14 @@ package me.melijn.melijnbot.objects.events.eventutil
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.ChannelType
+import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.objects.translation.getLanguage
+import me.melijn.melijnbot.objects.utils.LogUtils
 import me.melijn.melijnbot.objects.utils.awaitOrNull
+import me.melijn.melijnbot.objects.utils.checks.CANNOT_INTERACT_CAUSE
+import me.melijn.melijnbot.objects.utils.checks.UNKNOWN_ID_CAUSE
+import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
+import me.melijn.melijnbot.objects.utils.getZoneId
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.events.message.guild.react.GenericGuildMessageReactionEvent
 
@@ -34,8 +41,26 @@ object SelfRoleUtil {
         val roleId = map[emoteji] ?: return null
         if (daoManager.forceRoleWrapper.forceRoleCache[guildId].await()[member.idLong]?.contains(roleId) == true) return null
         val role = guild.getRoleById(roleId)
-        if (role == null || !selfMember.canInteract(role)) {
+        val language = getLanguage(daoManager, -1, guildId)
+        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.BOT)
+        val zoneId = getZoneId(daoManager, guildId)
+
+        var shouldRemove = false
+        var cause = ""
+        var causeArg = ""
+        if (role == null) {
+            cause = UNKNOWN_ID_CAUSE
+            causeArg = roleId.toString()
+            shouldRemove = true
+        } else if (!selfMember.canInteract(role)) {
+            cause = CANNOT_INTERACT_CAUSE
+            causeArg = roleId.toString()
+            shouldRemove = true
+        }
+
+        if (shouldRemove) {
             daoManager.selfRoleWrapper.remove(guildId, emoteji)
+            LogUtils.sendRemovedSelfRoleLog(language, zoneId, emoteji, logChannel, cause, causeArg)
         }
         return role
     }
