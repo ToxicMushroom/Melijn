@@ -91,7 +91,7 @@ object DiscordMethods {
         }),
         Method("memberCount", { env ->
             val guild: Guild = env.getReifiedX("guild")
-            guild.memberCache.size().toString()
+            guild.memberCount.toString()
         }),
         Method("currentTimeMillis", {
             System.currentTimeMillis().toString()

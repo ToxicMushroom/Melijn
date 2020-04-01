@@ -143,7 +143,7 @@ class RestServer(container: Container) : Jooby() {
             rsp.send(DataObject.empty()
                 .put("name", guild.name)
                 .put("iconUrl", if (guild.iconUrl == null) MISSING_IMAGE_URL else guild.iconUrl)
-                .put("memberCount", guild.memberCache.size())
+                .put("memberCount", guild.memberCount)
                 .put("ownerId", guild.ownerId)
                 .put("isBotMember", true)
                 .put("voiceChannels", voiceChannels)

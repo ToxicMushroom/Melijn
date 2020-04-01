@@ -100,7 +100,6 @@ object ImageCommandUtil {
                 effect(image, offset)
             }, context)
             else ImageUtils.addEffectToGifFrames(gifDecoder, fps, quality, repeat, { image ->
-                println("new frame begins")
                 effect(image, offset)
             })
 

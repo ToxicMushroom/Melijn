@@ -4,7 +4,6 @@ import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.MessageType
-import net.dv8tion.jda.api.AccountType
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.EmbedType
 import net.dv8tion.jda.api.entities.Message
@@ -69,7 +68,7 @@ data class ModularMessage(var messageContent: String? = null,
 
     fun toMessage(): Message? {
         val embed = embed
-        if (messageContent == null && (embed == null || embed.isEmpty || !embed.isSendable(AccountType.BOT)) && attachments.isEmpty()) return null
+        if (messageContent == null && (embed == null || embed.isEmpty || !embed.isSendable) && attachments.isEmpty()) return null
 
         val mb = MessageBuilder()
             .setEmbed(embed)

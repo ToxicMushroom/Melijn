@@ -5,10 +5,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.utils.asLongLongGMTString
-import me.melijn.melijnbot.objects.utils.asTag
-import me.melijn.melijnbot.objects.utils.sendEmbed
-import me.melijn.melijnbot.objects.utils.toUCC
+import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.entities.Guild
 import kotlin.math.roundToLong
 
@@ -66,7 +63,7 @@ class GuildInfoCommand : AbstractCommand("command.guildinfo") {
         return replaceFieldVar(context.getTranslation(path), guild, isSupporter, yes, no)
     }
 
-    private fun replaceFieldVar(string: String, guild: Guild, isSupporter: Boolean, yes: String, no: String): String {
+    private suspend fun replaceFieldVar(string: String, guild: Guild, isSupporter: Boolean, yes: String, no: String): String {
         val botCount = guild.memberCache
             .stream()
             .filter { member -> member.user.isBot }
@@ -85,17 +82,17 @@ class GuildInfoCommand : AbstractCommand("command.guildinfo") {
             .replace("%supportsMelijn%", if (isSupporter) yes else no)
             .replace("%boostCount%", guild.boostCount.toString())
             .replace("%boostTier%", guild.boostTier.key.toString())
-            .replace("%memberCount%", guild.memberCache.size().toString())
+            .replace("%memberCount%", guild.memberCount.toString())
             .replace("%roleCount%", guild.roleCache.size().toString())
             .replace("%textChannelCount%", guild.textChannelCache.size().toString())
             .replace("%voiceChannelCount%", guild.voiceChannelCache.size().toString())
             .replace("%categoryCount%", guild.categoryCache.size().toString())
-            .replace("%owner%", (if (guild.owner != null) guild.owner?.asTag else "NONE").toString())
+            .replace("%owner%", guild.retrieveOwner().awaitOrNull()?.asTag ?: "NONE")
             .replace("%verificationLevel%", guild.verificationLevel.toUCC())
             .replace("%botCount%", botCount.toString())
-            .replace("%userCount%", (guild.memberCache.size() - botCount).toString())
-            .replace("%botPercent%", (((botCount.toDouble() / guild.memberCache.size()) * 10000).roundToLong() / 100.0).toString())
-            .replace("%userPercent%", ((((guild.memberCache.size() - botCount.toDouble()) / guild.memberCache.size()) * 10000).roundToLong() / 100.0).toString())
+            .replace("%userCount%", (guild.memberCount - botCount).toString())
+            .replace("%botPercent%", (((botCount.toDouble() / guild.memberCount) * 10000).roundToLong() / 100.0).toString())
+            .replace("%userPercent%", ((((guild.memberCount - botCount.toDouble()) / guild.memberCount) * 10000).roundToLong() / 100.0).toString())
             .replace("%mfa%", guild.requiredMFALevel.toUCC())
     }
 }
