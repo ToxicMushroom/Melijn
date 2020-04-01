@@ -70,7 +70,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: CommandContext) {
-
+                val name = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
+                
             }
         }
 

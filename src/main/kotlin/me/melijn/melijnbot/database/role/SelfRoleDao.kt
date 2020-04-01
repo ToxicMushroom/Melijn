@@ -34,6 +34,4 @@ class SelfRoleDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND emoteji = ?",
             guildId, emoteji)
     }
-
-
 }
