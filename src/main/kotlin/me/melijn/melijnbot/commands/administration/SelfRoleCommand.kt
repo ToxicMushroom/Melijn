@@ -1,12 +1,15 @@
 package me.melijn.melijnbot.commands.administration
 
 import kotlinx.coroutines.future.await
+import me.melijn.melijnbot.database.role.SelfRoleMode
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
+
+const val UNKNOWN_SELFROLEMODE_PATH = "message.unknown.selfrolemode"
 
 class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
@@ -45,7 +48,20 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: CommandContext) {
+            val wrapper = context.daoManager.selfRoleModeWrapper
+            if (context.args.isEmpty()) {
+                val mode = wrapper.selfRoleModeCache.get(context.guildId).await().toUCC()
+                val msg = context.getTranslation("$root.show")
+                    .replace("%mode%", mode)
+                sendMsg(context, msg)
+                return
+            }
 
+            val mode = getEnumFromArgNMessage<SelfRoleMode>(context, 0, UNKNOWN_SELFROLEMODE_PATH) ?: return
+            wrapper.set(context.guildId, mode)
+            val msg = context.getTranslation("$root.set")
+                .replace("%mode%", mode.toUCC())
+            sendMsg(context, msg)
         }
     }
 
@@ -58,6 +74,10 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 AddArg(root),     //Adds a group
                 RemoveArg(root),  //Removes a group
                 ListArg(root),    //Lists all roles in group
+                AddIdManually(root), //Message Ids
+                RemoveIdManually(root),
+                SetIsSelfRoleAble(root),
+                SetIsEnabled(root),
                 ChangeNameArg(root)
             )
         }
@@ -71,7 +91,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
             override suspend fun execute(context: CommandContext) {
                 val name = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
-                
+
             }
         }
 

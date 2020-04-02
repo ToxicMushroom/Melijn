@@ -4,6 +4,7 @@ import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.utils.ImageUtils
 import net.dv8tion.jda.api.Permission
 import java.lang.Integer.max
@@ -15,6 +16,7 @@ class PixelateCommand : AbstractCommand("command.pixelate") {
         name = "pixelate"
         aliases = arrayOf("pixelateGif")
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
+        runConditions = arrayOf(RunCondition.VOTED)
         commandCategory = CommandCategory.IMAGE
     }
 

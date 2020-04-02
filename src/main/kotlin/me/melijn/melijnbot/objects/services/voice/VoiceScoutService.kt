@@ -15,7 +15,7 @@ class VoiceScoutService(
 
     override val service = Task {
         val gmp = MusicPlayerManager.guildMusicPlayers
-        ArrayList(gmp.values).forEach { guildMusicPlayer ->
+        gmp.values.iterator().forEach { guildMusicPlayer ->
             val guild = shardManager.getGuildById(guildMusicPlayer.guildId)
             if (guild == null) {
                 guildMusicPlayer.guildTrackManager.clear()

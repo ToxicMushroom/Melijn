@@ -264,13 +264,13 @@ object ImageUtils {
     fun getInvertedPixel(r: Int, g: Int, b: Int, a: Int, isGif: Boolean = false): IntArray {
         val ir = 255 - r
         val ig = 255 - g
-        val ia = 255 - a
+        val ib = 255 - b
         return if (isGif && a < 128) {
             intArrayOf(255, 255, 255, 255)
-        } else if (isGif && ir == 255 && ig == 255 && ia == 255) {
+        } else if (isGif && ir == 255 && ig == 255 && ib == 255) {
             intArrayOf(254, 254, 254, 255)
         } else {
-            intArrayOf(ir, ig, ia, a)
+            intArrayOf(ir, ig, ib, a)
         }
     }
 

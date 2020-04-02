@@ -2,13 +2,14 @@ package me.melijn.melijnbot.database.role
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
+import me.melijn.melijnbot.objects.utils.splitIETEL
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class SelfRoleGroupDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "selfRoleGroups"
-    override val tableStructure: String = "guildId bigint, groupName varchar(64), mode varchar(16), isSelfRoleable boolean"
+    override val tableStructure: String = "guildId bigint, groupName varchar(64), ids varchar(1024), isEnabled boolean, isSelfRoleable boolean"
     override val primaryKey: String = "guildId, groupName"
 
     init {
@@ -22,7 +23,8 @@ class SelfRoleGroupDao(driverManager: DriverManager) : Dao(driverManager) {
                 list.add(
                     SelfRoleGroup(
                         rs.getString("groupName"),
-                        SelfRoleGroup.SelfRoleGroupMode.valueOf(rs.getString("mode")),
+                        rs.getString("messageIds").splitIETEL("%SPLIT%").map { it.toLong() },
+                        rs.getBoolean("isEnabled"),
                         rs.getBoolean("isSelfRoleable")
                     )
                 )
@@ -32,9 +34,9 @@ class SelfRoleGroupDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
 
-    suspend fun set(guildId: Long, groupName: String, mode: String, isSelfRoleable: Boolean) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, groupName, mode, isSelfRoleable) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET mode = ? AND isSelfRoleable = ?",
-            guildId, groupName, mode, isSelfRoleable, mode, isSelfRoleable)
+    suspend fun set(guildId: Long, groupName: String, messageIds: String, isEnabled: Boolean, isSelfRoleable: Boolean) {
+        driverManager.executeUpdate("INSERT INTO $table (guildId, groupName, messageIds, isEnabled, isSelfRoleable) VALUES (?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET messageIds = ? AND isEnabled = ? AND isSelfRoleable = ?",
+            guildId, groupName, messageIds, isEnabled, isSelfRoleable, messageIds, isEnabled, isSelfRoleable)
     }
 
     suspend fun remove(guildId: Long, groupName: String) {
@@ -42,13 +44,10 @@ class SelfRoleGroupDao(driverManager: DriverManager) : Dao(driverManager) {
             guildId, groupName)
     }
 }
+
 data class SelfRoleGroup(
     val groupName: String,
-    val mode: SelfRoleGroupMode,
+    val messageIds: List<Long>,
+    val isEnabled: Boolean,
     val isSelfRoleable: Boolean
-) {
-
-    enum class SelfRoleGroupMode {
-        AUTO, MANUAL
-    }
-}
+)

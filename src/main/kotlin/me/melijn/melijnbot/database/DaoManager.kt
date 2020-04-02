@@ -115,6 +115,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
     val tempRoleWrapper: TempRoleWrapper
     val selfRoleWrapper: SelfRoleWrapper
     val selfRoleGroupWrapper: SelfRoleGroupWrapper
+    val selfRoleModeWrapper: SelfRoleModeWrapper
 
     lateinit var dbVersion: String
     lateinit var connectorVersion: String
@@ -203,6 +204,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
         roleWrapper = RoleWrapper(taskManager, RoleDao(driverManager))
         selfRoleWrapper = SelfRoleWrapper(taskManager, SelfRoleDao(driverManager))
         selfRoleGroupWrapper = SelfRoleGroupWrapper(taskManager, SelfRoleGroupDao(driverManager))
+        selfRoleModeWrapper = SelfRoleModeWrapper(taskManager, SelfRoleModeDao(driverManager))
         tempRoleWrapper = TempRoleWrapper(taskManager, TempRoleDao(driverManager))
 
         banWrapper = BanWrapper(taskManager, BanDao(driverManager))

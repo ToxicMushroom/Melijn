@@ -4,6 +4,7 @@ import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.utils.ImageUtils
 import net.dv8tion.jda.api.Permission
 
@@ -14,6 +15,7 @@ class SharpenCommand : AbstractCommand("command.sharpen") {
         name = "sharpen"
         aliases = arrayOf("sharpenGif")
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
+        runConditions = arrayOf(RunCondition.VOTED)
         commandCategory = CommandCategory.IMAGE
     }
 
