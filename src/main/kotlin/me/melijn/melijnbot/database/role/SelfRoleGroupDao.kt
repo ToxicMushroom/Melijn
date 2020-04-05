@@ -48,6 +48,6 @@ class SelfRoleGroupDao(driverManager: DriverManager) : Dao(driverManager) {
 data class SelfRoleGroup(
     val groupName: String,
     val messageIds: List<Long>,
-    val isEnabled: Boolean,
-    val isSelfRoleable: Boolean
+    var isEnabled: Boolean,
+    var isSelfRoleable: Boolean
 )

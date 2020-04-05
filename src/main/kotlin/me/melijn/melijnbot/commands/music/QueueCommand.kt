@@ -7,6 +7,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.utils.*
+import net.dv8tion.jda.api.Permission
 
 class QueueCommand : AbstractCommand("command.queue") {
 
@@ -14,6 +15,7 @@ class QueueCommand : AbstractCommand("command.queue") {
         id = 82
         name = "queue"
         aliases = arrayOf("q", "list", "songlist", "songs", "tracks")
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
         commandCategory = CommandCategory.MUSIC
     }
 

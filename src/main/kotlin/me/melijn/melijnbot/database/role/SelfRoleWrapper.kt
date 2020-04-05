@@ -12,12 +12,12 @@ class SelfRoleWrapper(val taskManager: TaskManager, private val selfRoleDao: Sel
 
     val selfRoleCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, Map<String, Long>> { key ->
+        .build(loadingCacheFrom<Long, Map<String, Map<String, Long>>> { key ->
             getMap(key)
         })
 
-    fun getMap(guildId: Long): CompletableFuture<Map<String, Long>> {
-        val future = CompletableFuture<Map<String, Long>>()
+    fun getMap(guildId: Long): CompletableFuture<Map<String, Map<String, Long>>> {
+        val future = CompletableFuture<Map<String, Map<String, Long>>>()
         taskManager.async {
             val map = selfRoleDao.getMap(guildId)
             future.complete(map)
@@ -25,17 +25,30 @@ class SelfRoleWrapper(val taskManager: TaskManager, private val selfRoleDao: Sel
         return future
     }
 
-    suspend fun set(guildId: Long, emoteji: String, roleId: Long) {
-        val map = selfRoleCache.get(guildId).await().toMutableMap()
-        map[emoteji] = roleId
-        selfRoleDao.set(guildId, emoteji, roleId)
+    suspend fun set(guildId: Long, groupName: String, emoteji: String, roleId: Long) {
+        val map = selfRoleCache.get(guildId)
+            .await()
+            .toMutableMap()
+
+        val pairs = map.getOrDefault(groupName, emptyMap())
+            .toMutableMap()
+        pairs[emoteji] = roleId
+        map[groupName] = pairs
+        selfRoleDao.set(guildId, groupName, emoteji, roleId)
         selfRoleCache.put(guildId, CompletableFuture.completedFuture(map))
     }
 
-    suspend fun remove(guildId: Long, emoteji: String) {
-        val map = selfRoleCache.get(guildId).await().toMutableMap()
-        map.remove(emoteji)
-        selfRoleDao.remove(guildId, emoteji)
+    suspend fun remove(guildId: Long, groupName: String, emoteji: String) {
+        val map = selfRoleCache.get(guildId)
+            .await()
+            .toMutableMap()
+
+        val pairs = map.getOrDefault(groupName, emptyMap())
+            .toMutableMap()
+        pairs.remove(emoteji)
+        map[groupName] = pairs
+
+        selfRoleDao.remove(guildId, groupName, emoteji)
         selfRoleCache.put(guildId, CompletableFuture.completedFuture(map))
     }
 }
