@@ -2,7 +2,6 @@ package me.melijn.melijnbot.objects.events.eventutil
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
-import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.utils.LogUtils
@@ -15,30 +14,54 @@ import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.events.message.guild.react.GenericGuildMessageReactionEvent
 
 object SelfRoleUtil {
+
     suspend fun getSelectedSelfRoleNByReactionEvent(event: GenericGuildMessageReactionEvent, container: Container): Role? {
+
+        /* INIT */
         val guild = event.guild
         val member = event.member ?: guild.retrieveMemberById(event.userIdLong).awaitOrNull() ?: return null
         val channel = event.channel
+        val channelId = channel.idLong
         val reaction = event.reaction
         val guildId = guild.idLong
         val selfMember = guild.selfMember
         val daoManager = container.daoManager
 
         if (!selfMember.canInteract(member)) return null
-        val channelId = daoManager.channelWrapper.channelCache.get(Pair(guildId, ChannelType.SELFROLE)).await()
-        if (channelId != channel.idLong) return null
+        /* END INIT */
+
+        // val channelId = daoManager.channelWrapper.channelCache.get(Pair(guildId, ChannelType.SELFROLE)).await()
+        // if (channelId != channel.idLong) return null
 
         val emoteji = if (reaction.reactionEmote.isEmote) {
             reaction.reactionEmote.emote.id
         } else {
             reaction.reactionEmote.emoji
         }
-        val map = daoManager.selfRoleWrapper.selfRoleCache.get(guildId).await()
-        if (!map.containsKey(emoteji)) {
+
+        val selfRoleGroups = daoManager.selfRoleGroupWrapper.getMap(guildId).await()
+        val selfRoleGroupMatches = selfRoleGroups.filter {
+            it.channelId == channelId && it.messageIds.contains(event.messageIdLong)
+        }
+
+        if (selfRoleGroupMatches.isEmpty()) {
             return null
         }
 
-        val roleId = map[emoteji] ?: return null
+        var roleIds: List<Long> = mutableListOf()
+        if (selfRoleGroupMatches.size > 1) {
+            val mapList = mutableListOf<Map<String, Long>>()
+            val selfRoles = daoManager.selfRoleWrapper.selfRoleCache.get(guildId).await()
+            for ((groupName) in selfRoleGroupMatches) {
+                val subMap = selfRoles[groupName]
+                subMap?.let { mapList.add(it) }
+                val roleId =
+            }
+        } else {
+
+        }
+
+        if (roleIds.isEmpty()) return null
         if (daoManager.forceRoleWrapper.forceRoleCache[guildId].await()[member.idLong]?.contains(roleId) == true) return null
         val role = guild.getRoleById(roleId)
         val language = getLanguage(daoManager, -1, guildId)

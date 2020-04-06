@@ -10,14 +10,15 @@ import java.util.concurrent.TimeUnit
 
 class SelfRoleWrapper(val taskManager: TaskManager, private val selfRoleDao: SelfRoleDao) {
 
+    //guildId -> <selfRoleGroupName -> <emoteji -> <roleIds>>>
     val selfRoleCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, Map<String, Map<String, Long>>> { key ->
+        .build(loadingCacheFrom<Long, Map<String, Map<String, List<Long>>>> { key ->
             getMap(key)
         })
 
-    fun getMap(guildId: Long): CompletableFuture<Map<String, Map<String, Long>>> {
-        val future = CompletableFuture<Map<String, Map<String, Long>>>()
+    fun getMap(guildId: Long): CompletableFuture<Map<String, Map<String, List<Long>>>> {
+        val future = CompletableFuture<Map<String, Map<String, List<Long>>>>()
         taskManager.async {
             val map = selfRoleDao.getMap(guildId)
             future.complete(map)

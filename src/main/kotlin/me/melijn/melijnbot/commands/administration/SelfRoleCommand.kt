@@ -6,10 +6,14 @@ import me.melijn.melijnbot.database.role.SelfRoleMode
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.MessageEmbed
 
 const val UNKNOWN_SELFROLEMODE_PATH = "message.unknown.selfrolemode"
 
@@ -22,14 +26,16 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         children = arrayOf(
             AddArg(root),
             RemoveArg(root),
+            SendGroupAuto(root),
             ListArg(root),
             GroupArg(root),
-            SetMode(root),  //Manual, Auto | Auto will ignore selfRoleMessageIds and selfRoleChannelIds and use the internal cached ones
+            SetMode(root),  // Manual, Auto | Auto will ignore selfRoleMessageIds and selfRoleChannelIds and use the internal cached ones
             SendGroup(root) // Internal cached ones are messageIds created by the >sr sendGroup <channel> command
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
+    // Sends the group
     class SendGroup(parent: String) : AbstractCommand("$parent.sendgroup") {
 
         init {
@@ -38,7 +44,119 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: CommandContext) {
+            sendMsg(context, "WIP")
+//            if (context.args.isEmpty()) {
+//                sendSyntax(context)
+//                return
+//            }
+//
+//            val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+//
+//            val channel = if (context.args.size < 2) {
+//                context.textChannel
+//
+//            } else {
+//                getTextChannelByArgsNMessage(context, 1)
+//            } ?: return
+//
+//            val messages: List<Message> = sendMsg(channel, "test ${group.groupName}")
 
+
+        }
+    }
+
+    // Sends the group and sets the channel ect aka the big mess
+    class SendGroupAuto(parent: String) : AbstractCommand("$parent.sendgroupauto") {
+
+        init {
+            name = "sendGroupAuto"
+            aliases = arrayOf("sg")
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+
+            val wrapper = context.daoManager.selfRoleGroupWrapper
+            val wrapper2 = context.daoManager.selfRoleWrapper
+            val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+            val selfRoles = wrapper2.selfRoleCache[context.guildId].await().get(group.groupName)
+
+            if (selfRoles == null || selfRoles.isEmpty()) {
+                val msg = context.getTranslation("$root.noselfroles.forgroup")
+                    .replace("%group%", group.groupName)
+                sendMsg(context, msg)
+                return
+            }
+
+
+            val channel = if (context.args.size < 2) {
+                context.textChannel
+
+            } else {
+                getTextChannelByArgsNMessage(context, 1)
+            } ?: return
+
+
+            val bodyFormat = context.getTranslation("$root.bodyformat")
+
+            val embedder = Embedder(context)
+
+
+            var body = ""
+            val size = selfRoles.size
+            for ((emoteji, roleId) in selfRoles) {
+                val role = context.guild.getRoleById(roleId)
+                val isEmoji = SupportedDiscordEmoji.helpMe.contains(emoteji)
+
+                body += if (isEmoji) {
+                    bodyFormat
+                        .replace("%role%", role?.asMention ?: "error")
+                        .replace("%emoteji%", emoteji)
+                } else {
+                    val emote = context.guild.getEmoteById(emoteji) ?: context.shardManager.getEmoteById(emoteji)
+                    bodyFormat
+                        .replace("%role%", role?.asMention ?: "error")
+                        .replace("%emoteji%", emote?.asMention ?: "error")
+                }
+            }
+
+            val messages: List<Message> = if (size > 20 || body.length > MessageEmbed.TEXT_MAX_LENGTH) {
+                val splitted = StringUtils.splitMessageAtMaxCharAmountOrLength(body, 20, '\n', MessageEmbed.TEXT_MAX_LENGTH)
+
+                val messages = mutableListOf<Message>()
+                val titleFormat = context.getTranslation("$root.titleformat.part")
+                for ((index, part) in splitted.withIndex()) {
+
+                    embedder.setTitle(titleFormat
+                        .replace("%group%", group.groupName)
+                        .replace("%part%", index + 1)
+                    )
+
+                    embedder.setDescription(part)
+                    messages.addAll(sendEmbed(context.daoManager.embedDisabledWrapper, channel, embedder.build()))
+                }
+                messages.toList()
+            } else {
+                val titleFormat = context.getTranslation("$root.titleformat")
+                embedder.setTitle(titleFormat.replace("%group%", group.groupName))
+                embedder.setDescription(body)
+                sendEmbed(context.daoManager.embedDisabledWrapper, channel, embedder.build())
+            }
+
+            val messageIds = messages.map { it.idLong }.sorted()
+
+            group.messageIds = messageIds
+            group.channelId = channel.idLong
+
+            wrapper.insertOrUpdate(context.guildId, group)
+
+            val msg = context.getTranslation("$root.sent")
+                .replace("%group%", group.groupName)
+                .replace(PLACEHOLDER_CHANNEL, channel.asTag)
+            sendMsg(context, msg)
         }
     }
 
@@ -71,19 +189,58 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
         init {
             name = "group"
-            children = arrayOf(
-                //Groups will have lite ids, the arg for add will be the displayname
-                AddArg(root),     //Adds a group
-                RemoveArg(root),  //Removes a group
-                ListArg(root),    //Lists all roles in group
-                IdsArg(root), //Message Ids
+            children = arrayOf(   // Groups will have lite ids, the arg for add will be the displayname
+                AddArg(root),     // Adds a group
+                RemoveArg(root),  // Removes a group
+                ListArg(root),    // Lists all roles in group
+                MessageIdsArg(root),     // Message Ids
+                SetChannel(root), // pepega
                 SetSelfRoleAbleArg(root),
                 SetEnabledArg(root),
                 ChangeNameArg(root)
             )
         }
 
-        class IdsArg(parent: String) : AbstractCommand("$parent.ids") {
+        class SetChannel(parent: String) : AbstractCommand("$parent.setchannel") {
+
+            init {
+                name = "setChannelId"
+                aliases = arrayOf("sci")
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                if (context.args.isEmpty()) {
+                    sendSyntax(context)
+                    return
+                }
+
+                val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+                val wrapper = context.daoManager.selfRoleGroupWrapper
+
+                if (context.args[0].equals("null", true)) {
+                    group.channelId = -1
+                    wrapper.insertOrUpdate(context.guildId, group)
+
+                    val msg = context.getTranslation("$root.unset")
+                        .replace("%group%", group.groupName)
+                    sendMsg(context, msg)
+                    return
+                }
+
+                val channel = getTextChannelByArgsN(context, 1) ?: return
+
+                group.channelId = channel.idLong
+                wrapper.insertOrUpdate(context.guildId, group)
+
+                val msg = context.getTranslation("$root.set")
+                    .replace("%group%", group.groupName)
+                    .replace(PLACEHOLDER_CHANNEL, channel.asTag)
+                sendMsg(context, msg)
+                return
+            }
+        }
+
+        class MessageIdsArg(parent: String) : AbstractCommand("$parent.ids") {
 
             init {
                 name = "ids"
@@ -105,7 +262,23 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 override suspend fun execute(context: CommandContext) {
+                    if (context.args.isEmpty()) {
+                        sendSyntax(context)
+                        return
+                    }
 
+                    val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+                    val argument = getLongFromArgNMessage(context, 1, 1000000000000000) ?: return
+                    val wrapper = context.daoManager.selfRoleGroupWrapper
+
+                    group.messageIds = group.messageIds + argument
+                    wrapper.insertOrUpdate(context.guildId, group)
+
+                    val msg = context.getTranslation("$root.added")
+                        .replace("%group%", group.groupName)
+                        .replace(PLACEHOLDER_ARG, "$argument")
+
+                    sendMsg(context, msg)
                 }
             }
 
@@ -117,7 +290,23 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 override suspend fun execute(context: CommandContext) {
+                    if (context.args.isEmpty()) {
+                        sendSyntax(context)
+                        return
+                    }
 
+                    val wrapper = context.daoManager.selfRoleGroupWrapper
+                    val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+                    val argument = getLongFromArgNMessage(context, 1, 1000000000000000) ?: return
+
+                    group.messageIds = group.messageIds + argument
+                    wrapper.insertOrUpdate(context.guildId, group)
+
+                    val msg = context.getTranslation("$root.removed")
+                        .replace("%group%", group.groupName)
+                        .replace(PLACEHOLDER_ARG, "$argument")
+
+                    sendMsg(context, msg)
                 }
             }
 
@@ -129,7 +318,29 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 override suspend fun execute(context: CommandContext) {
+                    if (context.args.isEmpty()) {
+                        sendSyntax(context)
+                        return
+                    }
 
+                    val wrapper = context.daoManager.selfRoleGroupWrapper
+                    val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+                    val index = getIntegerFromArgNMessage(context, 1, 1, group.messageIds.size)
+                        ?: return
+
+                    val messages = group.messageIds.toMutableList()
+                    val messageId = messages[index]
+                    messages.removeAt(index)
+
+                    group.messageIds = messages
+                    wrapper.insertOrUpdate(context.guildId, group)
+
+                    val msg = context.getTranslation("$root.removed")
+                        .replace("%group%", group.groupName)
+                        .replace(PLACEHOLDER_ARG, "$index")
+                        .replace("%messageId%", "$messageId")
+
+                    sendMsg(context, msg)
                 }
             }
 
@@ -141,7 +352,25 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 override suspend fun execute(context: CommandContext) {
+                    if (context.args.isEmpty()) {
+                        sendSyntax(context)
+                        return
+                    }
 
+                    val wrapper = context.daoManager.selfRoleGroupWrapper
+                    val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+                    val index = getIntegerFromArgNMessage(context, 1, 1, group.messageIds.size)
+                        ?: return
+
+                    group.messageIds = emptyList()
+                    wrapper.insertOrUpdate(context.guildId, group)
+
+
+                    val msg = context.getTranslation("$root.removed")
+                        .replace("%group%", group.groupName)
+                        .replace(PLACEHOLDER_ARG, "$index")
+
+                    sendMsg(context, msg)
                 }
             }
 
@@ -153,7 +382,23 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 override suspend fun execute(context: CommandContext) {
+                    if (context.args.isEmpty()) {
+                        sendSyntax(context)
+                        return
+                    }
 
+                    val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+
+
+                    val title = context.getTranslation("$root.title")
+                    val content = StringBuilder("```INI\n[index] - [id]")
+
+                    for ((index, id) in group.messageIds.sorted().withIndex()) {
+                        content.append("$index - [$id]")
+                    }
+
+                    val msg = title + content.toString()
+                    sendMsg(context, msg)
                 }
             }
 
@@ -236,7 +481,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     return
                 }
 
-                val newSr = SelfRoleGroup(name, emptyList(), isEnabled = true, isSelfRoleable = true)
+                val newSr = SelfRoleGroup(name, emptyList(), -1, isEnabled = true, isSelfRoleable = true)
                 wrapper.insertOrUpdate(context.guildId, newSr)
 
                 val msg = context.getTranslation("$root.added")
@@ -307,14 +552,16 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     return
                 }
 
-                val newSr = SelfRoleGroup(name, selfRoleGroup1.messageIds, selfRoleGroup1.isEnabled, selfRoleGroup1.isSelfRoleable)
-                wrapper.delete(context.guildId, selfRoleGroup1.groupName)
-                wrapper.insertOrUpdate(context.guildId, newSr)
+                selfRoleGroup1.apply {
+                    val newSr = SelfRoleGroup(name, messageIds, channelId, isEnabled, isSelfRoleable)
+                    wrapper.delete(context.guildId, groupName)
+                    wrapper.insertOrUpdate(context.guildId, newSr)
 
-                val msg = context.getTranslation("$root.updated")
-                    .replace("%oldName%", selfRoleGroup1.groupName)
-                    .replace("%newName%", newSr.groupName)
-                sendMsg(context, msg)
+                    val msg = context.getTranslation("$root.updated")
+                        .replace("%oldName%", groupName)
+                        .replace("%newName%", newSr.groupName)
+                    sendMsg(context, msg)
+                }
             }
         }
 

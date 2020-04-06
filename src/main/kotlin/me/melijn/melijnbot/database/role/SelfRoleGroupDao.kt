@@ -9,7 +9,7 @@ import kotlin.coroutines.suspendCoroutine
 class SelfRoleGroupDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "selfRoleGroups"
-    override val tableStructure: String = "guildId bigint, groupName varchar(64), ids varchar(1024), isEnabled boolean, isSelfRoleable boolean"
+    override val tableStructure: String = "guildId bigint, groupName varchar(64), ids varchar(1024), channelId bigint, isEnabled boolean, isSelfRoleable boolean"
     override val primaryKey: String = "guildId, groupName"
 
     init {
@@ -24,6 +24,7 @@ class SelfRoleGroupDao(driverManager: DriverManager) : Dao(driverManager) {
                     SelfRoleGroup(
                         rs.getString("groupName"),
                         rs.getString("messageIds").splitIETEL("%SPLIT%").map { it.toLong() },
+                        rs.getLong("channelId"),
                         rs.getBoolean("isEnabled"),
                         rs.getBoolean("isSelfRoleable")
                     )
@@ -34,8 +35,8 @@ class SelfRoleGroupDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
 
-    suspend fun set(guildId: Long, groupName: String, messageIds: String, isEnabled: Boolean, isSelfRoleable: Boolean) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, groupName, messageIds, isEnabled, isSelfRoleable) VALUES (?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET messageIds = ? AND isEnabled = ? AND isSelfRoleable = ?",
+    suspend fun set(guildId: Long, groupName: String, messageIds: String, channelId: Long, isEnabled: Boolean, isSelfRoleable: Boolean) {
+        driverManager.executeUpdate("INSERT INTO $table (guildId, groupName, messageIds, channelId, isEnabled, isSelfRoleable) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET messageIds = ? AND channelId = ? AND isEnabled = ? AND isSelfRoleable = ?",
             guildId, groupName, messageIds, isEnabled, isSelfRoleable, messageIds, isEnabled, isSelfRoleable)
     }
 
@@ -47,7 +48,8 @@ class SelfRoleGroupDao(driverManager: DriverManager) : Dao(driverManager) {
 
 data class SelfRoleGroup(
     val groupName: String,
-    val messageIds: List<Long>,
+    var messageIds: List<Long>,
+    var channelId: Long,
     var isEnabled: Boolean,
     var isSelfRoleable: Boolean
 )

@@ -20,13 +20,14 @@ class SelfRoleDao(driverManager: DriverManager) : Dao(driverManager) {
             guildId, groupName, emoteji, roleId, roleId)
     }
 
-    suspend fun getMap(guildId: Long): Map<String, Map<String, Long>> = suspendCoroutine {
-        val map = mutableMapOf<String, Map<String, Long>>()
+    suspend fun getMap(guildId: Long): Map<String, Map<String, List<Long>>> = suspendCoroutine {
+        val map = mutableMapOf<String, Map<String, List<Long>>>()
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", { rs ->
             val group = rs.getString("groupName")
             val pairs = map.getOrDefault(group, emptyMap()).toMutableMap()
             while (rs.next()) {
-                pairs[rs.getString("emoteji")] = rs.getLong("roleId")
+                val emoteji = rs.getString("emoteji")
+                pairs[emoteji] = pairs.getOrDefault(emoteji, emptyList()) + rs.getLong("roleId")
             }
             map[group] = pairs
         }, guildId)
