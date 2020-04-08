@@ -15,7 +15,7 @@ import net.dv8tion.jda.api.events.message.guild.react.GenericGuildMessageReactio
 
 object SelfRoleUtil {
 
-    suspend fun getSelectedSelfRoleNByReactionEvent(event: GenericGuildMessageReactionEvent, container: Container): Role? {
+    suspend fun getSelectedSelfRoleNByReactionEvent(event: GenericGuildMessageReactionEvent, container: Container): List<Role>? {
 
         /* INIT */
         val guild = event.guild
@@ -48,43 +48,44 @@ object SelfRoleUtil {
             return null
         }
 
-        var roleIds: List<Long> = mutableListOf()
-        if (selfRoleGroupMatches.size > 1) {
-            val mapList = mutableListOf<Map<String, Long>>()
-            val selfRoles = daoManager.selfRoleWrapper.selfRoleCache.get(guildId).await()
-            for ((groupName) in selfRoleGroupMatches) {
-                val subMap = selfRoles[groupName]
-                subMap?.let { mapList.add(it) }
-                val roleId =
+        val roleIds = mutableListOf<Long>()
+
+        val roles = mutableListOf<Role>()
+        val selfRoles = daoManager.selfRoleWrapper.selfRoleCache.get(guildId).await()
+        for ((groupName) in selfRoleGroupMatches) {
+            val subMap = selfRoles[groupName] ?: continue
+            for (ls in subMap.values) {
+                if (ls.isEmpty()) return null
+                for (roleId in ls) {
+                    if (daoManager.forceRoleWrapper.forceRoleCache[guildId].await()[member.idLong]?.contains(roleId) == true) return null
+                    val role = guild.getRoleById(roleId)
+                    val language = getLanguage(daoManager, -1, guildId)
+                    val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.BOT)
+                    val zoneId = getZoneId(daoManager, guildId)
+
+                    var shouldRemove = false
+                    var cause = ""
+                    var causeArg = ""
+                    if (role == null) {
+                        cause = UNKNOWN_ID_CAUSE
+                        causeArg = roleId.toString()
+                        shouldRemove = true
+                    } else if (!selfMember.canInteract(role)) {
+                        cause = CANNOT_INTERACT_CAUSE
+                        causeArg = roleId.toString()
+                        shouldRemove = true
+                    }
+
+                    if (shouldRemove) {
+                        daoManager.selfRoleWrapper.remove(guildId, groupName, emoteji)
+                        LogUtils.sendRemovedSelfRoleLog(language, zoneId, emoteji, logChannel, cause, causeArg)
+                    }
+                    role?.let { roles.add(it) }
+                }
             }
-        } else {
-
         }
 
-        if (roleIds.isEmpty()) return null
-        if (daoManager.forceRoleWrapper.forceRoleCache[guildId].await()[member.idLong]?.contains(roleId) == true) return null
-        val role = guild.getRoleById(roleId)
-        val language = getLanguage(daoManager, -1, guildId)
-        val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.BOT)
-        val zoneId = getZoneId(daoManager, guildId)
-
-        var shouldRemove = false
-        var cause = ""
-        var causeArg = ""
-        if (role == null) {
-            cause = UNKNOWN_ID_CAUSE
-            causeArg = roleId.toString()
-            shouldRemove = true
-        } else if (!selfMember.canInteract(role)) {
-            cause = CANNOT_INTERACT_CAUSE
-            causeArg = roleId.toString()
-            shouldRemove = true
-        }
-
-        if (shouldRemove) {
-            daoManager.selfRoleWrapper.remove(guildId, emoteji)
-            LogUtils.sendRemovedSelfRoleLog(language, zoneId, emoteji, logChannel, cause, causeArg)
-        }
-        return role
+        if (roles.isEmpty()) return null
+        return roles
     }
 }

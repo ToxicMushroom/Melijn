@@ -21,20 +21,12 @@ class RerenderCommand : AbstractCommand("command.rerender") {
     }
 
     private suspend fun executeGif(context: CommandContext) {
-        val colors = mutableListOf<IntArray>()
         ImageCommandUtil.executeGifRecolor(context, { ints ->
-            val arr = if (ints[0] == 255 && ints[1] == 255 && ints[2] == 255) {
+            if (ints[0] == 255 && ints[1] == 255 && ints[2] == 255) {
                 intArrayOf(254, 254, 254, 255)
             } else if (ints[3] < 128) {
                 intArrayOf(255, 255, 255, 255)
             } else ints
-
-            if (!colors.any { it.contentEquals(arr) }) {
-                colors.add(arr)
-                println(ints.joinToString() + " -> " + arr.joinToString() + " = " + if (!ints.contentEquals(arr)) "changed" else "nono")
-            }
-
-            arr
         }, false, debug = false)
     }
 }

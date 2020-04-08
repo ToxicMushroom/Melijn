@@ -107,18 +107,24 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
             var body = ""
             val size = selfRoles.size
-            for ((emoteji, roleId) in selfRoles) {
-                val role = context.guild.getRoleById(roleId)
+            for ((emoteji, roleIds) in selfRoles) {
+                var roleMention = ""
+                for (roleId in roleIds) {
+                    val role = context.guild.getRoleById(roleId)
+                    roleMention += role?.asMention ?: "error" + ", "
+                }
+                roleMention = roleMention.removeSuffix(", ")
+
                 val isEmoji = SupportedDiscordEmoji.helpMe.contains(emoteji)
 
                 body += if (isEmoji) {
                     bodyFormat
-                        .replace("%role%", role?.asMention ?: "error")
+                        .replace("%role%", roleMention)
                         .replace("%emoteji%", emoteji)
                 } else {
                     val emote = context.guild.getEmoteById(emoteji) ?: context.shardManager.getEmoteById(emoteji)
                     bodyFormat
-                        .replace("%role%", role?.asMention ?: "error")
+                        .replace("%role%", roleMention)
                         .replace("%emoteji%", emote?.asMention ?: "error")
                 }
             }
@@ -606,7 +612,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
             val role = getRoleByArgsNMessage(context, 2) ?: return
 
-            context.daoManager.selfRoleWrapper.set(context.guildId, group.groupName, id, role.idLong)
+            context.daoManager.selfRoleWrapper.add(context.guildId, group.groupName, id, role.idLong)
 
             val msg = context.getTranslation("$root.success")
                 .replace("%group%", group.groupName)
@@ -631,43 +637,46 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+            val pair = getEmotejiByArgsN(context, 1) ?: return
+            val selfRoleWrapper = context.daoManager.selfRoleWrapper
+            val guildSelfRoles = selfRoleWrapper.selfRoleCache.get(context.guildId)
+                .await()[group.groupName] ?: throw IllegalArgumentException("Angry boy :c")
 
-            val pair = getEmotejiByArgsN(context, 1)
-            if (context.args[1].isNumber() && pair == null) {
-                val roleId = context.daoManager.selfRoleWrapper.selfRoleCache.get(context.guildId).await()
-                    .getOrElse(context.args[1]) {
-                        null
-                    }
-                context.daoManager.selfRoleWrapper.remove(context.guildId, group.groupName, context.args[0])
-
-                val msg = context.getTranslation("$root.success")
-                    .replace("%group%", group.groupName)
-                    .replace("%emoteName%", context.args[1])
-                    .replace("%role%", "<@&$roleId>")
-
-                sendMsg(context, msg)
-                return
-            }
-
-            if (pair == null) return
-
-            val id = if (pair.first == null) {
+            val emoteji = if (pair.first == null) {
                 pair.second
             } else {
                 pair.first?.id
             } ?: return
 
-            val roleId = context.daoManager.selfRoleWrapper.selfRoleCache.get(context.guildId).await()
-                .getOrElse(id) {
-                    null
-                }
+            val emoteName = if (pair.first == null) {
+                pair.second
+            } else {
+                pair.first?.asMention
+            } ?: return
 
-            context.daoManager.selfRoleWrapper.remove(context.guildId, group.groupName, id)
+            if (!guildSelfRoles.containsKey(emoteji)) {
+                val msg = context.getTranslation("$root.emotejivoid")
+                    .replace("%emoteji%", emoteName)
+                sendMsg(context, msg)
+                return
+            }
+
+            val roles: String
+
+            if (context.args.size > 2) {
+                val roleId = getLongFromArgNMessage(context, 2) ?: return
+                roles = roleId.toString()
+                selfRoleWrapper.remove(context.guildId, group.groupName, emoteji, roleId)
+            } else {
+                roles = guildSelfRoles.getOrDefault(emoteji, emptyList()).joinToString(", ")
+                selfRoleWrapper.remove(context.guildId, group.groupName, emoteji)
+            }
+
 
             val msg = context.getTranslation("$root.success")
                 .replace("%group%", group.groupName)
-                .replace("%emoteName%", id)
-                .replace("%role%", "<@&$roleId>")
+                .replace("%emoteName%", emoteName)
+                .replace("%role%", roles)
 
             sendMsg(context, msg)
         }
@@ -688,19 +697,21 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val language = context.getLanguage()
             val msg = if (map.isNotEmpty()) {
                 val title = i18n.getTranslation(language, "$root.title")
-                val content = StringBuilder("```ini\n[group]:\n [index] - [emoteji] -> [roleId] - [roleName]")
+                val content = StringBuilder("```ini\n[group]:\n [index] - [emoteji] -> [(roleId, roleName), ...]")
 
                 for ((group, emotejiRoleIdMap) in map.toSortedMap()) {
                     content.append("\n${group}:")
                     var counter = 1
-                    for ((emoteji, roleId) in emotejiRoleIdMap.toSortedMap()) {
-                        val role = context.guild.getRoleById(roleId)
-                        if (role == null) {
-                            wrapper.remove(context.guildId, group, emoteji)
-                            continue
+                    for ((emoteji, roleIds) in emotejiRoleIdMap.toSortedMap()) {
+                        var roleIdString = ""
+                        for (roleId in roleIds) {
+                            val role = context.guild.getRoleById(roleId)
+                            roleIdString += "(" + (role?.idLong ?: "error") + ", " + (role?.name
+                                ?: "error") + ")" + ", "
                         }
+                        roleIdString = roleIdString.removeSuffix(", ")
 
-                        content.append("\n ${counter++} - [$emoteji] -> [$roleId] - ${role.name}")
+                        content.append("\n ${counter++} - [$emoteji] -> [$roleIdString]")
                     }
                 }
                 content.append("```")

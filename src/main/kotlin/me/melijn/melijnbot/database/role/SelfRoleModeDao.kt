@@ -8,7 +8,7 @@ import kotlin.coroutines.suspendCoroutine
 class SelfRoleModeDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "selfRoleModes"
-    override val tableStructure: String = "guildId, mode"
+    override val tableStructure: String = "guildId bigint, mode varchar(16)"
     override val primaryKey: String = "guildId"
 
     init {

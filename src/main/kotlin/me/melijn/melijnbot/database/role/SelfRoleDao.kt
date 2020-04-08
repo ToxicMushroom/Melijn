@@ -9,15 +9,15 @@ class SelfRoleDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "selfRoles"
     override val tableStructure: String = "guildId bigint, groupName varchar(64), emoteji varchar(64), roleId bigint"
-    override val primaryKey: String = "guildId, groupName, emoteji"
+    override val primaryKey: String = "guildId, groupName, emoteji, roleId"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun set(guildId: Long, groupName: String, emoteji: String, roleId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, groupName, emoteji, roleId) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET roleId = ?",
-            guildId, groupName, emoteji, roleId, roleId)
+    suspend fun add(guildId: Long, groupName: String, emoteji: String, roleId: Long) {
+        driverManager.executeUpdate("INSERT INTO $table (guildId, groupName, emoteji, roleId) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
+            guildId, groupName, emoteji, roleId)
     }
 
     suspend fun getMap(guildId: Long): Map<String, Map<String, List<Long>>> = suspendCoroutine {
@@ -34,8 +34,18 @@ class SelfRoleDao(driverManager: DriverManager) : Dao(driverManager) {
         it.resume(map)
     }
 
-    suspend fun remove(guildId: Long, groupName: String, emoteji: String) {
+    suspend fun clear(guildId: Long, groupName: String) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND groupName = ?",
+            guildId, groupName)
+    }
+
+    suspend fun clear(guildId: Long, groupName: String, emoteji: String) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND groupName = ? AND emoteji = ?",
             guildId, groupName, emoteji)
+    }
+
+    suspend fun remove(guildId: Long, groupName: String, emoteji: String, roleId: Long) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND groupName = ? AND emoteji = ? AND roleId = ?",
+            guildId, groupName, emoteji, roleId)
     }
 }
