@@ -56,5 +56,6 @@ class InfoCommand : AbstractCommand("command.info") {
         .replace("%invite%", "https://discord.gg/E2RfZA9")
         .replace("%botInvite%", "https://melijn.com/invite?perms=true")
         .replace("%website%", "https://melijn.com")
+        .replace("%contact%", "merlijn@melijn.me")
 
 }
