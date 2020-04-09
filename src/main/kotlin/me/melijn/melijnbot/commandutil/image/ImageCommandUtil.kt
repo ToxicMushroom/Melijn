@@ -22,17 +22,17 @@ object ImageCommandUtil {
 
     // needs lower and higher to be put in the imgData with imgParser arg
     suspend fun defaultOffsetArgParser(context: CommandContext, argInt: Int, argData: DataObject, imgData: DataObject): Boolean {
-        val lower = argData.getInt("lower")
-        val higher = argData.getInt("higher")
+        val lower = imgData.getInt("lower")
+        val higher = imgData.getInt("higher")
         return if (argInt == context.args.size) {
-            imgData.put("offset", argData.getInt("defaultOffset"))
+            argData.put("offset", imgData.getInt("defaultOffset"))
             true
         } else {
             val offset = getIntegerFromArgNMessage(context, argInt, lower, higher)
             if (offset == null) {
                 false
             } else {
-                imgData.put("offset", offset)
+                argData.put("offset", offset)
                 true
             }
         }
@@ -48,16 +48,16 @@ object ImageCommandUtil {
             ImageUtils.recolorPixelSingleOffset(image, argData.getInt("offset")) { ints ->
                 recolor(ints)
             }
-        }, { argInt: Int, _: DataObject, imgData: DataObject ->
+        }, { argInt: Int, argData: DataObject, _: DataObject ->
             if (argInt == context.args.size) {
-                imgData.put("offset", 128)
+                argData.put("offset", 128)
                 true
             } else {
                 val offset = getIntegerFromArgNMessage(context, argInt, -255, 255)
                 if (offset == null) {
                     false
                 } else {
-                    imgData.put("offset", offset)
+                    argData.put("offset", offset)
                     true
                 }
             }
@@ -77,16 +77,16 @@ object ImageCommandUtil {
             ImageUtils.recolorPixelSingleOffset(image, offset) { ints ->
                 recolor(ints)
             }
-        }, { argInt: Int, _: DataObject, imgData: DataObject ->
+        }, { argInt: Int, argData: DataObject, _: DataObject ->
             if (argInt == context.args.size) {
-                imgData.put("offset", 128)
+                argData.put("offset", 128)
                 true
             } else {
                 val offset = getIntegerFromArgNMessage(context, argInt, -255, 255)
                 if (offset == null) {
                     false
                 } else {
-                    imgData.put("offset", offset)
+                    argData.put("offset", offset)
                     true
                 }
             }

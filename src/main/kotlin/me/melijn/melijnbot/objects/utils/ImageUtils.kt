@@ -225,6 +225,7 @@ object ImageUtils {
     }
 
 
+    // RGBA <-> color picker
     fun recolorPixelSingleOffset(image: BufferedImage, offset: Int = 128, colorPicker: (IntArray) -> IntArray) {
         for (y in 0 until image.height) {
             for (x in 0 until image.width) {
@@ -526,16 +527,16 @@ object ImageUtils {
         return bufferedImage
     }
 
-    fun suiteColorForGif(rgba: Int): Int = when {
-        (rgba shr 24 and 0xff) < 128 -> { // Checks if alpha is almost invisible
+    fun suiteColorForGif(argb: Int): Int = when {
+        (argb shr 24 and 0xff) < 128 -> { // Checks if alpha is almost invisible
             -1 // Sets to transparent gif color
         }
-        rgba and 0x00ffffff == 16777215 -> { //Cuts off the alpha of the int and compares it with white
-            ((rgba shr 24 and 0xff shl 24) // Only the alpha is visible here
+        argb and 0x00ffffff == 16777215 -> { //Cuts off the alpha of the int and compares it with white
+            ((argb shr 24 and 0xff shl 24) // Only the alpha is visible here
                 or (254 shl 16) // integrates other values into the int
                 or (254 shl 8)
                 or (254 shl 0))
         }
-        else -> rgba
+        else -> argb
     }
 }

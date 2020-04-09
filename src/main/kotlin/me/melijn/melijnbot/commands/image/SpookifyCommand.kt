@@ -34,6 +34,6 @@ class SpookifyCommand : AbstractCommand("command.spookify") {
     private suspend fun executeGif(context: CommandContext) {
         ImageCommandUtil.executeGifRecolorSingleOffset(context, { ints ->
             ImageUtils.getSpookyForPixel(ints[0], ints[1], ints[2], ints[3], ints[4], true)
-        }, true)
+        }, false)
     }
 }
