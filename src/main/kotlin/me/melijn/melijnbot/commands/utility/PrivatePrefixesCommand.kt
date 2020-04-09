@@ -85,7 +85,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             context.daoManager.userPrefixWrapper.addPrefix(context.authorId, prefix)
 
             val msg = context.getTranslation("$root.response1")
-                .replace(PREFIX_PLACE_HOLDER, prefix)
+                .replace(PLACEHOLDER_PREFIX, prefix)
             sendMsg(context, msg)
         }
     }
@@ -107,7 +107,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             context.daoManager.userPrefixWrapper.removePrefix(context.authorId, prefix)
 
             val msg = context.getTranslation("$root.response1")
-                .replace(PREFIX_PLACE_HOLDER, prefix)
+                .replace(PLACEHOLDER_PREFIX, prefix)
             sendMsg(context, msg)
         }
     }
@@ -134,7 +134,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             wrapper.removePrefix(context.authorId, toRemove)
 
             val msg = context.getTranslation("$root.removed")
-                .replace(PREFIX_PLACE_HOLDER, toRemove)
+                .replace(PLACEHOLDER_PREFIX, toRemove)
             sendMsg(context, msg)
         }
     }

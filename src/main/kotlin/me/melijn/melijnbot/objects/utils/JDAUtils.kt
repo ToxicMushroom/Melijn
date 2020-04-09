@@ -326,7 +326,7 @@ suspend fun getEmotejiByArgsNMessage(context: CommandContext, index: Int, sameGu
     if (emoteji == null) {
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.emojioremote")
-            .replace(PLACEHOLDER_ARG, context.args[0])
+            .replace(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg, null)
     }
 
@@ -335,7 +335,7 @@ suspend fun getEmotejiByArgsNMessage(context: CommandContext, index: Int, sameGu
 
 
 fun getEmotejiByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean = false): Pair<Emote?, String?>? {
-    val arg = context.args[0]
+    val arg = context.args[index]
     val emoji = if (SupportedDiscordEmoji.helpMe.contains(arg)) {
         arg
     } else {

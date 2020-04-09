@@ -4,7 +4,7 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
+import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.objects.utils.*
 
 const val PREFIXES_LIMIT = 2
@@ -86,7 +86,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             context.daoManager.guildPrefixWrapper.addPrefix(context.guildId, prefix)
 
             val msg = context.getTranslation("$root.response1")
-                .replace(PREFIX_PLACE_HOLDER, prefix)
+                .replace(PLACEHOLDER_PREFIX, prefix)
             sendMsg(context, msg)
         }
     }
@@ -108,7 +108,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             context.daoManager.guildPrefixWrapper.removePrefix(context.guildId, prefix)
 
             val msg = context.getTranslation("$root.response1")
-                .replace(PREFIX_PLACE_HOLDER, prefix)
+                .replace(PLACEHOLDER_PREFIX, prefix)
             sendMsg(context, msg)
         }
     }
@@ -134,7 +134,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             wrapper.removePrefix(context.guildId, toRemove)
 
             val msg = context.getTranslation("$root.removed")
-                .replace(PREFIX_PLACE_HOLDER, toRemove)
+                .replace(PLACEHOLDER_PREFIX, toRemove)
             sendMsg(context, msg)
         }
     }

@@ -168,8 +168,10 @@ class CommandClientBuilder(private val container: Container) {
         PreVerificationMessageCommand(),
         SupportCommand(),
         VoteSkipCommand(),
-        RerenderCommand(),
-        LyricsCommand()
+        RerenderGifCommand(),
+        LyricsCommand(),
+        AppendReverseGifCommand(),
+        GlobalRecolorCommand()
     )
 
     init {

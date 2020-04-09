@@ -9,7 +9,7 @@ import kotlin.coroutines.suspendCoroutine
 class SelfRoleGroupDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "selfRoleGroups"
-    override val tableStructure: String = "guildId bigint, groupName varchar(64), ids varchar(1024), channelId bigint, isEnabled boolean, isSelfRoleable boolean"
+    override val tableStructure: String = "guildId bigint, groupName varchar(64), messageIds varchar(1024), channelId bigint, isEnabled boolean, isSelfRoleable boolean"
     override val primaryKey: String = "guildId, groupName"
 
     init {
@@ -36,8 +36,8 @@ class SelfRoleGroupDao(driverManager: DriverManager) : Dao(driverManager) {
 
 
     suspend fun set(guildId: Long, groupName: String, messageIds: String, channelId: Long, isEnabled: Boolean, isSelfRoleable: Boolean) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, groupName, messageIds, channelId, isEnabled, isSelfRoleable) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET messageIds = ? AND channelId = ? AND isEnabled = ? AND isSelfRoleable = ?",
-            guildId, groupName, messageIds, isEnabled, isSelfRoleable, messageIds, isEnabled, isSelfRoleable)
+        driverManager.executeUpdate("INSERT INTO $table (guildId, groupName, messageIds, channelId, isEnabled, isSelfRoleable) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET messageIds = ?, channelId = ?, isEnabled = ?, isSelfRoleable = ?",
+            guildId, groupName, messageIds, channelId, isEnabled, isSelfRoleable, messageIds, channelId, isEnabled, isSelfRoleable)
     }
 
     suspend fun remove(guildId: Long, groupName: String) {

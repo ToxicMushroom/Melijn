@@ -6,7 +6,7 @@ import me.melijn.melijnbot.enums.PointsTriggerType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
+import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.utils.*
 
@@ -45,13 +45,13 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
 
                 if (punishGroup == null) {
                     val msg = context.getTranslation("message.pgremoved")
-                        .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
+                        .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
                     sendMsg(context, msg)
                 }
                 punishGroup
             } else {
                 val msg = context.getTranslation("message.nopgselected")
-                    .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
+                    .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
                 sendMsg(context, msg)
                 null
             }
@@ -272,7 +272,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             if (exists) {
                 val msg = context.getTranslation("$root.exists")
                     .replace(PLACEHOLDER_ARG, newName)
-                    .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
+                    .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
                 sendMsg(context, msg)
                 return
             }

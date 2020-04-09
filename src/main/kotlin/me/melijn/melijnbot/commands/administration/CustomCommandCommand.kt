@@ -8,7 +8,7 @@ import me.melijn.melijnbot.enums.ModularMessageProperty
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
+import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.utils.*
@@ -50,13 +50,13 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     ccs[0]
                 } else {
                     val msg = context.getTranslation("message.ccremoved")
-                        .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
+                        .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
                     sendMsg(context, msg)
                     null
                 }
             } else {
                 val msg = context.getTranslation("message.noccselected")
-                    .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
+                    .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
                 sendMsg(context, msg)
                 null
             }
@@ -188,7 +188,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             if (cc == null) {
                 val msg = context.getTranslation("$root.failed")
                     .replace("%id%", id.toString())
-                    .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
+                    .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
                 sendMsg(context, msg)
                 return
             }

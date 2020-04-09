@@ -27,13 +27,13 @@ class InvertCommand : AbstractCommand("command.invert") {
     }
 
     private suspend fun executeNormal(context: CommandContext) {
-        ImageCommandUtil.executeNormalRecolor(context, { ints ->
+        ImageCommandUtil.executeNormalRecolorSingleOffset(context) { ints ->
             ImageUtils.getInvertedPixel(ints[0], ints[1], ints[2], ints[3])
-        }, false)
+        }
     }
 
     private suspend fun executeGif(context: CommandContext) {
-        ImageCommandUtil.executeGifRecolor(context, { ints ->
+        ImageCommandUtil.executeGifRecolorSingleOffset(context, { ints ->
             ImageUtils.getInvertedPixel(ints[0], ints[1], ints[2], ints[3], true)
         }, false)
     }

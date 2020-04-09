@@ -9,21 +9,20 @@ import me.melijn.melijnbot.objects.utils.ImageUtils
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.awt.image.BufferedImage
-import java.lang.Integer.max
 
-class PixelateCommand : AbstractCommand("command.pixelate") {
+class GlobalRecolorCommand : AbstractCommand("command.globalrecolor") {
 
     init {
-        id = 133
-        name = "pixelate"
-        aliases = arrayOf("pixelateGif")
+        id = 154
+        name = "globalRecolor"
+        aliases = arrayOf("globalRecolorGif")
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         runConditions = arrayOf(RunCondition.VOTED)
         commandCategory = CommandCategory.IMAGE
     }
 
     override suspend fun execute(context: CommandContext) {
-        if (context.commandParts[1].equals("pixelateGif", true)) {
+        if (context.commandParts[1].equals("blurpleGif", true)) {
             executeGif(context)
         } else {
             executeNormal(context)
@@ -31,33 +30,32 @@ class PixelateCommand : AbstractCommand("command.pixelate") {
     }
 
     private suspend fun executeNormal(context: CommandContext) {
-        ImageCommandUtil.executeNormalEffect(context, effect = { image, imgData ->
-            ImageUtils.pixelate(image, imgData.getInt("offset"))
+        ImageCommandUtil.executeNormalEffect(context, effect = { image, argData ->
+            ImageUtils.blur(image, argData.getInt("offset"))
 
         }, argDataParser = { argInt: Int, argData: DataObject, imgData: DataObject ->
             ImageCommandUtil.defaultOffsetArgParser(context, argInt, argData, imgData)
 
         }, imgDataParser = { img: BufferedImage, imgData: DataObject ->
             imgData.put("lower", 1)
-            imgData.put("higher", max(img.height, img.width))
-            imgData.put("defaultOffset", max(1, max(img.height, img.width) / 100))
+            imgData.put("higher", Integer.max(img.height, img.width))
+            imgData.put("defaultOffset", Integer.max(Integer.max(img.width, img.height) / 75, 1))
 
         })
-
     }
 
     private suspend fun executeGif(context: CommandContext) {
-        ImageCommandUtil.executeGifEffect(context, effect = { image, imgData ->
-            ImageUtils.pixelate(image, imgData.getInt("offset"), true)
+        ImageCommandUtil.executeGifEffect(context, effect = { image, argData ->
+            ImageUtils.blur(image, argData.getInt("offset"), true)
 
         }, argDataParser = { argInt: Int, argData: DataObject, imgData: DataObject ->
             ImageCommandUtil.defaultOffsetArgParser(context, argInt, argData, imgData)
 
         }, imgDataParser = { img: BufferedImage, imgData: DataObject ->
             imgData.put("lower", 1)
-            imgData.put("higher", max(img.height, img.width))
-            imgData.put("defaultOffset", max(1, max(img.height, img.width) / 100))
+            imgData.put("higher", Integer.max(img.height, img.width))
+            imgData.put("defaultOffset", Integer.max(Integer.max(img.width, img.height) / 75, 1))
 
-        })
+        }, argumentAmount = 1)
     }
 }

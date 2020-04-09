@@ -155,7 +155,6 @@ object ImageUtils {
     fun addEffectToGifFrames(
         decoder: GifDecoder,
         fps: Float? = null,
-        quality: Int,
         repeat: Boolean?,
         effect: (BufferedImage) -> Unit,
         frameDebug: CommandContext? = null
@@ -226,7 +225,7 @@ object ImageUtils {
     }
 
 
-    fun recolorPixel(image: BufferedImage, offset: Int = 128, colorPicker: (IntArray) -> IntArray) {
+    fun recolorPixelSingleOffset(image: BufferedImage, offset: Int = 128, colorPicker: (IntArray) -> IntArray) {
         for (y in 0 until image.height) {
             for (x in 0 until image.width) {
                 var color = image.getRGB(x, y)

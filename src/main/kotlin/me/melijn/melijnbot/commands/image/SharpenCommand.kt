@@ -7,6 +7,8 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.utils.ImageUtils
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.utils.data.DataObject
+import java.awt.image.BufferedImage
 
 class SharpenCommand : AbstractCommand("command.sharpen") {
 
@@ -28,25 +30,31 @@ class SharpenCommand : AbstractCommand("command.sharpen") {
     }
 
     private suspend fun executeNormal(context: CommandContext) {
-        ImageCommandUtil.executeNormalEffect(context, effect = { image, i ->
-            ImageUtils.sharpen(image, i)
+        ImageCommandUtil.executeNormalEffect(context, effect = { image, imgData ->
+            ImageUtils.sharpen(image, imgData.getInt("offset"))
 
-        }, hasOffset = true, defaultOffset = {
-            1
-        }, offsetRange = { img ->
-            IntRange(1, Integer.max(img.height, img.width))
+        }, argDataParser = { argInt: Int, argData: DataObject, imgData: DataObject ->
+            ImageCommandUtil.defaultOffsetArgParser(context, argInt, argData, imgData)
+
+        }, imgDataParser = { img: BufferedImage, imgData: DataObject ->
+            imgData.put("lower", 1)
+            imgData.put("higher", Integer.max(img.height, img.width))
+            imgData.put("defaultOffset", 1)
 
         })
     }
 
     private suspend fun executeGif(context: CommandContext) {
-        ImageCommandUtil.executeGifEffect(context, effect = { image, i ->
-            ImageUtils.sharpen(image, i, true)
+        ImageCommandUtil.executeGifEffect(context, effect = { image, imgData ->
+            ImageUtils.sharpen(image, imgData.getInt("offset"), true)
 
-        }, hasOffset = true, defaultOffset = {
-            1
-        }, offsetRange = { img ->
-            IntRange(1, Integer.max(img.height, img.width))
+        }, argDataParser = { argInt: Int, argData: DataObject, imgData: DataObject ->
+            ImageCommandUtil.defaultOffsetArgParser(context, argInt, argData, imgData)
+
+        }, imgDataParser = { img: BufferedImage, imgData: DataObject ->
+            imgData.put("lower", 1)
+            imgData.put("higher", Integer.max(img.height, img.width))
+            imgData.put("defaultOffset", 1)
 
         })
     }

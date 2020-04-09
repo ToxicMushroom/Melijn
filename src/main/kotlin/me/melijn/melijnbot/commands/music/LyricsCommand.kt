@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.music
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
+import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.KSOFT_SI
 import me.melijn.melijnbot.objects.utils.*
@@ -29,7 +29,7 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
                 formatAndSendLyrics(context, info.title + " " + info.author, lyrics.first, lyrics.second)
             } else {
                 val msg = context.getTranslation("$root.extrahelp")
-                    .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
+                    .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
                 sendMsg(context, msg)
             }
         } else {

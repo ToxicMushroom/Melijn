@@ -29,13 +29,13 @@ class FlipCommand : AbstractCommand("command.flip") {
     private suspend fun executeNormal(context: CommandContext) {
         ImageCommandUtil.executeNormalEffect(context, { image, _ ->
             flipFrame(image)
-        }, false)
+        })
     }
 
     private suspend fun executeGif(context: CommandContext) {
         ImageCommandUtil.executeGifEffect(context, { image, _ ->
             flipFrame(image, true)
-        }, false)
+        })
     }
 
     private fun flipFrame(image: BufferedImage, isGif: Boolean = false) {
