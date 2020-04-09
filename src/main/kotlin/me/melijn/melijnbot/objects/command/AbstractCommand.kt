@@ -8,7 +8,7 @@ import me.melijn.melijnbot.objects.utils.sendMsg
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
-const val PREFIX_PLACE_HOLDER = "%prefix%"
+const val PLACEHOLDER_PREFIX = "%prefix%"
 
 abstract class AbstractCommand(val root: String) {
 
