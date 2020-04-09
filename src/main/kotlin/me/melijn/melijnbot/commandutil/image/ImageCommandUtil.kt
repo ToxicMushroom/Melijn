@@ -157,12 +157,12 @@ object ImageCommandUtil {
             val gct = gifDecoder.gct ?: emptyArray<Int>().toIntArray()
 
             for (index in 0 until gifDecoder.frameCount) {
-                addFrameToEncoderReverseThingie(gifDecoder, debug, gct, index, width, height, encoder, context, fps)
+                addFrameToEncoderReverseThingie(gifDecoder, debug, gct, index, width, height, encoder, context, fps, false)
             }
 
             for (fakeIndex in 0 until (gifDecoder.frameCount - 1)) {
                 val index = gifDecoder.frameCount - fakeIndex - 2
-                addFrameToEncoderReverseThingie(gifDecoder, debug, gct, index, width, height, encoder, context, fps)
+                addFrameToEncoderReverseThingie(gifDecoder, debug, gct, index, width, height, encoder, context, fps, true)
             }
 
             encoder.finishEncoding()
@@ -175,7 +175,7 @@ object ImageCommandUtil {
         }, 0)
     }
 
-    private fun addFrameToEncoderReverseThingie(decoder: GifDecoder, debug: Boolean, gct: IntArray, index: Int, width: Int, height: Int, encoder: GifEncoder, context: CommandContext, fps: Float?) {
+    private fun addFrameToEncoderReverseThingie(decoder: GifDecoder, debug: Boolean, gct: IntArray, index: Int, width: Int, height: Int, encoder: GifEncoder, context: CommandContext, fps: Float?, isSecondIteration: Boolean) {
         val options = ImageOptions()
         options.setColorQuantizer(MedianCutQuantizer.INSTANCE)
         options.setDitherer(FloydSteinbergDitherer.INSTANCE)
@@ -186,6 +186,13 @@ object ImageCommandUtil {
         val frameMeta = decoder.getFrameMeta(index)
         val gifFrame = frameMeta.image
 
+        if (!isSecondIteration) ImageUtils.recolorPixelSingleOffset(gifFrame, colorPicker = { ints ->
+            if (ints[0] == 255 && ints[1] == 255 && ints[2] == 255) {
+                intArrayOf(254, 254, 254, 255)
+            } else if (ints[3] < 128) {
+                intArrayOf(255, 255, 255, 255)
+            } else ints
+        })
 
         val delay = fps?.let { (1.0 / it * 1000.0).toLong() } ?: frameMeta.delay.toLong()
         options.setDelay(delay, TimeUnit.MILLISECONDS)
