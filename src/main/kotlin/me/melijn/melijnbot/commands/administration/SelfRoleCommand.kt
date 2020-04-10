@@ -15,6 +15,7 @@ import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
+import kotlin.math.max
 
 const val UNKNOWN_SELFROLEMODE_PATH = "message.unknown.selfrolemode"
 
@@ -84,7 +85,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val wrapper = context.daoManager.selfRoleGroupWrapper
             val wrapper2 = context.daoManager.selfRoleWrapper
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
-            val selfRoles = wrapper2.selfRoleCache[context.guildId].await().get(group.groupName)
+            val selfRoles = wrapper2.selfRoleCache[context.guildId].await()[group.groupName]
 
             if (selfRoles == null || selfRoles.isEmpty()) {
                 val msg = context.getTranslation("$root.noselfroles.forgroup")
@@ -151,7 +152,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     embedder.setDescription(part)
                     val messagesPart = sendEmbed(context.daoManager.embedDisabledWrapper, channel, embedder.build())
 
-                    val emoteAmount = part.count { c -> c == '\n' } / ratio
+                    val emoteAmount = part.count { c -> c == '\n' } / max(ratio, 1)
                     val emoteMessage = messagesPart.last()
                     for (emoteIndex in alreadyEmotesAmount until (alreadyEmotesAmount + emoteAmount)) {
                         val emoteji = selfRoles.keys.sorted()[emoteIndex]
@@ -161,7 +162,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                         } else {
                             val emote = context.guild.getEmoteById(emoteji)
                                 ?: context.shardManager.getEmoteById(emoteji)
-                            emote?.let { emoteMessage.addReaction(it) }
+                            emote?.let { emoteMessage.addReaction(it).queue() }
                         }
                     }
 
@@ -174,7 +175,24 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 val titleFormat = context.getTranslation("$root.titleformat")
                 embedder.setTitle(titleFormat.replace("%group%", group.groupName))
                 embedder.setDescription(body)
-                sendEmbed(context.daoManager.embedDisabledWrapper, channel, embedder.build())
+                val messagesPart = sendEmbed(context.daoManager.embedDisabledWrapper, channel, embedder.build())
+
+                val emoteMessage = messagesPart.last()
+                for (emoteIndex in alreadyEmotesAmount until (alreadyEmotesAmount + shouldCount)) {
+                    val emoteji = selfRoles.keys.sorted()[emoteIndex]
+                    val isEmoji = SupportedDiscordEmoji.helpMe.contains(emoteji)
+                    if (isEmoji) {
+                        emoteMessage.addReaction(emoteji).queue()
+                    } else {
+                        val emote = context.guild.getEmoteById(emoteji)
+                            ?: context.shardManager.getEmoteById(emoteji)
+                        emote?.let { emoteMessage.addReaction(it).queue() }
+                    }
+                }
+
+
+                alreadyEmotesAmount += shouldCount
+                messagesPart
             }
 
 
