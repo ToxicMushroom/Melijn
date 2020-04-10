@@ -109,7 +109,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
             var body = ""
             val size = selfRoles.size
-            for ((emoteji, roleIds) in selfRoles) {
+            for ((emoteji, roleIds) in selfRoles.toSortedMap()) {
                 var roleMention = ""
                 for (roleId in roleIds) {
                     val role = context.guild.getRoleById(roleId)
@@ -131,6 +131,11 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
             }
 
+            val totalCount = body.count { c -> c == '\n' }
+            val shouldCount = selfRoles.size
+            val ratio = totalCount / shouldCount
+
+            var alreadyEmotesAmount = 0
             val messages: List<Message> = if (size > 20 || body.length > MessageEmbed.TEXT_MAX_LENGTH) {
                 val splitted = StringUtils.splitMessageAtMaxCharAmountOrLength(body, 20, '\n', MessageEmbed.TEXT_MAX_LENGTH)
 
@@ -144,7 +149,25 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     )
 
                     embedder.setDescription(part)
-                    messages.addAll(sendEmbed(context.daoManager.embedDisabledWrapper, channel, embedder.build()))
+                    val messagesPart = sendEmbed(context.daoManager.embedDisabledWrapper, channel, embedder.build())
+
+                    val emoteAmount = part.count { c -> c == '\n' } / ratio
+                    val emoteMessage = messagesPart.last()
+                    for (emoteIndex in alreadyEmotesAmount until (alreadyEmotesAmount + emoteAmount)) {
+                        val emoteji = selfRoles.keys.sorted()[emoteIndex]
+                        val isEmoji = SupportedDiscordEmoji.helpMe.contains(emoteji)
+                        if (isEmoji) {
+                            emoteMessage.addReaction(emoteji).queue()
+                        } else {
+                            val emote = context.guild.getEmoteById(emoteji)
+                                ?: context.shardManager.getEmoteById(emoteji)
+                            emote?.let { emoteMessage.addReaction(it) }
+                        }
+                    }
+
+
+                    alreadyEmotesAmount += emoteAmount
+                    messages.addAll(messagesPart)
                 }
                 messages.toList()
             } else {
@@ -153,6 +176,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 embedder.setDescription(body)
                 sendEmbed(context.daoManager.embedDisabledWrapper, channel, embedder.build())
             }
+
 
             val messageIds = messages.map { it.idLong }.sorted()
 
