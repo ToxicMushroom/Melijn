@@ -30,8 +30,8 @@ object SelfRoleUtil {
         if (!selfMember.canInteract(member)) return null
         /* END INIT */
 
-        // val channelId = daoManager.channelWrapper.channelCache.get(Pair(guildId, ChannelType.SELFROLE)).await()
-        // if (channelId != channel.idLong) return null
+        //val channelId = daoManager.channelWrapper.channelCache.get(Pair(guildId, ChannelType.SELFROLE)).await()
+        //if (channelId != channel.idLong) return null
 
         val emoteji = if (reaction.reactionEmote.isEmote) {
             reaction.reactionEmote.emote.id
@@ -41,14 +41,13 @@ object SelfRoleUtil {
 
         val selfRoleGroups = daoManager.selfRoleGroupWrapper.getMap(guildId).await()
         val selfRoleGroupMatches = selfRoleGroups.filter {
-            it.channelId == channelId && it.messageIds.contains(event.messageIdLong)
+            it.channelId == channelId && (it.messageIds.contains(event.messageIdLong) || it.messageIds.isEmpty())
         }
 
         if (selfRoleGroupMatches.isEmpty()) {
             return null
         }
 
-        val roleIds = mutableListOf<Long>()
 
         val roles = mutableListOf<Role>()
         val selfRoles = daoManager.selfRoleWrapper.selfRoleCache.get(guildId).await()

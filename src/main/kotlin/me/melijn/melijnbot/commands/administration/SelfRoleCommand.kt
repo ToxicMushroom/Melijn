@@ -31,9 +31,9 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             RemoveAtArg(root),
             SendGroupAuto(root),
             ListArg(root),
-            GroupArg(root),
-            SetMode(root),  // Manual, Auto | Auto will ignore selfRoleMessageIds and selfRoleChannelIds and use the internal cached ones
-            SendGroup(root) // Internal cached ones are messageIds created by the >sr sendGroup <channel> command
+            GroupArg(root)
+            // SetMode(root),  Manual, Auto | Auto will ignore selfRoleMessageIds and selfRoleChannelIds and use the internal cached ones
+            // SendGroup(root)  Internal cached ones are messageIds created by the >sr sendGroup <channel> command
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }

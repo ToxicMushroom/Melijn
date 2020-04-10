@@ -6,7 +6,7 @@ plugins {
 }
 
 mainClassName = 'me.melijn.melijnbot.MelijnBotKt'
-version = '2.0.4'
+version = '2.0.5'
 sourceCompatibility = JavaVersion.VERSION_12
 
 repositories {
