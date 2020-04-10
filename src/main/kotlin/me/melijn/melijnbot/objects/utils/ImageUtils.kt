@@ -155,7 +155,6 @@ object ImageUtils {
     fun addEffectToGifFrames(
         decoder: GifDecoder,
         fps: Float? = null,
-        quality: Int,
         repeat: Boolean?,
         effect: (BufferedImage) -> Unit,
         frameDebug: CommandContext? = null
@@ -226,7 +225,8 @@ object ImageUtils {
     }
 
 
-    fun recolorPixel(image: BufferedImage, offset: Int = 128, colorPicker: (IntArray) -> IntArray) {
+    // RGBA <-> color picker
+    fun recolorPixelSingleOffset(image: BufferedImage, offset: Int = 128, colorPicker: (IntArray) -> IntArray) {
         for (y in 0 until image.height) {
             for (x in 0 until image.width) {
                 var color = image.getRGB(x, y)
@@ -264,13 +264,13 @@ object ImageUtils {
     fun getInvertedPixel(r: Int, g: Int, b: Int, a: Int, isGif: Boolean = false): IntArray {
         val ir = 255 - r
         val ig = 255 - g
-        val ia = 255 - a
+        val ib = 255 - b
         return if (isGif && a < 128) {
             intArrayOf(255, 255, 255, 255)
-        } else if (isGif && ir == 255 && ig == 255 && ia == 255) {
+        } else if (isGif && ir == 255 && ig == 255 && ib == 255) {
             intArrayOf(254, 254, 254, 255)
         } else {
-            intArrayOf(ir, ig, ia, a)
+            intArrayOf(ir, ig, ib, a)
         }
     }
 
@@ -527,16 +527,16 @@ object ImageUtils {
         return bufferedImage
     }
 
-    fun suiteColorForGif(rgba: Int): Int = when {
-        (rgba shr 24 and 0xff) < 128 -> { // Checks if alpha is almost invisible
+    fun suiteColorForGif(argb: Int): Int = when {
+        (argb shr 24 and 0xff) < 128 -> { // Checks if alpha is almost invisible
             -1 // Sets to transparent gif color
         }
-        rgba and 0x00ffffff == 16777215 -> { //Cuts off the alpha of the int and compares it with white
-            ((rgba shr 24 and 0xff shl 24) // Only the alpha is visible here
+        argb and 0x00ffffff == 16777215 -> { //Cuts off the alpha of the int and compares it with white
+            ((argb shr 24 and 0xff shl 24) // Only the alpha is visible here
                 or (254 shl 16) // integrates other values into the int
                 or (254 shl 8)
                 or (254 shl 0))
         }
-        else -> rgba
+        else -> argb
     }
 }

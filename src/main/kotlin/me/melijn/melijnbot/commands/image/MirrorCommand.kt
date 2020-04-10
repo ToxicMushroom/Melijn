@@ -4,6 +4,7 @@ import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.utils.ImageUtils
 import net.dv8tion.jda.api.Permission
 import java.awt.image.BufferedImage
 
@@ -28,27 +29,28 @@ class MirrorCommand : AbstractCommand("command.mirror") {
     private suspend fun executeNormal(context: CommandContext) {
         ImageCommandUtil.executeNormalEffect(context, { image, _ ->
             mirrorFrame(image)
-        }, false)
+        })
     }
 
     private suspend fun executeGif(context: CommandContext) {
         ImageCommandUtil.executeGifEffect(context, { image, _ ->
-            mirrorFrame(image)
-        }, false)
+            mirrorFrame(image, true)
+        })
     }
 
-    private fun mirrorFrame(image: BufferedImage) {
-        val newImage = BufferedImage(image.width, image.height, image.type)
+    private fun mirrorFrame(image: BufferedImage, isGif: Boolean = false) {
         for (y in 0 until image.height) {
-            for (x in 0 until image.width) {
-                val color = image.getRGB(image.width - 1 - x, y)
-                newImage.setRGB(x, y, color)
-            }
-        }
-        for (y in 0 until newImage.height) {
-            for (x in 0 until newImage.width) {
-                val color = newImage.getRGB(x, y)
-                image.setRGB(x, y, color)
+            for (x in 0 until image.width / 2) {
+                var leftColor = image.getRGB(x, y)
+                var rightColor = image.getRGB(image.width - x - 1, y)
+
+                if (isGif) {
+                    leftColor = ImageUtils.suiteColorForGif(leftColor)
+                    rightColor = ImageUtils.suiteColorForGif(rightColor)
+                }
+
+                image.setRGB(x, y, rightColor)
+                image.setRGB(image.width - x - 1, y, leftColor)
             }
         }
     }

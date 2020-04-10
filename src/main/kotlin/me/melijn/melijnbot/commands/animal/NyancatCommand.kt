@@ -3,6 +3,7 @@ package me.melijn.melijnbot.commands.animal
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import kotlin.random.Random
@@ -14,6 +15,7 @@ class NyancatCommand : AbstractCommand("command.nyancat") {
         id = 49
         name = "nyancat"
         aliases = arrayOf("nyan", "nya")
+        runConditions = arrayOf(RunCondition.VOTED)
         commandCategory = CommandCategory.ANIMAL
     }
 

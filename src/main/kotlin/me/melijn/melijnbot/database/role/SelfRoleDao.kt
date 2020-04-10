@@ -8,32 +8,44 @@ import kotlin.coroutines.suspendCoroutine
 class SelfRoleDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "selfRoles"
-    override val tableStructure: String = "guildId bigint, emoteji varchar(64), roleId bigint"
-    override val primaryKey: String = "emoteji"
+    override val tableStructure: String = "guildId bigint, groupName varchar(64), emoteji varchar(64), roleId bigint"
+    override val primaryKey: String = "guildId, groupName, emoteji, roleId"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun set(guildId: Long, emoteji: String, roleId: Long) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, emoteji, roleId) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET roleId = ?",
-            guildId, emoteji, roleId, roleId)
+    suspend fun add(guildId: Long, groupName: String, emoteji: String, roleId: Long) {
+        driverManager.executeUpdate("INSERT INTO $table (guildId, groupName, emoteji, roleId) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
+            guildId, groupName, emoteji, roleId)
     }
 
-    suspend fun getMap(guildId: Long): Map<String, Long> = suspendCoroutine {
-        val map = mutableMapOf<String, Long>()
+    suspend fun getMap(guildId: Long): Map<String, Map<String, List<Long>>> = suspendCoroutine {
+        val map = mutableMapOf<String, Map<String, List<Long>>>()
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", { rs ->
             while (rs.next()) {
-                map[rs.getString("emoteji")] = rs.getLong("roleId")
+                val group = rs.getString("groupName")
+                val pairs = map.getOrDefault(group, emptyMap()).toMutableMap()
+                val emoteji = rs.getString("emoteji")
+                pairs[emoteji] = pairs.getOrDefault(emoteji, emptyList()) + rs.getLong("roleId")
+                map[group] = pairs
             }
         }, guildId)
         it.resume(map)
     }
 
-    suspend fun remove(guildId: Long, emoteji: String) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND emoteji = ?",
-            guildId, emoteji)
+    suspend fun clear(guildId: Long, groupName: String) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND groupName = ?",
+            guildId, groupName)
     }
 
+    suspend fun clear(guildId: Long, groupName: String, emoteji: String) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND groupName = ? AND emoteji = ?",
+            guildId, groupName, emoteji)
+    }
 
+    suspend fun remove(guildId: Long, groupName: String, emoteji: String, roleId: Long) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND groupName = ? AND emoteji = ? AND roleId = ?",
+            guildId, groupName, emoteji, roleId)
+    }
 }

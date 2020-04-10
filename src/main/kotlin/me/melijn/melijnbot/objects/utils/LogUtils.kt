@@ -511,6 +511,7 @@ object LogUtils {
         if (logChannel == null) return
         val title = i18n.getTranslation(language, "logging.removed.selfrole.title")
             .replace("%emoteji%", emoteji)
+
         val cause = i18n.getTranslation(language, "logging.removed.selfrole.causepath.$causePath")
             .replace("%causeArg%", causeArg)
 

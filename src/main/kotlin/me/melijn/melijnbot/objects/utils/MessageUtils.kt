@@ -8,7 +8,7 @@ import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
 import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
+import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.StringUtils.humanReadableByteCountBin
@@ -90,8 +90,9 @@ suspend fun Throwable.sendInGuildSuspend(guild: Guild? = null, channel: MessageC
 suspend fun sendSyntax(context: CommandContext, translationPath: String = context.commandOrder.last().syntax) {
     val syntax = context.getTranslation("message.command.usage")
         .replace("%syntax%", context.getTranslation(translationPath)
-            .replace(PREFIX_PLACE_HOLDER, context.usedPrefix))
-    sendMsg(context.textChannel, syntax)
+            .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
+        )
+    sendMsg(context, syntax)
 }
 
 suspend fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String, shouldPaginate: Boolean = false) {
@@ -922,5 +923,5 @@ fun String.toUpperWordCase(): String {
 }
 
 fun String.replacePrefix(context: CommandContext): String {
-    return this.replace(PREFIX_PLACE_HOLDER, context.commandParts[0])
+    return this.replace(PLACEHOLDER_PREFIX, context.commandParts[0])
 }

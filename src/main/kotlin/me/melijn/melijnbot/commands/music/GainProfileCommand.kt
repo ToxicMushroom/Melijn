@@ -239,7 +239,7 @@ suspend fun getGainProfileNMessage(context: CommandContext, map: Map<String, Gai
         } else {
             val msg = context.getTranslation("${context.commandOrder.first().root}.notfound")
                 .replace(PLACEHOLDER_ARG, name)
-                .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
+                .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
             sendMsg(context, msg)
             return null
         }

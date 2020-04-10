@@ -335,16 +335,18 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
     private suspend fun selfRoleHandler(event: GuildMessageReactionAddEvent) {
         val guild = event.guild
         val member = event.member
-        val role = SelfRoleUtil.getSelectedSelfRoleNByReactionEvent(event, container) ?: return
+        val roles = SelfRoleUtil.getSelectedSelfRoleNByReactionEvent(event, container) ?: return
 
-        if (!member.roles.contains(role)) {
-            val added = try {
-                guild.addRoleToMember(member, role).reason("SelfRole").awaitBool()
-            } catch (t: Throwable) {
-                false
-            }
-            if (!added) {
-                LogUtils.sendMessageFailedToAddRoleToMember(container.daoManager, member, role)
+        for (role in roles) {
+            if (!member.roles.contains(role)) {
+                val added = try {
+                    guild.addRoleToMember(member, role).reason("SelfRole").awaitBool()
+                } catch (t: Throwable) {
+                    false
+                }
+                if (!added) {
+                    LogUtils.sendMessageFailedToAddRoleToMember(container.daoManager, member, role)
+                }
             }
         }
     }

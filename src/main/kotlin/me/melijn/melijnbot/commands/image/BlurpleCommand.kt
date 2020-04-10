@@ -27,14 +27,14 @@ class BlurpleCommand : AbstractCommand("command.blurple") {
     }
 
     private suspend fun executeNormal(context: CommandContext) {
-        ImageCommandUtil.executeNormalRecolor(context, { ints ->
+        ImageCommandUtil.executeNormalRecolorSingleOffset(context) { ints ->
             ImageUtils.getBlurpleForPixel(ints[0], ints[1], ints[2], ints[3], ints[4])
-        }, true)
+        }
     }
 
     private suspend fun executeGif(context: CommandContext) {
-        ImageCommandUtil.executeGifRecolor(context, { ints ->
+        ImageCommandUtil.executeGifRecolorSingleOffset(context, { ints ->
             ImageUtils.getBlurpleForPixel(ints[0], ints[1], ints[2], ints[3], ints[4], true)
-        }, true)
+        }, false)
     }
 }

@@ -6,7 +6,7 @@ import me.melijn.melijnbot.enums.FilterMode
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
+import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.objects.utils.*
@@ -46,13 +46,13 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                     fgs[0]
                 } else {
                     val msg = context.getTranslation("message.fgremoved")
-                        .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
+                        .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
                     sendMsg(context, msg)
                     null
                 }
             } else {
                 val msg = context.getTranslation("message.nofgselected")
-                    .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
+                    .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
                 sendMsg(context, msg)
                 null
             }

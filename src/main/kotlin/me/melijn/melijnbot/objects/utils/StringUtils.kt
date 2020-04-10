@@ -130,10 +130,40 @@ object StringUtils {
 
     fun Long.toBase64(): String {
         return Base64.encode(ByteBuffer
-                .allocate(Long.SIZE_BYTES)
-                .putLong(this)
-                .array())
+            .allocate(Long.SIZE_BYTES)
+            .putLong(this)
+            .array())
             .remove("=")
+    }
+
+    fun splitMessageAtMaxCharAmountOrLength(message: String, maxAmount: Int, c: Char, maxLength: Int): List<String> {
+        var msg = message
+        var amount = msg.count { c == it }
+        val messages = ArrayList<String>()
+        if (amount > maxAmount) {
+            while (amount > maxAmount) {
+                amount -= maxAmount
+
+                var index = 0
+                var amount = 0
+                for ((charIndex, char) in msg.withIndex()) {
+                    amount++
+                    if (char == c && amount == maxAmount) {
+                        index = charIndex
+                        break
+                    }
+                }
+                messages.addAll(splitMessage(msg.substring(0, index + 1)))
+                msg = msg.substring(index + 1, msg.length + 1)
+            }
+            messages.addAll(splitMessage(msg.substring(0, msg.length + 1)))
+        } else if (maxLength > msg.length) {
+            messages.addAll(splitMessage(msg))
+        } else {
+            messages.add(msg)
+        }
+
+        return messages
     }
 }
 

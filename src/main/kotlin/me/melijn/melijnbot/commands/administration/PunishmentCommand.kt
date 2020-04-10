@@ -6,7 +6,7 @@ import me.melijn.melijnbot.enums.PunishmentType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.PREFIX_PLACE_HOLDER
+import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_PERMISSIONTYPE
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.utils.*
@@ -380,7 +380,7 @@ suspend fun getPunishmentNMessage(context: CommandContext, position: Int, punish
         val extra = if (punishmentType == null) "" else ".typed"
         val msg = context.getTranslation("command.punishment.nomatch$extra")
             .replace(PLACEHOLDER_ARG, name)
-            .replace(PREFIX_PLACE_HOLDER, context.usedPrefix)
+            .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
             .replace("%type%", item?.punishmentType?.toUCC() ?: "error")
         sendMsg(context, msg)
     }
