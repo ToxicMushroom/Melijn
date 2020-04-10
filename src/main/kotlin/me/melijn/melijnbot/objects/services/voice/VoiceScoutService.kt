@@ -15,13 +15,15 @@ class VoiceScoutService(
 
     override val service = Task {
         val gmp = MusicPlayerManager.guildMusicPlayers
-        gmp.values.iterator().forEach { guildMusicPlayer ->
+        val iterator = gmp.iterator()
+        while (iterator.hasNext()) {
+            val guildMusicPlayer = iterator.next().value
             val guild = shardManager.getGuildById(guildMusicPlayer.guildId)
             if (guild == null) {
                 guildMusicPlayer.guildTrackManager.clear()
                 guildMusicPlayer.guildTrackManager.iPlayer.stopTrack()
                 guildMusicPlayer.removeTrackManagerListener()
-                MusicPlayerManager.guildMusicPlayers.remove(guildMusicPlayer.guildId)
+                iterator.remove()
             } else {
                 val botChannel = container.lavaManager.getConnectedChannel(guild)
                 val daoManager = container.daoManager
@@ -35,7 +37,7 @@ class VoiceScoutService(
                     guildMusicPlayer.guildTrackManager.clear()
                     guildMusicPlayer.guildTrackManager.iPlayer.stopTrack()
                     guildMusicPlayer.removeTrackManagerListener()
-                    MusicPlayerManager.guildMusicPlayers.remove(guildMusicPlayer.guildId)
+                    iterator.remove()
                 }
             }
         }
