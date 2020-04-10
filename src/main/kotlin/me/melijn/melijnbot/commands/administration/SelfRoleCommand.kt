@@ -254,8 +254,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         class SetChannel(parent: String) : AbstractCommand("$parent.setchannel") {
 
             init {
-                name = "setChannelId"
-                aliases = arrayOf("sci")
+                name = "setChannel"
+                aliases = arrayOf("sc")
             }
 
             override suspend fun execute(context: CommandContext) {
@@ -268,9 +268,14 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 val wrapper = context.daoManager.selfRoleGroupWrapper
 
                 if (context.args.size == 1) {
-                    val msg = context.getTranslation("$root.show")
-                        .replace("%group%", group.groupName)
-                        .replace("%channel%", "<#${group.channelId}>")
+                    val textChannel = context.guild.getTextChannelById(group.channelId)
+                    val msg = if (textChannel == null) {
+                        context.getTranslation("$root.show.unset")
+                    } else {
+                        context.getTranslation("$root.show")
+                            .replace("%group%", group.groupName)
+                            .replace("%channel%", textChannel.asTag)
+                    }
                     sendMsg(context, msg)
                     return
                 }
@@ -298,11 +303,11 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
         }
 
-        class MessageIdsArg(parent: String) : AbstractCommand("$parent.ids") {
+        class MessageIdsArg(parent: String) : AbstractCommand("$parent.messageids") {
 
             init {
-                name = "ids"
-                aliases = arrayOf("i", "id")
+                name = "messageIds"
+                aliases = arrayOf("mid", "mids")
                 children = arrayOf(
                     AddArg(root),
                     RemoveArg(root),
@@ -589,10 +594,13 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     .sortedBy { it.groupName }
 
                 val title = context.getTranslation("$root.title")
-                val content = StringBuilder("```INI\n[index] - [name] - [selfAssignable] - [enabled]")
+                val content = StringBuilder("```INI\n[index] - [name] - ([channelId], [channelName]) - [selfAssignable] - [enabled]")
 
                 for ((index, srg) in list.withIndex()) {
-                    content.append("\n$index - ").append(srg.groupName).append(" - ").append(srg.isSelfRoleable).append(" - ").append(srg.isEnabled)
+                    val channel = context.guild.getTextChannelById(srg.channelId)
+                    content.append("\n${index + 1} - ").append(srg.groupName)
+                        .append(" - (").append(channel?.idLong ?: -1).append(", ").append(channel?.name ?: "null")
+                        .append(") - ").append(srg.isSelfRoleable).append(" - ").append(srg.isEnabled)
                 }
                 content.append("```")
                 val msg = title + content.toString()
@@ -721,6 +729,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             if (!guildSelfRoles.containsKey(emoteji)) {
                 val msg = context.getTranslation("$root.emotejivoid")
                     .replace("%emoteji%", emoteName)
+                    .replace("%group%", group.groupName)
                 sendMsg(context, msg)
                 return
             }

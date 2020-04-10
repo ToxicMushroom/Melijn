@@ -53,34 +53,33 @@ object SelfRoleUtil {
         val selfRoles = daoManager.selfRoleWrapper.selfRoleCache.get(guildId).await()
         for ((groupName) in selfRoleGroupMatches) {
             val subMap = selfRoles[groupName] ?: continue
-            for (ls in subMap.values) {
-                if (ls.isEmpty()) return null
-                for (roleId in ls) {
-                    if (daoManager.forceRoleWrapper.forceRoleCache[guildId].await()[member.idLong]?.contains(roleId) == true) return null
-                    val role = guild.getRoleById(roleId)
-                    val language = getLanguage(daoManager, -1, guildId)
-                    val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.BOT)
-                    val zoneId = getZoneId(daoManager, guildId)
+            val deservedRoles = subMap[emoteji] ?: continue
 
-                    var shouldRemove = false
-                    var cause = ""
-                    var causeArg = ""
-                    if (role == null) {
-                        cause = UNKNOWN_ID_CAUSE
-                        causeArg = roleId.toString()
-                        shouldRemove = true
-                    } else if (!selfMember.canInteract(role)) {
-                        cause = CANNOT_INTERACT_CAUSE
-                        causeArg = roleId.toString()
-                        shouldRemove = true
-                    }
+            for (roleId in deservedRoles) {
+                if (daoManager.forceRoleWrapper.forceRoleCache[guildId].await()[member.idLong]?.contains(roleId) == true) return null
+                val role = guild.getRoleById(roleId)
+                val language = getLanguage(daoManager, -1, guildId)
+                val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.BOT)
+                val zoneId = getZoneId(daoManager, guildId)
 
-                    if (shouldRemove) {
-                        daoManager.selfRoleWrapper.remove(guildId, groupName, emoteji)
-                        LogUtils.sendRemovedSelfRoleLog(language, zoneId, emoteji, logChannel, cause, causeArg)
-                    }
-                    role?.let { roles.add(it) }
+                var shouldRemove = false
+                var cause = ""
+                var causeArg = ""
+                if (role == null) {
+                    cause = UNKNOWN_ID_CAUSE
+                    causeArg = roleId.toString()
+                    shouldRemove = true
+                } else if (!selfMember.canInteract(role)) {
+                    cause = CANNOT_INTERACT_CAUSE
+                    causeArg = roleId.toString()
+                    shouldRemove = true
                 }
+
+                if (shouldRemove) {
+                    daoManager.selfRoleWrapper.remove(guildId, groupName, emoteji)
+                    LogUtils.sendRemovedSelfRoleLog(language, zoneId, emoteji, logChannel, cause, causeArg)
+                }
+                role?.let { roles.add(it) }
             }
         }
 
