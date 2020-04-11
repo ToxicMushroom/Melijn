@@ -8,6 +8,14 @@ object RegexMethods {
             "\\E.\\Q"
         }),
 
+        Method(".*", {
+            "\\E.*\\Q"
+        }),
+
+        Method(".+", {
+            "\\E.*\\Q"
+        }),
+
         Method("[a-zA-Z]", {
             "\\E[a-zA-Z]\\Q"
         }),

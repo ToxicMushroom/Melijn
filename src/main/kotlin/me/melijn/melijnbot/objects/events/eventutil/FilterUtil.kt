@@ -43,6 +43,7 @@ object FilterUtil {
 
         // Loop through the filter groups
         for (fg in groups) {
+            if (!fg.state) continue
             // Detected stuff returned from the case from mode of the filtergroup
             val map = mutableMapOf<String, List<String>>()
             var extraPoints = 0
