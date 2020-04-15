@@ -67,7 +67,9 @@ class HistoryCommand : AbstractCommand("command.history") {
             }
         }
 
-        val orderedMap = unorderedMap.toSortedMap().toMap()
+        val orderedMap = unorderedMap
+            .toSortedMap(Comparator.reverseOrder())
+            .toMap()
 
         //Collected all punishments
         val msg = orderedMap.values.joinToString("")
@@ -90,7 +92,59 @@ class HistoryCommand : AbstractCommand("command.history") {
 
             sendMsg(context, noHistory)
         } else {
-            sendMsgCodeBlocks(context, msg, "INI")
+            val comment = context.getTranslation("message.pagination")
+            val maxLength = 1999 - comment.length
+            if (msg.length > 2000) {
+                val paginationPartList = mutableListOf<String>()
+                val paginationPart = StringBuilder("")
+                var countr = 1
+                var tempLength = 0
+                var pages = 0
+
+                for (part in orderedMap.values) {
+                    if (part.length < maxLength) {
+                        if (tempLength < maxLength) {
+                            if (part.length + tempLength < maxLength) {
+                                tempLength += part.length
+                            } else {
+                                tempLength = part.length
+                                pages++
+                            }
+                        }
+                    } else continue
+                }
+                if (tempLength != 0) pages++
+
+                for (part in orderedMap.values) {
+                    if (part.length < maxLength) {
+                        if (paginationPart.length < maxLength) {
+                            if (part.length + paginationPart.length < maxLength) {
+                                paginationPart.append(part)
+                            } else {
+                                paginationPart.append(comment
+                                    .replace("%page%", countr++)
+                                    .replace("%pages%", pages)
+                                )
+                                paginationPartList.add(paginationPart.toString())
+                                paginationPart.clear()
+                                paginationPart.append(part)
+                            }
+                        }
+                    } else continue
+                }
+                if (paginationPart.isNotEmpty()) {
+                    paginationPart.append(comment
+                        .replace("%page%", countr)
+                        .replace("%pages%", pages)
+                    )
+                    paginationPartList.add(paginationPart.toString())
+                    paginationPart.clear()
+                }
+
+                sendPaginationMsg(context, paginationPartList, 0)
+            } else {
+                sendMsg(context, msg)
+            }
         }
     }
 

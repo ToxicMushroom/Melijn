@@ -47,7 +47,7 @@ class QueueCommand : AbstractCommand("command.queue") {
         description += context.getTranslation("$root.fakefooter")
             .replace("%duration%", getDurationString(totalDuration - trackManager.iPlayer.trackPosition))
             .replace("%amount%", (allTracks.size + 1).toString())
-        val footerPagination = context.getTranslation("$root.pagination")
+        val footerPagination = context.getTranslation("message.pagination")
 
         val modularMessages = mutableListOf<ModularMessage>()
 
@@ -59,7 +59,7 @@ class QueueCommand : AbstractCommand("command.queue") {
             if (queueParts.size > 1) {
                 eb.setFooter(
                     footerPagination
-                        .replace("%pos%", index + 1)
+                        .replace("%page%", index + 1)
                         .replace("%pages%", queueParts.size)
                 )
             }

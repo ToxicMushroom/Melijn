@@ -41,16 +41,11 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         val noUserArg = context
             .rawArg.removeFirst(context.args[0])
             .trim()
-        val noReasonArgs = noUserArg.split(">")[0].trim().split("\\s+".toRegex())
-        val banDuration = (getDurationByArgsNMessage(context, 0, noReasonArgs.size, noReasonArgs) ?: return) * 1000
+        val durationArgs = context.args[1].split("\\s+")
+        val banDuration = (getDurationByArgsNMessage(context, 0, durationArgs.size, durationArgs) ?: return) * 1000
 
-        var reason = if (noUserArg.contains(">")) {
-            noUserArg.substring(noUserArg.indexOfFirst { s -> s == '>' } + 1, noUserArg.length)
-        } else {
-            "/"
-        }
-
-        reason = reason.trim()
+        var reason = noUserArg.removeFirst(context.args[0]).trim()
+        if (reason.isBlank()) reason = "/"
 
         val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong)
         val ban = Ban(
