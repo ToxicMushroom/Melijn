@@ -25,36 +25,39 @@ import java.awt.Color
 
 class MessageReceivedListener(container: Container) : AbstractListener(container) {
 
-    override fun onEvent(event: GenericEvent) = runBlocking {
-        if (event is GuildMessageReceivedEvent) {
-            handleMessageReceivedStoring(event)
-            handleAttachmentLog(event)
-            handleVerification(event)
-            FilterUtil.handleFilter(container, event.message)
-            // SpammingUtil.handleSpam(container, event.message)
-        }
-        if (event is MessageReceivedEvent) {
-            handleSimpleMelijnPing(event)
+    override fun onEvent(event: GenericEvent) {
+        container.taskManager.async {
+            if (event is GuildMessageReceivedEvent) {
+                handleMessageReceivedStoring(event)
+                handleAttachmentLog(event)
+                handleVerification(event)
+                FilterUtil.handleFilter(container, event.message)
+                // SpammingUtil.handleSpam(container, event.message)
+            }
+            if (event is MessageReceivedEvent) {
+                handleSimpleMelijnPing(event)
+            }
         }
     }
 
     private suspend fun handleSimpleMelijnPing(event: MessageReceivedEvent) {
         if (event.author.isBot) return
         val tags = arrayOf("<@${event.jda.selfUser.idLong}>", "<@!${event.jda.selfUser.idLong}>")
-        if (tags.contains(event.message.contentRaw.trim())) {
-            val helpCmd = container.commandMap.values.firstOrNull { cmd ->
-                cmd is HelpCommand
-            } ?: return
-            container.taskManager.async {
-                val cmdContext = CommandContext(event, listOf(">", "help"), container, container.commandMap.values.toSet(), ">help")
+        val usedMention = event.message.contentRaw.trim()
+        if (!tags.contains(usedMention)) return
 
-                if (event is GuildMessageReceivedEvent) {
-                    val guildEvent: GuildMessageReceivedEvent = event
-                    if (!guildEvent.guild.selfMember.hasPermission(guildEvent.channel, Permission.MESSAGE_WRITE)) return@async
-                }
+        val helpCmd = container.commandMap.values.firstOrNull { cmd ->
+            cmd is HelpCommand
+        } ?: return
 
-                helpCmd.run(cmdContext)
-            }
+        if (event is GuildMessageReceivedEvent) {
+            val guildEvent: GuildMessageReceivedEvent = event
+            if (!guildEvent.guild.selfMember.hasPermission(guildEvent.channel, Permission.MESSAGE_WRITE)) return
+        }
+
+        container.taskManager.async {
+            val cmdContext = CommandContext(event, listOf(usedMention, "help"), container, container.commandMap.values.toSet(), "${usedMention}help")
+            helpCmd.run(cmdContext)
         }
     }
 
@@ -101,7 +104,6 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
                     } else {
                         VerificationUtils.failedVerification(dao, member)
                     }
-
                 }
                 else -> {
                 }
@@ -139,6 +141,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         val fmId = logChannelCache.get(Pair(guildId, LogChannelType.FILTERED_MESSAGE))
         val emId = logChannelCache.get(Pair(guildId, LogChannelType.EDITED_MESSAGE))
         if (odmId.await() == -1L && sdmId.await() == -1L && pmId.await() == -1L && fmId.await() == -1L && emId.await() == -1L) return
+
 
         val messageWrapper = container.daoManager.messageHistoryWrapper
         var content = event.message.contentRaw

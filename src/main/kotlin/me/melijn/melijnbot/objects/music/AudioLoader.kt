@@ -176,7 +176,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         val description = context.getTranslation("$root.addedtracks.description")
             .replace("%size%", audioTracks.size.toString())
             .replace("%positionFirst%", getQueuePosition(context, audioTracks[0]).toString())
-            .replace("%positionLast%", (getQueuePosition(context, audioTracks[0]) + audioTracks.size).toString())
+            .replace("%positionLast%", getQueuePosition(context, audioTracks[audioTracks.size - 1]).toString())
 
         val eb = Embedder(context)
         eb.setTitle(title)
