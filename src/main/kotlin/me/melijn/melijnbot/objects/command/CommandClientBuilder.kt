@@ -171,7 +171,8 @@ class CommandClientBuilder(private val container: Container) {
         RerenderGifCommand(),
         LyricsCommand(),
         AppendReverseGifCommand(),
-        GlobalRecolorCommand()
+        GlobalRecolorCommand(),
+        MoveCommand()
     )
 
     init {
