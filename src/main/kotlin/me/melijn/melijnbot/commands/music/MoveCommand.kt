@@ -49,8 +49,8 @@ class MoveCommand : AbstractCommand("command.move") {
         firstPart.forEach { trck -> trackManager.tracks.offer(trck) }
 
         val msg = context.getTranslation("$root.moved")
-            .replace("%pos1%", "$index1")
-            .replace("%pos2%", "$index2")
+            .replace("%pos1%", "${index1 + 1}")
+            .replace("%pos2%", "${index2 + 1}")
             .replace("%track%", MarkdownSanitizer.escape(track.info.title))
 
         sendMsg(context, msg)
