@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 class VoiceScoutService(
     val container: Container,
     val shardManager: ShardManager
-) : Service("VoiceScout", 10, 5, TimeUnit.MINUTES) {
+) : Service("VoiceScout", 1, 1, TimeUnit.MINUTES, VOICE_SAFE) {
 
     override val service = Task {
         val gmp = MusicPlayerManager.guildMusicPlayers

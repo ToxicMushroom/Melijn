@@ -20,7 +20,12 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
     }
 
     private suspend fun onStatusChange(event: StatusChangeEvent) {
-        val shardManager = event.jda.shardManager ?: return
+        val shardManager = event.jda.shardManager
+        if (shardManager == null) {
+            logger.info("angry " + event.newStatus)
+            return
+        }
+
         if (event.newStatus == JDA.Status.CONNECTED) {
             val readyShards = shardManager.shards.count { jda -> jda.status == JDA.Status.CONNECTED }
             val loadedAllShards = readyShards == container.settings.shardCount

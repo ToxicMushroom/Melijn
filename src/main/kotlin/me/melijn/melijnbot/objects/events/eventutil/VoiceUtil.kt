@@ -3,6 +3,7 @@ package me.melijn.melijnbot.objects.events.eventutil
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
+import me.melijn.melijnbot.objects.services.voice.VOICE_SAFE
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyMusicChannel
 import me.melijn.melijnbot.objects.utils.listeningMembers
 import net.dv8tion.jda.api.JDA
@@ -59,11 +60,15 @@ object VoiceUtil {
             !(daoManager.music247Wrapper.music247Cache.get(guildId).await() &&
                 daoManager.supporterWrapper.guildSupporterIds.contains(guildId))
         ) {
-            if (!disconnectQueue.containsKey(guildId)) {
-                disconnectQueue[guildId] = System.currentTimeMillis() + 600_000
+            VOICE_SAFE.submit {
+                if (!disconnectQueue.containsKey(guildId)) {
+                    disconnectQueue[guildId] = System.currentTimeMillis() + 600_000
+                }
             }
         } else {
-            disconnectQueue.remove(guildId)
+            VOICE_SAFE.submit {
+                disconnectQueue.remove(guildId)
+            }
         }
     }
 

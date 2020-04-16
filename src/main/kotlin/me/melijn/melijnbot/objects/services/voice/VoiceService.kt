@@ -7,12 +7,16 @@ import me.melijn.melijnbot.objects.services.Service
 import me.melijn.melijnbot.objects.threading.Task
 import me.melijn.melijnbot.objects.utils.listeningMembers
 import net.dv8tion.jda.api.sharding.ShardManager
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
+
+val VOICE_SAFE: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
 
 class VoiceService(
     val container: Container,
     val shardManager: ShardManager
-) : Service("Voice", 1, 1, TimeUnit.MINUTES) {
+) : Service("Voice", 1, 1, TimeUnit.MINUTES, VOICE_SAFE) {
 
     override val service = Task {
         val currentTime = System.currentTimeMillis()

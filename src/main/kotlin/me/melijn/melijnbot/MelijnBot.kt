@@ -65,9 +65,9 @@ class MelijnBot {
             )
         }
 
+        eventManager.start()
         shardManager = defaultShardManagerBuilder.build()
         container.initShardManager(shardManager)
-        eventManager.start()
     }
 
     private fun generateJdaLinkFromNodes(container: Container, httpNodes: Array<Settings.Lavalink.Node>): JdaLavalink? {
@@ -108,13 +108,13 @@ class MyVoiceInterceptor(val container: Container) : VoiceDispatchInterceptor {
             } else {
                 container.jdaLavaLink
             }
+
             link?.voiceInterceptor?.onVoiceServerUpdate(update)
         }
     }
 
     override fun onVoiceStateUpdate(update: VoiceDispatchInterceptor.VoiceStateUpdate): Boolean = runBlocking {
         val guildId = update.guildIdLong
-
 
         val link = if (MusicNodeCommand.connectionMap[guildId] == false && container.daoManager.musicNodeWrapper.isPremium(guildId)) {
             MusicNodeCommand.connectionMap.remove(guildId)
@@ -127,6 +127,7 @@ class MyVoiceInterceptor(val container: Container) : VoiceDispatchInterceptor {
         } else {
             container.jdaLavaLink
         }
+        
         link?.voiceInterceptor?.onVoiceStateUpdate(update) ?: false
     }
 }
