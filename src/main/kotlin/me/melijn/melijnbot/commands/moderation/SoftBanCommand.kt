@@ -133,8 +133,8 @@ fun getSoftBanMessage(
 
     if (!lc) {
         description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .replace("%guildName%", guild.name)
-            .replace("%guildId%", guild.id)
+            .replace("%serverName%", guild.name)
+            .replace("%serverId%", guild.id)
     }
 
     description += i18n.getTranslation(language, "message.punishment.softban.description")

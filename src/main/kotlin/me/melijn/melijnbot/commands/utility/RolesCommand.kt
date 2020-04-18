@@ -31,7 +31,7 @@ class RolesCommand : AbstractCommand("command.roles") {
 
         val unReplacedTitle = context.getTranslation("$root.response1.title")
         val title = unReplacedTitle
-            .replace("%guildName%", guild.name)
+            .replace("%serverName%", guild.name)
 
 
         var content = "```INI"

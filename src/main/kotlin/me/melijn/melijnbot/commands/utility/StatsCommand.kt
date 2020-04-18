@@ -107,7 +107,7 @@ class StatsCommand : AbstractCommand("command.stats") {
     ): String = value
         .replace("%shardCount%", shardCount.toString())
         .replace("%userCount%", userCount.toString())
-        .replace("%guildCount%", guildCount.toString())
+        .replace("%serverCount%", guildCount.toString())
         .replace("%cVCCount%", "$voiceChannelsNotEmpty/$voiceChannels")
         .replace("%botThreadCount%", threadCount.toString())
         .replace("%botUptime%", uptime)

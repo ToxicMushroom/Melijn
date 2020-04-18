@@ -49,6 +49,7 @@ class HelpCommand : AbstractCommand("command.help") {
             val path = "help.arg.${context.rawArg.toLowerCase()}"
             val pathExtra = "help.arg.${context.rawArg.toLowerCase()}.examples"
             val translation = context.getTranslation(path)
+                .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
             val translationExtra = context.getTranslation(pathExtra)
             val hasExtra = translationExtra != pathExtra
             if (path == translation) {

@@ -39,7 +39,7 @@ object RunConditionUtil {
     private fun checkGuildSupporter(container: Container, event: MessageReceivedEvent, language: String): Boolean {
         val supporterGuilds = container.daoManager.supporterWrapper.guildSupporterIds
         return if (!supporterGuilds.contains(event.guild.idLong)) {
-            val msg = i18n.getTranslation(language, "message.runcondition.failed.guild.supporter")
+            val msg = i18n.getTranslation(language, "message.runcondition.failed.server.supporter")
             event.channel.sendMessage(msg).queue()
             false
         } else {
@@ -191,7 +191,7 @@ object RunConditionUtil {
         return if (event.isFromGuild) {
             true
         } else {
-            val msg = i18n.getTranslation(language, "message.runcondition.guildonly")
+            val msg = i18n.getTranslation(language, "message.runcondition.serveronly")
             sendMsg(event.privateChannel, msg)
             false
         }

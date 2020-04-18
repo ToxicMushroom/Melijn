@@ -13,15 +13,15 @@ class DonateCommand : AbstractCommand("command.donate") {
         id = 97
         name = "donate"
         aliases = arrayOf("patreon", "patron", "sponsor")
-        children = arrayOf(LinkGuildArg(root))
+        children = arrayOf(LinkServer(root))
         commandCategory = CommandCategory.UTILITY
     }
 
-    class LinkGuildArg(parent: String) : AbstractCommand("$parent.linkguild") {
+    class LinkServer(parent: String) : AbstractCommand("$parent.linkserver") {
 
         init {
-            name = "linkGuild"
-            aliases = arrayOf("lg", "linkServer", "ls")
+            name = "linkServer"
+            aliases = arrayOf("lg", "linkGuild", "ls")
             runConditions = arrayOf(RunCondition.GUILD, RunCondition.USER_SUPPORTER)
         }
 
@@ -32,7 +32,7 @@ class DonateCommand : AbstractCommand("command.donate") {
                 wrapper.setGuild(context.authorId, context.guildId)
 
                 val msg = context.getTranslation("$root.selected")
-                    .replace("%guild%", context.guild.name)
+                    .replace("%server%", context.guild.name)
                 sendMsg(context, msg)
             } else {
                 val msg = context.getTranslation("$root.oncooldown")

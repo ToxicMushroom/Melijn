@@ -90,7 +90,7 @@ class CommandClientBuilder(private val container: Container) {
         T2eCommand(),
         FlipCommand(),
         ClearChannelCommand(),
-        GuildInfoCommand(),
+        ServerInfo(),
         PatCommand(),
         SelfRoleCommand(),
         PingCommand(),

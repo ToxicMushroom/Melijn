@@ -907,7 +907,7 @@ suspend fun sendFeatureRequiresGuildPremiumMessage(context: CommandContext, feat
         feature = feature.replace("%$key%", replacement)
     }
 
-    val baseMsg = context.getTranslation("message.feature.requires.premium.guild")
+    val baseMsg = context.getTranslation("message.feature.requires.premium.server")
         .replace("%feature%", feature)
     sendMsg(context, baseMsg)
 }

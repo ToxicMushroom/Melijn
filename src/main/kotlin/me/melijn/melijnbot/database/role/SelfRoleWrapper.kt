@@ -5,20 +5,21 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.NOT_IMPORTANT_CACHE
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.utils.loadingCacheFrom
+import net.dv8tion.jda.api.utils.data.DataArray
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 class SelfRoleWrapper(val taskManager: TaskManager, private val selfRoleDao: SelfRoleDao) {
 
-    //guildId -> <selfRoleGroupName -> <emoteji -> <roleIds>>>
+    // guildId -> <selfRoleGroupName -> emotejiInfo (see SelfRoleDao for example)
     val selfRoleCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, Map<String, Map<String, List<Long>>>> { key ->
+        .build(loadingCacheFrom<Long, Map<String, DataArray>> { key ->
             getMap(key)
         })
 
-    fun getMap(guildId: Long): CompletableFuture<Map<String, Map<String, List<Long>>>> {
-        val future = CompletableFuture<Map<String, Map<String, List<Long>>>>()
+    fun getMap(guildId: Long): CompletableFuture<Map<String, DataArray>> {
+        val future = CompletableFuture<Map<String, DataArray>>()
         taskManager.async {
             val map = selfRoleDao.getMap(guildId)
             future.complete(map)
@@ -26,19 +27,64 @@ class SelfRoleWrapper(val taskManager: TaskManager, private val selfRoleDao: Sel
         return future
     }
 
-    suspend fun add(guildId: Long, groupName: String, emoteji: String, roleId: Long) {
+    suspend fun set(guildId: Long, groupName: String, emoteji: String, roleId: Long, chance: Int = 100) {
         val map = selfRoleCache.get(guildId)
             .await()
             .toMutableMap()
 
-        val pairs = map.getOrDefault(groupName, emptyMap())
-            .toMutableMap()
+        val data = map.getOrDefault(groupName, DataArray.empty())
+        var containsEmoteji = false
 
-        if (pairs[emoteji]?.contains(roleId) == false)
-            pairs[emoteji] = pairs.getOrDefault(emoteji, emptyList()) + roleId
+        for (i in 0 until data.length()) {
+            val entryData = data.getArray(i)
+            if (entryData.getString(0) == emoteji) {
+                containsEmoteji = true
+                val rolesArr = entryData.getArray(2)
 
-        map[groupName] = pairs
-        selfRoleDao.add(guildId, groupName, emoteji, roleId)
+                for (j in 0 until rolesArr.length()) {
+                    val roleInfoArr = rolesArr.getArray(j)
+                    if (roleInfoArr.getLong(1) == roleId) {
+                        rolesArr.remove(j)
+                        break
+                    }
+                }
+
+                rolesArr.add(
+                    DataArray.empty()
+                        .add(chance)
+                        .add(roleId)
+                )
+
+                entryData.remove(2)
+                val boolValue = entryData.getBoolean(2)
+                entryData.remove(2)
+
+                entryData.add(rolesArr)
+                entryData.add(boolValue)
+
+                data.remove(i)
+                data.add(entryData)
+                break
+            }
+        }
+
+        if (!containsEmoteji) {
+            data.add(
+                DataArray.empty()
+                    .add(emoteji)
+                    .add("")
+                    .add(
+                        DataArray.empty().add(
+                            DataArray.empty()
+                                .add(chance)
+                                .add(roleId)
+                        )
+                    ).add(true)
+            )
+        }
+
+        map[groupName] = data
+        selfRoleDao.set(guildId, groupName, data.toString())
         selfRoleCache.put(guildId, CompletableFuture.completedFuture(map))
     }
 
@@ -49,39 +95,77 @@ class SelfRoleWrapper(val taskManager: TaskManager, private val selfRoleDao: Sel
             .toMutableMap()
 
         // layer1
-        val pairs = map.getOrDefault(groupName, emptyMap())
-            .toMutableMap()
+        val data = map.getOrDefault(groupName, DataArray.empty())
 
         // inner list
-        val list = pairs.getOrDefault(emoteji, emptyList()).toMutableList()
-        list.remove(roleId)
+        for (i in 0 until data.length()) {
+            val entryData = data.getArray(i)
+            if (entryData.getString(0) == emoteji) {
+                val rolesArr = entryData.getArray(2)
 
-        // inserting list into layer1
-        if (list.isNotEmpty()) {
-            pairs[emoteji] = list
-        } else {
-            pairs.remove(emoteji)
+                for (j in 0 until rolesArr.length()) {
+                    val roleInfoArr = rolesArr.getArray(j)
+                    if (roleInfoArr.getLong(1) == roleId) {
+                        rolesArr.remove(j)
+                        break
+                    }
+                }
+
+                // reconstruct array
+                entryData.remove(2)
+                val boolValue = entryData.getBoolean(2)
+                entryData.remove(2)
+
+                entryData.add(rolesArr)
+                entryData.add(boolValue)
+
+                data.remove(i)
+                data.add(entryData)
+                break
+            }
         }
 
         // putting pairs into map
-        map[groupName] = pairs
+        map[groupName] = data
 
-        selfRoleDao.remove(guildId, groupName, emoteji, roleId)
+        selfRoleDao.set(guildId, groupName, data.toString())
         selfRoleCache.put(guildId, CompletableFuture.completedFuture(map))
     }
 
     suspend fun remove(guildId: Long, groupName: String, emoteji: String) {
+        // map
         val map = selfRoleCache.get(guildId)
             .await()
             .toMutableMap()
 
-        val pairs = map.getOrDefault(groupName, emptyMap())
+        // layer1
+        val data = map.getOrDefault(groupName, DataArray.empty())
+
+        // inner list
+        for (i in 0 until data.length()) {
+            val entryData = data.getArray(i)
+            if (entryData.getString(0) == emoteji) {
+                data.remove(i)
+                break
+            }
+        }
+
+        // putting pairs into map
+        map[groupName] = data
+
+        selfRoleDao.set(guildId, groupName, data.toString())
+        selfRoleCache.put(guildId, CompletableFuture.completedFuture(map))
+    }
+
+    suspend fun update(guildId: Long, groupName: String, data: DataArray) {
+        // map
+        val map = selfRoleCache.get(guildId)
+            .await()
             .toMutableMap()
 
-        pairs.remove(emoteji)
-        map[groupName] = pairs
+        map[groupName] = data
 
-        selfRoleDao.clear(guildId, groupName, emoteji)
+        selfRoleDao.set(guildId, groupName, data.toString())
         selfRoleCache.put(guildId, CompletableFuture.completedFuture(map))
     }
 }

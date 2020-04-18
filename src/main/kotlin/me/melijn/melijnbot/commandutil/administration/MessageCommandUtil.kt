@@ -263,6 +263,7 @@ object MessageCommandUtil {
         val msg =
             if (file == null) {
                 context.getTranslation("message.attachments.remove.notanattachment")
+                    .replace("%prefix%", context.usedPrefix)
             } else {
                 context.getTranslation("message.attachments.remove.success")
                     .replace("%file%", file)

@@ -462,8 +462,8 @@ object LogUtils {
         eb.setColor(Color.decode("#c596ff"))
 
         val dmBody = i18n.getTranslation(language, "logging.punishmentpoints.description.extra.dm")
-            .replace("%guild%", message.guild.name)
-            .replace("%guildId%", message.guild.id) + lcBody
+            .replace("%server%", message.guild.name)
+            .replace("%serverId%", message.guild.id) + lcBody
         eb.setDescription("```LDIF\n$dmBody```")
 
         val pc = message.author.openPrivateChannel().awaitOrNull()

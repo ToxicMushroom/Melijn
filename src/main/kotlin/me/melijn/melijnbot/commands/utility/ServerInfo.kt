@@ -9,12 +9,12 @@ import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.entities.Guild
 import kotlin.math.roundToLong
 
-class GuildInfoCommand : AbstractCommand("command.guildinfo") {
+class ServerInfo : AbstractCommand("command.serverinfo") {
 
     init {
         id = 7
-        name = "guildInfo"
-        aliases = arrayOf("guild", "server", "serverInfo")
+        name = "serverInfo"
+        aliases = arrayOf("guild", "server", "guildInfo")
         runConditions = arrayOf(RunCondition.GUILD)
         commandCategory = CommandCategory.UTILITY
     }
@@ -70,8 +70,8 @@ class GuildInfoCommand : AbstractCommand("command.guildinfo") {
             .count()
 
         return string
-            .replace("%guildName%", guild.name)
-            .replace("%guildId%", guild.id)
+            .replace("%serverName%", guild.name)
+            .replace("%serverId%", guild.id)
             .replace("%iconUrl%", (if (guild.iconUrl != null) "${guild.iconUrl}?size=2048" else "").toString())
             .replace("%bannerUrl%", (if (guild.bannerUrl != null) "${guild.bannerUrl}?size=2048" else "").toString())
             .replace("%splashUrl%", (if (guild.splashUrl != null) "${guild.splashUrl}?size=2048" else "").toString())

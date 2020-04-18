@@ -89,6 +89,14 @@ object DiscordMethods {
             val guild: Guild = env.getReifiedX("guild")
             guild.id
         }),
+        Method("serverName", { env ->
+            val guild: Guild = env.getReifiedX("guild")
+            guild.name
+        }),
+        Method("serverId", { env ->
+            val guild: Guild = env.getReifiedX("guild")
+            guild.id
+        }),
         Method("memberCount", { env ->
             val guild: Guild = env.getReifiedX("guild")
             guild.memberCount.toString()
