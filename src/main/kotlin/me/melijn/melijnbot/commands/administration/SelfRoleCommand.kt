@@ -173,7 +173,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             } ?: return
 
 
-            val bodyFormat = context.getTranslation("$root.bodyformat")
+            val bodyFormat = group.pattern ?: context.getTranslation("$root.bodyformat")
 
             val embedder = Embedder(context)
 
@@ -325,8 +325,61 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 SetChannel(root), // pepega
                 SetSelfRoleAbleArg(root),
                 SetEnabledArg(root),
+                SetPattern(root),
                 ChangeNameArg(root)
             )
+        }
+
+        class SetPattern(parent: String) : AbstractCommand("$parent.setpattern") {
+
+            init {
+                name = "setPattern"
+                aliases = arrayOf("sp")
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                if (context.args.isEmpty()) {
+                    sendSyntax(context)
+                    return
+                }
+
+                val wrapper = context.daoManager.selfRoleGroupWrapper
+                val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+
+                if (context.args.size == 1) {
+                    val unset = if (group.pattern == null) ".unset" else ""
+
+                    val msg = context.getTranslation("$root.show$unset")
+                        .replace("%group%", group.groupName)
+                        .replace("%pattern%", group.pattern ?: "null")
+
+                    sendMsg(context, msg)
+                    return
+                }
+
+                if (context.args[1] == "null") {
+                    group.pattern = null
+                    wrapper.insertOrUpdate(context.guildId, group)
+
+                    val msg = context.getTranslation("$root.unset")
+                        .replace("%group%", group.groupName)
+
+                    sendMsg(context, msg)
+                    return
+                } else {
+                    val newPattern = getStringFromArgsNMessage(context, 1, 1, 256) ?: return
+                    group.pattern = newPattern
+
+                    wrapper.insertOrUpdate(context.guildId, group)
+
+                    val msg = context.getTranslation("$root.set")
+                        .replace("%group%", group.groupName)
+                        .replace("%pattern%", newPattern)
+
+                    sendMsg(context, msg)
+                    return
+                }
+            }
         }
 
         class SetChannel(parent: String) : AbstractCommand("$parent.setchannel") {
@@ -632,7 +685,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     return
                 }
 
-                val newSr = SelfRoleGroup(name, emptyList(), -1, isEnabled = true, isSelfRoleable = true)
+                val newSr = SelfRoleGroup(name, emptyList(), -1, isEnabled = true, isSelfRoleable = true, pattern = null)
                 wrapper.insertOrUpdate(context.guildId, newSr)
 
                 val msg = context.getTranslation("$root.added")
@@ -708,7 +761,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 selfRoleGroup1.apply {
-                    val newSr = SelfRoleGroup(name, messageIds, channelId, isEnabled, isSelfRoleable)
+                    val newSr = SelfRoleGroup(name, messageIds, channelId, isEnabled, pattern, isSelfRoleable)
                     wrapper.delete(context.guildId, groupName)
                     wrapper.insertOrUpdate(context.guildId, newSr)
 

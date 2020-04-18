@@ -62,7 +62,6 @@ class RestServer(container: Container) : Jooby() {
                 .put("ramTotal", totalMem)
             )
 
-
             rsp.send(dataObject.toMap())
         }
 

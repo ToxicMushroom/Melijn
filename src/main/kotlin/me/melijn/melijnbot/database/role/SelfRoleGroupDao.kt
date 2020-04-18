@@ -9,7 +9,7 @@ import kotlin.coroutines.suspendCoroutine
 class SelfRoleGroupDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "selfRoleGroups"
-    override val tableStructure: String = "guildId bigint, groupName varchar(64), messageIds varchar(1024), channelId bigint, isEnabled boolean, isSelfRoleable boolean"
+    override val tableStructure: String = "guildId bigint, groupName varchar(64), messageIds varchar(1024), channelId bigint, isEnabled boolean, pattern varchar(256), isSelfRoleable boolean"
     override val primaryKey: String = "guildId, groupName"
 
     init {
@@ -20,12 +20,14 @@ class SelfRoleGroupDao(driverManager: DriverManager) : Dao(driverManager) {
         val list = mutableListOf<SelfRoleGroup>()
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", { rs ->
             while (rs.next()) {
+                val pattern = rs.getString("pattern")
                 list.add(
                     SelfRoleGroup(
                         rs.getString("groupName"),
                         rs.getString("messageIds").splitIETEL("%SPLIT%").map { it.toLong() },
                         rs.getLong("channelId"),
                         rs.getBoolean("isEnabled"),
+                        if (pattern.isBlank()) null else pattern,
                         rs.getBoolean("isSelfRoleable")
                     )
                 )
@@ -35,9 +37,11 @@ class SelfRoleGroupDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
 
-    suspend fun set(guildId: Long, groupName: String, messageIds: String, channelId: Long, isEnabled: Boolean, isSelfRoleable: Boolean) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, groupName, messageIds, channelId, isEnabled, isSelfRoleable) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET messageIds = ?, channelId = ?, isEnabled = ?, isSelfRoleable = ?",
-            guildId, groupName, messageIds, channelId, isEnabled, isSelfRoleable, messageIds, channelId, isEnabled, isSelfRoleable)
+    suspend fun set(guildId: Long, groupName: String, messageIds: String, channelId: Long, isEnabled: Boolean, pattern: String, isSelfRoleable: Boolean) {
+        driverManager.executeUpdate(
+            "INSERT INTO $table (guildId, groupName, messageIds, channelId, isEnabled, pattern, isSelfRoleable) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO " +
+                "UPDATE SET messageIds = ?, channelId = ?, isEnabled = ?, pattern = ?, isSelfRoleable = ?",
+            guildId, groupName, messageIds, channelId, isEnabled, pattern, isSelfRoleable, messageIds, channelId, isEnabled, pattern, isSelfRoleable)
     }
 
     suspend fun remove(guildId: Long, groupName: String) {
@@ -51,5 +55,6 @@ data class SelfRoleGroup(
     var messageIds: List<Long>,
     var channelId: Long,
     var isEnabled: Boolean,
+    var pattern: String?,
     var isSelfRoleable: Boolean
 )
