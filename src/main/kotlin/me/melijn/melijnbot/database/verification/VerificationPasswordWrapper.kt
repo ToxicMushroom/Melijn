@@ -7,9 +7,9 @@ import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class VerificationCodeWrapper(val taskManager: TaskManager, private val verificationCodeDao: VerificationCodeDao) {
+class VerificationPasswordWrapper(val taskManager: TaskManager, private val verificationPasswordDao: VerificationPasswordDao) {
 
-    val verificationCodeCache = CacheBuilder.newBuilder()
+    val verificationPasswordCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
         .build(loadingCacheFrom<Long, String> { key ->
             getCode(key)
@@ -18,20 +18,20 @@ class VerificationCodeWrapper(val taskManager: TaskManager, private val verifica
     private fun getCode(guildId: Long): CompletableFuture<String> {
         val future = CompletableFuture<String>()
         taskManager.async {
-            val code = verificationCodeDao.get(guildId)
-            future.complete(code)
+            val password = verificationPasswordDao.get(guildId)
+            future.complete(password)
         }
         return future
     }
 
-    suspend fun setCode(guildId: Long, code: String) {
-        verificationCodeCache.put(guildId, CompletableFuture.completedFuture(code))
-        verificationCodeDao.set(guildId, code)
+    suspend fun set(guildId: Long, password: String) {
+        verificationPasswordCache.put(guildId, CompletableFuture.completedFuture(password))
+        verificationPasswordDao.set(guildId, password)
     }
 
-    suspend fun removeCode(guildId: Long) {
-        verificationCodeCache.put(guildId, CompletableFuture.completedFuture(""))
-        verificationCodeDao.remove(guildId)
+    suspend fun remove(guildId: Long) {
+        verificationPasswordCache.put(guildId, CompletableFuture.completedFuture(""))
+        verificationPasswordDao.remove(guildId)
     }
 
 }

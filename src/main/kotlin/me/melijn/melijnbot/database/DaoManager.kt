@@ -130,7 +130,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
     val messageWrapper: MessageWrapper
     val forceRoleWrapper: ForceRoleWrapper
 
-    val verificationCodeWrapper: VerificationCodeWrapper
+    val verificationPasswordWrapper: VerificationPasswordWrapper
     val verificationEmotejiWrapper: VerificationEmotejiWrapper
     val verificationTypeWrapper: VerificationTypeWrapper
     val verificationUserFlowRateWrapper: VerificationUserFlowRateWrapper
@@ -217,7 +217,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
         messageWrapper = MessageWrapper(taskManager, MessageDao(driverManager))
         forceRoleWrapper = ForceRoleWrapper(taskManager, ForceRoleDao(driverManager))
 
-        verificationCodeWrapper = VerificationCodeWrapper(taskManager, VerificationCodeDao(driverManager))
+        verificationPasswordWrapper = VerificationPasswordWrapper(taskManager, VerificationPasswordDao(driverManager))
         verificationEmotejiWrapper = VerificationEmotejiWrapper(taskManager, VerificationEmotejiDao(driverManager))
         verificationTypeWrapper = VerificationTypeWrapper(taskManager, VerificationTypeDao(driverManager))
         verificationUserFlowRateWrapper = VerificationUserFlowRateWrapper(taskManager, VerificationUserFlowRateDao(driverManager))

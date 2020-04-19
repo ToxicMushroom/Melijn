@@ -7,36 +7,36 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.utils.sendMsg
 
-class SetVerificationCodeCommand : AbstractCommand("command.setverificationcode") {
+class SetVerificationPasswordCommand : AbstractCommand("command.setverificationpassword") {
 
     init {
         id = 42
-        name = "setVerificationCode"
+        name = "setVerificationPassword"
         aliases = arrayOf("svc")
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
     override suspend fun execute(context: CommandContext) {
-        val wrapper = context.daoManager.verificationCodeWrapper
+        val wrapper = context.daoManager.verificationPasswordWrapper
         if (context.args.isEmpty()) {
-            val code = wrapper.verificationCodeCache.get(context.guildId).await()
-            val part = if (code.isBlank()) {
+            val password = wrapper.verificationPasswordCache.get(context.guildId).await()
+            val part = if (password.isBlank()) {
                 "unset"
             } else {
                 "set"
             }
 
             val msg = context.getTranslation("$root.show.$part")
-                .replace("%code%", code)
+                .replace("%password%", password)
             sendMsg(context, msg)
             return
         }
 
         val msg = if (context.rawArg == "null") {
-            wrapper.removeCode(context.guildId)
+            wrapper.remove(context.guildId)
             context.getTranslation("$root.unset")
         } else {
-            wrapper.setCode(context.guildId, context.rawArg)
+            wrapper.set(context.guildId, context.rawArg)
             context.getTranslation("$root.set")
                 .replace(PLACEHOLDER_ARG, context.rawArg)
         }

@@ -63,7 +63,7 @@ class SettingsCommand : AbstractCommand("command.settings") {
             "\n**BirthDayChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.BIRTHDAY)).await()) +
             "\n$logChannels" +
             "\n" +
-            "\n**VerificationCode:** " + stringToString(daoManager.verificationCodeWrapper.verificationCodeCache.get(guildId).await()) +
+            "\n**VerificationCode:** " + stringToString(daoManager.verificationPasswordWrapper.verificationPasswordCache.get(guildId).await()) +
             "\n**VerificationEmoteji:** " + stringToString(daoManager.verificationEmotejiWrapper.verificationEmotejiCache.get(guildId).await()) +
             "\n**VerificationType:** " + stringToString(daoManager.verificationTypeWrapper.verificationTypeCache.get(guildId).await().toUCSC()) +
             "\n**MaxVerificationFlowRate:** " + daoManager.verificationUserFlowRateWrapper.verificationUserFlowRateCache.get(guildId).await() +

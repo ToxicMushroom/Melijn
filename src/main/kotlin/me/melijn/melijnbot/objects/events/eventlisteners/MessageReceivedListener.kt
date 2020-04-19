@@ -52,7 +52,20 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
 
         if (event is GuildMessageReceivedEvent) {
             val guildEvent: GuildMessageReceivedEvent = event
-            if (!guildEvent.guild.selfMember.hasPermission(guildEvent.channel, Permission.MESSAGE_WRITE)) return
+            if (!guildEvent.channel.canTalk()) {
+                try {
+                    val pChannel = guildEvent.author.openPrivateChannel().awaitOrNull()
+                    val language = getLanguage(container.daoManager, guildEvent.author.idLong)
+                    val msg = i18n.getTranslation(language, "message.melijnping.nowriteperms")
+                        .replace("%server%", guildEvent.guild.name)
+                        .replace(PLACEHOLDER_CHANNEL, guildEvent.channel.asMention)
+
+                    pChannel?.sendMessage(msg)?.queue({}, {})
+                } catch (t: Throwable) {
+                    t.printStackTrace()
+                }
+                return
+            }
         }
 
         container.taskManager.async {
@@ -88,9 +101,9 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         val verificationType = dao.verificationTypeWrapper.verificationTypeCache[guild.idLong].await()
         verificationType?.let {
             when (it) {
-                VerificationType.CODE -> {
-                    val code = dao.verificationCodeWrapper.verificationCodeCache[guild.idLong].await()
-                    if (event.message.contentRaw == code) {
+                VerificationType.PASSWORD -> {
+                    val password = dao.verificationPasswordWrapper.verificationPasswordCache[guild.idLong].await()
+                    if (event.message.contentRaw == password) {
                         VerificationUtils.verify(dao, unverifiedRole, guild.selfMember.user, member)
                     } else {
                         VerificationUtils.failedVerification(dao, member)

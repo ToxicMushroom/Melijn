@@ -141,7 +141,7 @@ class CommandClientBuilder(private val container: Container) {
         EvalCommand(),
         OwOCommand(),
         SmugCommand(),
-        SetVerificationCodeCommand(),
+        SetVerificationPasswordCommand(),
         DonateCommand(),
         CryCommand(),
         DiscordMemeCommand(),

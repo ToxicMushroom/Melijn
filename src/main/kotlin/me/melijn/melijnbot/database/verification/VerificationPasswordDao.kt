@@ -5,10 +5,10 @@ import me.melijn.melijnbot.database.DriverManager
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class VerificationCodeDao(driverManager: DriverManager) : Dao(driverManager) {
+class VerificationPasswordDao(driverManager: DriverManager) : Dao(driverManager) {
 
-    override val table: String = "verificationCodes"
-    override val tableStructure: String = "guildId bigint, code varchar(64)"
+    override val table: String = "verificationPasswords"
+    override val tableStructure: String = "guildId bigint, password varchar(128)"
     override val primaryKey: String = "guildId"
 
     init {
@@ -16,9 +16,9 @@ class VerificationCodeDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun get(guildId: Long): String = suspendCoroutine {
-        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", {rs ->
+        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", { rs ->
             if (rs.next()) {
-                it.resume(rs.getString("code"))
+                it.resume(rs.getString("password"))
             } else {
                 it.resume("")
             }
@@ -26,13 +26,12 @@ class VerificationCodeDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun set(guildId: Long, code: String) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, code) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET code = ?",
+        driverManager.executeUpdate("INSERT INTO $table (guildId, password) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET password = ?",
             guildId, code, code)
     }
 
     suspend fun remove(guildId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ?", guildId)
     }
-
 
 }
