@@ -32,6 +32,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             ListArg(root),
             GroupArg(root),
             SetGetAllRolesArg(root),
+            SetNameArg(root),
             // SetMode(root),  Manual, Auto | Auto will ignore selfRoleMessageIds and selfRoleChannelIds and use the internal cached ones
             SendGroupArg(root)  //Internal cached ones are messageIds created by the >sr sendGroup <channel> command
         )
@@ -41,6 +42,84 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
     override suspend fun execute(context: CommandContext) {
         sendSyntax(context)
+    }
+
+    class SetNameArg(parent: String) : AbstractCommand("$parent.setname") {
+
+        init {
+            name = "setName"
+            aliases = arrayOf("sn")
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.args.size < 2) {
+                sendSyntax(context)
+                return
+            }
+
+            val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+
+            val pair = getEmotejiByArgsNMessage(context, 1) ?: return
+            var emName: String? = null
+            val emoteji = if (pair.first == null) {
+                pair.second?.let { emName = it }
+                pair.second
+            } else {
+                pair.first?.name?.let { emName = it }
+                pair.first?.id
+            } ?: return
+
+            val name = emName
+            require(name != null) { "what.." }
+
+            val wrapper = context.daoManager.selfRoleWrapper
+            val map = wrapper.selfRoleCache.get(context.guildId).await()
+
+            val data = map[group.groupName] ?: return
+
+            for (i in 0 until data.length()) {
+                val dataEntry = data.getArray(i)
+                if (dataEntry.getString(0) == emoteji) {
+                    if (context.args.size == 2) {
+                        var dName = dataEntry.getString(1)
+                        if (dName.isBlank()) {
+                            dName = "/"
+                        }
+
+                        val msg = context.getTranslation("$root.show.")
+                            .replace("%group%", group.groupName)
+                            .replace("%emoteji%", emoteji)
+                            .replace("%name%", dName)
+
+                        sendMsg(context, msg)
+                    } else {
+                        val dName = getStringFromArgsNMessage(context, 2, 1, 32) ?: return
+                        val roleData = dataEntry.getArray(2)
+                        val getAllRoles = dataEntry.getBoolean(3)
+                        dataEntry.remove(1)
+                        dataEntry.remove(1)
+                        dataEntry.remove(1)
+                        dataEntry.add(dName)
+                        dataEntry.add(roleData)
+                        dataEntry.add(getAllRoles)
+
+                        data.remove(i)
+                        data.add(dataEntry)
+
+                        wrapper.update(context.guildId, group.groupName, data)
+
+                        val msg = context.getTranslation("$root.set")
+                            .replace("%group%", group.groupName)
+                            .replace("%emoteji%", emoteji)
+                            .replace("%name%", dName)
+
+                        sendMsg(context, msg)
+                    }
+
+                    break
+                }
+            }
+        }
     }
 
     class SetGetAllRolesArg(parent: String) : AbstractCommand("$parent.setgetallroles") {
@@ -83,7 +162,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                         val state = dataEntry.getBoolean(3)
                         val msg = context.getTranslation("$root.show.$state")
                             .replace("%group%", group.groupName)
-                            .replace("%emoteji%", name)
+                            .replace("%emoteji%", emoteji)
+
                         sendMsg(context, msg)
                     } else {
                         val state = getBooleanFromArgNMessage(context, 2) ?: return
@@ -97,7 +177,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
                         val msg = context.getTranslation("$root.set.$state")
                             .replace("%group%", group.groupName)
-                            .replace("%emoteji%", name)
+                            .replace("%emoteji%", emoteji)
 
                         sendMsg(context, msg)
                     }
@@ -190,7 +270,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 for (j in 0 until roleData.length()) {
                     val roleId = roleData.getArray(j).getLong(1)
                     val role = context.guild.getRoleById(roleId)
-                    roleMention += role?.asMention ?: "error" + ", "
+                    roleMention += (role?.asMention ?: "error") + ", "
                 }
                 roleMention = roleMention.removeSuffix(", ")
 
