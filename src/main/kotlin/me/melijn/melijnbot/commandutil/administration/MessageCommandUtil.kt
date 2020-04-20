@@ -368,9 +368,14 @@ object MessageCommandUtil {
             eb.setTitle(title, null)
             context.getTranslation("message.embed.titleurl.unset")
         } else {
-            eb.setTitle(title, arg)
-            context.getTranslation("message.embed.titleurl.set")
-                .replace(PLACEHOLDER_ARG, arg)
+            try {
+                eb.setTitle(title, arg)
+                context.getTranslation("message.embed.titleurl.set")
+                    .replace(PLACEHOLDER_ARG, arg)
+            } catch (t: Throwable) {
+                context.getTranslation("message.embed.titleurl.invalid")
+                    .replace(PLACEHOLDER_ARG, arg)
+            }
         }.replace(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()

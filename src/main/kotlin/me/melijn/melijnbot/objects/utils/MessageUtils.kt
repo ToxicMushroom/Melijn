@@ -339,6 +339,9 @@ fun MessageEmbed.toMessage(): String {
     if (this.description != null) {
         sb.append(this.description?.replace(Regex("\\[(.+)]\\((.+)\\)"), "$1 (Link: $2)")).append("\n\n")
     }
+    if (this.image != null) {
+        sb.append(this.image?.url).append("\n\n")
+    }
     if (this.fields.isNotEmpty()) {
         for (field in this.fields) {
             sb.append("**").append(field.name).append("**\n")
