@@ -11,6 +11,7 @@ import me.melijn.melijnbot.objects.events.eventutil.JoinLeaveUtil
 import me.melijn.melijnbot.objects.events.eventutil.JoinLeaveUtil.joinRole
 import me.melijn.melijnbot.objects.utils.VerificationUtils
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelByType
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent
@@ -27,7 +28,7 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
         val member = event.member
         JoinLeaveUtil.reAddMute(daoManager, event)
 
-        if (guildHasNoVerification(event)) {
+        if (guildHasNoVerification(event.guild)) {
             JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, member.user, ChannelType.JOIN, MessageType.JOIN)
             JoinLeaveUtil.forceRole(daoManager, member)
             joinRole(daoManager, member)
@@ -38,8 +39,8 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
         }
     }
 
-    private suspend fun guildHasNoVerification(event: GuildMemberJoinEvent): Boolean {
-        val channel = event.guild.getAndVerifyChannelByType(container.daoManager, ChannelType.VERIFICATION)
+    private suspend fun guildHasNoVerification(guild: Guild): Boolean {
+        val channel = guild.getAndVerifyChannelByType(container.daoManager, ChannelType.VERIFICATION)
         return channel == null
     }
 
@@ -49,6 +50,10 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
 
         if (!daoManager.unverifiedUsersWrapper.contains(event.guild.idLong, user.idLong)) {
             JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, user, ChannelType.LEAVE, MessageType.LEAVE)
+
+        } else if (!guildHasNoVerification(event.guild)) {
+            JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, user, ChannelType.PRE_VERIFICATION_LEAVE, MessageType.PRE_VERIFICATION_LEAVE_MESSAGE)
+
         }
     }
 }
