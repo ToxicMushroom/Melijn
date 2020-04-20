@@ -6,17 +6,17 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.sendSyntax
 
-class PreVerificationMessageCommand : AbstractCommand("command.preverificationmessage") {
+class PreVerificationJoinMessageCommand : AbstractCommand("command.preverificationjoinmessage") {
 
     init {
         id = 147
-        name = "preVerificationMessage"
-        aliases = arrayOf("pvm")
+        name = "preVerificationJoinMessage"
+        aliases = arrayOf("pvjm")
         children = arrayOf(
-            LeaveMessageCommand.SetContentArg(root, MessageType.PRE_VERIFICATION_MESSAGE),
-            LeaveMessageCommand.EmbedArg(root, MessageType.PRE_VERIFICATION_MESSAGE),
-            LeaveMessageCommand.AttachmentsArg(root, MessageType.PRE_VERIFICATION_MESSAGE),
-            LeaveMessageCommand.ViewArg(root, MessageType.PRE_VERIFICATION_MESSAGE)
+            LeaveMessageCommand.SetContentArg(root, MessageType.PRE_VERIFICATION_JOIN_MESSAGE),
+            LeaveMessageCommand.EmbedArg(root, MessageType.PRE_VERIFICATION_JOIN_MESSAGE),
+            LeaveMessageCommand.AttachmentsArg(root, MessageType.PRE_VERIFICATION_JOIN_MESSAGE),
+            LeaveMessageCommand.ViewArg(root, MessageType.PRE_VERIFICATION_JOIN_MESSAGE)
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }

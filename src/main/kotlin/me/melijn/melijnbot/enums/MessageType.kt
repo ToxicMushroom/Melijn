@@ -1,7 +1,8 @@
 package me.melijn.melijnbot.enums
 
 enum class MessageType(val text: String) {
-    PRE_VERIFICATION_MESSAGE("PreVerificationMessage"),
+    PRE_VERIFICATION_JOIN_MESSAGE("PreVerificationJoinMessage"),
+    PRE_VERIFICATION_LEAVE_MESSAGE("PreVerificationLeaveMessage"),
     JOIN("JoinMessage"),
     LEAVE("LeaveMessage"),
     CUSTOM_COMMAND("CustomCommandMessage"),
