@@ -302,27 +302,6 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         }
     }
 
-    fun updateDivinedDiscordBots(servers: Long, shards: Long) {
-        val token = settings.tokens.divineDiscordBotsCom
-        val url = "$DIVINE_DISCORD_BOTS_COM/bot/${settings.id}/stats"
-        if (token.isBlank()) return
-
-        taskManager.async {
-            val body = DataObject.empty()
-                .put("server_count", servers)
-                .put("shard_count", shards)
-                .toString()
-
-            val request = Request.Builder()
-                .addHeader("Authorization", token)
-                .url(url)
-                .post(body.toRequestBody(jsonMedia))
-                .build()
-
-            httpClient.newCall(request).enqueue(defaultCallbackHandler)
-        }
-    }
-
     fun updateDiscordBotsGG(servers: Long, shards: Long) {
         val token = settings.tokens.discordBotsGG
         val url = "$DISCORD_BOTS_GG/api/v1/bots/${settings.id}/stats"
