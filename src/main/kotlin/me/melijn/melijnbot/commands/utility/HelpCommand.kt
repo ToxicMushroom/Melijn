@@ -94,7 +94,12 @@ class HelpCommand : AbstractCommand("command.help") {
                 }
                 val eb = Embedder(context)
                 val title = context.getTranslation("$root.title")
-                eb.addField(title, list.joinToString("`, `", "`", "`"), false)
+                val cool = list.joinToString("`, `", "`", "`")
+                val splitOmg = StringUtils.splitMessage(cool, 800, 1024)
+                for (s in splitOmg) {
+                    eb.addField(title, s, false)
+                }
+
                 sendEmbed(context, eb.build())
             }
         }

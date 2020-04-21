@@ -20,7 +20,6 @@ class StatsService(
         webManager.updateBotsOnDiscordXYZ(guilds) // 2min ratelimit
         webManager.updateBotlistSpace(guildArray) // 15s ratelimit
         webManager.updateDiscordBotListCom(guilds) // no
-        webManager.updateDivinedDiscordBots(guilds, shards) // 1min ratelimit
         webManager.updateDiscordBotsGG(guilds, shards) // 0.05s ratelimit
         webManager.updateBotsForDiscordCom(guilds) // no
         webManager.updateDiscordBoats(guilds) // 1s
