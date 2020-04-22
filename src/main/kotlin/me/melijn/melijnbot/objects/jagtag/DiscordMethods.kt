@@ -5,8 +5,8 @@ import com.jagrosh.jagtag.Method
 import com.jagrosh.jagtag.ParseException
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
-import me.melijn.melijnbot.objects.utils.getMemberByArgsN
 import me.melijn.melijnbot.objects.utils.getUserByArgsN
+import me.melijn.melijnbot.objects.utils.retrieveMemberByArgsN
 import me.melijn.melijnbot.objects.utils.retrieveUserByArgsN
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
@@ -47,7 +47,7 @@ object DiscordMethods {
         Method("isMember", { "true" }, { env: Environment, input: Array<String> ->
             val guild: Guild = env.getReifiedX("guild")
             val arg = input[0]
-            (getMemberByArgsN(guild, arg) != null).toString()
+            (retrieveMemberByArgsN(guild, arg) != null).toString()
         }),
         Method("userId", { env ->
             val user: User = env.getReifiedX("user")

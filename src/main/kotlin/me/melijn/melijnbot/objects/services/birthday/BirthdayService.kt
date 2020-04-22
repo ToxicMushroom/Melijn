@@ -9,6 +9,7 @@ import me.melijn.melijnbot.objects.threading.Task
 import me.melijn.melijnbot.objects.utils.LogUtils
 import me.melijn.melijnbot.objects.utils.awaitBool
 import me.melijn.melijnbot.objects.utils.awaitEX
+import me.melijn.melijnbot.objects.utils.awaitOrNull
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelById
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyRoleById
 import net.dv8tion.jda.api.Permission
@@ -47,7 +48,7 @@ class BirthdayService(
 
             //Add birthday role (maybe channel message)
             for ((userId, info) in HashMap(birthdays)) {
-                val member = guild.getMemberById(userId) ?: continue
+                val member = guild.retrieveMemberById(userId).awaitOrNull() ?: continue
                 val userTZ = info.zoneId?.let { TimeZone.getTimeZone(it) } ?: guildTZ
 
                 var actualBirthday = info.birthday
@@ -89,7 +90,7 @@ class BirthdayService(
 
             //Birthdays to remove
             for ((userId, pair) in birthDaysToRemove) {
-                val member = guild.getMemberById(userId) ?: continue
+                val member = guild.retrieveMemberById(userId).awaitOrNull() ?: continue
                 guild.removeRoleFromMember(member, role)
                     .reason("Birthday is over")
                     .awaitBool()
@@ -112,7 +113,7 @@ class BirthdayService(
             } ?: continue
 
             for ((userId, info) in birthdays) {
-                val member = guild.getMemberById(userId) ?: continue
+                val member = guild.retrieveMemberById(userId).awaitOrNull() ?: continue
                 val userTZ = info.zoneId?.let { TimeZone.getTimeZone(it) } ?: guildTZ
 
                 var actualBirthday = info.birthday

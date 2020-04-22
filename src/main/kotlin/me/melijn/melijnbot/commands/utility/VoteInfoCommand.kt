@@ -7,7 +7,7 @@ import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER_ID
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
-import me.melijn.melijnbot.objects.utils.getUserByArgsNMessage
+import me.melijn.melijnbot.objects.utils.retrieveUserByArgsNMessage
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.utils.sendMsg
 
@@ -25,7 +25,7 @@ class VoteInfoCommand : AbstractCommand("command.voteinfo") {
         val target = if (context.args.isEmpty()) {
             context.author
         } else {
-            getUserByArgsNMessage(context, 0) ?: return
+            retrieveUserByArgsNMessage(context, 0) ?: return
         }
 
         val userVote = voteWrapper.getUserVote(target.idLong)

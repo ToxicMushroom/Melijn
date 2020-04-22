@@ -27,7 +27,7 @@ class KickCommand : AbstractCommand("command.kick") {
             sendSyntax(context)
             return
         }
-        val targetMember = getMemberByArgsNMessage(context, 0, true, botAllowed = false) ?: return
+        val targetMember = retrieveMemberByArgsNMessage(context, 0, true, botAllowed = false) ?: return
         if (!context.guild.selfMember.canInteract(targetMember)) {
             val msg = context.getTranslation("message.interact.member.hierarchyexception")
                 .replace(PLACEHOLDER_USER, targetMember.asTag)

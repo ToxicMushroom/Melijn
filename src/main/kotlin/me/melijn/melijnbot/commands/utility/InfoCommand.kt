@@ -6,6 +6,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
+import me.melijn.melijnbot.objects.utils.awaitOrNull
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import net.dv8tion.jda.api.JDAInfo
 
@@ -50,8 +51,8 @@ class InfoCommand : AbstractCommand("command.info") {
         .replace("%os%", "${System.getProperty("os.name")} ${System.getProperty("os.arch")} ${System.getProperty("os.version")}")
         .replace("%commandCount%", context.commandList.size.toString())
 
-    private fun replaceValueOneVars(string: String, context: CommandContext): String = string
-        .replace("%ownerTag%", context.jda.shardManager?.getUserById(231459866630291459L)?.asTag
+    private suspend fun replaceValueOneVars(string: String, context: CommandContext): String = string
+        .replace("%ownerTag%", context.jda.shardManager?.retrieveUserById(231459866630291459L)?.awaitOrNull()?.asTag
             ?: "ToxicMushroom#2610")
         .replace("%invite%", "https://discord.gg/E2RfZA9")
         .replace("%botInvite%", "https://melijn.com/invite?perms=true")

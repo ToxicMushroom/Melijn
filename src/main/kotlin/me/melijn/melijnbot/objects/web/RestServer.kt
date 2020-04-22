@@ -163,25 +163,26 @@ class RestServer(container: Container) : Jooby() {
                     .toMap())
                 return@get
             }
+            runBlocking {
+                val user = shardManager.retrieveUserById(req.param("userId").longValue()).awaitOrNull()
 
-            val user = shardManager.getUserById(req.param("userId").longValue())
+                val member =
+                    user?.let { guild.retrieveMember(it).awaitOrNull() }
 
-            val member = runBlocking {
-                user?.let { guild.retrieveMember(it).awaitOrNull() }
-            }
 
-            if (member == null) {
+                if (member == null) {
+                    rsp.send(DataObject.empty()
+                        .put("error", "Member not found")
+                        .put("isMember", false)
+                        .toMap())
+                    return@runBlocking
+                }
+
                 rsp.send(DataObject.empty()
-                    .put("error", "Member not found")
-                    .put("isMember", false)
+                    .put("isMember", true)
+                    .put("isAdmin", member.hasPermission(Permission.ADMINISTRATOR) || member.isOwner)
                     .toMap())
-                return@get
             }
-
-            rsp.send(DataObject.empty()
-                .put("isMember", true)
-                .put("isAdmin", member.hasPermission(Permission.ADMINISTRATOR) || member.isOwner)
-                .toMap())
         }
 
 

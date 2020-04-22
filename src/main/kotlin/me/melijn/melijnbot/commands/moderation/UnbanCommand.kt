@@ -57,7 +57,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
         ban.endTime = System.currentTimeMillis()
         ban.active = false
 
-        val banAuthor = ban.banAuthorId?.let { context.shardManager.getUserById(it) }
+        val banAuthor = ban.banAuthorId?.let { context.shardManager.retrieveUserById(it).awaitOrNull() }
 
         try {
             guild.retrieveBan(targetUser).await()

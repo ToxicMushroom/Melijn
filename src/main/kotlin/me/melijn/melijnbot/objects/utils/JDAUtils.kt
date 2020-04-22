@@ -520,6 +520,57 @@ suspend fun getVoiceChannelByArgNMessage(context: CommandContext, index: Int, sa
     return voiceChannel
 }
 
+suspend fun retrieveMemberByArgsN(context: CommandContext, index: Int): Member? {
+    val user = retrieveUserByArgsN(context, index)
+    val member =
+        if (user == null) null
+        else context.guild.retrieveMember(user).awaitOrNull()
+
+    return member
+}
+
+suspend fun retrieveMemberByArgsN(guild: Guild, arg: String): Member? {
+    val user = retrieveUserByArgsN(guild, arg)
+    val member =
+        if (user == null) null
+        else guild.retrieveMember(user).awaitOrNull()
+
+    return member
+}
+
+
+suspend fun retrieveMemberByArgsNMessage(context: CommandContext, index: Int, interactable: Boolean = false, botAllowed: Boolean = true): Member? {
+    val user = retrieveUserByArgsN(context, index)
+    val member =
+        if (user == null) null
+        else context.guild.retrieveMember(user).awaitOrNull()
+
+    if (member == null) {
+        val language = context.getLanguage()
+        val msg = i18n.getTranslation(language, "message.unknown.member")
+            .replace(PLACEHOLDER_ARG, context.args[index])
+        sendMsg(context, msg, null)
+        return null
+    }
+
+    if (interactable && !member.guild.selfMember.canInteract(member)) {
+        val msg = context.getTranslation("message.interact.member.hierarchyexception")
+            .replace(PLACEHOLDER_USER, member.asTag)
+        sendMsg(context, msg)
+        return null
+    }
+
+    if (!botAllowed && member.user.isBot) {
+        val msg = context.getTranslation("message.interact.member.isbot")
+            .replace(PLACEHOLDER_USER, member.asTag)
+        sendMsg(context, msg)
+        return null
+    }
+
+
+    return member
+}
+
 suspend fun getMemberByArgsNMessage(context: CommandContext, index: Int, interactable: Boolean = false, botAllowed: Boolean = true): Member? {
     val user = getUserByArgsN(context, index)
     val member =

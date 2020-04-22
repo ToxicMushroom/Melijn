@@ -28,7 +28,7 @@ class WarnCommand : AbstractCommand("command.warn") {
             return
         }
 
-        val targetMember = getMemberByArgsNMessage(context, 0, true, botAllowed = false) ?: return
+        val targetMember = retrieveMemberByArgsNMessage(context, 0, true, botAllowed = false) ?: return
 
         var reason = context.rawArg
             .removeFirst(context.args[0])

@@ -49,7 +49,7 @@ class VerifyCommand : AbstractCommand("command.verify") {
             }.replace("%count%", (members.size - failures.size).toString())
 
         } else {
-            val member = getMemberByArgsNMessage(context, 0) ?: return
+            val member = retrieveMemberByArgsNMessage(context, 0) ?: return
             try {
                 if (VerificationUtils.verify(context.daoManager, role, context.author, member)) {
                     context.getTranslation("$root.success")
