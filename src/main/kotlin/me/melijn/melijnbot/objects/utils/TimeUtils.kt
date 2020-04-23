@@ -127,8 +127,8 @@ suspend fun getDurationByArgsNMessage(context: CommandContext, leftBound: Int, r
     }
 
     if (holyTimeStamps.isEmpty()) {
-        val msg = context.getTranslation("unknown.time")
-            .replace("%args%", timeStamps.joinToString(" "))
+        val msg = context.getTranslation("message.unknown.timeduration")
+            .replace("%arg%", timeStamps.joinToString(" "))
 
         sendMsg(context, msg)
         return null
@@ -142,7 +142,7 @@ suspend fun getDurationByArgsNMessage(context: CommandContext, leftBound: Int, r
         val amount = matcher.group(1).toLongOrNull()
         if (amount == null) {
             val msg = context.getTranslation("message.numbertobig")
-                .replace("%args%", matcher.group(1))
+                .replace("%arg%", matcher.group(1))
 
             sendMsg(context, msg, null)
             return null
@@ -162,8 +162,8 @@ suspend fun getDurationByArgsNMessage(context: CommandContext, leftBound: Int, r
         }
 
         if (multiplier == null) {
-            val msg = context.getTranslation("unknown.timeunit")
-                .replace("%args%", matcher.group(2))
+            val msg = context.getTranslation("message.unknown.timeunit")
+                .replace("%arg%", matcher.group(2))
 
             sendMsg(context, msg)
             return null

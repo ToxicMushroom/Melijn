@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.User
+import java.util.regex.Pattern
 
 class TempMuteCommand : AbstractCommand("command.tempmute") {
 
@@ -43,12 +44,12 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         }
 
         val noUserArg = context
-            .rawArg.removeFirst(context.args[0])
+            .rawArg.removeFirst(("\"?" + Pattern.quote(context.args[0]) + "\"?").toRegex())
             .trim()
-        val durationArgs = context.args[1].split("\\s+")
+        val durationArgs = context.args[1].split("\\s+".toRegex())
         val muteDuration = (getDurationByArgsNMessage(context, 0, durationArgs.size, durationArgs) ?: return) * 1000
 
-        var reason = noUserArg.removeFirst(context.args[0]).trim()
+        var reason = noUserArg.removeFirst(("\"?" + Pattern.quote(context.args[1]) + "\"?").toRegex()).trim()
         if (reason.isBlank()) reason = "/"
 
 
