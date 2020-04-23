@@ -113,6 +113,8 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
 
     val roleWrapper: RoleWrapper
     val tempRoleWrapper: TempRoleWrapper
+    val joinRoleWrapper: JoinRoleWrapper
+    val joinRoleGroupWrapper: JoinRoleGroupWrapper
     val selfRoleWrapper: SelfRoleWrapper
     val selfRoleGroupWrapper: SelfRoleGroupWrapper
     val selfRoleModeWrapper: SelfRoleModeWrapper
@@ -202,6 +204,8 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
         channelWrapper = ChannelWrapper(taskManager, ChannelDao(driverManager))
         musicChannelWrapper = MusicChannelWrapper(taskManager, MusicChannelDao(driverManager))
         roleWrapper = RoleWrapper(taskManager, RoleDao(driverManager))
+        joinRoleWrapper = JoinRoleWrapper(taskManager, JoinRoleDao(driverManager))
+        joinRoleGroupWrapper = JoinRoleGroupWrapper(taskManager, JoinRoleGroupDao(driverManager))
         selfRoleWrapper = SelfRoleWrapper(taskManager, SelfRoleDao(driverManager))
         selfRoleGroupWrapper = SelfRoleGroupWrapper(taskManager, SelfRoleGroupDao(driverManager))
         selfRoleModeWrapper = SelfRoleModeWrapper(taskManager, SelfRoleModeDao(driverManager))

@@ -42,6 +42,6 @@ class JoinRoleGroupDao(driverManager: DriverManager) : Dao(driverManager) {
 
 data class JoinRoleGroupInfo(
     val groupName: String,
-    val getAllRoles: Boolean,
-    val isEnabled: Boolean
+    var getAllRoles: Boolean,
+    var isEnabled: Boolean
 )
