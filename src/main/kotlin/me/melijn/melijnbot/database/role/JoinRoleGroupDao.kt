@@ -2,6 +2,7 @@ package me.melijn.melijnbot.database.role
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
+import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class JoinRoleGroupDao(driverManager: DriverManager) : Dao(driverManager) {
@@ -36,6 +37,7 @@ class JoinRoleGroupDao(driverManager: DriverManager) : Dao(driverManager) {
                     rs.getBoolean("isEnabled")
                 ))
             }
+            it.resume(list)
         }, guildId)
     }
 }

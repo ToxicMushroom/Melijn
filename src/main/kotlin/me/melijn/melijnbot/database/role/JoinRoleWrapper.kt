@@ -35,7 +35,12 @@ class JoinRoleWrapper(val taskManager: TaskManager, private val joinRoleDao: Joi
 
     private fun convertToJoinRoleInfo(fromString: String): JoinRoleInfo {
         val internalMap = mutableMapOf<String, List<JoinRoleInfo.JoinRoleEntry>>()
-        val dataArray = DataArray.fromJson(fromString)
+        val dataArray = if (fromString.isBlank()) {
+            DataArray.empty()
+        } else {
+            DataArray.fromJson(fromString)
+        }
+
         for (i in 0 until dataArray.length()) {
             val dataEntry = dataArray.getArray(i)
             val jrEntryList = mutableListOf<JoinRoleInfo.JoinRoleEntry>()
@@ -79,7 +84,7 @@ class JoinRoleWrapper(val taskManager: TaskManager, private val joinRoleDao: Joi
             }
 
             dataEntry.add(group)
-            dataEntry.add(jrEntryList)
+            dataEntry.add(jrEntries)
             dataArray.add(dataEntry)
         }
 

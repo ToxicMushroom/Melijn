@@ -4,6 +4,7 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.message.ModularMessage
+import me.melijn.melijnbot.database.role.JoinRoleInfo
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.enums.RoleType
@@ -19,6 +20,7 @@ import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
+import kotlin.random.Random
 
 object JoinLeaveUtil {
 
@@ -78,10 +80,44 @@ object JoinLeaveUtil {
         val guild = member.guild
         if (!guild.selfMember.canInteract(member)) return
 
-        val joinRole = guild.getAndVerifyRoleByType(daoManager, RoleType.JOIN, true) ?: return
 
-        if (guild.selfMember.canInteract(member)) {
-            guild.addRoleToMember(member, joinRole).reason("joinrole").queue()
+        val groups = daoManager.joinRoleGroupWrapper.joinRoleGroupCache[guild.idLong].await()
+        val joinRoleInfo = daoManager.joinRoleWrapper.joinRoleCache.get(guild.idLong).await()
+        val map = joinRoleInfo.dataMap
+        for ((groupName, list) in map) {
+            val group = groups.firstOrNull { it.groupName == groupName } ?: continue
+            if (!group.isEnabled) continue
+            if (group.getAllRoles) {
+                for ((roleId) in list) {
+                    val role = roleId?.let { guild.getRoleById(it) } ?: continue
+                    if (guild.selfMember.canInteract(member)) {
+                        guild.addRoleToMember(member, role).reason("joinrole $group").queue()
+                    }
+                }
+            } else {
+                var totalChance = 0
+                for (entry in list) {
+                    totalChance += entry.chance
+                }
+
+                val winner = Random.nextInt(0, totalChance)
+                var counter = 0
+                var entryWon: JoinRoleInfo.JoinRoleEntry? = null
+                for (entry in list) {
+                    if (counter <= winner && (counter + entry.chance) > winner) {
+                        entryWon = entry
+                    }
+
+                    counter += entry.chance
+                }
+
+                val immutableEntry = entryWon ?: continue
+
+                val role = immutableEntry.roleId?.let { guild.getRoleById(it) } ?: continue
+                if (guild.selfMember.canInteract(member)) {
+                    guild.addRoleToMember(member, role).reason("joinrole $group").queue()
+                }
+            }
         }
     }
 

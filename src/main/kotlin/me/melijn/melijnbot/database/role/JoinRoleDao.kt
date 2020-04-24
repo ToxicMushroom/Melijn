@@ -18,7 +18,7 @@ class JoinRoleDao(driverManager: DriverManager) : Dao(driverManager) {
     suspend fun get(guildId: Long): String = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", { rs ->
             if (rs.next()) {
-                it.resume(rs.getString("joinRolesInfo"))
+                it.resume(rs.getString("joinRoleInfo"))
             } else {
                 it.resume("")
             }

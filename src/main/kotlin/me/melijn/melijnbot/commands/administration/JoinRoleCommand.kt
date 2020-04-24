@@ -67,7 +67,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 group.getAllRoles = newState
                 context.daoManager.joinRoleGroupWrapper.insertOrUpdate(context.guildId, group)
 
-                val msg = context.getTranslation("$root.$newState")
+                val msg = context.getTranslation("$root.set.$newState")
                     .replace("%group%", group.groupName)
                 sendMsg(context, msg)
             }
@@ -208,7 +208,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 var content = "```INI\n[index] - [group] - [getAllRoles] - [enabled]"
 
                 for ((index, roleInfo) in list.withIndex()) {
-                    content += "${index + 1} - [${roleInfo.groupName}] - ${roleInfo.getAllRoles} - ${roleInfo.isEnabled}"
+                    content += "\n${index + 1} - [${roleInfo.groupName}] - ${roleInfo.getAllRoles} - ${roleInfo.isEnabled}"
                 }
 
                 content += "```"
@@ -251,7 +251,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
 
                 context.daoManager.joinRoleWrapper.set(context.guildId, group.groupName, role?.idLong ?: -1, chance)
 
-                context.getTranslation("$root.added.$extra.chance")
+                context.getTranslation("$root.added.chance.$extra")
                     .replace("%group%", group.groupName)
                     .replace(PLACEHOLDER_ROLE, role?.name ?: "kek")
                     .replace("%chance%", "$chance")
@@ -373,7 +373,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 content.append("\n${group}:")
                 for ((index, roleInfo) in list.sortedBy { it.roleId }.withIndex()) {
                     val role = roleInfo.roleId?.let { context.guild.getRoleById(it) }
-                    content.append(" ${index + 1} - [${role?.name ?: "/"}] - ${roleInfo.roleId ?: -1} - ${roleInfo.chance}")
+                    content.append("\n ${index + 1} - [${role?.name ?: "/"}] - ${roleInfo.roleId ?: -1} - ${roleInfo.chance}")
                 }
             }
 
