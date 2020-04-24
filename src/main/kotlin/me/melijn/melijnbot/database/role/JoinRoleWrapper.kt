@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.database.role
 
 import com.google.common.cache.CacheBuilder
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.NOT_IMPORTANT_CACHE
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.utils.loadingCacheFrom
@@ -83,6 +84,45 @@ class JoinRoleWrapper(val taskManager: TaskManager, private val joinRoleDao: Joi
         }
 
         return dataArray.toString()
+    }
+
+    // inserts or updates an entry
+    suspend fun set(guildId: Long, groupName: String, roleId: Long?, chance: Int) {
+        val currentInfo = joinRoleCache.get(guildId).await()
+        val map = currentInfo.dataMap.toMutableMap()
+        val list = currentInfo.dataMap.getOrDefault(groupName, emptyList()).toMutableList()
+        val entryToUpdate = list.firstOrNull { (roleId1) -> roleId1 == roleId }
+        if (entryToUpdate != null) {
+            entryToUpdate.chance = chance
+            list.removeIf { (roleId1) -> roleId1 == roleId }
+            list.add(entryToUpdate)
+        } else {
+            list.add(JoinRoleInfo.JoinRoleEntry(roleId, chance))
+        }
+        map[groupName] = list
+        currentInfo.dataMap = map
+
+        put(guildId, currentInfo)
+    }
+
+    // [returns] true if the item was removed, false if it was never there
+    suspend fun remove(guildId: Long, groupName: String, roleId: Long?): Boolean {
+        val currentInfo = joinRoleCache.get(guildId).await()
+        val map = currentInfo.dataMap.toMutableMap()
+        val list = currentInfo.dataMap.getOrDefault(groupName, emptyList()).toMutableList()
+        val exists = list.any { (roleId1) -> roleId1 == roleId }
+
+        if (exists) {
+            list.removeIf { (roleId1) -> roleId1 == roleId }
+        } else {
+            return false
+        }
+
+        map[groupName] = list
+        currentInfo.dataMap = map
+
+        put(guildId, currentInfo)
+        return true
     }
 }
 

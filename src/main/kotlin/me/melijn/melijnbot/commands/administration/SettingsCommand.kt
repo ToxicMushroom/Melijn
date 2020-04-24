@@ -52,7 +52,6 @@ class SettingsCommand : AbstractCommand("command.settings") {
             "\n**StreamUrl:** " + stringToString(daoManager.streamUrlWrapper.streamUrlCache.get(guildId).await()) +
             "\n" +
             "\n**MuteRole:** " + idToRoleMention(roleCache.get(Pair(guildId, RoleType.MUTE)).await()) +
-            "\n**JoinRole:** " + idToRoleMention(roleCache.get(Pair(guildId, RoleType.JOIN)).await()) +
             "\n**UnverifiedRole:** " + idToRoleMention(roleCache.get(Pair(guildId, RoleType.UNVERIFIED)).await()) +
             "\n**BirthDayRole:** " + idToRoleMention(roleCache.get(Pair(guildId, RoleType.BIRTHDAY)).await()) +
             "\n" +
@@ -61,9 +60,11 @@ class SettingsCommand : AbstractCommand("command.settings") {
             "\n**LeaveChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.LEAVE)).await()) +
             "\n**SelfRoleChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.SELFROLE)).await()) +
             "\n**BirthDayChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.BIRTHDAY)).await()) +
+            "\n**PreVerificationJoinChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.PRE_VERIFICATION_JOIN)).await()) +
+            "\n**PreVerificationLeaveChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.PRE_VERIFICATION_LEAVE)).await()) +
             "\n$logChannels" +
             "\n" +
-            "\n**VerificationCode:** " + stringToString(daoManager.verificationPasswordWrapper.verificationPasswordCache.get(guildId).await()) +
+            "\n**VerificationPassword:** " + stringToString(daoManager.verificationPasswordWrapper.verificationPasswordCache.get(guildId).await()) +
             "\n**VerificationEmoteji:** " + stringToString(daoManager.verificationEmotejiWrapper.verificationEmotejiCache.get(guildId).await()) +
             "\n**VerificationType:** " + stringToString(daoManager.verificationTypeWrapper.verificationTypeCache.get(guildId).await().toUCSC()) +
             "\n**MaxVerificationFlowRate:** " + daoManager.verificationUserFlowRateWrapper.verificationUserFlowRateCache.get(guildId).await() +

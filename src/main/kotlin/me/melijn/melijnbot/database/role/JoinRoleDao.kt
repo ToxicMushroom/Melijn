@@ -8,7 +8,7 @@ import kotlin.coroutines.suspendCoroutine
 class JoinRoleDao(driverManager: DriverManager) : Dao(driverManager) {
 
     override val table: String = "joinRoles"
-    override val tableStructure: String = "guildId bigint, joinRoleInfo"
+    override val tableStructure: String = "guildId bigint, joinRoleInfo varchar(2048)"
     override val primaryKey: String = "guildId"
 
     init {

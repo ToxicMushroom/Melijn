@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import jdk.javadoc.internal.doclets.toolkit.util.DocPath.parent
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.role.JoinRoleGroupInfo
 import me.melijn.melijnbot.objects.command.AbstractCommand
@@ -10,20 +9,20 @@ import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
 import me.melijn.melijnbot.objects.utils.*
+import net.dv8tion.jda.api.entities.Role
 
-class JoinRolesCommand : AbstractCommand("command.joinroles") {
+class JoinRoleCommand : AbstractCommand("command.joinrole") {
 
     init {
         id = 157
-        name = "joinRoles"
+        name = "joinRole"
         aliases = arrayOf("jr")
         children = arrayOf(
             AddArg(root),
             RemoveArg(root),
-            GroupArg(root),
             RemoveAtArg(root),
-            SetChanceArg(root),
-            ListArg(root)
+            ListArg(root),
+            GroupArg(root)
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }
@@ -37,9 +36,9 @@ class JoinRolesCommand : AbstractCommand("command.joinroles") {
                 AddArg(root),
                 RemoveArg(root),
                 RemoveAtArg(root),
+                ListArg(root),
                 SetEnabledArg(root),
-                SetGetAllRolesArg(root),
-                ListArg(root)
+                SetGetAllRolesArg(root)
             )
         }
 
@@ -105,7 +104,7 @@ class JoinRolesCommand : AbstractCommand("command.joinroles") {
             }
         }
 
-        class AddArg(parent: String) : AbstractCommand("$parent.add") {
+        class AddArg(val parent: String) : AbstractCommand("$parent.add") {
 
             init {
                 name = "add"
@@ -234,48 +233,35 @@ class JoinRolesCommand : AbstractCommand("command.joinroles") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            if (context.args.size < 3) {
+            if (context.args.size < 2) {
                 sendSyntax(context)
                 return
             }
 
-            val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
+            val group = getJoinRoleGroupByArgNMessage(context, 0) ?: return
 
-            val pair = getEmotejiByArgsNMessage(context, 1) ?: return
-            var rname: String? = null
-            val id = if (pair.first == null) {
-                pair.second?.let { rname = it }
-                pair.second
-            } else {
-                pair.first?.name?.let { rname = it }
-                pair.first?.id
-            } ?: return
+            val role: Role? = if (context.args[1] == "null") null else getRoleByArgsNMessage(context, 1) ?: return
+            val extra = if (role == null) "null" else "role"
 
-            val name = rname
-            require(name != null) { "what.." }
+            val msg = if (context.args.size > 2) {
+                val chance = getIntegerFromArgNMessage(context, 2, 1) ?: return
 
-            val role = getRoleByArgsNMessage(context, 2) ?: return
 
-            val msg = if (context.args.size > 3) {
-                val chance = getIntegerFromArgNMessage(context, 3, 1) ?: return
 
-                context.daoManager.selfRoleWrapper.set(context.guildId, group.groupName, id, role.idLong, chance)
 
-                context.getTranslation("$root.success.chance")
+                context.daoManager.joinRoleWrapper.set(context.guildId, group.groupName, role?.idLong ?: -1, chance)
+
+                context.getTranslation("$root.added.$extra.chance")
                     .replace("%group%", group.groupName)
-                    .replace("%emoteji%", name)
-                    .replace(PLACEHOLDER_ROLE, role.name)
+                    .replace(PLACEHOLDER_ROLE, role?.name ?: "kek")
                     .replace("%chance%", "$chance")
             } else {
-                context.daoManager.selfRoleWrapper.set(context.guildId, group.groupName, id, role.idLong, 100)
+                context.daoManager.joinRoleWrapper.set(context.guildId, group.groupName, role?.idLong ?: -1, 100)
 
-                context.getTranslation("$root.success")
+                context.getTranslation("$root.added.$extra")
                     .replace("%group%", group.groupName)
-                    .replace("%emoteji%", name)
-                    .replace(PLACEHOLDER_ROLE, role.name)
+                    .replace(PLACEHOLDER_ROLE, role?.name ?: "kek")
             }
-
-
 
             sendMsg(context, msg)
         }
@@ -290,7 +276,28 @@ class JoinRolesCommand : AbstractCommand("command.joinroles") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            TODO("Not yet implemented")
+            if (context.args.size < 2) {
+                sendSyntax(context)
+                return
+            }
+
+            val group = getJoinRoleGroupByArgNMessage(context, 0) ?: return
+
+            val role: Role? = if (context.args[1] == "null") null else getRoleByArgsNMessage(context, 1) ?: return
+            val extra = if (role == null) "null" else "role"
+
+            val existed = context.daoManager.joinRoleWrapper.remove(context.guildId, group.groupName, role?.idLong)
+            val msg = if (existed) {
+                context.getTranslation("$root.removed.$extra")
+                    .replace("%group%", group.groupName)
+                    .replace("%role%", role?.name ?: "kek")
+            } else {
+                context.getTranslation("$root.noentry.$extra")
+                    .replace("%group%", group.groupName)
+                    .replace("%role%", role?.name ?: "kek")
+            }
+
+            sendMsg(context, msg)
         }
     }
 
@@ -303,23 +310,44 @@ class JoinRolesCommand : AbstractCommand("command.joinroles") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            TODO("Not yet implemented")
+            if (context.args.size < 2) {
+                sendSyntax(context)
+
+                return
+            }
+
+            val group = getJoinRoleGroupByArgNMessage(context, 0) ?: return
+
+            val jrInfo = context.daoManager.joinRoleWrapper.joinRoleCache.get(context.guildId).await()
+            val map = jrInfo.dataMap.toMutableMap()
+            val ls = map[group.groupName]?.toMutableList()
+            if (ls == null) {
+                val msg = context.getTranslation("$root.emptygroup")
+                    .replace("%group%", group.groupName)
+                sendMsg(context, msg)
+                return
+            }
+            val index = getIntegerFromArgNMessage(context, 1, 1, ls.size) ?: return
+            val entry = ls[index]
+            ls.removeAt(index)
+            if (ls.isNotEmpty()) {
+                map[group.groupName] = ls
+            } else {
+                map.remove(group.groupName)
+            }
+            jrInfo.dataMap = map
+            context.daoManager.joinRoleWrapper.put(context.guildId, jrInfo)
+
+            val role = entry.roleId?.let { context.guild.getRoleById(it) }
+            val extra = if (entry.roleId == null) "null" else "role"
+            val msg = context.getTranslation("$root.removed.$extra")
+                .replace("%group%", group.groupName)
+                .replace("%index%", "$index")
+                .replace("%role%", role?.name ?: "${entry.roleId}")
+
+            sendMsg(context, msg)
         }
     }
-
-
-    class SetChanceArg(parent: String) : AbstractCommand("$parent.setchance") {
-
-        init {
-            name = "setChance"
-            aliases = arrayOf("sc")
-        }
-
-        override suspend fun execute(context: CommandContext) {
-            TODO("Not yet implemented")
-        }
-    }
-
 
     class ListArg(parent: String) : AbstractCommand("$parent.list") {
 
@@ -329,7 +357,30 @@ class JoinRolesCommand : AbstractCommand("command.joinroles") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            TODO("Not yet implemented")
+            val wrapper = context.daoManager.joinRoleWrapper
+            val map = wrapper.joinRoleCache[context.guildId].await().dataMap
+
+            if (map.isEmpty()) {
+                val msg = context.getTranslation("$root.empty")
+                sendMsg(context, msg)
+                return
+            }
+
+            val title = context.getTranslation("$root.title")
+            val content = StringBuilder("```ini\n[group]:\n [index] - [role] - [roleId] - [chance]")
+
+            for ((group, list) in map) {
+                content.append("\n${group}:")
+                for ((index, roleInfo) in list.sortedBy { it.roleId }.withIndex()) {
+                    val role = roleInfo.roleId?.let { context.guild.getRoleById(it) }
+                    content.append(" ${index + 1} - [${role?.name ?: "/"}] - ${roleInfo.roleId ?: -1} - ${roleInfo.chance}")
+                }
+            }
+
+            content.append("```")
+            val msg = title + content.toString()
+
+            sendMsg(context, msg)
         }
     }
 
