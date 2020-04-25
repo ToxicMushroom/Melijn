@@ -15,17 +15,21 @@ class TestCommand : AbstractCommand("command.test") {
     override suspend fun execute(context: CommandContext) {
 //        val driverManager = context.daoManager.driverManager
 //
-//        var vccounter = 0
-//        val vpw = context.daoManager.verificationPasswordWrapper
-//        driverManager.executeQuery("SELECT * FROM verificationcodes", { rs ->
+//        var jrcounter = 0
+//        val jrw = context.daoManager.joinRoleWrapper
+//        val jrgw = context.daoManager.joinRoleGroupWrapper
+//
+//        driverManager.executeQuery("SELECT * FROM roles WHERE roleType = ?", { rs ->
 //            while (rs.next()) {
 //                runBlocking {
-//                    vpw.set(rs.getLong("guildId"), rs.getString("code"))
+//                    jrgw.insertOrUpdate(context.guildId, JoinRoleGroupInfo("basic", true, true))
+//                    val guildId = rs.getLong("guildId")
+//                    jrw.set(guildId, "basic", rs.getLong("roleId"), 100)
 //                }
-//                println("migrated ${vccounter++} selfrolegroups")
+//                println("migrated ${jrcounter++} joinroles")
 //            }
-//        })
-//
+//        }, "JOIN")
+
 //        var srgcounter = 0
 //        val srgw = context.daoManager.selfRoleGroupWrapper
 //        driverManager.executeQuery("SELECT * FROM old_selfrolegroups", { rs ->

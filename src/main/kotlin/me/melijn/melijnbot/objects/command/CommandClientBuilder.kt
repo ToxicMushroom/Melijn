@@ -174,7 +174,8 @@ class CommandClientBuilder(private val container: Container) {
         AppendReverseGifCommand(),
         GlobalRecolorCommand(),
         MoveCommand(),
-        JoinRoleCommand()
+        JoinRoleCommand(),
+        MassMoveCommand()
     )
 
     init {
