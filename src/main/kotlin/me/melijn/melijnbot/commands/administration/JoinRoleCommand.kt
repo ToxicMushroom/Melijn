@@ -98,7 +98,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 group.isEnabled = newState
                 context.daoManager.joinRoleGroupWrapper.insertOrUpdate(context.guildId, group)
 
-                val msg = context.getTranslation("$root.$newState")
+                val msg = context.getTranslation("$root.set.$newState")
                     .replace("%group%", group.groupName)
                 sendMsg(context, msg)
             }

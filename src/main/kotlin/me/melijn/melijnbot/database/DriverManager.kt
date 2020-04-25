@@ -21,7 +21,8 @@ class DriverManager(
 
     private val afterConnectToBeExecutedQueries = ArrayList<String>()
     private val dataSource: DataSource
-    //    private val dataSourceMySQL: DataSource
+
+    // private val dataSourceMySQL: DataSource
     private val logger = LoggerFactory.getLogger(DriverManager::class.java.name)
     private val postgresqlPattern = "(\\d+\\.\\d+).*".toRegex()
 
