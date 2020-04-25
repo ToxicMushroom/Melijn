@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.objects.events.eventlisteners
 
-import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.utility.HelpCommand
@@ -14,6 +13,7 @@ import me.melijn.melijnbot.objects.events.eventutil.FilterUtil
 import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelByType
+import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
@@ -127,18 +127,14 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
     }
 
 
-    private fun handleAttachmentLog(event: GuildMessageReceivedEvent) {
+    private suspend fun handleAttachmentLog(event: GuildMessageReceivedEvent) {
         if (event.author.isBot) return
         if (event.message.attachments.isEmpty()) return
-        val logChannelWrapper = container.daoManager.logChannelWrapper
-        val logChannelCache = logChannelWrapper.logChannelCache
-        CoroutineScope(Dispatchers.Default).launch {
-            val attachmentLogChannelId = logChannelCache.get(Pair(event.guild.idLong, LogChannelType.ATTACHMENT)).await()
-            if (attachmentLogChannelId == -1L) return@launch
-            val logChannel = event.guild.getTextChannelById(attachmentLogChannelId) ?: return@launch
-            for (attachment in event.message.attachments) {
-                postAttachmentLog(event, logChannel, attachment)
-            }
+        val channel = event.guild.getAndVerifyLogChannelByType(container.daoManager, LogChannelType.ATTACHMENT, true)
+            ?: return
+
+        for (attachment in event.message.attachments) {
+            postAttachmentLog(event, channel, attachment)
         }
     }
 
