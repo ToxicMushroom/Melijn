@@ -104,6 +104,9 @@ object DiscordMethods {
         Method("currentTimeMillis", {
             System.currentTimeMillis().toString()
         }),
+        Method("zws", {
+            "\u200B"
+        }),
         Method("currentDateTime", { env ->
             val guild: Guild = env.getReifiedX("guild")
             val user: User = env.getReifiedX("user")

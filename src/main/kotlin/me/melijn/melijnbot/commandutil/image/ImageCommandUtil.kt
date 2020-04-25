@@ -240,6 +240,9 @@ object ImageCommandUtil {
         val imageByteArray = triple.first
         val argInt = if (triple.third) 1 else 0
 
+        val loadingMsg = context.getTranslation("message.loading.effect")
+        val lmsg = sendMsg(context, loadingMsg).firstOrNull()
+
         val img = withContext(Dispatchers.IO) {
             ImageIO.read(ByteArrayInputStream(triple.first))
         }
@@ -252,6 +255,7 @@ object ImageCommandUtil {
 
         val outputStream = transform(imageByteArray, argData)
         sendFile(context, outputStream.toByteArray(), "png")
+        lmsg?.delete()?.queue()
     }
 
 
@@ -268,6 +272,10 @@ object ImageCommandUtil {
         val argInt = if (triple.third) 1 else 0
 
         //╯︿╰
+
+        val loadingMsg = context.getTranslation("message.loading.effect")
+        val lmsg = sendMsg(context, loadingMsg).firstOrNull()
+
 
         val decoder = GifDecoder()
         val inputStream = ByteArrayInputStream(triple.first)
@@ -287,5 +295,6 @@ object ImageCommandUtil {
 
         val outputStream = transform(decoder, fps, repeat, argData)
         sendFile(context, outputStream.toByteArray(), "gif")
+        lmsg?.delete()?.queue()
     }
 }

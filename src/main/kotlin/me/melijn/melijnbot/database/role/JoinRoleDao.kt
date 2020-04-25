@@ -31,6 +31,6 @@ class JoinRoleDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun remove(guildId: Long) {
-        driverManager.executeUpdate("REMOVE FROM $table WHERE guildId = ?", guildId)
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ?", guildId)
     }
 }

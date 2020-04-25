@@ -123,7 +123,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             }
         }
         container.botDeletedMessageIds.add(event.messageIdLong)
-        event.message.delete().queue()
+        event.message.delete().reason("verification channel").queue({}, {})
     }
 
 

@@ -25,7 +25,7 @@ class PunishmentDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun remove(guildId: Long, name: String) {
-        driverManager.executeUpdate("REMOVE FROM $table WHERE guildId = ? AND name = ?",
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND name = ?",
             guildId, name)
     }
 

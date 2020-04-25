@@ -80,7 +80,6 @@ object JoinLeaveUtil {
         val guild = member.guild
         if (!guild.selfMember.canInteract(member)) return
 
-
         val groups = daoManager.joinRoleGroupWrapper.joinRoleGroupCache[guild.idLong].await()
         val joinRoleInfo = daoManager.joinRoleWrapper.joinRoleCache.get(guild.idLong).await()
         val map = joinRoleInfo.dataMap
