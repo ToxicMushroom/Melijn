@@ -176,7 +176,9 @@ class CommandClientBuilder(private val container: Container) {
         MoveCommand(),
         JoinRoleCommand(),
         MassMoveCommand(),
-        LimitRoleToChannelCommand()
+        LimitRoleToChannelCommand(),
+        BanMessageCommand(),
+        KickMessageCommand()
     )
 
     init {

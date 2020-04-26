@@ -76,6 +76,7 @@ class LavaManager(
         }
     }
 
+    // run with VOICE_SAFE pls
     fun closeConnection(guildId: Long, premium: Boolean) {
         closeConnectionLite(guildId, premium)
 

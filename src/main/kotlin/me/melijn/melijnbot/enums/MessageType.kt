@@ -5,6 +5,8 @@ enum class MessageType(val text: String) {
     PRE_VERIFICATION_LEAVE_MESSAGE("PreVerificationLeaveMessage"),
     JOIN("JoinMessage"),
     LEAVE("LeaveMessage"),
+    BANNED("BannedMessage"),
+    KICKED("KickedMessage"),
     CUSTOM_COMMAND("CustomCommandMessage"),
     BIRTHDAY("BirthdayMessage")
 }

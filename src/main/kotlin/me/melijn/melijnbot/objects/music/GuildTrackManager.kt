@@ -12,6 +12,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.objects.services.voice.VOICE_SAFE
 import me.melijn.melijnbot.objects.utils.LogUtils
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.objects.utils.sendEmbed
@@ -194,9 +195,11 @@ class GuildTrackManager(
     fun stopAndDestroy() {
         clear()
         iPlayer.stopTrack()
-        runBlocking {
-            val isPremium = daoManager.musicNodeWrapper.isPremium(guildId)
-            lavaManager.closeConnection(guildId, isPremium)
+        VOICE_SAFE.submit {
+            runBlocking {
+                val isPremium = daoManager.musicNodeWrapper.isPremium(guildId)
+                lavaManager.closeConnection(guildId, isPremium)
+            }
         }
     }
 

@@ -128,8 +128,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            val args = context.rawArg.split("\\s*>\\s*".toRegex())
-            if (args.size < 2) {
+            if (context.args.size < 2) {
                 sendSyntax(context)
                 return
             }
@@ -147,12 +146,9 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 sendMsg(context, msg)
             }
 
-            val name = args[0]
-            val content = if (args[1].isBlank()) {
-                "empty"
-            } else {
-                args[1]
-            }
+            val name = context.args[0]
+            var content = context.rawArg.removeFirst(name).trim()
+            if (content.isBlank()) content = "empty"
 
             val cc = CustomCommand(0, name, ModularMessage(content))
 
