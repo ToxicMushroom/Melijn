@@ -175,7 +175,8 @@ class CommandClientBuilder(private val container: Container) {
         GlobalRecolorCommand(),
         MoveCommand(),
         JoinRoleCommand(),
-        MassMoveCommand()
+        MassMoveCommand(),
+        LimitRoleToChannelCommand()
     )
 
     init {

@@ -56,6 +56,7 @@ class EventManager(val container: Container) : IEventManager {
         eventListeners.add(voiceJoinListener)
         eventListeners.add(voiceLeaveListener)
         eventListeners.add(voiceMoveListener)
+        eventListeners.add(container.eventWaiter)
         // eventListeners.add(roleAddedListener)
         // eventListeners.add(roleRemovedListener)
 
