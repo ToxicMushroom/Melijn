@@ -18,7 +18,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
     init {
         id = 23
         name = "tempBan"
-        aliases = arrayOf("temporaryBan")
+        aliases = arrayOf("tBan", "temporaryBan")
         commandCategory = CommandCategory.MODERATION
         discordChannelPermissions = arrayOf(Permission.BAN_MEMBERS)
     }

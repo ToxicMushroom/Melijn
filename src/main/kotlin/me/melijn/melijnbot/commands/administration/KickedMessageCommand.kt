@@ -6,17 +6,17 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.sendSyntax
 
-class KickMessageCommand : AbstractCommand("command.kickmessage") {
+class KickedMessageCommand : AbstractCommand("command.kickedmessage") {
 
     init {
         id = 163
-        name = "kickMessage"
+        name = "kickedMessage"
         aliases = arrayOf("km")
         children = arrayOf(
             LeaveMessageCommand.SetContentArg(root, MessageType.KICKED),
             LeaveMessageCommand.EmbedArg(root, MessageType.KICKED),
             LeaveMessageCommand.AttachmentsArg(root, MessageType.KICKED),
-            LeaveMessageCommand.ViewArg(root, MessageType.BANNED)
+            LeaveMessageCommand.ViewArg(root, MessageType.KICKED)
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }

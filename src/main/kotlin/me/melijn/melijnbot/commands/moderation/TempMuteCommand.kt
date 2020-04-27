@@ -21,8 +21,8 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
 
     init {
         id = 27
-        name = "tempmute"
-        aliases = arrayOf("tm")
+        name = "tempMute"
+        aliases = arrayOf("tm", "temporaryMute")
         commandCategory = CommandCategory.MODERATION
         discordChannelPermissions = arrayOf(Permission.MANAGE_ROLES)
     }

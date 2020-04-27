@@ -6,11 +6,11 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.sendSyntax
 
-class BanMessageCommand : AbstractCommand("command.banmessage") {
+class BannedMessageCommand : AbstractCommand("command.bannedmessage") {
 
     init {
         id = 162
-        name = "banMessage"
+        name = "bannedMessage"
         aliases = arrayOf("bm")
         children = arrayOf(
             LeaveMessageCommand.SetContentArg(root, MessageType.BANNED),
