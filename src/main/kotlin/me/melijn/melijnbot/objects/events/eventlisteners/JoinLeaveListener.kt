@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.objects.events.eventlisteners
 
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
@@ -54,6 +55,7 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
 
         if (!daoManager.unverifiedUsersWrapper.contains(event.guild.idLong, user.idLong)) {
             if (event.guild.selfMember.hasPermission(Permission.BAN_MEMBERS, Permission.VIEW_AUDIT_LOGS)) {
+                val stateAction = daoManager.bannedOrKickedTriggersLeaveWrapper.bannedOrKickedTriggersLeaveCache.get(event.guild.idLong)
                 val ban = event.guild.retrieveBan(user).awaitOrNull()
                 if (ban == null) {
                     val auditKick = event.guild.retrieveAuditLogs()
@@ -79,12 +81,18 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
 
                         if (kicked) {
                             JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, user, ChannelType.KICKED, MessageType.KICKED)
+                            if (stateAction.await()) {
+                                JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, user, ChannelType.LEAVE, MessageType.LEAVE)
+                            }
                         } else {
                             JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, user, ChannelType.LEAVE, MessageType.LEAVE)
                         }
                     }
                 } else {
                     JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, user, ChannelType.BANNED, MessageType.BANNED)
+                    if (stateAction.await()) {
+                        JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, user, ChannelType.LEAVE, MessageType.LEAVE)
+                    }
                 }
             } else {
                 JoinLeaveUtil.postWelcomeMessage(daoManager, event.guild, user, ChannelType.LEAVE, MessageType.LEAVE)

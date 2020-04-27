@@ -3,6 +3,7 @@ package me.melijn.melijnbot.commands.developer
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import moe.ganen.jikankt.JikanKt
 
 class TestCommand : AbstractCommand("command.test") {
 
@@ -13,6 +14,11 @@ class TestCommand : AbstractCommand("command.test") {
     }
 
     override suspend fun execute(context: CommandContext) {
+        val result = JikanKt.searchAnime("Your Name")
+        result.results?.let {
+            val item = it.firstOrNull() ?: return
+            println(item.url)
+        }
 //        val driverManager = context.daoManager.driverManager
 //
 //        var jrcounter = 0

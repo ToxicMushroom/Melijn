@@ -178,7 +178,8 @@ class CommandClientBuilder(private val container: Container) {
         MassMoveCommand(),
         LimitRoleToChannelCommand(),
         BanMessageCommand(),
-        KickMessageCommand()
+        KickMessageCommand(),
+        SetBannedOrKickedTriggersLeaveCommand()
     )
 
     init {
