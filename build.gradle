@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation('net.dv8tion:JDA:4.1.1_138') {
+    implementation('net.dv8tion:JDA:4.1.1_139') {
         exclude module: 'opus-java'
     }
 
@@ -87,6 +87,11 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib-jdk8
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.3.72'
+
+    // https://github.com/GSculerlor/JikanKt/releases
+    implementation (group: 'com.github.GSculerlor', name: 'JikanKT', version: '1.1.2') {
+        exclude group: 'org.slf4j', module: 'slf4j-simple'
+    }
 
 
     // START | https://github.com/JetBrains/kotlin/blob/master/libraries/examples/kotlin-jsr223-local-example/build.gradle.kts

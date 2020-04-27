@@ -14,11 +14,11 @@ class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val gui
     val guildTrackManager: GuildTrackManager = GuildTrackManager(guildId, daoManager, lavaManager, lavaManager.getIPlayer(guildId, runBlocking { daoManager.musicNodeWrapper.isPremium(guildId) }))
 
     init {
-        guildTrackManager.iPlayer.addListener(guildTrackManager)
+        addTrackManagerListener()
     }
 
     fun addTrackManagerListener() {
-        guildTrackManager.iPlayer.removeListener(guildTrackManager)
+        guildTrackManager.iPlayer.addListener(guildTrackManager)
     }
 
     fun removeTrackManagerListener() {

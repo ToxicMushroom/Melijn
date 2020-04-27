@@ -10,6 +10,8 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.sharding.ShardManager
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 
 class LavaManager(
@@ -19,6 +21,7 @@ class LavaManager(
     val jdaLavaLink: JdaLavalink?,
     val premiumLavaLink: JdaLavalink?
 ) {
+    private val logger: Logger = LoggerFactory.getLogger(LavaManager::class.java)
 
     val musicPlayerManager: MusicPlayerManager = MusicPlayerManager(daoManager, this)
 
@@ -82,6 +85,7 @@ class LavaManager(
 
         MusicPlayerManager.guildMusicPlayers[guildId]?.removeTrackManagerListener()
         MusicPlayerManager.guildMusicPlayers.remove(guildId)
+        logger.debug("removed guildmusicplayer for $guildId")
     }
 
     fun closeConnectionLite(guildId: Long, premium: Boolean) {

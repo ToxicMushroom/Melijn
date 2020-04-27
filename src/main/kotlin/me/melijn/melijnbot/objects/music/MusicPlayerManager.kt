@@ -7,6 +7,7 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.services.voice.VOICE_SAFE
 import net.dv8tion.jda.api.entities.Guild
+import org.slf4j.LoggerFactory
 
 
 class MusicPlayerManager(
@@ -14,6 +15,7 @@ class MusicPlayerManager(
     private val lavaManager: LavaManager
 ) {
 
+    private val logger = LoggerFactory.getLogger(MusicPlayerManager::class.java)
     val audioPlayerManager: AudioPlayerManager = DefaultAudioPlayerManager()
     val audioLoader = AudioLoader(this)
 
@@ -40,6 +42,7 @@ class MusicPlayerManager(
             val newMusicPlayer = GuildMusicPlayer(daoManager, lavaManager, guild.idLong)
             VOICE_SAFE.submit {
                 guildMusicPlayers[guild.idLong] = newMusicPlayer
+                logger.debug("new player for ${guild.id}")
             }
 
             if (!lavaManager.lavalinkEnabled) {

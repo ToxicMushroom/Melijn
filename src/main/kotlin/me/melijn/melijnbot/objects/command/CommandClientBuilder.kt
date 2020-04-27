@@ -179,7 +179,8 @@ class CommandClientBuilder(private val container: Container) {
         LimitRoleToChannelCommand(),
         BannedMessageCommand(),
         KickedMessageCommand(),
-        SetBannedOrKickedTriggersLeaveCommand()
+        SetBannedOrKickedTriggersLeaveCommand(),
+        MyAnimeListCommand()
     )
 
     init {

@@ -41,7 +41,11 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             val prefixes = context.daoManager.guildPrefixWrapper.prefixCache.get(context.guildId).await()
                 .sortedBy { it }
 
+            val defPrefixMsg = context.getTranslation("$root.defprefix")
+                .replace(PLACEHOLDER_PREFIX, context.prefix)
+
             var content = "```INI"
+            if (prefixes.isEmpty()) content += "\n$defPrefixMsg"
             for ((index, prefix) in prefixes.withIndex()) {
                 content += "\n$index - [$prefix]"
             }
