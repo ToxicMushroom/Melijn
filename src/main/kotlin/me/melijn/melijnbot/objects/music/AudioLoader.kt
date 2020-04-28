@@ -8,6 +8,7 @@ import com.wrapper.spotify.model_objects.specification.ArtistSimplified
 import com.wrapper.spotify.model_objects.specification.Track
 import com.wrapper.spotify.model_objects.specification.TrackSimplified
 import kotlinx.coroutines.runBlocking
+import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.audio.SongCacheWrapper
 import me.melijn.melijnbot.enums.SearchType
@@ -48,9 +49,16 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 //        override fun playlistLoaded(playlist: AudioPlaylist) = playListLoaded(playlist)
 //    }
 
-    fun foundSingleTrack(context: CommandContext, guildMusicPlayer: GuildMusicPlayer, wrapper: SongCacheWrapper, track: AudioTrack, rawInput: String) {
+    fun foundSingleTrack(
+        context: CommandContext,
+        guildMusicPlayer: GuildMusicPlayer,
+        wrapper: SongCacheWrapper,
+        track: AudioTrack,
+        rawInput: String,
+        nextPos: NextSongPosition
+    ) {
         track.userData = TrackUserData(context.author)
-        if (guildMusicPlayer.safeQueue(context, track)) {
+        if (guildMusicPlayer.safeQueue(context, track, nextPos)) {
             sendMessageAddedTrack(context, track)
             runBlocking {
                 LogUtils.addMusicPlayerNewTrack(context, track)
@@ -59,14 +67,22 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
     }
 
-    fun foundTracks(context: CommandContext, guildMusicPlayer: GuildMusicPlayer, wrapper: SongCacheWrapper, tracks: List<AudioTrack>, rawInput: String, isPlaylist: Boolean) {
+    fun foundTracks(
+        context: CommandContext,
+        guildMusicPlayer: GuildMusicPlayer,
+        wrapper: SongCacheWrapper,
+        tracks: List<AudioTrack>,
+        rawInput: String,
+        isPlaylist: Boolean,
+        nextPos: NextSongPosition
+    ) {
         if (isPlaylist) {
             var notAdded = 0
 
             for (track in tracks) {
                 track.userData = TrackUserData(context.author)
 
-                if (!guildMusicPlayer.safeQueueSilent(context.daoManager, track)) notAdded++
+                if (!guildMusicPlayer.safeQueueSilent(context.daoManager, track, nextPos)) notAdded++
                 else {
                     runBlocking {
                         LogUtils.addMusicPlayerNewTrack(context, track)
@@ -75,11 +91,11 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             }
             sendMessageAddedTracks(context, tracks.subList(0, tracks.size - notAdded))
         } else {
-            foundSingleTrack(context, guildMusicPlayer, wrapper, tracks[0], rawInput)
+            foundSingleTrack(context, guildMusicPlayer, wrapper, tracks[0], rawInput, nextPos)
         }
     }
 
-    suspend fun loadNewTrackNMessage(context: CommandContext, source: String, isPlaylist: Boolean = false) {
+    suspend fun loadNewTrackNMessage(context: CommandContext, source: String, isPlaylist: Boolean = false, nextPos: NextSongPosition) {
         val guild = context.guild
         val guildMusicPlayer = musicPlayerManager.getGuildMusicPlayer(guild)
         val searchType = when {
@@ -100,7 +116,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             }
 
             override fun trackLoaded(track: AudioTrack) {
-                foundSingleTrack(context, guildMusicPlayer, wrapper, track, rawInput)
+                foundSingleTrack(context, guildMusicPlayer, wrapper, track, rawInput, nextPos)
             }
 
             override fun noMatches() {
@@ -108,13 +124,13 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             }
 
             override fun playlistLoaded(playlist: AudioPlaylist) {
-                foundTracks(context, guildMusicPlayer, wrapper, playlist.tracks, rawInput, isPlaylist)
+                foundTracks(context, guildMusicPlayer, wrapper, playlist.tracks, rawInput, isPlaylist, nextPos)
             }
         }
 
         val audioTrack = wrapper.getTrackInfo(rawInput)
         if (audioTrack != null && !source.startsWith(SC_SELECTOR)) { // track found and made from cache
-            foundSingleTrack(context, guildMusicPlayer, wrapper, audioTrack, rawInput)
+            foundSingleTrack(context, guildMusicPlayer, wrapper, audioTrack, rawInput, nextPos)
             return
         }
 
@@ -127,7 +143,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 }
             }, { tracks ->
                 if (tracks.isNotEmpty()) {
-                    foundTracks(context, guildMusicPlayer, wrapper, tracks, rawInput, isPlaylist)
+                    foundTracks(context, guildMusicPlayer, wrapper, tracks, rawInput, isPlaylist, nextPos)
                 } else {
                     sendMessageNoMatches(context, rawInput)
                 }
@@ -194,6 +210,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         artists: Array<ArtistSimplified>?,
         durationMs: Int,
         silent: Boolean = false,
+        nextPos: NextSongPosition,
         loaded: ((Boolean) -> Unit)? = null
     ) {
         val player: GuildMusicPlayer = context.guildMusicPlayer
@@ -211,7 +228,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 if ((durationMs + spotifyTrackDiff > track.duration && track.duration > durationMs - spotifyTrackDiff)
                     || track.info.title.contains(title, true)) {
                     track.userData = TrackUserData(context.author)
-                    if (player.safeQueue(context, track)) {
+                    if (player.safeQueue(context, track, nextPos)) {
                         if (!silent) {
                             sendMessageAddedTrack(context, track)
                         }
@@ -223,7 +240,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                         loaded?.invoke(false)
                     }
                 } else {
-                    loadSpotifyTrackOther(context, query, artists, durationMs, title, silent, loaded)
+                    loadSpotifyTrackOther(context, query, artists, durationMs, title, silent, nextPos, loaded)
                 }
             }
 
@@ -233,7 +250,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                     if ((durationMs + spotifyTrackDiff > track.duration && track.duration > durationMs - spotifyTrackDiff)
                         || track.info.title.contains(title, true)) {
                         track.userData = TrackUserData(context.author)
-                        if (player.safeQueue(context, track)) {
+                        if (player.safeQueue(context, track, nextPos)) {
                             if (!silent) {
                                 sendMessageAddedTrack(context, track)
                             }
@@ -247,11 +264,11 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                         return
                     }
                 }
-                loadSpotifyTrackOther(context, query, artists, durationMs, title, silent, loaded)
+                loadSpotifyTrackOther(context, query, artists, durationMs, title, silent, nextPos, loaded)
             }
 
             override fun noMatches() {
-                loadSpotifyTrackOther(context, query, artists, durationMs, title, silent, loaded)
+                loadSpotifyTrackOther(context, query, artists, durationMs, title, silent, nextPos, loaded)
             }
 
             override fun loadFailed(exception: FriendlyException) {
@@ -270,18 +287,19 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         durationMs: Int,
         title: String,
         silent: Boolean = false,
+        nextPos: NextSongPosition,
         loaded: ((Boolean) -> Unit)? = null
     ) {
         if (query.startsWith(YT_SELECTOR)) {
             if (artists != null) {
-                loadSpotifyTrack(context, query, null, durationMs, silent, loaded)
+                loadSpotifyTrack(context, query, null, durationMs, silent, nextPos, loaded)
             } else {
                 val newQuery = query.replaceFirst(YT_SELECTOR, SC_SELECTOR)
-                loadSpotifyTrack(context, newQuery, artists, durationMs, silent, loaded)
+                loadSpotifyTrack(context, newQuery, artists, durationMs, silent, nextPos, loaded)
             }
         } else if (query.startsWith(SC_SELECTOR)) {
             if (artists != null) {
-                loadSpotifyTrack(context, query, null, durationMs, silent, loaded)
+                loadSpotifyTrack(context, query, null, durationMs, silent, nextPos, loaded)
             } else {
                 if (!silent) sendMessageNoMatches(context, title)
                 loaded?.invoke(false)
@@ -300,7 +318,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
     }
 
-    fun loadSpotifyPlaylist(context: CommandContext, tracks: Array<Track>) = runBlocking {
+    fun loadSpotifyPlaylist(context: CommandContext, tracks: Array<Track>, nextPos: NextSongPosition) = runBlocking {
         if (tracks.size + context.guildMusicPlayer.guildTrackManager.tracks.size > QUEUE_LIMIT) {
             val msg = context.getTranslation("$root.queuelimit")
                 .replace("%amount%", QUEUE_LIMIT.toString())
@@ -317,7 +335,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
         val message = sendMsg(context, msg)
         for (track in tracks) {
-            loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, true) {
+            loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, true, nextPos) {
                 if (it) {
                     loadedTracks.add(track)
                 } else {
@@ -335,7 +353,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
     }
 
-    fun loadSpotifyAlbum(context: CommandContext, simpleTracks: Array<TrackSimplified>) = runBlocking {
+    fun loadSpotifyAlbum(context: CommandContext, simpleTracks: Array<TrackSimplified>, nextPos: NextSongPosition) = runBlocking {
         if (simpleTracks.size + context.guildMusicPlayer.guildTrackManager.tracks.size > QUEUE_LIMIT) {
             val msg = context.getTranslation("$root.queuelimit")
                 .replace("%amount%", QUEUE_LIMIT.toString())
@@ -350,7 +368,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             .replace("%trackCount%", simpleTracks.size.toString())
         val message = sendMsg(context, msg)
         for (track in simpleTracks) {
-            loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, true) {
+            loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, true, nextPos) {
                 if (it) {
                     loadedTracks.add(track)
                 } else {
@@ -368,7 +386,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
     }
 
-    fun loadNewTrackPickerNMessage(context: CommandContext, query: String) {
+    fun loadNewTrackPickerNMessage(context: CommandContext, query: String, nextPos: NextSongPosition) {
         val guildMusicPlayer = context.guildMusicPlayer
         val rawInput = query
             .replace(YT_SELECTOR, "")
@@ -381,7 +399,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             }
 
             override fun trackLoaded(track: AudioTrack) {
-                prepareSearchMenu(context, listOf(track))
+                prepareSearchMenu(context, listOf(track), nextPos)
             }
 
             override fun noMatches() {
@@ -389,14 +407,14 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             }
 
             override fun playlistLoaded(playlist: AudioPlaylist) {
-                prepareSearchMenu(context, playlist.tracks)
+                prepareSearchMenu(context, playlist.tracks, nextPos)
             }
         }
 
         audioPlayerManager.loadItemOrdered(guildMusicPlayer, query, resultHandler)
     }
 
-    private fun prepareSearchMenu(context: CommandContext, trackList: List<AudioTrack>) {
+    private fun prepareSearchMenu(context: CommandContext, trackList: List<AudioTrack>, nextPos: NextSongPosition) {
         val guildMusicPlayer = context.guildMusicPlayer
         if (guildMusicPlayer.queueIsFull(context, 1)) return
 
@@ -409,7 +427,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
         context.taskManager.async {
             val msg = sendMessageSearchMenu(context, tracks).last()
-            guildMusicPlayer.searchMenus[msg.idLong] = tracks
+            guildMusicPlayer.searchMenus[msg.idLong] = TracksForQueue(tracks, nextPos)
 
             if (tracks.size > 0) msg.addReaction("\u0031\u20E3").queue()
             if (tracks.size > 1) msg.addReaction("\u0032\u20E3").queue()
@@ -433,7 +451,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         return sendEmbed(context, eb.build())
     }
 
-    fun loadNewTrack(daoManager: DaoManager, lavaManager: LavaManager, vc: VoiceChannel, author: User, source: String) {
+    fun loadNewTrack(daoManager: DaoManager, lavaManager: LavaManager, vc: VoiceChannel, author: User, source: String, nextPos: NextSongPosition) {
         val guild = vc.guild
         val guildMusicPlayer = musicPlayerManager.getGuildMusicPlayer(guild)
 
@@ -444,7 +462,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
             override fun trackLoaded(track: AudioTrack) {
                 track.userData = TrackUserData(guild.selfMember.user)
-                guildMusicPlayer.guildTrackManager.queue(track)
+                guildMusicPlayer.guildTrackManager.queue(track, nextPos)
                 runBlocking {
                     LogUtils.addMusicPlayerNewTrack(daoManager, lavaManager, vc, author, track)
                 }

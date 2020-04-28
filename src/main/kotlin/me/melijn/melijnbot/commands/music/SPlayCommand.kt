@@ -34,8 +34,18 @@ class SPlayCommand : AbstractCommand("command.splay") {
         if (senderVoiceChannel == null && botChannel == null) throw IllegalArgumentException("Fix vc_bot_or_user_dj")
         val lava: LavaManager = context.lavaManager
 
-        val songArg = context.rawArg.trim()
+        val args = context.oldArgs
+        var songArg = context.getRawArgPart(1, -1)
 
+        val songPosition = when {
+            args[0] == "-t" || args[0] == "-top" -> NextSongPosition.TOP
+            args[0] == "-r" || args[0] == "-random" -> NextSongPosition.RANDOM
+            args[0] == "-b" || args[0] == "-bottom" -> NextSongPosition.BOTTOM
+            else -> {
+                songArg = context.rawArg.trim()
+                NextSongPosition.BOTTOM
+            }
+        }
 
         if (!hasPermission(context, "$root.yt")) {
             sendMissingPermissionMessage(context, "$root.yt")
@@ -45,7 +55,7 @@ class SPlayCommand : AbstractCommand("command.splay") {
         val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
         if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
 
-        context.audioLoader.loadNewTrackPickerNMessage(context, "$YT_SELECTOR$songArg")
+        context.audioLoader.loadNewTrackPickerNMessage(context, "$YT_SELECTOR$songArg", songPosition)
     }
 
     class YTArg(root: String) : AbstractCommand("$root.yt") {
@@ -63,11 +73,22 @@ class SPlayCommand : AbstractCommand("command.splay") {
             if (senderVoiceChannel == null && botChannel == null) throw IllegalArgumentException("Fix vc_bot_or_user_dj")
             val lava: LavaManager = context.lavaManager
 
-            val songArg = context.rawArg.trim()
+            val args = context.oldArgs
+            var songArg = context.getRawArgPart(1, -1)
+
+            val songPosition = when {
+                args[0] == "-t" || args[0] == "-top" -> NextSongPosition.TOP
+                args[0] == "-r" || args[0] == "-random" -> NextSongPosition.RANDOM
+                args[0] == "-b" || args[0] == "-bottom" -> NextSongPosition.BOTTOM
+                else -> {
+                    songArg = context.rawArg.trim()
+                    NextSongPosition.BOTTOM
+                }
+            }
 
             val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
             if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
-            context.audioLoader.loadNewTrackPickerNMessage(context, "$YT_SELECTOR$songArg")
+            context.audioLoader.loadNewTrackPickerNMessage(context, "$YT_SELECTOR$songArg", songPosition)
         }
 
     }
@@ -87,11 +108,22 @@ class SPlayCommand : AbstractCommand("command.splay") {
             if (senderVoiceChannel == null && botChannel == null) throw IllegalArgumentException("Fix vc_bot_or_user_dj")
             val lava: LavaManager = context.lavaManager
 
-            val songArg = context.rawArg.trim()
+            val args = context.oldArgs
+            var songArg = context.getRawArgPart(1, -1)
+
+            val songPosition = when {
+                args[0] == "-t" || args[0] == "-top" -> NextSongPosition.TOP
+                args[0] == "-r" || args[0] == "-random" -> NextSongPosition.RANDOM
+                args[0] == "-b" || args[0] == "-bottom" -> NextSongPosition.BOTTOM
+                else -> {
+                    songArg = context.rawArg.trim()
+                    NextSongPosition.BOTTOM
+                }
+            }
 
             val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
             if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
-            context.audioLoader.loadNewTrackPickerNMessage(context, "$SC_SELECTOR$songArg")
+            context.audioLoader.loadNewTrackPickerNMessage(context, "$SC_SELECTOR$songArg", songPosition)
         }
     }
 }

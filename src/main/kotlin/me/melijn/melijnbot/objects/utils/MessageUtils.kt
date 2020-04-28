@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
+import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
 import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.objects.command.CommandContext
@@ -17,6 +18,7 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.requests.restaction.MessageAction
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
+import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
@@ -27,6 +29,8 @@ import javax.imageio.ImageIO
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
+
+val logger = LoggerFactory.getLogger("messageutils")
 
 fun Throwable.sendInGuild(context: CommandContext, thread: Thread = Thread.currentThread(), extra: String? = null) = runBlocking {
     sendInGuildSuspend(context.guildN, context.messageChannel, context.author, thread, "Message: ${MarkdownSanitizer.escape(context.message.contentRaw)}\n" + (extra
@@ -743,10 +747,20 @@ suspend fun sendMsg(channel: TextChannel, msg: String): List<Message> = suspendC
         try {
             val messageList = mutableListOf<Message>()
             if (msg.length <= 2000) {
+                
+                if (msg.contains("%")) {
+                    logger.warn("raw variable ?: $msg")
+                }
+
                 messageList.add(channel.sendMessage(msg).await())
             } else {
                 val msgParts = StringUtils.splitMessage(msg).withIndex()
                 for ((index, text) in msgParts) {
+
+                    if (msg.contains("%")) {
+                        logger.warn("raw variable ?: $msg")
+                    }
+
                     messageList.add(index, channel.sendMessage(text).await())
                 }
 
@@ -926,5 +940,17 @@ fun String.toUpperWordCase(): String {
 }
 
 fun String.replacePrefix(context: CommandContext): String {
-    return this.replace(PLACEHOLDER_PREFIX, context.commandParts[0])
+    return this.replace(PLACEHOLDER_PREFIX, context.usedPrefix)
+}
+
+fun String.replacePrefix(prefix: String): String {
+    return this.replace(PLACEHOLDER_PREFIX, prefix)
+}
+
+fun getNicerUsedPrefix(settings: Settings, prefix: String): String {
+    return if (prefix.contains(settings.id.toString()) && USER_MENTION.matcher(prefix).matches()) {
+        "@${settings.name} "
+    } else {
+        prefix
+    }
 }

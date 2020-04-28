@@ -196,21 +196,23 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
     private suspend fun searchMenuHandler(event: GuildMessageReactionAddEvent) {
         val guild = event.guild
-        if (event.reactionEmote.isEmote) return
+        if (event.reactionEmote.isEmote && event.user.isBot) return
         val guildPlayer = container.lavaManager.musicPlayerManager.getGuildMusicPlayer(guild)
         val menus = guildPlayer.searchMenus
         val menu = menus.getOrElse(event.messageIdLong, {
             return
         })
 
-        if (event.user.idLong != (menu.first().userData as TrackUserData).userId) return
+        val tracks = menu.audioTracks
+
+        if (event.user.idLong != (tracks.first().userData as TrackUserData).userId) return
 
         val track: AudioTrack? = when (event.reactionEmote.emoji) {
-            "1⃣" -> menu.getOrElse(0) { return }
-            "2⃣" -> menu.getOrElse(1) { return }
-            "3⃣" -> menu.getOrElse(2) { return }
-            "4⃣" -> menu.getOrElse(3) { return }
-            "5⃣" -> menu.getOrElse(4) { return }
+            "1⃣" -> tracks.getOrElse(0) { return }
+            "2⃣" -> tracks.getOrElse(1) { return }
+            "3⃣" -> tracks.getOrElse(2) { return }
+            "4⃣" -> tracks.getOrElse(3) { return }
+            "5⃣" -> tracks.getOrElse(4) { return }
             "❌" -> null
             else -> return
         }
@@ -227,7 +229,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 eb.setDescription(desc)
                 message.editMessage(eb.build()).queue()
             }
-            guildPlayer.safeQueueSilent(container.daoManager, track) -> {
+            guildPlayer.safeQueueSilent(container.daoManager, track, menu.nextPosition) -> {
                 event.guild.selfMember.voiceState?.channel?.let {
                     LogUtils.addMusicPlayerNewTrack(container.daoManager, container.lavaManager, it, event.user, track)
                 }

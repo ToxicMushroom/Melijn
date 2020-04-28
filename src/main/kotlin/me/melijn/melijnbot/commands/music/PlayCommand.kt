@@ -6,6 +6,7 @@ import me.melijn.melijnbot.objects.music.AudioLoader
 import me.melijn.melijnbot.objects.music.LavaManager
 import me.melijn.melijnbot.objects.translation.SC_SELECTOR
 import me.melijn.melijnbot.objects.translation.YT_SELECTOR
+import me.melijn.melijnbot.objects.utils.replacePrefix
 import me.melijn.melijnbot.objects.utils.sendInGuild
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
@@ -34,7 +35,18 @@ class PlayCommand : AbstractCommand("command.play") {
         if (senderVoiceChannel == null && botChannel == null) throw IllegalArgumentException("Fix vc_bot_or_user_dj")
         val lava: LavaManager = context.lavaManager
 
-        val songArg = context.rawArg.trim()
+        val args = context.oldArgs
+        var songArg = context.getRawArgPart(1, -1)
+
+        val songPosition = when {
+            args[0] == "-t" || args[0] == "-top" -> NextSongPosition.TOP
+            args[0] == "-r" || args[0] == "-random" -> NextSongPosition.RANDOM
+            args[0] == "-b" || args[0] == "-bottom" -> NextSongPosition.BOTTOM
+            else -> {
+                songArg = context.rawArg.trim()
+                NextSongPosition.BOTTOM
+            }
+        }
 
         val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
         if (songArg.startsWith("https://") || songArg.startsWith("http://")) {
@@ -44,9 +56,9 @@ class PlayCommand : AbstractCommand("command.play") {
             }
             if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
             if (songArg.contains("open.spotify.com")) {
-                spotifySearchNLoad(context.audioLoader, context, songArg)
+                spotifySearchNLoad(context.audioLoader, context, songArg, songPosition)
             } else {
-                context.audioLoader.loadNewTrackNMessage(context, songArg, true)
+                context.audioLoader.loadNewTrackNMessage(context, songArg, true, songPosition)
             }
         } else if (songArg.isNotBlank()) {
             if (!hasPermission(context, "$root.yt")) {
@@ -56,9 +68,9 @@ class PlayCommand : AbstractCommand("command.play") {
             if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
 
             if (songArg.matches("spotify:(.*)".toRegex())) {
-                spotifySearchNLoad(context.audioLoader, context, songArg)
+                spotifySearchNLoad(context.audioLoader, context, songArg, songPosition)
             } else {
-                context.audioLoader.loadNewTrackNMessage(context, "${YT_SELECTOR}$songArg", false)
+                context.audioLoader.loadNewTrackNMessage(context, "${YT_SELECTOR}$songArg", false, songPosition)
             }
         } else {
             val tracks = context.message.attachments.map { attachment -> attachment.url }
@@ -68,7 +80,7 @@ class PlayCommand : AbstractCommand("command.play") {
             }
             if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
             for (url in tracks) {
-                context.audioLoader.loadNewTrackNMessage(context, url, false)
+                context.audioLoader.loadNewTrackNMessage(context, url, false, songPosition)
             }
         }
     }
@@ -86,11 +98,22 @@ class PlayCommand : AbstractCommand("command.play") {
             val senderVoiceChannel: VoiceChannel = member.voiceState?.channel ?: return
             val lava: LavaManager = context.lavaManager
 
-            val songArg = context.rawArg.trim()
+            val args = context.oldArgs
+            var songArg = context.getRawArgPart(1, -1)
+
+            val songPosition = when {
+                args[0] == "-t" || args[0] == "-top" -> NextSongPosition.TOP
+                args[0] == "-r" || args[0] == "-random" -> NextSongPosition.RANDOM
+                args[0] == "-b" || args[0] == "-bottom" -> NextSongPosition.BOTTOM
+                else -> {
+                    songArg = context.rawArg.trim()
+                    NextSongPosition.BOTTOM
+                }
+            }
 
             val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
             if (!lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
-            context.audioLoader.loadNewTrackNMessage(context, "${YT_SELECTOR}$songArg", false)
+            context.audioLoader.loadNewTrackNMessage(context, "${YT_SELECTOR}$songArg", false, songPosition)
         }
 
     }
@@ -108,11 +131,22 @@ class PlayCommand : AbstractCommand("command.play") {
             val senderVoiceChannel: VoiceChannel = member.voiceState?.channel ?: return
             val lava: LavaManager = context.lavaManager
 
-            val songArg = context.rawArg.trim()
+            val args = context.oldArgs
+            var songArg = context.getRawArgPart(1, -1)
+
+            val songPosition = when {
+                args[0] == "-t" || args[0] == "-top" -> NextSongPosition.TOP
+                args[0] == "-r" || args[0] == "-random" -> NextSongPosition.RANDOM
+                args[0] == "-b" || args[0] == "-bottom" -> NextSongPosition.BOTTOM
+                else -> {
+                    songArg = context.rawArg.trim()
+                    NextSongPosition.BOTTOM
+                }
+            }
 
             val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
             if (!lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
-            context.audioLoader.loadNewTrackNMessage(context, "${SC_SELECTOR}$songArg", false)
+            context.audioLoader.loadNewTrackNMessage(context, "${SC_SELECTOR}$songArg", false, songPosition)
         }
     }
 
@@ -132,34 +166,51 @@ class PlayCommand : AbstractCommand("command.play") {
             val senderVoiceChannel: VoiceChannel = member.voiceState?.channel ?: return
             val lava: LavaManager = context.lavaManager
 
+            val args = context.args
+
+            val songPosition = when {
+                args[0] == "-t" || args[0] == "-top" -> NextSongPosition.TOP
+                args[0] == "-r" || args[0] == "-random" -> NextSongPosition.RANDOM
+                args[0] == "-b" || args[0] == "-bottom" -> NextSongPosition.BOTTOM
+                else -> {
+                    NextSongPosition.BOTTOM
+                }
+            }
+
+
             val tracks = context.message.attachments.map { attachment -> attachment.url }
 
             val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
             if (!lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
             for (url in tracks) {
-                context.audioLoader.loadNewTrackNMessage(context, url, false)
+                context.audioLoader.loadNewTrackNMessage(context, url, false, songPosition)
             }
         }
     }
 
-    private fun spotifySearchNLoad(audioLoader: AudioLoader, context: CommandContext, songArg: String) {
+    private fun spotifySearchNLoad(audioLoader: AudioLoader, context: CommandContext, songArg: String, nextPos: NextSongPosition) {
         context.webManager.getTracksFromSpotifyUrl(songArg,
             { track ->
-                audioLoader.loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs)
+                audioLoader.loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, nextPos = nextPos)
             },
             { trackList ->
-                audioLoader.loadSpotifyPlaylist(context, trackList)
+                audioLoader.loadSpotifyPlaylist(context, trackList, nextPos)
             },
             { simpleTrackList ->
-                audioLoader.loadSpotifyAlbum(context, simpleTrackList)
+                audioLoader.loadSpotifyAlbum(context, simpleTrackList, nextPos)
             },
             { error ->
                 runBlocking {
                     val msg = context.getTranslation("message.spotify.down")
+                        .replacePrefix(context)
                     sendMsg(context, msg)
                     error.sendInGuild(context)
                 }
             }
         )
     }
+}
+
+enum class NextSongPosition {
+    BOTTOM, RANDOM, TOP
 }

@@ -2,6 +2,7 @@ package me.melijn.melijnbot.objects.events.eventutil
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.services.voice.VOICE_SAFE
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyMusicChannel
@@ -43,12 +44,12 @@ object VoiceUtil {
         if (musicChannel.id == botChannel?.id && channelJoined.id == botChannel.id && iPlayer.playingTrack != null) {
             return
         } else if (musicChannel.id == botChannel?.id && channelJoined.id == botChannel.id) {
-            audioLoader.loadNewTrack(daoManager, container.lavaManager, channelJoined, guild.jda.selfUser, musicUrl)
+            audioLoader.loadNewTrack(daoManager, container.lavaManager, channelJoined, guild.jda.selfUser, musicUrl, NextSongPosition.BOTTOM)
         } else if (botChannel == null && musicChannel.id == channelJoined.id) {
 
             val premium = daoManager.musicNodeWrapper.isPremium(guild.idLong)
             if (container.lavaManager.tryToConnectToVCSilent(musicChannel, premium)) {
-                audioLoader.loadNewTrack(daoManager, container.lavaManager, channelJoined, guild.jda.selfUser, musicUrl)
+                audioLoader.loadNewTrack(daoManager, container.lavaManager, channelJoined, guild.jda.selfUser, musicUrl, NextSongPosition.BOTTOM)
             }
         }
     }
@@ -104,7 +105,7 @@ object VoiceUtil {
             if (container.lavaManager.tryToConnectToVCSilent(channel, premium)) {
                 val mp = mpm.getGuildMusicPlayer(guild)
                 for (track in tracks) {
-                    mp.safeQueueSilent(container.daoManager, track)
+                    mp.safeQueueSilent(container.daoManager, track, NextSongPosition.BOTTOM)
                 }
             }
         }

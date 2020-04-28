@@ -18,9 +18,16 @@ object RunConditionUtil {
      * [return] returns true if the check passed
      *
      * **/
-    suspend fun runConditionCheckPassed(container: Container, runCondition: RunCondition, event: MessageReceivedEvent, command: AbstractCommand): Boolean {
+    suspend fun runConditionCheckPassed(
+        container: Container,
+        runCondition: RunCondition,
+        event: MessageReceivedEvent,
+        command: AbstractCommand,
+        commandParts: List<String>
+    ): Boolean {
         val userId = event.author.idLong
         val language = getLanguage(container.daoManager, userId, if (event.isFromGuild) event.guild.idLong else -1)
+        val prefix = getNicerUsedPrefix(container.settings, commandParts[0])
         return when (runCondition) {
             RunCondition.GUILD -> checkGuild(event, language)
             RunCondition.VC_BOT_ALONE_OR_USER_DJ -> checkOtherOrSameVCBotAloneOrUserDJ(container, event, command, language)
@@ -31,15 +38,16 @@ object RunConditionUtil {
             RunCondition.DEV_ONLY -> checkDevOnly(container, event, language)
             RunCondition.CHANNEL_NSFW -> checkChannelNSFW(container, event, language)
             RunCondition.VOTED -> checkVoted(container, event, language)
-            RunCondition.USER_SUPPORTER -> checkUserSupporter(container, event, language)
-            RunCondition.GUILD_SUPPORTER -> checkGuildSupporter(container, event, language)
+            RunCondition.USER_SUPPORTER -> checkUserSupporter(container, event, language, prefix)
+            RunCondition.GUILD_SUPPORTER -> checkGuildSupporter(container, event, language, prefix)
         }
     }
 
-    private fun checkGuildSupporter(container: Container, event: MessageReceivedEvent, language: String): Boolean {
+    private fun checkGuildSupporter(container: Container, event: MessageReceivedEvent, language: String, prefix: String): Boolean {
         val supporterGuilds = container.daoManager.supporterWrapper.guildSupporterIds
         return if (!supporterGuilds.contains(event.guild.idLong)) {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.server.supporter")
+                .replacePrefix(prefix)
             event.channel.sendMessage(msg).queue()
             false
         } else {
@@ -47,7 +55,7 @@ object RunConditionUtil {
         }
     }
 
-    private fun checkUserSupporter(container: Container, event: MessageReceivedEvent, language: String): Boolean {
+    private fun checkUserSupporter(container: Container, event: MessageReceivedEvent, language: String, prefix: String): Boolean {
         val supporters = container.daoManager.supporterWrapper.userSupporterIds
         return if (
             supporters.contains(event.author.idLong) ||
@@ -56,6 +64,7 @@ object RunConditionUtil {
             true
         } else {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.user.supporter")
+                .replacePrefix(prefix)
             event.channel.sendMessage(msg).queue()
             false
         }

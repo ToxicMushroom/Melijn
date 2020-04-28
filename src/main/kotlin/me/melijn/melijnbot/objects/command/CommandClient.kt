@@ -121,7 +121,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             }
 
             val command = commandMap.getOrElse(commandParts[1].toLowerCase(), { null }) ?: continue
-            if (checksFailed(container, command, event)) return
+            if (checksFailed(container, command, event, false, commandParts)) return
             command.run(CommandContext(event, commandParts, container, commandList))
             return
         }
@@ -289,7 +289,13 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
          * [@return] returns true if the check failed
          *
          * **/
-        suspend fun checksFailed(container: Container, command: AbstractCommand, event: MessageReceivedEvent, isSubCommand: Boolean = false): Boolean {
+        suspend fun checksFailed(
+            container: Container,
+            command: AbstractCommand,
+            event: MessageReceivedEvent,
+            isSubCommand: Boolean,
+            commandParts: List<String>
+        ): Boolean {
             val cmdId = command.id.toString()
             if (event.isFromGuild && commandIsDisabled(container.daoManager, cmdId, event)) {
                 return true
@@ -300,7 +306,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             addConditions(conditions, command.runConditions)
 
             conditions.forEach {
-                if (!RunConditionUtil.runConditionCheckPassed(container, it, event, command)) return true
+                if (!RunConditionUtil.runConditionCheckPassed(container, it, event, command, commandParts)) return true
             }
 
             if (event.isFromGuild && !isSubCommand) {

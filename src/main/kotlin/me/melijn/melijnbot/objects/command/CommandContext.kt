@@ -5,6 +5,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.music.GuildMusicPlayer
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.USER_MENTION
+import me.melijn.melijnbot.objects.utils.removeFirst
 import me.melijn.melijnbot.objects.web.WebManager
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
@@ -53,6 +54,7 @@ class CommandContext(
     val prefix: String = container.settings.prefix
     var commandOrder: List<AbstractCommand> = emptyList()
     var args: List<String> = emptyList()
+    var oldArgs: List<String> = emptyList()
     val botDevIds: LongArray = container.settings.developerIds
     val daoManager = container.daoManager
     val taskManager = container.taskManager
@@ -73,7 +75,6 @@ class CommandContext(
                 .removePrefix(commandParts[i])
                 .trim()
         }
-
 
         //Quot arg support
         val rearg = rawArg.replace("\\s+".toRegex(), " ") + " " // this last space is needed so I don't need to hack around in the splitter for the last arg
@@ -132,7 +133,11 @@ class CommandContext(
         }
 
         args = newCoolArgs.toList()
-
+        oldArgs = if (rawArg.isNotBlank()) {
+            rawArg.split("\\s+".toRegex())
+        } else {
+            emptyList()
+        }
         logger = LoggerFactory.getLogger(commandOrder.first().javaClass.name)
     }
 
@@ -168,23 +173,19 @@ class CommandContext(
 
     //Gets part of the rawarg by using regex and args
     fun getRawArgPart(beginIndex: Int, endIndex: Int = -1): String {
-        var stringPatternForRemoval = ""
+        var newString = rawArg
         for (i in 0 until beginIndex) {
-            stringPatternForRemoval += "${args[i]}\\s*"
+            newString = newString.removeFirst(oldArgs[i]).trim()
         }
-        var patternForRemoval = stringPatternForRemoval.toRegex()
-        rawArg.replace(patternForRemoval, "")
 
-        stringPatternForRemoval = ""
-        if (endIndex != -1) {
-            for (i in endIndex until args.size) {
-                stringPatternForRemoval += "${args[i]}\\s*"
+
+        if (endIndex != -1 && endIndex < oldArgs.size) {
+            for (i in endIndex until oldArgs.size) {
+                newString = newString.removeSuffix(oldArgs[i]).trim()
             }
         }
 
-        patternForRemoval = stringPatternForRemoval.toRegex()
-        rawArg.replace(patternForRemoval, "")
-        return rawArg
+        return newString
     }
 
     suspend fun getTranslation(path: String): String = i18n.getTranslation(this, path)

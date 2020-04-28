@@ -2,12 +2,14 @@ package me.melijn.melijnbot.objects.translation
 
 import me.melijn.melijnbot.objects.command.CommandContext
 import net.dv8tion.jda.api.utils.data.DataObject
+import org.slf4j.LoggerFactory
 import java.util.*
 
 val i18n = TranslateManager()
 const val BASE_BUNDLE_NAME = "strings"
 
 class TranslateManager {
+    val logger = LoggerFactory.getLogger(TranslateManager::class.java)
 
     private val defaultRecourseBundle: ResourceBundle = ResourceBundle.getBundle(BASE_BUNDLE_NAME)
     //val dutchBelgianRecourseBundle: ResourceBundle = ResourceBundle.getBundle(BASE_BUNDLE_NAME, Locale("nl_BE"))
@@ -24,6 +26,9 @@ class TranslateManager {
         return if (bundle.containsKey(path)) {
             bundle.getString(path)
         } else {
+            if (path.contains(".")) {
+                logger.warn("missing string: $path")
+            }
             path
         }
     }

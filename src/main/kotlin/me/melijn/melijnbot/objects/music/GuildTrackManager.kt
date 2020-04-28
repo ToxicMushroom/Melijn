@@ -10,6 +10,7 @@ import lavalink.client.player.IPlayer
 import lavalink.client.player.event.AudioEventAdapterWrapped
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
+import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.services.voice.VOICE_SAFE
@@ -20,6 +21,7 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.MessageEmbed
 import org.slf4j.LoggerFactory
 import java.util.*
+import kotlin.random.Random
 
 
 class GuildTrackManager(
@@ -43,7 +45,7 @@ class GuildTrackManager(
     var loopedTrack = false
     var loopedQueue = false
 
-    var tracks: Queue<AudioTrack> = LinkedList()
+    var tracks: LinkedList<AudioTrack> = LinkedList()
     fun trackSize() = tracks.size
 
 
@@ -80,12 +82,24 @@ class GuildTrackManager(
         }
     }
 
-    fun queue(track: AudioTrack) {
+    /** returns the song postition **/
+    fun queue(track: AudioTrack, nextPos: NextSongPosition) {
         if (track.userData == null) throw IllegalArgumentException("no")
         if (iPlayer.playingTrack == null) {
             iPlayer.playTrack(track)
         } else {
-            tracks.offer(track)
+            when (nextPos) {
+                NextSongPosition.BOTTOM -> {
+                    tracks.addLast(track)
+                }
+                NextSongPosition.TOP -> {
+                    tracks.addFirst(track)
+                }
+                NextSongPosition.RANDOM -> {
+                    val pos = Random.nextInt(tracks.size) + 1
+                    tracks.add(pos, track)
+                }
+            }
         }
     }
 

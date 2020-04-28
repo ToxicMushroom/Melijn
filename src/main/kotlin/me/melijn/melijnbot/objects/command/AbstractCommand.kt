@@ -59,7 +59,7 @@ abstract class AbstractCommand(val root: String) {
                 context.daoManager.commandChannelCoolDownWrapper.executions[pair2] = map2
             }
             try {
-                if (CommandClient.checksFailed(context.container, context.commandOrder.last(), context.event, true)) return
+                if (CommandClient.checksFailed(context.container, context.commandOrder.last(), context.event, true, context.commandParts)) return
                 execute(context)
             } catch (e: Exception) {
                 e.sendInGuild(context)
