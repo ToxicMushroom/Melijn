@@ -188,7 +188,7 @@ suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): S
             .filter { command -> command.commandCategory == category }
     }.map { cmd -> cmd.id.toString() }.toMutableSet()
 
-    commands.removeIf { id -> id == "16" }
+    commands.removeIf { id -> id == "16" || id == "0" }
 
     if (matcher.matches()) {
         commands.add(arg)

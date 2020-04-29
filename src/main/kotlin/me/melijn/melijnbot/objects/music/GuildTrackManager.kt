@@ -14,8 +14,10 @@ import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.services.voice.VOICE_SAFE
+import me.melijn.melijnbot.objects.threading.Task
 import me.melijn.melijnbot.objects.utils.LogUtils
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
+import me.melijn.melijnbot.objects.utils.launch
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.MessageEmbed
@@ -209,11 +211,11 @@ class GuildTrackManager(
     fun stopAndDestroy() {
         clear()
         iPlayer.stopTrack()
-        VOICE_SAFE.submit {
-            runBlocking {
+        VOICE_SAFE.launch {
+            Task {
                 val isPremium = daoManager.musicNodeWrapper.isPremium(guildId)
                 lavaManager.closeConnection(guildId, isPremium)
-            }
+            }.run()
         }
     }
 
