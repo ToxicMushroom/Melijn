@@ -49,6 +49,8 @@ import me.melijn.melijnbot.database.prefix.UserPrefixWrapper
 import me.melijn.melijnbot.database.role.*
 import me.melijn.melijnbot.database.settings.BannedOrKickedTriggersLeaveDao
 import me.melijn.melijnbot.database.settings.BannedOrKickedTriggersLeaveWrapper
+import me.melijn.melijnbot.database.settings.BotLogStateDao
+import me.melijn.melijnbot.database.settings.BotLogStateWrapper
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.database.supporter.UserSupporterDao
 import me.melijn.melijnbot.database.time.TimeZoneDao
@@ -154,6 +156,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
     val timeZoneWrapper: TimeZoneWrapper
 
     val bannedOrKickedTriggersLeaveWrapper: BannedOrKickedTriggersLeaveWrapper
+    val botLogStateWrapper: BotLogStateWrapper
 
     val voteWrapper: VoteWrapper
     var driverManager: DriverManager
@@ -244,6 +247,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
         timeZoneWrapper = TimeZoneWrapper(taskManager, TimeZoneDao(driverManager))
 
         bannedOrKickedTriggersLeaveWrapper = BannedOrKickedTriggersLeaveWrapper(taskManager, BannedOrKickedTriggersLeaveDao(driverManager))
+        botLogStateWrapper = BotLogStateWrapper(taskManager, BotLogStateDao(driverManager))
 
 
         voteWrapper = VoteWrapper(VoteDao(driverManager))

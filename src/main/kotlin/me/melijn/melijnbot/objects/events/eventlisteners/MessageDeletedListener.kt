@@ -124,9 +124,13 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
     private suspend fun postDeletedByPurgeLog(pmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent, purgeRequesterId: Long) {
         if (pmLogChannel == null) return
         val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull() ?: return
+        val botLogState = container.daoManager.botLogStateWrapper.botLogStateCache[pmLogChannel.guild.idLong].await()
+        if (!botLogState && messageAuthor.isBot) return
+
         val ebs = getGeneralEmbedBuilder(msg, event, messageAuthor, event.jda.selfUser.idLong)
         for ((index, eb) in ebs.withIndex()) {
             eb.setColor(Color.decode("#551A8B"))
+
 
             if (index == ebs.size - 1) {
                 val language = getLanguage(container.daoManager, -1, event.guild.idLong)
@@ -143,6 +147,9 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
     private suspend fun postDeletedBySelfLog(sdmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent) {
         if (sdmLogChannel == null) return
         val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull() ?: return
+        val botLogState = container.daoManager.botLogStateWrapper.botLogStateCache[sdmLogChannel.guild.idLong].await()
+        if (!botLogState && messageAuthor.isBot) return
+
         val ebs = getGeneralEmbedBuilder(msg, event, messageAuthor, messageAuthor.idLong)
         for ((index, eb) in ebs.withIndex()) {
             eb.setColor(Color.decode("#000001"))
@@ -160,6 +167,8 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
     private suspend fun postDeletedByOtherLog(odmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent, deleterMember: Member) {
         if (odmLogChannel == null) return
         val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull() ?: return
+        val botLogState = container.daoManager.botLogStateWrapper.botLogStateCache[odmLogChannel.guild.idLong].await()
+        if (!botLogState && messageAuthor.isBot) return
 
         val ebs = getGeneralEmbedBuilder(msg, event, messageAuthor, deleterMember.idLong)
         for ((index, eb) in ebs.withIndex()) {
@@ -178,6 +187,8 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
     private suspend fun postDeletedByFilterLog(fmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent, causeArgs: Map<String, List<String>>?) {
         if (fmLogChannel == null) return
         val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull() ?: return
+        val botLogState = container.daoManager.botLogStateWrapper.botLogStateCache[fmLogChannel.guild.idLong].await()
+        if (!botLogState && messageAuthor.isBot) return
 
         val ebs = getGeneralEmbedBuilder(msg, event, messageAuthor, event.jda.selfUser.idLong)
         for ((index, eb) in ebs.withIndex()) {

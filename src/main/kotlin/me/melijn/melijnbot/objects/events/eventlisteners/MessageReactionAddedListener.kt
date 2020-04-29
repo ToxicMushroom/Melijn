@@ -303,10 +303,15 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
     private suspend fun postReactionAddedLog(event: GuildMessageReactionAddEvent) {
         val dao = container.daoManager
-        val zoneId = getZoneId(dao, event.guild.idLong)
+
         val logChannel = event.guild.getAndVerifyLogChannelByType(dao, LogChannelType.REACTION)
             ?: return
 
+        val botLogState = dao.botLogStateWrapper.botLogStateCache[event.guild.idLong].await()
+        if (!botLogState && event.member.user.isBot) return
+
+
+        val zoneId = getZoneId(dao, event.guild.idLong)
         val embedBuilder = EmbedBuilder()
         val language = getLanguage(dao, -1, event.guild.idLong)
         val title = i18n.getTranslation(language, "listener.message.reaction.log.title")

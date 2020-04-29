@@ -88,11 +88,13 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
 
             val dao = context.daoManager.channelCommandStateWrapper
             dao.setCommandState(context.guildId, channel.idLong, commands, commandState)
+
             val path = "$root.response1" + if (commands.size > 1) {
                 ".multiple"
             } else {
                 ""
             }
+
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, path)
                 .replace(PLACEHOLDER_CHANNEL, channel.asTag)
