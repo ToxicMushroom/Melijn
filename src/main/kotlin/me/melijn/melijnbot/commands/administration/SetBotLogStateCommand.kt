@@ -22,6 +22,7 @@ class SetBotLogStateCommand : AbstractCommand("command.setbotlogstate") {
             val state = wrapper.botLogStateCache.get(context.guildId).await()
             val msg = context.getTranslation("$root.show.$state")
             sendMsg(context, msg)
+            return
         }
 
         val newState = getBooleanFromArgNMessage(context, 0) ?: return

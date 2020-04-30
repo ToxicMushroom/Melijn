@@ -213,6 +213,7 @@ fun escapeForLog(string: String): String {
     return string
         .replace("`", "´")
         .replace("\n", " ")
+        .trim()
 }
 
 suspend fun sendAttachments(textChannel: MessageChannel, urls: Map<String, String>): Message = suspendCoroutine {

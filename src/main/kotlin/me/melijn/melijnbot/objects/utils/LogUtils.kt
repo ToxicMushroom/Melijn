@@ -17,6 +17,7 @@ import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.*
+import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import java.awt.Color
 import java.time.ZoneId
 
@@ -545,20 +546,25 @@ object LogUtils {
             if (day != groupDay) {
                 groupDay = day
                 sb
-                    .append("\n")
+                    .append("\n\n*")
                     .append(msg.timeCreated.asEpochMillisToDate(zoneId))
+                    .append("*")
             }
 
-            sb
-                .append("\n(")
+            sb.append("\n**(")
                 .append(msg.timeCreated.asEpochMillisToTimeInvis(zoneId))
                 .append(")")
                 .append(" [")
                 .append(author.name)
-                .append(" (")
-                .append(author.id)
-                .append(")]: ")
-                .append(escapeForLog(msg.contentRaw))
+
+            if (msg.author.idLong != context.authorId) {
+                sb.append(" (")
+                    .append(author.id)
+                    .append(")")
+            }
+
+            sb.append("]:** ")
+                .append(MarkdownSanitizer.escape(escapeForLog(msg.contentRaw)))
 
 
         }
@@ -577,14 +583,15 @@ object LogUtils {
         val ebs = mutableListOf<EmbedBuilder>()
         val embedBuilder = EmbedBuilder()
         embedBuilder.setTitle(title)
-        embedBuilder.setColor(Color.decode("#551A8B"))
+        embedBuilder.setColor(Color.decode("#927ca6"))
 
         if (description.length > MessageEmbed.TEXT_MAX_LENGTH) {
-            val parts = StringUtils.splitMessageWithCodeBlocks(description, lang = "LDIF")
+            val parts = StringUtils.splitMessage(description, maxLength = MessageEmbed.TEXT_MAX_LENGTH)
             embedBuilder.setDescription(parts[0])
             ebs.add(embedBuilder)
             for (part in parts.subList(1, parts.size)) {
                 val embedBuilder2 = EmbedBuilder()
+                embedBuilder2.setColor(Color.decode("#927ca6"))
                 embedBuilder2.setDescription(part)
                 ebs.add(embedBuilder2)
             }
