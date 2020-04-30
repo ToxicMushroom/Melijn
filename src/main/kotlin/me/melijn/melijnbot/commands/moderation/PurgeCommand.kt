@@ -4,10 +4,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
-import me.melijn.melijnbot.objects.utils.retrieveUserByArgsNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import java.util.concurrent.TimeUnit
@@ -76,5 +73,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
                         sendMsg(context, msg)[0].delete().queueAfter(5, TimeUnit.SECONDS)
                 }
             }
+
+        LogUtils.sendPurgeLog(context, messages)
     }
 }

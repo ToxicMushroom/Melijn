@@ -25,7 +25,9 @@ object VoiceUtil {
 
         // Leave channel timer stuff
         botChannel?.let {
+            VOICE_SAFE.acquire()
             checkShouldDisconnectAndApply(it, daoManager)
+            VOICE_SAFE.release()
         }
 
 
@@ -61,15 +63,11 @@ object VoiceUtil {
             !(daoManager.music247Wrapper.music247Cache.get(guildId).await() &&
                 daoManager.supporterWrapper.guildSupporterIds.contains(guildId))
         ) {
-            VOICE_SAFE.submit {
-                if (!disconnectQueue.containsKey(guildId)) {
-                    disconnectQueue[guildId] = System.currentTimeMillis() + 600_000
-                }
+            if (!disconnectQueue.containsKey(guildId)) {
+                disconnectQueue[guildId] = System.currentTimeMillis() + 6_000
             }
         } else {
-            VOICE_SAFE.submit {
-                disconnectQueue.remove(guildId)
-            }
+            disconnectQueue.remove(guildId)
         }
     }
 

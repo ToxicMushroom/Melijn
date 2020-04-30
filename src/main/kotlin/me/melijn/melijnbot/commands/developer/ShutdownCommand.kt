@@ -3,6 +3,7 @@ package me.melijn.melijnbot.commands.developer
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.services.voice.VOICE_SAFE
 import me.melijn.melijnbot.objects.utils.sendMsg
 import org.slf4j.LoggerFactory
 import kotlin.system.exitProcess
@@ -30,7 +31,9 @@ class ShutdownCommand : AbstractCommand("command.shutdown") {
             wrapper.put(guildId, pTrack, trackManager.tracks)
             wrapper.addChannel(guildId, channel.idLong)
 
+            VOICE_SAFE.acquire()
             trackManager.stopAndDestroy()
+            VOICE_SAFE.release()
         }
 
         sendMsg(context, "Shutting down")

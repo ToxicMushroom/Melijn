@@ -523,4 +523,85 @@ object LogUtils {
 
         logChannel.sendMessage(eb.build())
     }
+
+    suspend fun sendPurgeLog(context: CommandContext, messages: List<Message>) {
+        val guild = context.guild
+        val daoManager = context.daoManager
+        val pmLogChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.PURGED_MESSAGE)
+            ?: return
+        val botLogState = daoManager.botLogStateWrapper.botLogStateCache[pmLogChannel.guild.idLong].await()
+        val zoneId = getZoneId(daoManager, guild.idLong)
+
+        val channel: TextChannel = messages.first().textChannel
+
+        val sb = StringBuilder()
+        var groupDay = 0
+
+        for (msg in messages.sortedBy { it.idLong }) {
+            val day = msg.timeCreated.dayOfMonth
+            val author = msg.author
+            if (!botLogState && author.isBot) continue
+
+            if (day != groupDay) {
+                groupDay = day
+                sb
+                    .append("\n")
+                    .append(msg.timeCreated.asEpochMillisToDate(zoneId))
+            }
+
+            sb
+                .append("\n(")
+                .append(msg.timeCreated.asEpochMillisToTimeInvis(zoneId))
+                .append(")")
+                .append(" [")
+                .append(author.name)
+                .append(" (")
+                .append(author.id)
+                .append(")]: ")
+                .append(escapeForLog(msg.contentRaw))
+
+
+        }
+
+
+        val language = getLanguage(daoManager, -1, guild.idLong)
+        val title = i18n.getTranslation(language, "listener.message.purge.log.title")
+            .replace(PLACEHOLDER_CHANNEL, channel.asTag)
+            .replace("%amount%", "${messages.size}")
+
+        val description = i18n.getTranslation(language, "listener.message.purge.log.description")
+            .replace("%content%", sb.toString())
+            .replace("%messageDeleterId%", "${context.authorId}")
+            .replace("%deletedTime%", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+
+        val ebs = mutableListOf<EmbedBuilder>()
+        val embedBuilder = EmbedBuilder()
+        embedBuilder.setTitle(title)
+        embedBuilder.setColor(Color.decode("#551A8B"))
+
+        if (description.length > MessageEmbed.TEXT_MAX_LENGTH) {
+            val parts = StringUtils.splitMessageWithCodeBlocks(description, lang = "LDIF")
+            embedBuilder.setDescription(parts[0])
+            ebs.add(embedBuilder)
+            for (part in parts.subList(1, parts.size)) {
+                val embedBuilder2 = EmbedBuilder()
+                embedBuilder2.setDescription(part)
+                ebs.add(embedBuilder2)
+            }
+        } else {
+            embedBuilder.setDescription(description)
+            ebs.add(embedBuilder)
+        }
+
+        for ((index, eb) in ebs.withIndex()) {
+
+            if (index == ebs.size - 1) {
+                val footer = i18n.getTranslation(language, "listener.message.purge.log.footer")
+                    .replace(PLACEHOLDER_USER, context.author.asTag)
+                eb.setFooter(footer, context.author.effectiveAvatarUrl)
+            }
+
+            sendEmbed(daoManager.embedDisabledWrapper, pmLogChannel, eb.build())
+        }
+    }
 }

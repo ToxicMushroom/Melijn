@@ -13,11 +13,10 @@ abstract class Service(
     val name: String,
     private val period: Long,
     private val initialDelay: Long = 0,
-    private val unit: TimeUnit = TimeUnit.SECONDS,
-    private val scheduledExecutor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(ThreadFactoryBuilder().setNameFormat("[$name-Service]").build())
+    private val unit: TimeUnit = TimeUnit.SECONDS
 ) {
 
-
+    private val scheduledExecutor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor(ThreadFactoryBuilder().setNameFormat("[$name-Service]").build())
     private lateinit var future: ScheduledFuture<*>
     val logger: Logger = LoggerFactory.getLogger(name)
 

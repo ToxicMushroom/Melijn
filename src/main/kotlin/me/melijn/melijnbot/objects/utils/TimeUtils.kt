@@ -11,16 +11,18 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
-val timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd kk:mm:ss O")
+val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd kk:mm:ss O")
+val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd O")
+val purgeTimeFormatter = DateTimeFormatter.ofPattern("kk:mm:ss")
 
 object TimeUtils {
 
 }
 
 /** interprets the long as millis duration string **/
-fun Long.getAsDurationString(): String {
-    return getDurationString(this)
-}
+//fun Long.getAsDurationString(): String {
+//    return getDurationString(this)
+//}
 
 //fun Long.asEpochMillisToDateTime(): String {
 //    val offsetDateTime = Instant.ofEpochMilli(this).atOffset(ZoneOffset.UTC)
@@ -67,8 +69,26 @@ fun Long.asEpochMillisToDateTime(zoneId: ZoneId): String {
     return offsetDateTime.asLongLongGMTString()
 }
 
-fun OffsetDateTime.asLongLongGMTString(): String = this.format(timeFormatter)
-fun ZonedDateTime.asLongLongGMTString(): String = this.format(timeFormatter)
+fun OffsetDateTime.asEpochMillisToDate(zoneId: ZoneId): String {
+    val offsetDateTime = this.atZoneSameInstant(zoneId) ?: throw IllegalArgumentException("ANGRY")
+    return offsetDateTime.asLongDateGMTString()
+}
+
+fun OffsetDateTime.asEpochMillisToTimeInvis(zoneId: ZoneId): String {
+    val offsetDateTime = this.atZoneSameInstant(zoneId) ?: throw IllegalArgumentException("ANGRY")
+    return offsetDateTime.asAsLongTimeAndInvisOffset()
+}
+
+fun OffsetDateTime.asEpochMillisToDateTime(zoneId: ZoneId): String {
+    return this.atZoneSameInstant(zoneId).asLongLongGMTString()
+}
+
+fun OffsetDateTime.asLongLongGMTString(): String = this.format(dateTimeFormatter)
+fun OffsetDateTime.asLongDateGMTString(): String = this.format(dateFormatter)
+fun ZonedDateTime.asLongLongGMTString(): String = this.format(dateTimeFormatter)
+fun ZonedDateTime.asLongDateGMTString(): String = this.format(dateFormatter)
+fun ZonedDateTime.asAsLongTimeAndInvisOffset(): String = this.format(purgeTimeFormatter)
+
 
 fun getDurationString(milliseconds: Long): String {
     return getDurationString(milliseconds.toDouble())

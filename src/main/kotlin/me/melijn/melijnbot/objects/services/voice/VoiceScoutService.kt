@@ -11,11 +11,13 @@ import java.util.concurrent.TimeUnit
 class VoiceScoutService(
     val container: Container,
     val shardManager: ShardManager
-) : Service("VoiceScout", 1, 1, TimeUnit.MINUTES, VOICE_SAFE) {
+) : Service("VoiceScout", 1, 1, TimeUnit.MINUTES) {
 
     override val service = Task {
+        VOICE_SAFE.acquire()
         val gmp = MusicPlayerManager.guildMusicPlayers
         val iterator = gmp.iterator()
+
         while (iterator.hasNext()) {
             val guildMusicPlayer = iterator.next().value
             val guild = shardManager.getGuildById(guildMusicPlayer.guildId)
@@ -41,5 +43,7 @@ class VoiceScoutService(
                 }
             }
         }
+
+        VOICE_SAFE.release()
     }
 }

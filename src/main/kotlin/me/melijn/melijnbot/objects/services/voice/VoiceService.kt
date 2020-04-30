@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.objects.services.voice
 
+import kotlinx.coroutines.sync.Semaphore
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.objects.music.MusicPlayerManager
@@ -7,18 +8,17 @@ import me.melijn.melijnbot.objects.services.Service
 import me.melijn.melijnbot.objects.threading.Task
 import me.melijn.melijnbot.objects.utils.listeningMembers
 import net.dv8tion.jda.api.sharding.ShardManager
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
-val VOICE_SAFE: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
+val VOICE_SAFE = Semaphore(1, 0)
 
 class VoiceService(
     val container: Container,
     val shardManager: ShardManager
-) : Service("Voice", 1, 1, TimeUnit.MINUTES, VOICE_SAFE) {
+) : Service("Voice", 1, 1, TimeUnit.MINUTES) {
 
     override val service = Task {
+        VOICE_SAFE.acquire()
         val currentTime = System.currentTimeMillis()
         val disconnect = ArrayList(VoiceUtil.disconnectQueue.entries)
             .filter { (_, time) -> time < currentTime }
@@ -55,5 +55,6 @@ class VoiceService(
 
             VoiceUtil.disconnectQueue.remove(guildId)
         }
+        VOICE_SAFE.release()
     }
 }

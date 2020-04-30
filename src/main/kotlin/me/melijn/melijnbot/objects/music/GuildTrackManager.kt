@@ -17,7 +17,6 @@ import me.melijn.melijnbot.objects.services.voice.VOICE_SAFE
 import me.melijn.melijnbot.objects.threading.Task
 import me.melijn.melijnbot.objects.utils.LogUtils
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
-import me.melijn.melijnbot.objects.utils.launch
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.MessageEmbed
@@ -61,8 +60,12 @@ class GuildTrackManager(
 
             val mNodeWrapper = daoManager.musicNodeWrapper
             runBlocking {
-                val isPremium = mNodeWrapper.isPremium(guildId)
-                lavaManager.closeConnection(guildId, isPremium)
+                VOICE_SAFE.acquire()
+                Task {
+                    val isPremium = mNodeWrapper.isPremium(guildId)
+                    lavaManager.closeConnection(guildId, isPremium)
+                }.run()
+                VOICE_SAFE.release()
             }
             return
         }
@@ -208,10 +211,11 @@ class GuildTrackManager(
             tracks.toList().indexOf(audioTrack) + 1
         }
 
+    //PLEASE RUN IN VOICE_SAFE
     fun stopAndDestroy() {
         clear()
         iPlayer.stopTrack()
-        VOICE_SAFE.launch {
+        runBlocking {
             Task {
                 val isPremium = daoManager.musicNodeWrapper.isPremium(guildId)
                 lavaManager.closeConnection(guildId, isPremium)
@@ -219,13 +223,18 @@ class GuildTrackManager(
         }
     }
 
+
     fun skip(amount: Int) {
         var nextTrack: AudioTrack? = null
         for (i in 0 until amount) {
             nextTrack = tracks.poll()
         }
         if (nextTrack == null) {
-            stopAndDestroy()
+            runBlocking {
+                VOICE_SAFE.acquire()
+                stopAndDestroy()
+                VOICE_SAFE.release()
+            }
         } else {
             iPlayer.stopTrack()
             iPlayer.playTrack(nextTrack)
@@ -254,7 +263,11 @@ class GuildTrackManager(
     private fun getAndCheckGuild(): Guild? {
         val guild = MelijnBot.shardManager.getGuildById(guildId)
         if (guild == null) {
-            stopAndDestroy()
+            runBlocking {
+                VOICE_SAFE.acquire()
+                stopAndDestroy()
+                VOICE_SAFE.release()
+            }
         }
         return guild
     }
