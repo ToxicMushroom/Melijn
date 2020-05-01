@@ -28,7 +28,8 @@ class ShutdownCommand : AbstractCommand("command.shutdown") {
             val channel = context.lavaManager.getConnectedChannel(guild) ?: continue
             val trackManager = player.guildTrackManager
             val pTrack = trackManager.playingTrack ?: continue
-            wrapper.put(guildId, pTrack, trackManager.tracks)
+
+            wrapper.put(guildId, context.selfUser.idLong, pTrack, trackManager.tracks, trackManager.iPlayer.trackPosition)
             wrapper.addChannel(guildId, channel.idLong)
 
             VOICE_SAFE.acquire()

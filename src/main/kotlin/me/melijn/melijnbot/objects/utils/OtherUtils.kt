@@ -119,9 +119,9 @@ fun getWindowsUptime(): Long {
 }
 
 fun Color.toHex(): String {
-    val redHex = Integer.toHexString(red)
-    val greenHex = Integer.toHexString(green)
-    val blueHex = Integer.toHexString(blue)
+    val redHex = Integer.toHexString(red).toUpperCase()
+    val greenHex = Integer.toHexString(green).toUpperCase()
+    val blueHex = Integer.toHexString(blue).toUpperCase()
     return "#$redHex$greenHex$blueHex"
 }
 

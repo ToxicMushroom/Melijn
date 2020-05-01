@@ -181,7 +181,8 @@ class CommandClientBuilder(private val container: Container) {
         KickedMessageCommand(),
         SetBannedOrKickedTriggersLeaveCommand(),
         MyAnimeListCommand(),
-        SetBotLogStateCommand()
+        SetBotLogStateCommand(),
+        SetRoleColorCommand()
     )
 
     init {

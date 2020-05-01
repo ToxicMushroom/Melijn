@@ -25,6 +25,14 @@ import kotlin.math.sqrt
 
 object ImageUtils {
 
+    fun createPlane(side: Int, color: Int): BufferedImage? {
+        val bufferedImage = BufferedImage(side, side, BufferedImage.TYPE_INT_RGB)
+        val graphics2D = bufferedImage.createGraphics()
+        graphics2D.color = Color(color)
+        graphics2D.fillRect(0, 0, bufferedImage.width, bufferedImage.height)
+        return bufferedImage
+    }
+
     //ByteArray (imageData)
     //Boolean (if it is from an argument -> true) (attachment or noArgs(author)) -> false)
     suspend fun getImageBytesNMessage(context: CommandContext, reqFormat: String? = null): Triple<ByteArray, String, Boolean>? {

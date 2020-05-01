@@ -551,19 +551,17 @@ object LogUtils {
                     .append("*")
             }
 
-            sb.append("\n**(")
+            sb.append("\n`")
                 .append(msg.timeCreated.asEpochMillisToTimeInvis(zoneId))
-                .append(")")
-                .append(" [")
+                .append("` **")
                 .append(author.name)
 
             if (msg.author.idLong != context.authorId) {
-                sb.append(" (")
+                sb.append(" • ")
                     .append(author.id)
-                    .append(")")
             }
 
-            sb.append("]:** ")
+            sb.append(":** ")
                 .append(MarkdownSanitizer.escape(escapeForLog(msg.contentRaw)))
 
 

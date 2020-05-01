@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.objects.services.voice
 
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Semaphore
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
@@ -52,6 +53,31 @@ class VoiceService(
                 container.lavaManager.closeConnection(guildId, isPremium)
                 logger.info("$guildId left")
             }
+
+            VoiceUtil.disconnectQueue.remove(guildId)
+        }
+        VOICE_SAFE.release()
+
+        delay(5000)
+
+        VOICE_SAFE.acquire()
+        for (guildId in disconnect) {
+            val guild = shardManager.getGuildById(guildId)
+            if (guild == null) {
+                VoiceUtil.disconnectQueue.remove(guildId)
+                logger.info("$guildId guild null")
+                continue
+            }
+
+            val connectedChannel = guild.selfMember.voiceState?.channel
+            if (connectedChannel != null && listeningMembers(connectedChannel) > 0) {
+                VoiceUtil.disconnectQueue.remove(guildId)
+                logger.info("$guildId someone is listening")
+                continue
+            }
+
+            guild.audioManager.closeAudioConnection()
+            logger.info("$guildId hard left")
 
             VoiceUtil.disconnectQueue.remove(guildId)
         }
