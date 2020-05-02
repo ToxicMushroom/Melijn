@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.objects.web
 
 
+import com.apollographql.apollo.ApolloClient
 import com.neovisionaries.i18n.CountryCode
 import com.wrapper.spotify.SpotifyApi
 import com.wrapper.spotify.exceptions.SpotifyWebApiException
@@ -47,6 +48,7 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
     val jsonMedia = "application/json".toMediaType()
     val textMedia = "text/html".toMediaType()
 
+
     private val httpClient = OkHttpClient()
         .newBuilder()
         .dispatcher(Dispatcher(taskManager.executorService))
@@ -73,6 +75,11 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
             spotifyApi.accessToken = credentialsRequest.executeAsync().await().accessToken
         }
     }
+
+    val apolloClient = ApolloClient.builder()
+        .serverUrl("serverUrl")
+        .okHttpClient(httpClient)
+        .build()
 
     suspend fun getResponseFromUrl(url: String, params: Map<String, String> = emptyMap(), headers: Map<String, String>): String? {
         val fullUrlWithParams = url + params.entries.joinToString("&", "?",

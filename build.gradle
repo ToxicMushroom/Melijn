@@ -1,8 +1,22 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.apollographql.apollo:apollo-gradle-plugin:2.0.1'
+    }
+}
+
 plugins {
     id 'java'
     id 'application'
     id 'com.github.johnrengelman.shadow' version '5.2.0'
     id 'org.jetbrains.kotlin.jvm' version '1.3.72'
+    id 'com.apollographql.apollo' version '2.0.1'
+}
+
+apollo {
+    generateKotlinModels.set(true) // or false for Java models
 }
 
 mainClassName = 'me.melijn.melijnbot.MelijnBotKt'
@@ -19,7 +33,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation('net.dv8tion:JDA:4.1.1_140') {
+    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.1.1_141') {
         exclude module: 'opus-java'
     }
 
@@ -93,6 +107,9 @@ dependencies {
         exclude group: 'org.slf4j', module: 'slf4j-simple'
     }
 
+    implementation("com.apollographql.apollo:apollo-runtime:2.0.1")
+    implementation("com.apollographql.apollo:apollo-coroutines-support:2.0.1")
+
 
     // START | https://github.com/JetBrains/kotlin/blob/master/libraries/examples/kotlin-jsr223-local-example/build.gradle.kts
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-script-runtime
@@ -107,8 +124,8 @@ dependencies {
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-scripting-compiler-embeddable
     // runtimeOnly group: 'org.jetbrains.kotlin', name: 'kotlin-scripting-compiler-embeddable', version: '1.3.72'
     // END
-
 }
+
 
 compileJava.options.encoding = 'UTF-8'
 compileKotlin {

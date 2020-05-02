@@ -1,0 +1,10 @@
+query FindCharacter($name: String) {
+  Character(search: $name) {
+    name {
+      first
+      last
+      full
+      native
+    }
+  }
+}

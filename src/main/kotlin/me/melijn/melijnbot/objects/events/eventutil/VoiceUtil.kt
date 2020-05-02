@@ -64,7 +64,7 @@ object VoiceUtil {
                 daoManager.supporterWrapper.guildSupporterIds.contains(guildId))
         ) {
             if (!disconnectQueue.containsKey(guildId)) {
-                disconnectQueue[guildId] = System.currentTimeMillis() + 6_000
+                disconnectQueue[guildId] = System.currentTimeMillis() + 600_000
             }
         } else {
             disconnectQueue.remove(guildId)

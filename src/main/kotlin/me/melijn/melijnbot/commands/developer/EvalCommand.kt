@@ -18,6 +18,7 @@ class EvalCommand : AbstractCommand("command.eval") {
         commandCategory = CommandCategory.DEVELOPER
     }
 
+
     override suspend fun execute(context: CommandContext) {
         sendMsg(context, "pog no eval")
     }

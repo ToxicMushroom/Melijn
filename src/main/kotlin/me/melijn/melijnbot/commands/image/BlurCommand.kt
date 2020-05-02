@@ -58,6 +58,6 @@ class BlurCommand : AbstractCommand("command.blur") {
             imgData.put("higher", max(img.height, img.width))
             imgData.put("defaultOffset", max(max(img.width, img.height) / 75, 1))
 
-        }, argumentAmount = 1)
+        }, argumentAmount = 1, debug = false)
     }
 }

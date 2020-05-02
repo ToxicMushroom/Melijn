@@ -433,56 +433,91 @@ object ImageUtils {
         // Create an identically-sized output raster
         val dest = src.createCompatibleWritableRaster()
 
-        val rFloatArr = floatArrayOf(0f, 0f, 0f, 0f)
+        val intArray = intArrayOf(0, 0, 0, 0)
+        val floatBuffer = floatArrayOf(0.0f, 0.0f, 0.0f, 0.0f)
         val kData = kernel.getKernelData(null)
-        for (x in 0 until image.width) {
-            for (y in 0 until image.height) {
+        val kHeight = kernel.height
+        val kWidth = kernel.width
+
+        val kYOrigin = kernel.yOrigin
+        val kXOrigin = kernel.xOrigin
+
+        val iWidth = image.width
+        val iHeight = image.height
+
+        require(kWidth % 2 == 1 && kHeight % 2 == 1) { "kernel should have odd number of pixels" }
+
+        val fArr = FloatArray(iHeight * 4 * kWidth)
+        var pixels: FloatArray = src.getPixels(0, 0, kWidth, iHeight, fArr)
+        var currentCenter = kotlin.math.floor(kWidth / 2.0)
+        val kSideWidth = (kWidth - 1) / 2
+
+
+        for (x in 0 until iWidth) {
+            val mostLeft = x - kSideWidth
+            if (x > currentCenter && x < iWidth - kSideWidth) {
+                pixels = src.getPixels(x - kSideWidth, 0, kWidth, iHeight, fArr)
+                currentCenter = x.toDouble()
+            }
+            for (y in 0 until iHeight) {
                 var newRed = 0f
                 var newGreen = 0f
                 var newBlue = 0f
                 var newAlpha = 0f
 
 
-                for (yk in 0 until kernel.height) {
-                    for (xk in 0 until kernel.width) {
-                        val kry = kernel.yOrigin - yk
-                        val krx = kernel.xOrigin - xk
-                        val pixel = src.getPixel(
-                            if (x + krx >= image.width || x + krx < 0) {
-                                x
-                            } else {
-                                x + krx
-                            },
-                            if (y + kry >= image.height || y + kry < 0) {
-                                y
-                            } else {
-                                y + kry
-                            }, rFloatArr)
+                for (yk in 0 until kHeight) {
+                    for (xk in 0 until kWidth) {
+                        val kry = kYOrigin - yk
+                        val krx = kXOrigin - xk
 
-                        val kernelModifier = kData[yk * kernel.width + xk]
-                        newRed += kernelModifier * pixel[0]
-                        newGreen += kernelModifier * pixel[1]
-                        newBlue += kernelModifier * pixel[2]
-                        newAlpha += kernelModifier * pixel[3]
+                        val absoluteX = if (x + krx >= iWidth || x + krx < 0) {
+                            x
+                        } else {
+                            x + krx
+                        }
+
+                        val absoluteY = if (y + kry >= iHeight || y + kry < 0) {
+                            y
+                        } else {
+                            y + kry
+                        }
+
+                        val startIndex = (absoluteX - mostLeft) * 4 + absoluteY * kWidth * 4
+
+                        val kernelModifier = kData[yk * kWidth + xk]
+                        newRed += kernelModifier * pixels[startIndex]
+                        newGreen += kernelModifier * pixels[startIndex + 1]
+                        newBlue += kernelModifier * pixels[startIndex + 2]
+
+                        if (kry == 0 && krx == 0)
+                            newAlpha += pixels[startIndex + 3]
                     }
                 }
 
                 newAlpha = max(0f, min(255f, newAlpha))
-                val intArr = if (shouldMakeGifAlphaSupport && newAlpha < 128) {
-                    floatArrayOf(255f, 255f, 255f, 255f)
+                if (shouldMakeGifAlphaSupport && newAlpha < 128) {
+                    floatBuffer[0] = 255f
+                    floatBuffer[1] = 255f
+                    floatBuffer[2] = 255f
+                    floatBuffer[3] = 255f
+
                 } else if (shouldMakeGifAlphaSupport && newRed >= 255f && newGreen >= 255f && newBlue >= 255f) {
-                    floatArrayOf(254f, 254f, 254f, 255f)
+                    floatBuffer[0] = 254f
+                    floatBuffer[1] = 254f
+                    floatBuffer[2] = 254f
+                    floatBuffer[3] = 255f
+
                 } else {
-                    floatArrayOf(
-                        max(0f, min(255f, newRed)),
-                        max(0f, min(255f, newGreen)),
-                        max(0f, min(255f, newBlue)),
-                        newAlpha
-                    )
+                    floatBuffer[0] = max(0f, min(255f, newRed))
+                    floatBuffer[1] = max(0f, min(255f, newGreen))
+                    floatBuffer[2] = max(0f, min(255f, newBlue))
+                    floatBuffer[3] = newAlpha
+
                 }
 
                 dest.setPixel(x, y,
-                    intArr
+                    floatBuffer
                 )
             }
         }
