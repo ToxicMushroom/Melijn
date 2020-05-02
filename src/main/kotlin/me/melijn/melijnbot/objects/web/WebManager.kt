@@ -76,8 +76,8 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         }
     }
 
-    val apolloClient = ApolloClient.builder()
-        .serverUrl("serverUrl")
+    val aniListApolloClient = ApolloClient.builder()
+        .serverUrl("https://graphql.anilist.co")
         .okHttpClient(httpClient)
         .build()
 

@@ -16,7 +16,16 @@ plugins {
 }
 
 apollo {
-    generateKotlinModels.set(true) // or false for Java models
+    generateKotlinModels.set(false) // or false for Java models
+
+    service("anilist") {
+        rootPackageName = "me.melijn.melijnbot.anilist"
+        sourceFolder = "me/melijn/melijnbot/anilist"
+    }
+    service("kitsu") {
+        rootPackageName = "me.melijn.melijnbot.kitsu"
+        sourceFolder = "me/melijn/melijnbot/kitsu"
+    }
 }
 
 mainClassName = 'me.melijn.melijnbot.MelijnBotKt'
@@ -33,7 +42,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.1.1_141') {
+    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.1.1_142') {
         exclude module: 'opus-java'
     }
 
@@ -65,7 +74,7 @@ dependencies {
     implementation group: 'me.duncte123', name: 'weebJava', version: '2.2.0_29'
 
     // https://mvnrepository.com/artifact/se.michaelthelin.spotify/spotify-web-api-java
-    implementation (group: 'se.michaelthelin.spotify', name: 'spotify-web-api-java', version: '5.0.4') {
+    implementation(group: 'se.michaelthelin.spotify', name: 'spotify-web-api-java', version: '5.0.4') {
         exclude group: 'org.slf4j', module: 'slf4j-simple'
     }
 
@@ -103,7 +112,7 @@ dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.3.72'
 
     // https://github.com/GSculerlor/JikanKt/releases
-    implementation (group: 'com.github.GSculerlor', name: 'JikanKT', version: '1.1.2') {
+    implementation(group: 'com.github.GSculerlor', name: 'JikanKT', version: '1.1.2') {
         exclude group: 'org.slf4j', module: 'slf4j-simple'
     }
 

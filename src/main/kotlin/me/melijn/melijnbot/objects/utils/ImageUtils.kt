@@ -2,9 +2,7 @@ package me.melijn.melijnbot.objects.utils
 
 import com.madgag.gif.fmsware.GifDecoder
 import com.squareup.gifencoder.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import java.awt.Color
@@ -182,24 +180,27 @@ object ImageUtils {
 
 
         val gct = decoder.gct ?: emptyArray<Int>().toIntArray()
+        val jobs = mutableListOf<Job>()
+        val framesDone = mutableMapOf<Int, FinishedFrame>()
+
         for (index in 0 until decoder.frameCount) {
-            val options = ImageOptions()
-            options.setColorQuantizer(MedianCutQuantizer.INSTANCE)
-            options.setDitherer(FloydSteinbergDitherer.INSTANCE)
-            options.setTransparencyColor(Color.WHITE.rgb)
-            options.setDisposalMethod(DisposalMethod.DO_NOT_DISPOSE)
+            jobs.add(CoroutineScope(Dispatchers.Default).launch {
+                val options = ImageOptions()
+                options.setColorQuantizer(MedianCutQuantizer.INSTANCE)
+                options.setDitherer(FloydSteinbergDitherer.INSTANCE)
+                options.setTransparencyColor(Color.WHITE.rgb)
+                options.setDisposalMethod(DisposalMethod.DO_NOT_DISPOSE)
 
 
-            val frameMeta = decoder.getFrameMeta(index)
-            val gifFrame = frameMeta.image
+                val frameMeta = decoder.getFrameMeta(index)
+                val gifFrame = frameMeta.image
 
-            effect(gifFrame)
+                effect(gifFrame)
 
-            val delay = fps?.let { (1.0 / it * 1000.0).toLong() } ?: frameMeta.delay.toLong()
-            options.setDelay(delay, TimeUnit.MILLISECONDS)
+                val delay = fps?.let { (1.0 / it * 1000.0).toLong() } ?: frameMeta.delay.toLong()
+                options.setDelay(delay, TimeUnit.MILLISECONDS)
 
-            frameDebug?.let {
-                runBlocking {
+                frameDebug?.let {
                     val lct = if (frameMeta.lct.isEmpty()) {
                         gct
                     } else {
@@ -220,17 +221,29 @@ object ImageUtils {
 
                     sendMsg(it, "bg: $bgColor, trans: $transColor", gifFrame, "gif")
                 }
-            }
 
-            encoder.addImage(
-                gifFrame.getRGB(0, 0, width, height, Array(width * height) { 0 }.toIntArray(), 0, width),
-                width, options)
+                framesDone[index] = FinishedFrame(
+                    gifFrame.getRGB(0, 0, width, height, IntArray(width * height), 0, width),
+                    width,
+                    options
+                )
+            })
+        }
+        runBlocking {
+            for (job in jobs) job.join()
+        }
+        for (i in 0 until framesDone.size) {
+            val frame = framesDone[i] ?: continue
+            encoder.addImage(frame.rgbArr, frame.imageWidth, frame.options)
         }
 
         encoder.finishEncoding()
 
         return outputStream
     }
+
+
+    data class FinishedFrame(val rgbArr: IntArray, val imageWidth: Int, val options: ImageOptions)
 
 
     // RGBA <-> color picker
@@ -409,6 +422,7 @@ object ImageUtils {
         }
 
         val kernel = Kernel(size, size, data)
+
         useKernel(image, kernel, isGif)
     }
 
@@ -432,8 +446,6 @@ object ImageUtils {
 
         // Create an identically-sized output raster
         val dest = src.createCompatibleWritableRaster()
-
-        val intArray = intArrayOf(0, 0, 0, 0)
         val floatBuffer = floatArrayOf(0.0f, 0.0f, 0.0f, 0.0f)
         val kData = kernel.getKernelData(null)
         val kHeight = kernel.height
@@ -495,7 +507,6 @@ object ImageUtils {
                     }
                 }
 
-                newAlpha = max(0f, min(255f, newAlpha))
                 if (shouldMakeGifAlphaSupport && newAlpha < 128) {
                     floatBuffer[0] = 255f
                     floatBuffer[1] = 255f
@@ -509,9 +520,9 @@ object ImageUtils {
                     floatBuffer[3] = 255f
 
                 } else {
-                    floatBuffer[0] = max(0f, min(255f, newRed))
-                    floatBuffer[1] = max(0f, min(255f, newGreen))
-                    floatBuffer[2] = max(0f, min(255f, newBlue))
+                    floatBuffer[0] = newRed
+                    floatBuffer[1] = newGreen
+                    floatBuffer[2] = newBlue
                     floatBuffer[3] = newAlpha
 
                 }

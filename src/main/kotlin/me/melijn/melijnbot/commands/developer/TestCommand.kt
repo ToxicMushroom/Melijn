@@ -14,14 +14,6 @@ class TestCommand : AbstractCommand("command.test") {
     }
 
     override suspend fun execute(context: CommandContext) {
-//        context.webManager.apolloClient.query(
-//            FindCharacter
-//                .limit(10)
-//                .type(FeedType.HOT)
-//                .build()
-//        ).enqueue();
-
-        // Prints: {hello=world}
 
 //        val driverManager = context.daoManager.driverManager
 //

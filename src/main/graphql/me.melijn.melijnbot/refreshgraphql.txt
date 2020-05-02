@@ -1,0 +1,3 @@
+windows terminal: gradlew generateApolloSources
+linux or bash: ./gradlew generateApolloSources
+https://www.apollographql.com/docs/android/essentials/get-started/

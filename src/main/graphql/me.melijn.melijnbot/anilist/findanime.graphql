@@ -1,0 +1,54 @@
+query FindAnime($name: String) {
+    Media(search: $name, type: ANIME) {
+        title {
+            romaji
+            english
+            native
+            userPreferred
+        }
+        synonyms
+        type
+        status
+        startDate {
+            year
+            month
+            day
+        }
+        endDate{
+            year
+            month
+            day
+        }
+        format
+        description
+        coverImage {
+            extraLarge
+            large
+            medium
+            color
+        }
+        episodes
+        duration
+        siteUrl
+        averageScore
+        genres
+        trailer {
+            site
+        }
+        favourites
+        studios {
+            edges {
+                node {
+                    name
+                    siteUrl
+                }
+                isMain
+            }
+        }
+        isAdult
+        nextAiringEpisode {
+            episode
+            airingAt
+        }
+    }
+}

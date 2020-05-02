@@ -1,0 +1,28 @@
+query FindCharacter($name: String) {
+    Character(search: $name) {
+        name {
+            first
+            last
+            native
+            alternative
+        }
+        image {
+            large
+        }
+        siteUrl
+        description(asHtml: false)
+        favourites
+        media(sort: [POPULARITY_DESC]) {
+            edges {
+                node {
+                    title {
+                        romaji
+                    }
+                    type
+                    siteUrl
+                }
+                characterRole
+            }
+        }
+    }
+}
