@@ -20,7 +20,7 @@ query FindAnime($name: String) {
             day
         }
         format
-        description
+        description(asHtml: false)
         coverImage {
             extraLarge
             large

@@ -13,11 +13,16 @@ class BotJoinLeaveListener(container: Container) : AbstractListener(container) {
         if (event is GuildJoinEvent) {
             onBotJoinGuild(event)
         } else if (event is GuildLeaveEvent) {
-            onBotLeaveGuild(event)
+            container.taskManager.async { onBotLeaveGuild(event) }
         }
     }
 
-    private fun onBotLeaveGuild(event: GuildLeaveEvent) {
+    private suspend fun onBotLeaveGuild(event: GuildLeaveEvent) {
+        container.lavaManager.closeConnection(
+            event.guild.idLong,
+            container.daoManager.musicNodeWrapper.isPremium(event.guild.idLong)
+        )
+
         logger.info("{}Left the '{}' guild, id: {}, shard: {}{}",
             ConsoleColor.BLUE,
             event.guild.name,

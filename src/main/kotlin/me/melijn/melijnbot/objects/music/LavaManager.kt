@@ -95,7 +95,9 @@ class LavaManager(
         if (ll == null) {
             guild?.audioManager?.closeAudioConnection()
         } else {
-            guild?.let { ll.getLink(it).disconnect() }
+            guild?.let {
+                ll.getLink(it).destroy()
+            }
         }
     }
 

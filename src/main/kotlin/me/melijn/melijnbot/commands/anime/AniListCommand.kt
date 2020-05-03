@@ -3,6 +3,7 @@ package me.melijn.melijnbot.commands.anime
 import com.apollographql.apollo.ApolloCall
 import com.apollographql.apollo.api.Response
 import com.apollographql.apollo.exception.ApolloException
+import me.melijn.melijnbot.anilist.FindAnimeQuery
 import me.melijn.melijnbot.anilist.FindCharacterQuery
 import me.melijn.melijnbot.anilist.type.MediaType
 import me.melijn.melijnbot.objects.command.AbstractCommand
@@ -10,19 +11,19 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.utils.StringUtils
-import me.melijn.melijnbot.objects.utils.sendEmbed
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.entities.MessageEmbed
+import java.util.regex.Pattern
 
 class AniListCommand : AbstractCommand("command.anilist") {
+
+    val animeArg: AnimeArg
 
     init {
         id = 165
         name = "aniList"
         aliases = arrayOf("al")
-        val animeArg = AnimeArg(root)
+        animeArg = AnimeArg(root)
         children = arrayOf(
             animeArg,
             CharacterArg(root)
@@ -38,33 +39,106 @@ class AniListCommand : AbstractCommand("command.anilist") {
         }
 
         override suspend fun execute(context: CommandContext) {
+            searchAnime(context)
+        }
+
+        suspend fun searchAnime(context: CommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
             }
 
-            val characterName = context.rawArg
+            val animeName = context.rawArg
 
             context.webManager.aniListApolloClient.query(
-                FindCharacterQuery.builder()
-                    .name(characterName)
+                FindAnimeQuery.builder()
+                    .name(animeName)
                     .build()
-            ).enqueue(object : ApolloCall.Callback<FindCharacterQuery.Data>() {
+            ).enqueue(object : ApolloCall.Callback<FindAnimeQuery.Data>() {
                 override fun onFailure(e: ApolloException) {
                     context.taskManager.async {
                         val msg = context.getTranslation("$root.noresult")
-                            .replace(PLACEHOLDER_ARG, characterName)
+                            .replace(PLACEHOLDER_ARG, animeName)
                         sendMsg(context, msg)
                     }
                 }
 
-                override fun onResponse(response: Response<FindCharacterQuery.Data>) {
+                override fun onResponse(response: Response<FindAnimeQuery.Data>) {
                     context.taskManager.async {
-                        val char: FindCharacterQuery.Character = response.data?.Character() ?: return@async
-                        foundSeries(context, char)
+                        val char: FindAnimeQuery.Media = response.data?.Media() ?: return@async
+                        foundAnime(context, char)
                     }
                 }
             })
+        }
+
+        suspend fun foundAnime(context: CommandContext, media: FindAnimeQuery.Media) {
+            val eb = Embedder(context)
+
+            eb.setThumbnail(media.coverImage()?.extraLarge())
+            eb.setTitle(media.title()?.english() ?: media.title()?.romaji() ?: "?", media.siteUrl())
+
+            var description: String = media.description() ?: ""
+            val italicRegex = "<i>(.*?)</i>".toRegex()
+
+            for (res in italicRegex.findAll(description)) {
+                description = description.replace(res.groups[0]?.value
+                    ?: "$$$$$$$", "*${res.groups[1]?.value}*")
+
+            }
+
+            if (description.isNotBlank())
+                eb.setDescription(
+                    description
+                        .replace("<br>", "\n")
+                        .replace(("[" + Pattern.quote("\n") + "]{3,15}").toRegex(), "\n\n")
+                        .take(MessageEmbed.TEXT_MAX_LENGTH))
+
+            var alias = media.synonyms()?.joinToString()
+            if (alias == null || alias.isBlank()) alias = "/"
+
+            eb.addField("Genres", media.genres()?.joinToString("\n") ?: "/", true)
+            eb.addField("Other names", alias, true)
+            eb.addField("Rating", (media.averageScore()?.toString() ?: "?") + "%", true)
+
+            eb.addField("Format", media.format()?.toUCC() ?: "/", true)
+            eb.addField("Episodes", media.episodes()?.toString() ?: "/", true)
+            eb.addField("Avg Episode length", media.duration()?.toString() ?: "/", true)
+
+            eb.addField("Status", media.status()?.toUCC() ?: "/", true)
+            eb.addField("Start Date", formatDate(media.startDate()), true)
+            eb.addField("End Date", formatDate(media.endDate()), true)
+
+            val next = media.nextAiringEpisode()
+            if (next != null) {
+                val epochMillis = next.airingAt() * 1000L
+                val dateTime = epochMillis.asEpochMillisToDateTime(context.getTimeZoneId())
+                eb.addField("Next Episode", next.episode().toString(), true)
+                eb.addField("Airing At", dateTime, true)
+            }
+
+
+            eb.setFooter("Favourites ${media.favourites() ?: 0} 💗")
+
+            sendEmbed(context, eb.build())
+        }
+
+        private fun formatDate(date: FindAnimeQuery.StartDate?): String {
+            if (date == null) return "/"
+            val year = date.year()
+            val month = date.month()
+            val day = date.day()
+            if (year == null || month == null || day == null) return "/"
+            return "$year-$month-$day"
+        }
+
+        private fun formatDate(date: FindAnimeQuery.EndDate?): String {
+            if (date == null) return "/"
+            val year = date.year()
+            val month = date.month()
+            val day = date.day()
+            if (year == null || month == null || day == null) return "/"
+            return "$year-$month-$day"
         }
     }
 
@@ -182,6 +256,11 @@ class AniListCommand : AbstractCommand("command.anilist") {
     }
 
     override suspend fun execute(context: CommandContext) {
+        if (context.args.isEmpty()) {
+            sendSyntax(context)
+            return
+        }
 
+        animeArg.searchAnime(context)
     }
 }

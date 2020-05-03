@@ -1,0 +1,10 @@
+query FindUser($name: String) {
+    User(search: $name) {
+        siteUrl
+        about
+        avatar {
+            large
+        }
+
+    }
+}
