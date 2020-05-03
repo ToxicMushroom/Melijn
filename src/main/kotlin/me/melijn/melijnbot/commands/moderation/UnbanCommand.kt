@@ -150,7 +150,7 @@ fun getUnbanMessage(
             .replace("%serverId%", guild.id)
     }
 
-    val deletedAccount = i18n.getTranslation(language, "message.deletedaccount")
+    val deletedAccount = i18n.getTranslation(language, "message.deleted.user")
     description += i18n.getTranslation(language, "message.punishment.unban.description")
         .replace("%banAuthor%", banAuthor?.asTag ?: deletedAccount)
         .replace("%banAuthorId%", ban.banAuthorId.toString())

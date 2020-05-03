@@ -24,7 +24,7 @@ class PlayCommand : AbstractCommand("command.play") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        if (context.args.isEmpty() && context.message.attachments.isEmpty()) {
+        if ((context.args.isEmpty() || context.rawArg.isBlank()) && context.message.attachments.isEmpty()) {
             sendSyntax(context)
             return
         }
@@ -38,14 +38,19 @@ class PlayCommand : AbstractCommand("command.play") {
         val args = context.oldArgs
         var songArg = context.getRawArgPart(1, -1)
 
-        val songPosition = when {
-            args[0] == "-t" || args[0] == "-top" -> NextSongPosition.TOP
-            args[0] == "-r" || args[0] == "-random" -> NextSongPosition.RANDOM
-            args[0] == "-b" || args[0] == "-bottom" -> NextSongPosition.BOTTOM
-            else -> {
-                songArg = context.rawArg.trim()
-                NextSongPosition.BOTTOM
+        val songPosition = if (context.args.isNotEmpty()) {
+            when {
+                args[0] == "-t" || args[0] == "-top" -> NextSongPosition.TOP
+                args[0] == "-r" || args[0] == "-random" -> NextSongPosition.RANDOM
+                args[0] == "-b" || args[0] == "-bottom" -> NextSongPosition.BOTTOM
+                else -> {
+                    songArg = context.rawArg.trim()
+                    NextSongPosition.BOTTOM
+                }
             }
+        } else {
+            songArg = context.rawArg.trim()
+            NextSongPosition.BOTTOM
         }
 
         val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
@@ -94,6 +99,11 @@ class PlayCommand : AbstractCommand("command.play") {
 
 
         override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+
             val member = context.member
             val senderVoiceChannel: VoiceChannel = member.voiceState?.channel ?: return
             val lava: LavaManager = context.lavaManager
@@ -127,6 +137,10 @@ class PlayCommand : AbstractCommand("command.play") {
 
 
         override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
             val member = context.member
             val senderVoiceChannel: VoiceChannel = member.voiceState?.channel ?: return
             val lava: LavaManager = context.lavaManager
@@ -162,19 +176,24 @@ class PlayCommand : AbstractCommand("command.play") {
                 sendSyntax(context)
                 return
             }
+
             val member = context.member
             val senderVoiceChannel: VoiceChannel = member.voiceState?.channel ?: return
             val lava: LavaManager = context.lavaManager
 
             val args = context.args
 
-            val songPosition = when {
-                args[0] == "-t" || args[0] == "-top" -> NextSongPosition.TOP
-                args[0] == "-r" || args[0] == "-random" -> NextSongPosition.RANDOM
-                args[0] == "-b" || args[0] == "-bottom" -> NextSongPosition.BOTTOM
-                else -> {
-                    NextSongPosition.BOTTOM
+            val songPosition = if (args.isNotEmpty()) {
+                when {
+                    args[0] == "-t" || args[0] == "-top" -> NextSongPosition.TOP
+                    args[0] == "-r" || args[0] == "-random" -> NextSongPosition.RANDOM
+                    args[0] == "-b" || args[0] == "-bottom" -> NextSongPosition.BOTTOM
+                    else -> {
+                        NextSongPosition.BOTTOM
+                    }
                 }
+            } else {
+                NextSongPosition.BOTTOM
             }
 
 

@@ -158,7 +158,7 @@ fun getUnmuteMessage(
             .replace("%serverId%", guild.id)
     }
 
-    val deletedAccount = i18n.getTranslation(language, "message.deletedaccount")
+    val deletedAccount = i18n.getTranslation(language, "message.deleted.user")
     description += i18n.getTranslation(language, "message.punishment.unmute.description")
         .replace("%muteAuthor%", muteAuthor?.asTag ?: deletedAccount)
         .replace("%muteAuthorId%", mute.muteAuthorId.toString())

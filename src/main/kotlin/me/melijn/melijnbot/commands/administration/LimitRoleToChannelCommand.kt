@@ -5,10 +5,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
-import me.melijn.melijnbot.objects.utils.asTag
-import me.melijn.melijnbot.objects.utils.getRoleByArgsNMessage
-import me.melijn.melijnbot.objects.utils.getTextChannelByArgsNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
@@ -23,6 +20,10 @@ class LimitRoleToChannelCommand : AbstractCommand("command.limitroletochannel") 
     }
 
     override suspend fun execute(context: CommandContext) {
+        if (context.args.size < 2) {
+            sendSyntax(context)
+            return
+        }
         val role = getRoleByArgsNMessage(context, 0) ?: return
         val immuneChannel = getTextChannelByArgsNMessage(context, 1) ?: return
 
