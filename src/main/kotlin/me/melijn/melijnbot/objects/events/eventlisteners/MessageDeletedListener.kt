@@ -185,7 +185,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
                     }
                 }
 
-                eb.addField(fieldTitle, extra.maxLength(MessageEmbed.VALUE_MAX_LENGTH), false)
+                eb.addField(fieldTitle, extra.take(MessageEmbed.VALUE_MAX_LENGTH), false)
 
                 val footer = i18n.getTranslation(language, "listener.message.deletion.log.footer")
                     .replace(PLACEHOLDER_USER, event.jda.selfUser.asTag)

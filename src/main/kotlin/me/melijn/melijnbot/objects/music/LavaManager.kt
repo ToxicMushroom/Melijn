@@ -83,9 +83,11 @@ class LavaManager(
     fun closeConnection(guildId: Long, premium: Boolean) {
         closeConnectionLite(guildId, premium)
 
-        MusicPlayerManager.guildMusicPlayers[guildId]?.removeTrackManagerListener()
-        MusicPlayerManager.guildMusicPlayers.remove(guildId)
-        logger.info("removed guildmusicplayer for $guildId")
+        if (MusicPlayerManager.guildMusicPlayers.containsKey(guildId)) {
+            MusicPlayerManager.guildMusicPlayers[guildId]?.removeTrackManagerListener()
+            MusicPlayerManager.guildMusicPlayers.remove(guildId)
+            logger.info("removed guildmusicplayer for $guildId")
+        }
     }
 
     fun closeConnectionLite(guildId: Long, premium: Boolean) {

@@ -3,8 +3,10 @@ package me.melijn.melijnbot.commands.anime
 import com.apollographql.apollo.ApolloCall
 import com.apollographql.apollo.api.Response
 import com.apollographql.apollo.exception.ApolloException
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.anilist.FindAnimeQuery
 import me.melijn.melijnbot.anilist.FindCharacterQuery
+import me.melijn.melijnbot.anilist.FindUserQuery
 import me.melijn.melijnbot.anilist.type.MediaType
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
@@ -12,7 +14,9 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.utils.*
+import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
+import java.awt.Color
 import java.util.regex.Pattern
 
 class AniListCommand : AbstractCommand("command.anilist") {
@@ -26,9 +30,181 @@ class AniListCommand : AbstractCommand("command.anilist") {
         animeArg = AnimeArg(root)
         children = arrayOf(
             animeArg,
-            CharacterArg(root)
+            CharacterArg(root),
+            UserArg(root)
         )
         commandCategory = CommandCategory.ANIME
+    }
+
+    class UserArg(parent: String) : AbstractCommand("$parent.user") {
+
+        init {
+            name = "user"
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+
+            val userName = context.rawArg
+
+            context.webManager.aniListApolloClient.query(
+                FindUserQuery.builder()
+                    .name(userName)
+                    .build()
+            ).enqueue(object : ApolloCall.Callback<FindUserQuery.Data>() {
+                override fun onFailure(e: ApolloException) {
+                    context.taskManager.async {
+                        val msg = context.getTranslation("$root.noresult")
+                            .replace(PLACEHOLDER_ARG, userName)
+                        sendMsg(context, msg)
+                    }
+                }
+
+                override fun onResponse(response: Response<FindUserQuery.Data>) {
+                    context.taskManager.async {
+                        val user: FindUserQuery.User = response.data?.User() ?: return@async
+                        foundUser(context, user)
+                    }
+                }
+            })
+        }
+
+        private suspend fun foundUser(context: CommandContext, user: FindUserQuery.User) {
+            val eb = EmbedBuilder()
+
+            val daoManager = context.daoManager
+            val embedColorWrapper = daoManager.embedColorWrapper
+            val userEmbedColorWrapper = daoManager.userEmbedColorWrapper
+            val guildColor: Int = embedColorWrapper.embedColorCache.get(context.guildId).await()
+            val userColor = userEmbedColorWrapper.userEmbedColorCache.get(context.guildId).await()
+
+            val defaultColor = when {
+                userColor != 0 -> userColor
+                guildColor != 0 -> guildColor
+                else -> context.embedColor
+            }
+
+
+            eb.setThumbnail(user.avatar()?.large())
+            eb.setTitle(user.name(), user.siteUrl())
+
+
+            val aboutValue = user.about()
+            if (aboutValue != null && aboutValue.isNotEmpty()) {
+                val about = context.getTranslation("title.about")
+                eb.setDescription(
+                    "**$about**\n" + user.about()?.take(MessageEmbed.TEXT_MAX_LENGTH - 11)
+                )
+            }
+
+            val chosenColor = when (user.options()?.profileColor()?.toLowerCase() ?: "null") {
+                "green" -> Color.decode("#4CCA51")
+                "blue" -> Color.decode("#3DB4F2")
+                "purple" -> Color.decode("#C063FF")
+                "pink" -> Color.decode("#FC9DD6")
+                "orange" -> Color.decode("#EF881A")
+                "red" -> Color.decode("#E13333")
+                "gray" -> Color.decode("#677B94")
+                else -> Color(defaultColor)
+            }
+            eb.setColor(chosenColor)
+
+            val animeStats = user.statistics()?.anime()
+            val mangaStats = user.statistics()?.manga()
+
+            val favoriteAnimeGenres = context.getTranslation("title.topanimegenres")
+            val favoriteMangaGenres = context.getTranslation("title.topmangagenres")
+
+            eb.addField(favoriteAnimeGenres, animeStats?.genres()?.withIndex()?.joinToString("\n") { (index, genre) ->
+                "${index + 1}. ${genre.genre() ?: "error"}"
+            }?.ifEmpty { "/" } ?: "/", true)
+            eb.addField(favoriteMangaGenres, mangaStats?.genres()?.withIndex()?.joinToString("\n") { (index, genre) ->
+                "${index + 1}. ${genre.genre() ?: "error"}"
+            }?.ifEmpty { "/" } ?: "/", true)
+
+            val parts = mutableListOf<String>()
+
+            val animeStatsTitle = context.getTranslation("$root.title.animestats")
+            val mangaStatsTitle = context.getTranslation("$root.title.mangastats")
+
+
+            val animePart = animeStatsTitle + if ((animeStats?.count() ?: 0) > 0) {
+                val animeValueStats = context.getTranslation("$root.animestats")
+                "\n" + animeValueStats
+                    .replace("%watched%", animeStats?.count() ?: 0)
+                    .replace("%epwatched%", animeStats?.episodesWatched() ?: 0)
+                    .replace("%meanscore%", animeStats?.meanScore()?.toString() ?: "--")
+                    .replace("%standardDeviation%", animeStats?.standardDeviation()?.toString() ?: "--")
+            } else ""
+
+            val mangaPart = mangaStatsTitle + if ((mangaStats?.count() ?: 0) > 0) {
+                val mangaValueStats = context.getTranslation("$root.mangastats")
+                "\n" + mangaValueStats
+                    .replace("%read%", mangaStats?.count() ?: 0)
+                    .replace("%volread%", mangaStats?.volumesRead() ?: 0)
+                    .replace("%chapread%", mangaStats?.chaptersRead() ?: 0)
+                    .replace("%meanscore%", mangaStats?.meanScore()?.toString() ?: "--")
+                    .replace("%standardDeviation%", mangaStats?.standardDeviation()?.toString() ?: "--")
+            } else ""
+
+            parts.add(animePart)
+            parts.add(mangaPart)
+
+            val otherStats = context.getTranslation("title.otherstats")
+
+            eb.addField(otherStats, parts.joinToString("\n\n"), false)
+
+
+
+            user.favourites()?.let outer@{
+                it.anime()?.nodes()?.let { animeList ->
+                    if (animeList.isEmpty()) return@let
+                    val top = animeList.take(5)
+
+                    eb.addField(
+                        context.getTranslation("title.favorite.anime"),
+                        StringUtils.splitMessage(
+                            top.joinToString("\n") { anime ->
+                                "⁎ [${anime?.title()?.english() ?: anime?.title()?.romaji()}](${anime?.siteUrl()})"
+                            }, 800, MessageEmbed.VALUE_MAX_LENGTH
+                        ).first(),
+                        true
+                    )
+                }
+                it.manga()?.nodes()?.let { mangaList ->
+                    if (mangaList.isEmpty()) return@let
+
+                    eb.addField(
+                        context.getTranslation("title.favorite.manga"),
+                        StringUtils.splitMessage(
+                            mangaList.joinToString("\n") { manga ->
+                                "⁎ [${manga?.title()?.english() ?: manga?.title()?.romaji()}](${manga?.siteUrl()})"
+                            }
+                            , 800, MessageEmbed.VALUE_MAX_LENGTH
+                        ).first(),
+                        true
+                    )
+                }
+                it.characters()?.nodes()?.let { characters ->
+                    if (characters.isEmpty()) return@let
+
+                    eb.addField(
+                        context.getTranslation("title.favorite.characters"),
+                        StringUtils.splitMessage(
+                            characters.joinToString("\n") { character ->
+                                "⁎ [${character?.name()?.full()}](${character?.siteUrl()})"
+                            }, 800, MessageEmbed.VALUE_MAX_LENGTH
+                        ).first(),
+                        true
+                    )
+                }
+            }
+
+            sendEmbed(context, eb.build())
+        }
     }
 
     class AnimeArg(parent: String) : AbstractCommand("$parent.anime") {

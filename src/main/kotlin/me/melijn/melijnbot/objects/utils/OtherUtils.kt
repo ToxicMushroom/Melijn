@@ -24,7 +24,6 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.regex.Pattern
-import kotlin.math.min
 
 
 val linuxUptimePattern: Pattern = Pattern.compile(
@@ -387,9 +386,6 @@ fun <E : Any> MutableList<E>.addIfNotPresent(value: E) {
     if (!this.contains(value)) this.add(value)
 }
 
-fun String.maxLength(length: Int): String {
-    return this.substring(0, min(length, this.length))
-}
 
 // Any space surrounded sequence of characters is considered a word
 fun String.countWords(): Int {

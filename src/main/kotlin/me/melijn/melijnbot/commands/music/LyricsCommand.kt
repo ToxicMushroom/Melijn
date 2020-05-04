@@ -42,8 +42,8 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
 
     private suspend fun formatAndSendLyrics(context: CommandContext, title: String, name: String, lyrics: String) {
         val embed = Embedder(context)
-        embed.setTitle(name.maxLength(MessageEmbed.TITLE_MAX_LENGTH))
-        embed.setDescription(lyrics.maxLength(MessageEmbed.TEXT_MAX_LENGTH))
+        embed.setTitle(name.take(MessageEmbed.TITLE_MAX_LENGTH))
+        embed.setDescription(lyrics.take(MessageEmbed.TEXT_MAX_LENGTH))
 
         val words = context.getTranslation("$root.words")
         val characters = context.getTranslation("$root.characters")

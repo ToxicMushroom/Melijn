@@ -1,5 +1,6 @@
 query FindUser($name: String) {
     User(search: $name) {
+        name
         siteUrl
         about
         avatar {
@@ -21,8 +22,13 @@ query FindUser($name: String) {
             }
             manga {
                 count
-                chaptersRead
+                genres(limit: 6, sort: [MEAN_SCORE_DESC]) {
+                    genre
+                }
                 volumesRead
+                chaptersRead
+                meanScore
+                standardDeviation
             }
         }
         favourites {

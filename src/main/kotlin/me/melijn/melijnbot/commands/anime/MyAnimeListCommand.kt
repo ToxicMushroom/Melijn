@@ -7,7 +7,6 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.utils.maxLength
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
@@ -149,10 +148,10 @@ class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
                         val top = animeList.take(5)
 
                         eb.addField(
-                            context.getTranslation("$root.favorite.anime"),
+                            context.getTranslation("title.favorite.anime"),
                             top.joinToString("\n") { anime ->
                                 "⁎ [${anime?.name}](${anime?.url})"
-                            }.maxLength(MessageEmbed.VALUE_MAX_LENGTH),
+                            }.take(MessageEmbed.VALUE_MAX_LENGTH),
                             true
                         )
                     }
@@ -160,12 +159,12 @@ class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
                         if (mangaList.isEmpty()) return@let
 
                         eb.addField(
-                            context.getTranslation("$root.favorite.manga"),
+                            context.getTranslation("title.favorite.manga"),
                             mangaList
                                 .joinToString("\n") { manga ->
                                     "⁎ [${manga?.name}](${manga?.url})"
                                 }
-                                .maxLength(MessageEmbed.VALUE_MAX_LENGTH),
+                                .take(MessageEmbed.VALUE_MAX_LENGTH),
                             true
                         )
                     }
@@ -173,10 +172,10 @@ class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
                         if (characters.isEmpty()) return@let
 
                         eb.addField(
-                            context.getTranslation("$root.favorite.characters"),
+                            context.getTranslation("title.favorite.characters"),
                             characters.joinToString("\n") { character ->
                                 "⁎ [${character?.name}](${character?.url})"
-                            }.maxLength(MessageEmbed.VALUE_MAX_LENGTH),
+                            }.take(MessageEmbed.VALUE_MAX_LENGTH),
                             true
                         )
                     }
