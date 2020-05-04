@@ -5,6 +5,55 @@ query FindUser($name: String) {
         avatar {
             large
         }
-
+        options {
+            profileColor
+        }
+        statistics {
+            anime {
+                count
+                genres(limit: 6, sort: [MEAN_SCORE_DESC]) {
+                    genre
+                }
+                episodesWatched
+                minutesWatched
+                meanScore
+                standardDeviation
+            }
+            manga {
+                count
+                chaptersRead
+                volumesRead
+            }
+        }
+        favourites {
+            anime {
+                nodes {
+                    title {
+                        romaji
+                        english
+                    }
+                    format
+                    siteUrl
+                }
+            }
+            characters {
+                nodes {
+                    name {
+                        full
+                    }
+                    siteUrl
+                }
+            }
+            manga {
+                nodes {
+                    title {
+                        romaji
+                        english
+                    }
+                    format
+                    siteUrl
+                }
+            }
+        }
     }
 }

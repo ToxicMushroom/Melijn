@@ -97,28 +97,47 @@ class AniListCommand : AbstractCommand("command.anilist") {
             var alias = media.synonyms()?.joinToString()
             if (alias == null || alias.isBlank()) alias = "/"
 
-            eb.addField("Genres", media.genres()?.joinToString("\n") ?: "/", true)
-            eb.addField("Other names", alias, true)
-            eb.addField("Rating", (media.averageScore()?.toString() ?: "?") + "%", true)
 
-            eb.addField("Format", media.format()?.toUCC() ?: "/", true)
-            eb.addField("Episodes", media.episodes()?.toString() ?: "/", true)
-            eb.addField("Avg Episode length", media.duration()?.toString() ?: "/", true)
+            val genres = context.getTranslation("title.genres")
+            val othernames = context.getTranslation("title.othernames")
+            val rating = context.getTranslation("title.rating")
 
-            eb.addField("Status", media.status()?.toUCC() ?: "/", true)
-            eb.addField("Start Date", formatDate(media.startDate()), true)
-            eb.addField("End Date", formatDate(media.endDate()), true)
+            val format = context.getTranslation("title.format")
+            val episodes = context.getTranslation("title.episodes")
+            val avgepisodelength = context.getTranslation("title.avgepisodelength")
+
+
+            val status = context.getTranslation("title.status")
+            val startdate = context.getTranslation("title.startdate")
+            val enddate = context.getTranslation("title.enddate")
+
+
+            eb.addField(genres, media.genres()?.joinToString("\n") ?: "/", true)
+            eb.addField(othernames, alias, true)
+            eb.addField(rating, (media.averageScore()?.toString() ?: "?") + "%", true)
+
+            eb.addField(format, media.format()?.toUCC() ?: "/", true)
+            eb.addField(episodes, media.episodes()?.toString() ?: "/", true)
+            eb.addField(avgepisodelength, media.duration()?.toString() ?: "/", true)
+
+            eb.addField(status, media.status()?.toUCC() ?: "/", true)
+            eb.addField(startdate, formatDate(media.startDate()), true)
+            eb.addField(enddate, formatDate(media.endDate()), true)
 
             val next = media.nextAiringEpisode()
             if (next != null) {
+                val nextepisode = context.getTranslation("title.nextepisode")
+                val airingat = context.getTranslation("title.airingat")
+
                 val epochMillis = next.airingAt() * 1000L
                 val dateTime = epochMillis.asEpochMillisToDateTime(context.getTimeZoneId())
-                eb.addField("Next Episode", next.episode().toString(), true)
-                eb.addField("Airing At", dateTime, true)
+                eb.addField(nextepisode, next.episode().toString(), true)
+                eb.addField(airingat, dateTime, true)
             }
 
-
-            eb.setFooter("Favourites ${media.favourites() ?: 0} 💗")
+            val favourites = context.getTranslation("footer.favourites")
+                .replace("%amount%", media.favourites() ?: 0)
+            eb.setFooter(favourites)
 
             sendEmbed(context, eb.build())
         }
