@@ -54,7 +54,7 @@ dependencies {
     implementation group: 'com.sedmelluq', name: 'lavaplayer', version: '1.3.47'
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Client
-    implementation group: 'com.github.ToxicMushroom', name: 'Lavalink-Client', version: 'e13fa39898'
+    implementation group: 'com.github.ToxicMushroom', name: 'Lavalink-Client', version: '4.1.3'
 
     // https://github.com/ToxicMushroom/JagTag-Kotlin
     implementation group: 'com.github.ToxicMushroom', name: 'JagTag-Kotlin', version: 'c0f01bae27'
@@ -113,7 +113,7 @@ dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.3.72'
 
     // https://github.com/GSculerlor/JikanKt/releases
-    implementation(group: 'com.github.GSculerlor', name: 'JikanKT', version: '1.1.2') {
+    implementation(group: 'com.github.GSculerlor', name: 'JikanKT', version: '1.1.3') {
         exclude group: 'org.slf4j', module: 'slf4j-simple'
     }
 
