@@ -28,7 +28,7 @@ class VoiceService(
             val guild = shardManager.getGuildById(guildId)
             if (guild == null) {
                 VoiceUtil.disconnectQueue.remove(guildId)
-                logger.info("$guildId guild null")
+                //logger.info("$guildId guild null")
                 continue
             }
 
@@ -39,18 +39,18 @@ class VoiceService(
             val connectedChannel = guild.selfMember.voiceState?.channel
             if (connectedChannel != null && listeningMembers(connectedChannel) > 0) {
                 VoiceUtil.disconnectQueue.remove(guildId)
-                logger.info("$guildId someone is listening")
+                //logger.info("$guildId someone is listening")
                 continue
             }
 
             if (guildMPlayer?.guildTrackManager != null) {
-                guildMPlayer.guildTrackManager.stopAndDestroy()
+                //guildMPlayer.guildTrackManager.stopAndDestroy()
                 logger.info("$guildId stopped player & left")
 
             } else {
                 val isPremium = container.daoManager.musicNodeWrapper.isPremium(guildId)
                 container.lavaManager.closeConnection(guildId, isPremium)
-                logger.info("$guildId left")
+                //logger.info("$guildId left")
             }
 
             VoiceUtil.disconnectQueue.remove(guildId)

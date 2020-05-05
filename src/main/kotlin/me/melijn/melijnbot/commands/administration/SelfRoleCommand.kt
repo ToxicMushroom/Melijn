@@ -924,7 +924,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            if (context.args.isEmpty()) {
+            if (context.args.size < 2) {
                 sendSyntax(context)
                 return
             }

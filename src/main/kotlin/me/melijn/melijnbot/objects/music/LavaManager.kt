@@ -86,7 +86,7 @@ class LavaManager(
         if (MusicPlayerManager.guildMusicPlayers.containsKey(guildId)) {
             MusicPlayerManager.guildMusicPlayers[guildId]?.removeTrackManagerListener()
             MusicPlayerManager.guildMusicPlayers.remove(guildId)
-            logger.info("removed guildmusicplayer for $guildId")
+            //logger.info("removed guildmusicplayer for $guildId")
         }
     }
 
@@ -96,7 +96,7 @@ class LavaManager(
         if (MusicPlayerManager.guildMusicPlayers.containsKey(guildId)) {
             MusicPlayerManager.guildMusicPlayers[guildId]?.removeTrackManagerListener()
             MusicPlayerManager.guildMusicPlayers.remove(guildId)
-            logger.info("removed guildmusicplayer for $guildId")
+            //logger.info("removed guildmusicplayer for $guildId")
         }
     }
 
