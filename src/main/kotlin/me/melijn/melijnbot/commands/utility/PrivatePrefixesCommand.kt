@@ -68,8 +68,8 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             val ppList = wrapper.prefixCache[context.guildId].await()
             if (ppList.size >= PRIVATE_PREFIXES_LIMIT && !isPremiumUser(context)) {
                 val replaceMap = mapOf(
-                    Pair("limit", "$PRIVATE_PREFIXES_LIMIT"),
-                    Pair("premiumLimit", "$PREMIUM_PRIVATE_PREFIXES_LIMIT")
+                    "limit" to "$PRIVATE_PREFIXES_LIMIT",
+                    "premiumLimit" to "$PREMIUM_PRIVATE_PREFIXES_LIMIT"
                 )
 
                 sendFeatureRequiresPremiumMessage(context, PRIVATE_PREFIXES_LIMIT_PATH, replaceMap)

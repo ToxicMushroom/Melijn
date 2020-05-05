@@ -67,7 +67,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
                 val zoneId = getZoneId(daoManager, guild.idLong)
 
                 //Normal success path
-                val msgLc = getUnbanMessage(language,zoneId, context.guild, targetUser, banAuthor, context.author, ban, true)
+                val msgLc = getUnbanMessage(language, zoneId, context.guild, targetUser, banAuthor, context.author, ban, true)
 
 
                 val privateChannel = targetUser.openPrivateChannel().awaitOrNull()

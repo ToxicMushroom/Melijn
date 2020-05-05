@@ -117,16 +117,17 @@ object AnimeCommandUtil {
 
         val eb = Embedder(context)
         eb.setDescription(title)
-        eb.setImage(context.webManager.getWeebJavaUrl(type))
+        eb.setImage(context.webManager.weebshApi.getUrl(type))
         sendEmbed(context, eb.build())
     }
 
     suspend fun executeShow(context: CommandContext, type: String, nsfw: Boolean = false) {
         val eb = Embedder(context)
-        if (nsfw && context.isFromGuild && context.textChannel.isNSFW)
-            eb.setImage(context.webManager.getWeebJavaUrl(type, nsfw))
-        else
-            eb.setImage(context.webManager.getWeebJavaUrl(type))
+        if (nsfw && context.isFromGuild && context.textChannel.isNSFW) {
+            eb.setImage(context.webManager.weebshApi.getUrl(type, nsfw))
+        } else {
+            eb.setImage(context.webManager.weebshApi.getUrl(type))
+        }
         sendEmbed(context, eb.build())
     }
 }

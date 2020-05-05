@@ -748,7 +748,7 @@ suspend fun sendMsg(channel: TextChannel, msg: String): List<Message> = suspendC
         try {
             val messageList = mutableListOf<Message>()
             if (msg.length <= 2000) {
-                
+
                 if (msg.contains("%")) {
                     logger.warn("raw variable ?: $msg")
                 }

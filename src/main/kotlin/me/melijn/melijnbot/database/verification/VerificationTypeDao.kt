@@ -17,7 +17,7 @@ class VerificationTypeDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun get(guildId: Long): VerificationType = suspendCoroutine {
-        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", {rs ->
+        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", { rs ->
             if (rs.next()) {
                 it.resume(VerificationType.valueOf(rs.getString("type")))
             } else {

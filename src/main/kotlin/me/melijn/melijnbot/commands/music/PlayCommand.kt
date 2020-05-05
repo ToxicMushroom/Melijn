@@ -208,7 +208,7 @@ class PlayCommand : AbstractCommand("command.play") {
     }
 
     private fun spotifySearchNLoad(audioLoader: AudioLoader, context: CommandContext, songArg: String, nextPos: NextSongPosition) {
-        context.webManager.getTracksFromSpotifyUrl(songArg,
+        context.webManager.spotifyApi.getTracksFromSpotifyUrl(songArg,
             { track ->
                 audioLoader.loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, nextPos = nextPos)
             },

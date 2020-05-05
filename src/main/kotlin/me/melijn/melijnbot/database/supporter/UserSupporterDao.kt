@@ -55,7 +55,7 @@ class UserSupporterDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun setGuild(authorId: Long, guildId: Long, lastServerPickTime: Long) {
         driverManager.executeUpdate("UPDATE $table SET guildId = ?, lastServerPickTime = ? WHERE userId = ?",
-        guildId, lastServerPickTime, authorId)
+            guildId, lastServerPickTime, authorId)
     }
 }
 

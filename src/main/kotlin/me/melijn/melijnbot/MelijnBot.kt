@@ -127,7 +127,7 @@ class MyVoiceInterceptor(val container: Container) : VoiceDispatchInterceptor {
         } else {
             container.jdaLavaLink
         }
-        
+
         link?.voiceInterceptor?.onVoiceStateUpdate(update) ?: false
     }
 }

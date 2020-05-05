@@ -4,10 +4,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.administration.*
 import me.melijn.melijnbot.commands.animal.*
 import me.melijn.melijnbot.commands.anime.*
-import me.melijn.melijnbot.commands.developer.EvalCommand
-import me.melijn.melijnbot.commands.developer.ShutdownCommand
-import me.melijn.melijnbot.commands.developer.SpamCommand
-import me.melijn.melijnbot.commands.developer.TestCommand
+import me.melijn.melijnbot.commands.developer.*
 import me.melijn.melijnbot.commands.image.*
 import me.melijn.melijnbot.commands.moderation.*
 import me.melijn.melijnbot.commands.music.*
@@ -183,7 +180,8 @@ class CommandClientBuilder(private val container: Container) {
         MyAnimeListCommand(),
         SetBotLogStateCommand(),
         SetRoleColorCommand(),
-        AniListCommand()
+        AniListCommand(),
+        AngryCommand()
     )
 
     init {

@@ -7,6 +7,7 @@ import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.web.WebManager
+import me.melijn.melijnbot.objects.web.WebUtils
 
 class PandaCommand : AbstractCommand("command.panda") {
 
@@ -27,7 +28,8 @@ class PandaCommand : AbstractCommand("command.panda") {
     }
 
     private suspend fun getRandomPandaUrl(webManager: WebManager): String {
-        val reply = webManager.getJsonFromUrl("https://some-random-api.ml/img/panda")?: return MISSING_IMAGE_URL
+        val reply = WebUtils.getJsonFromUrl(webManager.httpClient, "https://some-random-api.ml/img/panda")
+            ?: return MISSING_IMAGE_URL
         return reply.getString("link")
     }
 }

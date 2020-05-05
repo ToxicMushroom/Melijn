@@ -7,6 +7,7 @@ import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.web.WebManager
+import me.melijn.melijnbot.objects.web.WebUtils
 
 class CatCommand : AbstractCommand("command.cat") {
 
@@ -29,16 +30,16 @@ class CatCommand : AbstractCommand("command.cat") {
 
     private suspend fun getRandomCatUrl(webManager: WebManager, apiKey: String): String {
         val headers = mapOf(
-            Pair("x-api-key", apiKey)
+            "x-api-key" to apiKey
         )
 
         val params = mapOf(
-            Pair("limit", "1"),
-            Pair("format", "json"),
-            Pair("order", "RANDOM")
+            "limit" to "1",
+            "format" to "json",
+            "order" to "RANDOM"
         )
 
-        val reply = webManager.getJsonAFromUrl("https://api.thecatapi.com/v1/images/search", params, headers)
+        val reply = WebUtils.getJsonAFromUrl(webManager.httpClient, "https://api.thecatapi.com/v1/images/search", params, headers)
             ?: return MISSING_IMAGE_URL
         return reply.getObject(0).getString("url", MISSING_IMAGE_URL)
     }

@@ -35,7 +35,8 @@ class SelfRoleGroupWrapper(val taskManager: TaskManager, private val selfRoleGro
 
         list.add(selfRoleGroup)
 
-        selfRoleGroupDao.set(guildId, selfRoleGroup.groupName, selfRoleGroup.messageIds.joinToString(), selfRoleGroup.channelId, selfRoleGroup.isEnabled, selfRoleGroup.pattern ?: "", selfRoleGroup.isSelfRoleable)
+        selfRoleGroupDao.set(guildId, selfRoleGroup.groupName, selfRoleGroup.messageIds.joinToString(), selfRoleGroup.channelId, selfRoleGroup.isEnabled, selfRoleGroup.pattern
+            ?: "", selfRoleGroup.isSelfRoleable)
         selfRoleGroupCache.put(guildId, CompletableFuture.completedFuture(list))
     }
 

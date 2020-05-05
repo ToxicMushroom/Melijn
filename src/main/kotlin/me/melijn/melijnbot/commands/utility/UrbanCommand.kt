@@ -11,6 +11,7 @@ import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
 import me.melijn.melijnbot.objects.web.WebManager
+import me.melijn.melijnbot.objects.web.WebUtils
 import java.lang.Integer.min
 
 class UrbanCommand : AbstractCommand("command.urban") {
@@ -57,7 +58,8 @@ class UrbanCommand : AbstractCommand("command.urban") {
     }
 
     private suspend fun getUrbanResult(webManager: WebManager, arg: String): Pair<String?, String?>? {
-        val json = webManager.getJsonFromUrl("https://api.urbandictionary.com/v0/define?term=$arg") ?: return null
+        val json = WebUtils.getJsonFromUrl(webManager.httpClient, "https://api.urbandictionary.com/v0/define?term=$arg")
+            ?: return null
         val results = json.getArray("list")
         if (results.isEmpty) return Pair(null, null)
         val result = results.getObject(0)

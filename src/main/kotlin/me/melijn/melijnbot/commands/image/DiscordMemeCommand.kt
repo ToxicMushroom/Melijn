@@ -31,6 +31,6 @@ class DiscordMemeCommand : AbstractCommand("command.discordmeme") {
     }
 
     private suspend fun getRandomDiscordMemeUrl(webManager: WebManager): String {
-        return webManager.getWeebJavaUrl("discord_memes")
+        return webManager.weebshApi.getUrl("discord_memes")
     }
 }

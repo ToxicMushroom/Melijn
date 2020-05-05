@@ -65,7 +65,7 @@ suspend fun getFloatFromArgNMessage(context: CommandContext, index: Int, start: 
     return float
 }
 
-suspend fun getBooleanFromArgN(context: CommandContext, index: Int): Boolean?{
+suspend fun getBooleanFromArgN(context: CommandContext, index: Int): Boolean? {
     if (argSizeCheckFailed(context, index, true)) return null
     val arg = context.args[index]
 

@@ -5,7 +5,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 
-class HugCommand  : AbstractCommand("command.hug") {
+class HugCommand : AbstractCommand("command.hug") {
 
     init {
         id = 61

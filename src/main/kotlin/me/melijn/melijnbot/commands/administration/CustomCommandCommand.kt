@@ -222,7 +222,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 return
             }
 
-            selectionMap[Pair(guildId, context.authorId)] = id
+            selectionMap[guildId to context.authorId] = id
 
 
             val msg = context.getTranslation("$root.selected")

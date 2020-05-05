@@ -7,6 +7,7 @@ import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.KSOFT_SI
 import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.web.WebUtils
 import net.dv8tion.jda.api.entities.MessageEmbed
 
 class LyricsCommand : AbstractCommand("command.lyrics") {
@@ -56,7 +57,7 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
 
     // url, lyrics
     private suspend fun getLyricsNMessage(context: CommandContext, title: String, author: String?): Pair<String, String>? {
-        val json = context.webManager.getJsonFromUrl(
+        val json = WebUtils.getJsonFromUrl(context.webManager.httpClient,
             "$KSOFT_SI/lyrics/search",
             mutableMapOf(
                 Pair("q", title + author?.let { " $author" }),

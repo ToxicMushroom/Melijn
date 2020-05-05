@@ -10,6 +10,7 @@ import me.melijn.melijnbot.objects.utils.sendFeatureRequiresPremiumMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 
 const val VOLUME_OVER_150 = "premium.feature.volume.over.150"
+
 class VolumeCommand : AbstractCommand("command.volume") {
 
     init {

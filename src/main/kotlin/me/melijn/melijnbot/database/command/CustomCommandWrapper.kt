@@ -10,7 +10,6 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 
-
 class CustomCommandWrapper(private val taskManager: TaskManager, private val customCommandDao: CustomCommandDao) {
 
     val customCommandCache = CacheBuilder.newBuilder()

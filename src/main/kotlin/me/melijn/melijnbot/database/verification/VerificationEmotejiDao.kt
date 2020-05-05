@@ -16,7 +16,7 @@ class VerificationEmotejiDao(driverManager: DriverManager) : Dao(driverManager) 
     }
 
     suspend fun get(guildId: Long): String = suspendCoroutine {
-        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", {rs ->
+        driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ?", { rs ->
             if (rs.next()) {
                 it.resume(rs.getString("emoteji"))
             } else {

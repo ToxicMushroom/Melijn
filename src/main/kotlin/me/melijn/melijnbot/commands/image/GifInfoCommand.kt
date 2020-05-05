@@ -54,7 +54,7 @@ class GifInfoCommand : AbstractCommand("command.gifinfo") {
         val globalUrl = if (gct.isEmpty()) {
             null
         } else {
-            context.webManager.postToHastebin("json", globalDataArray.toString())
+            context.webManager.binApis.postToHastebin("json", globalDataArray.toString())
         }
 
         val gifInfoValue = context.getTranslation("$root.eb.gif.value")
@@ -98,7 +98,7 @@ class GifInfoCommand : AbstractCommand("command.gifinfo") {
             val url = if (lct.isEmpty()) {
                 null
             } else {
-                context.webManager.postToHastebin("json", da.toString())
+                context.webManager.binApis.postToHastebin("json", da.toString())
             }
 
             val frameInfoTitle = context.getTranslation("$root.eb.frame.title")

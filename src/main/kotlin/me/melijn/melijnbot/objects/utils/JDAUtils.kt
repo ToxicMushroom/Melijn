@@ -353,7 +353,6 @@ fun getEmotejiByArgsN(context: CommandContext, index: Int, sameGuildAsContext: B
 }
 
 
-
 fun getEmoteByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean): Emote? {
     val arg = context.args[index]
     val matcher = DISCORD_ID.matcher(arg)

@@ -7,6 +7,7 @@ import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.web.WebManager
+import me.melijn.melijnbot.objects.web.WebUtils
 
 class KoalaCommand : AbstractCommand("command.koala") {
 
@@ -27,7 +28,8 @@ class KoalaCommand : AbstractCommand("command.koala") {
     }
 
     private suspend fun getRandomKoalaUrl(webManager: WebManager): String {
-        val reply = webManager.getJsonFromUrl("https://some-random-api.ml/img/koala")?: return MISSING_IMAGE_URL
+        val reply = WebUtils.getJsonFromUrl(webManager.httpClient, "https://some-random-api.ml/img/koala")
+            ?: return MISSING_IMAGE_URL
         return reply.getString("link")
     }
 }

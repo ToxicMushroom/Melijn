@@ -13,6 +13,7 @@ import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.entities.TextChannel
 
 const val UNKNOWN_FILTERMODE_PATH: String = "message.unknown.filtermode"
+
 class FilterGroupCommand : AbstractCommand("command.filtergroup") {
 
     init {

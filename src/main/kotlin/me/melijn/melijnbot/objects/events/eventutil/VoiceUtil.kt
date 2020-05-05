@@ -18,8 +18,8 @@ object VoiceUtil {
     //guildId, timeOfLeave
     var disconnectQueue = mutableMapOf<Long, Long>()
 
-    suspend fun channelUpdate(container: Container, channelJoined: VoiceChannel) {
-        val guild = channelJoined.guild
+    suspend fun channelUpdate(container: Container, channelUpdate: VoiceChannel) {
+        val guild = channelUpdate.guild
         val botChannel = container.lavaManager.getConnectedChannel(guild)
         val daoManager = container.daoManager
 
@@ -29,7 +29,6 @@ object VoiceUtil {
             checkShouldDisconnectAndApply(it, daoManager)
             VOICE_SAFE.release()
         }
-
 
         // Radio stuff
         val musicChannel = guild.getAndVerifyMusicChannel(daoManager, Permission.VOICE_CONNECT, Permission.VOICE_SPEAK)
@@ -43,15 +42,17 @@ object VoiceUtil {
         val audioLoader = musicPlayerManager.audioLoader
         val iPlayer = trackManager.iPlayer
 
-        if (musicChannel.id == botChannel?.id && channelJoined.id == botChannel.id && iPlayer.playingTrack != null) {
+        if (musicChannel.id == botChannel?.id && channelUpdate.id == botChannel.id && iPlayer.playingTrack != null) {
             return
-        } else if (musicChannel.id == botChannel?.id && channelJoined.id == botChannel.id) {
-            audioLoader.loadNewTrack(daoManager, container.lavaManager, channelJoined, guild.jda.selfUser, musicUrl, NextSongPosition.BOTTOM)
-        } else if (botChannel == null && musicChannel.id == channelJoined.id) {
+        } else if (musicChannel.id == botChannel?.id && channelUpdate.id == botChannel.id) {
+            audioLoader.loadNewTrack(daoManager, container.lavaManager, channelUpdate, guild.jda.selfUser, musicUrl, NextSongPosition.BOTTOM)
 
-            val premium = daoManager.musicNodeWrapper.isPremium(guild.idLong)
-            if (container.lavaManager.tryToConnectToVCSilent(musicChannel, premium)) {
-                audioLoader.loadNewTrack(daoManager, container.lavaManager, channelJoined, guild.jda.selfUser, musicUrl, NextSongPosition.BOTTOM)
+        } else if (botChannel == null && musicChannel.id == channelUpdate.id) {
+            if (listeningMembers(musicChannel, container.settings.id) > 0) {
+                val premium = daoManager.musicNodeWrapper.isPremium(guild.idLong)
+                if (container.lavaManager.tryToConnectToVCSilent(musicChannel, premium)) {
+                    audioLoader.loadNewTrack(daoManager, container.lavaManager, channelUpdate, guild.jda.selfUser, musicUrl, NextSongPosition.BOTTOM)
+                }
             }
         }
     }

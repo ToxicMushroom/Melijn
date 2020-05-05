@@ -90,7 +90,30 @@ class LavaManager(
         }
     }
 
+    fun closeConnectionAngry(guildId: Long, premium: Boolean) {
+        closeConnectionLiteAngry(guildId, premium)
+
+        if (MusicPlayerManager.guildMusicPlayers.containsKey(guildId)) {
+            MusicPlayerManager.guildMusicPlayers[guildId]?.removeTrackManagerListener()
+            MusicPlayerManager.guildMusicPlayers.remove(guildId)
+            logger.info("removed guildmusicplayer for $guildId")
+        }
+    }
+
     fun closeConnectionLite(guildId: Long, premium: Boolean) {
+        val ll = if (premium) premiumLavaLink else jdaLavaLink
+        val guild = shardManager.getGuildById(guildId)
+
+        if (ll == null) {
+            guild?.audioManager?.closeAudioConnection()
+        } else {
+            guild?.let {
+                ll.getLink(it).destroy()
+            }
+        }
+    }
+
+    fun closeConnectionLiteAngry(guildId: Long, premium: Boolean) {
         val ll = if (premium) premiumLavaLink else jdaLavaLink
         val guild = shardManager.getGuildById(guildId)
 

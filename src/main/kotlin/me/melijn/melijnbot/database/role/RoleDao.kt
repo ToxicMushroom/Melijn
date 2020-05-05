@@ -36,7 +36,7 @@ class RoleDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun getRoles(roleType: RoleType): Map<Long, Long> = suspendCoroutine {
-        driverManager.executeQuery("SELECT * FROM $table WHERE roleType = ?", {rs ->
+        driverManager.executeQuery("SELECT * FROM $table WHERE roleType = ?", { rs ->
             val roleMap = HashMap<Long, Long>()
             while (rs.next()) {
                 roleMap[rs.getLong("guildId")] = rs.getLong("roleId")

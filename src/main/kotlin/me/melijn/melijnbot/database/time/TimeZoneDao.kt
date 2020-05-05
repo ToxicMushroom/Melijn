@@ -30,7 +30,7 @@ class TimeZoneDao(driverManager: DriverManager) : Dao(driverManager) {
                 it.resume(rs.getString("zoneId"))
             } else {
                 it.resume("")
-            }              
+            }
         }, id)
     }
 }

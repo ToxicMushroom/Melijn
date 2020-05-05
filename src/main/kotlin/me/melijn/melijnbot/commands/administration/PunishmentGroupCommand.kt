@@ -35,7 +35,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
     companion object {
         val selectionMap = HashMap<Pair<Long, Long>, String>()
         suspend fun getSelectedPGroup(context: CommandContext): PunishGroup? {
-            val pair = Pair(context.guildId, context.authorId)
+            val pair = context.guildId to context.authorId
             return if (selectionMap.containsKey(pair)) {
                 val id = selectionMap[pair] ?: return null
                 val pList = context.daoManager.autoPunishmentGroupWrapper.autoPunishmentCache.get(context.guildId).await()
@@ -142,7 +142,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
 
         override suspend fun execute(context: CommandContext) {
             val group = getPunishmentGroupByArgNMessage(context, 0) ?: return
-            selectionMap[Pair(context.guildId, context.authorId)] = group.groupName
+            selectionMap[context.guildId to context.authorId] = group.groupName
 
             val msg = context.getTranslation("$root.selected")
                 .replace("%group%", group.groupName)

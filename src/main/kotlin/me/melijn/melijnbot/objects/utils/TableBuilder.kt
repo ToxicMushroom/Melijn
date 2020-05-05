@@ -105,9 +105,9 @@ class TableBuilder(private val split: Boolean) {
         sb.append("║")
         for ((i, value) in list.withIndex()) {
             sb.append(" ")
-                    .append(value)
-                    .append(getSpaces(i, value))
-                    .append(" ║")
+                .append(value)
+                .append(getSpaces(i, value))
+                .append(" ║")
         }
         sb.append("\n")
     }
