@@ -43,7 +43,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.1.1_142') {
+    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.1.1_143') {
         exclude module: 'opus-java'
     }
 
@@ -117,8 +117,12 @@ dependencies {
         exclude group: 'org.slf4j', module: 'slf4j-simple'
     }
 
-    implementation("com.apollographql.apollo:apollo-runtime:2.0.1")
-    implementation("com.apollographql.apollo:apollo-coroutines-support:2.0.1")
+    implementation group: 'com.apollographql.apollo', name: 'apollo-runtime', version: '2.0.1'
+    implementation group: 'com.apollographql.apollo', name: 'apollo-coroutines-support', version: '2.0.1'
+
+    implementation group: 'com.github.husnjak', name: 'IGDB-API-JVM', version: '0.7'
+
+    implementation group: 'org.codehaus.groovy', name: 'groovy', version: '3.0.3'
 
 
     // START | https://github.com/JetBrains/kotlin/blob/master/libraries/examples/kotlin-jsr223-local-example/build.gradle.kts
