@@ -1,5 +1,5 @@
-query FindAnime($name: String) {
-    Media(search: $name, type: ANIME) {
+query FindManga($name: String) {
+    Media(search: $name, type: MANGA) {
         title {
             romaji
             english
@@ -25,7 +25,8 @@ query FindAnime($name: String) {
             extraLarge
             color
         }
-        episodes
+        chapters
+        volumes
         duration
         siteUrl
         averageScore

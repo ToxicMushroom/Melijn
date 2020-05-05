@@ -7,6 +7,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.objects.utils.StringUtils
 import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.utils.sendMsg
 import me.melijn.melijnbot.objects.utils.sendSyntax
@@ -17,26 +18,208 @@ import java.lang.Integer.min
 
 class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
 
-    val seriesArg: SeriesArg
+    private val seriesArg: AnimeArg
 
     init {
         id = 158
         name = "myAnimeList"
         aliases = arrayOf("mal")
-        seriesArg = SeriesArg(root)
+        seriesArg = AnimeArg(root)
         children = arrayOf(
             UserArg(root),
-            seriesArg
+            seriesArg,
+            MangaArg(root),
+            CharacterArg(root)
         )
         commandCategory = CommandCategory.ANIME
     }
 
-
-    class SeriesArg(parent: String) : AbstractCommand("$parent.series") {
+    class CharacterArg(parent: String) : AbstractCommand("$parent.character") {
 
         init {
-            name = "series"
-            aliases = arrayOf("anime")
+            name = "character"
+            aliases = arrayOf("char")
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+
+            val characterName = context.rawArg.substring(0, min(256, context.rawArg.length))
+
+
+            try {
+                val characterLite = JikanKt.searchCharacter(characterName).results?.firstOrNull()
+                val character = characterLite?.malId?.let { JikanKt.getCharacter(it) }
+                if (character == null) {
+                    val msg = context.getTranslation("$root.noresult")
+                        .replace(PLACEHOLDER_ARG, context.args[0])
+                    sendMsg(context, msg)
+                    return
+                }
+
+                val eb = Embedder(context)
+
+                val name = context.getTranslation("title.name")
+                val namekanji = context.getTranslation("title.namekanji")
+                val alternativenames = context.getTranslation("title.alternativenames")
+
+                val anime = context.getTranslation("title.anime")
+                val manga = context.getTranslation("title.manga")
+
+                eb.setThumbnail(character.imageUrl)
+                eb.setTitle(character.name ?: "/", character.url)
+                eb.setDescription(character.about?.take(MessageEmbed.TEXT_MAX_LENGTH) ?: "/")
+
+                eb.addField(name, character.name ?: "/", true)
+                eb.addField(namekanji, character.nameKanji ?: "/", true)
+
+                val otherNames = character.nicknames
+                if (otherNames != null && otherNames.isNotEmpty() && !(otherNames.size == 1 && otherNames[0]?.isBlank() == true)) {
+                    eb.addField(alternativenames, otherNames.joinToString(), true)
+                }
+
+                val animes = mutableListOf<String>()
+                val mangas = mutableListOf<String>()
+
+
+                for (animepgraphi in character.animeography ?: emptyList()) {
+                    if (animepgraphi == null) continue
+                    val title = animepgraphi.name ?: "error"
+                    val url = animepgraphi.url ?: "error"
+                    val characterRole = animepgraphi.role ?: "?"
+
+                    animes.add("[$title]($url) [$characterRole]")
+                }
+
+                for (mangagraphi in character.mangaography ?: emptyList()) {
+                    if (mangagraphi == null) continue
+                    val title = mangagraphi.name ?: "error"
+                    val url = mangagraphi.url ?: "error"
+                    val characterRole = mangagraphi.role ?: "?"
+
+                    mangas.add("[$title]($url) [$characterRole]")
+                }
+
+                if (animes.isNotEmpty()) {
+                    val split = StringUtils.splitMessage(animes.joinToString("\n"), 600, MessageEmbed.VALUE_MAX_LENGTH)
+                    if (split.size == 1)
+                        eb.addField(anime, split[0], true)
+                    else {
+                        eb.addField(anime, split[0], true)
+                        eb.addField("$anime..", split[1], true)
+                        if (split.size > 2) {
+                            val didntfit = context.getTranslation("title.nofitgotourl")
+                            eb.addField("$anime...", didntfit, true)
+                        }
+                    }
+                }
+
+                if (mangas.isNotEmpty()) {
+                    val split = StringUtils.splitMessage(mangas.joinToString("\n"), 600, MessageEmbed.VALUE_MAX_LENGTH)
+                    if (split.size == 1)
+                        eb.addField(manga, split[0], true)
+                    else {
+                        eb.addField(manga, split[0], true)
+                        eb.addField("$manga..", split[1], true)
+                        if (split.size > 2) {
+                            val didntfit = context.getTranslation("title.nofitgotourl")
+                            eb.addField("$manga...", didntfit, true)
+                        }
+                    }
+                }
+
+                val favourites = context.getTranslation("footer.favourites")
+                eb.setFooter(favourites.replace("%amount%", character.memberFavorites?.toString() ?: "0"))
+
+                sendEmbed(context, eb.build())
+            } catch (e: JikanException) {
+                val msg = context.getTranslation("$root.noresult")
+                    .replace(PLACEHOLDER_ARG, context.args[0])
+                sendMsg(context, msg)
+            }
+        }
+    }
+
+    class MangaArg(parent: String) : AbstractCommand("$parent.manga") {
+
+        init {
+            name = "manga"
+            aliases = arrayOf("m", "ln")
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+
+            val manga = context.rawArg.substring(0, min(256, context.rawArg.length))
+            try {
+                val result = JikanKt.searchManga(manga).results?.firstOrNull()
+                if (result == null) {
+                    val msg = context.getTranslation("$root.noresult")
+                        .replace(PLACEHOLDER_ARG, context.args[0])
+                    sendMsg(context, msg)
+                    return
+                }
+
+                val rating = context.getTranslation("title.rating")
+                val chapters = context.getTranslation("title.chapters")
+                val volumes = context.getTranslation("title.volumes")
+                val type = context.getTranslation("title.manga.type")
+
+                val startDate = context.getTranslation("title.startdate")
+                val endDate = context.getTranslation("title.enddate")
+                val publishing = context.getTranslation("title.publishing")
+                val synopsis = context.getTranslation("title.synopsis")
+
+
+                val publishingValue = result.publishing?.let {
+                    context.getTranslation(if (it) {
+                        "yes"
+                    } else {
+                        "no"
+                    })
+                } ?: context.getTranslation("unknown")
+
+                val eb = Embedder(context)
+                eb.setTitle(result.title ?: "???", result.url)
+
+                eb.addField(type, result.type?.toString() ?: "?", true)
+                eb.addField("$volumes | $chapters", "${result.volumes ?: "0"} | ${result.chapters ?: "0"}", true)
+                eb.addField(rating, "${result.score ?: "?"}/10.0", true)
+
+                eb.addField(startDate, result.startDate?.toUniversalDateFormat() ?: "/", true)
+                eb.addField(endDate, result.endDate?.toUniversalDateFormat() ?: "/", true)
+                eb.addField(publishing, publishingValue, true)
+
+                eb.addField(synopsis, result.synopsis ?: "/", false)
+
+                eb.setThumbnail(result.imageUrl)
+
+                result.members?.let {
+                    val members = context.getTranslation("footer.members")
+                    eb.setFooter(members.replace("%amount%", "$it"))
+                }
+
+                sendEmbed(context, eb.build())
+
+            } catch (e: JikanException) {
+                val msg = context.getTranslation("$root.noresult")
+                    .replace(PLACEHOLDER_ARG, context.args[0])
+                sendMsg(context, msg)
+            }
+        }
+    }
+
+    class AnimeArg(parent: String) : AbstractCommand("$parent.anime") {
+
+        init {
+            name = "anime"
+            aliases = arrayOf("a", "series", "movie", "tv", "ova", "ona")
         }
 
         override suspend fun execute(context: CommandContext) {
@@ -59,16 +242,14 @@ class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
                     return
                 }
 
-                val missing = context.getTranslation("missing")
+                val rating = context.getTranslation("title.rating")
+                val episodes = context.getTranslation("title.episodes")
+                val type = context.getTranslation("title.anime.type")
 
-                val rating = context.getTranslation("rating")
-                val episodes = context.getTranslation("episodes")
-                val type = context.getTranslation("$root.type")
-
-                val startDate = context.getTranslation("startdate")
-                val endDate = context.getTranslation("enddate")
-                val airing = context.getTranslation("airing")
-                val description = context.getTranslation("description")
+                val startDate = context.getTranslation("title.startdate")
+                val endDate = context.getTranslation("title.enddate")
+                val airing = context.getTranslation("title.airing")
+                val synopsis = context.getTranslation("title.synopsis")
 
                 val airingValue = result.airing?.let {
                     context.getTranslation(if (it) {
@@ -79,19 +260,24 @@ class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
                 } ?: context.getTranslation("unknown")
 
                 val eb = Embedder(context)
-                eb.setTitle(result.title ?: missing, result.url)
+                eb.setTitle(result.title ?: "???", result.url)
 
-                eb.addField(type, result.type?.toString() ?: missing, true)
-                eb.addField(episodes, "${result.episodes ?: missing}", true)
+                eb.addField(type, result.type?.toString() ?: "?", true)
+                eb.addField(episodes, "${result.episodes ?: "?"}", true)
                 eb.addField(rating, "${result.score ?: "?"}/10.0", true)
 
                 eb.addField(startDate, result.startDate?.toUniversalDateFormat() ?: "/", true)
                 eb.addField(endDate, result.endDate?.toUniversalDateFormat() ?: "/", true)
                 eb.addField(airing, airingValue, true)
 
-                eb.addField(description, result.synopsis ?: missing, false)
+                eb.addField(synopsis, result.synopsis ?: "/", false)
 
                 eb.setThumbnail(result.imageUrl)
+
+                result.members?.let {
+                    val members = context.getTranslation("footer.members")
+                    eb.setFooter(members.replace("%amount%", "$it"))
+                }
 
                 sendEmbed(context, eb.build())
 
@@ -102,7 +288,6 @@ class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
             }
         }
     }
-
 
     class UserArg(parent: String) : AbstractCommand("$parent.user") {
 
@@ -122,22 +307,22 @@ class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
             try {
                 val result = JikanKt.getUser(user)
 
-                val about = context.getTranslation("about")
-                val joinDate = context.getTranslation("joindate")
+                val about = context.getTranslation("title.about")
+                val joinDate = context.getTranslation("title.joindate")
 
 
                 val eb = Embedder(context)
-                eb.setTitle("MAL User: ${result.username}", result.url)
+                eb.setTitle(result.username, result.url)
 
                 eb.addField(joinDate, result.joined?.toUniversalDateFormat() ?: "/", true)
                 result.location?.let {
-                    eb.addField(context.getTranslation("location"), it, true)
+                    eb.addField(context.getTranslation("title.location"), it, true)
                 }
                 result.birthday?.let {
-                    eb.addField(context.getTranslation("birthday"), it.toUniversalDateFormat(), true)
+                    eb.addField(context.getTranslation("title.birthday"), it.toUniversalDateFormat(), true)
                 }
                 result.gender?.let {
-                    eb.addField(context.getTranslation("gender"), it, true)
+                    eb.addField(context.getTranslation("title.gender"), it, true)
                 }
 
                 eb.addField(about, result.about ?: "", false)
@@ -182,9 +367,8 @@ class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
                 }
 
                 result.lastOnline?.let {
-                    eb.addField(context.getTranslation("lastonline"), it.toUniversalDateTimeFormat(), false)
+                    eb.addField(context.getTranslation("title.lastonline"), it.toUniversalDateTimeFormat(), false)
                 }
-
 
                 eb.setThumbnail(result.imageUrl)
                 sendEmbed(context, eb.build())

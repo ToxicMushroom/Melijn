@@ -1,10 +1,10 @@
 {
-  "name": "Untitled GraphQL Schema",
-  "schemaPath": "/schema.graphql",
+  "name": "AniList GraphQL Schema",
+  "schemaPath": "/schema.json",
   "extensions": {
     "endpoints": {
       "Default GraphQL Endpoint": {
-        "url": "http://localhost:8080/graphql",
+        "url": "https://anilist.co/graphiql",
         "headers": {
           "user-agent": "JS GraphQL"
         },
