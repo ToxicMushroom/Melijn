@@ -55,13 +55,13 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         CoroutineScope(Dispatchers.Default).launch {
             try {
                 commandFinder(event)
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (t: Throwable) {
+                t.printStackTrace()
 
                 if (event.isFromType(ChannelType.PRIVATE)) {
-                    e.sendInGuild(channel = event.privateChannel, author = event.author)
+                    t.sendInGuild(channel = event.privateChannel, author = event.author)
                 } else if (event.isFromType(ChannelType.TEXT)) {
-                    e.sendInGuild(event.guild, event.textChannel, event.author)
+                    t.sendInGuild(event.guild, event.textChannel, event.author)
                 }
             }
         }
@@ -70,6 +70,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
     private suspend fun commandFinder(event: MessageReceivedEvent) {
         val prefixes = getPrefixes(event)
         val message = event.message
+        if (message.contentRaw.isBlank()) return
 
         val ccsWithPrefix = mutableListOf<CustomCommand>()
         val ccsWithoutPrefix = mutableListOf<CustomCommand>()
@@ -126,6 +127,24 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             return
         }
 
+        val prefixLessCommandParts: ArrayList<String> = ArrayList(message.contentRaw
+            .trim()
+            .split(Regex("\\s+")))
+
+        for (cc in ccsWithoutPrefix) {
+            val aliases = cc.aliases
+            if (cc.name.equals(prefixLessCommandParts[0], true)) {
+                commandPartsGlobal = prefixLessCommandParts
+                ccsWithPrefixMatches.add(cc)
+            } else if (aliases != null) {
+                for (alias in aliases) {
+                    if (alias.equals(prefixLessCommandParts[0], true)) {
+                        commandPartsGlobal = prefixLessCommandParts
+                        ccsWithPrefixMatches.add(cc)
+                    }
+                }
+            }
+        }
 
         if (ccsWithPrefixMatches.isNotEmpty()) {
 
