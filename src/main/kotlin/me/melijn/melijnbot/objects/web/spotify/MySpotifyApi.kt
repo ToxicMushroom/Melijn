@@ -25,12 +25,10 @@ class MySpotifyApi(val httpClient: OkHttpClient, val taskManager: TaskManager, v
         .build()
 
     init {
-
         updateSpotifyCredentials()
     }
 
     fun updateSpotifyCredentials() {
-
         val credentialsRequest = spotifyApi.clientCredentials().build()
         CoroutineScope(Dispatchers.IO).launch {
             spotifyApi.accessToken = credentialsRequest.executeAsync().await().accessToken
@@ -94,11 +92,11 @@ class MySpotifyApi(val httpClient: OkHttpClient, val taskManager: TaskManager, v
     private suspend fun fetchTracksFromArtist(songArg: String, trackList: (Array<Track>) -> Unit, spotifyArtistUrl: Pattern) {
         val matcher: Matcher = spotifyArtistUrl.matcher(songArg)
         while (matcher.find()) {
-            if (matcher.group(1) != null) {
-                val id = matcher.group(1).removeFirst("\\?\\S+".toRegex())
-                val tracks = spotifyApi.getArtistsTopTracks(id, CountryCode.US).build().executeAsync().await()
-                trackList(tracks)
-            }
+            if (matcher.group(1) == null) continue
+
+            val id = matcher.group(1).removeFirst("\\?\\S+".toRegex())
+            val tracks = spotifyApi.getArtistsTopTracks(id, CountryCode.US).build().executeAsync().await()
+            trackList(tracks)
         }
     }
 
@@ -106,25 +104,25 @@ class MySpotifyApi(val httpClient: OkHttpClient, val taskManager: TaskManager, v
     private suspend fun acceptTracksIfMatchesPattern(url: String, trackList: (Array<Track>) -> Unit, pattern: Pattern) {
         val matcher: Matcher = pattern.matcher(url)
         while (matcher.find()) {
-            if (matcher.group(1) != null) {
-                val id = matcher.group(1).removeFirst("\\?\\S+".toRegex())
-                val tracks = spotifyApi.getPlaylistsTracks(id).build().executeAsync().await().items.map { playlistTrack ->
-                    playlistTrack.track
-                }
+            if (matcher.group(1) == null) continue
 
-                trackList(tracks.toTypedArray())
+            val id = matcher.group(1).removeFirst("\\?\\S+".toRegex())
+            val tracks = spotifyApi.getPlaylistsTracks(id).build().executeAsync().await().items.map { playlistTrack ->
+                playlistTrack.track
             }
+
+            trackList(tracks.toTypedArray())
         }
     }
 
     private suspend fun acceptIfMatchesPattern(url: String, simpleTrack: (Array<TrackSimplified>) -> Unit, pattern: Pattern) {
         val matcher: Matcher = pattern.matcher(url)
         while (matcher.find()) {
-            if (matcher.group(1) != null) {
-                val id = matcher.group(1).removeFirst("\\?\\S+".toRegex())
-                val simpleTracks = spotifyApi.getAlbumsTracks(id).build().executeAsync().await().items
-                simpleTrack(simpleTracks)
-            }
+            if (matcher.group(1) == null) continue
+
+            val id = matcher.group(1).removeFirst("\\?\\S+".toRegex())
+            val simpleTracks = spotifyApi.getAlbumsTracks(id).build().executeAsync().await().items
+            simpleTrack(simpleTracks)
         }
     }
 

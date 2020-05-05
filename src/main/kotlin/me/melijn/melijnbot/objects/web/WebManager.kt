@@ -15,6 +15,7 @@ import okhttp3.OkHttpClient
 
 class WebManager(val taskManager: TaskManager, val settings: Settings) {
 
+
     val httpClient = OkHttpClient()
         .newBuilder()
         .dispatcher(Dispatcher(taskManager.executorService))
@@ -27,10 +28,9 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
         .build()
 
 
-    lateinit var spotifyApi: MySpotifyApi
+    val spotifyApi: MySpotifyApi = MySpotifyApi(httpClient, taskManager, settings.spotify)
     val binApis: BinApis = BinApis(httpClient)
     val kitsuApi: KitsuApi = KitsuApi(httpClient)
     val botListApi: BotListApi = BotListApi(httpClient, taskManager, settings)
     val weebshApi: WeebshApi = WeebshApi(settings)
-
 }
