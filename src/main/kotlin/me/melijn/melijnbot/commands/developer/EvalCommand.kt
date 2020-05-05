@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.commands.developer
 
 //import org.jetbrains.kotlin.cli.common.environment.setIdeaIoUseFallback
+import groovy.lang.GroovyShell
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
@@ -8,19 +9,25 @@ import me.melijn.melijnbot.objects.utils.sendMsg
 
 class EvalCommand : AbstractCommand("command.eval") {
 
+    val groovyShell: GroovyShell
+
     init {
         id = 22
         name = "eval"
         aliases = arrayOf("evaluate")
-        children = arrayOf(
-            KotlinArg(root)
-        )
         commandCategory = CommandCategory.DEVELOPER
+        groovyShell = GroovyShell()
     }
 
 
     override suspend fun execute(context: CommandContext) {
-        sendMsg(context, "pog no eval")
+        groovyShell.setProperty("context", context)
+
+        try {
+            groovyShell.evaluate(context.rawArg)
+        } catch (t: Throwable) {
+            sendMsg(context, "ERROR:\n```" + t.message + "```")
+        }
     }
 
 
