@@ -5,29 +5,26 @@ import me.melijn.melijnbot.commands.utility.toUniversalDateTimeFormat
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.utils.StringUtils
-import me.melijn.melijnbot.objects.utils.sendEmbed
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.*
 import moe.ganen.jikankt.JikanKt
 import moe.ganen.jikankt.exception.JikanException
 import net.dv8tion.jda.api.entities.MessageEmbed
-import java.lang.Integer.min
 
 class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
 
-    private val seriesArg: AnimeArg
+    private val animeArg: AnimeArg
 
     init {
         id = 158
         name = "myAnimeList"
         aliases = arrayOf("mal")
-        seriesArg = AnimeArg(root)
+        animeArg = AnimeArg(root)
         children = arrayOf(
             UserArg(root),
-            seriesArg,
+            animeArg,
             MangaArg(root),
             CharacterArg(root)
         )
@@ -47,7 +44,7 @@ class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
                 return
             }
 
-            val characterName = context.rawArg.substring(0, min(256, context.rawArg.length))
+            val characterName = context.rawArg.take(256)
 
 
             try {
@@ -55,14 +52,14 @@ class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
                 val character = characterLite?.malId?.let { JikanKt.getCharacter(it) }
                 if (character == null) {
                     val msg = context.getTranslation("$root.noresult")
-                        .replace(PLACEHOLDER_ARG, context.args[0])
+                        .replace(PLACEHOLDER_ARG, characterName)
                     sendMsg(context, msg)
                     return
                 }
 
                 val eb = Embedder(context)
 
-                val name = context.getTranslation("title.name")
+                val name = context.getTranslation("title.fullname")
                 val namekanji = context.getTranslation("title.namekanji")
                 val alternativenames = context.getTranslation("title.alternativenames")
 
@@ -71,7 +68,7 @@ class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
 
                 eb.setThumbnail(character.imageUrl)
                 eb.setTitle(character.name ?: "/", character.url)
-                eb.setDescription(character.about?.take(MessageEmbed.TEXT_MAX_LENGTH) ?: "/")
+                eb.setDescription(character.about?.remove("\\n")?.take(MessageEmbed.TEXT_MAX_LENGTH) ?: "/")
 
                 eb.addField(name, character.name ?: "/", true)
                 eb.addField(namekanji, character.nameKanji ?: "/", true)
@@ -148,20 +145,22 @@ class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
         init {
             name = "manga"
             aliases = arrayOf("m", "ln")
+            runConditions = arrayOf(RunCondition.CHANNEL_NSFW)
         }
 
+        //TODO ("get the actual manga entry")
         override suspend fun execute(context: CommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
                 return
             }
 
-            val manga = context.rawArg.substring(0, min(256, context.rawArg.length))
+            val manga = context.rawArg.take(256)
             try {
                 val result = JikanKt.searchManga(manga).results?.firstOrNull()
                 if (result == null) {
                     val msg = context.getTranslation("$root.noresult")
-                        .replace(PLACEHOLDER_ARG, context.args[0])
+                        .replace(PLACEHOLDER_ARG, manga)
                     sendMsg(context, msg)
                     return
                 }
@@ -220,8 +219,10 @@ class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
         init {
             name = "anime"
             aliases = arrayOf("a", "series", "movie", "tv", "ova", "ona")
+            runConditions = arrayOf(RunCondition.CHANNEL_NSFW)
         }
 
+        //TODO ("get the actual anime entry")
         override suspend fun execute(context: CommandContext) {
             showSeries(context)
         }
@@ -232,12 +233,12 @@ class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
                 return
             }
 
-            val series = context.rawArg.substring(0, min(256, context.rawArg.length))
+            val animeName = context.rawArg.take(256)
             try {
-                val result = JikanKt.searchAnime(series).results?.firstOrNull()
+                val result = JikanKt.searchAnime(animeName).results?.firstOrNull()
                 if (result == null) {
                     val msg = context.getTranslation("$root.noresult")
-                        .replace(PLACEHOLDER_ARG, context.args[0])
+                        .replace(PLACEHOLDER_ARG, animeName)
                     sendMsg(context, msg)
                     return
                 }
@@ -302,10 +303,16 @@ class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
                 return
             }
 
-            val user = context.rawArg.substring(0, min(256, context.rawArg.length))
+            val user = context.rawArg.take(256)
 
             try {
                 val result = JikanKt.getUser(user)
+                if (result.url == null) {
+                    val msg = context.getTranslation("$root.noresult")
+                        .replace(PLACEHOLDER_ARG, user)
+                    sendMsg(context, msg)
+                    return
+                }
 
                 val about = context.getTranslation("title.about")
                 val joinDate = context.getTranslation("title.joindate")
@@ -382,6 +389,6 @@ class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        seriesArg.showSeries(context)
+        animeArg.showSeries(context)
     }
 }

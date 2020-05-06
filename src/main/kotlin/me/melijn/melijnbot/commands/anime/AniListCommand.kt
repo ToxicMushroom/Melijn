@@ -22,7 +22,7 @@ import java.util.regex.Pattern
 
 class AniListCommand : AbstractCommand("command.anilist") {
 
-    val animeArg: AnimeArg
+    private val animeArg: AnimeArg
 
     init {
         id = 165
@@ -51,7 +51,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                 return
             }
 
-            val mangaName = context.rawArg
+            val mangaName = context.rawArg.take(256)
 
             context.webManager.aniListApolloClient.query(
                 FindMangaQuery.builder()
@@ -76,6 +76,13 @@ class AniListCommand : AbstractCommand("command.anilist") {
         }
 
         suspend fun foundManga(context: CommandContext, media: FindMangaQuery.Media) {
+            if (media.isAdult == true && context.isFromGuild && !context.textChannel.isNSFW) {
+                val msg = context.getTranslation("$root.nsfw")
+                    .replace("%manga%", media.title()?.english() ?: media.title()?.romaji() ?: context.rawArg)
+                sendMsg(context, msg)
+                return
+            }
+
             val eb = Embedder(context)
 
             eb.setThumbnail(media.coverImage()?.extraLarge())
@@ -95,7 +102,8 @@ class AniListCommand : AbstractCommand("command.anilist") {
                     description
                         .replace("<br>", "\n")
                         .replace(("[" + Pattern.quote("\n") + "]{3,15}").toRegex(), "\n\n")
-                        .take(MessageEmbed.TEXT_MAX_LENGTH))
+                        .take(MessageEmbed.TEXT_MAX_LENGTH)
+                )
 
             var alias = media.synonyms()?.joinToString()
             if (alias == null || alias.isBlank()) alias = "/"
@@ -108,8 +116,6 @@ class AniListCommand : AbstractCommand("command.anilist") {
             val format = context.getTranslation("title.format")
             val volumes = context.getTranslation("title.volumes")
             val chapters = context.getTranslation("title.chapters")
-            val avgepisodelength = context.getTranslation("title.avgepisodelength")
-
 
             val status = context.getTranslation("title.status")
             val startdate = context.getTranslation("title.startdate")
@@ -121,8 +127,9 @@ class AniListCommand : AbstractCommand("command.anilist") {
             eb.addField(rating, (media.averageScore()?.toString() ?: "?") + "%", true)
 
             eb.addField(format, media.format()?.toUCC() ?: "/", true)
-            eb.addField("$volumes | $chapters", "${media.volumes()?: 0} | ${media.chapters() ?: 0}", true)
-            eb.addField(avgepisodelength, media.duration()?.toString() ?: "/", true)
+            eb.addField(volumes, "${media.volumes() ?: 0}", true)
+            eb.addField(chapters, "${media.chapters() ?: 0}", true)
+
 
             eb.addField(status, media.status()?.toUCC() ?: "/", true)
             eb.addField(startdate, formatDate(media.startDate()), true)
@@ -178,7 +185,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                 return
             }
 
-            val userName = context.rawArg
+            val userName = context.rawArg.take(256)
 
             context.webManager.aniListApolloClient.query(
                 FindUserQuery.builder()
@@ -354,7 +361,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                 return
             }
 
-            val animeName = context.rawArg
+            val animeName = context.rawArg.take(256)
 
             context.webManager.aniListApolloClient.query(
                 FindAnimeQuery.builder()
@@ -379,6 +386,12 @@ class AniListCommand : AbstractCommand("command.anilist") {
         }
 
         suspend fun foundAnime(context: CommandContext, media: FindAnimeQuery.Media) {
+            if (media.isAdult == true && context.isFromGuild && !context.textChannel.isNSFW) {
+                val msg = context.getTranslation("$root.nsfw")
+                    .replace("%manga%", media.title()?.english() ?: media.title()?.romaji() ?: context.rawArg)
+                sendMsg(context, msg)
+                return
+            }
             val eb = Embedder(context)
 
             eb.setThumbnail(media.coverImage()?.extraLarge())
@@ -480,7 +493,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                 return
             }
 
-            val characterName = context.rawArg
+            val characterName = context.rawArg.take(256)
 
 
             context.webManager.aniListApolloClient.query(
