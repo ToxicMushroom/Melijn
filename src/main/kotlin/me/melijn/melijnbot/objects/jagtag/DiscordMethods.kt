@@ -107,6 +107,18 @@ object DiscordMethods {
         Method("zws", {
             "\u200B"
         }),
+        Method("zwss", {
+            "\u200B "
+        }, { _, args ->
+            val arg = args[0].toIntOrNull() ?: 1
+            "\u200B ".repeat(arg)
+        }),
+        Method("szws", {
+            " \u200B"
+        }, { _, args ->
+            val arg = args[0].toIntOrNull() ?: 1
+            " \u200B".repeat(arg)
+        }),
         Method("currentDateTime", { env ->
             val guild: Guild = env.getReifiedX("guild")
             val user: User = env.getReifiedX("user")
