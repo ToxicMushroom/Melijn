@@ -3,7 +3,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.apollographql.apollo:apollo-gradle-plugin:2.0.2'
+        classpath 'com.apollographql.apollo:apollo-gradle-plugin:2.0.3'
     }
 }
 
@@ -26,10 +26,10 @@ apollo {
         rootPackageName = "me.melijn.melijnbot.anilist"
         sourceFolder = "me/melijn/melijnbot/anilist"
     }
-    service("kitsu") {
-        rootPackageName = "me.melijn.melijnbot.kitsu"
-        sourceFolder = "me/melijn/melijnbot/kitsu"
-    }
+//    service("kitsu") {
+//        rootPackageName = "me.melijn.melijnbot.kitsu"
+//        sourceFolder = "me/melijn/melijnbot/kitsu"
+//    }
 }
 
 
@@ -117,7 +117,7 @@ dependencies {
         exclude group: 'org.slf4j', module: 'slf4j-simple'
     }
 
-    implementation group: 'com.apollographql.apollo', name: 'apollo-runtime', version: '2.0.1'
+    implementation group: 'com.apollographql.apollo', name: 'apollo-runtime', version: '2.0.3'
     implementation group: 'com.apollographql.apollo', name: 'apollo-coroutines-support', version: '2.0.3'
 
     implementation group: 'com.github.husnjak', name: 'IGDB-API-JVM', version: '0.7'
