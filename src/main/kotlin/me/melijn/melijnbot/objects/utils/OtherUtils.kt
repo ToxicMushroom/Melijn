@@ -341,8 +341,11 @@ fun isPremiumGuild(daoManager: DaoManager, guildId: Long): Boolean {
 }
 
 
-fun getLongFromArgN(context: CommandContext, index: Int): Long? =
-    if (context.args.size > index) context.args[index].toLongOrNull() else null
+fun getLongFromArgN(context: CommandContext, index: Int, min: Long = Long.MIN_VALUE, max: Long = Long.MAX_VALUE): Long? {
+    val number = (if (context.args.size > index) context.args[index].toLongOrNull() else null) ?: return null
+    if (number > max || number < min) return null
+    return number
+}
 
 fun getIntegerFromArgN(context: CommandContext, index: Int, min: Int = Int.MIN_VALUE, max: Int = Int.MAX_VALUE): Int? {
     val number = (if (context.args.size > index) context.args[index].toIntOrNull() else null) ?: return null

@@ -14,6 +14,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.net.URL
 import java.util.concurrent.TimeUnit
+import java.util.zip.ZipInputStream
 import javax.imageio.ImageIO
 import kotlin.math.absoluteValue
 import kotlin.math.max
@@ -102,6 +103,140 @@ object ImageUtils {
 
         val nonnullImage: ByteArray = img ?: return null
         return Triple(nonnullImage, url, arg)
+    }
+
+    //ByteArray (imageData)
+    //String (urls)
+    //Boolean (if it is from an argument -> true) (attachment or noArgs(author)) -> false)
+    suspend fun getImagesBytesNMessage(context: CommandContext, reqFormat: String? = null): Triple<List<ByteArray>, Pair<Int, Int>, Boolean>? {
+        val args = context.args
+        val attachments = context.message.attachments
+
+        val imgs: MutableList<ByteArray> = mutableListOf()
+        var error = false
+        var errorFile: String? = null
+        var url = ""
+        val arg: Boolean
+        var maxWidth = 0
+        var maxHeight = 0
+
+        if (attachments.isNotEmpty()) {
+            arg = false
+            for (attachment in attachments) {
+                try {
+                    url = attachment.url
+                    val isZip = url.endsWith(".zip")
+
+                    if (isZip) {
+                        // Attachment is a zip
+                        val zip = URL(url).readBytes()
+                        val zis = ZipInputStream(zip.inputStream())
+                        var ze = zis.nextEntry
+//                        val buffer = ByteArray(4096)
+                        while (ze != null) {
+//                            var len: Int
+                            val img = zis.readAllBytes()
+//                            while (zis.read(buffer).also { len = it } > 0) {
+//                                fos.write(buffer, 0, len)
+//                            }
+                            val anImage = ImageIO.read(ByteArrayInputStream(img))
+                            if (anImage == null) {
+                                error = true
+                                errorFile = url + " > " + ze.name
+                            } else {
+                                maxWidth = max(maxWidth, anImage.width)
+                                maxHeight = max(maxHeight, anImage.height)
+                                imgs.add(img)
+                            }
+                            ze = zis.nextEntry
+                        }
+                        zis.close()
+                    } else {
+                        //Attachment is an image (should be)
+                        url = attachment.url + "?size=2048"
+                        if (!checkFormat(context, attachment.url, reqFormat)) return null
+
+                        val img = URL(url).readBytes()
+                        if (ImageIO.read(ByteArrayInputStream(img)) == null) {
+                            error = true
+                            errorFile = url
+                            break
+                        }
+                        imgs.add(img)
+                    }
+                } catch (e: Throwable) {
+                    val msg = context.getTranslation("message.attachmentnotanimage")
+                        .replace(PLACEHOLDER_ARG, url)
+                    sendMsg(context, msg)
+                    return null
+                }
+            }
+        } else if (args.isNotEmpty() && args[0].isNotEmpty()) {
+            arg = true
+            val urls = args[0].replace("\n", " ").split("\\s+".toRegex())
+
+            try {
+                for (url1 in urls) {
+                    val isZip = url1.endsWith(".zip")
+
+                    if (isZip) {
+                        // One of the arguments is a zip file
+                        val zip = URL(url1).readBytes()
+                        val zis = ZipInputStream(zip.inputStream())
+                        var ze = zis.nextEntry
+//                        val buffer = ByteArray(4096)
+                        while (ze != null) {
+//                            var len: Int
+                            val img = zis.readAllBytes()
+//                            while (zis.read(buffer).also { len = it } > 0) {
+//                                fos.write(buffer, 0, len)
+//                            }
+                            val anImage = ImageIO.read(ByteArrayInputStream(img))
+                            if (anImage == null) {
+                                error = true
+                                errorFile = url1 + " > " + ze.name
+                            } else {
+                                maxWidth = max(maxWidth, anImage.width)
+                                maxHeight = max(maxHeight, anImage.height)
+                                imgs.add(img)
+                            }
+                            ze = zis.nextEntry
+                        }
+                        zis.close()
+
+                    } else {
+                        // One of the arguments is an image
+
+                        if (!checkFormat(context, url1, reqFormat)) return null
+
+                        val img = URL(url1).readBytes()
+                        if (ImageIO.read(ByteArrayInputStream(img)) == null) {
+                            error = true
+                            errorFile = url1
+                            break
+                        }
+                        imgs.add(img)
+                    }
+                }
+            } catch (e: Throwable) {
+                val msg = context.getTranslation("message.attachmentnotanimage")
+                    .replace(PLACEHOLDER_ARG, attachments[0].url)
+                sendMsg(context, msg)
+                return null
+            }
+        } else {
+            sendSyntax(context)
+            return null
+        }
+
+        if (error && imgs.isEmpty()) {
+            val msg = context.getTranslation("message.notimage")
+                .replace("%url%", errorFile ?: "")
+            sendMsg(context, msg)
+            return null
+        }
+
+        return Triple(imgs, Pair(maxWidth, maxHeight), arg)
     }
 
     private suspend fun checkFormat(context: CommandContext, url: String, reqFormat: String?): Boolean {

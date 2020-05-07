@@ -44,8 +44,8 @@ class VoiceService(
             }
 
             if (guildMPlayer?.guildTrackManager != null) {
-                //guildMPlayer.guildTrackManager.stopAndDestroy()
-                logger.info("$guildId stopped player & left")
+                guildMPlayer.guildTrackManager.stopAndDestroy()
+                //logger.info("$guildId stopped player & left")
 
             } else {
                 val isPremium = container.daoManager.musicNodeWrapper.isPremium(guildId)

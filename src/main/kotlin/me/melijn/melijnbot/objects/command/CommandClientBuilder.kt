@@ -181,7 +181,9 @@ class CommandClientBuilder(private val container: Container) {
         SetBotLogStateCommand(),
         SetRoleColorCommand(),
         AniListCommand(),
-        AngryCommand()
+        AngryCommand(),
+        PngsFromGif(),
+        PngsToGif()
     )
 
     init {

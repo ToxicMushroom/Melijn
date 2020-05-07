@@ -610,9 +610,9 @@ suspend fun getMemberByArgsN(guild: Guild, arg: String): Member? {
     else guild.retrieveMember(user).awaitOrNull()
 }
 
-suspend fun notEnoughPermissionsAndMessage(context: CommandContext, channel: GuildChannel, vararg perms: Permission, checkParent: Boolean = false): Boolean {
+suspend fun notEnoughPermissionsAndMessage(context: CommandContext, channel: GuildChannel, vararg perms: Permission): Boolean {
     val member = channel.guild.selfMember
-    val result = notEnoughPermissions(member, channel, perms.toList(), checkParent)
+    val result = notEnoughPermissions(member, channel, perms.toList())
     if (result.first.isNotEmpty()) {
         val more = if (result.first.size > 1) "s" else ""
         val msg = context.getTranslation("message.discordpermission$more.missing")
@@ -637,7 +637,7 @@ suspend fun notEnoughPermissionsAndMessage(context: CommandContext, channel: Gui
     return false
 }
 
-fun notEnoughPermissions(member: Member, channel: GuildChannel, perms: Collection<Permission>, checkParent: Boolean = false): Pair<List<Permission>, List<Permission>> {
+fun notEnoughPermissions(member: Member, channel: GuildChannel, perms: Collection<Permission>): Pair<List<Permission>, List<Permission>> {
     val missingPerms = mutableListOf<Permission>()
     //val missingParentPerms = mutableListOf<Permission>()
     //val parent = channel.parent

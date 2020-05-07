@@ -107,7 +107,7 @@ dependencies {
 
 
     implementation group: 'com.github.ToxicMushroom', name: 'animated-gif-lib-for-java', version: '03e397e311'
-    implementation group: 'com.github.ToxicMushroom', name: 'gifencoder', version: '10a95a4c97'
+    implementation group: 'com.github.ToxicMushroom', name: 'gifencoder', version: '881f627bd9'
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib-jdk8
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.3.72'

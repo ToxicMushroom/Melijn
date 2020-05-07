@@ -31,7 +31,7 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
                     sendSyntax(context)
                     return
                 }
-                if (notEnoughPermissionsAndMessage(context, context.textChannel, Permission.MANAGE_CHANNEL, checkParent = true)) return
+                if (notEnoughPermissionsAndMessage(context, context.textChannel, Permission.MANAGE_CHANNEL)) return
                 val textChannel = context.textChannel
                 val copy = textChannel.createCopy().await()
                 copy.manager.setPosition(textChannel.position)
@@ -40,7 +40,7 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
             }
             context.args.size > 1 && context.args[1] == "confirm" -> {
                 val textChannel = getTextChannelByArgsNMessage(context, 0) ?: return
-                if (notEnoughPermissionsAndMessage(context, textChannel, Permission.MANAGE_CHANNEL, checkParent = true)) return
+                if (notEnoughPermissionsAndMessage(context, textChannel, Permission.MANAGE_CHANNEL)) return
                 val copy = textChannel.createCopy().await()
                 copy.manager.setPosition(textChannel.position)
 

@@ -878,6 +878,8 @@ suspend fun sendMsg(textChannel: TextChannel, msg: String, image: BufferedImage?
             )
         }
 
+        byteArrayOutputStream.close()
+
         it.resume(messageList)
     } catch (t: Throwable) {
         t.printStackTrace()
@@ -900,6 +902,8 @@ suspend fun sendMsg(privateChannel: PrivateChannel, msg: String, image: Buffered
                     .await()
             )
         }
+
+        byteArrayOutputStream.close()
 
         it.resume(messageList)
     } catch (t: Throwable) {
