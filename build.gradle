@@ -118,7 +118,7 @@ dependencies {
     }
 
     implementation group: 'com.apollographql.apollo', name: 'apollo-runtime', version: '2.0.1'
-    implementation group: 'com.apollographql.apollo', name: 'apollo-coroutines-support', version: '2.0.2'
+    implementation group: 'com.apollographql.apollo', name: 'apollo-coroutines-support', version: '2.0.3'
 
     implementation group: 'com.github.husnjak', name: 'IGDB-API-JVM', version: '0.7'
 
