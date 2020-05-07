@@ -127,49 +127,32 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             return
         }
 
-        val prefixLessCommandParts: ArrayList<String> = ArrayList(message.contentRaw
-            .trim()
-            .split(Regex("\\s+")))
-
-        for (cc in ccsWithoutPrefix) {
-            val aliases = cc.aliases
-            if (cc.name.equals(prefixLessCommandParts[0], true)) {
-                commandPartsGlobal = prefixLessCommandParts
-                ccsWithPrefixMatches.add(cc)
-            } else if (aliases != null) {
-                for (alias in aliases) {
-                    if (alias.equals(prefixLessCommandParts[0], true)) {
-                        commandPartsGlobal = prefixLessCommandParts
-                        ccsWithPrefixMatches.add(cc)
-                    }
-                }
-            }
-        }
-
         if (ccsWithPrefixMatches.isNotEmpty()) {
-
             runCustomCommandByChance(event, commandPartsGlobal, ccsWithPrefixMatches, true)
             return
         } else {
+            val prefixLessCommandParts: ArrayList<String> = ArrayList(message.contentRaw
+                .trim()
+                .split(Regex("\\s+")))
+
             for (cc in ccsWithoutPrefix) {
                 val aliases = cc.aliases
-                if (commandPartsGlobal[0].equals(cc.name, true)) {
+                if (prefixLessCommandParts[0].equals(cc.name, true)) {
                     ccsWithoutPrefixMatches.add(cc)
                 } else if (aliases != null) {
                     for (alias in aliases) {
-                        if (alias.equals(commandPartsGlobal[0], true)) {
+                        if (alias.equals(prefixLessCommandParts[0], true)) {
                             ccsWithoutPrefixMatches.add(cc)
                         }
                     }
                 }
+            }
 
+            if (ccsWithoutPrefixMatches.isNotEmpty()) {
+                runCustomCommandByChance(event, prefixLessCommandParts, ccsWithoutPrefixMatches, false)
+                return
             }
         }
-        if (ccsWithoutPrefixMatches.isNotEmpty()) {
-            runCustomCommandByChance(event, commandPartsGlobal, ccsWithoutPrefixMatches, false)
-            return
-        }
-
     }
 
     private suspend fun runCustomCommandByChance(event: MessageReceivedEvent, commandParts: List<String>, ccs: List<CustomCommand>, hasPrefix: Boolean) {
