@@ -218,14 +218,14 @@ class HelpCommand : AbstractCommand("command.help") {
             while (matcher.find()) {
                 val og = matcher.group(0)
                 val path = matcher.group(1)
-                help = help.replace(og, "*" + context.getTranslation(path))
+                help = help.replace(og, "*" + context.getTranslation(path).replace(PLACEHOLDER_PREFIX, context.usedPrefix))
             }
             for (helpPart in StringUtils.splitMessage(help, splitAtLeast = 750, maxLength = 1024)) {
                 embedder.addField(cmdHelp, helpPart, false)
             }
         }
 
-        embedder.addField(cmdCategory, command.commandCategory.toLCC(), false)
+        embedder.addField(cmdCategory, parent.commandCategory.toLCC(), false)
 
         sendEmbed(context, embedder.build())
     }
