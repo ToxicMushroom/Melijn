@@ -99,7 +99,7 @@ dependencies {
     implementation group: 'ru.gildor.coroutines', name: 'kotlin-coroutines-okhttp', version: '1.0'
 
     // https://mvnrepository.com/artifact/com.google.apis/google-api-services-youtube
-    implementation group: 'com.google.apis', name: 'google-api-services-youtube', version: 'v3-rev222-1.25.0'
+    implementation group: 'com.google.apis', name: 'google-api-services-youtube', version: 'v3-rev20200423-1.30.9'
 
     // https://mvnrepository.com/artifact/org.reflections/reflections
     // simplifies loading commands
