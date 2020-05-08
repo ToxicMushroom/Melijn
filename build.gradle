@@ -60,7 +60,7 @@ dependencies {
     implementation group: 'com.github.ToxicMushroom', name: 'JagTag-Kotlin', version: 'c0f01bae27'
 
     // https://search.maven.org/artifact/com.zaxxer/HikariCP
-    implementation group: 'com.zaxxer', name: 'HikariCP', version: '3.4.3'
+    implementation group: 'com.zaxxer', name: 'HikariCP', version: '3.4.4'
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.12'
