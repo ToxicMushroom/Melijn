@@ -33,9 +33,81 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             SetPrefixStateArg(root),
             SetDescriptionArg(root),
             ResponseArg(root),
-            InfoArg(root)
+            InfoArg(root),
+            RenameArg(root),
+            CopyArg(root)
         )
         commandCategory = CommandCategory.ADMINISTRATION
+    }
+
+    class CopyArg(parent: String) : AbstractCommand("$parent.copy") {
+
+        init {
+            name = "copy"
+            aliases = arrayOf("cp")
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+            }
+
+            val guildId = context.guildId
+
+            val id1 = getLongFromArgNMessage(context, 0) ?: return
+            val id2 = getLongFromArgNMessage(context, 1) ?: return
+            val cc1 = context.daoManager.customCommandWrapper.getCCById(guildId, id1)
+            val cc2 = context.daoManager.customCommandWrapper.getCCById(guildId, id2)
+            if (cc1 == null) {
+                val msg = context.getTranslation("message.unknown.ccid")
+                    .replace(PLACEHOLDER_ARG, id.toString())
+                sendMsg(context, msg)
+                return
+            }
+            if (cc2 == null) {
+                val msg = context.getTranslation("message.unknown.ccid")
+                    .replace(PLACEHOLDER_ARG, id.toString())
+                sendMsg(context, msg)
+                return
+            }
+
+            cc2.chance = cc1.chance
+            cc2.content = cc1.content
+            cc2.prefix = cc1.prefix
+
+            context.daoManager.customCommandWrapper.update(context.guildId, cc2)
+
+            val msg = context.getTranslation("$root.success")
+                .replace("%id1%", cc1.id)
+                .replace("%ccName1%", cc1.name)
+                .replace("%id2%", cc2.id)
+                .replace("%ccName2%", cc2.name)
+            sendMsg(context, msg)
+        }
+    }
+
+    class RenameArg(parent: String) : AbstractCommand("$parent.rename") {
+
+        init {
+            name = "rename"
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+            }
+
+            val cc = getSelectedCCNMessage(context) ?: return
+            val newName = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
+            val oldName = cc.name
+            cc.name = newName
+            context.daoManager.customCommandWrapper.update(context.guildId, cc)
+
+            val msg = context.getTranslation("$root.success")
+                .replace("%oldName%", oldName)
+                .replace("%newName%", newName)
+            sendMsg(context, msg)
+        }
     }
 
     companion object {
