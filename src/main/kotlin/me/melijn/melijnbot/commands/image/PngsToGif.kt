@@ -39,7 +39,7 @@ class PngsToGif : AbstractCommand("command.pngstogif") {
         val maxheight = triple.second.second
         val gifEncoder = GifEncoder(baos, maxwidth, maxheight, loopAmount)
 
-        for (f in triple.first) {
+        for ((_, f) in triple.first.toSortedMap()) {
             val frame = ByteArrayInputStream(f).use {
                 ImageIO.read(it)
             }

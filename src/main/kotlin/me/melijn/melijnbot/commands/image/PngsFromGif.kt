@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.commands.image
 
 import com.madgag.gif.fmsware.GifDecoder
+import me.melijn.melijnbot.commands.utility.prependZeros
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
@@ -37,7 +38,7 @@ class PngsFromGif : AbstractCommand("command.pngsfromgif") {
         zipOutputStream.use { zos ->
             for (i in 0 until decoder.frameCount) {
                 val coolFrame = decoder.getFrame(i)
-                val zipEntry = ZipEntry("frame_$i.png")
+                val zipEntry = ZipEntry("frame_${gitGud(i, decoder.frameCount)}.png")
                 zos.putNextEntry(zipEntry)
                 val baos = ByteArrayOutputStream()
                 ImageIO.write(coolFrame, "png", baos)
@@ -51,5 +52,10 @@ class PngsFromGif : AbstractCommand("command.pngsfromgif") {
 
         sendFile(context, byteArrayOutputStream.toByteArray(), "zip")
         // zipOutputStream
+    }
+
+    private fun gitGud(cool: Int, maxSize: Int): String {
+        val shouldSize = maxSize.toString().length + 1
+        return cool.toString().prependZeros(shouldSize)
     }
 }
