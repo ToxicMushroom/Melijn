@@ -86,7 +86,7 @@ dependencies {
     // WebServer
     implementation(group: 'org.jooby', name: 'jooby-netty', version: '1.6.6')
 
-    implementation group: 'org.jooby', name: 'jooby-jackson', version: '1.6.6'
+    implementation group: 'org.jooby', name: 'jooby-jackson', version: '1.6.7'
 
     // https://github.com/FasterXML/jackson-module-kotlin
     implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.11.0'
