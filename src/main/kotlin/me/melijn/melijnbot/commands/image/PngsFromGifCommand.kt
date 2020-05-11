@@ -16,7 +16,7 @@ import java.util.zip.ZipOutputStream
 import javax.imageio.ImageIO
 
 
-class PngsFromGif : AbstractCommand("command.pngsfromgif") {
+class PngsFromGifCommand : AbstractCommand("command.pngsfromgif") {
 
     init {
         id = 170

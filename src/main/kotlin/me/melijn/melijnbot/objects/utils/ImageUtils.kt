@@ -79,7 +79,7 @@ object ImageUtils {
                         }
                     }
                 } catch (e: Exception) {
-                    val msg = context.getTranslation("message.wrong.url")
+                    val msg = context.getTranslation("message.notuserorurl")
                         .replace(PLACEHOLDER_ARG, args[0])
                     sendMsg(context, msg)
                     return null

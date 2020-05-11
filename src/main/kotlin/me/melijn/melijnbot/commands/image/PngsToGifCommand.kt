@@ -15,7 +15,7 @@ import java.io.ByteArrayOutputStream
 import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 
-class PngsToGif : AbstractCommand("command.pngstogif") {
+class PngsToGifCommand : AbstractCommand("command.pngstogif") {
 
     init {
         id = 171
@@ -43,6 +43,7 @@ class PngsToGif : AbstractCommand("command.pngstogif") {
             val frame = ByteArrayInputStream(f).use {
                 ImageIO.read(it)
             }
+
             val width = frame.width
             val height = frame.height
 

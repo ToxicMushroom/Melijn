@@ -38,6 +38,7 @@ class PlayCommand : AbstractCommand("command.play") {
         val args = context.oldArgs
         var songArg = context.getRawArgPart(1, -1)
 
+
         val songPosition = if (context.args.isNotEmpty()) {
             when {
                 args[0] == "-t" || args[0] == "-top" -> NextSongPosition.TOP
