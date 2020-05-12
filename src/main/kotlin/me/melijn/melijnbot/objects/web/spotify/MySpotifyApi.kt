@@ -107,8 +107,8 @@ class MySpotifyApi(val httpClient: OkHttpClient, val taskManager: TaskManager, v
             if (matcher.group(1) == null) continue
 
             val id = matcher.group(1).removeFirst("\\?\\S+".toRegex())
-            val tracks = spotifyApi.getPlaylistsTracks(id).build().executeAsync().await().items.map { playlistTrack ->
-                playlistTrack.track
+            val tracks = spotifyApi.getPlaylistsItems(id).build().executeAsync().await().items.map { playlistTrack ->
+                (playlistTrack.track as Track)
             }
 
             trackList(tracks.toTypedArray())

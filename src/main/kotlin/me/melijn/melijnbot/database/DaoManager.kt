@@ -27,6 +27,8 @@ import me.melijn.melijnbot.database.filter.FilterDao
 import me.melijn.melijnbot.database.filter.FilterGroupDao
 import me.melijn.melijnbot.database.filter.FilterGroupWrapper
 import me.melijn.melijnbot.database.filter.FilterWrapper
+import me.melijn.melijnbot.database.giveaway.GiveawayDao
+import me.melijn.melijnbot.database.giveaway.GiveawayWrapper
 import me.melijn.melijnbot.database.kick.KickDao
 import me.melijn.melijnbot.database.kick.KickWrapper
 import me.melijn.melijnbot.database.language.GuildLanguageDao
@@ -107,6 +109,8 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
     val userPrefixWrapper: UserPrefixWrapper
 
     val supporterWrapper: SupporterWrapper
+
+    val giveawayWrapper: GiveawayWrapper
 
     val embedDisabledWrapper: EmbedDisabledWrapper
     val embedColorWrapper: EmbedColorWrapper
@@ -202,6 +206,8 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
         userPrefixWrapper = UserPrefixWrapper(taskManager, UserPrefixDao(driverManager))
 
         supporterWrapper = SupporterWrapper(taskManager, UserSupporterDao(driverManager))
+
+        giveawayWrapper = GiveawayWrapper(taskManager, GiveawayDao(driverManager))
 
         embedDisabledWrapper = EmbedDisabledWrapper(taskManager, EmbedDisabledDao(driverManager))
         embedColorWrapper = EmbedColorWrapper(taskManager, EmbedColorDao(driverManager))

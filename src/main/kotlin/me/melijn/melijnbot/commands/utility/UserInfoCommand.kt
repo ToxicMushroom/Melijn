@@ -25,7 +25,7 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
             retrieveUserByArgsNMessage(context, 0) ?: return
         }
 
-        val member: Member? = context.guild.retrieveMember(user).awaitOrNull()
+        val member: Member? = if (context.isFromGuild) context.guild.retrieveMember(user).awaitOrNull() else null
         val isSupporter = context.daoManager.supporterWrapper.userSupporterIds.contains(user.idLong)
 
         val title1 = context.getTranslation("$root.response1.field1.title")

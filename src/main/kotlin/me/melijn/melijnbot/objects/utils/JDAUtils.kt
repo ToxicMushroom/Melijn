@@ -265,7 +265,8 @@ suspend fun getStringFromArgsNMessage(
     mustMatch: Regex? = null,
     cantContainChars: Array<Char> = emptyArray(),
     cantContainWords: Array<String> = emptyArray(),
-    ignoreCase: Boolean = false): String? {
+    ignoreCase: Boolean = false
+): String? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     if (arg.length < min) {
@@ -334,7 +335,8 @@ suspend fun getEmotejiByArgsNMessage(context: CommandContext, index: Int, sameGu
 }
 
 
-fun getEmotejiByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean = false): Pair<Emote?, String?>? {
+suspend fun getEmotejiByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean = false): Pair<Emote?, String?>? {
+    if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     val emoji = if (SupportedDiscordEmoji.helpMe.contains(arg)) {
         arg
@@ -353,7 +355,8 @@ fun getEmotejiByArgsN(context: CommandContext, index: Int, sameGuildAsContext: B
 }
 
 
-fun getEmoteByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean): Emote? {
+suspend fun getEmoteByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean): Emote? {
+    if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     val matcher = DISCORD_ID.matcher(arg)
     val emoteMatcher = EMOTE_MENTION.matcher(arg)
@@ -388,6 +391,7 @@ fun getEmoteByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boo
 }
 
 suspend fun getColorFromArgNMessage(context: CommandContext, index: Int): Color? {
+    if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     val color: Color? = when {
         arg.matches("(?i)#([a-f]|\\d){6}".toRegex()) -> {
@@ -732,7 +736,9 @@ fun listeningMembers(vc: VoiceChannel, alwaysListeningUser: Long = -1L): Int {
 
 
 suspend fun getTimeFromArgsNMessage(context: CommandContext, start: Long = Long.MIN_VALUE, end: Long = Long.MAX_VALUE): Long? {
-    val parts = context.rawArg.replace(":", " ").split("\\s+".toRegex()).toMutableList()
+    val parts = context.rawArg
+        .replace(":", " ")
+        .split("\\s+".toRegex()).toMutableList()
     parts.reverse()
     var time: Long = 0
     var workingPart = ""

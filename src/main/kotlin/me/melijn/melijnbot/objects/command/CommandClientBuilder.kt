@@ -182,8 +182,10 @@ class CommandClientBuilder(private val container: Container) {
         SetRoleColorCommand(),
         AniListCommand(),
         AngryCommand(),
-        PngsFromGif(),
-        PngsToGif()
+        PngsFromGifCommand(),
+        PngsToGifCommand(),
+        //GiveawayCommand(),
+        ReplaceColorCommand()
     )
 
     init {

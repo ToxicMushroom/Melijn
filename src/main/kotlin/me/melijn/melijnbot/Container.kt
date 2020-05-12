@@ -49,7 +49,7 @@ class Container {
 
     var startTime = System.currentTimeMillis()
 
-    var settings: Settings = objectMapper.readValue(File("config.json"), Settings::class.java)
+    var settings: Settings = objectMapper.readValue(File("${System.getenv("CONFIG_NAME") ?: "config"}.json"), Settings::class.java)
     val taskManager = TaskManager()
 
     //Used by events
