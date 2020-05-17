@@ -2,9 +2,13 @@ package me.melijn.melijnbot.commands.moderation
 
 import me.melijn.melijnbot.database.warn.Warn
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.command.hasPermission
+import me.melijn.melijnbot.objects.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
+import me.melijn.melijnbot.objects.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
@@ -29,6 +33,19 @@ class WarnCommand : AbstractCommand("command.warn") {
         }
 
         val targetMember = retrieveMemberByArgsNMessage(context, 0, true, botAllowed = false) ?: return
+        if (!context.guild.selfMember.canInteract(targetMember)) {
+            val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
+                .replace(PLACEHOLDER_USER, targetMember.asTag)
+            sendMsg(context, msg)
+            return
+        }
+
+        if (!context.member.canInteract(targetMember) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
+            val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
+                .replace(PLACEHOLDER_USER, targetMember.asTag)
+            sendMsg(context, msg)
+            return
+        }
 
         var reason = context.rawArg
             .removeFirst(context.args[0])

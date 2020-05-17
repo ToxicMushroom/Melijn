@@ -12,6 +12,8 @@ const val MESSAGE_UNKNOWN_COMMANDSTATE = "message.unknown.commandstate"
 const val MESSAGE_UNKNOWN_CHANNELTYPE = "message.unknown.channeltype"
 const val MESSAGE_UNKNOWN_ROLETYPE = "message.unknown.roletype"
 const val MESSAGE_UNKNOWN_GAINTYPE = "message.unknown.gaintype"
+const val MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION = "message.selfinteract.member.hierarchyexception"
+const val MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION = "message.interact.member.hierarchyexception"
 
 const val PLACEHOLDER_CHANNEL = "%channel%"
 const val PLACEHOLDER_USER = "%user%"

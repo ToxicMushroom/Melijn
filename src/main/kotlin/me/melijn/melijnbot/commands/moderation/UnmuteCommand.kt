@@ -3,10 +3,10 @@ package me.melijn.melijnbot.commands.moderation
 import me.melijn.melijnbot.database.mute.Mute
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.RoleType
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
+import me.melijn.melijnbot.enums.SpecialPermission
+import me.melijn.melijnbot.objects.command.*
+import me.melijn.melijnbot.objects.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
+import me.melijn.melijnbot.objects.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
@@ -71,6 +71,21 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         }
 
         if (targetMember != null && targetMember.roles.contains(muteRole)) {
+
+            if (!context.guild.selfMember.canInteract(targetMember)) {
+                val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
+                    .replace(PLACEHOLDER_USER, targetMember.asTag)
+                sendMsg(context, msg)
+                return
+            }
+            if (!context.member.canInteract(targetMember) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
+                val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
+                    .replace(PLACEHOLDER_USER, targetMember.asTag)
+                sendMsg(context, msg)
+                return
+            }
+
+
             val exception = guild.removeRoleFromMember(targetMember, muteRole).reason("unmuted").awaitEX()
             if (exception == null) {
                 sendUnmuteLogs(context, targetUser, muteAuthor, mute, unmuteReason)
@@ -89,10 +104,10 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
                 .replace(PLACEHOLDER_USER, targetUser.asTag)
 
             sendMsg(context, msg)
+        }
 
-            if (activeMute != null) {
-                daoManager.muteWrapper.setMute(mute)
-            }
+        if (activeMute != null) {
+            daoManager.muteWrapper.setMute(mute)
         }
     }
 

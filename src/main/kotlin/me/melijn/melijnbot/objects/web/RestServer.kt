@@ -184,7 +184,7 @@ class RestServer(container: Container) : Jooby() {
         }
 
 
-        get("/translate/{language:.*}/{path:.*}") { context ->
+        get("/translate/{language:.+}/{path:.+}") { context ->
             val lang = context.path("language").value()
             val path = context.path("path").value()
             val translation = i18n.getTranslation(lang, path)
@@ -194,7 +194,7 @@ class RestServer(container: Container) : Jooby() {
                 .toMap()
         }
 
-        get("/translations/{language:.*}") { context ->
+        get("/translations/{language:.+}") { context ->
             val lang = context.path("language").value()
             val data = i18n.getTranslations(lang)
             data.toMap()

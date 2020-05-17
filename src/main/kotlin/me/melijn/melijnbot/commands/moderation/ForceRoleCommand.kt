@@ -1,9 +1,13 @@
 package me.melijn.melijnbot.commands.moderation
 
 import kotlinx.coroutines.future.await
+import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.command.hasPermission
+import me.melijn.melijnbot.objects.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
+import me.melijn.melijnbot.objects.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.utils.*
@@ -40,6 +44,20 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
             val role = getRoleByArgsNMessage(context, 1, sameGuildAsContext = true, canInteract = true) ?: return
             val member = context.guild.retrieveMember(user).awaitOrNull()
+            if (member != null) {
+                if (!context.guild.selfMember.canInteract(member)) {
+                    val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
+                        .replace(PLACEHOLDER_USER, member.asTag)
+                    sendMsg(context, msg)
+                    return
+                }
+                if (!context.member.canInteract(member) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
+                    val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
+                        .replace(PLACEHOLDER_USER, member.asTag)
+                    sendMsg(context, msg)
+                    return
+                }
+            }
 
             context.daoManager.forceRoleWrapper.add(context.guildId, user.idLong, role.idLong)
             if (member != null && !member.roles.contains(role)) {

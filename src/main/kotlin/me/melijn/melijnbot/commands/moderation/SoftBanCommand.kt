@@ -3,9 +3,13 @@ package me.melijn.melijnbot.commands.moderation
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.ban.SoftBan
 import me.melijn.melijnbot.enums.LogChannelType
+import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.command.hasPermission
+import me.melijn.melijnbot.objects.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
+import me.melijn.melijnbot.objects.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
@@ -34,11 +38,19 @@ class SoftBanCommand : AbstractCommand("command.softban") {
         }
         val targetUser = retrieveUserByArgsNMessage(context, 0) ?: return
         val member = context.guild.retrieveMember(targetUser).awaitOrNull()
-        if (member != null && !context.guild.selfMember.canInteract(member)) {
-            val msg = context.getTranslation("message.interact.member.hierarchyexception")
-                .replace(PLACEHOLDER_USER, targetUser.asTag)
-            sendMsg(context, msg)
-            return
+        if (member != null) {
+            if (!context.guild.selfMember.canInteract(member)) {
+                val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
+                    .replace(PLACEHOLDER_USER, member.asTag)
+                sendMsg(context, msg)
+                return
+            }
+            if (!context.member.canInteract(member) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
+                val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
+                    .replace(PLACEHOLDER_USER, member.asTag)
+                sendMsg(context, msg)
+                return
+            }
         }
 
         val clearDays = getIntegerFromArgN(context, 1, 1, 7)

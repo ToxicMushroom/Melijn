@@ -1,10 +1,7 @@
 package me.melijn.melijnbot.objects.utils
 
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_USER
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.i18n
+import me.melijn.melijnbot.objects.translation.*
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
@@ -582,7 +579,7 @@ suspend fun retrieveMemberByArgsNMessage(context: CommandContext, index: Int, in
     }
 
     if (interactable && !member.guild.selfMember.canInteract(member)) {
-        val msg = context.getTranslation("message.interact.member.hierarchyexception")
+        val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
             .replace(PLACEHOLDER_USER, member.asTag)
         sendMsg(context, msg)
         return null
@@ -614,7 +611,7 @@ suspend fun getMemberByArgsNMessage(context: CommandContext, index: Int, interac
     }
 
     if (interactable && !member.guild.selfMember.canInteract(member)) {
-        val msg = context.getTranslation("message.interact.member.hierarchyexception")
+        val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
             .replace(PLACEHOLDER_USER, member.asTag)
         sendMsg(context, msg)
         return null
