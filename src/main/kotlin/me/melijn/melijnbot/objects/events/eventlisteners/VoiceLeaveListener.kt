@@ -13,7 +13,7 @@ class VoiceLeaveListener(container: Container) : AbstractListener(container) {
     override fun onEvent(event: GenericEvent) = runBlocking {
         if (event is GuildVoiceLeaveEvent) {
             musicNodeSwitchCheck(container, event)
-            if (!event.member.user.isBot || event.member.user.idLong == container.settings.id) {
+            if (!event.member.user.isBot) {
                 VoiceUtil.channelUpdate(container, event.channelLeft)
             }
         }

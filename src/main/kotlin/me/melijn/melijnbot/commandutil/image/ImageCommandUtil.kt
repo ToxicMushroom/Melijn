@@ -251,7 +251,9 @@ object ImageCommandUtil {
         imgDataParser(img, imgData)
 
         val argData = DataObject.empty()
-        argDataParser(argInt, argData, imgData)
+        if (!argDataParser(argInt, argData, imgData)) { // The arg data parser will send the error message and return false
+            return
+        }
 
         val outputStream = transform(imageByteArray, argData)
         sendFile(context, outputStream.toByteArray(), "png")

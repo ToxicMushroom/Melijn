@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.requests.RestAction
 import net.dv8tion.jda.api.sharding.ShardManager
+import net.dv8tion.jda.api.utils.concurrent.Task
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
 import java.awt.Color
@@ -32,6 +33,30 @@ val Member.asTag: String
 
 val TextChannel.asTag: String
     get() = "#${this.name}"
+
+suspend fun <T> Task<T>.await(failure: ((Throwable) -> Unit)? = null) = suspendCoroutine<T> {
+    onSuccess { success ->
+        it.resume(success)
+    }
+
+    onError { throwable ->
+        if (failure == null) {
+            it.resumeWithException(throwable)
+        } else {
+            failure.invoke(throwable)
+        }
+    }
+}
+
+suspend fun <T> Task<T>.awaitOrNull() = suspendCoroutine<T?> { continuation ->
+    onSuccess { success ->
+        continuation.resume(success)
+    }
+
+    onError {
+        continuation.resume(null)
+    }
+}
 
 suspend fun <T> RestAction<T>.await(failure: ((Throwable) -> Unit)? = null) = suspendCoroutine<T> {
     queue(
@@ -727,11 +752,10 @@ fun getTimespanFromArgNMessage(context: CommandContext, beginIndex: Int): Pair<L
 }
 
 fun listeningMembers(vc: VoiceChannel, alwaysListeningUser: Long = -1L): Int {
-    val guild = vc.guild
-
-    return vc.members.filter { member ->
-        member != guild.selfMember && !(member.voiceState?.isDeafened ?: true) && member.idLong != alwaysListeningUser
-    }.size
+    return vc.members.count { member ->
+        // isDeafened checks both guild and self deafened (no worries)
+        member.user.isBot && (member.voiceState?.isDeafened == false) && (member.idLong != alwaysListeningUser)
+    }
 }
 
 

@@ -11,7 +11,7 @@ class VoiceMoveListener(container: Container) : AbstractListener(container) {
 
     override fun onEvent(event: GenericEvent) = runBlocking {
         if (event is GuildVoiceMoveEvent) {
-            if (!event.member.user.isBot || event.member.user.idLong == container.settings.id) {
+            if (!event.member.user.isBot) {
                 VoiceUtil.channelUpdate(container, event.channelJoined)
                 VoiceUtil.channelUpdate(container, event.channelLeft)
             }

@@ -9,12 +9,9 @@ import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.jagtag.WelcomeJagTagParser
-import me.melijn.melijnbot.objects.utils.awaitBool
+import me.melijn.melijnbot.objects.utils.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelByType
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyRoleByType
-import me.melijn.melijnbot.objects.utils.sendAttachments
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendMsgWithAttachments
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
@@ -89,8 +86,10 @@ object JoinLeaveUtil {
             if (group.getAllRoles) {
                 for ((roleId) in list) {
                     val role = roleId?.let { guild.getRoleById(it) } ?: continue
-                    if (guild.selfMember.canInteract(member)) {
-                        guild.addRoleToMember(member, role).reason("joinrole $group").queue()
+                    if (guild.selfMember.canInteract(role)) {
+                        guild.addRoleToMember(member, role).reason("joinrole ${group.groupName}").queue()
+                    } else {
+                        LogUtils.sendMessageFailedToAddRoleToMember(daoManager, member, role)
                     }
                 }
             } else {

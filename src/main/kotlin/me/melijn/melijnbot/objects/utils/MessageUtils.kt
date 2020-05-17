@@ -321,13 +321,10 @@ suspend fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: T
     }
     if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
         !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
-        try {
-            val msg = textChannel.sendMessage(embed).await()
-            success?.invoke(listOf(msg))
-        } catch (t: Throwable) {
-            t.printStackTrace()
-            failed?.invoke(t)
-        }
+        textChannel.sendMessage(embed).queue(
+            { success?.invoke(listOf(it)) },
+            { failed?.invoke(it) }
+        )
     } else {
         sendEmbedAsMessage(textChannel, embed, success, failed)
     }
@@ -468,7 +465,7 @@ suspend fun sendFile(language: String, textChannel: TextChannel, bytes: ByteArra
     require(textChannel.canTalk()) { "Cannot talk in this channel " + textChannel.name }
     try {
         val messageList = mutableListOf<Message>()
-        if (textChannel.jda.selfUser.allowedFileSize < (bytes.size)) {
+        if (textChannel.guild.maxFileSize < (bytes.size)) {
             val size = humanReadableByteCountBin(bytes.size)
             val max = humanReadableByteCountBin(textChannel.jda.selfUser.allowedFileSize)
             val msg = i18n.getTranslation(language, "message.filetoobig")
@@ -775,7 +772,9 @@ suspend fun sendMsg(channel: TextChannel, msg: String): List<Message> = suspendC
 }
 
 suspend fun sendMsg(channel: TextChannel, msg: String, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
-    require(channel.canTalk()) { "Cannot talk in this channel " + channel.name }
+    require(channel.canTalk()) {
+        "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
+    }
     try {
         val messageList = mutableListOf<Message>()
         if (msg.length <= 2000) {
