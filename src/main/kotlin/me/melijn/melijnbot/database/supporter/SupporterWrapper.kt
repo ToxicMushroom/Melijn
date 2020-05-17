@@ -21,8 +21,11 @@ class SupporterWrapper(val taskManager: TaskManager, private val userSupporterDa
 
     suspend fun add(userId: Long) {
         if (!userSupporterIds.contains(userId)) {
+            val addTime = System.currentTimeMillis()
+            val newUser = Supporter(userId, -1, addTime, 0)
+            supporters = supporters + newUser
             userSupporterIds = userSupporterIds + userId
-            userSupporterDao.addUser(userId)
+            userSupporterDao.addUser(newUser)
         }
     }
 
