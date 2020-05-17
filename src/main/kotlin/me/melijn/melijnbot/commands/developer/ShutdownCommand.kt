@@ -5,7 +5,6 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.services.voice.VOICE_SAFE
 import me.melijn.melijnbot.objects.utils.sendMsg
-import org.slf4j.LoggerFactory
 import kotlin.system.exitProcess
 
 
@@ -16,8 +15,6 @@ class ShutdownCommand : AbstractCommand("command.shutdown") {
         name = "shutdown"
         commandCategory = CommandCategory.DEVELOPER
     }
-
-    val logger = LoggerFactory.getLogger(this::class.java.name)
 
     override suspend fun execute(context: CommandContext) {
         val players = context.lavaManager.musicPlayerManager.getPlayers()

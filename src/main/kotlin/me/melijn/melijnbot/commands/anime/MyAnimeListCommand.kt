@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.anime
 
+import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.commands.utility.toUniversalDateFormat
 import me.melijn.melijnbot.commands.utility.toUniversalDateTimeFormat
 import me.melijn.melijnbot.objects.command.AbstractCommand
@@ -10,12 +11,14 @@ import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.utils.*
 import moe.ganen.jikankt.JikanKt
+import moe.ganen.jikankt.connection.RestClient
 import moe.ganen.jikankt.exception.JikanException
 import net.dv8tion.jda.api.entities.MessageEmbed
 
-class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
+class MyAnimeListCommand(jikanSettings: Settings.Jikan) : AbstractCommand("command.myanimelist") {
 
     private val animeArg: AnimeArg
+    private val jikanUrl: String
 
     init {
         id = 158
@@ -28,6 +31,9 @@ class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
             MangaArg(root),
             CharacterArg(root)
         )
+        jikanUrl = "http${(if (jikanSettings.ssl) "s" else "")}://${jikanSettings.host}:${jikanSettings.port}/v3/"
+
+        JikanKt.apply { restClient = RestClient(false, jikanUrl) }
         commandCategory = CommandCategory.ANIME
     }
 
@@ -48,6 +54,7 @@ class MyAnimeListCommand : AbstractCommand("command.myanimelist") {
 
 
             try {
+
                 val characterLite = JikanKt.searchCharacter(characterName).results?.firstOrNull()
                 val character = characterLite?.malId?.let { JikanKt.getCharacter(it) }
                 if (character == null) {

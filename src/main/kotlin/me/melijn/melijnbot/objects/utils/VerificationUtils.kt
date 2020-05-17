@@ -19,11 +19,11 @@ object VerificationUtils {
     //guildId, userId, time
     private val memberJoinTimes = HashMap<Long, HashMap<Long, Long>>()
 
-    suspend fun getUnverifiedRoleNMessage(user: User?, textChannel: TextChannel, daoManager: DaoManager): Role? {
+    suspend fun getUnverifiedRoleNMessage(user: User?, textChannel: TextChannel, daoManager: DaoManager, prefix: String): Role? {
         val role = getUnverifiedRoleN(textChannel, daoManager)
 
         if (role == null) {
-            sendNoUnverifiedRoleIsSetMessage(daoManager, user, textChannel)
+            sendNoUnverifiedRoleIsSetMessage(daoManager, user, textChannel, prefix)
         }
 
         return role
@@ -40,9 +40,10 @@ object VerificationUtils {
         }
     }
 
-    private suspend fun sendNoUnverifiedRoleIsSetMessage(daoManager: DaoManager, user: User?, textChannel: TextChannel) {
+    private suspend fun sendNoUnverifiedRoleIsSetMessage(daoManager: DaoManager, user: User?, textChannel: TextChannel, prefix: String) {
         val language = getLanguage(daoManager, user?.idLong ?: -1L, textChannel.guild.idLong)
         val msg = i18n.getTranslation(language, "message.notset.role.unverified")
+            .replace("%prefix%", prefix)
 
         sendMsg(textChannel, msg)
     }

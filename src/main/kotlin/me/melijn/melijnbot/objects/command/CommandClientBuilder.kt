@@ -177,7 +177,7 @@ class CommandClientBuilder(private val container: Container) {
         BannedMessageCommand(),
         KickedMessageCommand(),
         SetBannedOrKickedTriggersLeaveCommand(),
-        MyAnimeListCommand(),
+        MyAnimeListCommand(container.settings.jikan),
         SetBotLogStateCommand(),
         SetRoleColorCommand(),
         AniListCommand(),

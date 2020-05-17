@@ -14,6 +14,7 @@ public class Settings {
     public int restPort;
     public int embedColor;
     public long exceptionChannel;
+    public Jikan jikan;
 
     public Spotify spotify;
     public Lavalink lavalink;
@@ -24,6 +25,12 @@ public class Settings {
     public static class Spotify {
         public String clientId;
         public String password;
+    }
+
+    public static class Jikan {
+        public boolean ssl;
+        public String host;
+        public int port;
     }
 
     public static class Lavalink {

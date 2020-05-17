@@ -1,6 +1,9 @@
 package me.melijn.melijnbot.objects.web
 
 import com.sun.management.OperatingSystemMXBean
+import io.jooby.Context
+import io.jooby.Jooby
+import io.jooby.json.JacksonModule
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
@@ -14,8 +17,6 @@ import me.melijn.melijnbot.objects.utils.getUnixRam
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
-import org.jooby.Jooby
-import org.jooby.json.Jackson
 import java.lang.management.ManagementFactory
 import java.util.*
 import java.util.concurrent.ThreadPoolExecutor
@@ -23,16 +24,20 @@ import java.util.concurrent.ThreadPoolExecutor
 
 class RestServer(container: Container) : Jooby() {
 
+    fun Context.send(any: Any) {
+        this.send(any.toString())
+    }
+
     init {
         //val token = container.settings.tokens.melijnRest
-        use(Jackson())
+        install(JacksonModule())
 
-        get("/guildCount") { _, rsp ->
-            rsp.send(MelijnBot.shardManager.guildCache.size())
+        get("/guildCount") { context ->
+            context.send(MelijnBot.shardManager.guildCache.size())
         }
 
 
-        get("/stats") { _, rsp ->
+        get("/stats") {
             val bean: OperatingSystemMXBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean::class.java)
             val totalMem = bean.totalPhysicalMemorySize shr 20
 
@@ -62,11 +67,11 @@ class RestServer(container: Container) : Jooby() {
                 .put("ramTotal", totalMem)
             )
 
-            rsp.send(dataObject.toMap())
+            dataObject.toMap()
         }
 
 
-        get("/shards") { _, rsp ->
+        get("/shards") {
 
             val shardManager = MelijnBot.shardManager
             val dataArray = DataArray.empty()
@@ -99,19 +104,17 @@ class RestServer(container: Container) : Jooby() {
 
                 dataArray.add(dataObject)
             }
-            rsp.send(dataArray.toList())
+            dataArray.toList()
         }
 
 
-        get("/guild/{id:\\d+}") { req, rsp ->
-            val id = req.param("id").longValue()
+        get("/guild/{id:\\d+}") { context ->
+
+            val id = context.path("id").longValue()
             val guild = MelijnBot.shardManager.getGuildById(id)
-            if (guild == null) {
-                rsp.send(DataObject.empty()
+                ?: return@get DataObject.empty()
                     .put("isBotMember", false)
-                    .toMap())
-                return@get
-            }
+                    .toMap()
 
             val voiceChannels = DataArray.empty()
             val textChannels = DataArray.empty()
@@ -139,7 +142,8 @@ class RestServer(container: Container) : Jooby() {
                     .put("name", role.name)
                 )
             }
-            rsp.send(DataObject.empty()
+
+            DataObject.empty()
                 .put("name", guild.name)
                 .put("iconUrl", if (guild.iconUrl == null) MISSING_IMAGE_URL else guild.iconUrl)
                 .put("memberCount", guild.memberCount)
@@ -148,69 +152,63 @@ class RestServer(container: Container) : Jooby() {
                 .put("voiceChannels", voiceChannels)
                 .put("textChannels", textChannels)
                 .put("roles", roles)
-                .toMap())
+                .toMap()
         }
 
 
-        get("/member/{guildId:\\d+}/{userId:\\d+}") { req, rsp ->
+        get("/member/{guildId:\\d+}/{userId:\\d+}") { context ->
 
             val shardManager = MelijnBot.shardManager
-            val guild = shardManager.getGuildById(req.param("guildId").longValue())
-            if (guild == null) {
-                rsp.send(DataObject.empty()
+            val guild = shardManager.getGuildById(context.path("guildId").longValue())
+                ?: return@get DataObject.empty()
                     .put("error", "Invalid guildId")
                     .put("isMember", false)
-                    .toMap())
-                return@get
-            }
+                    .toMap()
+
             runBlocking {
-                val user = shardManager.retrieveUserById(req.param("userId").longValue()).awaitOrNull()
+                val user = shardManager.retrieveUserById(context.path("userId").longValue()).awaitOrNull()
 
-                val member =
-                    user?.let { guild.retrieveMember(it).awaitOrNull() }
+                val member = user?.let {
+                    guild.retrieveMember(it).awaitOrNull()
+                } ?: return@runBlocking DataObject.empty()
+                    .put("error", "Member not found")
+                    .put("isMember", false)
+                    .toMap()
 
 
-                if (member == null) {
-                    rsp.send(DataObject.empty()
-                        .put("error", "Member not found")
-                        .put("isMember", false)
-                        .toMap())
-                    return@runBlocking
-                }
-
-                rsp.send(DataObject.empty()
+                DataObject.empty()
                     .put("isMember", true)
                     .put("isAdmin", member.hasPermission(Permission.ADMINISTRATOR) || member.isOwner)
-                    .toMap())
+                    .toMap()
             }
         }
 
 
-        get("/translate/{language:.*}/{path:.*}") { req, rsp ->
-            val lang = req.param("language").value()
-            val path = req.param("path").value()
+        get("/translate/{language:.*}/{path:.*}") { context ->
+            val lang = context.path("language").value()
+            val path = context.path("path").value()
             val translation = i18n.getTranslation(lang, path)
-            rsp.send(DataObject.empty()
+            DataObject.empty()
                 .put("isSame", path == translation)
                 .put("translation", translation)
-                .toMap())
+                .toMap()
         }
 
-        get("/translations/{language:.*}") { req, rsp ->
-            val lang = req.param("language").value()
+        get("/translations/{language:.*}") { context ->
+            val lang = context.path("language").value()
             val data = i18n.getTranslations(lang)
-            rsp.send(data.toMap())
+            data.toMap()
         }
 
-        get("/commands") { _, rsp ->
-            rsp.send(container.commandMap)
+        get("/commands") {
+            container.commandMap
         }
 
-        get("/timezones") { _, rsp ->
-            rsp.send(TimeZone.getAvailableIDs())
+        get("/timezones") {
+            TimeZone.getAvailableIDs()
         }
 
         //Has to be registered last to not override other paths
-        get("*") { -> "blub" }
+        get("*") { "blub" }
     }
 }

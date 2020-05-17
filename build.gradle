@@ -79,19 +79,18 @@ dependencies {
         exclude group: 'org.slf4j', module: 'slf4j-simple'
     }
 
-    // https://mvnrepository.com/artifact/ch.qos.logback/logback-core
-    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+    // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 
-    // https://mvnrepository.com/artifact/org.jooby/jooby
-    // WebServer
-    implementation(group: 'org.jooby', name: 'jooby-netty', version: '1.6.7')
+    // https://mvnrepository.com/artifact/io.jooby/jooby
+    implementation(group: 'io.jooby', name: 'jooby-netty', version: '2.8.3')
 
-    implementation group: 'org.jooby', name: 'jooby-jackson', version: '1.6.7'
+    implementation group: 'io.jooby', name: 'jooby-jackson', version: '2.8.3'
 
     // https://github.com/FasterXML/jackson-module-kotlin
     implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.11.0'
 
-    // https://mvnrepository.com/artifact/com.google.guava /guava
+    // https://mvnrepository.com/artifact/com.google.guava/guava
     implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 
     // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
@@ -101,10 +100,6 @@ dependencies {
     // https://mvnrepository.com/artifact/com.google.apis/google-api-services-youtube
     implementation group: 'com.google.apis', name: 'google-api-services-youtube', version: 'v3-rev20200423-1.30.9'
 
-    // https://mvnrepository.com/artifact/org.reflections/reflections
-    // simplifies loading commands
-    // implementation group: 'org.reflections', name: 'reflections', version: '0.9.12'
-
 
     implementation group: 'com.github.ToxicMushroom', name: 'animated-gif-lib-for-java', version: '03e397e311'
     implementation group: 'com.github.ToxicMushroom', name: 'gifencoder', version: '0f8c620995'
@@ -113,9 +108,7 @@ dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.3.72'
 
     // https://github.com/GSculerlor/JikanKt/releases
-    implementation(group: 'com.github.GSculerlor', name: 'JikanKT', version: '1.1.3') {
-        exclude group: 'org.slf4j', module: 'slf4j-simple'
-    }
+    implementation(group: 'com.github.ToxicMushroom', name: 'JikanKT', version: 'ee56c42739')
 
     implementation group: 'com.apollographql.apollo', name: 'apollo-runtime', version: '2.0.3'
     implementation group: 'com.apollographql.apollo', name: 'apollo-coroutines-support', version: '2.0.3'

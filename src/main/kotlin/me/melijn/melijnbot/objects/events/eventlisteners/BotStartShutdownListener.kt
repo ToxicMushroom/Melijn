@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.objects.events.eventlisteners
 
+import io.jooby.ServerOptions
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.events.AbstractListener
@@ -8,7 +9,6 @@ import me.melijn.melijnbot.objects.web.RestServer
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.StatusChangeEvent
-import org.jooby.Jooby
 
 class BotStartShutdownListener(container: Container) : AbstractListener(container) {
 
@@ -49,8 +49,15 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
                 logger.info("Services ready")
                 logger.info("Starting Jooby rest server..")
                 val restServer = RestServer(container)
+
                 container.taskManager.async {
-                    Jooby.run({ restServer }, arrayOf("application.port=${container.settings.restPort}"))
+                    restServer
+                        .apply {
+                            serverOptions = ServerOptions()
+                                .setPort(container.settings.restPort)
+
+                        }
+                        .start()
                 }
                 container.restServer = restServer
                 logger.info("Started Jooby rest server")
