@@ -94,7 +94,7 @@ dependencies {
     implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 
     // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
-    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.6.0'
+    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.7.0'
     implementation group: 'ru.gildor.coroutines', name: 'kotlin-coroutines-okhttp', version: '1.0'
 
     // https://mvnrepository.com/artifact/com.google.apis/google-api-services-youtube
