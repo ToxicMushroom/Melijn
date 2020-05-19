@@ -18,7 +18,7 @@ class FilterCommand : AbstractCommand("command.filter") {
     init {
         id = 114
         name = "filter"
-        aliases = arrayOf("chatFilter", "chatMod")
+        aliases = arrayOf("f", "cf", "chatFilter", "chatMod")
         children = arrayOf(
             AllowedArg(root),
             DeniedArg(root)

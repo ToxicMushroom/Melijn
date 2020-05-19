@@ -31,7 +31,7 @@ object RunConditionUtil {
         return when (runCondition) {
             RunCondition.GUILD -> checkGuild(event, language)
             RunCondition.VC_BOT_ALONE_OR_USER_DJ -> checkOtherOrSameVCBotAloneOrUserDJ(container, event, command, language)
-            RunCondition.SAME_VC_BOT_ALONE_OR_USER_DJ -> checkSameVCBotAloneOrUserDJ(container, event, command, language)
+//            RunCondition.SAME_VC_BOT_ALONE_OR_USER_DJ -> checkSameVCBotAloneOrUserDJ(container, event, command, language)
             RunCondition.VC_BOT_OR_USER_DJ -> checkVCBotOrUserDJ(container, event, command, language)
             RunCondition.BOT_ALONE_OR_USER_DJ -> checkBotAloneOrUserDJ(container, event, command, language)
             RunCondition.PLAYING_TRACK_NOT_NULL -> checkPlayingTrackNotNullMessage(container, event, language)
@@ -173,24 +173,6 @@ object RunConditionUtil {
         else if (hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_VCBOTALONE.node, true)) true
         else {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.vcbotalone")
-            sendMsg(event.textChannel, msg)
-            false
-        }
-    }
-
-    suspend fun checkSameVCBotAloneOrUserDJ(container: Container, event: MessageReceivedEvent, command: AbstractCommand, language: String): Boolean {
-        val member = event.member ?: return false
-        val vc = member.voiceState?.channel
-        if (vc == null) {
-            val msg = i18n.getTranslation(language, "message.runcondition.failed.vc")
-            sendMsg(event.textChannel, msg)
-            return false
-        }
-        return if (vc.members.contains(member.guild.selfMember) && listeningMembers(vc, member.idLong) == 0) true
-        else if (!vc.members.contains(member.guild.selfMember) && member.guild.selfMember.voiceState?.inVoiceChannel() != true) true
-        else if (hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_SAMEVCALONE.node, true)) true
-        else {
-            val msg = i18n.getTranslation(language, "message.runcondition.failed.samevcalone")
             sendMsg(event.textChannel, msg)
             false
         }

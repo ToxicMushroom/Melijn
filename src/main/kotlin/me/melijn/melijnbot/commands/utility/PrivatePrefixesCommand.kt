@@ -13,7 +13,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
     init {
         id = 19
         name = "privatePrefixes"
-        aliases = arrayOf("pp")
+        aliases = arrayOf("pp", "privatePrefix")
         children = arrayOf(
             ListArg(root),
             AddArg(root),

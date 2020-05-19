@@ -139,7 +139,8 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
     }
 
     private suspend fun handleMessageReceivedStoring(event: GuildMessageReceivedEvent) {
-        if (event.author.isBot && event.author.idLong != container.settings.id) return
+        // TODO ("Add switch for bot logging 'premium feature'")
+//        if (event.author.isBot && event.author.idLong != container.settings.id) return
         val guildId = event.guild.idLong
         val logChannelWrapper = container.daoManager.logChannelWrapper
         val logChannelCache = logChannelWrapper.logChannelCache

@@ -16,13 +16,14 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
     init {
         id = 18
         name = "prefixes"
-        commandCategory = CommandCategory.ADMINISTRATION
+        aliases = arrayOf("prefix")
         children = arrayOf(
             ListArg(root),
             AddArg(root),
             RemoveArg(root),
             RemoveAtArg(root)
         )
+        commandCategory = CommandCategory.ADMINISTRATION
     }
 
     override suspend fun execute(context: CommandContext) {

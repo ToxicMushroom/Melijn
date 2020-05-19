@@ -6,6 +6,7 @@ import me.melijn.melijnbot.objects.music.GuildMusicPlayer
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.USER_MENTION
 import me.melijn.melijnbot.objects.utils.removeFirst
+import me.melijn.melijnbot.objects.utils.removePrefix
 import me.melijn.melijnbot.objects.web.WebManager
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
@@ -67,7 +68,7 @@ class CommandContext(
     fun initArgs() {
         args = commandParts.drop(1 + commandOrder.size)
         rawArg = contentRaw
-            .removePrefix(commandParts[0])
+            .removePrefix(commandParts[0], true)
             .trim()
 
         for (i in 1..commandOrder.size) {

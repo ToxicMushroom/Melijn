@@ -204,6 +204,14 @@ fun String.removeFirst(vararg regexes: Regex): String {
     return newString
 }
 
+fun String.removePrefix(prefix: CharSequence, ignoreCase: Boolean = false): String {
+    if (startsWith(prefix, ignoreCase)) {
+        return substring(prefix.length)
+    }
+    return this
+}
+
+
 fun String.splitIETEL(delimiter: String): List<String> {
     val res = this.split(delimiter)
     return if (res.first().isEmpty() && res.size == 1) {

@@ -4,6 +4,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.hasPermission
+import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.objects.utils.RunConditionUtil
 import me.melijn.melijnbot.objects.utils.getVoiceChannelByArgNMessage
 import me.melijn.melijnbot.objects.utils.notEnoughPermissionsAndMessage
@@ -21,7 +22,7 @@ class SummonCommand : AbstractCommand("command.summon") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
-            if (!RunConditionUtil.checkSameVCBotAloneOrUserDJ(context.container, context.event, this, context.getLanguage())) return
+            if (!RunConditionUtil.checkBotAloneOrUserDJ(context.container, context.event, this, context.getLanguage())) return
             val vc = context.member.voiceState?.channel ?: throw IllegalStateException("I messed up")
             if (notEnoughPermissionsAndMessage(context, vc, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)) return
 
@@ -40,7 +41,8 @@ class SummonCommand : AbstractCommand("command.summon") {
 
             val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
             context.lavaManager.openConnection(vc, premium)
-            val msg = context.getTranslation("$root.summoned")
+            val msg = context.getTranslation("$root.summoned.other")
+                .replace(PLACEHOLDER_CHANNEL, vc.name)
             sendMsg(context, msg)
         }
     }
