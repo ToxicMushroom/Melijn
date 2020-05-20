@@ -9,10 +9,10 @@ val i18n = TranslateManager()
 const val BASE_BUNDLE_NAME = "strings"
 
 class TranslateManager {
-    val logger = LoggerFactory.getLogger(TranslateManager::class.java)
 
-    private val defaultRecourseBundle: ResourceBundle = ResourceBundle.getBundle(BASE_BUNDLE_NAME)
-    //val dutchBelgianRecourseBundle: ResourceBundle = ResourceBundle.getBundle(BASE_BUNDLE_NAME, Locale("nl_BE"))
+    private val logger = LoggerFactory.getLogger(TranslateManager::class.java)
+
+    private val defaultResourceBundle: ResourceBundle = ResourceBundle.getBundle(BASE_BUNDLE_NAME)
 
     suspend fun getTranslation(context: CommandContext, path: String): String {
         return getTranslation(context.getLanguage(), path)
@@ -20,13 +20,13 @@ class TranslateManager {
 
     fun getTranslation(language: String, path: String): String {
         val bundle = when (language.toUpperCase()) {
-            DEFAULT_LANGUAGE -> defaultRecourseBundle
-            else -> defaultRecourseBundle
+            DEFAULT_LANGUAGE -> defaultResourceBundle
+            else -> defaultResourceBundle
         }
         return if (bundle.containsKey(path)) {
             bundle.getString(path)
         } else {
-            if (path.contains(".")) {
+            if (pathPattern.matches(path)) {
                 logger.warn("missing string: $path")
             }
             path
@@ -35,9 +35,13 @@ class TranslateManager {
 
     fun getTranslations(lang: String): DataObject {
         val map = DataObject.empty()
-        defaultRecourseBundle.keySet().forEach { key ->
+        defaultResourceBundle.keySet().forEach { key ->
             map.put(key, getTranslation(lang, key))
         }
         return map
+    }
+
+    companion object {
+        val pathPattern = "^(?:[a-z0-9]+\\.)*[a-z0-9]+$".toRegex(RegexOption.IGNORE_CASE)
     }
 }

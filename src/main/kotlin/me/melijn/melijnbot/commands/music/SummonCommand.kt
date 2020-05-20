@@ -16,7 +16,7 @@ class SummonCommand : AbstractCommand("command.summon") {
     init {
         id = 94
         name = "summon"
-        aliases = arrayOf("joinChannel")
+        aliases = arrayOf("join", "joinChannel")
         commandCategory = CommandCategory.MUSIC
     }
 
