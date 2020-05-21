@@ -23,7 +23,7 @@ class SetEmbedColorCommand : AbstractCommand("command.setembedcolor") {
         val msg = if (context.args.isEmpty()) {
             val colorInt = wrapper.embedColorCache.get(context.guildId).await()
 
-            if (colorInt == -1) {
+            if (colorInt == 0) {
                 context.getTranslation("$root.show.unset")
             } else {
                 context.getTranslation("$root.show.set")

@@ -32,7 +32,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
 
         init {
             name = "list"
-            aliases = arrayOf("ls")
+            aliases = arrayOf("ls", "view")
         }
 
         override suspend fun execute(context: CommandContext) {

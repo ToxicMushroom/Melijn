@@ -25,7 +25,7 @@ class SetPrivateEmbedColorCommand : AbstractCommand("command.setprivateembedcolo
         val msg = if (context.args.isEmpty()) {
             val colorInt = wrapper.userEmbedColorCache.get(context.authorId).await()
 
-            if (colorInt == -1) {
+            if (colorInt == 0) {
                 context.getTranslation("$root.show.unset")
             } else {
                 context.getTranslation("$root.show.set")

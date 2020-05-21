@@ -50,6 +50,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         override suspend fun execute(context: CommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
+                return
             }
 
             val guildId = context.guildId
@@ -95,6 +96,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         override suspend fun execute(context: CommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
+                return
             }
 
             val cc = getSelectedCCNMessage(context) ?: return
