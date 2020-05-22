@@ -63,9 +63,9 @@ class PurgeCommand : AbstractCommand("command.purge") {
 
 
                     context.textChannel.purgeMessages(messages)
-                    val userMore = if (targetUser == null) "" else "user"
-                    val more = if (amount > 1) "more" else "one"
-                    val msg = context.getTranslation("$root.success.$userMore$more")
+                    val userMore = if (targetUser == null) "" else ".user"
+                    val more = if (amount > 1) ".more" else ".one"
+                    val msg = context.getTranslation("$root.success$userMore$more")
                         .replace("%amount%", amount.toString())
                         .replace(PLACEHOLDER_USER, targetUser?.asTag ?: "")
 
