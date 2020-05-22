@@ -42,6 +42,6 @@ class TranslateManager {
     }
 
     companion object {
-        val pathPattern = "^(?:[a-z0-9]+\\.)*[a-z0-9]+$".toRegex(RegexOption.IGNORE_CASE)
+        val pathPattern = "^(?:[a-z0-9]+\\.)+[a-z0-9]+$".toRegex(RegexOption.IGNORE_CASE)
     }
 }
