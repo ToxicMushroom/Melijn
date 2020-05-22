@@ -115,7 +115,7 @@ dependencies {
 
     implementation group: 'com.github.husnjak', name: 'IGDB-API-JVM', version: '0.7'
 
-    implementation group: 'org.codehaus.groovy', name: 'groovy', version: '3.0.3'
+    implementation group: 'org.codehaus.groovy', name: 'groovy', version: '3.0.4'
 
 
     // START | https://github.com/JetBrains/kotlin/blob/master/libraries/examples/kotlin-jsr223-local-example/build.gradle.kts
