@@ -270,8 +270,8 @@ suspend fun getRoleByArgsNMessage(
     } else if (canInteract) {
         if (!context.guild.selfMember.canInteract(role)) {
             val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, "message.cantinteract.role")
-                .replace(PLACEHOLDER_ARG, context.args[index])
+            val msg = i18n.getTranslation(language, MESSAGE_SELFINTERACT_ROLE_HIARCHYEXCEPTION)
+                .replace(PLACEHOLDER_ROLE, context.args[index])
             sendMsg(context, msg, null)
             return null
         }
