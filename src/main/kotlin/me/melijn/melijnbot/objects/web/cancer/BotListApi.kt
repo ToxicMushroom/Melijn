@@ -81,7 +81,7 @@ class BotListApi(val httpClient: OkHttpClient, val taskManager: TaskManager, val
         }
     }
 
-    fun updateDiscordBotListCom(servers: Long) {
+    fun updateDiscordBotListCom(servers: Long, voice: Long) {
         val token = settings.tokens.discordBotListCom
         val url = "$DISCORD_BOT_LIST_COM/api/bots/${settings.id}/stats"
         if (token.isBlank()) return
@@ -89,10 +89,11 @@ class BotListApi(val httpClient: OkHttpClient, val taskManager: TaskManager, val
             val body = MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("guilds", "$servers")
+                .addFormDataPart("voice_connections", "$voice")
                 .build()
 
             val request = Request.Builder()
-                .addHeader("Authorization", "Bot $token")
+                .addHeader("Authorization", token)
                 .url(url)
                 .post(body)
                 .build()
