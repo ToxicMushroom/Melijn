@@ -43,9 +43,11 @@ class MessageDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 }
 
-data class ModularMessage(var messageContent: String? = null,
-                          var embed: MessageEmbed? = null,
-                          var attachments: Map<String, String> = emptyMap()) {
+data class ModularMessage(
+    var messageContent: String? = null,
+    var embed: MessageEmbed? = null,
+    var attachments: Map<String, String> = emptyMap()
+) {
 
     fun toJSON(): String {
         val json = DataObject.empty()
