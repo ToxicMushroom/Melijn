@@ -27,8 +27,6 @@ import me.melijn.melijnbot.database.filter.FilterDao
 import me.melijn.melijnbot.database.filter.FilterGroupDao
 import me.melijn.melijnbot.database.filter.FilterGroupWrapper
 import me.melijn.melijnbot.database.filter.FilterWrapper
-import me.melijn.melijnbot.database.giveaway.GiveawayDao
-import me.melijn.melijnbot.database.giveaway.GiveawayWrapper
 import me.melijn.melijnbot.database.kick.KickDao
 import me.melijn.melijnbot.database.kick.KickWrapper
 import me.melijn.melijnbot.database.language.GuildLanguageDao
@@ -49,10 +47,7 @@ import me.melijn.melijnbot.database.prefix.GuildPrefixWrapper
 import me.melijn.melijnbot.database.prefix.UserPrefixDao
 import me.melijn.melijnbot.database.prefix.UserPrefixWrapper
 import me.melijn.melijnbot.database.role.*
-import me.melijn.melijnbot.database.settings.BannedOrKickedTriggersLeaveDao
-import me.melijn.melijnbot.database.settings.BannedOrKickedTriggersLeaveWrapper
-import me.melijn.melijnbot.database.settings.BotLogStateDao
-import me.melijn.melijnbot.database.settings.BotLogStateWrapper
+import me.melijn.melijnbot.database.settings.*
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.database.supporter.UserSupporterDao
 import me.melijn.melijnbot.database.time.TimeZoneDao
@@ -107,10 +102,9 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
 
     val guildPrefixWrapper: GuildPrefixWrapper
     val userPrefixWrapper: UserPrefixWrapper
+    val allowSpacedPrefixWrapper: AllowSpacedPrefixWrapper
 
     val supporterWrapper: SupporterWrapper
-
-    val giveawayWrapper: GiveawayWrapper
 
     val embedDisabledWrapper: EmbedDisabledWrapper
     val embedColorWrapper: EmbedColorWrapper
@@ -204,10 +198,11 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
 
         guildPrefixWrapper = GuildPrefixWrapper(taskManager, GuildPrefixDao(driverManager))
         userPrefixWrapper = UserPrefixWrapper(taskManager, UserPrefixDao(driverManager))
+        allowSpacedPrefixWrapper = AllowSpacedPrefixWrapper(taskManager,
+            AllowSpacedPrefixDao(driverManager), PrivateAllowSpacedPrefixDao(driverManager)
+        )
 
         supporterWrapper = SupporterWrapper(taskManager, UserSupporterDao(driverManager))
-
-        giveawayWrapper = GiveawayWrapper(taskManager, GiveawayDao(driverManager))
 
         embedDisabledWrapper = EmbedDisabledWrapper(taskManager, EmbedDisabledDao(driverManager))
         embedColorWrapper = EmbedColorWrapper(taskManager, EmbedColorDao(driverManager))
