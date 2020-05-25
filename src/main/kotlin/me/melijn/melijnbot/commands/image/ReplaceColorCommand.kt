@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.utils.data.DataObject
 import java.awt.Color
 import java.awt.image.BufferedImage
 
-class ReplaceColorCommand : AbstractCommand("command.globalreplacecolor") {
+class ReplaceColorCommand : AbstractCommand("command.replacecolor") {
 
     init {
         id = 173
