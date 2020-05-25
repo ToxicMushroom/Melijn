@@ -48,6 +48,7 @@ class AllowSpacedPrefixWrapper(
     suspend fun setGuildState(guildId: Long, state: Boolean) {
         if (state) allowSpacedPrefixDao.add(guildId)
         else allowSpacedPrefixDao.delete(guildId)
+        allowSpacedPrefixGuildCache.put(guildId, CompletableFuture.completedFuture(state))
     }
 
     suspend fun setUserState(userId: Long, triState: TriState) {
@@ -56,5 +57,6 @@ class AllowSpacedPrefixWrapper(
             TriState.DEFAULT -> privateAllowSpacedPrefixDao.delete(userId)
             TriState.FALSE -> privateAllowSpacedPrefixDao.setState(userId, false)
         }
+        privateAllowSpacedPrefixGuildCache.put(userId, CompletableFuture.completedFuture(triState))
     }
 }
