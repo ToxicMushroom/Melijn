@@ -185,7 +185,9 @@ class CommandClientBuilder(private val container: Container) {
         PngsFromGifCommand(),
         PngsToGifCommand(),
         //GiveawayCommand(),
-        ReplaceColorCommand()
+        ReplaceColorCommand(),
+        SetAllowSpacedPrefixState(),
+        SetPrivateAllowSpacedPrefixState()
     )
 
     init {

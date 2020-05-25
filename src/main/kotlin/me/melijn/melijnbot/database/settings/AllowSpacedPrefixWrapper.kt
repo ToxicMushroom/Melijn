@@ -21,7 +21,13 @@ class AllowSpacedPrefixWrapper(
             containsGuild(key)
         })
 
-    fun containsGuild(guildId: Long): CompletableFuture<Boolean> {
+    val privateAllowSpacedPrefixGuildCache = CacheBuilder.newBuilder()
+        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
+        .build(loadingCacheFrom<Long, TriState> { key ->
+            getUserTriState(key)
+        })
+
+    private fun containsGuild(guildId: Long): CompletableFuture<Boolean> {
         val future = CompletableFuture<Boolean>()
         taskManager.async {
             val result = allowSpacedPrefixDao.contains(guildId)
@@ -30,7 +36,7 @@ class AllowSpacedPrefixWrapper(
         return future
     }
 
-    fun getUserTriState(userId: Long): CompletableFuture<TriState> {
+    private fun getUserTriState(userId: Long): CompletableFuture<TriState> {
         val future = CompletableFuture<TriState>()
         taskManager.async {
             val result = privateAllowSpacedPrefixDao.getState(userId)

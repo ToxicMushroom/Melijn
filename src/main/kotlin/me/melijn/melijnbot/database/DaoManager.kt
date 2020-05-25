@@ -47,10 +47,7 @@ import me.melijn.melijnbot.database.prefix.GuildPrefixWrapper
 import me.melijn.melijnbot.database.prefix.UserPrefixDao
 import me.melijn.melijnbot.database.prefix.UserPrefixWrapper
 import me.melijn.melijnbot.database.role.*
-import me.melijn.melijnbot.database.settings.BannedOrKickedTriggersLeaveDao
-import me.melijn.melijnbot.database.settings.BannedOrKickedTriggersLeaveWrapper
-import me.melijn.melijnbot.database.settings.BotLogStateDao
-import me.melijn.melijnbot.database.settings.BotLogStateWrapper
+import me.melijn.melijnbot.database.settings.*
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.database.supporter.UserSupporterDao
 import me.melijn.melijnbot.database.time.TimeZoneDao
@@ -105,6 +102,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
 
     val guildPrefixWrapper: GuildPrefixWrapper
     val userPrefixWrapper: UserPrefixWrapper
+    val allowSpacedPrefixWrapper: AllowSpacedPrefixWrapper
 
     val supporterWrapper: SupporterWrapper
 
@@ -200,6 +198,9 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
 
         guildPrefixWrapper = GuildPrefixWrapper(taskManager, GuildPrefixDao(driverManager))
         userPrefixWrapper = UserPrefixWrapper(taskManager, UserPrefixDao(driverManager))
+        allowSpacedPrefixWrapper = AllowSpacedPrefixWrapper(taskManager,
+            AllowSpacedPrefixDao(driverManager), PrivateAllowSpacedPrefixDao(driverManager)
+        )
 
         supporterWrapper = SupporterWrapper(taskManager, UserSupporterDao(driverManager))
 

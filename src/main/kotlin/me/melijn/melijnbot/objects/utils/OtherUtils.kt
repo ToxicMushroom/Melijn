@@ -379,6 +379,10 @@ fun Enum<*>.toLCC(): String {
     return uCC[0].toLowerCase() + uCC.substring(1)
 }
 
+//lowerCase
+fun Enum<*>.toLC(): String = this.toString().toLowerCase()
+
+
 val numberRegex = "-?\\d+".toRegex()
 val negativeNumberRegex = "-\\d+".toRegex()
 val positiveNumberRegex = "\\d+".toRegex()
