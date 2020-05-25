@@ -9,6 +9,7 @@ import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.command.CustomCommand
 import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.enums.ChannelCommandState
+import me.melijn.melijnbot.objects.internals.TriState
 import me.melijn.melijnbot.objects.jagtag.CCJagTagParser
 import me.melijn.melijnbot.objects.jagtag.CCJagTagParserArgs
 import me.melijn.melijnbot.objects.translation.getLanguage
@@ -75,7 +76,6 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         val ccsWithPrefix = mutableListOf<CustomCommand>()
         val ccsWithoutPrefix = mutableListOf<CustomCommand>()
         if (event.isFromGuild) {
-
             val ccWrapper = container.daoManager.customCommandWrapper
             val ccs = ccWrapper.customCommandCache.get(event.guild.idLong).await()
 
@@ -101,10 +101,34 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
             val commandParts: ArrayList<String> = ArrayList(message.contentRaw
                 .removeFirst(prefix, ignoreCase = true)
-                .trim()
+                .trimEnd()
                 .split(Regex("\\s+")))
 
-            commandParts.add(0, prefix)
+            if (commandParts[0].isEmpty()) {
+                // Used a space :angry:
+                val userTriState = container.daoManager.allowSpacedPrefixWrapper
+                    .privateAllowSpacedPrefixGuildCache.get(event.author.idLong).await()
+                val allowSpace = if (userTriState == TriState.DEFAULT) {
+                    if (event.isFromGuild) {
+                        val guildAllows = container.daoManager.allowSpacedPrefixWrapper
+                            .allowSpacedPrefixGuildCache.get(event.guild.idLong).await()
+                        guildAllows
+
+                    } else false
+                } else {
+                    when (userTriState) {
+                        TriState.TRUE -> true
+                        TriState.FALSE -> false
+                        else -> false
+                    }
+                }
+
+                if (!allowSpace) return
+
+                commandParts[0] = prefix
+            } else {
+                commandParts.add(0, prefix)
+            }
 
             for (cc in ccsWithPrefix) {
                 val aliases = cc.aliases

@@ -57,7 +57,7 @@ class RemoveCommand : AbstractCommand("command.remove") {
                                 ints.addIfNotPresent(i - 1)
                         }
                     } else {
-                        val msg = context.getTranslation("message.unknown.intorintrange")
+                        val msg = context.getTranslation("message.unknown.numberornumberrange")
                             .replace(PLACEHOLDER_ARG, arg)
                         sendMsg(context, msg)
                         return null
@@ -67,7 +67,7 @@ class RemoveCommand : AbstractCommand("command.remove") {
                         ints.add(arg.toInt() - 1)
                     }
                 } else {
-                    val msg = context.getTranslation("message.unknown.intorintrange")
+                    val msg = context.getTranslation("message.unknown.numberornumberrange")
                         .replace(PLACEHOLDER_ARG, arg)
                     sendMsg(context, msg)
                     return null
