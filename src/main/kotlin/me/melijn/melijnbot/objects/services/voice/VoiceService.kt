@@ -5,7 +5,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.objects.music.MusicPlayerManager
 import me.melijn.melijnbot.objects.services.Service
-import me.melijn.melijnbot.objects.threading.Task
+import me.melijn.melijnbot.objects.threading.RunnableTask
 import me.melijn.melijnbot.objects.utils.listeningMembers
 import net.dv8tion.jda.api.sharding.ShardManager
 import java.util.concurrent.TimeUnit
@@ -17,7 +17,7 @@ class VoiceService(
     val shardManager: ShardManager
 ) : Service("Voice", 1, 1, TimeUnit.MINUTES) {
 
-    override val service = Task {
+    override val service = RunnableTask {
         VOICE_SAFE.acquire()
         val currentTime = System.currentTimeMillis()
         val disconnect = ArrayList(VoiceUtil.disconnectQueue.entries)

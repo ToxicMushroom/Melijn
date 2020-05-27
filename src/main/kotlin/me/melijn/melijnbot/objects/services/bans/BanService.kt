@@ -5,7 +5,7 @@ import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.objects.services.Service
-import me.melijn.melijnbot.objects.threading.Task
+import me.melijn.melijnbot.objects.threading.RunnableTask
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.utils.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
@@ -19,7 +19,7 @@ class BanService(
     val daoManager: DaoManager
 ) : Service("Ban", 1_000, 1_200, TimeUnit.MILLISECONDS) {
 
-    override val service = Task {
+    override val service = RunnableTask {
         val bans = daoManager.banWrapper.getUnbannableBans()
         for (ban in bans) {
             val selfUser = shardManager.shards[0].selfUser

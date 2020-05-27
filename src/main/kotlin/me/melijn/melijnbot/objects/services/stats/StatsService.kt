@@ -2,7 +2,7 @@ package me.melijn.melijnbot.objects.services.stats
 
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.objects.services.Service
-import me.melijn.melijnbot.objects.threading.Task
+import me.melijn.melijnbot.objects.threading.RunnableTask
 import me.melijn.melijnbot.objects.web.cancer.BotListApi
 import net.dv8tion.jda.api.sharding.ShardManager
 import java.util.concurrent.TimeUnit
@@ -12,7 +12,7 @@ class StatsService(
     private val botListApi: BotListApi
 ) : Service("Stats", 2, 3, TimeUnit.MINUTES) {
 
-    override val service = Task {
+    override val service = RunnableTask {
         val shards = shardManager.shardCache.size()
         val guildArray = shardManager.shardCache.map { shard -> shard.guildCache.size() }
         val guilds = shardManager.guildCache.size()
