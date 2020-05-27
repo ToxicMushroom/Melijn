@@ -276,40 +276,29 @@ suspend fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed, succe
     }
 }
 
-suspend fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed): List<Message> = suspendCoroutine {
-    runBlocking {
-        try {
-            if (privateChannel.user.isBot) {
-                it.resume(emptyList())
-                return@runBlocking
-            }
-            val msg = privateChannel.sendMessage(embed).await()
-            it.resume(listOf(msg))
-        } catch (t: Throwable) {
-            it.resumeWithException(t)
-        }
+suspend fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed): List<Message> {
+    if (privateChannel.user.isBot) {
+        return emptyList()
     }
+    val msg = privateChannel.sendMessage(embed).await()
+    return listOf(msg)
 }
 
 
-suspend fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChannel, embed: MessageEmbed): List<Message> = suspendCoroutine {
-    runBlocking {
-        val guild = textChannel.guild
-        if (!textChannel.canTalk()) {
-            it.resumeWithException(IllegalArgumentException("No permission to talk in this channel"))
-            return@runBlocking
-        }
-        if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
-            !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
-            try {
-                val msg = textChannel.sendMessage(embed).await()
-                it.resume(listOf(msg))
-            } catch (t: Throwable) {
-                it.resumeWithException(t)
-            }
-        } else {
-            it.resume(sendEmbedAsMessage(textChannel, embed))
-        }
+suspend fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChannel, embed: MessageEmbed): List<Message> {
+    val guild = textChannel.guild
+    if (!textChannel.canTalk()) {
+        throw IllegalArgumentException("No permission to talk in this channel")
+    }
+
+    return if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
+        !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
+
+        val msg = textChannel.sendMessage(embed).await()
+        listOf(msg)
+
+    } else {
+        sendEmbedAsMessage(textChannel, embed)
     }
 }
 

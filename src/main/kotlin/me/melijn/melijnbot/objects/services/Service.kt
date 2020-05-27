@@ -1,7 +1,7 @@
 package me.melijn.melijnbot.objects.services
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder
-import me.melijn.melijnbot.objects.threading.Task
+import me.melijn.melijnbot.objects.threading.RunnableTask
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.Executors
@@ -20,7 +20,7 @@ abstract class Service(
     private lateinit var future: ScheduledFuture<*>
     val logger: Logger = LoggerFactory.getLogger(name)
 
-    abstract val service: Task
+    abstract val service: RunnableTask
 
     open fun start() {
         future = scheduledExecutor.scheduleAtFixedRate(service, initialDelay, period, unit)
@@ -32,3 +32,4 @@ abstract class Service(
         logger.info("Stopped $name-Service")
     }
 }
+

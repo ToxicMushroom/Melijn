@@ -2,7 +2,7 @@ package me.melijn.melijnbot.objects.services.donator
 
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.services.Service
-import me.melijn.melijnbot.objects.threading.Task
+import me.melijn.melijnbot.objects.threading.RunnableTask
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.sharding.ShardManager
 import java.util.concurrent.TimeUnit
@@ -12,7 +12,7 @@ class DonatorService(
     val shardManager: ShardManager
 ) : Service("Donator", 2, 2, TimeUnit.MINUTES) {
 
-    override val service = Task {
+    override val service = RunnableTask {
         val wrapper = container.daoManager.supporterWrapper
         val guild = shardManager.getGuildById(340081887265685504)
 

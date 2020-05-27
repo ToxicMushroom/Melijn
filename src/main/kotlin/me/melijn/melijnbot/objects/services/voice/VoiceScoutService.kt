@@ -4,7 +4,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil.checkShouldDisconnectAndApply
 import me.melijn.melijnbot.objects.music.MusicPlayerManager
 import me.melijn.melijnbot.objects.services.Service
-import me.melijn.melijnbot.objects.threading.Task
+import me.melijn.melijnbot.objects.threading.RunnableTask
 import net.dv8tion.jda.api.sharding.ShardManager
 import java.util.concurrent.TimeUnit
 
@@ -13,7 +13,7 @@ class VoiceScoutService(
     val shardManager: ShardManager
 ) : Service("VoiceScout", 1, 1, TimeUnit.MINUTES) {
 
-    override val service = Task {
+    override val service = RunnableTask {
         VOICE_SAFE.acquire()
         val gmp = MusicPlayerManager.guildMusicPlayers
         val iterator = gmp.iterator()
