@@ -113,7 +113,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
 
         val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
         val message: Message? = privateChannel?.let {
-            sendMsgEL(it, muting)
+            sendMsgAwaitEL(it, muting)
         }?.firstOrNull()
 
         continueMuting(context, muteRole, targetUser, mute, activeMute, message)

@@ -308,7 +308,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     )
 
                     embedder.setDescription(part)
-                    val messagesPart = sendEmbed(context.daoManager.embedDisabledWrapper, channel, embedder.build())
+                    val messagesPart = sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, channel, embedder.build())
 
                     val emoteAmount = part.count { c -> c == '\n' } / max(ratio, 1)
                     val emoteMessage = messagesPart.last()
@@ -333,7 +333,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 val titleFormat = context.getTranslation("$root.titleformat")
                 embedder.setTitle(titleFormat.replace("%group%", group.groupName))
                 embedder.setDescription(body)
-                val messagesPart = sendEmbed(context.daoManager.embedDisabledWrapper, channel, embedder.build())
+                val messagesPart = sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, channel, embedder.build())
 
                 val emoteMessage = messagesPart.last()
                 for (emoteIndex in alreadyEmotesAmount until (alreadyEmotesAmount + shouldCount)) {

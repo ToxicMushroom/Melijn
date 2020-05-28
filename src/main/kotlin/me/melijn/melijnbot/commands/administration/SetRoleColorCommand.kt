@@ -32,7 +32,7 @@ class SetRoleColorCommand : AbstractCommand("command.setrolecolor") {
                 val msg = context.getTranslation("$root.show")
                     .replace("%role%", role.name)
                     .replace("%color%", color.toHex())
-                sendMsg(context, msg, plane, "jpg")
+                sendMsgAwaitEL(context, msg, plane, "jpg")
             }
 
             return
@@ -56,7 +56,7 @@ class SetRoleColorCommand : AbstractCommand("command.setrolecolor") {
                 .replace("%role%", role.name)
                 .replace("%oldColor%", oldColor?.toHex() ?: "/")
                 .replace("%color%", color.toHex())
-            sendMsg(context, msg, plane, "jpg")
+            sendMsgAwaitEL(context, msg, plane, "jpg")
         }
     }
 }

@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.objects.music
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import kotlinx.coroutines.runBlocking
@@ -17,7 +16,7 @@ class MusicPlayerManager(
 ) {
 
     private val logger = LoggerFactory.getLogger(MusicPlayerManager::class.java)
-    val audioPlayerManager: AudioPlayerManager = DefaultAudioPlayerManager()
+    val audioPlayerManager: DefaultAudioPlayerManager = DefaultAudioPlayerManager()
     val audioLoader = AudioLoader(this)
 
     companion object {

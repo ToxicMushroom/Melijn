@@ -73,7 +73,7 @@ class UnbanCommand : AbstractCommand("command.unban") {
                 val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
                 privateChannel?.let {
                     try {
-                        val msg = sendEmbed(it, msgLc)
+                        val msg = sendEmbedAwaitEL(it, msgLc)
                         continueUnbanning(context, targetUser, ban, banAuthor, msg[0])
                     } catch (t: Throwable) {
                         continueUnbanning(context, targetUser, ban, banAuthor, null)

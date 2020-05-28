@@ -501,8 +501,8 @@ object LogUtils {
 
             val msg: Message? = message.toMessage()
             when {
-                msg == null -> sendAttachments(textChannel, message.attachments)
-                message.attachments.isNotEmpty() -> sendMsgWithAttachments(textChannel, msg, message.attachments)
+                msg == null -> sendAttachmentsAwaitN(textChannel, message.attachments)
+                message.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(textChannel, msg, message.attachments)
                 else -> sendMsg(textChannel, msg, failed = { t -> t.printStackTrace() })
             }
         }
