@@ -48,8 +48,12 @@ class MelijnOrderedExecutor(private val delegateService: ExecutorService) {
         }
 
         private suspend fun executeQueue(queue: BlockingQueue<suspend () -> Unit>) {
-            var next: suspend () -> Unit
-            while (queue.poll().also { next = it } != null) {
+            var next: (suspend () -> Unit)?
+
+            do {
+                next = queue.poll()
+                if (next == null) break
+
                 var finished = false
                 finished = try {
                     next.invoke()
@@ -59,7 +63,8 @@ class MelijnOrderedExecutor(private val delegateService: ExecutorService) {
                         delegateService.launch { ChannelRunnable(key).run() }
                     }
                 }
-            }
+            } while (true)
+
             states.remove(key, queue)
         }
 

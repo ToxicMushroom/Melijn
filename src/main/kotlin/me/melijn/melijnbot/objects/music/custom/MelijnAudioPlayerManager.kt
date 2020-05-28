@@ -4,12 +4,10 @@ import com.sedmelluq.discord.lavaplayer.player.*
 import com.sedmelluq.discord.lavaplayer.remote.RemoteNodeRegistry
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager
 import com.sedmelluq.discord.lavaplayer.source.ProbingAudioSourceManager
-import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager
 import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools
 import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.tools.GarbageCollectionMonitor
-import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpConfigurable
 import com.sedmelluq.discord.lavaplayer.tools.io.MessageInput
 import com.sedmelluq.discord.lavaplayer.tools.io.MessageOutput
@@ -349,6 +347,7 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
                 continue
             }
             val item = sourceManager.loadItem(this, reference)
+
             if (item != null) {
                 if (item is AudioTrack) {
                     log.debug("Loaded a track with identifier {} using {}.", reference.identifier, sourceManager.javaClass.simpleName)
@@ -433,21 +432,5 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
         garbageCollectionMonitor = GarbageCollectionMonitor(scheduledExecutorService)
         lifecycleManager = AudioPlayerLifecycleManager(scheduledExecutorService, cleanupThreshold)
         lifecycleManager.initialise()
-    }
-}
-
-private fun YoutubeAudioSourceManager.loadItem(melijnAudioPlayerManager: MelijnAudioPlayerManager, reference: AudioReference): AudioItem? {
-    return try {
-        apply {
-
-        }
-        linkRouter.route(reference.identifier, loadingRoutes)
-    } catch (exception: FriendlyException) {
-        // In case of a connection reset exception, try once more.
-        if (HttpClientTools.isRetriableNetworkException(exception.cause)) {
-            loadItemOnce(reference)
-        } else {
-            throw exception
-        }
     }
 }
