@@ -1,15 +1,15 @@
 package me.melijn.melijnbot.objects.music.custom
 
 import com.sedmelluq.discord.lavaplayer.player.*
-import com.sedmelluq.discord.lavaplayer.remote.RemoteAudioTrackExecutor
-import com.sedmelluq.discord.lavaplayer.remote.RemoteNodeManager
 import com.sedmelluq.discord.lavaplayer.remote.RemoteNodeRegistry
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager
 import com.sedmelluq.discord.lavaplayer.source.ProbingAudioSourceManager
+import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager
 import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools
 import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.tools.GarbageCollectionMonitor
+import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpConfigurable
 import com.sedmelluq.discord.lavaplayer.tools.io.MessageInput
 import com.sedmelluq.discord.lavaplayer.tools.io.MessageOutput
@@ -63,11 +63,9 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
     private var useSeekGhosting: Boolean
 
     // Additional services
-    private val remoteNodeManager: RemoteNodeManager
     private val garbageCollectionMonitor: GarbageCollectionMonitor
     private val lifecycleManager: AudioPlayerLifecycleManager
     override fun shutdown() {
-        remoteNodeManager.shutdown(true)
         garbageCollectionMonitor.disable()
         lifecycleManager.shutdown()
         for (sourceManager in sourceManagers) {
@@ -79,11 +77,7 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
     }
 
     override fun useRemoteNodes(vararg nodeAddresses: String) {
-        if (nodeAddresses.isNotEmpty()) {
-            remoteNodeManager.initialise(listOf(*nodeAddresses))
-        } else {
-            remoteNodeManager.shutdown(false)
-        }
+
     }
 
     override fun enableGcMonitoring() {
@@ -290,17 +284,14 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
 
     private fun createExecutorForTrack(track: InternalAudioTrack, configuration: AudioConfiguration,
                                        playerOptions: AudioPlayerOptions): AudioTrackExecutor {
-        val sourceManager = track.sourceManager
-        return if (remoteNodeManager.isEnabled && sourceManager != null && sourceManager.isTrackEncodable(track)) {
-            RemoteAudioTrackExecutor(track, configuration, remoteNodeManager, playerOptions.volumeLevel)
+
+        val customExecutor = track.createLocalExecutor(this)
+        return if (customExecutor != null) {
+            customExecutor
         } else {
-            val customExecutor = track.createLocalExecutor(this)
-            if (customExecutor != null) {
-                customExecutor
-            } else {
-                val bufferDuration = Optional.ofNullable(playerOptions.frameBufferDuration.get()).orElse(frameBufferDuration)
-                LocalAudioTrackExecutor(track, configuration, playerOptions, useSeekGhosting, bufferDuration)
-            }
+
+            val bufferDuration = Optional.ofNullable(playerOptions.frameBufferDuration.get()).orElse(frameBufferDuration)
+            LocalAudioTrackExecutor(track, configuration, playerOptions, useSeekGhosting, bufferDuration)
         }
     }
 
@@ -377,9 +368,6 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
     override fun createPlayer(): AudioPlayer {
         val player = constructPlayer()
         player.addListener(lifecycleManager)
-        if (remoteNodeManager.isEnabled) {
-            player.addListener(remoteNodeManager)
-        }
         return player
     }
 
@@ -388,7 +376,7 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
     }
 
     override fun getRemoteNodeRegistry(): RemoteNodeRegistry {
-        return remoteNodeManager
+        throw IllegalArgumentException("ANGRY")
     }
 
     override fun setHttpRequestConfigurator(configurator: Function<RequestConfig, RequestConfig>) {
@@ -442,17 +430,24 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
         useSeekGhosting = true
 
         // Additional services
-        remoteNodeManager = RemoteNodeManager(this)
         garbageCollectionMonitor = GarbageCollectionMonitor(scheduledExecutorService)
         lifecycleManager = AudioPlayerLifecycleManager(scheduledExecutorService, cleanupThreshold)
         lifecycleManager.initialise()
     }
-
-    private fun RemoteNodeManager(melijnAudioPlayerManager: MelijnAudioPlayerManager): RemoteNodeManager {
-        TODO("Not yet implemented")
-    }
 }
 
-private fun AudioSourceManager.loadItem(melijnAudioPlayerManager: MelijnAudioPlayerManager, reference: AudioReference): AudioItem? {
-    TODO("Not yet implemented")
+private fun YoutubeAudioSourceManager.loadItem(melijnAudioPlayerManager: MelijnAudioPlayerManager, reference: AudioReference): AudioItem? {
+    return try {
+        apply {
+
+        }
+        linkRouter.route(reference.identifier, loadingRoutes)
+    } catch (exception: FriendlyException) {
+        // In case of a connection reset exception, try once more.
+        if (HttpClientTools.isRetriableNetworkException(exception.cause)) {
+            loadItemOnce(reference)
+        } else {
+            throw exception
+        }
+    }
 }

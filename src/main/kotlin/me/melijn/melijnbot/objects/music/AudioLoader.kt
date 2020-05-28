@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.objects.music
 
-import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
@@ -364,7 +363,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
     }
 
-    fun loadNewTrackPickerNMessage(context: CommandContext, query: String, nextPos: NextSongPosition) {
+    suspend fun loadNewTrackPickerNMessage(context: CommandContext, query: String, nextPos: NextSongPosition) {
         val guildMusicPlayer = context.guildMusicPlayer
         val rawInput = query
             .replace(YT_SELECTOR, "")
@@ -429,7 +428,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         return sendEmbedAwaitEL(context, eb.build())
     }
 
-    fun loadNewTrack(daoManager: DaoManager, lavaManager: LavaManager, vc: VoiceChannel, author: User, source: String, nextPos: NextSongPosition) {
+    suspend fun loadNewTrack(daoManager: DaoManager, lavaManager: LavaManager, vc: VoiceChannel, author: User, source: String, nextPos: NextSongPosition) {
         val guild = vc.guild
         val guildMusicPlayer = musicPlayerManager.getGuildMusicPlayer(guild)
 
@@ -457,10 +456,6 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
         audioPlayerManager.loadItemOrdered(guildMusicPlayer, source, resultHandler)
     }
-}
-
-private fun DefaultAudioPlayerManager.loadItemOrdered(guildMusicPlayer: GuildMusicPlayer, source: String, resultHandler: SuspendingAudioLoadResultHandler) {
-
 }
 
 interface SuspendingAudioLoadResultHandler {
