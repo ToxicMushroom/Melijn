@@ -164,7 +164,7 @@ suspend fun getDurationByArgsNMessage(context: CommandContext, leftBound: Int, r
             val msg = context.getTranslation("message.numbertobig")
                 .replace("%arg%", matcher.group(1))
 
-            sendMsg(context, msg, null)
+            sendMsg(context, msg)
             return null
         }
 

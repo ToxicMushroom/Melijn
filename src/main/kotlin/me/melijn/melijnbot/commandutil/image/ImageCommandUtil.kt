@@ -217,7 +217,7 @@ object ImageCommandUtil {
                     null
                 }
 
-                sendMsg(context, "bg: $bgColor, trans: $transColor", gifFrame, "gif")
+                sendMsgAwaitEL(context, "bg: $bgColor, trans: $transColor", gifFrame, "gif")
             }
         }
 
@@ -241,7 +241,7 @@ object ImageCommandUtil {
         val argInt = if (triple.third) 1 else 0
 
         val loadingMsg = context.getTranslation("message.loading.effect")
-        val lmsg = sendMsg(context, loadingMsg).firstOrNull()
+        val lmsg = sendMsgAwaitEL(context, loadingMsg).firstOrNull()
 
         val img = withContext(Dispatchers.IO) {
             ImageIO.read(ByteArrayInputStream(triple.first))
@@ -276,7 +276,7 @@ object ImageCommandUtil {
         //╯︿╰
 
         val loadingMsg = context.getTranslation("message.loading.effect")
-        val lmsg = sendMsg(context, loadingMsg).firstOrNull()
+        val lmsg = sendMsgAwaitEL(context, loadingMsg).firstOrNull()
 
 
         val decoder = GifDecoder()

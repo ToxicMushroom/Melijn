@@ -355,7 +355,7 @@ object ImageUtils {
                         null
                     }
 
-                    sendMsg(it, "bg: $bgColor, trans: $transColor", gifFrame, "gif")
+                    sendMsgAwaitEL(it, "bg: $bgColor, trans: $transColor", gifFrame, "gif")
                 }
 
                 framesDone[index] = FinishedFrame(

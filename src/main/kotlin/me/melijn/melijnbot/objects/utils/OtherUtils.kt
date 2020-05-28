@@ -197,7 +197,7 @@ suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): S
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.commandnode")
             .replace(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg, null)
+        sendMsg(context, msg)
         return null
     }
     return commands
@@ -219,7 +219,7 @@ suspend fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.commands")
             .replace(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg, null)
+        sendMsg(context, msg)
         return null
     }
     return commands
@@ -233,11 +233,11 @@ suspend fun getLongFromArgNMessage(context: CommandContext, index: Int, min: Lon
     if (!arg.matches("\\d+".toRegex())) {
         val msg = i18n.getTranslation(language, "message.unknown.number")
             .replace(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg, null)
+        sendMsg(context, msg)
     } else if (long == null) {
         val msg = i18n.getTranslation(language, "message.unknown.long")
             .replace(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg, null)
+        sendMsg(context, msg)
     }
     if (long != null) {
         if (min > long || long > max) {
@@ -245,7 +245,7 @@ suspend fun getLongFromArgNMessage(context: CommandContext, index: Int, min: Lon
                 .replace("%min%", min.toString())
                 .replace("%max%", max.toString())
                 .replace(PLACEHOLDER_ARG, arg)
-            sendMsg(context, msg, null)
+            sendMsg(context, msg)
             return null
         }
     }

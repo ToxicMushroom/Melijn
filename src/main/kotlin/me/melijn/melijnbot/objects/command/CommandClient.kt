@@ -219,9 +219,9 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         val message: Message? = modularMessage.toMessage()
         when {
-            message == null -> sendAttachments(channel, modularMessage.attachments)
-            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachments(channel, message, modularMessage.attachments)
-            else -> sendMsg(channel, message)
+            message == null -> sendAttachmentsAwaitN(channel, modularMessage.attachments)
+            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(channel, message, modularMessage.attachments)
+            else -> sendMsgAwaitN(channel, message)
         }
     }
 
