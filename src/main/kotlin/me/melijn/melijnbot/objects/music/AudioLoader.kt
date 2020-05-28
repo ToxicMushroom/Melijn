@@ -7,7 +7,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.wrapper.spotify.model_objects.specification.ArtistSimplified
 import com.wrapper.spotify.model_objects.specification.Track
 import com.wrapper.spotify.model_objects.specification.TrackSimplified
-import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.audio.SongCacheWrapper
@@ -34,18 +33,6 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     private val ytSearch = YTSearch()
     private val spotifyTrackDiff = 2000
 
-
-//    fun audioLoadResultHandler(
-//        failed: (FriendlyException) -> Unit,
-//        loaded: (AudioTrack) -> Unit,
-//        noMatches: () -> Unit,
-//        playListLoaded: (AudioPlaylist) -> Unit
-//    ) = object : AudioLoadResultHandler {
-//        override fun loadFailed(exception: FriendlyException) = failed(exception)
-//        override fun trackLoaded(track: AudioTrack) = loaded(track)
-//        override fun noMatches() = noMatches()
-//        override fun playlistLoaded(playlist: AudioPlaylist) = playListLoaded(playlist)
-//    }
 
     suspend fun foundSingleTrack(
         context: CommandContext,
@@ -81,9 +68,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
                 if (!guildMusicPlayer.safeQueueSilent(context.daoManager, track, nextPos)) notAdded++
                 else {
-                    runBlocking {
-                        LogUtils.addMusicPlayerNewTrack(context, track)
-                    }
+                    LogUtils.addMusicPlayerNewTrack(context, track)
                 }
             }
             sendMessageAddedTracks(context, tracks.subList(0, tracks.size - notAdded))
