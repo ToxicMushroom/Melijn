@@ -3,6 +3,7 @@ package me.melijn.melijnbot.database.alias
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.objects.utils.splitIETEL
+import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 // free: 5 rows, 1 value each | premium: 50 rows, 5 value each
@@ -18,7 +19,7 @@ class AliasDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun insert(id: Long, commandNode: String, aliases: String) {
         driverManager.executeUpdate("INSERT INTO $table (id, command, aliases) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET aliases = ?",
-            id, commandNode, aliases)
+            id, commandNode, aliases, aliases)
     }
 
     suspend fun remove(id: Long, commandNode: String) {
@@ -26,12 +27,13 @@ class AliasDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun getAliases(id: Long): Map<String, List<String>> = suspendCoroutine {
-        driverManager.executeQuery("SELECT * FROM $table WHERE id = ? AND command = ?", { rs ->
+        driverManager.executeQuery("SELECT * FROM $table WHERE id = ?", { rs ->
             val map = mutableMapOf<String, List<String>>()
             while (rs.next()) {
                 val aliases = rs.getString("aliases").splitIETEL("%SPLIT%")
                 map[rs.getString("command")] = aliases
             }
+            it.resume(map)
         }, id)
     }
 

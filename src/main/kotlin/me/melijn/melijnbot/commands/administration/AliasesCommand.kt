@@ -48,22 +48,23 @@ class AliasesCommand : AbstractCommand("command.aliases") {
                 return
             }
 
-            val sb = StringBuilder()
+            val sb = StringBuilder("```INI\n")
             var indexer = 1
             for ((cmdPath, aliases) in aliasMap.toSortedMap()) {
                 val cmdId = cmdPath.split(".")[0].toInt()
                 val rootCmd = context.commandList.first { it.id == cmdId }
                 val idLessCmd = cmdPath.removePrefix("$cmdId")
 
-                sb.append(indexer++).append(". ").append(rootCmd.name).append(idLessCmd.replace(".", " "))
+                sb.append(indexer++).append(". [").append(rootCmd.name).append(idLessCmd.replace(".", "] "))
                     .append("\n")
                 for ((index, alias) in aliases.sorted().withIndex()) {
-                    sb.append("    ").append(index).append(". ").append(alias).append("\n")
+                    sb.append("    ").append(index + 1).append(": ").append(alias).append("\n")
                 }
             }
+            sb.append("```")
 
             val listTitle = context.getTranslation("$root.title")
-            sendMsg(context, "$listTitle\n${sb.toString()}")
+            sendMsgCodeBlock(context, "$listTitle\n$sb", "INI", true)
         }
     }
 
@@ -258,7 +259,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
         fun find(children: Array<AbstractCommand>, parts: List<String>, progress: Int): AbstractCommand? {
             for (child in children) {
                 if (!child.isCommandFor(parts[progress])) continue
-                return if (parts.size <= progress) {
+                return if ((parts.size - 1) <= progress) {
                     child
                 } else {
                     find(child.children, parts, progress + 1)
