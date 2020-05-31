@@ -189,7 +189,8 @@ class CommandClientBuilder(private val container: Container) {
         SetAllowSpacedPrefixState(),
         SetPrivateAllowSpacedPrefixState(),
         AliasesCommand(),
-        PrivateAliasesCommand()
+        PrivateAliasesCommand(),
+        BoostMessageCommand()
     )
 
     init {

@@ -55,7 +55,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
                 val rootCmd = context.commandList.first { it.id == cmdId }
                 val idLessCmd = cmdPath.removePrefix("$cmdId")
 
-                sb.append(indexer++).append(". [").append(rootCmd.name).append(idLessCmd.replace(".", "] "))
+                sb.append(indexer++).append(". [").append(rootCmd.name).append("]").append(idLessCmd.replace(".", " "))
                     .append("\n")
                 for ((index, alias) in aliases.sorted().withIndex()) {
                     sb.append("    ").append(index + 1).append(": ").append(alias).append("\n")

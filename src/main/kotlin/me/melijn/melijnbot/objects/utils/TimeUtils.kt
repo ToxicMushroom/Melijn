@@ -71,6 +71,7 @@ fun Long.asEpochMillisToDateTime(zoneId: ZoneId): String {
 
 fun OffsetDateTime.asEpochMillisToDate(zoneId: ZoneId): String {
     val offsetDateTime = this.atZoneSameInstant(zoneId) ?: throw IllegalArgumentException("ANGRY")
+
     return offsetDateTime.asLongDateGMTString()
 }
 

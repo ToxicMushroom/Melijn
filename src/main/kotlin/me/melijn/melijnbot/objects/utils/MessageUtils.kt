@@ -125,8 +125,8 @@ suspend fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String,
                     }
                 }.toMutableList()
 
-                val message = channel.sendMessage(paginatedParts[0]).await()
-                registerPaginationMessage(channel, message, paginatedParts, 0)
+                val message = channel.sendMessage(paginatedParts[0]).awaitOrNull()
+                message?.let { registerPaginationMessage(channel, it, paginatedParts, 0) }
             } else {
                 parts.forEachIndexed { index, msgPart ->
                     channel.sendMessage(when {
@@ -153,8 +153,8 @@ suspend fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String,
                     }
                 }.toMutableList()
 
-                val message = privateChannel.sendMessage(paginatedParts[0]).await()
-                registerPaginationMessage(privateChannel, message, paginatedParts, 0)
+                val message = privateChannel.sendMessage(paginatedParts[0]).awaitOrNull()
+                message?.let { registerPaginationMessage(privateChannel, it, paginatedParts, 0) }
             } else {
                 parts.forEachIndexed { index, msgPart ->
                     privateChannel.sendMessage(when {
@@ -228,7 +228,7 @@ suspend fun sendAttachmentsAwaitN(textChannel: MessageChannel, urls: Map<String,
             messageAction?.addFile(stream, url.value)
         }
     }
-    return messageAction?.await()
+    return messageAction?.awaitOrNull()
 }
 
 suspend fun sendMsgWithAttachmentsAwaitN(channel: MessageChannel, message: Message, attachments: Map<String, String>): Message? {
@@ -250,7 +250,7 @@ suspend fun sendMsgWithAttachmentsAwaitN(channel: MessageChannel, message: Messa
             messageAction
         }?.addFile(stream, url.value)
     }
-    return messageAction?.await()
+    return messageAction?.awaitOrNull()
 }
 
 suspend fun sendEmbed(context: CommandContext, embed: MessageEmbed) {
@@ -278,8 +278,8 @@ suspend fun sendEmbedAwaitEL(privateChannel: PrivateChannel, embed: MessageEmbed
     if (privateChannel.user.isBot) {
         return emptyList()
     }
-    val msg = privateChannel.sendMessage(embed).await()
-    return listOf(msg)
+    val msg = privateChannel.sendMessage(embed).awaitOrNull()
+    return msg?.let { listOf(it) } ?: emptyList()
 }
 
 
@@ -292,8 +292,8 @@ suspend fun sendEmbedAwaitEL(embedDisabledWrapper: EmbedDisabledWrapper, textCha
     return if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
         !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
 
-        val msg = textChannel.sendMessage(embed).await()
-        listOf(msg)
+        val msg = textChannel.sendMessage(embed).awaitOrNull()
+        msg?.let { listOf(it) } ?: emptyList()
 
     } else {
         sendEmbedAsMessageAwaitEL(textChannel, embed)
@@ -614,11 +614,11 @@ fun addPaginationEmotes(message: Message, morePages: Boolean) {
 suspend fun sendMsgAwaitEL(privateChannel: PrivateChannel, msg: String): List<Message> {
     val messageList = mutableListOf<Message>()
     if (msg.length <= 2000) {
-        messageList.add(privateChannel.sendMessage(msg).await())
+        privateChannel.sendMessage(msg).awaitOrNull()?.let { messageList.add(it) }
     } else {
         val msgParts = StringUtils.splitMessage(msg).withIndex()
         for ((index, text) in msgParts) {
-            messageList.add(index, privateChannel.sendMessage(text).await())
+            privateChannel.sendMessage(text).awaitOrNull()?.let { messageList.add(index, it) }
         }
     }
 
@@ -655,7 +655,7 @@ suspend fun sendMsgAwaitEL(channel: TextChannel, msg: String): List<Message> {
             logger.warn("raw variable ?: $msg")
         }
 
-        messageList.add(channel.sendMessage(msg).await())
+        channel.sendMessage(msg).awaitOrNull()?.let { messageList.add(it) }
     } else {
         val msgParts = StringUtils.splitMessage(msg).withIndex()
         for ((index, text) in msgParts) {
@@ -664,7 +664,7 @@ suspend fun sendMsgAwaitEL(channel: TextChannel, msg: String): List<Message> {
                 logger.warn("raw variable ?: $msg")
             }
 
-            messageList.add(index, channel.sendMessage(text).await())
+            channel.sendMessage(text).awaitOrNull()?.let { messageList.add(index, it) }
         }
     }
 
@@ -692,11 +692,11 @@ suspend fun sendMsg(channel: TextChannel, msg: String, success: ((messages: List
     try {
         val messageList = mutableListOf<Message>()
         if (msg.length <= 2000) {
-            messageList.add(channel.sendMessage(msg).await())
+            channel.sendMessage(msg).awaitOrNull()?.let { messageList.add(it) }
         } else {
             val msgParts = StringUtils.splitMessage(msg).withIndex()
             for ((index, text) in msgParts) {
-                messageList.add(index, channel.sendMessage(text).await())
+                channel.sendMessage(text).awaitOrNull()?.let { messageList.add(index, it) }
             }
 
         }
@@ -739,7 +739,7 @@ suspend fun sendMsgAwaitN(channel: TextChannel, msg: Message): Message? {
         else action.embed(embed)
     }
 
-    return action?.await()
+    return action?.awaitOrNull()
 }
 
 suspend fun sendMsgAwaitN(channel: PrivateChannel, msg: Message): Message? {
@@ -751,7 +751,7 @@ suspend fun sendMsgAwaitN(channel: PrivateChannel, msg: Message): Message? {
         else action.embed(embed)
     }
 
-    return action?.await()
+    return action?.awaitOrNull()
 }
 
 suspend fun sendMsgAwaitEL(context: CommandContext, msg: String, bufferedImage: BufferedImage?, extension: String): List<Message> {
@@ -770,12 +770,14 @@ suspend fun sendMsgAwaitEL(textChannel: TextChannel, msg: String, image: Buffere
 
     ImageIO.write(image, extension, byteArrayOutputStream)
 
-    messageList.add(
-        textChannel
-            .sendMessage(msg)
-            .addFile(byteArrayOutputStream.toByteArray(), "finished.$extension")
-            .await()
-    )
+    textChannel
+        .sendMessage(msg)
+        .addFile(byteArrayOutputStream.toByteArray(), "finished.$extension")
+        .awaitOrNull()?.let {
+            messageList.add(
+                it
+            )
+        }
 
     byteArrayOutputStream.close()
 
@@ -789,12 +791,14 @@ suspend fun sendMsgAwaitEL(privateChannel: PrivateChannel, msg: String, image: B
 
     ImageIO.write(image, extension, byteArrayOutputStream)
 
-    messageList.add(
-        privateChannel
-            .sendMessage(msg)
-            .addFile(byteArrayOutputStream.toByteArray(), "finished.$extension")
-            .await()
-    )
+    privateChannel
+        .sendMessage(msg)
+        .addFile(byteArrayOutputStream.toByteArray(), "finished.$extension")
+        .awaitOrNull()?.let {
+            messageList.add(
+                it
+            )
+        }
 
     byteArrayOutputStream.close()
 
