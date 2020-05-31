@@ -565,7 +565,7 @@ fun registerPaginationModularMessage(textChannel: TextChannel, message: Message,
         index
     )
 
-    addPaginationEmotes(message)
+    addPaginationEmotes(message, msgList.size > 2)
 }
 
 fun registerPaginationModularMessage(privateChannel: PrivateChannel, message: Message, msgList: MutableList<ModularMessage>, index: Int) {
@@ -577,7 +577,7 @@ fun registerPaginationModularMessage(privateChannel: PrivateChannel, message: Me
         index
     )
 
-    addPaginationEmotes(message)
+    addPaginationEmotes(message, msgList.size > 2)
 }
 
 fun registerPaginationMessage(textChannel: TextChannel, message: Message, msgList: MutableList<String>, index: Int) {
@@ -589,7 +589,7 @@ fun registerPaginationMessage(textChannel: TextChannel, message: Message, msgLis
         index
     )
 
-    addPaginationEmotes(message)
+    addPaginationEmotes(message, msgList.size > 2)
 }
 
 fun registerPaginationMessage(privateChannel: PrivateChannel, message: Message, msgList: MutableList<String>, index: Int) {
@@ -601,14 +601,14 @@ fun registerPaginationMessage(privateChannel: PrivateChannel, message: Message, 
         index
     )
 
-    addPaginationEmotes(message)
+    addPaginationEmotes(message, msgList.size > 2)
 }
 
-fun addPaginationEmotes(message: Message) {
-    message.addReaction("⏪").queue()
+fun addPaginationEmotes(message: Message, morePages: Boolean) {
+    if (morePages) message.addReaction("⏪").queue()
     message.addReaction("◀️").queue()
     message.addReaction("▶️").queue()
-    message.addReaction("⏩").queue()
+    if (morePages) message.addReaction("⏩").queue()
 }
 
 suspend fun sendMsgAwaitEL(privateChannel: PrivateChannel, msg: String): List<Message> {
