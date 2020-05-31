@@ -93,7 +93,7 @@ suspend fun hasPermission(context: CommandContext, permission: String, required:
     val guildId = context.guildId
     val authorId = context.authorId
     val daoManager = context.daoManager
-    //Gives me better ability to help
+    // Gives me better ability to help
     if (context.botDevIds.contains(authorId)) return true
 
 
@@ -103,12 +103,12 @@ suspend fun hasPermission(context: CommandContext, permission: String, required:
 
     val lPermission = permission.toLowerCase()
 
-    //permission checking for user specific channel overrides (these override all)
+    // permission checking for user specific channel overrides (these override all)
     if (channelUserMap.containsKey(lPermission) && channelUserMap[lPermission] != PermState.DEFAULT) {
         return channelUserMap[lPermission] == PermState.ALLOW
     }
 
-    //permission checking for user specific permissions (these override all role permissions)
+    // permission checking for user specific permissions (these override all role permissions)
     if (userMap.containsKey(lPermission) && userMap[lPermission] != PermState.DEFAULT) {
         return userMap[lPermission] == PermState.ALLOW
     }
@@ -117,7 +117,7 @@ suspend fun hasPermission(context: CommandContext, permission: String, required:
     var channelRoleResult = PermState.DEFAULT
 
 
-    //Permission checking for roles
+    // Permission checking for roles
     for (roleId in (context.member.roles.map { role -> role.idLong } + context.guild.publicRole.idLong)) {
         channelRoleResult = when (
             daoManager.channelRolePermissionWrapper.channelRolePermissionCache
@@ -167,7 +167,7 @@ suspend fun hasPermission(command: AbstractCommand, container: Container, event:
     val guild = member.guild
     val guildId = guild.idLong
     val authorId = member.idLong
-    //Gives me better ability to help
+    // Gives me better ability to help
     if (container.settings.developerIds.contains(authorId)) return true
 
 
@@ -177,12 +177,12 @@ suspend fun hasPermission(command: AbstractCommand, container: Container, event:
 
     val lPermission = permission.toLowerCase()
 
-    //permission checking for user specific channel overrides (these override all)
+    // permission checking for user specific channel overrides (these override all)
     if (channelUserMap.containsKey(lPermission) && channelUserMap[lPermission] != PermState.DEFAULT) {
         return channelUserMap[lPermission] == PermState.ALLOW
     }
 
-    //permission checking for user specific permissions (these override all role permissions)
+    // permission checking for user specific permissions (these override all role permissions)
     if (userMap.containsKey(lPermission) && userMap[lPermission] != PermState.DEFAULT) {
         return userMap[lPermission] == PermState.ALLOW
     }
@@ -190,7 +190,7 @@ suspend fun hasPermission(command: AbstractCommand, container: Container, event:
     var roleResult = PermState.DEFAULT
     var channelRoleResult = PermState.DEFAULT
 
-    //Permission checking for roles
+    // Permission checking for roles
     for (roleId in (member.roles.map { role -> role.idLong } + guild.publicRole.idLong)) {
         channelRoleResult = when (container.daoManager.channelRolePermissionWrapper.channelRolePermissionCache.get(Pair(channelId, roleId)).await()[lPermission]) {
             PermState.ALLOW -> PermState.ALLOW

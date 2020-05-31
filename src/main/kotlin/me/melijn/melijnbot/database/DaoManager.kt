@@ -2,6 +2,8 @@ package me.melijn.melijnbot.database
 
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Settings
+import me.melijn.melijnbot.database.alias.AliasDao
+import me.melijn.melijnbot.database.alias.AliasWrapper
 import me.melijn.melijnbot.database.audio.*
 import me.melijn.melijnbot.database.autopunishment.*
 import me.melijn.melijnbot.database.ban.BanDao
@@ -103,6 +105,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
     val guildPrefixWrapper: GuildPrefixWrapper
     val userPrefixWrapper: UserPrefixWrapper
     val allowSpacedPrefixWrapper: AllowSpacedPrefixWrapper
+    val aliasWrapper: AliasWrapper
 
     val supporterWrapper: SupporterWrapper
 
@@ -201,6 +204,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
         allowSpacedPrefixWrapper = AllowSpacedPrefixWrapper(taskManager,
             AllowSpacedPrefixDao(driverManager), PrivateAllowSpacedPrefixDao(driverManager)
         )
+        aliasWrapper = AliasWrapper(taskManager, AliasDao(driverManager))
 
         supporterWrapper = SupporterWrapper(taskManager, UserSupporterDao(driverManager))
 
