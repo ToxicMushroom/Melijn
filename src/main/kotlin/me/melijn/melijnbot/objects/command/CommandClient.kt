@@ -106,7 +106,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
             if (commandParts[0].isEmpty()) {
                 // Used a space :angry:
-                if (melijnMentions.contains(prefix)) {
+                if (!melijnMentions.contains(prefix)) {
                     val userTriState = container.daoManager.allowSpacedPrefixWrapper
                         .privateAllowSpacedPrefixGuildCache.get(event.author.idLong).await()
                     val allowSpace = if (userTriState == TriState.DEFAULT) {
