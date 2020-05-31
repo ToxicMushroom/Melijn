@@ -86,7 +86,7 @@ class YTSearch {
 
         if (searchType == SearchType.YT) {
             try {
-                val search: YouTube.Search.List = youtube.search().list("id")
+                val search: YouTube.Search.List = youtube.search().list(listOf("id"))
 
                 // Set your developer key from the {{ Google Cloud Console }} for
                 // non-authenticated requests. See:
@@ -97,7 +97,7 @@ class YTSearch {
 
                 // Restrict the search results to only include videos. See:
                 // https://developers.google.com/youtube/v3/docs/search/list#type
-                search.type = "video"
+                search.type = listOf("video")
 
                 // To increase efficiency, only retrieve the fields that the
                 // application uses.
