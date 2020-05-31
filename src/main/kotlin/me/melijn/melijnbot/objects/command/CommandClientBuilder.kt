@@ -188,7 +188,8 @@ class CommandClientBuilder(private val container: Container) {
         ReplaceColorCommand(),
         SetAllowSpacedPrefixState(),
         SetPrivateAllowSpacedPrefixState(),
-        AliasesCommand()
+        AliasesCommand(),
+        PrivateAliasesCommand()
     )
 
     init {

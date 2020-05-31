@@ -1,26 +1,18 @@
-package me.melijn.melijnbot.commands.administration
+package me.melijn.melijnbot.commands.utility
 
 import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
+import me.melijn.melijnbot.commands.administration.AliasesCommand.Companion.getCommandPathInfo
+import me.melijn.melijnbot.objects.command.*
 import me.melijn.melijnbot.objects.utils.*
 
-const val UNKNOWN_COMMAND = "message.unknown.command"
-const val TOTAL_ALIASES_LIMIT = 5
-const val CMD_ALIASES_LIMIT = 2
-const val PREMIUM_TOTAL_ALIASES_LIMIT = 50
-const val PREMIUM_CMD_ALIASES_LIMIT = 10
-const val ALIASES_TOTAL_LIMIT_PATH = "premium.feature.aliases.total.limit"
-const val ALIASES_CMD_LIMIT_PATH = "premium.feature.aliases.cmd.limit"
+const val TOTAL_ALIASES_LIMIT = 25
+const val CMD_ALIASES_LIMIT = 3
 
-
-class AliasesCommand : AbstractCommand("command.aliases") {
+class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
 
     init {
-        id = 177
-        name = "aliases"
+        id = 178
+        name = "privateAliases"
         children = arrayOf(
             AddArg(root),
             RemoveArg(root),
@@ -29,8 +21,9 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             ClearAtArg(root),
             ListArg(root)
         )
-        aliases = arrayOf("alias", "a")
-        commandCategory = CommandCategory.ADMINISTRATION
+        runConditions = arrayOf(RunCondition.USER_SUPPORTER)
+        aliases = arrayOf("privateAlias", "pa")
+        commandCategory = CommandCategory.UTILITY
     }
 
     class ListArg(parent: String) : AbstractCommand("$parent.list") {
@@ -41,7 +34,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            val aliasMap = context.daoManager.aliasWrapper.aliasCache.get(context.guildId).await()
+            val aliasMap = context.daoManager.aliasWrapper.aliasCache.get(context.authorId).await()
             if (aliasMap.isEmpty()) {
                 val msg = context.getTranslation("$root.empty")
                 sendMsg(context, msg)
@@ -81,7 +74,8 @@ class AliasesCommand : AbstractCommand("command.aliases") {
                 return
             }
 
-            val aliasMap = context.daoManager.aliasWrapper.aliasCache.get(context.guildId).await()
+            val aliasWrapper = context.daoManager.aliasWrapper
+            val aliasMap = aliasWrapper.aliasCache.get(context.authorId).await()
             val commandKeys = aliasMap
                 .keys
                 .sorted()
@@ -90,7 +84,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             val cmdPath = commandKeys[index]
             val amount = aliasMap[cmdPath]?.size ?: 0
 
-            context.daoManager.aliasWrapper.clear(context.guildId, cmdPath)
+            aliasWrapper.clear(context.authorId, cmdPath)
 
             val cmdId = cmdPath.split(".")[0].toInt()
             val rootCmd = context.commandList.first { it.id == cmdId }
@@ -117,10 +111,11 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             }
 
             val pathInfo = getCommandPathInfo(context, 0) ?: return
-            val aliasMap = context.daoManager.aliasWrapper.aliasCache.get(context.guildId).await()
+            val aliasWrapper = context.daoManager.aliasWrapper
+            val aliasMap = aliasWrapper.aliasCache.get(context.authorId).await()
             val removed = aliasMap[pathInfo.fullPath]?.size ?: 0
 
-            context.daoManager.aliasWrapper.clear(context.guildId, pathInfo.fullPath)
+            aliasWrapper.clear(context.authorId, pathInfo.fullPath)
 
             val msg = context.getTranslation("$root.cleared")
                 .replace("%amount%", removed)
@@ -143,7 +138,8 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             }
 
             val pathInfo = getCommandPathInfo(context, 0) ?: return
-            val aliasMap = context.daoManager.aliasWrapper.aliasCache.get(context.guildId).await()
+            val aliasWrapper = context.daoManager.aliasWrapper
+            val aliasMap = aliasWrapper.aliasCache.get(context.authorId).await()
             val aliases = aliasMap[pathInfo.fullPath] ?: emptyList()
             if (aliases.isEmpty()) {
                 val msg = context.getTranslation("$root.empty")
@@ -157,7 +153,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             val index = getIntegerFromArgNMessage(context, 1, 1, aliases.size) ?: return
             val alias = aliases[index]
 
-            context.daoManager.aliasWrapper.remove(context.guildId, pathInfo.fullPath, alias)
+            aliasWrapper.remove(context.authorId, pathInfo.fullPath, alias)
 
             val msg = context.getTranslation("$root.removed")
                 .replace("%alias%", alias)
@@ -179,7 +175,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             val alias = getStringFromArgsNMessage(context, 1, 1, 64,
                 cantContainChars = arrayOf(' '), cantContainWords = arrayOf("%SPLIT%")) ?: return
 
-            context.daoManager.aliasWrapper.remove(context.guildId, pathInfo.fullPath, alias)
+            context.daoManager.aliasWrapper.remove(context.authorId, pathInfo.fullPath, alias)
 
             val msg = context.getTranslation("$root.removed")
                 .replace("%alias%", alias)
@@ -202,22 +198,16 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             }
 
             var total = 0
-            val aliases = context.daoManager.aliasWrapper.aliasCache.get(context.guildId).await()
+            val aliasWrapper = context.daoManager.aliasWrapper
+            val aliases = aliasWrapper.aliasCache.get(context.guildId).await()
             for ((_, aliasList) in aliases) {
                 total += aliasList.size
             }
 
-            if (total >= TOTAL_ALIASES_LIMIT && !isPremiumGuild(context)) {
-                val replaceMap = mapOf(
-                    Pair("limit", "$TOTAL_ALIASES_LIMIT"),
-                    Pair("premiumLimit", "$PREMIUM_TOTAL_ALIASES_LIMIT")
-                )
-
-                sendFeatureRequiresGuildPremiumMessage(context, ALIASES_TOTAL_LIMIT_PATH, replaceMap)
-                return
-            } else if (total >= PREMIUM_TOTAL_ALIASES_LIMIT) {
+            if (total >= TOTAL_ALIASES_LIMIT) {
                 val msg = context.getTranslation("$root.limit.total")
-                    .replace("%limit%", "$PREMIUM_TOTAL_ALIASES_LIMIT")
+                    .replace("%limit%", "$TOTAL_ALIASES_LIMIT")
+
                 sendMsg(context, msg)
                 return
             }
@@ -227,22 +217,15 @@ class AliasesCommand : AbstractCommand("command.aliases") {
                 cantContainChars = arrayOf(' '), cantContainWords = arrayOf("%SPLIT%")) ?: return
 
             val cmdTotal = (aliases[pathInfo.fullPath] ?: emptyList()).size
-            if (cmdTotal >= CMD_ALIASES_LIMIT && !isPremiumGuild(context)) {
-                val replaceMap = mapOf(
-                    Pair("limit", "$CMD_ALIASES_LIMIT"),
-                    Pair("premiumLimit", "$PREMIUM_CMD_ALIASES_LIMIT")
-                )
-
-                sendFeatureRequiresGuildPremiumMessage(context, ALIASES_CMD_LIMIT_PATH, replaceMap)
-                return
-            } else if (cmdTotal >= PREMIUM_CMD_ALIASES_LIMIT) {
+            if (cmdTotal >= CMD_ALIASES_LIMIT) {
                 val msg = context.getTranslation("$root.limit.cmd")
-                    .replace("%limit%", "$PREMIUM_CMD_ALIASES_LIMIT")
+                    .replace("%limit%", "$CMD_ALIASES_LIMIT")
+
                 sendMsg(context, msg)
                 return
             }
 
-            context.daoManager.aliasWrapper.add(context.guildId, pathInfo.fullPath, alias)
+            aliasWrapper.add(context.guildId, pathInfo.fullPath, alias)
 
             val msg = context.getTranslation("$root.added")
                 .replace("%alias%", alias)
@@ -254,38 +237,4 @@ class AliasesCommand : AbstractCommand("command.aliases") {
     override suspend fun execute(context: CommandContext) {
         sendSyntax(context)
     }
-
-    companion object {
-        fun find(children: Array<AbstractCommand>, parts: List<String>, progress: Int): AbstractCommand? {
-            for (child in children) {
-                if (!child.isCommandFor(parts[progress])) continue
-                return if ((parts.size - 1) <= progress) {
-                    child
-                } else {
-                    find(child.children, parts, progress + 1)
-                }
-            }
-            return null
-        }
-
-        suspend fun getCommandPathInfo(context: CommandContext, index: Int): CmdPathInfo? {
-            val commandParts = context.args[index].split("\\s+".toRegex())
-            val cmd = find(context.commandList.toTypedArray(), commandParts, 0)
-            if (cmd == null) {
-                val msg = context.getTranslation(UNKNOWN_COMMAND)
-                sendMsg(context, msg)
-                return null
-            }
-
-            val rootCmd = context.commandList.first { it.isCommandFor(commandParts[0]) }
-            val idLessCmd = cmd.root.removePrefix(rootCmd.root)
-            return CmdPathInfo(idLessCmd, rootCmd)
-        }
-    }
 }
-
-data class CmdPathInfo(
-    val idLessCmd: String,
-    val rootCmd: AbstractCommand,
-    val fullPath: String = "${rootCmd.id}$idLessCmd"
-)
