@@ -131,6 +131,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             } else {
                 commandParts.add(0, prefix)
             }
+            if (commandParts.size < 2) return // if only a prefix is found -> abort
 
             for (cc in ccsWithPrefix) {
                 val aliases = cc.aliases
