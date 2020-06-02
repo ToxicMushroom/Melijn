@@ -7,6 +7,7 @@ import io.jooby.json.JacksonModule
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
+import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.objects.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.objects.translation.i18n
@@ -204,11 +205,60 @@ class RestServer(container: Container) : Jooby() {
             container.commandMap
         }
 
+        get("/fullCommands") {
+            val dataObject = DataObject.empty()
+            for ((_, root) in container.commandMap) {
+                val dataArray = if (dataObject.hasKey(root.commandCategory.toString())) {
+                    dataObject.getArray(root.commandCategory.toString())
+                } else {
+                    DataArray.empty()
+                }
+                val darr = getDataArrayArrayFrom(arrayOf(root)).getArray(0)
+                dataArray.add(darr)
+                dataObject.put(root.commandCategory.toString(), dataArray)
+            }
+            dataObject.toMap()
+        }
+
         get("/timezones") {
             TimeZone.getAvailableIDs()
         }
 
         //Has to be registered last to not override other paths
         get("*") { "blub" }
+    }
+
+    var i = 0
+    private fun getDataArrayArrayFrom(children: Array<AbstractCommand>): DataArray {
+        val dataArray = DataArray.empty()
+        for (c in children) {
+            i++
+            val innerDataArray = DataArray.empty()
+            innerDataArray.add(c.name)
+            innerDataArray.add(i18n.getTranslation("en", c.description))
+            innerDataArray.add(i18n.getTranslation("en", c.syntax))
+            innerDataArray.add(DataArray.fromCollection(c.aliases.toList()))
+            val translatedHelp = i18n.getTranslation("en", c.help)
+            innerDataArray.add(translatedHelp.replace("%help\\.arg\\..*?%".toRegex()) {
+                it.groups[0]?.let { (value) ->
+                    i18n.getTranslation("en", value.substring(1, value.length -1))
+                } ?: "report to devs it's BROKEN :c"
+            })
+            innerDataArray.add(
+                DataArray.fromCollection(c.discordChannelPermissions.map { it.toString() })
+            )
+            innerDataArray.add(
+                DataArray.fromCollection(c.discordPermissions.map { it.toString() })
+            )
+            innerDataArray.add(
+                DataArray.fromCollection(c.runConditions.map { it.toString() })
+            )
+            innerDataArray.add(
+                c.permissionRequired
+            )
+            innerDataArray.add(getDataArrayArrayFrom(c.children))
+            dataArray.add(innerDataArray)
+        }
+        return dataArray
     }
 }
