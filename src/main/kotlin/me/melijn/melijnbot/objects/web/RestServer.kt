@@ -234,29 +234,30 @@ class RestServer(container: Container) : Jooby() {
         for (c in children) {
             i++
             val innerDataArray = DataArray.empty()
-            innerDataArray.add(c.name)
-            innerDataArray.add(i18n.getTranslation("en", c.description))
-            innerDataArray.add(i18n.getTranslation("en", c.syntax))
-            innerDataArray.add(DataArray.fromCollection(c.aliases.toList()))
-            val translatedHelp = i18n.getTranslation("en", c.help)
-            innerDataArray.add(translatedHelp.replace("%help\\.arg\\..*?%".toRegex()) {
+
+            innerDataArray.add(c.name) // 0
+            innerDataArray.add(i18n.getTranslation("en", c.description)) // 1
+            innerDataArray.add(i18n.getTranslation("en", c.syntax)) // 2
+            innerDataArray.add(DataArray.fromCollection(c.aliases.toList())) // 3
+            val translatedHelp = i18n.getTranslationN("en", c.help, false)
+            innerDataArray.add(translatedHelp?.replace("%help\\.arg\\..*?%".toRegex()) {
                 it.groups[0]?.let { (value) ->
-                    i18n.getTranslation("en", value.substring(1, value.length -1))
+                    i18n.getTranslation("en", value.substring(1, value.length - 1))
                 } ?: "report to devs it's BROKEN :c"
-            })
+            }) // 4
             innerDataArray.add(
                 DataArray.fromCollection(c.discordChannelPermissions.map { it.toString() })
-            )
+            ) // 5
             innerDataArray.add(
                 DataArray.fromCollection(c.discordPermissions.map { it.toString() })
-            )
+            ) // 6
             innerDataArray.add(
                 DataArray.fromCollection(c.runConditions.map { it.toString() })
-            )
+            ) // 7
             innerDataArray.add(
                 c.permissionRequired
-            )
-            innerDataArray.add(getDataArrayArrayFrom(c.children))
+            ) // 8
+            innerDataArray.add(getDataArrayArrayFrom(c.children)) // 9
             dataArray.add(innerDataArray)
         }
         return dataArray
