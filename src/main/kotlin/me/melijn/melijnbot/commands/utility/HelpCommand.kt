@@ -9,6 +9,7 @@ import me.melijn.melijnbot.objects.jagtag.BirthdayMethods
 import me.melijn.melijnbot.objects.jagtag.CCMethods
 import me.melijn.melijnbot.objects.jagtag.DiscordMethods
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import java.io.BufferedReader
@@ -189,8 +190,15 @@ class HelpCommand : AbstractCommand("command.help") {
         val cmdAliases = context.getTranslation("$root.cmd.aliases")
         val cmdDesc = context.getTranslation("$root.cmd.description")
         val cmdHelp = context.getTranslation("$root.cmd.help")
+        val cmdArguments = context.getTranslation("$root.cmd.arguments")
+        val cmdExamples = context.getTranslation("$root.cmd.examples")
         val cmdCategory = context.getTranslation("$root.cmd.category")
-        val cmdHelpValue = context.getTranslation(command.help)
+        val cmdHelpValue = i18n.getTranslationN(context.getLanguage(), command.help, false)
+            ?.replace(PLACEHOLDER_PREFIX, context.usedPrefix)
+        val cmdArgumentsValue = i18n.getTranslationN(context.getLanguage(), command.arguments, false)
+            ?.replace(PLACEHOLDER_PREFIX, context.usedPrefix)
+        val cmdExamplesValue = i18n.getTranslationN(context.getLanguage(), command.examples, false)
+            ?.replace(PLACEHOLDER_PREFIX, context.usedPrefix)
 
         val embedder = Embedder(context)
         embedder.setTitle(cmdTitle)
@@ -205,14 +213,16 @@ class HelpCommand : AbstractCommand("command.help") {
         if (command.aliases.isNotEmpty()) {
             embedder.addField(cmdAliases, command.aliases.joinToString(), false)
         }
+
         embedder.addField(
             cmdDesc,
             context.getTranslation(command.description)
                 .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
             , false
         )
-        if (command.help != cmdHelpValue) {
-            var help = cmdHelpValue.replace(PLACEHOLDER_PREFIX, context.usedPrefix)
+
+        cmdArgumentsValue?.let {
+            var help = it.replace(PLACEHOLDER_PREFIX, context.usedPrefix)
 
             val matcher = Pattern.compile("%(help\\.arg\\..+)%").matcher(help)
             while (matcher.find()) {
@@ -220,7 +230,19 @@ class HelpCommand : AbstractCommand("command.help") {
                 val path = matcher.group(1)
                 help = help.replace(og, "*" + context.getTranslation(path).replace(PLACEHOLDER_PREFIX, context.usedPrefix))
             }
-            for (helpPart in StringUtils.splitMessage(help, splitAtLeast = 750, maxLength = 1024)) {
+            for (argumentsPart in StringUtils.splitMessage(help, splitAtLeast = 750, maxLength = 1024)) {
+                embedder.addField(cmdArguments, argumentsPart, false)
+            }
+        }
+
+        cmdExamplesValue?.let {
+            for (examplesPart in StringUtils.splitMessage(it, splitAtLeast = 750, maxLength = 1024)) {
+                embedder.addField(cmdExamples, examplesPart, false)
+            }
+        }
+
+        cmdHelpValue?.let {
+            for (helpPart in StringUtils.splitMessage(it, splitAtLeast = 750, maxLength = 1024)) {
                 embedder.addField(cmdHelp, helpPart, false)
             }
         }
