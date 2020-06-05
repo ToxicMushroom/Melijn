@@ -3,6 +3,8 @@ package me.melijn.melijnbot.database.warn
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.objects.utils.StringUtils.toBase64
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
 
@@ -37,9 +39,9 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
 
-    fun getWarns(guildId: Long, warnedId: Long): List<Warn> {
-        val kicks = ArrayList<Warn>()
+    suspend fun getWarns(guildId: Long, warnedId: Long): List<Warn> = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND warnedId = ?", { rs ->
+            val kicks = mutableListOf<Warn>()
             while (rs.next()) {
                 kicks.add(Warn(
                     guildId,
@@ -50,13 +52,13 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
                     rs.getString("warnId")
                 ))
             }
+            it.resume(kicks)
         }, guildId, warnedId)
-        return kicks
     }
 
-    fun getWarns(warnId: String): List<Warn> {
-        val kicks = ArrayList<Warn>()
+    suspend fun getWarns(warnId: String): List<Warn> = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE warnId = ?", { rs ->
+            val kicks = mutableListOf<Warn>()
             while (rs.next()) {
                 kicks.add(Warn(
                     rs.getLong("guildId"),
@@ -67,8 +69,18 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
                     warnId
                 ))
             }
+            it.resume(kicks)
         }, warnId)
-        return kicks
+    }
+
+    suspend fun clear(guildId: Long, warnedId: Long) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND warnedId = ?",
+            guildId, warnedId)
+    }
+
+    suspend fun remove(warn: Warn) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND warnedId = ? AND warnId = ?",
+            warn.guildId, warn.warnedId, warn.warnId)
     }
 }
 

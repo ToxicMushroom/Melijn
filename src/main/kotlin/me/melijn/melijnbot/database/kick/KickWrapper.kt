@@ -57,4 +57,16 @@ class KickWrapper(val taskManager: TaskManager, private val kickDao: KickDao) {
             .replace("%moment%", kick.moment.asEpochMillisToDateTime(zoneId))
             .replace("%kickId%", kick.kickId)
     }
+
+    suspend fun clear(guildId: Long, kickedId: Long) {
+        kickDao.clear(guildId, kickedId)
+    }
+
+    suspend fun getKicks(guildId: Long, kickedId: Long): List<Kick> {
+        return kickDao.getKicks(guildId, kickedId)
+    }
+
+    suspend fun remove(kick: Kick) {
+        kickDao.remove(kick)
+    }
 }

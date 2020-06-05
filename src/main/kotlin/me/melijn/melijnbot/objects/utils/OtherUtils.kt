@@ -169,7 +169,7 @@ suspend inline fun <reified T : Enum<*>> getEnumFromArgN(context: CommandContext
     }
 }
 
-val ccTagPattern = Pattern.compile("cc.\\d+")
+val ccTagPattern = Pattern.compile("cc\\.(\\d+)")
 suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): Set<String>? {
     val arg = context.args[index]
     val category: CommandCategory? = enumValueOrNull(arg)

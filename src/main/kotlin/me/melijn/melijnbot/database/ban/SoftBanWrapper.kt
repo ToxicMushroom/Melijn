@@ -58,4 +58,16 @@ class SoftBanWrapper(val taskManager: TaskManager, private val softBanDao: SoftB
 
         return map
     }
+
+    suspend fun clear(guildId: Long, softbannedId: Long) {
+        softBanDao.clear(guildId, softbannedId)
+    }
+
+    suspend fun getSoftBans(guildId: Long, softbannedId: Long): List<SoftBan> {
+        return softBanDao.getSoftBans(guildId, softbannedId)
+    }
+
+    suspend fun remove(softBan: SoftBan) {
+        softBanDao.remove(softBan)
+    }
 }

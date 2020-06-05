@@ -71,9 +71,9 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
         return mute
     }
 
-    fun getMutes(guildId: Long, mutedId: Long): List<Mute> {
-        val mutes = ArrayList<Mute>()
+    suspend fun getMutes(guildId: Long, mutedId: Long): List<Mute> = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE guildId = ? AND mutedId = ?", { rs ->
+            val mutes = mutableListOf<Mute>()
             while (rs.next()) {
                 mutes.add(Mute(
                     guildId,
@@ -88,8 +88,8 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
                     rs.getString("muteId")
                 ))
             }
+            it.resume(mutes)
         }, guildId, mutedId)
-        return mutes
     }
 
     fun getMutes(muteId: String): List<Mute> {
@@ -111,6 +111,21 @@ class MuteDao(driverManager: DriverManager) : Dao(driverManager) {
             }
         }, muteId)
         return mutes
+    }
+
+    suspend fun clearHistory(guildId: Long, mutedId: Long) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND mutedId = ? AND active = ?",
+            guildId, mutedId, false)
+    }
+
+    suspend fun clear(guildId: Long, mutedId: Long) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND mutedId = ?",
+            guildId, mutedId)
+    }
+
+    suspend fun remove(mute: Mute) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND mutedId = ? AND muteId = ?",
+            mute.guildId, mute.mutedId, mute.muteId)
     }
 }
 

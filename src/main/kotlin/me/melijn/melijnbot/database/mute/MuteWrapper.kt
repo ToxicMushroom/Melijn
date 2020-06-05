@@ -86,4 +86,20 @@ class MuteWrapper(val taskManager: TaskManager, private val muteDao: MuteDao) {
 
         return map
     }
+
+    suspend fun clear(guildId: Long, mutedId: Long, clearActive: Boolean) {
+        if (clearActive) {
+            muteDao.clearHistory(guildId, mutedId)
+        } else {
+            muteDao.clear(guildId, mutedId)
+        }
+    }
+
+    suspend fun getMutes(guildId: Long, mutedId: Long): List<Mute> {
+        return muteDao.getMutes(guildId, mutedId)
+    }
+
+    suspend fun remove(mute: Mute) {
+        muteDao.remove(mute)
+    }
 }
