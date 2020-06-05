@@ -239,12 +239,12 @@ class RestServer(container: Container) : Jooby() {
             innerDataArray.add(i18n.getTranslation("en", c.description)) // 1
             innerDataArray.add(i18n.getTranslation("en", c.syntax)) // 2
             innerDataArray.add(DataArray.fromCollection(c.aliases.toList())) // 3
-            val translatedHelp = i18n.getTranslationN("en", c.help, false)
-            innerDataArray.add(translatedHelp?.replace("%help\\.arg\\..*?%".toRegex()) {
+            val argumentsHelp = i18n.getTranslationN("en", c.arguments, false)
+            innerDataArray.add(argumentsHelp?.replace("%help\\.arg\\..*?%".toRegex()) {
                 it.groups[0]?.let { (value) ->
                     i18n.getTranslation("en", value.substring(1, value.length - 1))
                 } ?: "report to devs it's BROKEN :c"
-            }) // 4
+            } ?: "") // 4
             innerDataArray.add(
                 DataArray.fromCollection(c.discordChannelPermissions.map { it.toString() })
             ) // 5
@@ -258,6 +258,8 @@ class RestServer(container: Container) : Jooby() {
                 c.permissionRequired
             ) // 8
             innerDataArray.add(getDataArrayArrayFrom(c.children)) // 9
+            innerDataArray.add(i18n.getTranslationN("en", c.help, false) ?: "") // 10
+            innerDataArray.add(i18n.getTranslationN("en", c.examples, false) ?: "") // 11
             dataArray.add(innerDataArray)
         }
         return dataArray

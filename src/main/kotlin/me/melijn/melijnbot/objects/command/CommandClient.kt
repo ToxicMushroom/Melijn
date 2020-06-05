@@ -177,10 +177,13 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                     }
                 }
             }
-            val finalCommand = command ?: return
-            if (checksFailed(container, finalCommand, event, false, commandParts)) return
-            finalCommand.run(CommandContext(event, commandParts, container, commandList))
-            return
+
+            if (command != null) {
+                val finalCommand = command ?: return
+                if (checksFailed(container, finalCommand, event, false, commandParts)) return
+                finalCommand.run(CommandContext(event, commandParts, container, commandList))
+                return
+            }
         }
 
         if (ccsWithPrefixMatches.isNotEmpty()) {
