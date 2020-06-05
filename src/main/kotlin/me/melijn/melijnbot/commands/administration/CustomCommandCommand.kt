@@ -33,7 +33,6 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             SetPrefixStateArg(root),
             SetDescriptionArg(root),
             ResponseArg(root),
-            InfoArg(root),
             RenameArg(root),
             CopyArg(root)
         )

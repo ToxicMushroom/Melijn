@@ -6,7 +6,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.getBooleanFromArgNMessage
 import me.melijn.melijnbot.objects.utils.sendMsg
 
-class SpamCommand : AbstractCommand("spam") {
+class SpamCommand : AbstractCommand("command.spam") {
 
     init {
         id = 169

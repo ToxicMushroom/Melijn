@@ -18,7 +18,11 @@ class PlayCommand : AbstractCommand("command.play") {
         id = 80
         name = "play"
         aliases = arrayOf("p")
-        children = arrayOf(YTArg(root), SCArg(root), AttachmentArg(root))
+        children = arrayOf(
+            YTArg(root),
+            SCArg(root),
+            AttachmentArg(root)
+        )
         runConditions = arrayOf(RunCondition.VC_BOT_OR_USER_DJ)
         commandCategory = CommandCategory.MUSIC
     }
@@ -91,7 +95,7 @@ class PlayCommand : AbstractCommand("command.play") {
         }
     }
 
-    class YTArg(root: String) : AbstractCommand("$root.yt") {
+    class YTArg(parent: String) : AbstractCommand("$parent.yt") {
 
         init {
             name = "yt"
@@ -129,7 +133,7 @@ class PlayCommand : AbstractCommand("command.play") {
 
     }
 
-    class SCArg(root: String) : AbstractCommand("$root.sc") {
+    class SCArg(parent: String) : AbstractCommand("$parent.sc") {
 
         init {
             name = "sc"
@@ -165,7 +169,7 @@ class PlayCommand : AbstractCommand("command.play") {
         }
     }
 
-    class AttachmentArg(root: String) : AbstractCommand("$root.attachment") {
+    class AttachmentArg(parent: String) : AbstractCommand("$parent.attachment") {
 
         init {
             name = "attachment"

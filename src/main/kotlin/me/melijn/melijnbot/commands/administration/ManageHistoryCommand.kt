@@ -12,7 +12,7 @@ class ManageHistoryCommand : AbstractCommand("command.managehistory") {
 
     init {
         id = 180
-        name = "messageHistory"
+        name = "manageHistory"
         aliases = arrayOf("mh")
         children = arrayOf(
             RemoveArg(root),
@@ -76,9 +76,16 @@ class ManageHistoryCommand : AbstractCommand("command.managehistory") {
                 }
             }
 
-            val msg = context.getTranslation("$root.cleared")
-                .replace("%amount%", "$amount")
-                .replace(PLACEHOLDER_USER, targetUser.asTag)
+            val msg = if (amount > 0) {
+                context.getTranslation("$root.cleared")
+                    .replace("%amount%", "$amount")
+                    .replace("%type%", context.args[0])
+                    .replace(PLACEHOLDER_USER, targetUser.asTag)
+            } else {
+                context.getTranslation("$root.clearednone")
+                    .replace("%type%", context.args[0])
+                    .replace(PLACEHOLDER_USER, targetUser.asTag)
+            }
             sendMsg(context, msg)
         }
     }
@@ -101,7 +108,6 @@ class ManageHistoryCommand : AbstractCommand("command.managehistory") {
             val caseId = getStringFromArgsNMessage(context, 1, 8, 14) ?: return
 
             val dao = context.daoManager
-            var amount = 0
             var foundType: PunishmentType? = null
 
             loop@ for (type in PunishmentType.values()) {
@@ -150,6 +156,7 @@ class ManageHistoryCommand : AbstractCommand("command.managehistory") {
             if (foundType == null) {
                 val msg = context.getTranslation("$root.foundnothing")
                     .replace("%caseId%", caseId)
+                    .replace(PLACEHOLDER_USER, targetUser.asTag)
                 sendMsg(context, msg)
                 return
             }
@@ -157,6 +164,7 @@ class ManageHistoryCommand : AbstractCommand("command.managehistory") {
             val msg = context.getTranslation("$root.removed")
                 .replace("%caseId%", caseId)
                 .replace("%type%", foundType.toUCC())
+                .replace(PLACEHOLDER_USER, targetUser.asTag)
             sendMsg(context, msg)
         }
     }

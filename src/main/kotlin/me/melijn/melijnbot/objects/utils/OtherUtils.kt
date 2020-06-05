@@ -6,7 +6,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.enums.MonthFormat
+import me.melijn.melijnbot.enums.DateFormat
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
@@ -254,7 +254,7 @@ suspend fun getLongFromArgNMessage(context: CommandContext, index: Int, min: Lon
 
 
 //Dayofyear, year
-suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, format: MonthFormat = MonthFormat.DMY): Pair<Int, Int?>? {
+suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, format: DateFormat = DateFormat.DMY): Pair<Int, Int?>? {
     val list: List<Int> = context.args[0].split("/", "-")
         .map { value ->
             val newVal = value.toIntOrNull()
@@ -271,17 +271,17 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
         var monthIndex = 0
         var yearIndex = 0
         when (format) {
-            MonthFormat.DMY -> {
+            DateFormat.DMY -> {
                 birthdayIndex = 0
                 monthIndex = 1
                 yearIndex = 2
             }
-            MonthFormat.MDY -> {
+            DateFormat.MDY -> {
                 birthdayIndex = 1
                 monthIndex = 0
                 yearIndex = 2
             }
-            MonthFormat.YMD -> {
+            DateFormat.YMD -> {
                 birthdayIndex = 2
                 monthIndex = 1
                 yearIndex = 0

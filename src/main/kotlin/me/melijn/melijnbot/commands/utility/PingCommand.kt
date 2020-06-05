@@ -14,9 +14,6 @@ class PingCommand : AbstractCommand("command.ping") {
         id = 1
         name = "ping"
         aliases = arrayOf("pong", "latency")
-        children = arrayOf(
-            PongCommand(root)
-        )
         commandCategory = CommandCategory.UTILITY
     }
 
@@ -49,33 +46,4 @@ class PingCommand : AbstractCommand("command.ping") {
     private fun replacePart3(string: String, editMessagePing: Long): String = string
         .replace("%editMessagePing%", "$editMessagePing")
 
-
-    private class PongCommand(parent: String) : AbstractCommand("$parent.pong") {
-
-        init {
-            name = "pong"
-            children = arrayOf(
-                DunsteCommand(root)
-            )
-            aliases = arrayOf("ping")
-        }
-
-        override suspend fun execute(context: CommandContext) {
-            val msg = context.getTranslation("$root.response1")
-            sendMsg(context, msg)
-        }
-
-        private class DunsteCommand(parent: String) : AbstractCommand("$parent.dunste") {
-
-            init {
-                name = "dunste"
-                aliases = arrayOf("duncte")
-            }
-
-            override suspend fun execute(context: CommandContext) {
-                val msg = context.getTranslation("$root.response1")
-                sendMsg(context, msg)
-            }
-        }
-    }
 }

@@ -8,6 +8,7 @@ import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.objects.command.AbstractCommand
+import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.objects.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.objects.translation.i18n
@@ -208,6 +209,7 @@ class RestServer(container: Container) : Jooby() {
         get("/fullCommands") {
             val dataObject = DataObject.empty()
             for ((_, root) in container.commandMap) {
+                if (root.commandCategory == CommandCategory.DEVELOPER) continue
                 val dataArray = if (dataObject.hasKey(root.commandCategory.toString())) {
                     dataObject.getArray(root.commandCategory.toString())
                 } else {
