@@ -416,8 +416,9 @@ suspend fun getColorFromArgNMessage(context: CommandContext, index: Int): Color?
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     val color: Color? = when {
-        arg.matches("(?i)#([a-f]|\\d){6}".toRegex()) -> {
-            Color.decode(arg)
+        arg.matches("(?i)#?([a-f]|\\d){6}".toRegex()) -> {
+            if (arg.startsWith("#")) Color.decode(arg)
+            else Color.decode("#$arg")
         }
         arg.matches("\\s*\\d+,\\s*\\d+,\\s*\\d+".toRegex()) -> {
             val parts = arg.split(",")

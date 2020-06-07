@@ -3,6 +3,8 @@ package me.melijn.melijnbot.objects.utils
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.i18n
+import java.time.Instant
+import java.util.*
 
 suspend fun getIntegerFromArgNMessage(context: CommandContext, index: Int, start: Int = Integer.MIN_VALUE, end: Int = Integer.MAX_VALUE): Int? {
     if (argSizeCheckFailed(context, index)) return null
@@ -89,6 +91,36 @@ suspend fun getBooleanFromArgNMessage(context: CommandContext, index: Int): Bool
     }
 
     return bool
+}
+
+// Returns in epoch millis at UTC+0
+suspend fun getDateTimeFromArgNMessage(context: CommandContext, index: Int): Long? {
+    if (argSizeCheckFailed(context, index)) return null
+    val arg = context.args[index]
+
+    if (arg.equals("current", true)) {
+        return Instant.now().toEpochMilli()
+    }
+
+    val dateTime = getEpochMillisFromArgN(context, index)
+    if (dateTime == null) {
+        val language = context.getLanguage()
+        val msg = i18n.getTranslation(language, "message.unknown.datetime")
+            .replace(PLACEHOLDER_ARG, arg)
+        sendMsg(context, msg)
+    }
+
+    return dateTime
+}
+
+
+fun getEpochMillisFromArgN(context: CommandContext, index: Int): Long? {
+    val arg = context.args[index]
+    return try {
+        (simpleDateTimeFormatter.parse(arg) as Date).time
+    } catch (e: Exception) {
+        null
+    }
 }
 
 suspend fun argSizeCheckFailed(context: CommandContext, index: Int, silent: Boolean = false): Boolean {

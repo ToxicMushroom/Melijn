@@ -11,9 +11,10 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
-val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd kk:mm:ss O")
-val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd O")
-val purgeTimeFormatter = DateTimeFormatter.ofPattern("kk:mm:ss")
+val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd kk:mm:ss O")
+val simpleDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd kk:mm:ss")
+val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd O")
+val purgeTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("kk:mm:ss")
 
 object TimeUtils {
 

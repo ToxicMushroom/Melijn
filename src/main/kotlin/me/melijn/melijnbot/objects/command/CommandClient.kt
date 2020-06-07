@@ -287,6 +287,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             newAttachments[url] = file
         }
         newMessage.attachments = newAttachments
+        newMessage.extra = modularMessage.extra
         return newMessage
 
     }
