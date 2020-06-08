@@ -64,7 +64,7 @@ class KickCommand : AbstractCommand("command.kick") {
         val kicking = context.getTranslation("message.kicking")
         val privateChannel = targetMember.user.openPrivateChannel().awaitOrNull()
         val message: Message? = privateChannel?.let {
-            sendMsgEL(it, kicking)
+            sendMsgAwaitEL(it, kicking)
         }?.firstOrNull()
 
         continueKicking(context, targetMember, kick, message)

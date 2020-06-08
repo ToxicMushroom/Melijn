@@ -79,6 +79,7 @@ object MessageCommandUtil {
 
     private suspend fun showMessage(context: CommandContext, property: ModularMessageProperty, message: ModularMessage?, type: MessageType) {
         var path = ""
+        var pathSuffix = ""
         val string: String? = when (property) {
             ModularMessageProperty.CONTENT -> {
                 path = "message.content.show"
@@ -130,14 +131,15 @@ object MessageCommandUtil {
             }
             ModularMessageProperty.EMBED_TIME_STAMP -> {
                 path = "message.embed.timestamp.show"
-                message?.embed?.timestamp.toString()
+                if (message?.extra?.containsKey("currentTimestamp") == true) pathSuffix = ".updating"
+                message?.embed?.timestamp?.asLongLongGMTString()
             }
         }
 
         val msg = if (string == null) {
-            context.getTranslation("$path.unset")
+            context.getTranslation("$path.unset$pathSuffix")
         } else {
-            context.getTranslation("$path.set")
+            context.getTranslation("$path.set$pathSuffix")
                 .replace("%${property.variableName}%", string)
         }.replace(PLACEHOLDER_TYPE, type.text)
 
@@ -324,20 +326,34 @@ object MessageCommandUtil {
     }
 
     private suspend fun setEmbedTimeStampMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
-        val state = getBooleanFromArgNMessage(context, 0) ?: return
-        val timeStamp = if (state) Instant.now() else null
-        val arg = context.rawArg
-        val eb = EmbedBuilder(message.embed)
 
-        val msg = if (arg.equals("null", true)) {
-            eb.setTimestamp(timeStamp)
+        val timeArg = context.args[0]
+        val eb = EmbedBuilder(message.embed)
+        val mmap = message.extra.toMutableMap()
+
+        val msg = if (timeArg.equals("null", true)) {
+            eb.setTimestamp(null)
+            mmap.remove("currentTimestamp")
             context.getTranslation("message.embed.timestamp.unset")
         } else {
+            val millis = getDateTimeFromArgNMessage(context, 0) ?: return
+            val state = getBooleanFromArgN(context, 1) ?: false
+            val timeStamp = Instant.ofEpochMilli(millis)
             eb.setTimestamp(timeStamp)
-            context.getTranslation("message.embed.timestamp.set")
-                .replace(PLACEHOLDER_ARG, arg)
+
+            if (state) {
+                mmap["currentTimestamp"] = ""
+                context.getTranslation("message.embed.timestamp.set.updating")
+                    .replace(PLACEHOLDER_ARG, timeArg)
+            } else {
+                mmap.remove("currentTimestamp")
+                context.getTranslation("message.embed.timestamp.set")
+                    .replace(PLACEHOLDER_ARG, timeArg)
+            }
         }.replace(PLACEHOLDER_TYPE, type.text)
 
+
+        message.extra = mmap
         message.embed = eb.build()
         sendMsg(context, msg)
     }

@@ -26,9 +26,6 @@ import java.io.StringWriter
 import java.net.URL
 import java.time.format.DateTimeFormatter
 import javax.imageio.ImageIO
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 val logger = LoggerFactory.getLogger("messageutils")
 
@@ -39,11 +36,23 @@ fun Throwable.sendInGuild(context: CommandContext, thread: Thread = Thread.curre
 }
 
 
-fun Throwable.sendInGuild(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread(), extra: String? = null) = runBlocking {
+fun Throwable.sendInGuild(
+    guild: Guild? = null,
+    channel: MessageChannel? = null,
+    author: User? = null,
+    thread: Thread = Thread.currentThread(),
+    extra: String? = null
+) = runBlocking {
     sendInGuildSuspend(guild, channel, author, thread, extra)
 }
 
-suspend fun Throwable.sendInGuildSuspend(guild: Guild? = null, channel: MessageChannel? = null, author: User? = null, thread: Thread = Thread.currentThread(), extra: String? = null) {
+suspend fun Throwable.sendInGuildSuspend(
+    guild: Guild? = null,
+    channel: MessageChannel? = null,
+    author: User? = null,
+    thread: Thread = Thread.currentThread(),
+    extra: String? = null
+) {
     if (Container.instance.settings.unLoggedThreads.contains(thread.name)) return
 
     val channelId = Container.instance.settings.exceptionChannel
@@ -116,9 +125,8 @@ suspend fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String,
                     }
                 }.toMutableList()
 
-                val message = channel.sendMessage(paginatedParts[0]).await()
-                registerPaginationMessage(channel
-                    , message, paginatedParts, 0)
+                val message = channel.sendMessage(paginatedParts[0]).awaitOrNull()
+                message?.let { registerPaginationMessage(channel, it, paginatedParts, 0) }
             } else {
                 parts.forEachIndexed { index, msgPart ->
                     channel.sendMessage(when {
@@ -145,8 +153,8 @@ suspend fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String,
                     }
                 }.toMutableList()
 
-                val message = privateChannel.sendMessage(paginatedParts[0]).await()
-                registerPaginationMessage(privateChannel, message, paginatedParts, 0)
+                val message = privateChannel.sendMessage(paginatedParts[0]).awaitOrNull()
+                message?.let { registerPaginationMessage(privateChannel, it, paginatedParts, 0) }
             } else {
                 parts.forEachIndexed { index, msgPart ->
                     privateChannel.sendMessage(when {
@@ -163,12 +171,10 @@ suspend fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String,
 suspend fun sendMsgCodeBlocks(
     context: CommandContext,
     msg: String,
-    lang: String,
-    success: ((message: Message) -> Unit)? = null,
-    failed: ((ex: Throwable) -> Unit)? = null
+    lang: String
 ) {
-    if (context.isFromGuild) sendMsgCodeBlocks(context.textChannel, msg, lang, success, failed)
-    else sendMsgCodeBlocks(context.privateChannel, msg, lang, success, failed)
+    if (context.isFromGuild) sendMsgCodeBlocks(context.textChannel, msg, lang)
+    else sendMsgCodeBlocks(context.privateChannel, msg, lang)
 }
 
 suspend fun sendMsgCodeBlocks(
@@ -184,7 +190,7 @@ suspend fun sendMsgCodeBlocks(
 
         val list = StringUtils.splitMessageWithCodeBlocks(msg, 1600, 20 + lang.length, lang)
             .toMutableList()
-        val rsp = sendPaginationMsg(channel, list, 0)
+        val rsp = sendPaginationMsgAwait(channel, list, 0)
         success?.invoke(rsp)
     }
 }
@@ -192,20 +198,16 @@ suspend fun sendMsgCodeBlocks(
 suspend fun sendMsgCodeBlocks(
     channel: TextChannel,
     msg: String,
-    lang: String,
-    success: ((message: Message) -> Unit)? = null,
-    failed: ((ex: Throwable) -> Unit)? = null
+    lang: String
 ) {
-    if (channel.canTalk()) {
-        if (msg.length <= 2000) {
-            channel.sendMessage(msg).queue(success, failed)
-        } else {
+    if (!channel.canTalk()) throw IllegalArgumentException("bro cringe fix perms")
+    if (msg.length <= 2000) {
+        channel.sendMessage(msg).queue()
+    } else {
 
-            val list = StringUtils.splitMessageWithCodeBlocks(msg, 1600, 20 + lang.length, lang)
-                .toMutableList()
-            val rsp = sendPaginationMsg(channel, list, 0)
-            success?.invoke(rsp)
-        }
+        val list = StringUtils.splitMessageWithCodeBlocks(msg, 1600, 20 + lang.length, lang)
+            .toMutableList()
+        sendPaginationMsg(channel, list, 0)
     }
 }
 
@@ -216,9 +218,7 @@ fun escapeForLog(string: String): String {
         .trim()
 }
 
-suspend fun sendAttachments(textChannel: MessageChannel, urls: Map<String, String>): Message = suspendCoroutine {
-    val success = { success: Message -> it.resume(success) }
-    val failed = { failed: Throwable -> it.resumeWithException(failed) }
+suspend fun sendAttachmentsAwaitN(textChannel: MessageChannel, urls: Map<String, String>): Message? {
     var messageAction: MessageAction? = null
     for ((index, url) in urls.iterator().withIndex()) {
         val stream = URL(url.key).openStream()
@@ -228,17 +228,19 @@ suspend fun sendAttachments(textChannel: MessageChannel, urls: Map<String, Strin
             messageAction?.addFile(stream, url.value)
         }
     }
-    messageAction?.queue(success, failed)
+    return messageAction?.awaitOrNull()
 }
 
-suspend fun sendMsgWithAttachments(channel: MessageChannel, message: Message, attachments: Map<String, String>): Message = suspendCoroutine {
-    val success = { success: Message -> it.resume(success) }
-    val failed = { failed: Throwable -> it.resumeWithException(failed) }
+suspend fun sendMsgWithAttachmentsAwaitN(channel: MessageChannel, message: Message, attachments: Map<String, String>): Message? {
     var messageAction: MessageAction? = null
     for ((index, url) in attachments.iterator().withIndex()) {
         val stream = URL(url.key).openStream()
         messageAction = if (index == 0) {
-            var action = if (message.contentRaw.isNotBlank()) channel.sendMessage(message.contentRaw) else null
+            var action = if (message.contentRaw.isNotBlank()) {
+                channel.sendMessage(message.contentRaw)
+            } else {
+                null
+            }
             for (embed in message.embeds) {
                 if (action == null) action = channel.sendMessage(embed)
                 else action.embed(embed)
@@ -248,85 +250,66 @@ suspend fun sendMsgWithAttachments(channel: MessageChannel, message: Message, at
             messageAction
         }?.addFile(stream, url.value)
     }
-    messageAction?.queue(success, failed)
+    return messageAction?.awaitOrNull()
 }
 
-suspend fun sendEmbed(context: CommandContext, embed: MessageEmbed, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
+suspend fun sendEmbed(context: CommandContext, embed: MessageEmbed) {
     if (context.isFromGuild) {
-        sendEmbed(context.daoManager.embedDisabledWrapper, context.textChannel, embed, success, failed)
-    } else {
-        sendEmbed(context.privateChannel, embed, success, failed)
-    }
-}
-
-suspend fun sendEmbed(context: CommandContext, embed: MessageEmbed): List<Message> {
-    return if (context.isFromGuild) {
         sendEmbed(context.daoManager.embedDisabledWrapper, context.textChannel, embed)
     } else {
         sendEmbed(context.privateChannel, embed)
     }
 }
 
-suspend fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
-    try {
-        val msg = privateChannel.sendMessage(embed).await()
-        success?.invoke(listOf(msg))
-    } catch (t: Throwable) {
-        failed?.invoke(t)
+suspend fun sendEmbedAwaitEL(context: CommandContext, embed: MessageEmbed): List<Message> {
+    return if (context.isFromGuild) {
+        sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, context.textChannel, embed)
+    } else {
+        sendEmbedAwaitEL(context.privateChannel, embed)
     }
 }
 
-suspend fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed): List<Message> = suspendCoroutine {
-    runBlocking {
-        try {
-            if (privateChannel.user.isBot) {
-                it.resume(emptyList())
-                return@runBlocking
-            }
-            val msg = privateChannel.sendMessage(embed).await()
-            it.resume(listOf(msg))
-        } catch (t: Throwable) {
-            it.resumeWithException(t)
-        }
+fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed) {
+    if (privateChannel.user.isBot) return
+    privateChannel.sendMessage(embed).queue()
+}
+
+suspend fun sendEmbedAwaitEL(privateChannel: PrivateChannel, embed: MessageEmbed): List<Message> {
+    if (privateChannel.user.isBot) {
+        return emptyList()
     }
+    val msg = privateChannel.sendMessage(embed).awaitOrNull()
+    return msg?.let { listOf(it) } ?: emptyList()
 }
 
 
-suspend fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChannel, embed: MessageEmbed): List<Message> = suspendCoroutine {
-    runBlocking {
-        val guild = textChannel.guild
-        if (!textChannel.canTalk()) {
-            it.resumeWithException(IllegalArgumentException("No permission to talk in this channel"))
-            return@runBlocking
-        }
-        if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
-            !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
-            try {
-                val msg = textChannel.sendMessage(embed).await()
-                it.resume(listOf(msg))
-            } catch (t: Throwable) {
-                it.resumeWithException(t)
-            }
-        } else {
-            it.resume(sendEmbedAsMessage(textChannel, embed))
-        }
-    }
-}
-
-suspend fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChannel, embed: MessageEmbed, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
+suspend fun sendEmbedAwaitEL(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChannel, embed: MessageEmbed): List<Message> {
     val guild = textChannel.guild
     if (!textChannel.canTalk()) {
-        failed?.invoke(IllegalArgumentException("No permission to talk in this channel"))
-        return
+        throw IllegalArgumentException("No permission to talk in this channel")
+    }
+
+    return if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
+        !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
+
+        val msg = textChannel.sendMessage(embed).awaitOrNull()
+        msg?.let { listOf(it) } ?: emptyList()
+
+    } else {
+        sendEmbedAsMessageAwaitEL(textChannel, embed)
+    }
+}
+
+suspend fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChannel, embed: MessageEmbed) {
+    val guild = textChannel.guild
+    if (!textChannel.canTalk()) {
+        throw IllegalArgumentException("No permission to talk in this channel")
     }
     if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
         !embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
-        textChannel.sendMessage(embed).queue(
-            { success?.invoke(listOf(it)) },
-            { failed?.invoke(it) }
-        )
+        textChannel.sendMessage(embed).queue()
     } else {
-        sendEmbedAsMessage(textChannel, embed, success, failed)
+        sendEmbedAsMessage(textChannel, embed)
     }
 }
 
@@ -363,286 +346,212 @@ fun MessageEmbed.toMessage(): String {
     return sb.toString()
 }
 
-suspend fun sendEmbedAsMessage(textChannel: TextChannel, embed: MessageEmbed, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
-    sendMsg(textChannel, embed.toMessage(), success, failed)
+fun sendEmbedAsMessage(textChannel: TextChannel, embed: MessageEmbed) {
+    sendMsg(textChannel, embed.toMessage())
 }
 
-suspend fun sendEmbedAsMessage(textChannel: TextChannel, embed: MessageEmbed): List<Message> {
-    return sendMsg(textChannel, embed.toMessage())
+suspend fun sendEmbedAsMessageAwaitEL(textChannel: TextChannel, embed: MessageEmbed): List<Message> {
+    return sendMsgAwaitEL(textChannel, embed.toMessage())
 }
 
-suspend fun sendMsg(context: CommandContext, msg: String, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
-    if (context.isFromGuild) sendMsg(context.textChannel, msg, success, failed)
-    else sendMsg(context.privateChannel, msg, success, failed)
-}
-
-
-suspend fun sendMsg(context: CommandContext, image: BufferedImage, extension: String): List<Message> = suspendCoroutine {
-    val success = { success: List<Message> -> it.resume(success) }
-    val failed = { failed: Throwable -> it.resumeWithException(failed) }
-    runBlocking {
-        if (context.isFromGuild) {
-            sendMsg(context.textChannel, image, extension, success, failed)
-        } else {
-            sendMsg(context.privateChannel, image, extension, success, failed)
-        }
+suspend fun sendMsg(context: CommandContext, image: BufferedImage, extension: String) {
+    if (context.isFromGuild) {
+        sendMsg(context.textChannel, image, extension)
+    } else {
+        sendMsg(context.privateChannel, image, extension)
     }
 }
 
-suspend fun sendMsg(privateChannel: PrivateChannel, image: BufferedImage, extension: String, success: ((List<Message>) -> Unit)? = null, failed: ((Throwable) -> Unit)? = null) {
-    try {
-        val messageList = mutableListOf<Message>()
+suspend fun sendMsg(privateChannel: PrivateChannel, image: BufferedImage, extension: String) {
+    val byteArrayOutputStream = ByteArrayOutputStream()
 
-        val byteArrayOutputStream = ByteArrayOutputStream()
-        withContext(Dispatchers.IO) {
+    withContext(Dispatchers.IO) {
+        ImageIO.write(image, extension, byteArrayOutputStream)
+    }
+
+    privateChannel.sendFile(byteArrayOutputStream.toByteArray(), "finished.$extension").queue()
+}
+
+suspend fun sendMsg(textChannel: TextChannel, image: BufferedImage, extension: String) {
+    require(textChannel.canTalk()) { "Cannot talk in this channel " + textChannel.name }
+
+    val byteArrayOutputStream = ByteArrayOutputStream()
+    withContext(Dispatchers.IO) {
+        ImageIO.write(image, extension, byteArrayOutputStream)
+    }
+
+    textChannel.sendFile(byteArrayOutputStream.toByteArray(), "finished.$extension").queue()
+}
+
+suspend fun sendFile(context: CommandContext, bytes: ByteArray, extension: String) {
+    if (context.isFromGuild) {
+        sendFile(context.getLanguage(), context.textChannel, bytes, extension)
+    } else {
+        sendFile(context.getLanguage(), context.privateChannel, bytes, extension)
+    }
+}
+
+
+fun sendFile(language: String, privateChannel: PrivateChannel, bytes: ByteArray, extension: String) {
+    if (privateChannel.jda.selfUser.allowedFileSize < (bytes.size)) {
+        val size = humanReadableByteCountBin(bytes.size)
+        val max = humanReadableByteCountBin(privateChannel.jda.selfUser.allowedFileSize)
+        val msg = i18n.getTranslation(language, "message.filetoobig")
+            .replace("%size%", size)
+            .replace("%max%", max)
+        sendMsg(privateChannel, msg)
+        return
+    }
+
+    privateChannel.sendFile(bytes, "finished.$extension").queue()
+}
+
+fun sendFile(language: String, textChannel: TextChannel, bytes: ByteArray, extension: String) {
+    require(textChannel.canTalk()) { "Cannot talk in this channel " + textChannel.name }
+
+    if (textChannel.guild.maxFileSize < (bytes.size)) {
+        val size = humanReadableByteCountBin(bytes.size)
+        val max = humanReadableByteCountBin(textChannel.jda.selfUser.allowedFileSize)
+        val msg = i18n.getTranslation(language, "message.filetoobig")
+            .replace("%size%", size)
+            .replace("%max%", max)
+        sendMsg(textChannel, msg)
+        return
+    }
+
+    textChannel.sendFile(bytes, "finished.$extension").queue()
+}
+
+
+suspend fun sendMsg(context: CommandContext, listImages: List<BufferedImage>, extension: String) {
+    if (context.isFromGuild) {
+        sendMsg(context.textChannel, listImages, extension)
+    } else {
+        sendMsg(context.privateChannel, listImages, extension)
+    }
+}
+
+suspend fun sendMsg(privateChannel: PrivateChannel, listImages: List<BufferedImage>, extension: String) {
+    val byteArrayOutputStream = ByteArrayOutputStream()
+
+    withContext(Dispatchers.IO) {
+        for (image in listImages) {
             ImageIO.write(image, extension, byteArrayOutputStream)
         }
-        messageList.add(privateChannel.sendFile(byteArrayOutputStream.toByteArray(), "finished.$extension").await())
-
-        success?.invoke(messageList)
-    } catch (t: Throwable) {
-        t.printStackTrace()
-        failed?.invoke(t)
-        return
     }
+
+    privateChannel.sendFile(byteArrayOutputStream.toByteArray(), "finished.$extension").queue()
 }
 
-suspend fun sendMsg(textChannel: TextChannel, image: BufferedImage, extension: String, success: ((List<Message>) -> Unit)? = null, failed: ((Throwable) -> Unit)? = null) {
+suspend fun sendMsg(textChannel: TextChannel, listImages: List<BufferedImage>, extension: String) {
     require(textChannel.canTalk()) { "Cannot talk in this channel " + textChannel.name }
-    try {
-        val messageList = mutableListOf<Message>()
 
-        val byteArrayOutputStream = ByteArrayOutputStream()
-        withContext(Dispatchers.IO) {
+    val byteArrayOutputStream = ByteArrayOutputStream()
+    withContext(Dispatchers.IO) {
+        for (image in listImages) {
             ImageIO.write(image, extension, byteArrayOutputStream)
         }
-        messageList.add(textChannel.sendFile(byteArrayOutputStream.toByteArray(), "finished.$extension").await())
-
-        success?.invoke(messageList)
-    } catch (t: Throwable) {
-        t.printStackTrace()
-        failed?.invoke(t)
-        return
     }
+
+    textChannel.sendFile(byteArrayOutputStream.toByteArray(), "finished.$extension").queue()
 }
 
-suspend fun sendFile(context: CommandContext, bytes: ByteArray, extension: String): List<Message> = suspendCoroutine {
-    val success = { success: List<Message> -> it.resume(success) }
-    val failed = { failed: Throwable -> it.resumeWithException(failed) }
-    runBlocking {
-        if (context.isFromGuild) {
-            sendFile(context.getLanguage(), context.textChannel, bytes, extension, success, failed)
-        } else {
-            sendFile(context.getLanguage(), context.privateChannel, bytes, extension, success, failed)
-        }
+
+fun sendMsg(context: CommandContext, msg: String) {
+    if (context.isFromGuild) {
+        sendMsg(context.textChannel, msg)
+    } else {
+        sendMsg(context.privateChannel, msg)
     }
 }
 
 
-suspend fun sendFile(language: String, privateChannel: PrivateChannel, bytes: ByteArray, extension: String, success: ((List<Message>) -> Unit)? = null, failed: ((Throwable) -> Unit)? = null) {
-    try {
-        val messageList = mutableListOf<Message>()
-        if (privateChannel.jda.selfUser.allowedFileSize < (bytes.size)) {
-            val size = humanReadableByteCountBin(bytes.size)
-            val max = humanReadableByteCountBin(privateChannel.jda.selfUser.allowedFileSize)
-            val msg = i18n.getTranslation(language, "message.filetoobig")
-                .replace("%size%", size)
-                .replace("%max%", max)
-            sendMsg(privateChannel, msg)
-            return
-        }
-        messageList.add(privateChannel.sendFile(bytes, "finished.$extension").await())
-
-        success?.invoke(messageList)
-    } catch (t: Throwable) {
-        t.printStackTrace()
-        failed?.invoke(t)
-        return
-    }
-}
-
-suspend fun sendFile(language: String, textChannel: TextChannel, bytes: ByteArray, extension: String, success: ((List<Message>) -> Unit)? = null, failed: ((Throwable) -> Unit)? = null) {
-    require(textChannel.canTalk()) { "Cannot talk in this channel " + textChannel.name }
-    try {
-        val messageList = mutableListOf<Message>()
-        if (textChannel.guild.maxFileSize < (bytes.size)) {
-            val size = humanReadableByteCountBin(bytes.size)
-            val max = humanReadableByteCountBin(textChannel.jda.selfUser.allowedFileSize)
-            val msg = i18n.getTranslation(language, "message.filetoobig")
-                .replace("%size%", size)
-                .replace("%max%", max)
-            sendMsg(textChannel, msg)
-            return
-        }
-        messageList.add(textChannel.sendFile(bytes, "finished.$extension").await())
-
-        success?.invoke(messageList)
-    } catch (t: Throwable) {
-        t.printStackTrace()
-        failed?.invoke(t)
-        return
-    }
-}
-
-
-suspend fun sendMsg(context: CommandContext, listImages: List<BufferedImage>, extension: String): List<Message> = suspendCoroutine {
-    val success = { success: List<Message> -> it.resume(success) }
-    val failed = { failed: Throwable -> it.resumeWithException(failed) }
-    runBlocking {
-        if (context.isFromGuild) {
-            sendMsg(context.textChannel, listImages, extension, success, failed)
-        } else {
-            sendMsg(context.privateChannel, listImages, extension, success, failed)
-        }
-    }
-}
-
-suspend fun sendMsg(privateChannel: PrivateChannel, listImages: List<BufferedImage>, extension: String, success: ((List<Message>) -> Unit)? = null, failed: ((Throwable) -> Unit)? = null) {
-    try {
-        val messageList = mutableListOf<Message>()
-
-        val byteArrayOutputStream = ByteArrayOutputStream()
-        withContext(Dispatchers.IO) {
-            for (image in listImages) {
-                ImageIO.write(image, extension, byteArrayOutputStream)
-            }
-        }
-        messageList.add(privateChannel.sendFile(byteArrayOutputStream.toByteArray(), "finished.$extension").await())
-
-        success?.invoke(messageList)
-    } catch (t: Throwable) {
-        t.printStackTrace()
-        failed?.invoke(t)
-        return
-    }
-}
-
-suspend fun sendMsg(textChannel: TextChannel, listImages: List<BufferedImage>, extension: String, success: ((List<Message>) -> Unit)? = null, failed: ((Throwable) -> Unit)? = null) {
-    require(textChannel.canTalk()) { "Cannot talk in this channel " + textChannel.name }
-    try {
-        val messageList = mutableListOf<Message>()
-
-        val byteArrayOutputStream = ByteArrayOutputStream()
-        withContext(Dispatchers.IO) {
-            for (image in listImages) {
-                ImageIO.write(image, extension, byteArrayOutputStream)
-            }
-        }
-        messageList.add(textChannel.sendFile(byteArrayOutputStream.toByteArray(), "finished.$extension").await())
-
-        success?.invoke(messageList)
-    } catch (t: Throwable) {
-        t.printStackTrace()
-        failed?.invoke(t)
-        return
-    }
-}
-
-
-suspend fun sendMsg(context: CommandContext, msg: String): List<Message> = suspendCoroutine {
-    val success = { success: List<Message> -> it.resume(success) }
-    val failed = { failed: Throwable -> it.resumeWithException(failed) }
-    runBlocking {
-        if (context.isFromGuild) {
-            sendMsg(context.textChannel, msg, success, failed)
-        } else {
-            sendMsg(context.privateChannel, msg, success, failed)
-        }
-    }
-}
-
-
-suspend fun sendMsg(privateChannel: PrivateChannel, msg: ModularMessage): Message? {
+suspend fun sendMsgAwaitN(privateChannel: PrivateChannel, msg: ModularMessage): Message? {
     val message: Message? = msg.toMessage()
     return when {
-        message == null -> sendAttachments(privateChannel, msg.attachments)
-        msg.attachments.isNotEmpty() -> sendMsgWithAttachments(privateChannel, message, msg.attachments)
-        else -> sendMsg(privateChannel, message)
+        message == null -> sendAttachmentsAwaitN(privateChannel, msg.attachments)
+        msg.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(privateChannel, message, msg.attachments)
+        else -> sendMsgAwaitN(privateChannel, message)
     }
 }
 
-suspend fun sendMsg(textChannel: TextChannel, msg: ModularMessage): Message? {
+suspend fun sendMsgAwaitN(textChannel: TextChannel, msg: ModularMessage): Message? {
     val message: Message? = msg.toMessage()
     return when {
-        message == null -> sendAttachments(textChannel, msg.attachments)
-        msg.attachments.isNotEmpty() -> sendMsgWithAttachments(textChannel, message, msg.attachments)
-        else -> sendMsg(textChannel, message)
+        message == null -> sendAttachmentsAwaitN(textChannel, msg.attachments)
+        msg.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(textChannel, message, msg.attachments)
+        else -> sendMsgAwaitN(textChannel, message)
+    }
+}
+
+suspend fun sendMsg(textChannel: TextChannel, msg: ModularMessage) {
+    val message: Message? = msg.toMessage()
+    when {
+        message == null -> sendAttachmentsAwaitN(textChannel, msg.attachments)
+        msg.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(textChannel, message, msg.attachments)
+        else -> sendMsgAwaitN(textChannel, message)
     }
 }
 
 
-suspend fun sendPaginationMsg(context: CommandContext, msgList: MutableList<String>, index: Int): List<Message> = suspendCoroutine {
+suspend fun sendPaginationMsg(context: CommandContext, msgList: MutableList<String>, index: Int) {
     val msg = msgList[index]
     if (msg.length > 2000) throw IllegalArgumentException("No splitting here :angry:")
 
-    runBlocking {
-        if (context.isFromGuild) {
-            val message = sendMsg(context.textChannel, msg).first()
-            registerPaginationMessage(context.textChannel, message, msgList, index)
-        } else {
-            val message = sendMsg(context.privateChannel, msg).first()
-            registerPaginationMessage(context.privateChannel, message, msgList, index)
-        }
+    if (context.isFromGuild) {
+        val message = sendMsgAwaitEL(context.textChannel, msg).first()
+        registerPaginationMessage(context.textChannel, message, msgList, index)
+    } else {
+        val message = sendMsgAwaitEL(context.privateChannel, msg).first()
+        registerPaginationMessage(context.privateChannel, message, msgList, index)
     }
 }
 
-suspend fun sendPaginationMsg(textChannel: TextChannel, msgList: MutableList<String>, index: Int): Message = suspendCoroutine {
+suspend fun sendPaginationMsg(textChannel: TextChannel, msgList: MutableList<String>, index: Int) {
     val msg = msgList[index]
     if (msg.length > 2000) throw IllegalArgumentException("No splitting here :angry:")
 
-    runBlocking {
-        val message = sendMsg(textChannel, msg).first()
-        it.resume(message)
-        registerPaginationMessage(textChannel, message, msgList, index)
-    }
+    val message = sendMsgAwaitEL(textChannel, msg).first()
+    registerPaginationMessage(textChannel, message, msgList, index)
 }
 
-suspend fun sendPaginationMsg(privateChannel: PrivateChannel, msgList: MutableList<String>, index: Int): Message = suspendCoroutine {
+suspend fun sendPaginationMsg(privateChannel: PrivateChannel, msgList: MutableList<String>, index: Int) {
     val msg = msgList[index]
     if (msg.length > 2000) throw IllegalArgumentException("No splitting here :angry:")
 
-    runBlocking {
-        val message = sendMsg(privateChannel, msg).first()
-        it.resume(message)
-        registerPaginationMessage(privateChannel, message, msgList, index)
-    }
+    val message = sendMsgAwaitEL(privateChannel, msg).first()
+    registerPaginationMessage(privateChannel, message, msgList, index)
 }
 
-suspend fun sendPaginationModularMsg(context: CommandContext, msgList: MutableList<ModularMessage>, index: Int): List<Message> = suspendCoroutine {
+suspend fun sendPaginationMsgAwait(textChannel: TextChannel, msgList: MutableList<String>, index: Int): Message {
+    val msg = msgList[index]
+    if (msg.length > 2000) throw IllegalArgumentException("No splitting here :angry:")
+
+    val message = sendMsgAwaitEL(textChannel, msg).first()
+    registerPaginationMessage(textChannel, message, msgList, index)
+    return message
+}
+
+suspend fun sendPaginationMsgAwait(privateChannel: PrivateChannel, msgList: MutableList<String>, index: Int): Message {
+    val msg = msgList[index]
+    if (msg.length > 2000) throw IllegalArgumentException("No splitting here :angry:")
+
+    val message = sendMsgAwaitEL(privateChannel, msg).first()
+    registerPaginationMessage(privateChannel, message, msgList, index)
+    return message
+}
+
+suspend fun sendPaginationModularMsg(context: CommandContext, msgList: MutableList<ModularMessage>, index: Int) {
     val msg = msgList[index]
 
-    runBlocking {
-        if (context.isFromGuild) {
-            val message = sendMsg(context.textChannel, msg)
-                ?: throw IllegalArgumentException("Couldn't send the message")
-            registerPaginationModularMessage(context.textChannel, message, msgList, index)
-        } else {
-            val message = sendMsg(context.privateChannel, msg)
-                ?: throw IllegalArgumentException("Couldn't send the message")
-            registerPaginationModularMessage(context.privateChannel, message, msgList, index)
-        }
-    }
-}
-
-suspend fun sendPaginationModularMsg(textChannel: TextChannel, modularList: MutableList<ModularMessage>, index: Int): Message = suspendCoroutine {
-    val msg = modularList[index]
-
-    runBlocking {
-        val message = sendMsg(textChannel, msg)
+    if (context.isFromGuild) {
+        val message = sendMsgAwaitN(context.textChannel, msg)
             ?: throw IllegalArgumentException("Couldn't send the message")
-        it.resume(message)
-        registerPaginationModularMessage(textChannel, message, modularList, index)
-    }
-}
-
-suspend fun sendPaginationModularMsg(privateChannel: PrivateChannel, msgList: MutableList<ModularMessage>, index: Int): Message = suspendCoroutine {
-    val msg = msgList[index]
-
-    runBlocking {
-        val message = sendMsg(privateChannel, msg)
+        registerPaginationModularMessage(context.textChannel, message, msgList, index)
+    } else {
+        val message = sendMsgAwaitN(context.privateChannel, msg)
             ?: throw IllegalArgumentException("Couldn't send the message")
-        it.resume(message)
-        registerPaginationModularMessage(privateChannel, message, msgList, index)
+        registerPaginationModularMessage(context.privateChannel, message, msgList, index)
     }
 }
 
@@ -656,7 +565,7 @@ fun registerPaginationModularMessage(textChannel: TextChannel, message: Message,
         index
     )
 
-    addPaginationEmotes(message)
+    addPaginationEmotes(message, msgList.size > 2)
 }
 
 fun registerPaginationModularMessage(privateChannel: PrivateChannel, message: Message, msgList: MutableList<ModularMessage>, index: Int) {
@@ -668,7 +577,7 @@ fun registerPaginationModularMessage(privateChannel: PrivateChannel, message: Me
         index
     )
 
-    addPaginationEmotes(message)
+    addPaginationEmotes(message, msgList.size > 2)
 }
 
 fun registerPaginationMessage(textChannel: TextChannel, message: Message, msgList: MutableList<String>, index: Int) {
@@ -680,7 +589,7 @@ fun registerPaginationMessage(textChannel: TextChannel, message: Message, msgLis
         index
     )
 
-    addPaginationEmotes(message)
+    addPaginationEmotes(message, msgList.size > 2)
 }
 
 fun registerPaginationMessage(privateChannel: PrivateChannel, message: Message, msgList: MutableList<String>, index: Int) {
@@ -692,81 +601,86 @@ fun registerPaginationMessage(privateChannel: PrivateChannel, message: Message, 
         index
     )
 
-    addPaginationEmotes(message)
+    addPaginationEmotes(message, msgList.size > 2)
 }
 
-fun addPaginationEmotes(message: Message) {
-    message.addReaction("⏪").queue()
+fun addPaginationEmotes(message: Message, morePages: Boolean) {
+    if (morePages) message.addReaction("⏪").queue()
     message.addReaction("◀️").queue()
     message.addReaction("▶️").queue()
-    message.addReaction("⏩").queue()
+    if (morePages) message.addReaction("⏩").queue()
 }
 
-suspend fun sendMsg(privateChannel: PrivateChannel, msg: String): List<Message> = suspendCoroutine {
-    val success = { success: List<Message> -> it.resume(success) }
-    val failed = { failed: Throwable -> it.resumeWithException(failed) }
-    runBlocking {
-        sendMsg(privateChannel, msg, success, failed)
-    }
-}
-
-//Returns empty message list on failures
-suspend fun sendMsgEL(privateChannel: PrivateChannel, msg: String): List<Message> = suspendCoroutine {
-    val success = { success: List<Message> -> it.resume(success) }
-    val failed = { _: Throwable -> it.resume(emptyList()) }
-    runBlocking {
-        sendMsg(privateChannel, msg, success, failed)
-    }
-}
-
-
-suspend fun sendMsg(privateChannel: PrivateChannel, msg: String, success: ((messages: List<Message>) -> Unit)? = null, failed: ((ex: Throwable) -> Unit)? = null) {
-    try {
-        val messageList = mutableListOf<Message>()
-        if (msg.length <= 2000) {
-            messageList.add(privateChannel.sendMessage(msg).await())
-        } else {
-            val msgParts = StringUtils.splitMessage(msg).withIndex()
-            for ((index, text) in msgParts) {
-                messageList.add(index, privateChannel.sendMessage(text).await())
-            }
-
+suspend fun sendMsgAwaitEL(privateChannel: PrivateChannel, msg: String): List<Message> {
+    val messageList = mutableListOf<Message>()
+    if (msg.length <= 2000) {
+        privateChannel.sendMessage(msg).awaitOrNull()?.let { messageList.add(it) }
+    } else {
+        val msgParts = StringUtils.splitMessage(msg).withIndex()
+        for ((index, text) in msgParts) {
+            privateChannel.sendMessage(text).awaitOrNull()?.let { messageList.add(index, it) }
         }
-        success?.invoke(messageList)
-    } catch (t: Throwable) {
-        failed?.invoke(t)
-        return
+    }
+
+    return messageList
+}
+
+fun sendMsg(privateChannel: PrivateChannel, msg: String) {
+    if (msg.length <= 2000) {
+        privateChannel.sendMessage(msg).queue()
+    } else {
+        val msgParts = StringUtils.splitMessage(msg)
+        for (text in msgParts) {
+            privateChannel.sendMessage(text).queue()
+        }
     }
 }
 
-suspend fun sendMsg(channel: TextChannel, msg: String): List<Message> = suspendCoroutine {
-    runBlocking {
-        require(channel.canTalk()) { "Cannot talk in this channel " + channel.name }
-        try {
-            val messageList = mutableListOf<Message>()
-            if (msg.length <= 2000) {
+suspend fun sendMsgAwaitEL(context: CommandContext, msg: String): List<Message> {
+    return if (context.isFromGuild) {
+        sendMsgAwaitEL(context.textChannel, msg)
+    } else {
+        sendMsgAwaitEL(context.privateChannel, msg)
+    }
+}
 
-                if (msg.contains("%")) {
-                    logger.warn("raw variable ?: $msg")
-                }
 
-                messageList.add(channel.sendMessage(msg).await())
-            } else {
-                val msgParts = StringUtils.splitMessage(msg).withIndex()
-                for ((index, text) in msgParts) {
+suspend fun sendMsgAwaitEL(channel: TextChannel, msg: String): List<Message> {
+    require(channel.canTalk()) { "Cannot talk in this channel " + channel.name }
 
-                    if (msg.contains("%")) {
-                        logger.warn("raw variable ?: $msg")
-                    }
+    val messageList = mutableListOf<Message>()
+    if (msg.length <= 2000) {
 
-                    messageList.add(index, channel.sendMessage(text).await())
-                }
+        if (msg.contains("%")) {
+            logger.warn("raw variable ?: $msg")
+        }
 
+        channel.sendMessage(msg).awaitOrNull()?.let { messageList.add(it) }
+    } else {
+        val msgParts = StringUtils.splitMessage(msg).withIndex()
+        for ((index, text) in msgParts) {
+
+            if (msg.contains("%")) {
+                logger.warn("raw variable ?: $msg")
             }
-            it.resume(messageList)
-        } catch (t: Throwable) {
-            t.printStackTrace()
-            it.resumeWithException(t)
+
+            channel.sendMessage(text).awaitOrNull()?.let { messageList.add(index, it) }
+        }
+    }
+
+    return messageList
+}
+
+fun sendMsg(channel: TextChannel, msg: String) {
+    require(channel.canTalk()) { "Cannot talk in this channel " + channel.name }
+
+    if (msg.length <= 2000) {
+        channel.sendMessage(msg).queue()
+    } else {
+        val msgParts = StringUtils.splitMessage(msg)
+
+        for (text in msgParts) {
+            channel.sendMessage(text).queue()
         }
     }
 }
@@ -778,11 +692,11 @@ suspend fun sendMsg(channel: TextChannel, msg: String, success: ((messages: List
     try {
         val messageList = mutableListOf<Message>()
         if (msg.length <= 2000) {
-            messageList.add(channel.sendMessage(msg).await())
+            channel.sendMessage(msg).awaitOrNull()?.let { messageList.add(it) }
         } else {
             val msgParts = StringUtils.splitMessage(msg).withIndex()
             for ((index, text) in msgParts) {
-                messageList.add(index, channel.sendMessage(text).await())
+                channel.sendMessage(text).awaitOrNull()?.let { messageList.add(index, it) }
             }
 
         }
@@ -815,7 +729,7 @@ fun sendMsg(channel: PrivateChannel, msg: Message, success: ((messages: Message)
     action?.queue(success, failed)
 }
 
-suspend fun sendMsg(channel: TextChannel, msg: Message): Message? = suspendCoroutine {
+suspend fun sendMsgAwaitN(channel: TextChannel, msg: Message): Message? {
     require(channel.canTalk()) {
         "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
     }
@@ -824,91 +738,71 @@ suspend fun sendMsg(channel: TextChannel, msg: Message): Message? = suspendCorou
         if (action == null) action = channel.sendMessage(embed)
         else action.embed(embed)
     }
-    if (action == null) {
-        it.resume(null)
-    }
-    action?.queue({ msg ->
-        it.resume(msg)
-    }, { _ ->
-        it.resume(null)
-    })
+
+    return action?.awaitOrNull()
 }
 
-suspend fun sendMsg(channel: PrivateChannel, msg: Message): Message? = suspendCoroutine {
-    var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(msg.contentRaw) else null
+suspend fun sendMsgAwaitN(channel: PrivateChannel, msg: Message): Message? {
+    var action = if (msg.contentRaw.isNotBlank()) {
+        channel.sendMessage(msg.contentRaw)
+    } else null
     for (embed in msg.embeds) {
         if (action == null) action = channel.sendMessage(embed)
         else action.embed(embed)
     }
-    if (action == null) {
-        it.resume(null)
-    }
-    action?.queue({ msg ->
-        it.resume(msg)
-    }, { _ ->
-        it.resume(null)
-    })
+
+    return action?.awaitOrNull()
 }
 
-suspend fun sendMsg(context: CommandContext, msg: String, bufferedImage: BufferedImage?, extension: String): List<Message> = suspendCoroutine {
-    runBlocking {
-        it.resume(if (context.isFromGuild) {
-            sendMsg(context.textChannel, msg, bufferedImage, extension)
-        } else {
-            sendMsg(context.privateChannel, msg, bufferedImage, extension)
-        })
+suspend fun sendMsgAwaitEL(context: CommandContext, msg: String, bufferedImage: BufferedImage?, extension: String): List<Message> {
+    return if (context.isFromGuild) {
+        sendMsgAwaitEL(context.textChannel, msg, bufferedImage, extension)
+    } else {
+        sendMsgAwaitEL(context.privateChannel, msg, bufferedImage, extension)
     }
 }
 
-suspend fun sendMsg(textChannel: TextChannel, msg: String, image: BufferedImage?, extension: String): List<Message> = suspendCoroutine {
+suspend fun sendMsgAwaitEL(textChannel: TextChannel, msg: String, image: BufferedImage?, extension: String): List<Message> {
     require(textChannel.canTalk()) { "Cannot talk in this channel " + textChannel.name }
-    try {
-        val messageList = mutableListOf<Message>()
-        val byteArrayOutputStream = ByteArrayOutputStream()
 
-        ImageIO.write(image, extension, byteArrayOutputStream)
+    val messageList = mutableListOf<Message>()
+    val byteArrayOutputStream = ByteArrayOutputStream()
 
-        runBlocking {
+    ImageIO.write(image, extension, byteArrayOutputStream)
+
+    textChannel
+        .sendMessage(msg)
+        .addFile(byteArrayOutputStream.toByteArray(), "finished.$extension")
+        .awaitOrNull()?.let {
             messageList.add(
-                textChannel
-                    .sendMessage(msg)
-                    .addFile(byteArrayOutputStream.toByteArray(), "finished.$extension")
-                    .await()
+                it
             )
         }
 
-        byteArrayOutputStream.close()
+    byteArrayOutputStream.close()
 
-        it.resume(messageList)
-    } catch (t: Throwable) {
-        t.printStackTrace()
-        it.resumeWithException(t)
-    }
+    return messageList
 }
 
-suspend fun sendMsg(privateChannel: PrivateChannel, msg: String, image: BufferedImage?, extension: String): List<Message> = suspendCoroutine {
-    try {
-        val messageList = mutableListOf<Message>()
-        val byteArrayOutputStream = ByteArrayOutputStream()
+suspend fun sendMsgAwaitEL(privateChannel: PrivateChannel, msg: String, image: BufferedImage?, extension: String): List<Message> {
 
-        ImageIO.write(image, extension, byteArrayOutputStream)
+    val messageList = mutableListOf<Message>()
+    val byteArrayOutputStream = ByteArrayOutputStream()
 
-        runBlocking {
+    ImageIO.write(image, extension, byteArrayOutputStream)
+
+    privateChannel
+        .sendMessage(msg)
+        .addFile(byteArrayOutputStream.toByteArray(), "finished.$extension")
+        .awaitOrNull()?.let {
             messageList.add(
-                privateChannel
-                    .sendMessage(msg)
-                    .addFile(byteArrayOutputStream.toByteArray(), "finished.$extension")
-                    .await()
+                it
             )
         }
 
-        byteArrayOutputStream.close()
+    byteArrayOutputStream.close()
 
-        it.resume(messageList)
-    } catch (t: Throwable) {
-        t.printStackTrace()
-        it.resumeWithException(t)
-    }
+    return messageList
 }
 
 suspend fun sendFeatureRequiresPremiumMessage(context: CommandContext, featurePath: String, featureReplaceMap: Map<String, String> = emptyMap()) {

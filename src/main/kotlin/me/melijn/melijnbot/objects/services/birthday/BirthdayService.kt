@@ -5,7 +5,7 @@ import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.services.Service
-import me.melijn.melijnbot.objects.threading.Task
+import me.melijn.melijnbot.objects.threading.RunnableTask
 import me.melijn.melijnbot.objects.utils.LogUtils
 import me.melijn.melijnbot.objects.utils.awaitBool
 import me.melijn.melijnbot.objects.utils.awaitEX
@@ -22,7 +22,7 @@ class BirthdayService(
     val daoManager: DaoManager
 ) : Service("Birthday", 2, 5, TimeUnit.MINUTES) {
 
-    override val service = Task {
+    override val service = RunnableTask {
         val birthdayHistory = daoManager.birthdayHistoryWrapper
         val birthdays = daoManager.birthdayWrapper.getBirthdaysToday()
         val birthDaysToRemove = daoManager.birthdayHistoryWrapper.getBirthdaysToDeactivate()

@@ -50,15 +50,16 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
                 logger.info("Starting Jooby rest server..")
                 val restServer = RestServer(container)
 
-                container.taskManager.async {
-                    restServer
-                        .apply {
-                            serverOptions = ServerOptions()
-                                .setPort(container.settings.restPort)
 
-                        }
-                        .start()
-                }
+                restServer
+                    .apply {
+                        serverOptions = ServerOptions()
+                            .setPort(container.settings.restPort)
+                            .setIoThreads(2)
+                            .setWorkerThreads(4)
+                    }
+                    .start()
+
                 container.restServer = restServer
                 logger.info("Started Jooby rest server")
             }

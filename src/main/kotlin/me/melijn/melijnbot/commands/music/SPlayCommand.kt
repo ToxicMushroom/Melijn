@@ -58,7 +58,7 @@ class SPlayCommand : AbstractCommand("command.splay") {
         context.audioLoader.loadNewTrackPickerNMessage(context, "$YT_SELECTOR$songArg", songPosition)
     }
 
-    class YTArg(root: String) : AbstractCommand("$root.yt") {
+    class YTArg(parent: String) : AbstractCommand("$parent.yt") {
 
         init {
             name = "yt"
@@ -93,7 +93,7 @@ class SPlayCommand : AbstractCommand("command.splay") {
 
     }
 
-    class SCArg(root: String) : AbstractCommand("$root.sc") {
+    class SCArg(parent: String) : AbstractCommand("$parent.sc") {
 
         init {
             name = "sc"

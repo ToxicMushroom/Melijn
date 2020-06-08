@@ -31,7 +31,7 @@ class SetPrivateAllowSpacedPrefixState : AbstractCommand("command.setprivateallo
         }
 
         val state = getEnumFromArgNMessage<TriState>(context, 0, MESSAGE_UNKNOWN_TRISTATE) ?: return
-        wrapper.setUserState(context.guildId, state)
+        wrapper.setUserState(context.authorId, state)
         val msg = context.getTranslation("$root.set.${state.toLC()}")
         sendMsg(context, msg)
     }

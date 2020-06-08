@@ -8,5 +8,6 @@ enum class MessageType(val text: String) {
     BANNED("BannedMessage"),
     KICKED("KickedMessage"),
     CUSTOM_COMMAND("CustomCommandMessage"),
-    BIRTHDAY("BirthdayMessage")
+    BIRTHDAY("BirthdayMessage"),
+    BOOST("BoostMessage"),
 }

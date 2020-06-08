@@ -18,7 +18,7 @@ class TranslateManager {
         return getTranslation(context.getLanguage(), path)
     }
 
-    fun getTranslation(language: String, path: String): String {
+    fun getTranslation(language: String, path: String, logMissing: Boolean = true): String {
         val bundle = when (language.toUpperCase()) {
             DEFAULT_LANGUAGE -> defaultResourceBundle
             else -> defaultResourceBundle
@@ -26,10 +26,25 @@ class TranslateManager {
         return if (bundle.containsKey(path)) {
             bundle.getString(path)
         } else {
-            if (pathPattern.matches(path)) {
-                logger.warn("missing string: $path")
+            if (logMissing) {
+                logger.warn("missing translation: $path")
             }
             path
+        }
+    }
+
+    fun getTranslationN(language: String, path: String, logMissing: Boolean = true): String? {
+        val bundle = when (language.toUpperCase()) {
+            DEFAULT_LANGUAGE -> defaultResourceBundle
+            else -> defaultResourceBundle
+        }
+        return if (bundle.containsKey(path)) {
+            bundle.getString(path)
+        } else {
+            if (logMissing) {
+                logger.warn("missing translation: $path")
+            }
+            null
         }
     }
 

@@ -68,7 +68,7 @@ class WarnCommand : AbstractCommand("command.warn") {
 
         val privateChannel = targetMember.user.openPrivateChannel().awaitOrNull()
         val message: Message? = privateChannel?.let {
-            sendMsgEL(it, warning)
+            sendMsgAwaitEL(it, warning)
         }?.firstOrNull()
 
         continueWarning(context, targetMember, warn, message)

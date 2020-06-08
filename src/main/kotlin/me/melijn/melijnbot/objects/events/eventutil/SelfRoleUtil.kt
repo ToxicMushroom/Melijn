@@ -56,6 +56,7 @@ object SelfRoleUtil {
             val subMap = selfRoles[groupName] ?: continue
 
             for (i in 0 until subMap.length()) {
+                if (i >= subMap.length()) continue
                 val dataEntry = subMap.getArray(i)
 
                 val emotejiEntry = dataEntry.getString(0)

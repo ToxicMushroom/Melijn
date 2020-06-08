@@ -6,7 +6,7 @@ import me.melijn.melijnbot.database.mute.Mute
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.services.Service
-import me.melijn.melijnbot.objects.threading.Task
+import me.melijn.melijnbot.objects.threading.RunnableTask
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.utils.awaitEX
 import me.melijn.melijnbot.objects.utils.awaitOrNull
@@ -24,7 +24,7 @@ class MuteService(
     val daoManager: DaoManager
 ) : Service("Mute", 1000, 1100, TimeUnit.MILLISECONDS) {
 
-    override val service = Task {
+    override val service = RunnableTask {
         val mutes = daoManager.muteWrapper.getUnmuteableMutes()
         for (mute in mutes) {
             val selfUser = shardManager.shards[0].selfUser

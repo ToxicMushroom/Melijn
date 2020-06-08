@@ -4,6 +4,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.*
+import net.dv8tion.jda.api.Permission
 
 class SetRoleColorCommand : AbstractCommand("command.setrolecolor") {
 
@@ -11,6 +12,7 @@ class SetRoleColorCommand : AbstractCommand("command.setrolecolor") {
         id = 167
         name = "setRoleColor"
         aliases = arrayOf("src")
+        discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
@@ -32,7 +34,7 @@ class SetRoleColorCommand : AbstractCommand("command.setrolecolor") {
                 val msg = context.getTranslation("$root.show")
                     .replace("%role%", role.name)
                     .replace("%color%", color.toHex())
-                sendMsg(context, msg, plane, "jpg")
+                sendMsgAwaitEL(context, msg, plane, "jpg")
             }
 
             return
@@ -48,7 +50,7 @@ class SetRoleColorCommand : AbstractCommand("command.setrolecolor") {
                 .replace("%oldColor%", oldColor?.toHex() ?: "/")
             sendMsg(context, msg)
         } else {
-            val color = getColorFromArgNMessage(context, 0) ?: return
+            val color = getColorFromArgNMessage(context, 1) ?: return
             role.manager.setColor(color).reason("setRoleColor command").queue()
             val plane = ImageUtils.createPlane(100, color.rgb)
 
@@ -56,7 +58,7 @@ class SetRoleColorCommand : AbstractCommand("command.setrolecolor") {
                 .replace("%role%", role.name)
                 .replace("%oldColor%", oldColor?.toHex() ?: "/")
                 .replace("%color%", color.toHex())
-            sendMsg(context, msg, plane, "jpg")
+            sendMsgAwaitEL(context, msg, plane, "jpg")
         }
     }
 }

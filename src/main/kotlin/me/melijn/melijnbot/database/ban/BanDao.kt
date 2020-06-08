@@ -116,6 +116,21 @@ class BanDao(driverManager: DriverManager) : Dao(driverManager) {
             it.resume(bans)
         }, banId)
     }
+
+    suspend fun clear(guildId: Long, bannedId: Long) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND bannedId = ?",
+            guildId, bannedId)
+    }
+
+    suspend fun clearHistory(guildId: Long, bannedId: Long) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND bannedId = ? AND active = ?",
+            guildId, bannedId, false)
+    }
+
+    suspend fun remove(ban: Ban) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildID = ? AND bannedId = ? and banId = ?",
+            ban.guildId, ban.bannedId, ban.banId)
+    }
 }
 
 data class Ban(

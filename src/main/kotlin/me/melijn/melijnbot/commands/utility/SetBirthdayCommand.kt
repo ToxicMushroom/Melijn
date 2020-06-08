@@ -1,12 +1,12 @@
 package me.melijn.melijnbot.commands.utility
 
-import me.melijn.melijnbot.enums.MonthFormat
+import me.melijn.melijnbot.enums.DateFormat
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.getBirthdayByArgsNMessage
+import me.melijn.melijnbot.objects.utils.getEnumFromArgN
 import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
 import java.time.LocalDate
 
 class SetBirthdayCommand : AbstractCommand("command.setbirthday") {
@@ -14,65 +14,7 @@ class SetBirthdayCommand : AbstractCommand("command.setbirthday") {
     init {
         id = 139
         name = "setBirthDay"
-        children = arrayOf(
-            DMYArg(root),
-            YMDArg(root),
-            MDYArg(root)
-        )
         commandCategory = CommandCategory.UTILITY
-    }
-
-
-    class DMYArg(parent: String) : AbstractCommand("$parent.dmy") {
-
-        init {
-            name = "dmy"
-        }
-
-        override suspend fun execute(context: CommandContext) {
-            if (context.args.isEmpty()) {
-                sendSyntax(context)
-                return
-            }
-
-            val datePair = getBirthdayByArgsNMessage(context, 0, MonthFormat.DMY) ?: return
-            setBirthday(context, datePair)
-        }
-    }
-
-
-    class MDYArg(parent: String) : AbstractCommand("$parent.mdy") {
-
-        init {
-            name = "mdy"
-        }
-
-        override suspend fun execute(context: CommandContext) {
-            if (context.args.isEmpty()) {
-                sendSyntax(context)
-                return
-            }
-
-            val datePair = getBirthdayByArgsNMessage(context, 0, MonthFormat.MDY) ?: return
-            setBirthday(context, datePair)
-        }
-    }
-
-    class YMDArg(parent: String) : AbstractCommand("$parent.ymd") {
-
-        init {
-            name = "ymd"
-        }
-
-        override suspend fun execute(context: CommandContext) {
-            if (context.args.isEmpty()) {
-                sendSyntax(context)
-                return
-            }
-
-            val datePair = getBirthdayByArgsNMessage(context, 0, MonthFormat.YMD) ?: return
-            setBirthday(context, datePair)
-        }
     }
 
     override suspend fun execute(context: CommandContext) {
@@ -101,7 +43,8 @@ class SetBirthdayCommand : AbstractCommand("command.setbirthday") {
             return
         }
 
-        val datePair = getBirthdayByArgsNMessage(context, 0) ?: return
+        val format = getEnumFromArgN(context, 0) ?: DateFormat.DMY
+        val datePair = getBirthdayByArgsNMessage(context, 0, format) ?: return
         setBirthday(context, datePair)
     }
 }

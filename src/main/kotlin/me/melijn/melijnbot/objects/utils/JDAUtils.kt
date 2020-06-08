@@ -223,7 +223,7 @@ suspend fun getUserByArgsNMessage(context: CommandContext, index: Int): User? {
         val msg = i18n.getTranslation(language, MESSAGE_UNKNOWN_USER)
 
             .replace(PLACEHOLDER_ARG, context.args[index])
-        sendMsg(context, msg, null)
+        sendMsg(context, msg)
     }
     return user
 }
@@ -266,13 +266,13 @@ suspend fun getRoleByArgsNMessage(
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.role")
             .replace(PLACEHOLDER_ARG, context.args[index])
-        sendMsg(context, msg, null)
+        sendMsg(context, msg)
     } else if (canInteract) {
         if (!context.guild.selfMember.canInteract(role)) {
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, MESSAGE_SELFINTERACT_ROLE_HIARCHYEXCEPTION)
                 .replace(PLACEHOLDER_ROLE, context.args[index])
-            sendMsg(context, msg, null)
+            sendMsg(context, msg)
             return null
         }
     }
@@ -339,7 +339,7 @@ suspend fun getEmoteByArgsNMessage(context: CommandContext, index: Int, sameGuil
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.emote")
             .replace(PLACEHOLDER_ARG, context.args[index])
-        sendMsg(context, msg, null)
+        sendMsg(context, msg)
     }
     return emote
 }
@@ -350,7 +350,7 @@ suspend fun getEmotejiByArgsNMessage(context: CommandContext, index: Int, sameGu
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.emojioremote")
             .replace(PLACEHOLDER_ARG, context.args[index])
-        sendMsg(context, msg, null)
+        sendMsg(context, msg)
     }
 
     return emoteji
@@ -416,8 +416,9 @@ suspend fun getColorFromArgNMessage(context: CommandContext, index: Int): Color?
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     val color: Color? = when {
-        arg.matches("(?i)#([a-f]|\\d){6}".toRegex()) -> {
-            Color.decode(arg)
+        arg.matches("(?i)#?([a-f]|\\d){6}".toRegex()) -> {
+            if (arg.startsWith("#")) Color.decode(arg)
+            else Color.decode("#$arg")
         }
         arg.matches("\\s*\\d+,\\s*\\d+,\\s*\\d+".toRegex()) -> {
             val parts = arg.split(",")
@@ -448,7 +449,7 @@ suspend fun getColorFromArgNMessage(context: CommandContext, index: Int): Color?
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.color")
             .replace(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg, null)
+        sendMsg(context, msg)
     }
     return color
 }
@@ -462,7 +463,7 @@ suspend fun JDA.messageByJSONNMessage(context: CommandContext, json: String): Me
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.invalidJSONStruct")
             .replace("%cause%", e.message ?: "unknown")
-        sendMsg(context, msg, null)
+        sendMsg(context, msg)
         null
     }
 }
@@ -501,7 +502,7 @@ suspend fun getTextChannelByArgsNMessage(context: CommandContext, index: Int, sa
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.textchannel")
             .replace(PLACEHOLDER_ARG, context.args[index])
-        sendMsg(context, msg, null)
+        sendMsg(context, msg)
     }
     return textChannel
 }
@@ -540,7 +541,7 @@ suspend fun getVoiceChannelByArgNMessage(context: CommandContext, index: Int, sa
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.voicechannel")
             .replace(PLACEHOLDER_ARG, context.args[index])
-        sendMsg(context, msg, null)
+        sendMsg(context, msg)
     }
     return voiceChannel
 }
@@ -574,7 +575,7 @@ suspend fun retrieveMemberByArgsNMessage(context: CommandContext, index: Int, in
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.member")
             .replace(PLACEHOLDER_ARG, context.args[index])
-        sendMsg(context, msg, null)
+        sendMsg(context, msg)
         return null
     }
 
@@ -606,7 +607,7 @@ suspend fun getMemberByArgsNMessage(context: CommandContext, index: Int, interac
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.member")
             .replace(PLACEHOLDER_ARG, context.args[index])
-        sendMsg(context, msg, null)
+        sendMsg(context, msg)
         return null
     }
 

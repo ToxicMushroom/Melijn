@@ -79,7 +79,7 @@ class SoftBanCommand : AbstractCommand("command.softban") {
 
         val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
         val message: Message? = privateChannel?.let {
-            sendMsgEL(it, softBanning)
+            sendMsgAwaitEL(it, softBanning)
         }?.firstOrNull()
 
         continueBanning(context, targetUser, ban, hasActiveSoftBan, clearDays ?: 7, message)

@@ -4,6 +4,7 @@ import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.MessageType
+import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.EmbedType
 import net.dv8tion.jda.api.entities.Message
@@ -11,6 +12,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
+import java.time.Instant
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -46,7 +48,8 @@ class MessageDao(driverManager: DriverManager) : Dao(driverManager) {
 data class ModularMessage(
     var messageContent: String? = null,
     var embed: MessageEmbed? = null,
-    var attachments: Map<String, String> = emptyMap()
+    var attachments: Map<String, String> = emptyMap(),
+    var extra: Map<String, String> = emptyMap()
 ) {
 
     fun toJSON(): String {
@@ -65,15 +68,31 @@ data class ModularMessage(
                 .put("file", value))
         }
         json.put("attachments", attachmentsJson)
+
+        val extraJson = DataArray.empty()
+        for ((key, value) in extra) {
+            extraJson.add(DataArray.empty()
+                .add(key)
+                .add(value)
+            )
+        }
+        json.put("extra", extraJson)
         return json.toString()
     }
 
     fun toMessage(): Message? {
-        val embed = embed
-        if (messageContent == null && (embed == null || embed.isEmpty || !embed.isSendable) && attachments.isEmpty()) return null
+        var membed = embed
+        if (messageContent == null && (membed == null || membed.isEmpty || !membed.isSendable) && attachments.isEmpty()) return null
+
+        // Timestamp handler
+        if (membed != null && extra.containsKey("currentTimestamp")) {
+            val eb = EmbedBuilder(membed)
+            eb.setTimestamp(Instant.now())
+            membed = eb.build()
+        }
 
         val mb = MessageBuilder()
-            .setEmbed(embed)
+            .setEmbed(membed)
             .setContent(messageContent)
 
         return mb.build()
@@ -83,10 +102,14 @@ data class ModularMessage(
         fun fromJSON(json: String): ModularMessage {
             try {
                 val jsonObj = DataObject.fromJson(json)
+
+                // Just text
                 var content: String? = null
                 if (jsonObj.hasKey("content")) {
                     content = jsonObj.getString("content")
                 }
+
+                // Embed
                 var embed: MessageEmbed? = null
                 if (jsonObj.hasKey("embed")) {
                     val jdaImpl = (MelijnBot.shardManager.shards[0] as JDAImpl)
@@ -94,6 +117,8 @@ data class ModularMessage(
                     val dataObject = DataObject.fromJson(embedString.toString())
                     embed = jdaImpl.entityBuilder.createMessageEmbed(dataObject)
                 }
+
+                // Attachments
                 val attachments = mutableMapOf<String, String>()
                 if (jsonObj.hasKey("attachments")) {
                     val attachmentsJson = jsonObj.getArray("attachments")
@@ -103,7 +128,17 @@ data class ModularMessage(
                         attachments[attachmentObj.getString("url")] = attachmentObj.getString("file")
                     }
                 }
-                return ModularMessage(content, embed, attachments)
+
+                // Extra data
+                val extra = mutableMapOf<String, String>()
+                if (jsonObj.hasKey("extra")) {
+                    val extraJson = jsonObj.getArray("extra")
+                    for (i in 0 until extraJson.length()) {
+                        val extraObj = extraJson.getArray(i)
+                        extra[extraObj.getString(0)] = extraObj.getString(1)
+                    }
+                }
+                return ModularMessage(content, embed, attachments, extra)
             } catch (e: Exception) {
                 e.printStackTrace()
                 throw IllegalArgumentException("Invalid JSON structure")

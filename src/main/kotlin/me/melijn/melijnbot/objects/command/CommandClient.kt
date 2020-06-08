@@ -31,7 +31,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
     private val guildPrefixCache = container.daoManager.guildPrefixWrapper.prefixCache
     private val userPrefixCache = container.daoManager.userPrefixWrapper.prefixCache
-
+    private val melijnMentions = arrayOf("<@${container.settings.id}>", "<@!${container.settings.id}>")
 
     private val commandMap: HashMap<String, AbstractCommand> = HashMap()
 
@@ -106,29 +106,32 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
             if (commandParts[0].isEmpty()) {
                 // Used a space :angry:
-                val userTriState = container.daoManager.allowSpacedPrefixWrapper
-                    .privateAllowSpacedPrefixGuildCache.get(event.author.idLong).await()
-                val allowSpace = if (userTriState == TriState.DEFAULT) {
-                    if (event.isFromGuild) {
-                        val guildAllows = container.daoManager.allowSpacedPrefixWrapper
-                            .allowSpacedPrefixGuildCache.get(event.guild.idLong).await()
-                        guildAllows
+                if (!melijnMentions.contains(prefix)) {
+                    val userTriState = container.daoManager.allowSpacedPrefixWrapper
+                        .privateAllowSpacedPrefixGuildCache.get(event.author.idLong).await()
+                    val allowSpace = if (userTriState == TriState.DEFAULT) {
+                        if (event.isFromGuild) {
+                            val guildAllows = container.daoManager.allowSpacedPrefixWrapper
+                                .allowSpacedPrefixGuildCache.get(event.guild.idLong).await()
+                            guildAllows
 
-                    } else false
-                } else {
-                    when (userTriState) {
-                        TriState.TRUE -> true
-                        TriState.FALSE -> false
-                        else -> false
+                        } else false
+                    } else {
+                        when (userTriState) {
+                            TriState.TRUE -> true
+                            TriState.FALSE -> false
+                            else -> false
+                        }
                     }
+
+                    if (!allowSpace) return
+
                 }
-
-                if (!allowSpace) return
-
                 commandParts[0] = prefix
             } else {
                 commandParts.add(0, prefix)
             }
+            if (commandParts.size < 2) return // if only a prefix is found -> abort
 
             for (cc in ccsWithPrefix) {
                 val aliases = cc.aliases
@@ -145,10 +148,42 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 }
             }
 
-            val command = commandMap.getOrElse(commandParts[1].toLowerCase(), { null }) ?: continue
-            if (checksFailed(container, command, event, false, commandParts)) return
-            command.run(CommandContext(event, commandParts, container, commandList))
-            return
+            var command = commandMap.getOrElse(commandParts[1].toLowerCase(), { null })
+            if (command == null) {
+                val aliasesMap = mutableMapOf<String, List<String>>()
+                val aliasCache = container.daoManager.aliasWrapper.aliasCache
+                if (event.isFromGuild) {
+                    aliasesMap.putAll(aliasCache.get(event.guild.idLong).await())
+                }
+                for ((cmd, ls) in aliasCache.get(event.author.idLong).await()) {
+                    val currentList = (aliasesMap[cmd] ?: emptyList()).toMutableList()
+                    for (alias in ls) {
+                        currentList.addIfNotPresent(alias)
+                    }
+
+                    aliasesMap[cmd] = currentList
+                }
+
+                for ((cmd, aliases) in aliasesMap) {
+                    val id = cmd.toIntOrNull() ?: continue
+                    for (alias in aliases) {
+                        if (!alias.equals(commandParts[1], true)) continue
+
+                        commandList.firstOrNull {
+                            it.id == id
+                        }?.let {
+                            command = it
+                        }
+                    }
+                }
+            }
+
+            if (command != null) {
+                val finalCommand = command ?: return
+                if (checksFailed(container, finalCommand, event, false, commandParts)) return
+                finalCommand.run(CommandContext(event, commandParts, container, commandList))
+                return
+            }
         }
 
         if (ccsWithPrefixMatches.isNotEmpty()) {
@@ -219,9 +254,9 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         val message: Message? = modularMessage.toMessage()
         when {
-            message == null -> sendAttachments(channel, modularMessage.attachments)
-            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachments(channel, message, modularMessage.attachments)
-            else -> sendMsg(channel, message)
+            message == null -> sendAttachmentsAwaitN(channel, modularMessage.attachments)
+            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(channel, message, modularMessage.attachments)
+            else -> sendMsgAwaitN(channel, message)
         }
     }
 
@@ -252,6 +287,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             newAttachments[url] = file
         }
         newMessage.attachments = newAttachments
+        newMessage.extra = modularMessage.extra
         return newMessage
 
     }
@@ -274,6 +310,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         throw IllegalArgumentException("random int ($winner) out of range of ccs")
     }
 
+
     private suspend fun getPrefixes(event: MessageReceivedEvent): List<String> {
         var prefixes = if (event.isFromGuild) {
             guildPrefixCache.get(event.guild.idLong).await().toMutableList()
@@ -291,7 +328,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
 
         //mentioning the bot will always work
-        val tags = arrayOf("<@${event.jda.selfUser.idLong}>", "<@!${event.jda.selfUser.idLong}>")
+        val tags = melijnMentions
         for (tag in tags) {
             prefixes.add(tag)
         }

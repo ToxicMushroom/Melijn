@@ -22,6 +22,18 @@ class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
         return banDao.getActiveBan(guildId, bannedId)
     }
 
+    suspend fun clear(guildId: Long, bannedId: Long, clearActive: Boolean) {
+        if (clearActive) {
+            banDao.clearHistory(guildId, bannedId)
+        } else {
+            banDao.clear(guildId, bannedId)
+        }
+    }
+
+    suspend fun getBans(guildId: Long, bannedId: Long): List<Ban> {
+        return banDao.getBans(guildId, bannedId)
+    }
+
     suspend fun getBanMap(context: CommandContext, targetUser: User): Map<Long, String> {
         val map = hashMapOf<Long, String>()
         val bans = banDao.getBans(context.guildId, targetUser.idLong)
@@ -87,5 +99,9 @@ class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
             .replace("%duration%", banDuration)
             .replace("%banId%", ban.banId)
             .replace("%active%", "${ban.active}")
+    }
+
+    suspend fun remove(ban: Ban) {
+        banDao.remove(ban)
     }
 }

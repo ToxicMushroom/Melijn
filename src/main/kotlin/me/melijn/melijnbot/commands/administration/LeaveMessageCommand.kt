@@ -181,7 +181,7 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
         }
 
 
-        class FieldArg(root: String, val type: MessageType) : AbstractCommand("$root.field") {
+        class FieldArg(parent: String, val type: MessageType) : AbstractCommand("$parent.field") {
 
             init {
                 name = "field"

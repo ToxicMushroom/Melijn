@@ -5,6 +5,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.await
 import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.sendMsgAwaitEL
 
 
 class PingCommand : AbstractCommand("command.ping") {
@@ -13,9 +14,6 @@ class PingCommand : AbstractCommand("command.ping") {
         id = 1
         name = "ping"
         aliases = arrayOf("pong", "latency")
-        children = arrayOf(
-            PongCommand(root)
-        )
         commandCategory = CommandCategory.UTILITY
     }
 
@@ -28,7 +26,7 @@ class PingCommand : AbstractCommand("command.ping") {
         val part2 = context.getTranslation("$root.response1.part2")
         val part3 = context.getTranslation("$root.response1.part3")
 
-        val message = sendMsg(context, part1)
+        val message = sendMsgAwaitEL(context, part1)
         val timeStamp2 = System.currentTimeMillis()
         val msgPing = timeStamp2 - timeStamp1
         val restPing = context.jda.restPing.await()
@@ -48,33 +46,4 @@ class PingCommand : AbstractCommand("command.ping") {
     private fun replacePart3(string: String, editMessagePing: Long): String = string
         .replace("%editMessagePing%", "$editMessagePing")
 
-
-    private class PongCommand(parent: String) : AbstractCommand("$parent.pong") {
-
-        init {
-            name = "pong"
-            children = arrayOf(
-                DunsteCommand(root)
-            )
-            aliases = arrayOf("ping")
-        }
-
-        override suspend fun execute(context: CommandContext) {
-            val msg = context.getTranslation("$root.response1")
-            sendMsg(context, msg)
-        }
-
-        private class DunsteCommand(parent: String) : AbstractCommand("$parent.dunste") {
-
-            init {
-                name = "dunste"
-                aliases = arrayOf("duncte")
-            }
-
-            override suspend fun execute(context: CommandContext) {
-                val msg = context.getTranslation("$root.response1")
-                sendMsg(context, msg)
-            }
-        }
-    }
 }

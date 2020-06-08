@@ -17,7 +17,7 @@ import java.io.IOException
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-class MySpotifyApi(val httpClient: OkHttpClient, val taskManager: TaskManager, val spotifySettings: Settings.Spotify) {
+class MySpotifyApi(val httpClient: OkHttpClient, val taskManager: TaskManager, spotifySettings: Settings.Spotify) {
 
     private var spotifyApi: SpotifyApi = SpotifyApi.Builder()
         .setClientId(spotifySettings.clientId)
@@ -49,10 +49,10 @@ class MySpotifyApi(val httpClient: OkHttpClient, val taskManager: TaskManager, v
 
     fun getTracksFromSpotifyUrl(
         songArg: String,
-        track: (Track) -> Unit,
-        trackList: (Array<Track>) -> Unit,
-        simpleTrack: (Array<TrackSimplified>) -> Unit,
-        error: (Throwable) -> Unit
+        track: suspend (Track) -> Unit,
+        trackList: suspend (Array<Track>) -> Unit,
+        simpleTrack: suspend (Array<TrackSimplified>) -> Unit,
+        error: suspend (Throwable) -> Unit
     ) = taskManager.async {
         try {
             //Tracks
@@ -89,7 +89,7 @@ class MySpotifyApi(val httpClient: OkHttpClient, val taskManager: TaskManager, v
         }
     }
 
-    private suspend fun fetchTracksFromArtist(songArg: String, trackList: (Array<Track>) -> Unit, spotifyArtistUrl: Pattern) {
+    private suspend fun fetchTracksFromArtist(songArg: String, trackList: suspend(Array<Track>) -> Unit, spotifyArtistUrl: Pattern) {
         val matcher: Matcher = spotifyArtistUrl.matcher(songArg)
         while (matcher.find()) {
             if (matcher.group(1) == null) continue
@@ -101,7 +101,7 @@ class MySpotifyApi(val httpClient: OkHttpClient, val taskManager: TaskManager, v
     }
 
 
-    private suspend fun acceptTracksIfMatchesPattern(url: String, trackList: (Array<Track>) -> Unit, pattern: Pattern) {
+    private suspend fun acceptTracksIfMatchesPattern(url: String, trackList: suspend (Array<Track>) -> Unit, pattern: Pattern) {
         val matcher: Matcher = pattern.matcher(url)
         while (matcher.find()) {
             if (matcher.group(1) == null) continue
@@ -115,7 +115,7 @@ class MySpotifyApi(val httpClient: OkHttpClient, val taskManager: TaskManager, v
         }
     }
 
-    private suspend fun acceptIfMatchesPattern(url: String, simpleTrack: (Array<TrackSimplified>) -> Unit, pattern: Pattern) {
+    private suspend fun acceptIfMatchesPattern(url: String, simpleTrack: suspend (Array<TrackSimplified>) -> Unit, pattern: Pattern) {
         val matcher: Matcher = pattern.matcher(url)
         while (matcher.find()) {
             if (matcher.group(1) == null) continue

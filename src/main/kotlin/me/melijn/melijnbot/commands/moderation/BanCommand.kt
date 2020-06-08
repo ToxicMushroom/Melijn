@@ -79,7 +79,7 @@ class BanCommand : AbstractCommand("command.ban") {
         val banning = context.getTranslation("message.banning")
         val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
         val message: Message? = privateChannel?.let {
-            sendMsgEL(it, banning)
+            sendMsgAwaitEL(it, banning)
         }?.firstOrNull()
 
         continueBanning(context, targetUser, ban, activeBan, message)

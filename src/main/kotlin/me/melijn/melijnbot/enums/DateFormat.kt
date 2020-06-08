@@ -1,5 +1,5 @@
 package me.melijn.melijnbot.enums
 
-enum class MonthFormat {
+enum class DateFormat {
     DMY, MDY, YMD
 }

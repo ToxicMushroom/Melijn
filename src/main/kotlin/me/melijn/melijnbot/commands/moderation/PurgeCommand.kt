@@ -70,7 +70,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
                         .replace(PLACEHOLDER_USER, targetUser?.asTag ?: "")
 
                     if (context.commandParts[0].equals(silentPurgeName, true) || context.commandParts[0].equals(silentPruneName, true))
-                        sendMsg(context, msg)[0].delete().queueAfter(5, TimeUnit.SECONDS)
+                        sendMsgAwaitEL(context, msg)[0].delete().queueAfter(5, TimeUnit.SECONDS)
 
                     LogUtils.sendPurgeLog(context, messages)
                 }

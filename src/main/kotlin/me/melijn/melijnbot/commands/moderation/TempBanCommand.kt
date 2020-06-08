@@ -78,7 +78,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
 
         val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
         val message: Message? = privateChannel?.let {
-            sendMsgEL(it, banning)
+            sendMsgAwaitEL(it, banning)
         }?.firstOrNull()
 
         continueBanning(context, targetUser, ban, activeBan, message)

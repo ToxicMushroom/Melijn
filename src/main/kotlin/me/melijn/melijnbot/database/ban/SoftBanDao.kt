@@ -46,12 +46,12 @@ class SoftBanDao(driverManager: DriverManager) : Dao(driverManager) {
 
     suspend fun getSoftBans(softbanId: String): List<SoftBan> = suspendCoroutine {
         driverManager.executeQuery(
-            "SELECT * FROM $table WHERE softbanId = ?", { rs ->
+            "SELECT * FROM $table WHERE softBanId = ?", { rs ->
             val softBans = ArrayList<SoftBan>()
             while (rs.next()) {
                 softBans.add(SoftBan(
                     rs.getLong("guildId"),
-                    rs.getLong("bannedId"),
+                    rs.getLong("softBannedId"),
                     rs.getLong("softBanAuthorId"),
                     rs.getString("reason"),
                     rs.getLong("moment"),
@@ -62,6 +62,15 @@ class SoftBanDao(driverManager: DriverManager) : Dao(driverManager) {
         }, softbanId)
     }
 
+    suspend fun clear(guildId: Long, softbannedId: Long) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND softBannedId = ?",
+            guildId, softbannedId)
+    }
+
+    suspend fun remove(softBan: SoftBan) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND softBannedId = ? AND softBanId = ?",
+            softBan.guildId, softBan.softBannedId, softBan.softBanId)
+    }
 }
 
 data class SoftBan(

@@ -6,7 +6,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.enums.MonthFormat
+import me.melijn.melijnbot.enums.DateFormat
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
@@ -118,9 +118,9 @@ fun getWindowsUptime(): Long {
 }
 
 fun Color.toHex(): String {
-    val redHex = Integer.toHexString(red).toUpperCase()
-    val greenHex = Integer.toHexString(green).toUpperCase()
-    val blueHex = Integer.toHexString(blue).toUpperCase()
+    val redHex = Integer.toHexString(red).toUpperCase().padStart(2, '0')
+    val greenHex = Integer.toHexString(green).toUpperCase().padStart(2, '0')
+    val blueHex = Integer.toHexString(blue).toUpperCase().padStart(2, '0')
     return "#$redHex$greenHex$blueHex"
 }
 
@@ -169,7 +169,7 @@ suspend inline fun <reified T : Enum<*>> getEnumFromArgN(context: CommandContext
     }
 }
 
-val ccTagPattern = Pattern.compile("cc.\\d+")
+val ccTagPattern = Pattern.compile("cc\\.(\\d+)")
 suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): Set<String>? {
     val arg = context.args[index]
     val category: CommandCategory? = enumValueOrNull(arg)
@@ -197,7 +197,7 @@ suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): S
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.commandnode")
             .replace(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg, null)
+        sendMsg(context, msg)
         return null
     }
     return commands
@@ -219,7 +219,7 @@ suspend fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.commands")
             .replace(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg, null)
+        sendMsg(context, msg)
         return null
     }
     return commands
@@ -233,11 +233,11 @@ suspend fun getLongFromArgNMessage(context: CommandContext, index: Int, min: Lon
     if (!arg.matches("\\d+".toRegex())) {
         val msg = i18n.getTranslation(language, "message.unknown.number")
             .replace(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg, null)
+        sendMsg(context, msg)
     } else if (long == null) {
         val msg = i18n.getTranslation(language, "message.unknown.long")
             .replace(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg, null)
+        sendMsg(context, msg)
     }
     if (long != null) {
         if (min > long || long > max) {
@@ -245,7 +245,7 @@ suspend fun getLongFromArgNMessage(context: CommandContext, index: Int, min: Lon
                 .replace("%min%", min.toString())
                 .replace("%max%", max.toString())
                 .replace(PLACEHOLDER_ARG, arg)
-            sendMsg(context, msg, null)
+            sendMsg(context, msg)
             return null
         }
     }
@@ -254,7 +254,7 @@ suspend fun getLongFromArgNMessage(context: CommandContext, index: Int, min: Lon
 
 
 //Dayofyear, year
-suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, format: MonthFormat = MonthFormat.DMY): Pair<Int, Int?>? {
+suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, format: DateFormat = DateFormat.DMY): Pair<Int, Int?>? {
     val list: List<Int> = context.args[0].split("/", "-")
         .map { value ->
             val newVal = value.toIntOrNull()
@@ -271,17 +271,17 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
         var monthIndex = 0
         var yearIndex = 0
         when (format) {
-            MonthFormat.DMY -> {
+            DateFormat.DMY -> {
                 birthdayIndex = 0
                 monthIndex = 1
                 yearIndex = 2
             }
-            MonthFormat.MDY -> {
+            DateFormat.MDY -> {
                 birthdayIndex = 1
                 monthIndex = 0
                 yearIndex = 2
             }
-            MonthFormat.YMD -> {
+            DateFormat.YMD -> {
                 birthdayIndex = 2
                 monthIndex = 1
                 yearIndex = 0
@@ -389,8 +389,21 @@ val positiveNumberRegex = "\\d+".toRegex()
 fun String.isNumber(): Boolean = this.matches(numberRegex)
 fun String.isPositiveNumber(): Boolean = this.matches(positiveNumberRegex)
 fun String.isNegativeNumber(): Boolean = this.matches(negativeNumberRegex)
-fun <E : Any> MutableList<E>.addIfNotPresent(value: E) {
-    if (!this.contains(value)) this.add(value)
+
+fun <E : Any> MutableList<E>.addIfNotPresent(value: E): Boolean {
+    if (!this.contains(value)) {
+        this.add(value)
+        return true
+    }
+    return false
+}
+
+fun MutableList<String>.addIfNotPresent(value: String, ignoreCase: Boolean): Boolean {
+    if (this.none { it.equals(value, ignoreCase) }) {
+        this.add(value)
+        return true
+    }
+    return false
 }
 
 
