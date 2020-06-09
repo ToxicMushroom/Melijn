@@ -75,7 +75,7 @@ dependencies {
     implementation group: 'me.duncte123', name: 'weebJava', version: '2.2.0_29'
 
     // https://mvnrepository.com/artifact/se.michaelthelin.spotify/spotify-web-api-java
-    implementation(group: 'se.michaelthelin.spotify', name: 'spotify-web-api-java', version: '6.0.0') {
+    implementation(group: 'se.michaelthelin.spotify', name: 'spotify-web-api-java', version: '6.1.0') {
         exclude group: 'org.slf4j', module: 'slf4j-simple'
     }
 
