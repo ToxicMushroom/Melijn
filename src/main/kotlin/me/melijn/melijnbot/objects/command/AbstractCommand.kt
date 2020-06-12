@@ -43,19 +43,13 @@ abstract class AbstractCommand(val root: String) {
         if (context.calculatedRoot.isEmpty()) context.calculatedRoot += cmd.id
         else context.calculatedRoot += "." + cmd.name
 
-        context.calculatedCommandPartsOffset += (context.partSpaceMap[context.calculatedRoot] ?: 0) + 1 // +1 is for the index of the commandpart
+        context.calculatedCommandPartsOffset += (context.partSpaceMap[context.calculatedRoot]
+            ?: 0) + 1 // +1 is for the index of the commandpart
 
         // Check for child commands
         if (context.commandParts.size > context.calculatedCommandPartsOffset && children.isNotEmpty()) {
             val currentRoot = context.calculatedRoot
             val currentOffset = context.calculatedCommandPartsOffset
-
-            for (child in children) {
-                if (child.isCommandFor(context.commandParts[currentOffset])) {
-                    child.run(context)
-                    return
-                }
-            }
 
             // Searches if needed for aliases
             if (!context.searchedAliases) {
@@ -94,6 +88,13 @@ abstract class AbstractCommand(val root: String) {
                             }
                         }
                     }
+                }
+            }
+
+            for (child in children) {
+                if (child.isCommandFor(context.commandParts[currentOffset])) {
+                    child.run(context)
+                    return
                 }
             }
         }
