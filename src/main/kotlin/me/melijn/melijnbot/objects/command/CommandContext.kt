@@ -19,10 +19,13 @@ import java.util.regex.Pattern
 
 class CommandContext(
     private val messageReceivedEvent: MessageReceivedEvent,
-    val commandParts: List<String>,
+    val commandParts: List<String>, // rawArg split on spaces and prefix, index 0 = prefix, next index will be (part of) command invoke...
     val container: Container,
-    val commandList: Set<AbstractCommand>,
-    val contentRaw: String = messageReceivedEvent.message.contentRaw
+    val commandList: Set<AbstractCommand>, // Just the total list of commands
+    val partSpaceMap: MutableMap<String, Int>, // Only tracks spaces in the command's invoke (string is the path 45.perm.user.set or cc.101)
+    val aliasMap: MutableMap<String, List<String>>, // cmd.subcommand... -> list of aliases
+    var searchedAliases: Boolean,
+    private val contentRaw: String = messageReceivedEvent.message.contentRaw
 ) : ICommandContext {
 
     lateinit var logger: Logger
@@ -65,13 +68,16 @@ class CommandContext(
     val musicPlayerManager = container.lavaManager.musicPlayerManager
     val audioLoader = container.lavaManager.musicPlayerManager.audioLoader
 
+    var calculatedRoot = ""
+    var calculatedCommandPartsOffset = 1
+
     fun initArgs() {
-        args = commandParts.drop(1 + commandOrder.size)
+        args = commandParts.drop(calculatedCommandPartsOffset)
         rawArg = contentRaw
             .removePrefix(commandParts[0], true)
             .trim()
 
-        for (i in 1..commandOrder.size) {
+        for (i in 1 until calculatedCommandPartsOffset) {
             rawArg = rawArg
                 .removePrefix(commandParts[i])
                 .trim()
