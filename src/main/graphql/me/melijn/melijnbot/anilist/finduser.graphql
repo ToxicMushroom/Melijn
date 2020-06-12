@@ -1,4 +1,4 @@
-query FindUser($name: String) {
+query FindUser($name: String!) {
     User(search: $name) {
         name
         siteUrl

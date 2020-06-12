@@ -1,4 +1,4 @@
-query FindAnime($name: String) {
+query FindAnime($name: String!) {
     Media(search: $name, type: ANIME) {
         title {
             romaji

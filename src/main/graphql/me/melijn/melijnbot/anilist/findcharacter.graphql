@@ -1,4 +1,4 @@
-query FindCharacter($name: String) {
+query FindCharacter($name: String!) {
     Character(search: $name) {
         name {
             first
