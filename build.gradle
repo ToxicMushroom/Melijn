@@ -16,7 +16,7 @@ plugins {
 }
 
 mainClassName = 'me.melijn.melijnbot.MelijnBotKt'
-version = '2.0.7'
+version = '2.0.8'
 sourceCompatibility = JavaVersion.VERSION_12
 
 apollo {
