@@ -69,7 +69,8 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         }
 
         container.taskManager.async {
-            val cmdContext = CommandContext(event, listOf(usedMention, "help"), container, container.commandMap.values.toSet(), "${usedMention}help")
+            val cmdContext = CommandContext(event, listOf(usedMention, "help"), container, container.commandMap.values.toSet(),
+                mutableMapOf(), mutableMapOf(), true, "${usedMention}help")
             helpCmd.run(cmdContext)
         }
     }
