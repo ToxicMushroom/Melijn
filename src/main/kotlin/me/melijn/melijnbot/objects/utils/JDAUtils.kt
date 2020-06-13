@@ -293,18 +293,23 @@ suspend fun getStringFromArgsNMessage(
     val arg = context.args[index]
     if (arg.length < min) {
         val msg = context.getTranslation("message.string.minfailed")
+            .replace("%arg%", arg)
             .replace("%min%", min.toString())
+            .replace("%length%",arg.length)
         sendMsg(context, msg)
         return null
     }
     if (arg.length > max) {
         val msg = context.getTranslation("message.string.maxfailed")
+            .replace("%arg%", arg)
             .replace("%max%", max.toString())
+            .replace("%length%",arg.length)
         sendMsg(context, msg)
         return null
     }
     if (mustMatch != null && !mustMatch.matches(arg)) {
         val msg = context.getTranslation("message.string.matchfailed")
+            .replace("%arg%", arg)
             .replace("%pattern%", mustMatch.toString())
         sendMsg(context, msg)
         return null
@@ -312,6 +317,7 @@ suspend fun getStringFromArgsNMessage(
     for (char in cantContainChars) {
         if (arg.contains(char, ignoreCase)) {
             val msg = context.getTranslation("message.string.cantcontaincharfailed")
+                .replace("%arg%", arg)
                 .replace("%chars%", cantContainChars.toString())
                 .replace("%char%", char.toString())
                 .replace("%ignorecase%", ignoreCase.toString())
@@ -322,6 +328,7 @@ suspend fun getStringFromArgsNMessage(
     for (word in cantContainWords) {
         if (arg.contains(word, ignoreCase)) {
             val msg = context.getTranslation("message.string.cantcontainwordfailed")
+                .replace("%arg%", arg)
                 .replace("%words%", cantContainWords.toString())
                 .replace("%word%", word.toString())
                 .replace("%ignorecase%", ignoreCase.toString())

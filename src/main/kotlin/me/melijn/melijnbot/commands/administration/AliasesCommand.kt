@@ -273,6 +273,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             val cmd = find(context.commandList.toTypedArray(), commandParts, 0)
             if (cmd == null) {
                 val msg = context.getTranslation(UNKNOWN_COMMAND)
+                    .replace("%arg%", context.args[index])
                 sendMsg(context, msg)
                 return null
             }
