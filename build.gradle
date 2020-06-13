@@ -43,7 +43,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.1.1_162') {
+    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.1.1_163') {
         exclude module: 'opus-java'
     }
 
@@ -98,7 +98,7 @@ dependencies {
     implementation group: 'ru.gildor.coroutines', name: 'kotlin-coroutines-okhttp', version: '1.0'
 
     // https://mvnrepository.com/artifact/com.google.apis/google-api-services-youtube
-    implementation group: 'com.google.apis', name: 'google-api-services-youtube', version: 'v3-rev20200526-1.30.9'
+    implementation group: 'com.google.apis', name: 'google-api-services-youtube', version: 'v3-rev222-1.25.0'
 
 
     implementation group: 'com.github.ToxicMushroom', name: 'animated-gif-lib-for-java', version: '03e397e311'
