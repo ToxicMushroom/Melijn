@@ -613,6 +613,7 @@ fun addPaginationEmotes(message: Message, morePages: Boolean) {
 
 suspend fun sendMsgAwaitEL(privateChannel: PrivateChannel, msg: String): List<Message> {
     val messageList = mutableListOf<Message>()
+    if (privateChannel.user.isBot) return emptyList()
     if (msg.length <= 2000) {
         privateChannel.sendMessage(msg).awaitOrNull()?.let { messageList.add(it) }
     } else {
@@ -626,6 +627,7 @@ suspend fun sendMsgAwaitEL(privateChannel: PrivateChannel, msg: String): List<Me
 }
 
 fun sendMsg(privateChannel: PrivateChannel, msg: String) {
+    if (privateChannel.user.isBot) return
     if (msg.length <= 2000) {
         privateChannel.sendMessage(msg).queue()
     } else {
