@@ -18,6 +18,7 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.requests.restaction.MessageAction
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
+import net.dv8tion.jda.internal.entities.DataMessage
 import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
@@ -735,22 +736,34 @@ suspend fun sendMsgAwaitN(channel: TextChannel, msg: Message): Message? {
     require(channel.canTalk()) {
         "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
     }
+
     var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(msg.contentRaw) else null
     for (embed in msg.embeds) {
         if (action == null) action = channel.sendMessage(embed)
         else action.embed(embed)
     }
 
+    if (msg is DataMessage) {
+        action?.allowedMentions(msg.allowedMentions)
+    }
+
     return action?.awaitOrNull()
 }
 
 suspend fun sendMsgAwaitN(channel: PrivateChannel, msg: Message): Message? {
+    if (channel.user.isBot) return null
+
     var action = if (msg.contentRaw.isNotBlank()) {
         channel.sendMessage(msg.contentRaw)
     } else null
+
     for (embed in msg.embeds) {
         if (action == null) action = channel.sendMessage(embed)
         else action.embed(embed)
+    }
+
+    if (msg is DataMessage) {
+        action?.allowedMentions(msg.allowedMentions)
     }
 
     return action?.awaitOrNull()
@@ -787,6 +800,7 @@ suspend fun sendMsgAwaitEL(textChannel: TextChannel, msg: String, image: Buffere
 }
 
 suspend fun sendMsgAwaitEL(privateChannel: PrivateChannel, msg: String, image: BufferedImage?, extension: String): List<Message> {
+    if (privateChannel.user.isBot) return emptyList()
 
     val messageList = mutableListOf<Message>()
     val byteArrayOutputStream = ByteArrayOutputStream()
