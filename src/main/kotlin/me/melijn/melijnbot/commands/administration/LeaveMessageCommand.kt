@@ -22,7 +22,8 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
             SetContentArg(root, MessageType.LEAVE),
             EmbedArg(root, MessageType.LEAVE),
             AttachmentsArg(root, MessageType.LEAVE),
-            ViewArg(root, MessageType.LEAVE)
+            ViewArg(root, MessageType.LEAVE),
+            SetPingableArg(root, MessageType.LEAVE)
         )
     }
 
@@ -449,6 +450,23 @@ class LeaveMessageCommand : AbstractCommand("command.leavemessage") {
 
         override suspend fun execute(context: CommandContext) {
             MessageCommandUtil.showMessagePreviewTyped(context, type)
+        }
+    }
+
+    class SetPingableArg(parent: String, val type: MessageType) : AbstractCommand("$parent.setpingable") {
+
+        init {
+            name = "setPingable"
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.rawArg.isBlank()) {
+                MessageCommandUtil.showPingable(context, type)
+                return
+            }
+
+            val pingable = getBooleanFromArgNMessage(context, 0) ?: return
+            MessageCommandUtil.setPingable(context, type, pingable)
         }
     }
 }

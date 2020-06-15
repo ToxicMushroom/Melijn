@@ -787,4 +787,60 @@ object MessageCommandUtil {
             context.textChannel.sendMessage(msg).queue()
         }
     }
+
+    suspend fun setPingable(context: CommandContext, type: MessageType, pingable: Boolean) {
+        val messageWrapper = context.daoManager.messageWrapper
+        val modularMessage = messageWrapper.messageCache.get(Pair(context.guildId, type)).await()
+            ?: ModularMessage()
+
+        setPingableAndMessage(context, modularMessage, type, pingable)
+        messageWrapper.setMessage(context.guildId, type, modularMessage)
+    }
+
+    suspend fun setPingableCC(context: CommandContext, customCommand: CustomCommand, pingable: Boolean) {
+        val ccWrapper = context.daoManager.customCommandWrapper
+        val modularMessage = customCommand.content
+
+        setPingableAndMessage(context, modularMessage, MessageType.CUSTOM_COMMAND, pingable)
+        ccWrapper.update(context.guildId, customCommand)
+    }
+
+    private suspend fun setPingableAndMessage(context: CommandContext, message: ModularMessage, type: MessageType, pingable: Boolean) {
+        val muteableMap = message.extra.toMutableMap()
+        if (pingable) {
+            muteableMap["isPingable"] = ""
+        } else {
+            muteableMap.remove("isPingable")
+        }
+
+        message.extra = muteableMap
+
+        val msg = context.getTranslation("message.pingable.set.$pingable")
+            .replace("%type%", type.text)
+        sendMsg(context, msg)
+    }
+
+    suspend fun showPingable(context: CommandContext, type: MessageType) {
+        val messageWrapper = context.daoManager.messageWrapper
+        val guildId = context.guildId
+        val message = messageWrapper.messageCache.get(Pair(guildId, type)).await()
+            ?: ModularMessage()
+        val isPingable = message.extra.containsKey("isPingable")
+
+        val msg = context.getTranslation("message.pingable.show.$isPingable")
+            .replace("%type%", type.text)
+        sendMsg(context, msg)
+    }
+
+    suspend fun showPingableCC(context: CommandContext, cc: CustomCommand) {
+        val messageWrapper = context.daoManager.customCommandWrapper
+        val message = cc.content
+        val isPingable = message.extra.containsKey("isPingable")
+        cc.content = message
+
+        messageWrapper.update(context.guildId, cc)
+
+        val msg = context.getTranslation("message.pingable.show.$isPingable")
+        sendMsg(context, msg)
+    }
 }

@@ -95,6 +95,11 @@ data class ModularMessage(
             .setEmbed(membed)
             .setContent(messageContent)
 
+        // Timestamp handler
+        if (extra.containsKey("canPing")) {
+            mb.setAllowedMentions(null)
+        }
+
         return mb.build()
     }
 

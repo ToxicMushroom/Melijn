@@ -253,7 +253,7 @@ suspend fun sendMsgWithAttachmentsAwaitN(channel: MessageChannel, message: Messa
     return messageAction?.awaitOrNull()
 }
 
-suspend fun sendEmbed(context: CommandContext, embed: MessageEmbed) {
+fun sendEmbed(context: CommandContext, embed: MessageEmbed) {
     if (context.isFromGuild) {
         sendEmbed(context.daoManager.embedDisabledWrapper, context.textChannel, embed)
     } else {
@@ -300,7 +300,7 @@ suspend fun sendEmbedAwaitEL(embedDisabledWrapper: EmbedDisabledWrapper, textCha
     }
 }
 
-suspend fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChannel, embed: MessageEmbed) {
+fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChannel, embed: MessageEmbed) {
     val guild = textChannel.guild
     if (!textChannel.canTalk()) {
         throw IllegalArgumentException("No permission to talk in this channel")
