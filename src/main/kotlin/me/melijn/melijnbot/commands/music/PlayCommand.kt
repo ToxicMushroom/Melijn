@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.music
 
-import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.objects.command.*
 import me.melijn.melijnbot.objects.music.AudioLoader
 import me.melijn.melijnbot.objects.music.LavaManager
@@ -65,7 +64,7 @@ class PlayCommand : AbstractCommand("command.play") {
                 return
             }
             if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
-            if (songArg.contains("open.spotify.com")) {
+            if (songArg.contains("open.spotify.com") && context.webManager.spotifyApi != null) {
                 spotifySearchNLoad(context.audioLoader, context, songArg, songPosition)
             } else {
                 context.audioLoader.loadNewTrackNMessage(context, songArg, true, songPosition)
@@ -77,7 +76,7 @@ class PlayCommand : AbstractCommand("command.play") {
             }
             if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
 
-            if (songArg.matches("spotify:(.*)".toRegex())) {
+            if (songArg.matches("spotify:(.*)".toRegex()) && context.webManager.spotifyApi != null) {
                 spotifySearchNLoad(context.audioLoader, context, songArg, songPosition)
             } else {
                 context.audioLoader.loadNewTrackNMessage(context, "${YT_SELECTOR}$songArg", false, songPosition)
@@ -213,7 +212,7 @@ class PlayCommand : AbstractCommand("command.play") {
     }
 
     private fun spotifySearchNLoad(audioLoader: AudioLoader, context: CommandContext, songArg: String, nextPos: NextSongPosition) {
-        context.webManager.spotifyApi.getTracksFromSpotifyUrl(songArg,
+        context.webManager.spotifyApi?.getTracksFromSpotifyUrl(songArg,
             { track ->
                 audioLoader.loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, nextPos = nextPos)
             },
@@ -224,12 +223,10 @@ class PlayCommand : AbstractCommand("command.play") {
                 audioLoader.loadSpotifyAlbum(context, simpleTrackList, nextPos)
             },
             { error ->
-                runBlocking {
-                    val msg = context.getTranslation("message.spotify.down")
-                        .replacePrefix(context)
-                    sendMsg(context, msg)
-                    error.sendInGuild(context)
-                }
+                val msg = context.getTranslation("message.spotify.down")
+                    .replacePrefix(context)
+                sendMsg(context, msg)
+                error.sendInGuild(context)
             }
         )
     }

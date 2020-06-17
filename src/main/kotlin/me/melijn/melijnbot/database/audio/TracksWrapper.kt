@@ -41,11 +41,13 @@ class TracksWrapper(val tracksDao: TracksDao, val lastVoiceChannelDao: LastVoice
 
         tracksDao.set(guildId, 0, playing, udMessage)
 
-        for ((index, track) in newQueue.withIndex()) {
+        var goodIndex = 1
+        for (track in newQueue) {
+            if (track == null) continue
             val json = LavalinkUtil.toMessage(track)
             ud = playingTrack.userData as TrackUserData?
             udMessage = ud?.toMessage() ?: ""
-            tracksDao.set(guildId, index + 1, json, udMessage)
+            tracksDao.set(guildId, goodIndex++, json, udMessage)
         }
     }
 
