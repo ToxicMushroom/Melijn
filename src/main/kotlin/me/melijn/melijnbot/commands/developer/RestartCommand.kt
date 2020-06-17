@@ -5,12 +5,14 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.services.voice.VOICE_SAFE
 import me.melijn.melijnbot.objects.utils.sendMsg
+import kotlin.system.exitProcess
 
-class ShutdownCommand : AbstractCommand("command.shutdown") {
+
+class RestartCommand : AbstractCommand("command.restart") {
 
     init {
-        id = 123
-        name = "shutdown"
+        id = 181
+        name = "restart"
         commandCategory = CommandCategory.DEVELOPER
     }
 
@@ -36,6 +38,10 @@ class ShutdownCommand : AbstractCommand("command.shutdown") {
             VOICE_SAFE.release()
         }
 
-        sendMsg(context, "Shutting down")
+        sendMsg(context, "Restarting")
+
+        context.taskManager.asyncAfter(3_000) {
+            exitProcess(0)
+        }
     }
 }

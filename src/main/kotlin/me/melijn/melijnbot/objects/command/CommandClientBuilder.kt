@@ -76,7 +76,7 @@ class CommandClientBuilder(private val container: Container) {
         GreetCommand(),
         BanCommand(),
         InvertCommand(),
-        ShutdownCommand(),
+        RestartCommand(),
         UrbanCommand(),
         HistoryCommand(),
         RoleInfoCommand(),
@@ -191,7 +191,8 @@ class CommandClientBuilder(private val container: Container) {
         AliasesCommand(),
         PrivateAliasesCommand(),
         BoostMessageCommand(),
-        ManageHistoryCommand()
+        ManageHistoryCommand(),
+        ShutdownCommand()
     )
 
     init {
