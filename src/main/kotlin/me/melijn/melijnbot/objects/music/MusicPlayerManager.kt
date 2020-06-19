@@ -29,6 +29,7 @@ class MusicPlayerManager(
         audioPlayerManager.frameBufferDuration = 1000
         AudioSourceManagers.registerRemoteSources(audioPlayerManager)
         AudioSourceManagers.registerLocalSource(audioPlayerManager)
+
     }
 
     fun getLPPlayer(): AudioPlayer {

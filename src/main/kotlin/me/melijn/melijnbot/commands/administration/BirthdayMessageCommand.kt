@@ -16,7 +16,8 @@ class BirthdayMessageCommand : AbstractCommand("command.birthdaymessage") {
             LeaveMessageCommand.SetContentArg(root, MessageType.BIRTHDAY),
             LeaveMessageCommand.EmbedArg(root, MessageType.BIRTHDAY),
             LeaveMessageCommand.AttachmentsArg(root, MessageType.BIRTHDAY),
-            LeaveMessageCommand.ViewArg(root, MessageType.BIRTHDAY)
+            LeaveMessageCommand.ViewArg(root, MessageType.BIRTHDAY),
+            LeaveMessageCommand.SetPingableArg(root, MessageType.BIRTHDAY)
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }

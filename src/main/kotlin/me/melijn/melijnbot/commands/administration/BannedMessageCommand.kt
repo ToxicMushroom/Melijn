@@ -16,7 +16,8 @@ class BannedMessageCommand : AbstractCommand("command.bannedmessage") {
             LeaveMessageCommand.SetContentArg(root, MessageType.BANNED),
             LeaveMessageCommand.EmbedArg(root, MessageType.BANNED),
             LeaveMessageCommand.AttachmentsArg(root, MessageType.BANNED),
-            LeaveMessageCommand.ViewArg(root, MessageType.BANNED)
+            LeaveMessageCommand.ViewArg(root, MessageType.BANNED),
+            LeaveMessageCommand.SetPingableArg(root, MessageType.BANNED)
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }

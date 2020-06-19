@@ -3,20 +3,20 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.apollographql.apollo:apollo-gradle-plugin:2.1.0'
+        classpath 'com.apollographql.apollo:apollo-gradle-plugin:2.2.0'
     }
 }
 
 plugins {
     id 'java'
     id 'application'
-    id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'com.github.johnrengelman.shadow' version '6.0.0'
     id 'org.jetbrains.kotlin.jvm' version '1.3.72'
-    id 'com.apollographql.apollo' version '2.1.0'
+    id 'com.apollographql.apollo' version '2.2.0'
 }
 
 mainClassName = 'me.melijn.melijnbot.MelijnBotKt'
-version = '2.0.7'
+version = '2.0.8'
 sourceCompatibility = JavaVersion.VERSION_12
 
 apollo {
@@ -43,7 +43,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.1.1_160') {
+    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.1.1_165') {
         exclude module: 'opus-java'
     }
 
@@ -63,19 +63,19 @@ dependencies {
     implementation group: 'com.zaxxer', name: 'HikariCP', version: '3.4.5'
 
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.13'
+    implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.14'
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
-    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.3.6'
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.3.7'
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-jdk8
-    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-jdk8', version: '1.3.6'
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-jdk8', version: '1.3.7'
 
     // https://bintray.com/duncte123/weeb.java/weeb.java
     implementation group: 'me.duncte123', name: 'weebJava', version: '2.2.0_29'
 
     // https://mvnrepository.com/artifact/se.michaelthelin.spotify/spotify-web-api-java
-    implementation(group: 'se.michaelthelin.spotify', name: 'spotify-web-api-java', version: '6.0.0') {
+    implementation(group: 'se.michaelthelin.spotify', name: 'spotify-web-api-java', version: '6.1.0') {
         exclude group: 'org.slf4j', module: 'slf4j-simple'
     }
 
@@ -98,7 +98,7 @@ dependencies {
     implementation group: 'ru.gildor.coroutines', name: 'kotlin-coroutines-okhttp', version: '1.0'
 
     // https://mvnrepository.com/artifact/com.google.apis/google-api-services-youtube
-    implementation group: 'com.google.apis', name: 'google-api-services-youtube', version: 'v3-rev20200526-1.30.9'
+    implementation group: 'com.google.apis', name: 'google-api-services-youtube', version: 'v3-rev222-1.25.0'
 
 
     implementation group: 'com.github.ToxicMushroom', name: 'animated-gif-lib-for-java', version: '03e397e311'
@@ -110,8 +110,8 @@ dependencies {
     // https://github.com/GSculerlor/JikanKt/releases
     implementation(group: 'com.github.ToxicMushroom', name: 'JikanKT', version: 'ee56c42739')
 
-    implementation group: 'com.apollographql.apollo', name: 'apollo-runtime', version: '2.1.0'
-    implementation group: 'com.apollographql.apollo', name: 'apollo-coroutines-support', version: '2.1.0'
+    implementation group: 'com.apollographql.apollo', name: 'apollo-runtime', version: '2.2.0'
+    implementation group: 'com.apollographql.apollo', name: 'apollo-coroutines-support', version: '2.2.0'
 
     implementation group: 'com.github.husnjak', name: 'IGDB-API-JVM', version: '0.7'
 
@@ -133,8 +133,8 @@ dependencies {
     // END
 }
 
-
 compileJava.options.encoding = 'UTF-8'
+
 compileKotlin {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_12

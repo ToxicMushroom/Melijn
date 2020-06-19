@@ -16,7 +16,8 @@ class PreVerificationJoinMessageCommand : AbstractCommand("command.preverificati
             LeaveMessageCommand.SetContentArg(root, MessageType.PRE_VERIFICATION_JOIN_MESSAGE),
             LeaveMessageCommand.EmbedArg(root, MessageType.PRE_VERIFICATION_JOIN_MESSAGE),
             LeaveMessageCommand.AttachmentsArg(root, MessageType.PRE_VERIFICATION_JOIN_MESSAGE),
-            LeaveMessageCommand.ViewArg(root, MessageType.PRE_VERIFICATION_JOIN_MESSAGE)
+            LeaveMessageCommand.ViewArg(root, MessageType.PRE_VERIFICATION_JOIN_MESSAGE),
+            LeaveMessageCommand.SetPingableArg(root, MessageType.PRE_VERIFICATION_JOIN_MESSAGE)
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }

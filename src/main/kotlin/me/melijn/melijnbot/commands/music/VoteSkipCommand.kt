@@ -6,10 +6,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.utils.getDurationString
-import me.melijn.melijnbot.objects.utils.listeningMembers
-import me.melijn.melijnbot.objects.utils.sendEmbed
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.*
 import kotlin.math.floor
 
 
@@ -32,15 +29,15 @@ class VoteSkipCommand : AbstractCommand("command.voteskip") {
         }
         val listening = listeningMembers(vc)
 
-        guildMusicPlayer.votes++
+        guildMusicPlayer.votedUsers.addIfNotPresent(context.authorId)
         val requiredVotes = (floor(listening / 2.0) + 1).toInt()
-        if (guildMusicPlayer.votes == requiredVotes) {
-            doSkip(context, guildMusicPlayer.votes)
+        if (guildMusicPlayer.votedUsers.size == requiredVotes) {
+            doSkip(context, guildMusicPlayer.votedUsers.size)
         } else {
             val eb = Embedder(context)
             val title = context.getTranslation("$root.progress.title")
                 .replace("%votesRequired%", "$requiredVotes")
-                .replace("%votes%", "${guildMusicPlayer.votes}")
+                .replace("%votes%", "${guildMusicPlayer.votedUsers.size}")
             eb.setTitle(title)
 
             val iPlayer = context.guildMusicPlayer.guildTrackManager.iPlayer
@@ -56,7 +53,7 @@ class VoteSkipCommand : AbstractCommand("command.voteskip") {
         }
     }
 
-    suspend fun doSkip(context: CommandContext, votes: Int) {
+    private suspend fun doSkip(context: CommandContext, votes: Int) {
         val trackManager = context.guildMusicPlayer.guildTrackManager
         val cTrack = trackManager.iPlayer.playingTrack ?: return
         val part1 =

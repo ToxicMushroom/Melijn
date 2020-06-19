@@ -32,7 +32,8 @@ class GuildTrackManager(
     var iPlayer: IPlayer
 ) : AudioEventAdapterWrapped() {
 
-    var votes: Int = 0
+    var votedUsers = mutableListOf<Long>()
+
     val playingTrack: AudioTrack?
         get() = iPlayer.playingTrack
 
@@ -51,7 +52,7 @@ class GuildTrackManager(
 
 
     private fun nextTrack(lastTrack: AudioTrack) {
-        votes = 0
+        votedUsers.clear()
         if (tracks.isEmpty()) {
             if (loopedQueue || loopedTrack) {
                 iPlayer.playTrack(lastTrack.makeClone())

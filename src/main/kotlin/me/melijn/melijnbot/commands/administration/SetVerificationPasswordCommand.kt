@@ -12,7 +12,7 @@ class SetVerificationPasswordCommand : AbstractCommand("command.setverificationp
     init {
         id = 42
         name = "setVerificationPassword"
-        aliases = arrayOf("svc")
+        aliases = arrayOf("svp")
         commandCategory = CommandCategory.ADMINISTRATION
     }
 

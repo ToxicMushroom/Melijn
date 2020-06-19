@@ -22,6 +22,10 @@ class EventManager(val container: Container) : IEventManager {
     }
 
     private fun registerEvents() {
+
+
+
+
         val botJoinLeaveListener = BotJoinLeaveListener(container)
         val botStartShutdownListener = BotStartShutdownListener(container)
         val messageDeletedListener = MessageDeletedListener(container)
@@ -38,14 +42,12 @@ class EventManager(val container: Container) : IEventManager {
         val boostListener = BoostListener(container)
         val lavaEventListener = container.jdaLavaLink
         val premiumEventListener = container.premiumJdaLavaLink
+        val commandListener = CommandClientBuilder(container)
+            .loadCommands()
+            .build()
 
-        container.taskManager.async {
-            val commandListener = CommandClientBuilder(container)
-                .loadCommands()
-                .build()
 
-            eventListeners.add(commandListener)
-        }
+        eventListeners.add(commandListener)
         eventListeners.add(botJoinLeaveListener)
         eventListeners.add(botStartShutdownListener)
         eventListeners.add(messageDeletedListener)

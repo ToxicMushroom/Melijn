@@ -519,8 +519,27 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 SetContentArg(root),
                 EmbedArg(root),
                 AttachmentsArg(root),
-                ViewArg(root)
+                ViewArg(root),
+                SetPingableArg(root)
             )
+        }
+
+        class SetPingableArg(parent: String) : AbstractCommand("$parent.setpingable") {
+
+            init {
+                name = "setPingable"
+            }
+
+            override suspend fun execute(context: CommandContext) {
+                val cc = getSelectedCCNMessage(context) ?: return
+                if (context.rawArg.isBlank()) {
+                    MessageCommandUtil.showPingableCC(context, cc)
+                    return
+                }
+
+                val pingable = getBooleanFromArgNMessage(context, 0) ?: return
+                MessageCommandUtil.setPingableCC(context, cc, pingable)
+            }
         }
 
         override suspend fun execute(context: CommandContext) {

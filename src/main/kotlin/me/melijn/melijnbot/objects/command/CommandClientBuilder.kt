@@ -76,7 +76,7 @@ class CommandClientBuilder(private val container: Container) {
         GreetCommand(),
         BanCommand(),
         InvertCommand(),
-        ShutdownCommand(),
+        RestartCommand(),
         UrbanCommand(),
         HistoryCommand(),
         RoleInfoCommand(),
@@ -191,7 +191,8 @@ class CommandClientBuilder(private val container: Container) {
         AliasesCommand(),
         PrivateAliasesCommand(),
         BoostMessageCommand(),
-        ManageHistoryCommand()
+        ManageHistoryCommand(),
+        ShutdownCommand()
     )
 
     init {
@@ -202,13 +203,15 @@ class CommandClientBuilder(private val container: Container) {
         return CommandClient(commands.toSet(), container)
     }
 
-    private suspend fun addCommand(command: AbstractCommand): CommandClientBuilder {
+    private fun addCommand(command: AbstractCommand): CommandClientBuilder {
         commands.add(command)
-        container.daoManager.commandWrapper.insert(command)
+        container.taskManager.async {
+            container.daoManager.commandWrapper.insert(command)
+        }
         return this
     }
 
-    suspend fun loadCommands(): CommandClientBuilder {
+    fun loadCommands(): CommandClientBuilder {
         logger.info("Loading ${commands.size} commands...")
         commands.forEach { command ->
             addCommand(command)

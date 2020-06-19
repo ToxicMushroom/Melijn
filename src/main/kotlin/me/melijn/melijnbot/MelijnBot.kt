@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
 import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.ChunkingFilter
 import net.dv8tion.jda.api.utils.cache.CacheFlag
+import net.dv8tion.jda.internal.requests.restaction.MessageActionImpl
 import java.net.URI
 import java.util.*
 
@@ -26,6 +27,7 @@ class MelijnBot {
     init {
         instance = this
         Locale.setDefault(Locale.ENGLISH)
+        MessageActionImpl.setDefaultMentions(emptyList())
 
         val container = Container()
 
