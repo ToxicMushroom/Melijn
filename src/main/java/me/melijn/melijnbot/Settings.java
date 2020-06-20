@@ -15,6 +15,7 @@ public class Settings {
     public int embedColor;
     public long exceptionChannel;
     public Jikan jikan;
+    public MelijnCDN melijnCDN;
 
     public Spotify spotify;
     public Lavalink lavalink;
@@ -65,5 +66,9 @@ public class Settings {
         public String user;
         public String host;
         public int port;
+    }
+
+    public static class MelijnCDN {
+        public String token;
     }
 }
