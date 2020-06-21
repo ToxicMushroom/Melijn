@@ -220,3 +220,7 @@ fun String.splitIETEL(delimiter: String): List<String> {
         res
     }
 }
+
+fun String.withVariable(toReplace: String, obj: Any): String {
+    return this.replace("%$toReplace%", obj.toString())
+}

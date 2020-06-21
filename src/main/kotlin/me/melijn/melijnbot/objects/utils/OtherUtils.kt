@@ -226,8 +226,17 @@ suspend fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set
 }
 
 
-suspend fun getLongFromArgNMessage(context: CommandContext, index: Int, min: Long = Long.MIN_VALUE, max: Long = Long.MAX_VALUE): Long? {
-    val arg = context.args[index]
+suspend fun getLongFromArgNMessage(
+    context: CommandContext,
+    index: Int,
+    min: Long = Long.MIN_VALUE,
+    max: Long = Long.MAX_VALUE,
+    vararg ignore: String
+): Long? {
+    var arg = context.args[index]
+    for (a in ignore) {
+        arg = arg.remove(a)
+    }
     val long = arg.toLongOrNull()
     val language = context.getLanguage()
     if (!arg.matches("\\d+".toRegex())) {

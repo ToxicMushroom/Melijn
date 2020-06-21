@@ -25,6 +25,8 @@ class PlaylistDao(driverManager: DriverManager) : Dao(driverManager) {
             id, playlist)
     }
 
+    //Sign pls
+
     suspend fun getPlaylists(id: Long): List<String> = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table", { rs ->
             val playlists = mutableListOf<String>()

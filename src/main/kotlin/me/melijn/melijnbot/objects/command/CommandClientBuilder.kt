@@ -192,7 +192,11 @@ class CommandClientBuilder(private val container: Container) {
         PrivateAliasesCommand(),
         BoostMessageCommand(),
         ManageHistoryCommand(),
-        ShutdownCommand()
+        ShutdownCommand(),
+        PenguinCommand(),
+        SpeedCommand(),
+        PitchCommand(),
+        RateCommand()
     )
 
     init {

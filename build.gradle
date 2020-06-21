@@ -17,6 +17,7 @@ plugins {
 
 mainClassName = 'me.melijn.melijnbot.MelijnBotKt'
 version = '2.0.8'
+
 sourceCompatibility = JavaVersion.VERSION_12
 
 apollo {
@@ -50,11 +51,13 @@ dependencies {
     // https://bintray.com/sedmelluq/com.sedmelluq/jda-nas
     implementation group: 'com.sedmelluq', name: 'jda-nas', version: '1.1.0'
 
+
     // https://bintray.com/sedmelluq/com.sedmelluq/lavaplayer
-    implementation group: 'com.github.Melijn', name: 'lavaplayer', version: '51f068857f'
+    implementation group: 'com.github.ToxicMushroom', name: 'lavaplayer-test', version: 'a2cd883a06'
+//    implementation group: 'com.github.Melijn', name: 'lavaplayer', version: '18000a1479'
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Client
-    implementation group: 'com.github.ToxicMushroom', name: 'Lavalink-Client', version: '7a9750c65d'
+    implementation group: 'com.github.ToxicMushroom', name: 'Lavalink-Client', version: 'd6c5d6eced'
 
     // https://github.com/ToxicMushroom/JagTag-Kotlin
     implementation group: 'com.github.ToxicMushroom', name: 'JagTag-Kotlin', version: '0.6.2'
@@ -83,9 +86,9 @@ dependencies {
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 
     // https://mvnrepository.com/artifact/io.jooby/jooby
-    implementation(group: 'io.jooby', name: 'jooby-netty', version: '2.8.5')
+    implementation(group: 'io.jooby', name: 'jooby-netty', version: '2.8.6')
 
-    implementation group: 'io.jooby', name: 'jooby-jackson', version: '2.8.5'
+    implementation group: 'io.jooby', name: 'jooby-jackson', version: '2.8.6'
 
     // https://github.com/FasterXML/jackson-module-kotlin
     implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.11.0'
@@ -139,4 +142,8 @@ compileKotlin {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_12
     }
+}
+
+shadowJar {
+    archiveFileName = 'melijn.jar'
 }
