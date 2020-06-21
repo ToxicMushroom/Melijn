@@ -17,6 +17,7 @@ plugins {
 
 mainClassName = 'me.melijn.melijnbot.MelijnBotKt'
 version = '2.0.8'
+
 sourceCompatibility = JavaVersion.VERSION_12
 
 apollo {
@@ -50,8 +51,10 @@ dependencies {
     // https://bintray.com/sedmelluq/com.sedmelluq/jda-nas
     implementation group: 'com.sedmelluq', name: 'jda-nas', version: '1.1.0'
 
+
     // https://bintray.com/sedmelluq/com.sedmelluq/lavaplayer
-    implementation group: 'com.github.Melijn', name: 'lavaplayer', version: '18000a1479'
+    implementation group: 'com.github.ToxicMushroom', name: 'lavaplayer-test', version: 'a2cd883a06'
+//    implementation group: 'com.github.Melijn', name: 'lavaplayer', version: '18000a1479'
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Client
     implementation group: 'com.github.ToxicMushroom', name: 'Lavalink-Client', version: 'd6c5d6eced'
@@ -139,4 +142,8 @@ compileKotlin {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_12
     }
+}
+
+shadowJar {
+    archiveFileName = 'melijn.jar'
 }

@@ -10,6 +10,7 @@ import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
+import me.melijn.melijnbot.objects.services.voice.VOICE_SAFE
 import me.melijn.melijnbot.objects.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.OSValidator
@@ -74,39 +75,47 @@ class RestServer(container: Container) : Jooby() {
 
 
         get("/shards") {
-
             val shardManager = MelijnBot.shardManager
             val dataArray = DataArray.empty()
             val players = container.lavaManager.musicPlayerManager.getPlayers()
 
-            for (shard in shardManager.shardCache) {
-                var queuedTracks = 0
-                var musicPlayers = 0
-                for (player in players.values) {
-                    if (shard.guildCache.getElementById(player.guildId) != null) {
-                        if (player.guildTrackManager.iPlayer.playingTrack != null) {
-                            musicPlayers++
+            runBlocking {
+                VOICE_SAFE.acquire()
+
+                for (shard in shardManager.shardCache) {
+                    var queuedTracks = 0
+                    var musicPlayers = 0
+
+
+                    for (player in players.values) {
+                        if (shard.guildCache.getElementById(player.guildId) != null) {
+                            if (player.guildTrackManager.iPlayer.playingTrack != null) {
+                                musicPlayers++
+                            }
+                            queuedTracks += player.guildTrackManager.trackSize()
                         }
-                        queuedTracks += player.guildTrackManager.trackSize()
                     }
+
+
+                    val dataObject = DataObject.empty()
+                    dataObject
+                        .put("guildCount", shard.guildCache.size())
+                        .put("userCount", shard.userCache.size())
+                        .put("connectedVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shard))
+                        .put("listeningVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shard, true))
+                        .put("ping", shard.gatewayPing)
+                        .put("status", shard.status)
+                        .put("queuedTracks", queuedTracks)
+                        .put("musicPlayers", musicPlayers)
+                        .put("responses", shard.responseTotal)
+                        .put("id", shard.shardInfo.shardId)
+
+                    dataArray.add(dataObject)
                 }
-
-                val dataObject = DataObject.empty()
-                dataObject
-                    .put("guildCount", shard.guildCache.size())
-                    .put("userCount", shard.userCache.size())
-                    .put("connectedVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shard))
-                    .put("listeningVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shard, true))
-                    .put("ping", shard.gatewayPing)
-                    .put("status", shard.status)
-                    .put("queuedTracks", queuedTracks)
-                    .put("musicPlayers", musicPlayers)
-                    .put("responses", shard.responseTotal)
-                    .put("id", shard.shardInfo.shardId)
-
-                dataArray.add(dataObject)
             }
-            dataArray.toList()
+            VOICE_SAFE.release()
+                dataArray.toList()
+
         }
 
 

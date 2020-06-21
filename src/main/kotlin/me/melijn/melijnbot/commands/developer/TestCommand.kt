@@ -29,7 +29,6 @@ class TestCommand : AbstractCommand("command.test") {
             return
         }
 
-
         val iPlayer = context.guildMusicPlayer.guildTrackManager.iPlayer
         when {
             context.args[0] == "speed" -> {
