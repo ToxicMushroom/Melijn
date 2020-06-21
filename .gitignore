@@ -5,15 +5,11 @@ gradle/
 
 \.idea/
 
-\.gradle/
-
 gradlew\.bat
 
 build/
 
 out/
-
-gradlew
 
 *.iml
 

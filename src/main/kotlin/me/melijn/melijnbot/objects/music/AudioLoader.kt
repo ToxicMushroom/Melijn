@@ -15,7 +15,6 @@ import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.SC_SELECTOR
 import me.melijn.melijnbot.objects.translation.YT_SELECTOR
-import me.melijn.melijnbot.objects.translation.YT_VID_URL_BASE
 import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
@@ -116,13 +115,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
 
         try {
-            ytSearch.search(context.guild, rawInput, searchType, { videoId ->
-                if (videoId == null) {
-                    sendMessageNoMatches(context, rawInput)
-                } else {
-                    audioPlayerManager.loadItemOrdered(guildMusicPlayer, YT_VID_URL_BASE + videoId, resultHandler)
-                }
-            }, { tracks ->
+            ytSearch.search(context.guild, rawInput, searchType, { tracks ->
                 if (tracks.isNotEmpty()) {
                     foundTracks(context, guildMusicPlayer, wrapper, tracks, rawInput, isPlaylist, nextPos)
                 } else {
