@@ -1,4 +1,4 @@
-FROM openjdk:12-jdk
+FROM openjdk:12-jdk as builder
 WORKDIR /etc/melijn
 COPY ./ ./
 USER root

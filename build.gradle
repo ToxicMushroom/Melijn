@@ -100,10 +100,6 @@ dependencies {
     implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.7.2'
     implementation group: 'ru.gildor.coroutines', name: 'kotlin-coroutines-okhttp', version: '1.0'
 
-    // https://mvnrepository.com/artifact/com.google.apis/google-api-services-youtube
-    implementation group: 'com.google.apis', name: 'google-api-services-youtube', version: 'v3-rev222-1.25.0'
-
-
     implementation group: 'com.github.ToxicMushroom', name: 'animated-gif-lib-for-java', version: '03e397e311'
     implementation group: 'com.github.ToxicMushroom', name: 'gifencoder', version: '0f8c620995'
 
