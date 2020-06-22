@@ -88,7 +88,7 @@ dependencies {
     // https://mvnrepository.com/artifact/io.jooby/jooby
     implementation(group: 'io.jooby', name: 'jooby-netty', version: '2.8.6')
 
-    implementation group: 'io.jooby', name: 'jooby-jackson', version: '2.8.6'
+    implementation group: 'io.jooby', name: 'jooby-jackson', version: '2.8.7'
 
     // https://github.com/FasterXML/jackson-module-kotlin
     implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.11.0'
