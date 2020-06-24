@@ -35,7 +35,6 @@ class RestServer(container: Container) {
 
     private val server: NettyApplicationEngine = embeddedServer(Netty, container.settings.restPort) {
         routing {
-
             get("/guildCount") {
                 call.respondText {
                     "${MelijnBot.shardManager.guildCache.size()}"
@@ -250,7 +249,9 @@ class RestServer(container: Container) {
             }
 
             //Has to be registered last to not override other paths
-            get("*") { "blub" }
+            get("*") {
+                call.respondText("blub")
+            }
         }
     }
 
@@ -296,6 +297,6 @@ class RestServer(container: Container) {
     }
 
     fun start() {
-        server.start()
+        server.start(false)
     }
 }
