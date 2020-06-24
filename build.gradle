@@ -54,7 +54,7 @@ dependencies {
 
     // https://bintray.com/sedmelluq/com.sedmelluq/lavaplayer
     implementation group: 'com.github.ToxicMushroom', name: 'lavaplayer-test', version: 'a2cd883a06'
-//    implementation group: 'com.github.Melijn', name: 'lavaplayer', version: '18000a1479'
+    // implementation group: 'com.github.Melijn', name: 'lavaplayer', version: '18000a1479'
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Client
     implementation group: 'com.github.ToxicMushroom', name: 'Lavalink-Client', version: 'd6c5d6eced'
@@ -78,17 +78,14 @@ dependencies {
     implementation group: 'me.duncte123', name: 'weebJava', version: '2.2.0_29'
 
     // https://mvnrepository.com/artifact/se.michaelthelin.spotify/spotify-web-api-java
-    implementation(group: 'se.michaelthelin.spotify', name: 'spotify-web-api-java', version: '6.1.0') {
-        exclude group: 'org.slf4j', module: 'slf4j-simple'
-    }
+    implementation group: 'se.michaelthelin.spotify', name: 'spotify-web-api-java', version: '6.1.0'
 
     // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 
     // https://mvnrepository.com/artifact/io.jooby/jooby
-    implementation(group: 'io.jooby', name: 'jooby-netty', version: '2.8.7')
-
-    implementation group: 'io.jooby', name: 'jooby-jackson', version: '2.8.7'
+    // implementation group: 'io.jooby', name: 'jooby-netty', version: '2.8.7'
+    // implementation group: 'io.jooby', name: 'jooby-jackson', version: '2.8.7'
 
     // https://github.com/FasterXML/jackson-module-kotlin
     implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.11.0'
@@ -96,40 +93,30 @@ dependencies {
     // https://mvnrepository.com/artifact/com.google.guava/guava
     implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 
+    implementation group: 'io.ktor', name: 'ktor', version: '1.3.2'
+    implementation group: 'io.ktor', name: 'ktor-server-netty', version: '1.3.2'
+
     // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
     implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.7.2'
     implementation group: 'ru.gildor.coroutines', name: 'kotlin-coroutines-okhttp', version: '1.0'
 
-    implementation group: 'com.github.ToxicMushroom', name: 'animated-gif-lib-for-java', version: '03e397e311'
     implementation group: 'com.github.ToxicMushroom', name: 'gifencoder', version: '0f8c620995'
+    implementation group: 'com.github.ToxicMushroom', name: 'animated-gif-lib-for-java', version: '03e397e311'
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib-jdk8
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.3.72'
 
     // https://github.com/GSculerlor/JikanKt/releases
-    implementation(group: 'com.github.ToxicMushroom', name: 'JikanKT', version: 'ee56c42739')
+    implementation group: 'com.github.GSculerlor', name: 'JikanKT', version: '1.3.1'
+
 
     implementation group: 'com.apollographql.apollo', name: 'apollo-runtime', version: '2.2.1'
     implementation group: 'com.apollographql.apollo', name: 'apollo-coroutines-support', version: '2.2.1'
 
-    implementation group: 'com.github.husnjak', name: 'IGDB-API-JVM', version: '0.7'
+    // implementation group: 'com.github.husnjak', name: 'IGDB-API-JVM', version: '0.7'
 
     implementation group: 'org.codehaus.groovy', name: 'groovy', version: '3.0.4'
 
-
-    // START | https://github.com/JetBrains/kotlin/blob/master/libraries/examples/kotlin-jsr223-local-example/build.gradle.kts
-    // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-script-runtime
-    // implementation group: 'org.jetbrains.kotlin', name: 'kotlin-script-runtime', version: '1.3.72'
-
-    // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-compiler-embeddable
-    // implementation group: 'org.jetbrains.kotlin', name: 'kotlin-compiler-embeddable', version: '1.3.72'
-
-    // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-script-util
-    // implementation group: 'org.jetbrains.kotlin', name: 'kotlin-script-util', version: '1.3.72'
-
-    // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-scripting-compiler-embeddable
-    // runtimeOnly group: 'org.jetbrains.kotlin', name: 'kotlin-scripting-compiler-embeddable', version: '1.3.72'
-    // END
 }
 
 compileJava.options.encoding = 'UTF-8'
