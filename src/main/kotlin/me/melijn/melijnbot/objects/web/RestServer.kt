@@ -1,10 +1,15 @@
 package me.melijn.melijnbot.objects.web
 
 import com.sun.management.OperatingSystemMXBean
-import io.jooby.Context
-import io.jooby.Jooby
-import io.jooby.json.JacksonModule
-import kotlinx.coroutines.runBlocking
+import io.ktor.application.call
+import io.ktor.http.ContentType
+import io.ktor.response.respondText
+import io.ktor.routing.get
+import io.ktor.routing.routing
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.engine.stop
+import io.ktor.server.netty.Netty
+import io.ktor.server.netty.NettyApplicationEngine
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.objects.command.AbstractCommand
@@ -13,73 +18,71 @@ import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.objects.services.voice.VOICE_SAFE
 import me.melijn.melijnbot.objects.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.OSValidator
-import me.melijn.melijnbot.objects.utils.awaitOrNull
-import me.melijn.melijnbot.objects.utils.getSystemUptime
-import me.melijn.melijnbot.objects.utils.getUnixRam
+import me.melijn.melijnbot.objects.utils.*
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.lang.management.ManagementFactory
 import java.util.*
 import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 
 
-class RestServer(container: Container) : Jooby() {
-
-    fun Context.send(any: Any) {
-        this.send(any.toString())
-    }
-
-    init {
-        //val token = container.settings.tokens.melijnRest
-        install(JacksonModule())
-
-        get("/guildCount") { context ->
-            context.send(MelijnBot.shardManager.guildCache.size())
-        }
+class RestServer(container: Container) {
 
 
-        get("/stats") {
-            val bean: OperatingSystemMXBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean::class.java)
-            val totalMem = bean.totalPhysicalMemorySize shr 20
+    private val jsonType = ContentType.parse("Application/JSON")
 
-            val usedMem = if (OSValidator.isUnix) {
-                totalMem - getUnixRam()
-            } else {
-                totalMem - (bean.freeSwapSpaceSize shr 20)
+    private val server: NettyApplicationEngine = embeddedServer(Netty, container.settings.restPort) {
+        routing {
+
+            get("/guildCount") {
+                call.respondText {
+                    "${MelijnBot.shardManager.guildCache.size()}"
+                }
             }
-            val totalJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.max shr 20
-            val usedJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.used shr 20
-            val threadPoolExecutor = container.taskManager.executorService as ThreadPoolExecutor
-            val scheduledExecutorService = container.taskManager.scheduledExecutorService as ThreadPoolExecutor
-
-            val dataObject = DataObject.empty()
-            dataObject.put("bot", DataObject.empty()
-                .put("uptime", ManagementFactory.getRuntimeMXBean().uptime)
-                .put("melijnThreads", threadPoolExecutor.activeCount + scheduledExecutorService.activeCount + scheduledExecutorService.queue.size)
-                .put("ramUsage", usedJVMMem)
-                .put("ramTotal", totalJVMMem)
-                .put("jvmThreads", Thread.activeCount())
-                .put("cpuUsage", bean.processCpuLoad * 100)
-            )
-
-            dataObject.put("server", DataObject.empty()
-                .put("uptime", getSystemUptime())
-                .put("ramUsage", usedMem)
-                .put("ramTotal", totalMem)
-            )
-
-            dataObject.toMap()
-        }
 
 
-        get("/shards") {
-            val shardManager = MelijnBot.shardManager
-            val dataArray = DataArray.empty()
-            val players = container.lavaManager.musicPlayerManager.getPlayers()
+            get("/stats") {
+                val bean: OperatingSystemMXBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean::class.java)
+                val totalMem = bean.totalPhysicalMemorySize shr 20
 
-            runBlocking {
+                val usedMem = if (OSValidator.isUnix) {
+                    totalMem - getUnixRam()
+                } else {
+                    totalMem - (bean.freeSwapSpaceSize shr 20)
+                }
+                val totalJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.max shr 20
+                val usedJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.used shr 20
+                val threadPoolExecutor = container.taskManager.executorService as ThreadPoolExecutor
+                val scheduledExecutorService = container.taskManager.scheduledExecutorService as ThreadPoolExecutor
+
+                val dataObject = DataObject.empty()
+                dataObject.put("bot", DataObject.empty()
+                    .put("uptime", ManagementFactory.getRuntimeMXBean().uptime)
+                    .put("melijnThreads", threadPoolExecutor.activeCount + scheduledExecutorService.activeCount + scheduledExecutorService.queue.size)
+                    .put("ramUsage", usedJVMMem)
+                    .put("ramTotal", totalJVMMem)
+                    .put("jvmThreads", Thread.activeCount())
+                    .put("cpuUsage", bean.processCpuLoad * 100)
+                )
+
+                dataObject.put("server", DataObject.empty()
+                    .put("uptime", getSystemUptime())
+                    .put("ramUsage", usedMem)
+                    .put("ramTotal", totalMem)
+                )
+
+                call.respondText(dataObject.toString(), jsonType)
+            }
+
+
+            get("/shards") {
+                val shardManager = MelijnBot.shardManager
+                val dataArray = DataArray.empty()
+                val players = container.lavaManager.musicPlayerManager.getPlayers()
+
+
                 VOICE_SAFE.acquire()
 
                 for (shard in shardManager.shardCache) {
@@ -112,131 +115,143 @@ class RestServer(container: Container) : Jooby() {
 
                     dataArray.add(dataObject)
                 }
-            }
-            VOICE_SAFE.release()
-                dataArray.toList()
 
-        }
-
-
-        get("/guild/{id:\\d+}") { context ->
-
-            val id = context.path("id").longValue()
-            val guild = MelijnBot.shardManager.getGuildById(id)
-                ?: return@get DataObject.empty()
-                    .put("isBotMember", false)
-                    .toMap()
-
-            val voiceChannels = DataArray.empty()
-            val textChannels = DataArray.empty()
-            val roles = DataArray.empty()
-
-            guild.voiceChannelCache.forEach { voiceChannel ->
-                voiceChannels.add(DataObject.empty()
-                    .put("position", voiceChannel.position)
-                    .put("id", voiceChannel.idLong)
-                    .put("name", voiceChannel.name)
-                )
+                VOICE_SAFE.release()
+                call.respondText(dataArray.toString(), jsonType)
             }
 
-            guild.textChannelCache.forEach { textChannel ->
-                textChannels.add(DataObject.empty()
-                    .put("position", textChannel.position)
-                    .put("id", textChannel.idLong)
-                    .put("name", textChannel.name)
-                )
+
+            get("/guild/{id}") {
+                val id = call.parameters["id"] ?: return@get
+                if (!id.isPositiveNumber()) return@get
+                val guild = MelijnBot.shardManager.getGuildById(id)
+                if (guild == null) {
+                    call.respondText(DataObject.empty()
+                        .put("isBotMember", false)
+                        .toString(), jsonType)
+                    return@get
+                }
+
+                val voiceChannels = DataArray.empty()
+                val textChannels = DataArray.empty()
+                val roles = DataArray.empty()
+
+                guild.voiceChannelCache.forEach { voiceChannel ->
+                    voiceChannels.add(DataObject.empty()
+                        .put("position", voiceChannel.position)
+                        .put("id", voiceChannel.idLong)
+                        .put("name", voiceChannel.name)
+                    )
+                }
+
+                guild.textChannelCache.forEach { textChannel ->
+                    textChannels.add(DataObject.empty()
+                        .put("position", textChannel.position)
+                        .put("id", textChannel.idLong)
+                        .put("name", textChannel.name)
+                    )
+                }
+
+                guild.roleCache.forEach { role ->
+                    roles.add(DataObject.empty()
+                        .put("id", role.idLong)
+                        .put("name", role.name)
+                    )
+                }
+
+                call.respondText(DataObject.empty()
+                    .put("name", guild.name)
+                    .put("iconUrl", if (guild.iconUrl == null) MISSING_IMAGE_URL else guild.iconUrl)
+                    .put("memberCount", guild.memberCount)
+                    .put("ownerId", guild.ownerId)
+                    .put("isBotMember", true)
+                    .put("voiceChannels", voiceChannels)
+                    .put("textChannels", textChannels)
+                    .put("roles", roles)
+                    .toString(), jsonType)
             }
 
-            guild.roleCache.forEach { role ->
-                roles.add(DataObject.empty()
-                    .put("id", role.idLong)
-                    .put("name", role.name)
-                )
-            }
 
-            DataObject.empty()
-                .put("name", guild.name)
-                .put("iconUrl", if (guild.iconUrl == null) MISSING_IMAGE_URL else guild.iconUrl)
-                .put("memberCount", guild.memberCount)
-                .put("ownerId", guild.ownerId)
-                .put("isBotMember", true)
-                .put("voiceChannels", voiceChannels)
-                .put("textChannels", textChannels)
-                .put("roles", roles)
-                .toMap()
-        }
+            get("/member/{guildId}/{userId}") {
+
+                val shardManager = MelijnBot.shardManager
+                val guild = call.parameters["guildId"]?.let { guildId ->
+                    if (guildId.isPositiveNumber()) shardManager.getGuildById(guildId) else null
+                }
+
+                if (guild == null) {
+                    call.respondText(DataObject.empty()
+                        .put("error", "Invalid guildId")
+                        .put("isMember", false)
+                        .toString(), jsonType)
+                    return@get
+                }
 
 
-        get("/member/{guildId:\\d+}/{userId:\\d+}") { context ->
-
-            val shardManager = MelijnBot.shardManager
-            val guild = shardManager.getGuildById(context.path("guildId").longValue())
-                ?: return@get DataObject.empty()
-                    .put("error", "Invalid guildId")
-                    .put("isMember", false)
-                    .toMap()
-
-            runBlocking {
-                val user = shardManager.retrieveUserById(context.path("userId").longValue()).awaitOrNull()
+                val user = context.parameters["userId"]?.let { userId ->
+                    if (userId.isPositiveNumber()) shardManager.retrieveUserById(userId).awaitOrNull() else null
+                }
 
                 val member = user?.let {
                     guild.retrieveMember(it).awaitOrNull()
-                } ?: return@runBlocking DataObject.empty()
-                    .put("error", "Member not found")
-                    .put("isMember", false)
-                    .toMap()
+                }
+                if (member == null) {
+                    call.respondText(DataObject.empty()
+                        .put("error", "Member not found")
+                        .put("isMember", false)
+                        .toString(), jsonType)
+                    return@get
+                }
 
 
-                DataObject.empty()
+                call.respondText(DataObject.empty()
                     .put("isMember", true)
                     .put("isAdmin", member.hasPermission(Permission.ADMINISTRATOR) || member.isOwner)
-                    .toMap()
+                    .toString(), jsonType)
             }
-        }
 
 
-        get("/translate/{language:.+}/{path:.+}") { context ->
-            val lang = context.path("language").value()
-            val path = context.path("path").value()
-            val translation = i18n.getTranslation(lang, path)
-            DataObject.empty()
-                .put("isSame", path == translation)
-                .put("translation", translation)
-                .toMap()
-        }
+            get("/translate/{language}/{path}") {
+                val lang = call.parameters["language"] ?: return@get
+                val path = call.parameters["path"] ?: return@get
+                val translation = i18n.getTranslation(lang, path)
 
-        get("/translations/{language:.+}") { context ->
-            val lang = context.path("language").value()
-            val data = i18n.getTranslations(lang)
-            data.toMap()
-        }
+                call.respondText(DataObject.empty()
+                    .put("isSame", path == translation)
+                    .put("translation", translation)
+                    .toString())
+            }
 
-        get("/commands") {
-            container.commandMap
-        }
+            get("/translations/{language}") {
+                val lang = call.parameters["language"] ?: return@get
+                val data = i18n.getTranslations(lang)
+                call.respondText(data.toString(), jsonType)
+            }
 
-        get("/fullCommands") {
-            val dataObject = DataObject.empty()
-            for ((_, root) in container.commandMap) {
-                if (root.commandCategory == CommandCategory.DEVELOPER) continue
-                val dataArray = if (dataObject.hasKey(root.commandCategory.toString())) {
-                    dataObject.getArray(root.commandCategory.toString())
-                } else {
-                    DataArray.empty()
+
+            get("/fullCommands") {
+                val dataObject = DataObject.empty()
+                for ((_, root) in container.commandMap) {
+                    if (root.commandCategory == CommandCategory.DEVELOPER) continue
+                    val dataArray = if (dataObject.hasKey(root.commandCategory.toString())) {
+                        dataObject.getArray(root.commandCategory.toString())
+                    } else {
+                        DataArray.empty()
+                    }
+                    val darr = getDataArrayArrayFrom(arrayOf(root)).getArray(0)
+                    dataArray.add(darr)
+                    dataObject.put(root.commandCategory.toString(), dataArray)
                 }
-                val darr = getDataArrayArrayFrom(arrayOf(root)).getArray(0)
-                dataArray.add(darr)
-                dataObject.put(root.commandCategory.toString(), dataArray)
+                call.respondText(dataObject.toString(), jsonType)
             }
-            dataObject.toMap()
-        }
 
-        get("/timezones") {
-            TimeZone.getAvailableIDs()
-        }
+            get("/timezones") {
+                call.respondText(TimeZone.getAvailableIDs().toString(), jsonType)
+            }
 
-        //Has to be registered last to not override other paths
-        get("*") { "blub" }
+            //Has to be registered last to not override other paths
+            get("*") { "blub" }
+        }
     }
 
     var i = 0
@@ -274,5 +289,13 @@ class RestServer(container: Container) : Jooby() {
             dataArray.add(innerDataArray)
         }
         return dataArray
+    }
+
+    fun stop() {
+        server.stop(0, 2, TimeUnit.SECONDS)
+    }
+
+    fun start() {
+        server.start()
     }
 }

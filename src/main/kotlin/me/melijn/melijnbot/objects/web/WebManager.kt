@@ -5,7 +5,7 @@ import com.apollographql.apollo.ApolloClient
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.web.bins.BinApis
-import me.melijn.melijnbot.objects.web.cancer.BotListApi
+import me.melijn.melijnbot.objects.web.botlist.BotListApi
 import me.melijn.melijnbot.objects.web.kitsu.KitsuApi
 import me.melijn.melijnbot.objects.web.spotify.MySpotifyApi
 import me.melijn.melijnbot.objects.web.weebsh.WeebshApi

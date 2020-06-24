@@ -1,4 +1,4 @@
-package me.melijn.melijnbot.objects.web.cancer
+package me.melijn.melijnbot.objects.web.botlist
 
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.objects.threading.TaskManager

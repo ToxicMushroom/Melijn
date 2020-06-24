@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.objects.events.eventlisteners
 
-import io.jooby.ServerOptions
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.events.AbstractListener
@@ -51,14 +50,7 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
                 val restServer = RestServer(container)
 
                 container.taskManager.async {
-                    restServer
-                        .apply {
-                            serverOptions = ServerOptions()
-                                .setPort(container.settings.restPort)
-                                .setIoThreads(2)
-                                .setWorkerThreads(4)
-                        }
-                        .start()
+                    restServer.start()
                 }
 
                 container.restServer = restServer
