@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.developer
 
+import kotlinx.coroutines.sync.withPermit
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
@@ -39,9 +40,9 @@ class ShutdownCommand : AbstractCommand("command.shutdown") {
                     wrapper.put(guildId, context.selfUser.idLong, pTrack, trackManager.tracks)
                     wrapper.addChannel(guildId, channel.idLong)
 
-                    VOICE_SAFE.acquire()
-                    trackManager.stopAndDestroy()
-                    VOICE_SAFE.release()
+                    VOICE_SAFE.withPermit {
+                        trackManager.stopAndDestroy()
+                    }
                 }
 
                 sendMsg(context, "Detached all listeners, saved queues. Ready for termination.")

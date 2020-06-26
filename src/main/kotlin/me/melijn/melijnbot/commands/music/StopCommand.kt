@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.music
 
+import kotlinx.coroutines.sync.withPermit
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
@@ -20,9 +21,10 @@ class StopCommand : AbstractCommand("command.stop") {
     override suspend fun execute(context: CommandContext) {
         val guildMusicPlayer = context.musicPlayerManager.getGuildMusicPlayer(context.guild)
         guildMusicPlayer.guildTrackManager.clear()
-        VOICE_SAFE.acquire()
-        guildMusicPlayer.guildTrackManager.stopAndDestroy()
-        VOICE_SAFE.release()
+        VOICE_SAFE.withPermit {
+            guildMusicPlayer.guildTrackManager.stopAndDestroy()
+        }
+
         val msg = context.getTranslation("$root.success")
         sendMsg(context, msg)
     }
