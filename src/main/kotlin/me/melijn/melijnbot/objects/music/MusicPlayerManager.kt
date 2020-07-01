@@ -3,6 +3,7 @@ package me.melijn.melijnbot.objects.music
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.withPermit
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.music.custom.MelijnAudioPlayerManager
 import me.melijn.melijnbot.objects.services.voice.VOICE_SAFE
@@ -42,12 +43,10 @@ class MusicPlayerManager(
         if (cachedMusicPlayer == null) {
             val newMusicPlayer = GuildMusicPlayer(daoManager, lavaManager, guild.idLong)
             runBlocking {
-                VOICE_SAFE.acquire()
-
-                guildMusicPlayers[guild.idLong] = newMusicPlayer
-                logger.debug("new player for ${guild.id}")
-
-                VOICE_SAFE.release()
+                VOICE_SAFE.withPermit {
+                    guildMusicPlayers[guild.idLong] = newMusicPlayer
+                    logger.debug("new player for ${guild.id}")
+                }
             }
 
             if (!lavaManager.lavalinkEnabled) {

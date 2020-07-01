@@ -124,8 +124,8 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
     val selfRoleGroupWrapper: SelfRoleGroupWrapper
     val selfRoleModeWrapper: SelfRoleModeWrapper
 
-    lateinit var dbVersion: String
-    lateinit var connectorVersion: String
+    var dbVersion: String
+    var connectorVersion: String
 
     val banWrapper: BanWrapper
     val muteWrapper: MuteWrapper

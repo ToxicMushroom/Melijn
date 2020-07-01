@@ -196,7 +196,8 @@ class CommandClientBuilder(private val container: Container) {
         PenguinCommand(),
         SpeedCommand(),
         PitchCommand(),
-        RateCommand()
+        RateCommand(),
+        PossumCommand()
     )
 
     init {

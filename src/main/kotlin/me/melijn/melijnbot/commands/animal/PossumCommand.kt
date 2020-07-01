@@ -9,12 +9,12 @@ import me.melijn.melijnbot.objects.utils.sendEmbed
 import me.melijn.melijnbot.objects.web.WebManager
 import me.melijn.melijnbot.objects.web.WebUtils
 
-class PenguinCommand : AbstractCommand("command.penguin") {
+class PossumCommand : AbstractCommand("command.possum") {
 
     init {
-        id = 182
-        name = "penguin"
-        aliases = arrayOf("businessbird")
+        id = 186
+        name = "possum"
+        aliases = arrayOf("opossum")
         commandCategory = CommandCategory.ANIMAL
     }
 
@@ -29,7 +29,7 @@ class PenguinCommand : AbstractCommand("command.penguin") {
     }
 
     private suspend fun getRandomPandaUrl(webManager: WebManager, token: String): String {
-        val reply = WebUtils.getJsonFromUrl(webManager.httpClient, "https://cdnapi.melijn.com/img/penguin", headers =
+        val reply = WebUtils.getJsonFromUrl(webManager.httpClient, "https://cdnapi.melijn.com/img/possum", headers =
         mapOf(Pair("token", token))) ?: return MISSING_IMAGE_URL
         return reply.getString("url")
     }
