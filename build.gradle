@@ -110,7 +110,7 @@ dependencies {
     implementation group: 'com.github.GSculerlor', name: 'JikanKT', version: '1.3.1'
 
 
-    implementation group: 'com.apollographql.apollo', name: 'apollo-runtime', version: '2.2.1'
+    implementation group: 'com.apollographql.apollo', name: 'apollo-runtime', version: '2.2.2'
     implementation group: 'com.apollographql.apollo', name: 'apollo-coroutines-support', version: '2.2.2'
 
     // implementation group: 'com.github.husnjak', name: 'IGDB-API-JVM', version: '0.7'
