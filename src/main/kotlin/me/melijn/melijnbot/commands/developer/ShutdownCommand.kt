@@ -21,7 +21,7 @@ class ShutdownCommand : AbstractCommand("command.shutdown") {
         val wrapper = context.daoManager.tracksWrapper
         wrapper.clear()
 
-        sendMsg(context, "Are you sure you wanna restart ?")
+        sendMsg(context, "Are you sure you wanna shutdown ?")
 
         context.container.eventWaiter.waitFor(GuildMessageReceivedEvent::class.java, {
             it.channel.idLong == context.channelId && it.author.idLong == context.authorId
