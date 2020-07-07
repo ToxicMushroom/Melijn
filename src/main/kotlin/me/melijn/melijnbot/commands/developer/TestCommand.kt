@@ -3,11 +3,7 @@ package me.melijn.melijnbot.commands.developer
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.utils.getFloatFromArgNMessage
-import me.melijn.melijnbot.objects.utils.getLongFromArgNMessage
 import me.melijn.melijnbot.objects.utils.message.sendRsp
-import me.melijn.melijnbot.objects.utils.message.sendSyntax
 
 
 class TestCommand : AbstractCommand("command.test") {
@@ -15,59 +11,13 @@ class TestCommand : AbstractCommand("command.test") {
     init {
         id = 20
         name = "test"
-        runConditions = arrayOf(
-            RunCondition.VC_BOT_ALONE_OR_USER_DJ,
-            RunCondition.PLAYING_TRACK_NOT_NULL,
-            RunCondition.VOTED
-        )
         commandCategory = CommandCategory.DEVELOPER
     }
 
     override suspend fun execute(context: CommandContext) {
-        if (context.args.isEmpty()) {
-            sendSyntax(context)
-            return
-        }
-
-        val iPlayer = context.guildMusicPlayer.guildTrackManager.iPlayer
-        when {
-            context.args[0] == "speed" -> {
-                val speed = ((getLongFromArgNMessage(context, 1, 0) ?: return) / 100.0)
-                iPlayer.speed = speed
-
-                sendRsp(context, "set speed of playing track to $speed")
-                return
-            }
-            context.args[0] == "pitch" -> {
-                val pitch = ((getLongFromArgNMessage(context, 1, 0) ?: return) / 100.0)
-                iPlayer.pitch = pitch
-
-                sendRsp(context, "set pitch of playing track to $pitch")
-                return
-            }
-            context.args[0] == "rate" -> {
-                val rate = ((getLongFromArgNMessage(context, 1, 0) ?: return) / 100.0)
-                iPlayer.rate = rate
-
-                sendRsp(context, "set rate of playing track to $rate")
-                return
-            }
-            context.args[0] == "frequency" -> {
-                val frequency = getFloatFromArgNMessage(context, 1, 0.0f) ?: return
-                iPlayer.setTremolo(frequency, iPlayer.tremoloDepth)
-
-                sendRsp(context, "set tremolo frequency of playing track to $frequency")
-                return
-            }
-            context.args[0] == "depth" -> {
-                val depth = getFloatFromArgNMessage(context, 1, 0.0f) ?: return
-                iPlayer.setTremolo(iPlayer.tremoloFrequency, depth)
-
-                sendRsp(context, "set tremolo depth of playing track to $depth")
-                return
-            }
-            else -> sendSyntax(context)
-        }
+        val start = System.currentTimeMillis()
+        context.daoManager.messageHistoryWrapper.clearOldMessages()
+        sendRsp(context, "Done, this took: ${(System.currentTimeMillis() - start) / 1000.0}ms")
     }
 }
 

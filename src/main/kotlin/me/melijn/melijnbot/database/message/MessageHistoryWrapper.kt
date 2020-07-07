@@ -15,4 +15,8 @@ class MessageHistoryWrapper(val taskManager: TaskManager, private val messageHis
     suspend fun setMessage(daoMessage: DaoMessage) {
         messageHistoryDao.set(daoMessage)
     }
+
+    suspend fun clearOldMessages() {
+        messageHistoryDao.clearOldMessages()
+    }
 }

@@ -5,6 +5,7 @@ import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.services.bans.BanService
 import me.melijn.melijnbot.objects.services.birthday.BirthdayService
 import me.melijn.melijnbot.objects.services.donator.DonatorService
+import me.melijn.melijnbot.objects.services.message.MessageCleanerService
 import me.melijn.melijnbot.objects.services.music.SongCacheCleanerService
 import me.melijn.melijnbot.objects.services.music.SpotifyService
 import me.melijn.melijnbot.objects.services.mutes.MuteService
@@ -34,6 +35,7 @@ class ServiceManager(val taskManager: TaskManager, val daoManager: DaoManager, v
         }
 
         services.add(SongCacheCleanerService(daoManager.songCacheWrapper))
+        services.add(MessageCleanerService(daoManager.messageHistoryWrapper))
         services.add(VoiceService(container, shardManager))
         services.add(VoiceScoutService(container, shardManager))
         services.add(DonatorService(container, shardManager))
