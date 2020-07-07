@@ -1,15 +1,18 @@
 package me.melijn.melijnbot.objects.command
 
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.PermState
+import me.melijn.melijnbot.objects.utils.SPACE_PATTERN
 import me.melijn.melijnbot.objects.utils.addIfNotPresent
-import me.melijn.melijnbot.objects.utils.sendInGuild
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendInGuild
+import me.melijn.melijnbot.objects.utils.message.sendMsg
+import me.melijn.melijnbot.objects.utils.withVariable
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
-const val PLACEHOLDER_PREFIX = "%prefix%"
+const val PLACEHOLDER_PREFIX = "prefix"
 
 abstract class AbstractCommand(val root: String) {
 
@@ -74,7 +77,7 @@ abstract class AbstractCommand(val root: String) {
                     val subRoot = currentRoot + "." + child.name
                     if (cmdPath == subRoot) {
                         for (alias in aliases) {
-                            val aliasParts = alias.split(SPACE_REGEX)
+                            val aliasParts = alias.split(SPACE_PATTERN)
                             if (aliasParts.size <= (context.commandParts.size - currentOffset)) {
                                 val matches = aliasParts.withIndex().all {
                                     context.commandParts[it.index + currentOffset] == it.value
@@ -84,6 +87,7 @@ abstract class AbstractCommand(val root: String) {
                                 // Matched a subcommand v
                                 context.partSpaceMap[subRoot] = aliasParts.size - 1
                                 child.run(context)
+
                                 return
                             }
                         }
@@ -119,6 +123,18 @@ abstract class AbstractCommand(val root: String) {
             try {
                 if (CommandClient.checksFailed(context.container, context.commandOrder.last(), context.event, true, context.commandParts)) return
                 execute(context)
+                if (context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)) {
+                    context.taskManager.async {
+                        val timeMap = context.daoManager.removeResponseWrapper.removeResponseCache.get(context.guildId).await()
+                        val seconds = timeMap[context.textChannel.idLong] ?: timeMap[context.guildId] ?: return@async
+
+                        delay(seconds * 1000L)
+                        val message = context.message
+                        Container.instance.botDeletedMessageIds.add(message.idLong)
+
+                        message.delete().queue(null, { Container.instance.botDeletedMessageIds.remove(message.idLong) })
+                    }
+                }
             } catch (t: Throwable) {
                 t.sendInGuild(context)
             }
@@ -128,7 +144,7 @@ abstract class AbstractCommand(val root: String) {
 
     suspend fun sendMissingPermissionMessage(context: CommandContext, permission: String) {
         val msg = context.getTranslation("message.botpermission.missing")
-            .replace("%permission%", permission)
+            .withVariable("permission", permission)
         sendMsg(context, msg)
     }
 
@@ -227,7 +243,6 @@ suspend fun hasPermission(command: AbstractCommand, container: Container, event:
     val authorId = member.idLong
     // Gives me better ability to help
     if (container.settings.developerIds.contains(authorId)) return true
-
 
     val channelId = event.textChannel.idLong
     val userMap = container.daoManager.userPermissionWrapper.guildUserPermissionCache.get(Pair(guildId, authorId)).await()

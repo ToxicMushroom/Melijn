@@ -7,7 +7,8 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.utils.awaitOrNull
-import me.melijn.melijnbot.objects.utils.sendEmbed
+import me.melijn.melijnbot.objects.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.objects.utils.withVariable
 import net.dv8tion.jda.api.JDAInfo
 
 class InfoCommand : AbstractCommand("command.info") {
@@ -29,34 +30,33 @@ class InfoCommand : AbstractCommand("command.info") {
 
 
         val eb = Embedder(context)
+            .setThumbnail(context.selfUser.effectiveAvatarUrl)
+            .addField(title1, value1, false)
+            .addField(title2, value2, false)
+            .addField(title3, value3, false)
 
-        eb.setThumbnail(context.selfUser.effectiveAvatarUrl)
-        eb.addField(title1, value1, false)
-        eb.addField(title2, value2, false)
-        eb.addField(title3, value3, false)
-
-        sendEmbed(context, eb.build())
+        sendEmbedRsp(context, eb.build())
     }
 
     private fun replaceValueThreeVars(string: String, context: CommandContext): String = string
-        .replace("%javaVersion%", System.getProperty("java.version"))
-        .replace("%kotlinVersion%", "${KotlinVersion.CURRENT.major}.${KotlinVersion.CURRENT.minor}.${KotlinVersion.CURRENT.patch}")
-        .replace("%jdaVersion%", JDAInfo.VERSION)
-        .replace("%lavaplayerVersion%", PlayerLibrary.VERSION)
-        .replace("%weebVersion%", WeebInfo.VERSION)
-        .replace("%dbVersion%", context.daoManager.dbVersion)
-        .replace("%dbConnectorVersion%", context.daoManager.connectorVersion)
+        .withVariable("javaVersion", System.getProperty("java.version"))
+        .withVariable("kotlinVersion", "${KotlinVersion.CURRENT.major}.${KotlinVersion.CURRENT.minor}.${KotlinVersion.CURRENT.patch}")
+        .withVariable("jdaVersion", JDAInfo.VERSION)
+        .withVariable("lavaplayerVersion", PlayerLibrary.VERSION)
+        .withVariable("weebVersion", WeebInfo.VERSION)
+        .withVariable("dbVersion", context.daoManager.dbVersion)
+        .withVariable("dbConnectorVersion", context.daoManager.connectorVersion)
 
     private fun replaceValueTwoVars(string: String, context: CommandContext): String = string
-        .replace("%os%", "${System.getProperty("os.name")} ${System.getProperty("os.arch")} ${System.getProperty("os.version")}")
-        .replace("%commandCount%", context.commandList.size.toString())
+        .withVariable("os", "${System.getProperty("os.name")} ${System.getProperty("os.arch")} ${System.getProperty("os.version")}")
+        .withVariable("commandCount", context.commandList.size.toString())
 
     private suspend fun replaceValueOneVars(string: String, context: CommandContext): String = string
-        .replace("%ownerTag%", context.jda.shardManager?.retrieveUserById(231459866630291459L)?.awaitOrNull()?.asTag
+        .withVariable("ownerTag", context.jda.shardManager?.retrieveUserById(231459866630291459L)?.awaitOrNull()?.asTag
             ?: "ToxicMushroom#2610")
-        .replace("%invite%", "https://discord.gg/E2RfZA9")
-        .replace("%botInvite%", "https://melijn.com/invite?perms=true")
-        .replace("%website%", "https://melijn.com")
-        .replace("%contact%", "merlijn@melijn.me")
+        .withVariable("invite", "https://discord.gg/E2RfZA9")
+        .withVariable("botInvite", "https://melijn.com/invite?perms=true")
+        .withVariable("website", "https://melijn.com")
+        .withVariable("contact", "merlijn@melijn.me")
 
 }

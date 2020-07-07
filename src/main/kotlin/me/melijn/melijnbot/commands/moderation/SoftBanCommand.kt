@@ -13,6 +13,10 @@ import me.melijn.melijnbot.objects.translation.MESSAGE_SELFINTERACT_MEMBER_HIARC
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.message.sendEmbed
+import me.melijn.melijnbot.objects.utils.message.sendMsgAwaitEL
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
@@ -41,14 +45,14 @@ class SoftBanCommand : AbstractCommand("command.softban") {
         if (member != null) {
             if (!context.guild.selfMember.canInteract(member)) {
                 val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .replace(PLACEHOLDER_USER, member.asTag)
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_USER, member.asTag)
+                sendRsp(context, msg)
                 return
             }
             if (!context.member.canInteract(member) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
                 val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .replace(PLACEHOLDER_USER, member.asTag)
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_USER, member.asTag)
+                sendRsp(context, msg)
                 return
             }
         }
@@ -113,18 +117,18 @@ class SoftBanCommand : AbstractCommand("command.softban") {
             }
 
             context.getTranslation("$root.success")
-                .replace(PLACEHOLDER_USER, targetUser.asTag)
-                .replace("%reason%", softBan.reason)
+                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withVariable("reason", softBan.reason)
 
         } catch (t: Throwable) {
             val failedMsg = context.getTranslation("message.softbanning.failed")
             softBanningMessage?.editMessage(failedMsg)?.queue()
 
             context.getTranslation("$root.failure")
-                .replace(PLACEHOLDER_USER, targetUser.asTag)
-                .replace("%cause%", t.message ?: "/")
+                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withVariable("cause", t.message ?: "/")
         }
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }
 
@@ -140,23 +144,22 @@ fun getSoftBanMessage(
     isBot: Boolean = false,
     received: Boolean = true
 ): MessageEmbed {
-    val eb = EmbedBuilder()
     var description = "```LDIF\n"
 
     if (!lc) {
         description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .replace("%serverName%", guild.name)
-            .replace("%serverId%", guild.id)
+            .withVariable("serverName", guild.name)
+            .withVariable("serverId", guild.id)
     }
 
     description += i18n.getTranslation(language, "message.punishment.softban.description")
-        .replace("%softBanAuthor%", softBanAuthor.asTag)
-        .replace("%softBanAuthorId%", softBanAuthor.id)
-        .replace("%softBanned%", softBannedUser.asTag)
-        .replace("%softBannedId%", softBannedUser.id)
-        .replace("%reason%", softBan.reason)
-        .replace("%moment%", (softBan.moment.asEpochMillisToDateTime(zoneId)))
-        .replace("%softBanId%", softBan.softBanId)
+        .withVariable("softBanAuthor", softBanAuthor.asTag)
+        .withVariable("softBanAuthorId", softBanAuthor.id)
+        .withVariable("softBanned", softBannedUser.asTag)
+        .withVariable("softBannedId", softBannedUser.id)
+        .withVariable("reason", softBan.reason)
+        .withVariable("moment", (softBan.moment.asEpochMillisToDateTime(zoneId)))
+        .withVariable("softBanId", softBan.softBanId)
 
     val extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,
@@ -174,12 +177,13 @@ fun getSoftBanMessage(
     description += "```"
 
     val author = i18n.getTranslation(language, "message.punishment.softban.author")
-        .replace(PLACEHOLDER_USER, softBanAuthor.asTag)
-        .replace("%spaces%", " ".repeat(45).substring(0, 45 - softBanAuthor.name.length) + "\u200B")
+        .withVariable(PLACEHOLDER_USER, softBanAuthor.asTag)
+        .withVariable("spaces", " ".repeat(45).substring(0, 45 - softBanAuthor.name.length) + "\u200B")
 
-    eb.setAuthor(author, null, softBanAuthor.effectiveAvatarUrl)
-    eb.setDescription(description)
-    eb.setThumbnail(softBannedUser.effectiveAvatarUrl)
-    eb.setColor(Color.RED)
-    return eb.build()
+    return EmbedBuilder()
+        .setAuthor(author, null, softBanAuthor.effectiveAvatarUrl)
+        .setDescription(description)
+        .setThumbnail(softBannedUser.effectiveAvatarUrl)
+        .setColor(Color.RED)
+        .build()
 }

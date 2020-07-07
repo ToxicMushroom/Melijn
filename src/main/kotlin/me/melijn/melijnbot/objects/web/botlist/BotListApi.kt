@@ -1,28 +1,21 @@
 package me.melijn.melijnbot.objects.web.botlist
 
+import io.ktor.client.HttpClient
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.content.TextContent
+import io.ktor.http.ContentType
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.translation.*
-import me.melijn.melijnbot.objects.web.WebUtils.jsonMedia
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
-import okhttp3.*
-import okhttp3.RequestBody.Companion.toRequestBody
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.IOException
 
-class BotListApi(val httpClient: OkHttpClient, val taskManager: TaskManager, val settings: Settings) {
-    val logger = LoggerFactory.getLogger(BotListApi::class.java)
+class BotListApi(val httpClient: HttpClient, val taskManager: TaskManager, val settings: Settings) {
 
-    private val defaultCallbackHandler = object : Callback {
-        override fun onFailure(call: Call, e: IOException) {
-            logger.error(e.message ?: return)
-        }
-
-        override fun onResponse(call: Call, response: Response) {
-            response.close()
-        }
-    }
+    val logger: Logger = LoggerFactory.getLogger(BotListApi::class.java)
 
     fun updateTopDotGG(serversArray: List<Long>) {
         val token = settings.tokens.topDotGG
@@ -33,13 +26,10 @@ class BotListApi(val httpClient: OkHttpClient, val taskManager: TaskManager, val
                 .put("shards", DataArray.fromCollection(serversArray))
                 .toString()
 
-            val request = Request.Builder()
-                .addHeader("Authorization", token)
-                .url(url)
-                .post(body.toRequestBody(jsonMedia))
-                .build()
-
-            httpClient.newCall(request).enqueue(defaultCallbackHandler)
+            httpClient.post<String>(url) {
+                header("Authorization", token)
+                this.body = TextContent(body, ContentType.Application.Json)
+            }
         }
     }
 
@@ -52,13 +42,10 @@ class BotListApi(val httpClient: OkHttpClient, val taskManager: TaskManager, val
                 .put("guildCount", "$servers")
                 .toString()
 
-            val request = Request.Builder()
-                .addHeader("Authorization", token)
-                .url(url)
-                .post(body.toRequestBody(jsonMedia))
-                .build()
-
-            httpClient.newCall(request).enqueue(defaultCallbackHandler)
+            httpClient.post<String>(url) {
+                header("Authorization", token)
+                this.body = TextContent(body, ContentType.Application.Json)
+            }
         }
     }
 
@@ -71,13 +58,10 @@ class BotListApi(val httpClient: OkHttpClient, val taskManager: TaskManager, val
                 .put("shards", DataArray.fromCollection(serversArray))
                 .toString()
 
-            val request = Request.Builder()
-                .addHeader("Authorization", token)
-                .url(url)
-                .post(body.toRequestBody(jsonMedia))
-                .build()
-
-            httpClient.newCall(request).enqueue(defaultCallbackHandler)
+            httpClient.post<String>(url) {
+                header("Authorization", token)
+                this.body = TextContent(body, ContentType.Application.Json)
+            }
         }
     }
 
@@ -91,14 +75,11 @@ class BotListApi(val httpClient: OkHttpClient, val taskManager: TaskManager, val
                 .put("voice_connections", voice)
                 .toString()
 
-            val request = Request.Builder()
-                .addHeader("Authorization", token)
-                .addHeader("Content-Type", "application/json")
-                .url(url)
-                .post(body.toRequestBody(jsonMedia))
-                .build()
-
-            httpClient.newCall(request).enqueue(defaultCallbackHandler)
+            httpClient.post<String>(url) {
+                header("Authorization", token)
+                this.body = TextContent(body, ContentType.Application.Json)
+            }
+            // Might break due to missing content-type header
         }
     }
 
@@ -112,13 +93,10 @@ class BotListApi(val httpClient: OkHttpClient, val taskManager: TaskManager, val
                 .put("shardCount", shards)
                 .toString()
 
-            val request = Request.Builder()
-                .addHeader("Authorization", token)
-                .url(url)
-                .post(body.toRequestBody(jsonMedia))
-                .build()
-
-            httpClient.newCall(request).enqueue(defaultCallbackHandler)
+            httpClient.post<String>(url) {
+                header("Authorization", token)
+                this.body = TextContent(body, ContentType.Application.Json)
+            }
         }
     }
 
@@ -131,13 +109,10 @@ class BotListApi(val httpClient: OkHttpClient, val taskManager: TaskManager, val
                 .put("server_count", servers)
                 .toString()
 
-            val request = Request.Builder()
-                .addHeader("Authorization", token)
-                .url(url)
-                .post(body.toRequestBody(jsonMedia))
-                .build()
-
-            httpClient.newCall(request).enqueue(defaultCallbackHandler)
+            httpClient.post<String>(url) {
+                header("Authorization", token)
+                this.body = TextContent(body, ContentType.Application.Json)
+            }
         }
     }
 
@@ -150,13 +125,10 @@ class BotListApi(val httpClient: OkHttpClient, val taskManager: TaskManager, val
                 .put("server_count", servers)
                 .toString()
 
-            val request = Request.Builder()
-                .addHeader("Authorization", token)
-                .url(url)
-                .post(body.toRequestBody(jsonMedia))
-                .build()
-
-            httpClient.newCall(request).enqueue(defaultCallbackHandler)
+            httpClient.post<String>(url) {
+                header("Authorization", token)
+                this.body = TextContent(body, ContentType.Application.Json)
+            }
         }
     }
 }

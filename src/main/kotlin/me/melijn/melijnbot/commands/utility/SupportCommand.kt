@@ -3,7 +3,7 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
 
 class SupportCommand : AbstractCommand("command.support") {
 
@@ -16,6 +16,6 @@ class SupportCommand : AbstractCommand("command.support") {
 
     override suspend fun execute(context: CommandContext) {
         val msg = context.getTranslation("$root.server")
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

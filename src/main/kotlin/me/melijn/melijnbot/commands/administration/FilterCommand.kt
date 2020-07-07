@@ -8,9 +8,10 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
 import me.melijn.melijnbot.objects.utils.removeFirst
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.withVariable
 import java.util.concurrent.CompletableFuture
 
 class FilterCommand : AbstractCommand("command.filter") {
@@ -51,9 +52,9 @@ class FilterCommand : AbstractCommand("command.filter") {
 
 
             val msg = context.getTranslation("$root.success")
-                .replace("%filter%", filter)
-                .replace("%filterGroup%", filterGroup.filterGroupName)
-            sendMsg(context, msg)
+                .withVariable("filter", filter)
+                .withVariable("filterGroup", filterGroup.filterGroupName)
+            sendRsp(context, msg)
         }
     }
 
@@ -79,10 +80,10 @@ class FilterCommand : AbstractCommand("command.filter") {
             wrapper.removeFilter(context.guildId, filterGroup.filterGroupName, filterType, filter)
 
             val msg = context.getTranslation("$root.success")
-                .replace("%index%", index.toString())
-                .replace("%filter%", filter)
-                .replace("%filterGroup%", filterGroup.filterGroupName)
-            sendMsg(context, msg)
+                .withVariable("index", index.toString())
+                .withVariable("filter", filter)
+                .withVariable("filterGroup", filterGroup.filterGroupName)
+            sendRsp(context, msg)
         }
     }
 
@@ -106,9 +107,9 @@ class FilterCommand : AbstractCommand("command.filter") {
 
 
             val msg = context.getTranslation("$root.success")
-                .replace("%filter%", filter)
-                .replace("%filterGroup%", filterGroup.filterGroupName)
-            sendMsg(context, msg)
+                .withVariable("filter", filter)
+                .withVariable("filterGroup", filterGroup.filterGroupName)
+            sendRsp(context, msg)
         }
     }
 
@@ -132,7 +133,7 @@ class FilterCommand : AbstractCommand("command.filter") {
 
 
             val title = context.getTranslation("$root.success")
-                .replace("%filterGroup%", filterGroup.filterGroupName)
+                .withVariable("filterGroup", filterGroup.filterGroupName)
 
             var content = "```INI"
             for ((index, filter) in filters.withIndex()) {
@@ -140,7 +141,7 @@ class FilterCommand : AbstractCommand("command.filter") {
             }
             content += "```"
             val msg = title + content
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 

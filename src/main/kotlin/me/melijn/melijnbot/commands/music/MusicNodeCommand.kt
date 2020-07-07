@@ -5,8 +5,9 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
+import me.melijn.melijnbot.objects.utils.withVariable
 
 class MusicNodeCommand : AbstractCommand("command.musicnode") {
 
@@ -33,22 +34,22 @@ class MusicNodeCommand : AbstractCommand("command.musicnode") {
                     "default"
                 }
                 val msg = context.getTranslation("$root.current")
-                    .replace("%node%", currentNode)
-                sendMsg(context, msg)
+                    .withVariable("node", currentNode)
+                sendRsp(context, msg)
             }
             context.args[0] == "premium" -> {
                 switchToPremiumNode(context)
 
                 val msg = context.getTranslation("$root.selected")
-                    .replace("%node%", "premium")
-                sendMsg(context, msg)
+                    .withVariable("node", "premium")
+                sendRsp(context, msg)
             }
             context.args[0] == "default" -> {
                 switchToDefaultNode(context)
 
                 val msg = context.getTranslation("$root.selected")
-                    .replace("%node%", "default")
-                sendMsg(context, msg)
+                    .withVariable("node", "default")
+                sendRsp(context, msg)
             }
             else -> {
                 sendSyntax(context)

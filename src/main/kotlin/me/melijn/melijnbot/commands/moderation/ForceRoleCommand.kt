@@ -11,6 +11,8 @@ import me.melijn.melijnbot.objects.translation.MESSAGE_SELFINTERACT_MEMBER_HIARC
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
 
 class ForceRoleCommand : AbstractCommand("command.forcerole") {
 
@@ -47,14 +49,14 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             if (member != null) {
                 if (!context.guild.selfMember.canInteract(member)) {
                     val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-                        .replace(PLACEHOLDER_USER, member.asTag)
-                    sendMsg(context, msg)
+                        .withVariable(PLACEHOLDER_USER, member.asTag)
+                    sendRsp(context, msg)
                     return
                 }
                 if (!context.member.canInteract(member) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
                     val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
-                        .replace(PLACEHOLDER_USER, member.asTag)
-                    sendMsg(context, msg)
+                        .withVariable(PLACEHOLDER_USER, member.asTag)
+                    sendRsp(context, msg)
                     return
                 }
             }
@@ -67,9 +69,9 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             }
 
             val msg = context.getTranslation("$root.success")
-                .replace(PLACEHOLDER_USER, user.asTag)
-                .replace(PLACEHOLDER_ROLE, role.name)
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_USER, user.asTag)
+                .withVariable(PLACEHOLDER_ROLE, role.name)
+            sendRsp(context, msg)
         }
     }
 
@@ -96,9 +98,9 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             }
 
             val msg = context.getTranslation("$root.success")
-                .replace(PLACEHOLDER_USER, user.asTag)
-                .replace(PLACEHOLDER_ROLE, role.name)
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_USER, user.asTag)
+                .withVariable(PLACEHOLDER_ROLE, role.name)
+            sendRsp(context, msg)
         }
     }
 
@@ -127,8 +129,8 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             content += "```"
 
             val msg = context.getTranslation("$root.title")
-                .replace(PLACEHOLDER_USER, user.asTag)
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_USER, user.asTag)
+            sendRsp(context, msg)
         }
     }
 }

@@ -7,6 +7,8 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
 
 class ManageHistoryCommand : AbstractCommand("command.managehistory") {
 
@@ -37,8 +39,8 @@ class ManageHistoryCommand : AbstractCommand("command.managehistory") {
             val types = PunishmentType.getMatchingTypesFromNode(context.args[0])
             if (types.isEmpty()) {
                 val msg = context.getTranslation("message.unknown.punishmenttype")
-                    .replace(PLACEHOLDER_ARG, context.args[0])
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_ARG, context.args[0])
+                sendRsp(context, msg)
                 return
             }
 
@@ -78,15 +80,15 @@ class ManageHistoryCommand : AbstractCommand("command.managehistory") {
 
             val msg = if (amount > 0) {
                 context.getTranslation("$root.cleared")
-                    .replace("%amount%", "$amount")
-                    .replace("%type%", context.args[0])
-                    .replace(PLACEHOLDER_USER, targetUser.asTag)
+                    .withVariable("amount", "$amount")
+                    .withVariable("type", context.args[0])
+                    .withVariable(PLACEHOLDER_USER, targetUser.asTag)
             } else {
                 context.getTranslation("$root.clearednone")
-                    .replace("%type%", context.args[0])
-                    .replace(PLACEHOLDER_USER, targetUser.asTag)
+                    .withVariable("type", context.args[0])
+                    .withVariable(PLACEHOLDER_USER, targetUser.asTag)
             }
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -155,17 +157,17 @@ class ManageHistoryCommand : AbstractCommand("command.managehistory") {
 
             if (foundType == null) {
                 val msg = context.getTranslation("$root.foundnothing")
-                    .replace("%caseId%", caseId)
-                    .replace(PLACEHOLDER_USER, targetUser.asTag)
-                sendMsg(context, msg)
+                    .withVariable("caseId", caseId)
+                    .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                sendRsp(context, msg)
                 return
             }
 
             val msg = context.getTranslation("$root.removed")
-                .replace("%caseId%", caseId)
-                .replace("%type%", foundType.toUCC())
-                .replace(PLACEHOLDER_USER, targetUser.asTag)
-            sendMsg(context, msg)
+                .withVariable("caseId", caseId)
+                .withVariable("type", foundType.toUCC())
+                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+            sendRsp(context, msg)
         }
     }
 

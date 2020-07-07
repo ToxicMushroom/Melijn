@@ -5,7 +5,12 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.asTag
+import me.melijn.melijnbot.objects.utils.getRoleByArgsNMessage
+import me.melijn.melijnbot.objects.utils.getTextChannelByArgsNMessage
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
+import me.melijn.melijnbot.objects.utils.withVariable
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
@@ -28,10 +33,10 @@ class LimitRoleToChannelCommand : AbstractCommand("command.limitroletochannel") 
         val immuneChannel = getTextChannelByArgsNMessage(context, 1) ?: return
 
         val message = context.getTranslation("$root.confirmation")
-            .replace(PLACEHOLDER_ROLE, role.name)
-            .replace(PLACEHOLDER_CHANNEL, immuneChannel.asTag)
+            .withVariable(PLACEHOLDER_ROLE, role.name)
+            .withVariable(PLACEHOLDER_CHANNEL, immuneChannel.asTag)
 
-        sendMsg(context, message)
+        sendRsp(context, message)
 
         context.container.eventWaiter.waitFor(GuildMessageReceivedEvent::class.java, {
             it.channel.idLong == context.channelId && it.author.idLong == context.authorId
@@ -62,13 +67,13 @@ class LimitRoleToChannelCommand : AbstractCommand("command.limitroletochannel") 
                     if (failed == 0) context.getTranslation("$root.finished")
                     else context.getTranslation("$root.finished.failed")
                     )
-                    .replace(PLACEHOLDER_ROLE, role.name)
-                    .replace(PLACEHOLDER_CHANNEL, immuneChannel.asTag)
-                    .replace("%failed%", "$failed")
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_ROLE, role.name)
+                    .withVariable(PLACEHOLDER_CHANNEL, immuneChannel.asTag)
+                    .withVariable("failed", "$failed")
+                sendRsp(context, msg)
             } else {
                 val msg = context.getTranslation("$root.cancelled")
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
         })
     }

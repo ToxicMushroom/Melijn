@@ -3,7 +3,7 @@ package me.melijn.melijnbot.objects.events
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.command.CommandClientBuilder
 import me.melijn.melijnbot.objects.events.eventlisteners.*
-import me.melijn.melijnbot.objects.utils.sendInGuild
+import me.melijn.melijnbot.objects.utils.message.sendInGuild
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.guild.GenericGuildEvent
 import net.dv8tion.jda.api.events.message.guild.GenericGuildMessageEvent
@@ -22,8 +22,6 @@ class EventManager(val container: Container) : IEventManager {
     }
 
     private fun registerEvents() {
-
-
 
 
         val botJoinLeaveListener = BotJoinLeaveListener(container)

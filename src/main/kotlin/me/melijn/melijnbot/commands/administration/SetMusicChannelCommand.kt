@@ -6,7 +6,8 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyMusicChannel
 import me.melijn.melijnbot.objects.utils.getVoiceChannelByArgNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.withVariable
 
 class SetMusicChannelCommand : AbstractCommand("command.setmusicchannel") {
 
@@ -19,6 +20,7 @@ class SetMusicChannelCommand : AbstractCommand("command.setmusicchannel") {
 
     override suspend fun execute(context: CommandContext) {
         val wrapper = context.daoManager.musicChannelWrapper
+
         if (context.args.isEmpty()) {
             val vc = context.guild.getAndVerifyMusicChannel(context.daoManager)
             val vcName = vc?.name
@@ -27,9 +29,11 @@ class SetMusicChannelCommand : AbstractCommand("command.setmusicchannel") {
             } else {
                 "set"
             }
+
             val msg = context.getTranslation("$root.show.$extra")
-                .replace(PLACEHOLDER_CHANNEL, vcName ?: "/")
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_CHANNEL, vcName ?: "/")
+            sendRsp(context, msg)
+
         } else {
             val msg = if (context.args[0] == "null") {
                 wrapper.setChannel(context.guildId, -1)
@@ -38,9 +42,10 @@ class SetMusicChannelCommand : AbstractCommand("command.setmusicchannel") {
                 val channel = getVoiceChannelByArgNMessage(context, 0) ?: return
                 wrapper.setChannel(context.guildId, channel.idLong)
                 context.getTranslation("$root.set.success")
-                    .replace(PLACEHOLDER_CHANNEL, channel.name)
+                    .withVariable(PLACEHOLDER_CHANNEL, channel.name)
             }
-            sendMsg(context, msg)
+
+            sendRsp(context, msg)
         }
     }
 }

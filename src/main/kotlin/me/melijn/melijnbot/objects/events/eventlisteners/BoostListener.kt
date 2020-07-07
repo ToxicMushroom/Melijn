@@ -9,9 +9,9 @@ import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.objects.events.AbstractListener
 import me.melijn.melijnbot.objects.jagtag.WelcomeJagTagParser
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelByType
-import me.melijn.melijnbot.objects.utils.sendAttachmentsAwaitN
-import me.melijn.melijnbot.objects.utils.sendMsgAwaitN
-import me.melijn.melijnbot.objects.utils.sendMsgWithAttachmentsAwaitN
+import me.melijn.melijnbot.objects.utils.message.sendAttachments
+import me.melijn.melijnbot.objects.utils.message.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendMsgWithAttachments
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.EmbedType
 import net.dv8tion.jda.api.entities.Guild
@@ -52,9 +52,9 @@ class BoostListener(container: Container) : AbstractListener(container) {
 
         val message: Message? = modularMessage.toMessage()
         when {
-            message == null -> sendAttachmentsAwaitN(channel, modularMessage.attachments)
-            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(channel, message, modularMessage.attachments)
-            else -> sendMsgAwaitN(channel, message)
+            message == null -> sendAttachments(channel, modularMessage.attachments)
+            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachments(channel, message, modularMessage.attachments)
+            else -> sendMsg(channel, message)
         }
     }
 

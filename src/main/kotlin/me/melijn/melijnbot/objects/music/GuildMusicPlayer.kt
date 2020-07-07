@@ -6,7 +6,8 @@ import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.isPremiumGuild
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendMsg
+import me.melijn.melijnbot.objects.utils.withVariable
 
 
 class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val guildId: Long) {
@@ -43,8 +44,8 @@ class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val gui
         if (!success) {
             context.taskManager.async {
                 val msg = context.getTranslation("message.music.queuelimit")
-                    .replace("%amount%", QUEUE_LIMIT.toString())
-                    .replace("%donateAmount%", DONATE_QUEUE_LIMIT.toString())
+                    .withVariable("amount", QUEUE_LIMIT.toString())
+                    .withVariable("donateAmount", DONATE_QUEUE_LIMIT.toString())
                 sendMsg(context, msg)
             }
         }
@@ -60,8 +61,8 @@ class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val gui
             if (!silent) {
                 context.taskManager.async {
                     val msg = context.getTranslation("message.music.queuelimit")
-                        .replace("%amount%", QUEUE_LIMIT.toString())
-                        .replace("%donateAmount%", DONATE_QUEUE_LIMIT.toString())
+                        .withVariable("amount", QUEUE_LIMIT.toString())
+                        .withVariable("donateAmount", DONATE_QUEUE_LIMIT.toString())
                     sendMsg(context, msg)
                 }
             }

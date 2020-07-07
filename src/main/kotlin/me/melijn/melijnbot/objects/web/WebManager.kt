@@ -2,6 +2,7 @@ package me.melijn.melijnbot.objects.web
 
 
 import com.apollographql.apollo.ApolloClient
+import io.ktor.client.HttpClient
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.web.bins.BinApis
@@ -9,22 +10,18 @@ import me.melijn.melijnbot.objects.web.botlist.BotListApi
 import me.melijn.melijnbot.objects.web.kitsu.KitsuApi
 import me.melijn.melijnbot.objects.web.spotify.MySpotifyApi
 import me.melijn.melijnbot.objects.web.weebsh.WeebshApi
-import okhttp3.Dispatcher
 import okhttp3.OkHttpClient
 
 
 class WebManager(val taskManager: TaskManager, val settings: Settings) {
 
 
-    val httpClient = OkHttpClient()
-        .newBuilder()
-        .dispatcher(Dispatcher(taskManager.executorService))
-        .build()
+    val httpClient = HttpClient()
 
 
     val aniListApolloClient: ApolloClient = ApolloClient.builder()
         .serverUrl("https://graphql.anilist.co")
-        .okHttpClient(httpClient)
+        .okHttpClient(OkHttpClient())
         .build()
 
 
@@ -35,7 +32,8 @@ class WebManager(val taskManager: TaskManager, val settings: Settings) {
     val weebshApi: WeebshApi = WeebshApi(settings)
 
     init {
-        if (settings.spotify.clientId.isNotBlank() && settings.spotify.password.isNotBlank())
-            spotifyApi = MySpotifyApi(httpClient, taskManager, settings.spotify)
+        if (settings.spotify.clientId.isNotBlank() && settings.spotify.password.isNotBlank()) {
+            spotifyApi = MySpotifyApi(taskManager, settings.spotify)
+        }
     }
 }

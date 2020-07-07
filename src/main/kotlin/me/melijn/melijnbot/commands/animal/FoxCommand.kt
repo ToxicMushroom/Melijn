@@ -5,7 +5,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.MISSING_IMAGE_URL
-import me.melijn.melijnbot.objects.utils.sendEmbed
+import me.melijn.melijnbot.objects.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.objects.web.WebManager
 import me.melijn.melijnbot.objects.web.WebUtils
 
@@ -18,13 +18,13 @@ class FoxCommand : AbstractCommand("command.fox") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val eb = Embedder(context)
         val title = context.getTranslation("$root.title")
-
         val web = context.webManager
-        eb.setTitle(title)
-        eb.setImage(getRandomFoxUrl(web))
-        sendEmbed(context, eb.build())
+
+        val eb = Embedder(context)
+            .setTitle(title)
+            .setImage(getRandomFoxUrl(web))
+        sendEmbedRsp(context, eb.build())
     }
 
     private suspend fun getRandomFoxUrl(webManager: WebManager): String {

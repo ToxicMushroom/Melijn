@@ -6,7 +6,8 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.utils.getLongFromArgNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.withVariable
 
 class SetMaxUserVerificationFlowRateCommand : AbstractCommand("command.setmaxuserverificationflowrate") {
 
@@ -26,9 +27,10 @@ class SetMaxUserVerificationFlowRateCommand : AbstractCommand("command.setmaxuse
             } else {
                 "set"
             }
+
             val msg = context.getTranslation("$root.show.$part")
-                .replace("%rate%", flowRate.toString())
-            sendMsg(context, msg)
+                .withVariable("rate", flowRate.toString())
+            sendRsp(context, msg)
             return
         }
 
@@ -39,9 +41,9 @@ class SetMaxUserVerificationFlowRateCommand : AbstractCommand("command.setmaxuse
             val rate = getLongFromArgNMessage(context, 0, 0) ?: return
             wrapper.setUserFlowRate(context.guildId, rate)
             context.getTranslation("$root.set")
-                .replace(PLACEHOLDER_ARG, context.rawArg)
+                .withVariable(PLACEHOLDER_ARG, context.rawArg)
         }
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

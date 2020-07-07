@@ -4,6 +4,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.objects.utils.awaitOrNull
+import me.melijn.melijnbot.objects.utils.withVariable
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
@@ -38,11 +39,11 @@ class WarnWrapper(val taskManager: TaskManager, private val warnDao: WarnDao) {
         val zoneId = context.getTimeZoneId()
 
         return context.getTranslation("message.punishmenthistory.warn")
-            .replace("%warnAuthor%", warnAuthor?.asTag ?: deletedUser)
-            .replace("%warnAuthorId%", "${warn.warnAuthorId}")
-            .replace("%reason%", warn.reason.substring(0, min(warn.reason.length, 830)))
-            .replace("%moment%", warn.moment.asEpochMillisToDateTime(zoneId))
-            .replace("%warnId%", warn.warnId)
+            .withVariable("warnAuthor", warnAuthor?.asTag ?: deletedUser)
+            .withVariable("warnAuthorId", "${warn.warnAuthorId}")
+            .withVariable("reason", warn.reason.substring(0, min(warn.reason.length, 830)))
+            .withVariable("moment", warn.moment.asEpochMillisToDateTime(zoneId))
+            .withVariable("warnId", warn.warnId)
     }
 
     suspend fun getWarnMap(context: CommandContext, warnId: String): Map<Long, String> {

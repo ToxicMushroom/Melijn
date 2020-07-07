@@ -8,8 +8,8 @@ import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.music.TrackUserData
 import me.melijn.melijnbot.objects.utils.getDurationString
 import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
-import me.melijn.melijnbot.objects.utils.sendEmbed
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
 import java.lang.Integer.max
 
 class TrackInfoCommand : AbstractCommand("command.trackinfo") {
@@ -51,11 +51,12 @@ class TrackInfoCommand : AbstractCommand("command.trackinfo") {
 
 
         val embedder = Embedder(context)
-        embedder.setTitle(title)
-        embedder.setDescription(desc)
-        embedder.addField(requester, trackUserData.userTag, true)
-        embedder.addField(requesterId, trackUserData.userId.toString(), true)
-        embedder.setThumbnail("https://img.youtube.com/vi/${track.identifier}/hqdefault.jpg")
+            .setTitle(title)
+            .setDescription(desc)
+            .addField(requester, trackUserData.userTag, true)
+            .addField(requesterId, trackUserData.userId.toString(), true)
+            .setThumbnail("https://img.youtube.com/vi/${track.identifier}/hqdefault.jpg")
+
         if (index != 0) {
             embedder.addField(length, "`[${getDurationString(track.duration)}]`", true)
             embedder.addField(timeuntil, getDurationString(timeUntilTime), false)
@@ -63,6 +64,6 @@ class TrackInfoCommand : AbstractCommand("command.trackinfo") {
             embedder.addField(progress, getProgressBar(track, trackManager.iPlayer.trackPosition), false)
         }
 
-        sendEmbed(context, embedder.build())
+        sendEmbedRsp(context, embedder.build())
     }
 }

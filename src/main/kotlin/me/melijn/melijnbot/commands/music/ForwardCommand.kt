@@ -6,8 +6,9 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.utils.getDurationString
 import me.melijn.melijnbot.objects.utils.getTimeFromArgsNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
+import me.melijn.melijnbot.objects.utils.withVariable
 
 class ForwardCommand : AbstractCommand("command.forward") {
 
@@ -33,9 +34,9 @@ class ForwardCommand : AbstractCommand("command.forward") {
             iPlayer.seekTo(trackPosition)
             context.getTranslation("$root.forwarded")
 
-        }.replace("%duration%", getDurationString(trackDuration))
-            .replace("%position%", getDurationString(trackPosition))
+        }.withVariable("duration", getDurationString(trackDuration))
+            .withVariable("position", getDurationString(trackPosition))
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

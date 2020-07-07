@@ -5,7 +5,8 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.withVariable
 
 class SetStreamUrlCommand : AbstractCommand("command.setstreamurl") {
 
@@ -21,9 +22,10 @@ class SetStreamUrlCommand : AbstractCommand("command.setstreamurl") {
         if (context.args.isEmpty()) {
             val url = wrapper.streamUrlCache.get(context.guildId).await()
             val part = if (url.isBlank()) "unset" else "set"
+
             val msg = context.getTranslation("$root.show.$part")
-                .replace("%url%", url)
-            sendMsg(context, msg)
+                .withVariable("url", url)
+            sendRsp(context, msg)
             return
         }
 
@@ -33,9 +35,9 @@ class SetStreamUrlCommand : AbstractCommand("command.setstreamurl") {
         } else {
             wrapper.setUrl(context.guildId, context.rawArg)
             context.getTranslation("$root.set")
-                .replace(PLACEHOLDER_ARG, context.rawArg)
+                .withVariable(PLACEHOLDER_ARG, context.rawArg)
         }
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

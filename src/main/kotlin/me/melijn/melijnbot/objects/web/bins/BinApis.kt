@@ -1,22 +1,19 @@
 package me.melijn.melijnbot.objects.web.bins
 
-import me.melijn.melijnbot.objects.web.WebUtils
+import io.ktor.client.HttpClient
+import io.ktor.client.request.post
+import io.ktor.content.TextContent
+import io.ktor.http.ContentType
 import net.dv8tion.jda.api.utils.data.DataObject
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import ru.gildor.coroutines.okhttp.await
 
-class BinApis(val httpClient: OkHttpClient) {
+class BinApis(val httpClient: HttpClient) {
 
     suspend fun postToHastebin(lang: String, content: String): String? {
-        val request = Request.Builder()
-            .url("https://hasteb.in/documents")
-            .post(content.toByteArray().toRequestBody(WebUtils.textMedia))
-            .build()
-        val req = httpClient.newCall(request).await()
-        val body = req.body ?: return null
-        val json = DataObject.fromJson(body.string())
+        val result = httpClient.post<String>("https://hasteb.in/documents") {
+            body = TextContent(content, ContentType.Text.Html)
+        }
+
+        val json = DataObject.fromJson(result)
         return "https://hasteb.in/" + json.getString("key") + ".$lang"
     }
 }

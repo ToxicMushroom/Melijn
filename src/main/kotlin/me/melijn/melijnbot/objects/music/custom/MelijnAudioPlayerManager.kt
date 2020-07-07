@@ -20,7 +20,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import me.melijn.melijnbot.objects.music.SuspendingAudioLoadResultHandler
-import okhttp3.internal.and
 import org.apache.http.client.config.RequestConfig
 import org.apache.http.impl.client.HttpClientBuilder
 import org.slf4j.LoggerFactory
@@ -30,6 +29,7 @@ import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
 import java.util.function.Function
+import kotlin.experimental.and
 
 open class MelijnAudioPlayerManager : AudioPlayerManager {
     private val sourceManagers: MutableList<AudioSourceManager>
@@ -205,7 +205,11 @@ open class MelijnAudioPlayerManager : AudioPlayerManager {
     @Throws(IOException::class)
     override fun decodeTrack(stream: MessageInput): DecodedTrackHolder? {
         val input = stream.nextMessage() ?: return null
-        val version = if (stream.messageFlags and TRACK_INFO_VERSIONED != 0) input.readByte() and 0xFF else 1
+        val version = if (stream.messageFlags and TRACK_INFO_VERSIONED != 0) {
+            (input.readByte().and(0xFF.toByte()))
+        } else {
+            1
+        }
         val trackInfo = AudioTrackInfo(input.readUTF(), input.readUTF(), input.readLong(), input.readUTF(),
             input.readBoolean(), if (version >= 2) DataFormatTools.readNullableText(input) else null)
         val track = decodeTrackDetails(trackInfo, input)

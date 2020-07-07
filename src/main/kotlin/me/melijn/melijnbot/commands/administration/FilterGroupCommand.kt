@@ -10,6 +10,8 @@ import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
 import net.dv8tion.jda.api.entities.TextChannel
 
 const val UNKNOWN_FILTERMODE_PATH: String = "message.unknown.filtermode"
@@ -47,14 +49,14 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
                     fgs[0]
                 } else {
                     val msg = context.getTranslation("message.fgremoved")
-                        .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
-                    sendMsg(context, msg)
+                        .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                    sendRsp(context, msg)
                     null
                 }
             } else {
                 val msg = context.getTranslation("message.nofgselected")
-                    .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                sendRsp(context, msg)
                 null
             }
         }
@@ -87,12 +89,12 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
 
             val stateM = context.getTranslation(if (state) "enabled" else "disabled")
             val msg = context.getTranslation("$root.added")
-                .replace("%filterGroupName%", newGroup.filterGroupName)
-                .replace("%state%", stateM)
-                .replace("%mode%", "$mode")
-                .replace("%points%", "$points")
+                .withVariable("filterGroupName", newGroup.filterGroupName)
+                .withVariable("state", stateM)
+                .withVariable("mode", "$mode")
+                .withVariable("points", "$points")
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -114,8 +116,8 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
 
             wrapper.deleteGroup(context.guildId, group)
             val msg = context.getTranslation("$root.removed")
-                .replace("%filterGroupName%", group.filterGroupName)
-            sendMsg(context, msg)
+                .withVariable("filterGroupName", group.filterGroupName)
+            sendRsp(context, msg)
         }
     }
 
@@ -149,7 +151,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             content += "```"
 
             val msg = title + content
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -170,8 +172,8 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             selectionMap[Pair(context.guildId, context.authorId)] = group.filterGroupName
 
             val msg = context.getTranslation("$root.selected")
-                .replace("%filterGroupName%", group.filterGroupName)
-            sendMsg(context, msg)
+                .withVariable("filterGroupName", group.filterGroupName)
+            sendRsp(context, msg)
         }
     }
 
@@ -195,8 +197,8 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             context.daoManager.filterGroupWrapper.putGroup(context.guildId, group)
 
             val msg = context.getTranslation("$root.set")
-                .replace(PLACEHOLDER_ARG, "$points")
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_ARG, "$points")
+            sendRsp(context, msg)
         }
     }
 
@@ -227,12 +229,12 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
 
                 group.channels = channels.toLongArray()
                 context.getTranslation("$root.added")
-                    .replace(PLACEHOLDER_CHANNEL, textChannel.asTag)
+                    .withVariable(PLACEHOLDER_CHANNEL, textChannel.asTag)
             }
 
             context.daoManager.filterGroupWrapper.putGroup(context.guildId, group)
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -260,9 +262,9 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             context.daoManager.filterGroupWrapper.putGroup(context.guildId, group)
 
             val msg = context.getTranslation("$root.removed")
-                .replace(PLACEHOLDER_CHANNEL, textChannel.asTag)
+                .withVariable(PLACEHOLDER_CHANNEL, textChannel.asTag)
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -296,7 +298,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             }
 
             val msg = title + content
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -321,7 +323,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
 
             val statePath = if (state) "enabled" else "disabled"
             val msg = context.getTranslation("$root.$statePath")
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -345,9 +347,9 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             context.daoManager.filterGroupWrapper.putGroup(context.guildId, group)
 
             val msg = context.getTranslation("$root.set")
-                .replace("%mode%", "$mode")
+                .withVariable("mode", "$mode")
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 }
@@ -358,8 +360,8 @@ suspend fun getFilterGroupNMessage(context: CommandContext, position: Int): Filt
     val filterGroup = filterGroups.firstOrNull { (filterGroupName) -> filterGroupName == arg }
     if (filterGroup == null) {
         val msg = context.getTranslation("message.unknown.filtergroup")
-            .replace(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg)
+            .withVariable(PLACEHOLDER_ARG, arg)
+        sendRsp(context, msg)
     }
     return filterGroup
 }

@@ -9,9 +9,12 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
-import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.message.sendFeatureRequiresGuildPremiumMessage
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendRspCodeBlock
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
 
 const val CUSTOM_COMMAND_LIMIT = 10
 const val PREMIUM_CUSTOM_COMMAND_LIMIT = 100
@@ -60,14 +63,14 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             val cc2 = context.daoManager.customCommandWrapper.getCCById(guildId, id2)
             if (cc1 == null) {
                 val msg = context.getTranslation("message.unknown.ccid")
-                    .replace(PLACEHOLDER_ARG, id.toString())
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_ARG, id.toString())
+                sendRsp(context, msg)
                 return
             }
             if (cc2 == null) {
                 val msg = context.getTranslation("message.unknown.ccid")
-                    .replace(PLACEHOLDER_ARG, id.toString())
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_ARG, id.toString())
+                sendRsp(context, msg)
                 return
             }
 
@@ -78,11 +81,11 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             context.daoManager.customCommandWrapper.update(context.guildId, cc2)
 
             val msg = context.getTranslation("$root.success")
-                .replace("%id1%", cc1.id)
-                .replace("%ccName1%", cc1.name)
-                .replace("%id2%", cc2.id)
-                .replace("%ccName2%", cc2.name)
-            sendMsg(context, msg)
+                .withVariable("id1", cc1.id)
+                .withVariable("ccName1", cc1.name)
+                .withVariable("id2", cc2.id)
+                .withVariable("ccName2", cc2.name)
+            sendRsp(context, msg)
         }
     }
 
@@ -105,9 +108,9 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             context.daoManager.customCommandWrapper.update(context.guildId, cc)
 
             val msg = context.getTranslation("$root.success")
-                .replace("%oldName%", oldName)
-                .replace("%newName%", newName)
-            sendMsg(context, msg)
+                .withVariable("oldName", oldName)
+                .withVariable("newName", newName)
+            sendRsp(context, msg)
         }
     }
 
@@ -123,14 +126,14 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                     ccs[0]
                 } else {
                     val msg = context.getTranslation("message.ccremoved")
-                        .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
-                    sendMsg(context, msg)
+                        .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                    sendRsp(context, msg)
                     null
                 }
             } else {
                 val msg = context.getTranslation("message.noccselected")
-                    .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                sendRsp(context, msg)
                 null
             }
         }
@@ -138,36 +141,6 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
     override suspend fun execute(context: CommandContext) {
         sendSyntax(context)
-    }
-
-    class InfoArg(parent: String) : AbstractCommand("$parent.info") {
-
-        init {
-            name = "info"
-            aliases = arrayOf("information")
-        }
-
-        override suspend fun execute(context: CommandContext) {
-            val id = getLongFromArgN(context, 0)
-            var cc = context.daoManager.customCommandWrapper.getCCById(context.guildId, id)
-            if (cc == null && context.args.isNotEmpty()) {
-
-                val msg = context.getTranslation("message.unknown.ccid")
-                    .replace(PLACEHOLDER_ARG, id.toString())
-                sendMsg(context, msg)
-                return
-            } else if (cc == null) {
-                cc = getSelectedCCNMessage(context) ?: return
-            }
-
-            val title = context.getTranslation("$root.title")
-            val description = context.getTranslation("$root.description")
-                .replace("%ccName%", cc.name)
-            val eb = Embedder(context)
-            eb.setTitle(title)
-            eb.setDescription(description)
-            sendEmbed(context, eb.build())
-        }
     }
 
     class ListArg(parent: String) : AbstractCommand("$parent.list") {
@@ -190,7 +163,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             content += "```"
 
             val msg = title + content
-            sendMsgCodeBlock(context, msg, "INI")
+            sendRspCodeBlock(context, msg, "INI")
         }
     }
 
@@ -215,8 +188,8 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
             if (size >= PREMIUM_CUSTOM_COMMAND_LIMIT) {
                 val msg = context.getTranslation("$root.limit")
-                    .replace("%limit%", PREMIUM_CUSTOM_COMMAND_LIMIT.toString())
-                sendMsg(context, msg)
+                    .withVariable("limit", PREMIUM_CUSTOM_COMMAND_LIMIT.toString())
+                sendRsp(context, msg)
             }
 
             val name = context.args[0]
@@ -229,10 +202,10 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             cc.id = ccId
 
             val msg = context.getTranslation("$root.success")
-                .replace("%id%", cc.id.toString())
-                .replace("%ccName%", cc.name)
-                .replace("%content%", cc.content.messageContent ?: "error")
-            sendMsg(context, msg)
+                .withVariable("id", cc.id.toString())
+                .withVariable("ccName", cc.name)
+                .withVariable("content", cc.content.messageContent ?: "error")
+            sendRsp(context, msg)
         }
     }
 
@@ -256,19 +229,19 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
             if (cc == null) {
                 val msg = context.getTranslation("$root.failed")
-                    .replace("%id%", id.toString())
-                    .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
-                sendMsg(context, msg)
+                    .withVariable("id", id.toString())
+                    .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                sendRsp(context, msg)
                 return
             }
 
             context.daoManager.customCommandWrapper.remove(guildId, id)
 
             val msg = context.getTranslation("$root.success")
-                .replace("%id%", cc.id.toString())
-                .replace("%ccName%", cc.name)
+                .withVariable("id", cc.id.toString())
+                .withVariable("ccName", cc.name)
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -290,8 +263,8 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             val cc = context.daoManager.customCommandWrapper.getCCById(guildId, id)
             if (cc == null) {
                 val msg = context.getTranslation("message.unknown.ccid")
-                    .replace(PLACEHOLDER_ARG, id.toString())
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_ARG, id.toString())
+                sendRsp(context, msg)
                 return
             }
 
@@ -299,9 +272,9 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
 
             val msg = context.getTranslation("$root.selected")
-                .replace("%id%", cc.id.toString())
-                .replace("%ccName%", cc.name)
-            sendMsg(context, msg)
+                .withVariable("id", cc.id.toString())
+                .withVariable("ccName", cc.name)
+            sendRsp(context, msg)
 
         }
     }
@@ -342,11 +315,11 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 context.daoManager.customCommandWrapper.update(context.guildId, ccSelected)
 
                 val msg = context.getTranslation("$root.success")
-                    .replace("%id%", ccSelected.id.toString())
-                    .replace("%ccName%", ccSelected.name)
-                    .replace(PLACEHOLDER_ARG, context.rawArg)
+                    .withVariable("id", ccSelected.id.toString())
+                    .withVariable("ccName", ccSelected.name)
+                    .withVariable(PLACEHOLDER_ARG, context.rawArg)
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
         }
 
@@ -381,12 +354,12 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
                 context.daoManager.customCommandWrapper.update(context.guildId, ccSelected)
 
                 val msg = context.getTranslation("$root.success")
-                    .replace("%id%", ccSelected.id.toString())
-                    .replace("%ccName%", ccSelected.name)
-                    .replace("%position%", possibleLong.toString())
-                    .replace(PLACEHOLDER_ARG, alias)
+                    .withVariable("id", ccSelected.id.toString())
+                    .withVariable("ccName", ccSelected.name)
+                    .withVariable("position", possibleLong.toString())
+                    .withVariable(PLACEHOLDER_ARG, alias)
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
         }
 
@@ -403,8 +376,8 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                 val path = if (aliases == null) "$root.empty" else "$root.title"
                 val title = context.getTranslation(path)
-                    .replace("%id%", ccSelected.id.toString())
-                    .replace("%ccName%", ccSelected.name)
+                    .withVariable("id", ccSelected.id.toString())
+                    .withVariable("ccName", ccSelected.name)
 
                 val content = if (aliases == null) {
                     ""
@@ -418,7 +391,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
                 val msg = title + content
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
         }
     }
@@ -443,11 +416,11 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             context.daoManager.customCommandWrapper.update(context.guildId, ccSelected)
 
             val msg = context.getTranslation("$root.${if (unset) "unset" else "set"}")
-                .replace("%id%", ccSelected.id.toString())
-                .replace("%ccName%", ccSelected.name)
-                .replace(PLACEHOLDER_ARG, context.rawArg)
+                .withVariable("id", ccSelected.id.toString())
+                .withVariable("ccName", ccSelected.name)
+                .withVariable(PLACEHOLDER_ARG, context.rawArg)
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -471,11 +444,11 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             context.daoManager.customCommandWrapper.update(context.guildId, ccSelected)
 
             val msg = context.getTranslation("$root.success")
-                .replace("%id%", ccSelected.id.toString())
-                .replace("%ccName%", ccSelected.name)
-                .replace(PLACEHOLDER_ARG, chance.toString())
+                .withVariable("id", ccSelected.id.toString())
+                .withVariable("ccName", ccSelected.name)
+                .withVariable(PLACEHOLDER_ARG, chance.toString())
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
 
     }
@@ -502,10 +475,10 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
 
             val pathPart = if (state) "enabled" else "disabled"
             val msg = context.getTranslation("$root.$pathPart")
-                .replace("%id%", ccSelected.id.toString())
-                .replace("%ccName%", ccSelected.name)
+                .withVariable("id", ccSelected.id.toString())
+                .withVariable("ccName", ccSelected.name)
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
 
     }

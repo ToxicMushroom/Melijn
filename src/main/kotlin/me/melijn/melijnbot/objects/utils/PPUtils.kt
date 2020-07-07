@@ -16,6 +16,7 @@ import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyRoleByType
+import me.melijn.melijnbot.objects.utils.message.sendEmbed
 import net.dv8tion.jda.api.entities.Member
 
 object PPUtils {

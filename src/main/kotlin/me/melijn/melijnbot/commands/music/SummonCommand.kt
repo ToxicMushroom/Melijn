@@ -7,8 +7,9 @@ import me.melijn.melijnbot.objects.command.hasPermission
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.objects.utils.RunConditionUtil
 import me.melijn.melijnbot.objects.utils.getVoiceChannelByArgNMessage
+import me.melijn.melijnbot.objects.utils.message.sendRsp
 import me.melijn.melijnbot.objects.utils.notEnoughPermissionsAndMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.withVariable
 import net.dv8tion.jda.api.Permission
 
 class SummonCommand : AbstractCommand("command.summon") {
@@ -29,7 +30,7 @@ class SummonCommand : AbstractCommand("command.summon") {
             val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
             context.lavaManager.openConnection(vc, premium)
             val msg = context.getTranslation("$root.summoned")
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         } else {
             val vc = getVoiceChannelByArgNMessage(context, 0) ?: return
             if (!hasPermission(context, "summon.other", true)) {
@@ -42,8 +43,8 @@ class SummonCommand : AbstractCommand("command.summon") {
             val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
             context.lavaManager.openConnection(vc, premium)
             val msg = context.getTranslation("$root.summoned.other")
-                .replace(PLACEHOLDER_CHANNEL, vc.name)
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_CHANNEL, vc.name)
+            sendRsp(context, msg)
         }
     }
 }

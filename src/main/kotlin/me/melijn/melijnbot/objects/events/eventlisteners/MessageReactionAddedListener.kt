@@ -17,6 +17,7 @@ import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelByType
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
+import me.melijn.melijnbot.objects.utils.message.sendEmbed
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.GenericEvent
@@ -235,13 +236,13 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 }
 
                 val title = i18n.getTranslation(language, "message.music.addedtrack.title")
-                    .replace(PLACEHOLDER_USER, event.user.asTag)
+                    .withVariable(PLACEHOLDER_USER, event.user.asTag)
 
                 val description = i18n.getTranslation(language, "message.music.addedtrack.description")
-                    .replace("%position%", guildPlayer.guildTrackManager.getPosition(track).toString())
-                    .replace("%title%", track.info.title)
-                    .replace("%duration%", getDurationString(track.duration))
-                    .replace("%url%", track.info.uri)
+                    .withVariable("position", guildPlayer.guildTrackManager.getPosition(track).toString())
+                    .withVariable("title", track.info.title)
+                    .withVariable("duration", getDurationString(track.duration))
+                    .withVariable("url", track.info.uri)
 
                 val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong, container.settings.embedColor)
                 eb.setTitle(title)
@@ -251,8 +252,8 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             }
             else -> {
                 val msg = i18n.getTranslation(language, "message.music.queuelimit")
-                    .replace("%amount%", QUEUE_LIMIT.toString())
-                    .replace("%donateAmount%", DONATE_QUEUE_LIMIT.toString())
+                    .withVariable("amount", QUEUE_LIMIT.toString())
+                    .withVariable("donateAmount", DONATE_QUEUE_LIMIT.toString())
                 message.editMessage(msg).queue()
             }
         }
@@ -315,24 +316,24 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         val embedBuilder = EmbedBuilder()
         val language = getLanguage(dao, -1, event.guild.idLong)
         val title = i18n.getTranslation(language, "listener.message.reaction.log.title")
-            .replace(PLACEHOLDER_CHANNEL, event.channel.asTag)
+            .withVariable(PLACEHOLDER_CHANNEL, event.channel.asTag)
 
         val isEmote = event.reactionEmote.isEmote
         val part = if (isEmote) "emote" else "emoji"
         val description = i18n.getTranslation(language, "listener.message.reaction.$part.log.description")
-            .replace(PLACEHOLDER_USER_ID, event.member.id)
-            .replace("%messageId%", event.messageId)
-            .replace("%emoteName%", event.reactionEmote.name)
-            .replace("%emoteId%", if (isEmote) event.reactionEmote.id else "/")
-            .replace("%moment%", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
-            .replace("%messageUrl%", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.messageId}")
-            .replace("%emoteUrl%", if (isEmote) event.reactionEmote.emote.imageUrl else "/")
+            .withVariable(PLACEHOLDER_USER_ID, event.member.id)
+            .withVariable("messageId", event.messageId)
+            .withVariable("emoteName", event.reactionEmote.name)
+            .withVariable("emoteId", if (isEmote) event.reactionEmote.id else "/")
+            .withVariable("moment", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+            .withVariable("messageUrl", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.messageId}")
+            .withVariable("emoteUrl", if (isEmote) event.reactionEmote.emote.imageUrl else "/")
 
         embedBuilder.setTitle(title)
         embedBuilder.setDescription(description)
         embedBuilder.setThumbnail(if (isEmote) event.reactionEmote.emote.imageUrl else null)
         val footer = i18n.getTranslation(language, "listener.message.reaction.log.footer")
-            .replace(PLACEHOLDER_USER, event.member.asTag)
+            .withVariable(PLACEHOLDER_USER, event.member.asTag)
         embedBuilder.setFooter(footer, event.member.user.effectiveAvatarUrl)
         embedBuilder.setColor(Color.WHITE)
 

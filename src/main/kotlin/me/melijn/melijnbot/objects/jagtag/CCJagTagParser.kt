@@ -3,6 +3,7 @@ package me.melijn.melijnbot.objects.jagtag
 import com.jagrosh.jagtag.JagTag
 import com.jagrosh.jagtag.Parser
 import me.melijn.melijnbot.database.command.CustomCommand
+import me.melijn.melijnbot.objects.utils.SPACE_PATTERN
 import net.dv8tion.jda.api.entities.Member
 import java.util.function.Supplier
 
@@ -19,7 +20,7 @@ object CCJagTagParser {
             .put("user", args.member.user)
             .put("member", args.member)
             .put("guild", args.member.guild)
-            .put("args", args.rawArg.split("\\s+".toRegex()))
+            .put("args", args.rawArg.split(SPACE_PATTERN))
             .put("rawArg", args.rawArg)
             .put("cc", args.cc)
         val parsed = parser.parse(input)

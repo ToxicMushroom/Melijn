@@ -6,7 +6,12 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.addIfNotPresent
+import me.melijn.melijnbot.objects.utils.getDurationString
+import me.melijn.melijnbot.objects.utils.listeningMembers
+import me.melijn.melijnbot.objects.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.withVariable
 import kotlin.math.floor
 
 
@@ -24,7 +29,7 @@ class VoteSkipCommand : AbstractCommand("command.voteskip") {
         val guildMusicPlayer = context.guildMusicPlayer.guildTrackManager
         val vc = context.lavaManager.getConnectedChannel(context.guild)
         if (vc == null) {
-            sendMsg(context, "wtf")
+            sendRsp(context, "wtf")
             return
         }
         val listening = listeningMembers(vc)
@@ -34,22 +39,25 @@ class VoteSkipCommand : AbstractCommand("command.voteskip") {
         if (guildMusicPlayer.votedUsers.size == requiredVotes) {
             doSkip(context, guildMusicPlayer.votedUsers.size)
         } else {
-            val eb = Embedder(context)
+
             val title = context.getTranslation("$root.progress.title")
-                .replace("%votesRequired%", "$requiredVotes")
-                .replace("%votes%", "${guildMusicPlayer.votedUsers.size}")
-            eb.setTitle(title)
+                .withVariable("votesRequired", "$requiredVotes")
+                .withVariable("votes", "${guildMusicPlayer.votedUsers.size}")
+
 
             val iPlayer = context.guildMusicPlayer.guildTrackManager.iPlayer
             val cTrack = iPlayer.playingTrack ?: return
             val desc = context.getTranslation("$root.playing")
-                .replace("%track%", cTrack.info.title)
-                .replace("%url%", cTrack.info.uri)
-                .replace("%position%", getDurationString(iPlayer.trackPosition))
-                .replace("%duration%", getDurationString(cTrack.duration))
-            eb.setDescription(desc)
-            sendEmbed(context, eb.build())
+                .withVariable("track", cTrack.info.title)
+                .withVariable("url", cTrack.info.uri)
+                .withVariable("position", getDurationString(iPlayer.trackPosition))
+                .withVariable("duration", getDurationString(cTrack.duration))
 
+            val eb = Embedder(context)
+                .setTitle(title)
+                .setDescription(desc)
+
+            sendEmbedRsp(context, eb.build())
         }
     }
 
@@ -58,10 +66,10 @@ class VoteSkipCommand : AbstractCommand("command.voteskip") {
         val cTrack = trackManager.iPlayer.playingTrack ?: return
         val part1 =
             context.getTranslation("$root.skip")
-                .replace("%track%", cTrack.info.title)
-                .replace("%url%", cTrack.info.uri)
-                .replace("%position%", getDurationString(trackManager.iPlayer.trackPosition))
-                .replace("%duration%", getDurationString(cTrack.duration))
+                .withVariable("track", cTrack.info.title)
+                .withVariable("url", cTrack.info.uri)
+                .withVariable("position", getDurationString(trackManager.iPlayer.trackPosition))
+                .withVariable("duration", getDurationString(cTrack.duration))
 
         trackManager.skip(1)
         val nTrack: AudioTrack? = trackManager.iPlayer.playingTrack
@@ -70,18 +78,18 @@ class VoteSkipCommand : AbstractCommand("command.voteskip") {
             context.getTranslation("$root.nonext")
         } else {
             context.getTranslation("$root.next")
-                .replace("%track%", nTrack.info.title)
-                .replace("%url%", nTrack.info.uri)
-                .replace("%duration%", getDurationString(nTrack.duration))
+                .withVariable("track", nTrack.info.title)
+                .withVariable("url", nTrack.info.uri)
+                .withVariable("duration", getDurationString(nTrack.duration))
         }
 
         val s = if (votes > 1) "s" else ""
         val title = context.getTranslation("$root.title$s")
-            .replace("%votes%", "$votes")
+            .withVariable("votes", "$votes")
 
         val eb = Embedder(context)
-        eb.setTitle(title)
-        eb.setDescription(part1 + part2)
-        sendEmbed(context, eb.build())
+            .setTitle(title)
+            .setDescription(part1 + part2)
+        sendEmbedRsp(context, eb.build())
     }
 }

@@ -4,8 +4,9 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.boolFromStateArg
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
+import me.melijn.melijnbot.objects.utils.withVariable
 
 class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
 
@@ -33,9 +34,9 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
         val disabled = dao.embedDisabledCache.contains(context.guildId)
 
         val msg = context.getTranslation("$root.currentstateresponse")
-            .replace("%disabledState%", if (disabled) "disabled" else "enabled")
+            .withVariable("disabledState", if (disabled) "disabled" else "enabled")
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedStateState(context: CommandContext) {
@@ -49,7 +50,7 @@ class SetEmbedStateCommand : AbstractCommand("command.setembedstate") {
         dao.setDisabled(context.guildId, !state)
 
         val msg = context.getTranslation("$root.set.success")
-            .replace("%disabledState%", if (state) "enabled" else "disabled")
-        sendMsg(context, msg)
+            .withVariable("disabledState", if (state) "enabled" else "disabled")
+        sendRsp(context, msg)
     }
 }

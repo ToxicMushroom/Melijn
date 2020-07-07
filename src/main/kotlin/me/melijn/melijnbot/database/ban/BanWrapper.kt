@@ -5,6 +5,7 @@ import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.objects.utils.awaitOrNull
 import me.melijn.melijnbot.objects.utils.getDurationString
+import me.melijn.melijnbot.objects.utils.withVariable
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
@@ -88,17 +89,17 @@ class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
         } ?: context.getTranslation("infinite")
 
         return context.getTranslation("message.punishmenthistory.ban")
-            .replace("%banAuthor%", banAuthor?.asTag ?: deletedUser)
-            .replace("%banAuthorId%", "${ban.banAuthorId}")
-            .replace("%unbanAuthor%", if (ban.unbanAuthorId == null) "/" else unbanAuthor?.asTag ?: deletedUser)
-            .replace("%unbanAuthorId%", ban.unbanAuthorId?.toString() ?: "/")
-            .replace("%banReason%", ban.reason.substring(0, min(ban.reason.length, 830)))
-            .replace("%unbanReason%", unbanReason?.substring(0, min(unbanReason.length, 830)) ?: "/")
-            .replace("%startTime%", ban.startTime.asEpochMillisToDateTime(zoneId))
-            .replace("%endTime%", ban.endTime?.asEpochMillisToDateTime(zoneId) ?: "/")
-            .replace("%duration%", banDuration)
-            .replace("%banId%", ban.banId)
-            .replace("%active%", "${ban.active}")
+            .withVariable("banAuthor", banAuthor?.asTag ?: deletedUser)
+            .withVariable("banAuthorId", "${ban.banAuthorId}")
+            .withVariable("unbanAuthor", if (ban.unbanAuthorId == null) "/" else unbanAuthor?.asTag ?: deletedUser)
+            .withVariable("unbanAuthorId", ban.unbanAuthorId?.toString() ?: "/")
+            .withVariable("banReason", ban.reason.substring(0, min(ban.reason.length, 830)))
+            .withVariable("unbanReason", unbanReason?.substring(0, min(unbanReason.length, 830)) ?: "/")
+            .withVariable("startTime", ban.startTime.asEpochMillisToDateTime(zoneId))
+            .withVariable("endTime", ban.endTime?.asEpochMillisToDateTime(zoneId) ?: "/")
+            .withVariable("duration", banDuration)
+            .withVariable("banId", ban.banId)
+            .withVariable("active", "${ban.active}")
     }
 
     suspend fun remove(ban: Ban) {

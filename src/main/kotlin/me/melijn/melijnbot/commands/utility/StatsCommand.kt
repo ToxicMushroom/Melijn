@@ -7,6 +7,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.message.sendEmbedRsp
 import java.lang.management.ManagementFactory
 import java.text.DecimalFormat
 import java.util.concurrent.ThreadPoolExecutor
@@ -90,7 +91,7 @@ class StatsCommand : AbstractCommand("command.stats") {
             .addField(title3, value3, false)
             .build()
 
-        sendEmbed(context, embed)
+        sendEmbedRsp(context, embed)
     }
 
     private fun replaceValue1Vars(
@@ -105,24 +106,24 @@ class StatsCommand : AbstractCommand("command.stats") {
         queuedTracks: Int,
         musicPlayers: Int
     ): String = value
-        .replace("%shardCount%", shardCount.toString())
-        .replace("%userCount%", userCount.toString())
-        .replace("%serverCount%", guildCount.toString())
-        .replace("%cVCCount%", "$voiceChannelsNotEmpty/$voiceChannels")
-        .replace("%botThreadCount%", threadCount.toString())
-        .replace("%botUptime%", uptime)
-        .replace("%queuedTracks%", "$queuedTracks")
-        .replace("%musicPlayers%", "$musicPlayers")
+        .withVariable("shardCount", shardCount.toString())
+        .withVariable("userCount", userCount.toString())
+        .withVariable("serverCount", guildCount.toString())
+        .withVariable("cVCCount", "$voiceChannelsNotEmpty/$voiceChannels")
+        .withVariable("botThreadCount", threadCount.toString())
+        .withVariable("botUptime", uptime)
+        .withVariable("queuedTracks", "$queuedTracks")
+        .withVariable("musicPlayers", "$musicPlayers")
 
 
     private fun replaceValue2Vars(value: String, coreCount: Int, ramUsage: String, uptime: String): String = value
-        .replace("%coreCount%", coreCount.toString())
-        .replace("%ramUsage%", ramUsage)
-        .replace("%systemUptime%", uptime)
+        .withVariable("coreCount", coreCount.toString())
+        .withVariable("ramUsage", ramUsage)
+        .withVariable("systemUptime", uptime)
 
 
     private fun replaceValue3Vars(value: String, cpuUsage: String, ramUsage: String, threadCount: String): String = value
-        .replace("%jvmCPUUsage%", cpuUsage)
-        .replace("%ramUsage%", ramUsage)
-        .replace("%threadCount%", threadCount)
+        .withVariable("jvmCPUUsage", cpuUsage)
+        .withVariable("ramUsage", ramUsage)
+        .withVariable("threadCount", threadCount)
 }

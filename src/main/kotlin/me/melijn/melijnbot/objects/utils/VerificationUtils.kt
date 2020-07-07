@@ -9,6 +9,7 @@ import me.melijn.melijnbot.objects.events.eventutil.JoinLeaveUtil
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyRoleByType
+import me.melijn.melijnbot.objects.utils.message.sendMsg
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.TextChannel
@@ -43,7 +44,7 @@ object VerificationUtils {
     private suspend fun sendNoUnverifiedRoleIsSetMessage(daoManager: DaoManager, user: User?, textChannel: TextChannel, prefix: String) {
         val language = getLanguage(daoManager, user?.idLong ?: -1L, textChannel.guild.idLong)
         val msg = i18n.getTranslation(language, "message.notset.role.unverified")
-            .replace("%prefix%", prefix)
+            .withVariable("prefix", prefix)
 
         sendMsg(textChannel, msg)
     }

@@ -9,6 +9,8 @@ import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
 import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
 import net.dv8tion.jda.api.entities.Role
 
 class JoinRoleCommand : AbstractCommand("command.joinrole") {
@@ -58,8 +60,8 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 val group = getJoinRoleGroupByArgNMessage(context, 0) ?: return
                 if (context.args.size < 2) {
                     val msg = context.getTranslation("$root.show.${group.getAllRoles}")
-                        .replace("%group%", group.groupName)
-                    sendMsg(context, msg)
+                        .withVariable("group", group.groupName)
+                    sendRsp(context, msg)
                     return
                 }
 
@@ -68,8 +70,8 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 context.daoManager.joinRoleGroupWrapper.insertOrUpdate(context.guildId, group)
 
                 val msg = context.getTranslation("$root.set.$newState")
-                    .replace("%group%", group.groupName)
-                sendMsg(context, msg)
+                    .withVariable("group", group.groupName)
+                sendRsp(context, msg)
             }
         }
 
@@ -89,8 +91,8 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 val group = getJoinRoleGroupByArgNMessage(context, 0) ?: return
                 if (context.args.size < 2) {
                     val msg = context.getTranslation("$root.show.${group.isEnabled}")
-                        .replace("%group%", group.groupName)
-                    sendMsg(context, msg)
+                        .withVariable("group", group.groupName)
+                    sendRsp(context, msg)
                     return
                 }
 
@@ -99,8 +101,8 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 context.daoManager.joinRoleGroupWrapper.insertOrUpdate(context.guildId, group)
 
                 val msg = context.getTranslation("$root.set.$newState")
-                    .replace("%group%", group.groupName)
-                sendMsg(context, msg)
+                    .withVariable("group", group.groupName)
+                sendRsp(context, msg)
             }
         }
 
@@ -118,9 +120,9 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 val sr = getSelfRoleGroupByGroupNameN(context, name)
                 if (sr != null) {
                     val msg = context.getTranslation("$parent.exists")
-                        .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
-                        .replace(PLACEHOLDER_ARG, name)
-                    sendMsg(context, msg)
+                        .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                        .withVariable(PLACEHOLDER_ARG, name)
+                    sendRsp(context, msg)
                     return
                 }
 
@@ -128,8 +130,8 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 wrapper.insertOrUpdate(context.guildId, newJr)
 
                 val msg = context.getTranslation("$root.added")
-                    .replace("%group%", name)
-                sendMsg(context, msg)
+                    .withVariable("group", name)
+                sendRsp(context, msg)
             }
         }
 
@@ -147,8 +149,8 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 wrapper.delete(context.guildId, joinRoleGroupInfo.groupName)
 
                 val msg = context.getTranslation("$root.removed")
-                    .replace("%group%", name)
-                sendMsg(context, msg)
+                    .withVariable("group", name)
+                sendRsp(context, msg)
             }
         }
 
@@ -178,10 +180,10 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 wrapper.delete(context.guildId, group.groupName)
 
                 val msg = context.getTranslation("$root.removed")
-                    .replace("%group%", group.groupName)
-                    .replace("%index%", "$index")
+                    .withVariable("group", group.groupName)
+                    .withVariable("index", "$index")
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
         }
 
@@ -200,7 +202,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
 
                 if (list.isEmpty()) {
                     val msg = context.getTranslation("$root.empty")
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                     return
                 }
 
@@ -214,7 +216,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 content += "```"
                 content = title + content
 
-                sendMsg(context, content)
+                sendRsp(context, content)
             }
         }
 
@@ -252,18 +254,18 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 context.daoManager.joinRoleWrapper.set(context.guildId, group.groupName, role?.idLong ?: -1, chance)
 
                 context.getTranslation("$root.added.chance.$extra")
-                    .replace("%group%", group.groupName)
-                    .replace(PLACEHOLDER_ROLE, role?.name ?: "kek")
-                    .replace("%chance%", "$chance")
+                    .withVariable("group", group.groupName)
+                    .withVariable(PLACEHOLDER_ROLE, role?.name ?: "kek")
+                    .withVariable("chance", "$chance")
             } else {
                 context.daoManager.joinRoleWrapper.set(context.guildId, group.groupName, role?.idLong ?: -1, 100)
 
                 context.getTranslation("$root.added.$extra")
-                    .replace("%group%", group.groupName)
-                    .replace(PLACEHOLDER_ROLE, role?.name ?: "kek")
+                    .withVariable("group", group.groupName)
+                    .withVariable(PLACEHOLDER_ROLE, role?.name ?: "kek")
             }
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -289,15 +291,15 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
             val existed = context.daoManager.joinRoleWrapper.remove(context.guildId, group.groupName, role?.idLong)
             val msg = if (existed) {
                 context.getTranslation("$root.removed.$extra")
-                    .replace("%group%", group.groupName)
-                    .replace("%role%", role?.name ?: "kek")
+                    .withVariable("group", group.groupName)
+                    .withVariable("role", role?.name ?: "kek")
             } else {
                 context.getTranslation("$root.noentry.$extra")
-                    .replace("%group%", group.groupName)
-                    .replace("%role%", role?.name ?: "kek")
+                    .withVariable("group", group.groupName)
+                    .withVariable("role", role?.name ?: "kek")
             }
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -323,8 +325,8 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
             val ls = map[group.groupName]?.toMutableList()
             if (ls == null) {
                 val msg = context.getTranslation("$root.emptygroup")
-                    .replace("%group%", group.groupName)
-                sendMsg(context, msg)
+                    .withVariable("group", group.groupName)
+                sendRsp(context, msg)
                 return
             }
             val index = getIntegerFromArgNMessage(context, 1, 1, ls.size) ?: return
@@ -341,11 +343,11 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
             val role = entry.roleId?.let { context.guild.getRoleById(it) }
             val extra = if (entry.roleId == null) "null" else "role"
             val msg = context.getTranslation("$root.removed.$extra")
-                .replace("%group%", group.groupName)
-                .replace("%index%", "$index")
-                .replace("%role%", role?.name ?: "${entry.roleId}")
+                .withVariable("group", group.groupName)
+                .withVariable("index", "$index")
+                .withVariable("role", role?.name ?: "${entry.roleId}")
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -362,7 +364,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
 
             if (map.isEmpty()) {
                 val msg = context.getTranslation("$root.empty")
-                sendMsg(context, msg)
+                sendRsp(context, msg)
                 return
             }
 
@@ -380,7 +382,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
             content.append("```")
             val msg = title + content.toString()
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -396,12 +398,6 @@ suspend fun getJoinRoleGroupByGroupNameN(context: CommandContext, group: String)
     }
 }
 
-suspend fun getJoinRoleGroupByArgN(context: CommandContext, index: Int): JoinRoleGroupInfo? {
-    val group = getStringFromArgsNMessage(context, index, 1, 64)
-        ?: return null
-    return getJoinRoleGroupByGroupNameN(context, group)
-}
-
 suspend fun getJoinRoleGroupByArgNMessage(context: CommandContext, index: Int): JoinRoleGroupInfo? {
     val wrapper = context.daoManager.joinRoleGroupWrapper
     val group = getStringFromArgsNMessage(context, index, 1, 64)
@@ -411,8 +407,8 @@ suspend fun getJoinRoleGroupByArgNMessage(context: CommandContext, index: Int): 
     }
     if (joinRoleGroupInfo == null) {
         val msg = context.getTranslation("message.unknown.joinrolegroup")
-            .replace(PLACEHOLDER_ARG, group)
-        sendMsg(context, msg)
+            .withVariable(PLACEHOLDER_ARG, group)
+        sendRsp(context, msg)
     }
     return joinRoleGroupInfo
 }

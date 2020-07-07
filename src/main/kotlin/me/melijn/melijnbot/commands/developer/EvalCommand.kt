@@ -4,7 +4,7 @@ import groovy.lang.GroovyShell
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
 
 class EvalCommand : AbstractCommand("command.eval") {
 
@@ -24,9 +24,9 @@ class EvalCommand : AbstractCommand("command.eval") {
 
         try {
             val result = groovyShell.evaluate(context.rawArg)
-            sendMsg(context, "Success:\n```$result```")
+            sendRsp(context, "Success:\n```$result```")
         } catch (t: Throwable) {
-            sendMsg(context, "ERROR:\n```${t.message}```")
+            sendRsp(context, "ERROR:\n```${t.message}```")
         }
     }
 }

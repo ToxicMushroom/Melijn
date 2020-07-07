@@ -4,7 +4,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
 
 class LoopCommand : AbstractCommand("command.loop") {
 
@@ -27,6 +27,6 @@ class LoopCommand : AbstractCommand("command.loop") {
         }
 
         val msg = context.getTranslation("$root.$extra")
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

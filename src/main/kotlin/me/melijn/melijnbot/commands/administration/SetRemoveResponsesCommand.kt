@@ -5,14 +5,20 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.asTag
+import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.objects.utils.getTextChannelByArgsNMessage
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
+import me.melijn.melijnbot.objects.utils.withVariable
 
 class SetRemoveResponsesCommand : AbstractCommand("command.setremoveresponses") {
 
     init {
         id = 187
         name = "setRemoveResponses"
-        aliases = arrayOf("srr")
+        aliases = arrayOf("srr", "setRemoveResponse")
+        children = arrayOf(GlobalArg(root))
         runConditions = arrayOf(RunCondition.GUILD_SUPPORTER)
         commandCategory = CommandCategory.ADMINISTRATION
     }
@@ -32,11 +38,14 @@ class SetRemoveResponsesCommand : AbstractCommand("command.setremoveresponses") 
                 context.getTranslation("$root.show.set")
                     .withVariable("channel", channel.asTag)
                     .withVariable("seconds", map[channel.idLong] ?: 1)
+
             } else {
+
                 context.getTranslation("$root.show.empty")
                     .withVariable("channel", channel.asTag)
             }
-            sendMsg(context, msg)
+
+            sendRsp(context, msg)
 
         } else {
             if (context.args[1] == "null") {
@@ -44,7 +53,7 @@ class SetRemoveResponsesCommand : AbstractCommand("command.setremoveresponses") 
 
                 val msg = context.getTranslation("$root.unset")
                     .withVariable("channel", channel.asTag)
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             } else {
                 val seconds = getIntegerFromArgNMessage(context, 1, 1, 300) ?: return
                 wrapper.set(context.guildId, channel.idLong, seconds)
@@ -52,9 +61,53 @@ class SetRemoveResponsesCommand : AbstractCommand("command.setremoveresponses") 
                 val msg = context.getTranslation("$root.set")
                     .withVariable("channel", channel.asTag)
                     .withVariable("seconds", seconds)
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
 
+        }
+    }
+
+    class GlobalArg(parent: String) : AbstractCommand("$parent.global") {
+
+        init {
+            name = "global"
+            aliases = arrayOf("g")
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            val guildId = context.guildId
+            val wrapper = context.daoManager.removeResponseWrapper
+
+            if (context.args.isEmpty()) {
+                val map = wrapper.removeResponseCache.get(context.guildId).await()
+                val msg = if (map.containsKey(guildId)) {
+                    context.getTranslation("$root.show.set")
+                        .withVariable("seconds", map[guildId] ?: 1)
+
+                } else {
+                    context.getTranslation("$root.show.unset")
+
+                }
+
+                sendRsp(context, msg)
+
+            } else {
+                if (context.args[0] == "null") {
+                    wrapper.remove(context.guildId, guildId)
+
+                    val msg = context.getTranslation("$root.unset")
+                    sendRsp(context, msg)
+
+                } else {
+                    val seconds = getIntegerFromArgNMessage(context, 0, 1, 300) ?: return
+                    wrapper.set(context.guildId, guildId, seconds)
+
+                    val msg = context.getTranslation("$root.set")
+                        .withVariable("seconds", seconds)
+                    sendRsp(context, msg)
+
+                }
+            }
         }
     }
 }

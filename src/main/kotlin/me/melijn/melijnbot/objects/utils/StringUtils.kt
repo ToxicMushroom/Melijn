@@ -1,11 +1,13 @@
 package me.melijn.melijnbot.objects.utils
 
 import com.wrapper.spotify.Base64
+import me.melijn.melijnbot.objects.command.CommandContext
+import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
 import java.nio.ByteBuffer
 import java.util.*
-import javax.annotation.Nullable
 import kotlin.math.pow
 
+val SPACE_PATTERN = Regex("\\s+")
 
 object StringUtils {
     private val backTicks = "```".toRegex()
@@ -110,7 +112,7 @@ object StringUtils {
         return messages
     }
 
-    fun getSplitIndex(findLastNewline: String, splitAtLeast: Int, margin: Int): Int {
+    private fun getSplitIndex(findLastNewline: String, splitAtLeast: Int, margin: Int): Int {
         var index = findLastNewline.lastIndexOf("\n")
         if (index < splitAtLeast) {
             index = findLastNewline.lastIndexOf(". ")
@@ -167,11 +169,6 @@ object StringUtils {
     }
 }
 
-/** Returns true if state is positive (yes, enable, enabled...)
- * Returns false if state is negative (no, disable, disabled...)
- * Returns null if state is neither (you can handle this with the elvis operator or a null check)
- * **/
-@Nullable
 fun boolFromStateArg(state: String): Boolean? {
     return when (state) {
         "disable", "no", "false", "disabled", "off" -> false
@@ -224,3 +221,26 @@ fun String.splitIETEL(delimiter: String): List<String> {
 fun String.withVariable(toReplace: String, obj: Any): String {
     return this.replace("%$toReplace%", obj.toString())
 }
+
+fun String.toUpperWordCase(): String {
+    var previous = ' '
+    var newString = ""
+    this.toCharArray().forEach { c: Char ->
+        newString += if (previous == ' ') c.toUpperCase() else c.toLowerCase()
+        previous = c
+    }
+    return newString
+}
+
+fun String.replacePrefix(context: CommandContext): String {
+    return this.withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+}
+
+fun String.replacePrefix(prefix: String): String {
+    return this.withVariable(PLACEHOLDER_PREFIX, prefix)
+}
+
+fun Int.toHexString(size: Int = 6): String {
+    return String.format("#%0${size}X", 0xFFFFFF and this)
+}
+

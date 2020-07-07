@@ -3,8 +3,8 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
 
 class T2eCommand : AbstractCommand("command.t2e") {
 
@@ -83,7 +83,7 @@ class T2eCommand : AbstractCommand("command.t2e") {
                 } + if (spaces) " " else ""
             }
 
-            sendMsg(context, output)
+            sendRsp(context, output)
         }
 
         private fun regional(input: String): String = ":regional_indicator_$input:"

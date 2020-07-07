@@ -9,9 +9,13 @@ import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.jagtag.WelcomeJagTagParser
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.LogUtils
+import me.melijn.melijnbot.objects.utils.awaitBool
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelByType
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyRoleByType
+import me.melijn.melijnbot.objects.utils.message.sendAttachments
+import me.melijn.melijnbot.objects.utils.message.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendMsgWithAttachments
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
@@ -39,9 +43,9 @@ object JoinLeaveUtil {
 
         val message: Message? = modularMessage.toMessage()
         when {
-            message == null -> sendAttachmentsAwaitN(channel, modularMessage.attachments)
-            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(channel, message, modularMessage.attachments)
-            else -> sendMsgAwaitN(channel, message)
+            message == null -> sendAttachments(channel, modularMessage.attachments)
+            modularMessage.attachments.isNotEmpty() -> sendMsgWithAttachments(channel, message, modularMessage.attachments)
+            else -> sendMsg(channel, message)
         }
     }
 

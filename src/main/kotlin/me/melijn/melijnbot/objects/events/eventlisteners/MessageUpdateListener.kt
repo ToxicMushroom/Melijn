@@ -9,6 +9,8 @@ import me.melijn.melijnbot.objects.events.eventutil.FilterUtil
 import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
+import me.melijn.melijnbot.objects.utils.message.escapeForLog
+import me.melijn.melijnbot.objects.utils.message.sendEmbed
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.events.GenericEvent
@@ -61,16 +63,16 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
         val zoneId = getZoneId(daoManager, event.guild.idLong)
         val language = getLanguage(daoManager, -1, event.guild.idLong)
         val title = i18n.getTranslation(language, "listener.message.update.log.title")
-            .replace(PLACEHOLDER_CHANNEL, event.channel.asTag)
+            .withVariable(PLACEHOLDER_CHANNEL, event.channel.asTag)
 
         val description = i18n.getTranslation(language, "listener.message.update.log.description")
-            .replace("%oldContent%", escapeForLog(oldContent))
-            .replace("%newContent%", escapeForLog(daoMessage.content))
-            .replace(PLACEHOLDER_USER, event.author.asTag)
-            .replace(PLACEHOLDER_USER_ID, event.author.id)
-            .replace("%sentTime%", event.message.timeCreated.asLongLongGMTString())
-            .replace("%editedTime%", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
-            .replace("%link%", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.message.id}")
+            .withVariable("oldContent", escapeForLog(oldContent))
+            .withVariable("newContent", escapeForLog(daoMessage.content))
+            .withVariable(PLACEHOLDER_USER, event.author.asTag)
+            .withVariable(PLACEHOLDER_USER_ID, event.author.id)
+            .withVariable("sentTime", event.message.timeCreated.asLongLongGMTString())
+            .withVariable("editedTime", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+            .withVariable("link", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.message.id}")
 
         embedBuilder.setColor(Color.decode("#A1DAC3"))
         embedBuilder.setThumbnail(event.author.effectiveAvatarUrl)

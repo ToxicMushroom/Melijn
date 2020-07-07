@@ -8,8 +8,9 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_LANGUAGE
 import me.melijn.melijnbot.objects.utils.getEnumFromArgNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendMsgCodeBlock
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendRspCodeBlock
+import me.melijn.melijnbot.objects.utils.withVariable
 
 class SetLanguageCommand : AbstractCommand("command.setlanguage") {
 
@@ -42,9 +43,9 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
             } else {
                 "$root.show.set"
             }
-        ).replace("%language%", lang)
+        ).withVariable("language", lang)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setLang(context: CommandContext) {
@@ -67,8 +68,8 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
         }
 
         val msg = context.getTranslation("$root.${possible}set")
-            .replace("%language%", lang)
-        sendMsg(context, msg)
+            .withVariable("language", lang)
+        sendRsp(context, msg)
     }
 
     class ListArg(parent: String) : AbstractCommand("$parent.list") {
@@ -84,7 +85,7 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
                 .joinToString("\n", "```INI\n", "```") { (index, lang) ->
                     "$index - [$lang]"
                 }
-            sendMsgCodeBlock(context, msg, "INI")
+            sendRspCodeBlock(context, msg, "INI")
         }
     }
 }

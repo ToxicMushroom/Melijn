@@ -13,7 +13,7 @@ import me.melijn.melijnbot.objects.utils.awaitOrNull
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyRoleByType
 import me.melijn.melijnbot.objects.utils.getZoneId
-import me.melijn.melijnbot.objects.utils.sendEmbed
+import me.melijn.melijnbot.objects.utils.message.sendEmbed
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.sharding.ShardManager

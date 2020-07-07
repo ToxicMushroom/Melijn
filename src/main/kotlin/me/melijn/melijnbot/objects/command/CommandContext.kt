@@ -4,6 +4,7 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.music.GuildMusicPlayer
 import me.melijn.melijnbot.objects.translation.i18n
+import me.melijn.melijnbot.objects.utils.SPACE_PATTERN
 import me.melijn.melijnbot.objects.utils.USER_MENTION
 import me.melijn.melijnbot.objects.utils.removeFirst
 import me.melijn.melijnbot.objects.utils.removePrefix
@@ -84,7 +85,7 @@ class CommandContext(
         }
 
         //Quot arg support
-        val rearg = rawArg.replace("\\s+".toRegex(), " ") + " " // this last space is needed so I don't need to hack around in the splitter for the last arg
+        val rearg = rawArg.replace(SPACE_PATTERN, " ") + " " // this last space is needed so I don't need to hack around in the splitter for the last arg
         val quotationIndexes = mutableListOf<Int>()
         val slashIndexes = mutableListOf<Int>()
         val spaceIndexes = mutableListOf<Int>()
@@ -141,7 +142,7 @@ class CommandContext(
 
         args = newCoolArgs.toList()
         oldArgs = if (rawArg.isNotBlank()) {
-            rawArg.split("\\s+".toRegex())
+            rawArg.split(SPACE_PATTERN)
         } else {
             emptyList()
         }

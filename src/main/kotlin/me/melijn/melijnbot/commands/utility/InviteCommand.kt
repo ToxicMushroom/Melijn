@@ -4,7 +4,8 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.utils.sendEmbed
+import me.melijn.melijnbot.objects.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.objects.utils.withVariable
 
 class InviteCommand : AbstractCommand("command.invite") {
 
@@ -19,15 +20,15 @@ class InviteCommand : AbstractCommand("command.invite") {
         val botId = context.jda.selfUser.idLong
         val baseUrl = "https://discordapp.com/oauth2/authorize?client_id=$botId&scope=bot"
         val title = context.getTranslation("$root.title")
-            .replace("%botName%", context.container.settings.name)
+            .withVariable("botName", context.container.settings.name)
         val msg = context.getTranslation("$root.desc")
-            .replace("%urlWithPerm%", "$baseUrl&permissions=322268358")
-            .replace("%urlWithoutPerm%", baseUrl)
+            .withVariable("urlWithPerm", "$baseUrl&permissions=322268358")
+            .withVariable("urlWithoutPerm", baseUrl)
 
         val eb = Embedder(context)
-        eb.setTitle(title)
-        eb.setDescription(msg)
+            .setTitle(title)
+            .setDescription(msg)
 
-        sendEmbed(context, eb.build())
+        sendEmbedRsp(context, eb.build())
     }
 }

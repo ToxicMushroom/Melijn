@@ -12,12 +12,11 @@ import kotlinx.coroutines.launch
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.utils.removeFirst
-import okhttp3.OkHttpClient
 import java.io.IOException
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-class MySpotifyApi(val httpClient: OkHttpClient, val taskManager: TaskManager, spotifySettings: Settings.Spotify) {
+class MySpotifyApi(val taskManager: TaskManager, spotifySettings: Settings.Spotify) {
 
     private var spotifyApi: SpotifyApi = SpotifyApi.Builder()
         .setClientId(spotifySettings.clientId)

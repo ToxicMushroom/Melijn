@@ -8,8 +8,9 @@ import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.objects.utils.asTag
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.objects.utils.getTextChannelByArgsNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
+import me.melijn.melijnbot.objects.utils.withVariable
 
 class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
 
@@ -51,12 +52,12 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
 
         val msg = (if (channel != null) {
             context.getTranslation("$root.show.set.single")
-                .replace(PLACEHOLDER_CHANNEL, channel.asTag)
+                .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
         } else {
             context.getTranslation("$root.show.unset.single")
-        }).replace("%logChannelType%", logChannelType.text)
+        }).withVariable("logChannelType", logChannelType.text)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
 
@@ -71,17 +72,17 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
 
             daoWrapper.removeChannel(context.guildId, logChannelType)
             context.getTranslation("$root.unset.single")
-                .replace("%logChannelType%", logChannelType.text)
+                .withVariable("logChannelType", logChannelType.text)
         } else {
             val channel = getTextChannelByArgsNMessage(context, 1) ?: return
             daoWrapper.setChannel(context.guildId, logChannelType, channel.idLong)
 
             context.getTranslation("$root.set.single")
-                .replace("%logChannelType%", logChannelType.text)
-                .replace(PLACEHOLDER_CHANNEL, channel.asTag)
+                .withVariable("logChannelType", logChannelType.text)
+                .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
 
         }
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun handleEnums(context: CommandContext, logChannelTypes: List<LogChannelType>) {
@@ -95,8 +96,8 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
     private suspend fun displayChannels(context: CommandContext, logChannelTypes: List<LogChannelType>) {
         val daoManager = context.daoManager
         val title = context.getTranslation("$root.show.multiple")
-            .replace("%channelCount%", logChannelTypes.size.toString())
-            .replace("%logChannelTypeNode%", context.args[0])
+            .withVariable("channelCount", logChannelTypes.size.toString())
+            .withVariable("logChannelTypeNode", context.args[0])
 
         val lines = emptyList<String>().toMutableList()
 
@@ -107,7 +108,7 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
 
         val content = lines.joinToString(separator = "\n", prefix = "\n")
         val msg = title + content
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setChannels(context: CommandContext, logChannelTypes: List<LogChannelType>) {
@@ -122,19 +123,19 @@ class SetLogChannelCommand : AbstractCommand("command.setlogchannel") {
             daoWrapper.removeChannels(context.guildId, logChannelTypes)
 
             context.getTranslation("$root.unset.multiple")
-                .replace("%channelCount%", logChannelTypes.size.toString())
-                .replace("%logChannelTypeNode%", context.args[0])
+                .withVariable("channelCount", logChannelTypes.size.toString())
+                .withVariable("logChannelTypeNode", context.args[0])
         } else {
             val channel = getTextChannelByArgsNMessage(context, 1) ?: return
             daoWrapper.setChannels(context.guildId, logChannelTypes, channel.idLong)
 
 
             context.getTranslation("$root.set.multiple")
-                .replace("%channelCount%", logChannelTypes.size.toString())
-                .replace("%logChannelTypeNode%", context.args[0])
-                .replace(PLACEHOLDER_CHANNEL, channel.asTag)
+                .withVariable("channelCount", logChannelTypes.size.toString())
+                .withVariable("logChannelTypeNode", context.args[0])
+                .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
 
         }
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

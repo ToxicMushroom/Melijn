@@ -5,7 +5,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.services.voice.VOICE_SAFE
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 class ShutdownCommand : AbstractCommand("command.shutdown") {
@@ -21,7 +21,7 @@ class ShutdownCommand : AbstractCommand("command.shutdown") {
         val wrapper = context.daoManager.tracksWrapper
         wrapper.clear()
 
-        sendMsg(context, "Are you sure you wanna shutdown ?")
+        sendRsp(context, "Are you sure you wanna shutdown ?")
 
         context.container.eventWaiter.waitFor(GuildMessageReceivedEvent::class.java, {
             it.channel.idLong == context.channelId && it.author.idLong == context.authorId
@@ -45,9 +45,9 @@ class ShutdownCommand : AbstractCommand("command.shutdown") {
                     }
                 }
 
-                sendMsg(context, "Detached all listeners, saved queues. Ready for termination.")
+                sendRsp(context, "Detached all listeners, saved queues. Ready for termination.")
             } else {
-                sendMsg(context, "Okay, not shutting down :p")
+                sendRsp(context, "Okay, not shutting down :p")
             }
         })
     }

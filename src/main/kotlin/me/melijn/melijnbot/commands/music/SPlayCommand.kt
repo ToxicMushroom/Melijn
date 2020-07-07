@@ -4,7 +4,7 @@ import me.melijn.melijnbot.objects.command.*
 import me.melijn.melijnbot.objects.music.LavaManager
 import me.melijn.melijnbot.objects.translation.SC_SELECTOR
 import me.melijn.melijnbot.objects.translation.YT_SELECTOR
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
 import net.dv8tion.jda.api.Permission
 
 class SPlayCommand : AbstractCommand("command.splay") {

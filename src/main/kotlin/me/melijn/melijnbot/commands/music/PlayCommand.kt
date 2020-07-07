@@ -5,10 +5,10 @@ import me.melijn.melijnbot.objects.music.AudioLoader
 import me.melijn.melijnbot.objects.music.LavaManager
 import me.melijn.melijnbot.objects.translation.SC_SELECTOR
 import me.melijn.melijnbot.objects.translation.YT_SELECTOR
+import me.melijn.melijnbot.objects.utils.message.sendInGuild
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
 import me.melijn.melijnbot.objects.utils.replacePrefix
-import me.melijn.melijnbot.objects.utils.sendInGuild
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
 import net.dv8tion.jda.api.entities.VoiceChannel
 
 class PlayCommand : AbstractCommand("command.play") {
@@ -225,7 +225,7 @@ class PlayCommand : AbstractCommand("command.play") {
             { error ->
                 val msg = context.getTranslation("message.spotify.down")
                     .replacePrefix(context)
-                sendMsg(context, msg)
+                sendRsp(context, msg)
                 error.sendInGuild(context)
             }
         )

@@ -14,6 +14,8 @@ import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelByType
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
+import me.melijn.melijnbot.objects.utils.message.sendEmbed
+import me.melijn.melijnbot.objects.utils.message.toMessage
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
@@ -57,8 +59,8 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
                     val pChannel = guildEvent.author.openPrivateChannel().awaitOrNull()
                     val language = getLanguage(container.daoManager, guildEvent.author.idLong)
                     val msg = i18n.getTranslation(language, "message.melijnping.nowriteperms")
-                        .replace("%server%", guildEvent.guild.name)
-                        .replace(PLACEHOLDER_CHANNEL, guildEvent.channel.asMention)
+                        .withVariable("server", guildEvent.guild.name)
+                        .withVariable(PLACEHOLDER_CHANNEL, guildEvent.channel.asMention)
 
                     pChannel?.sendMessage(msg)?.queue({}, {})
                 } catch (t: Throwable) {
@@ -94,7 +96,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             if (!member.hasPermission(Permission.ADMINISTRATOR)) {
                 container.botDeletedMessageIds.add(event.messageIdLong)
                 //User doesn't have admin perms to send message in verification channel
-                event.message.delete().queue()
+                event.message.delete().reason("verification channel").queue({}, {})
             }
             return
         }
@@ -176,17 +178,17 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
         val embedBuilder = EmbedBuilder()
         val language = getLanguage(container.daoManager, -1, event.guild.idLong)
         val title = i18n.getTranslation(language, "listener.message.attachment.log.title")
-            .replace(PLACEHOLDER_CHANNEL, event.channel.asTag)
+            .withVariable(PLACEHOLDER_CHANNEL, event.channel.asTag)
 
         val description = i18n.getTranslation(language, "listener.message.attachment.log.description")
-            .replace(PLACEHOLDER_USER_ID, event.author.id)
-            .replace("%messageId%", event.messageId)
-            .replace("%messageUrl%", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.message.id}")
-            .replace("%attachmentUrl%", attachment.url)
-            .replace("%moment%", event.message.timeCreated.asLongLongGMTString())
+            .withVariable(PLACEHOLDER_USER_ID, event.author.id)
+            .withVariable("messageId", event.messageId)
+            .withVariable("messageUrl", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.message.id}")
+            .withVariable("attachmentUrl", attachment.url)
+            .withVariable("moment", event.message.timeCreated.asLongLongGMTString())
 
         val footer = i18n.getTranslation(language, "listener.message.attachment.log.footer")
-            .replace(PLACEHOLDER_USER, event.author.asTag)
+            .withVariable(PLACEHOLDER_USER, event.author.asTag)
 
         embedBuilder.setFooter(footer, event.author.effectiveAvatarUrl)
 

@@ -6,6 +6,10 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.message.sendFeatureRequiresGuildPremiumMessage
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendRspCodeBlock
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
 
 const val UNKNOWN_COMMAND = "message.unknown.command"
 const val TOTAL_ALIASES_LIMIT = 5
@@ -44,7 +48,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             val aliasMap = context.daoManager.aliasWrapper.aliasCache.get(context.guildId).await()
             if (aliasMap.isEmpty()) {
                 val msg = context.getTranslation("$root.empty")
-                sendMsg(context, msg)
+                sendRsp(context, msg)
                 return
             }
 
@@ -64,7 +68,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             sb.append("```")
 
             val listTitle = context.getTranslation("$root.title")
-            sendMsgCodeBlock(context, "$listTitle\n$sb", "INI", true)
+            sendRspCodeBlock(context, "$listTitle\n$sb", "INI", true)
         }
     }
 
@@ -97,9 +101,9 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             val idLessCmd = cmdPath.removePrefix("$cmdId")
 
             val msg = context.getTranslation("$root.cleared")
-                .replace("%amount%", amount)
-                .replace("%cmd%", rootCmd.name + idLessCmd.replace(".", " "))
-            sendMsg(context, msg)
+                .withVariable("amount", amount)
+                .withVariable("cmd", rootCmd.name + idLessCmd.replace(".", " "))
+            sendRsp(context, msg)
         }
     }
 
@@ -123,9 +127,9 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             context.daoManager.aliasWrapper.clear(context.guildId, pathInfo.fullPath)
 
             val msg = context.getTranslation("$root.cleared")
-                .replace("%amount%", removed)
-                .replace("%cmd%", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
-            sendMsg(context, msg)
+                .withVariable("amount", removed)
+                .withVariable("cmd", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
+            sendRsp(context, msg)
         }
     }
 
@@ -147,10 +151,10 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             val aliases = aliasMap[pathInfo.fullPath] ?: emptyList()
             if (aliases.isEmpty()) {
                 val msg = context.getTranslation("$root.empty")
-                    .replace("%cmd%", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
-                    .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
+                    .withVariable("cmd", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
+                    .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
                 return
             }
 
@@ -160,9 +164,9 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             context.daoManager.aliasWrapper.remove(context.guildId, pathInfo.fullPath, alias)
 
             val msg = context.getTranslation("$root.removed")
-                .replace("%alias%", alias)
-                .replace("%cmd%", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
-            sendMsg(context, msg)
+                .withVariable("alias", alias)
+                .withVariable("cmd", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
+            sendRsp(context, msg)
         }
 
     }
@@ -182,9 +186,9 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             context.daoManager.aliasWrapper.remove(context.guildId, pathInfo.fullPath, alias)
 
             val msg = context.getTranslation("$root.removed")
-                .replace("%alias%", alias)
-                .replace("%cmd%", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
-            sendMsg(context, msg)
+                .withVariable("alias", alias)
+                .withVariable("cmd", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
+            sendRsp(context, msg)
         }
     }
 
@@ -217,8 +221,8 @@ class AliasesCommand : AbstractCommand("command.aliases") {
                 return
             } else if (total >= PREMIUM_TOTAL_ALIASES_LIMIT) {
                 val msg = context.getTranslation("$root.limit.total")
-                    .replace("%limit%", "$PREMIUM_TOTAL_ALIASES_LIMIT")
-                sendMsg(context, msg)
+                    .withVariable("limit", "$PREMIUM_TOTAL_ALIASES_LIMIT")
+                sendRsp(context, msg)
                 return
             }
 
@@ -237,17 +241,17 @@ class AliasesCommand : AbstractCommand("command.aliases") {
                 return
             } else if (cmdTotal >= PREMIUM_CMD_ALIASES_LIMIT) {
                 val msg = context.getTranslation("$root.limit.cmd")
-                    .replace("%limit%", "$PREMIUM_CMD_ALIASES_LIMIT")
-                sendMsg(context, msg)
+                    .withVariable("limit", "$PREMIUM_CMD_ALIASES_LIMIT")
+                sendRsp(context, msg)
                 return
             }
 
             context.daoManager.aliasWrapper.add(context.guildId, pathInfo.fullPath, alias)
 
             val msg = context.getTranslation("$root.added")
-                .replace("%alias%", alias)
-                .replace("%cmd%", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
-            sendMsg(context, msg)
+                .withVariable("alias", alias)
+                .withVariable("cmd", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
+            sendRsp(context, msg)
         }
     }
 
@@ -269,12 +273,12 @@ class AliasesCommand : AbstractCommand("command.aliases") {
         }
 
         suspend fun getCommandPathInfo(context: CommandContext, index: Int): CmdPathInfo? {
-            val commandParts = context.args[index].split("\\s+".toRegex())
+            val commandParts = context.args[index].split(SPACE_PATTERN)
             val cmd = find(context.commandList.toTypedArray(), commandParts, 0)
             if (cmd == null) {
                 val msg = context.getTranslation(UNKNOWN_COMMAND)
-                    .replace("%arg%", context.args[index])
-                sendMsg(context, msg)
+                    .withVariable("arg", context.args[index])
+                sendRsp(context, msg)
                 return null
             }
 

@@ -16,6 +16,10 @@ import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.SC_SELECTOR
 import me.melijn.melijnbot.objects.translation.YT_SELECTOR
 import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.objects.utils.message.sendEmbedRspAwaitEL
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendRspAwaitEL
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.VoiceChannel
@@ -132,47 +136,47 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
     private suspend fun sendMessageLoadFailed(context: CommandContext, exception: Throwable) {
         val msg = context.getTranslation("$root.loadfailed")
-            .replace("%cause%", exception.message ?: "/")
-        sendMsg(context, msg)
+            .withVariable("cause", exception.message ?: "/")
+        sendRsp(context, msg)
         exception.printStackTrace()
     }
 
     suspend fun sendMessageNoMatches(context: CommandContext, input: String) {
         val msg = context.getTranslation("$root.nomatches")
-            .replace("%source%", input)
-        sendMsg(context, msg)
+            .withVariable("source", input)
+        sendRsp(context, msg)
     }
 
 
     suspend fun sendMessageAddedTrack(context: CommandContext, audioTrack: AudioTrack) {
         val title = context.getTranslation("$root.addedtrack.title")
-            .replace(PLACEHOLDER_USER, context.author.asTag)
+            .withVariable(PLACEHOLDER_USER, context.author.asTag)
         val description = context.getTranslation("$root.addedtrack.description")
-            .replace("%position%", getQueuePosition(context, audioTrack).toString())
-            .replace("%title%", audioTrack.info.title)
-            .replace("%duration%", getDurationString(audioTrack.duration))
-            .replace("%url%", audioTrack.info.uri)
+            .withVariable("position", getQueuePosition(context, audioTrack).toString())
+            .withVariable("title", audioTrack.info.title)
+            .withVariable("duration", getDurationString(audioTrack.duration))
+            .withVariable("url", audioTrack.info.uri)
 
         val eb = Embedder(context)
         eb.setTitle(title)
         eb.setDescription(description)
 
-        sendEmbed(context, eb.build())
+        sendEmbedRsp(context, eb.build())
     }
 
     private suspend fun sendMessageAddedTracks(context: CommandContext, audioTracks: List<AudioTrack>) {
         val title = context.getTranslation("$root.addedtracks.title")
-            .replace(PLACEHOLDER_USER, context.author.asTag)
+            .withVariable(PLACEHOLDER_USER, context.author.asTag)
         val description = context.getTranslation("$root.addedtracks.description")
-            .replace("%size%", audioTracks.size.toString())
-            .replace("%positionFirst%", getQueuePosition(context, audioTracks[0]).toString())
-            .replace("%positionLast%", getQueuePosition(context, audioTracks[audioTracks.size - 1]).toString())
+            .withVariable("size", audioTracks.size.toString())
+            .withVariable("positionFirst", getQueuePosition(context, audioTracks[0]).toString())
+            .withVariable("positionLast", getQueuePosition(context, audioTracks[audioTracks.size - 1]).toString())
 
         val eb = Embedder(context)
         eb.setTitle(title)
         eb.setDescription(description)
 
-        sendEmbed(context, eb.build())
+        sendEmbedRsp(context, eb.build())
     }
 
     private fun getQueuePosition(context: CommandContext, audioTrack: AudioTrack): Int =
@@ -295,19 +299,19 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     suspend fun loadSpotifyPlaylist(context: CommandContext, tracks: Array<Track>, nextPos: NextSongPosition) {
         if (tracks.size + context.guildMusicPlayer.guildTrackManager.tracks.size > QUEUE_LIMIT) {
             val msg = context.getTranslation("$root.queuelimit")
-                .replace("%amount%", QUEUE_LIMIT.toString())
+                .withVariable("amount", QUEUE_LIMIT.toString())
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
             return
         }
 
         val loadedTracks = mutableListOf<Track>()
         val failedTracks = mutableListOf<Track>()
         val msg = context.getTranslation("command.play.loadingtrack" + if (tracks.size > 1) "s" else "")
-            .replace("%trackCount%", tracks.size.toString())
-            .replace("%donateAmount%", DONATE_QUEUE_LIMIT.toString())
+            .withVariable("trackCount", tracks.size.toString())
+            .withVariable("donateAmount", DONATE_QUEUE_LIMIT.toString())
 
-        val message = sendMsgAwaitEL(context, msg)
+        val message = sendRspAwaitEL(context, msg)
         for (track in tracks) {
             loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, true, nextPos) {
                 if (it) {
@@ -317,8 +321,8 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 }
                 if (loadedTracks.size + failedTracks.size == tracks.size) {
                     val newMsg = context.getTranslation("command.play.loadedtrack" + if (tracks.size > 1) "s" else "")
-                        .replace("%loadedCount%", loadedTracks.size.toString())
-                        .replace("%failedCount%", failedTracks.size.toString())
+                        .withVariable("loadedCount", loadedTracks.size.toString())
+                        .withVariable("failedCount", failedTracks.size.toString())
                     message[0].editMessage(newMsg).await()
                 }
             }
@@ -328,17 +332,17 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     suspend fun loadSpotifyAlbum(context: CommandContext, simpleTracks: Array<TrackSimplified>, nextPos: NextSongPosition) {
         if (simpleTracks.size + context.guildMusicPlayer.guildTrackManager.tracks.size > QUEUE_LIMIT) {
             val msg = context.getTranslation("$root.queuelimit")
-                .replace("%amount%", QUEUE_LIMIT.toString())
-                .replace("%donateAmount%", DONATE_QUEUE_LIMIT.toString())
-            sendMsg(context, msg)
+                .withVariable("amount", QUEUE_LIMIT.toString())
+                .withVariable("donateAmount", DONATE_QUEUE_LIMIT.toString())
+            sendRsp(context, msg)
             return
         }
 
         val loadedTracks = mutableListOf<TrackSimplified>()
         val failedTracks = mutableListOf<TrackSimplified>()
         val msg = context.getTranslation("command.play.loadingtrack" + if (simpleTracks.size > 1) "s" else "")
-            .replace("%trackCount%", simpleTracks.size.toString())
-        val message = sendMsgAwaitEL(context, msg)
+            .withVariable("trackCount", simpleTracks.size.toString())
+        val message = sendRspAwaitEL(context, msg)
         for (track in simpleTracks) {
             loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, true, nextPos) {
                 if (it) {
@@ -348,8 +352,8 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
                 }
                 if (loadedTracks.size + failedTracks.size == simpleTracks.size) {
                     val newMsg = context.getTranslation("command.play.loadedtrack" + if (simpleTracks.size > 1) "s" else "")
-                        .replace("%loadedCount%", loadedTracks.size.toString())
-                        .replace("%failedCount%", failedTracks.size.toString())
+                        .withVariable("loadedCount", loadedTracks.size.toString())
+                        .withVariable("failedCount", failedTracks.size.toString())
                     message[0].editMessage(newMsg).await()
                 }
             }
@@ -415,10 +419,11 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         for ((index, track) in tracks.withIndex()) {
             menu += "\n[${index + 1}](${track.info.uri}) - ${track.info.title} `[${getDurationString(track.duration)}]`"
         }
+
         val eb = Embedder(context)
-        eb.setTitle(title)
-        eb.setDescription(menu)
-        return sendEmbedAwaitEL(context, eb.build())
+            .setTitle(title)
+            .setDescription(menu)
+        return sendEmbedRspAwaitEL(context, eb.build())
     }
 
     suspend fun loadNewTrack(daoManager: DaoManager, lavaManager: LavaManager, vc: VoiceChannel, author: User, source: String, nextPos: NextSongPosition) {

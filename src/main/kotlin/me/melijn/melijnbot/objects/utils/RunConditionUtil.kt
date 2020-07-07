@@ -10,6 +10,8 @@ import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.command.hasPermission
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
+import me.melijn.melijnbot.objects.utils.message.getNicerUsedPrefix
+import me.melijn.melijnbot.objects.utils.message.sendMsg
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
 object RunConditionUtil {
@@ -83,7 +85,7 @@ object RunConditionUtil {
                 true
             } else {
                 val msg = i18n.getTranslation(language, "message.runcondition.failed.voted")
-                    .replace("%url%", VOTE_URL)
+                    .withVariable("url", VOTE_URL)
                 event.channel.sendMessage(msg).queue()
                 false
             }

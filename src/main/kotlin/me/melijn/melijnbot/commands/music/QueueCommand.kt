@@ -6,7 +6,11 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.StringUtils
+import me.melijn.melijnbot.objects.utils.getDurationString
+import me.melijn.melijnbot.objects.utils.message.sendPaginationModularRsp
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.withVariable
 import net.dv8tion.jda.api.Permission
 
 class QueueCommand : AbstractCommand("command.queue") {
@@ -29,7 +33,7 @@ class QueueCommand : AbstractCommand("command.queue") {
         val cTrack: AudioTrack? = trackManager.iPlayer.playingTrack
         if (cTrack == null) {
             val noSongPlaying = context.getTranslation("message.music.notracks")
-            sendMsg(context, noSongPlaying)
+            sendRsp(context, noSongPlaying)
             return
         }
 
@@ -45,8 +49,8 @@ class QueueCommand : AbstractCommand("command.queue") {
         val title = context.getTranslation("$root.title")
 
         description += context.getTranslation("$root.fakefooter")
-            .replace("%duration%", getDurationString(totalDuration - trackManager.iPlayer.trackPosition))
-            .replace("%amount%", (allTracks.size + 1).toString())
+            .withVariable("duration", getDurationString(totalDuration - trackManager.iPlayer.trackPosition))
+            .withVariable("amount", (allTracks.size + 1).toString())
 
         val footerPagination = context.getTranslation("message.pagination")
 
@@ -60,8 +64,8 @@ class QueueCommand : AbstractCommand("command.queue") {
             if (queueParts.size > 1) {
                 eb.setFooter(
                     footerPagination
-                        .replace("%page%", index + 1)
-                        .replace("%pages%", queueParts.size)
+                        .withVariable("page", index + 1)
+                        .withVariable("pages", queueParts.size)
                 )
             }
             modularMessages.add(index, ModularMessage(
@@ -70,9 +74,9 @@ class QueueCommand : AbstractCommand("command.queue") {
         }
 
         if (modularMessages.size > 1) {
-            sendPaginationModularMsg(context, modularMessages, 0)
+            sendPaginationModularRsp(context, modularMessages, 0)
         } else {
-            sendMsg(context.textChannel, modularMessages.first())
+            sendRsp(context.textChannel, context, modularMessages.first())
         }
     }
 }

@@ -5,14 +5,15 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.utils.getDurationString
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.withVariable
 
 class DonateCommand : AbstractCommand("command.donate") {
 
     init {
         id = 97
         name = "donate"
-        aliases = arrayOf("patreon", "patron", "sponsor")
+        aliases = arrayOf("patreon", "patron", "sponsor", "donator", "subscribe")
         children = arrayOf(LinkServerArg(root))
         commandCategory = CommandCategory.UTILITY
     }
@@ -32,19 +33,19 @@ class DonateCommand : AbstractCommand("command.donate") {
                 wrapper.setGuild(context.authorId, context.guildId)
 
                 val msg = context.getTranslation("$root.selected")
-                    .replace("%server%", context.guild.name)
-                sendMsg(context, msg)
+                    .withVariable("server", context.guild.name)
+                sendRsp(context, msg)
             } else {
                 val msg = context.getTranslation("$root.oncooldown")
-                    .replace("%timeLeft%", getDurationString(supporter.lastServerPickTime - (System.currentTimeMillis() - 1_209_600_000)))
-                sendMsg(context, msg)
+                    .withVariable("timeLeft", getDurationString(supporter.lastServerPickTime - (System.currentTimeMillis() - 1_209_600_000)))
+                sendRsp(context, msg)
             }
         }
     }
 
     override suspend fun execute(context: CommandContext) {
         val msg = context.getTranslation("$root.response")
-            .replace("%url%", "https://patreon.com/melijn")
-        sendMsg(context, msg)
+            .withVariable("url", "https://patreon.com/melijn")
+        sendRsp(context, msg)
     }
 }

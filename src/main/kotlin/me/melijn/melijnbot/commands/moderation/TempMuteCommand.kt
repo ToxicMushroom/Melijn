@@ -14,6 +14,10 @@ import me.melijn.melijnbot.objects.translation.MESSAGE_SELFINTERACT_MEMBER_HIARC
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.utils.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
+import me.melijn.melijnbot.objects.utils.message.sendEmbed
+import me.melijn.melijnbot.objects.utils.message.sendMsgAwaitEL
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
@@ -42,14 +46,14 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         if (member != null) {
             if (!context.guild.selfMember.canInteract(member)) {
                 val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .replace(PLACEHOLDER_USER, member.asTag)
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_USER, member.asTag)
+                sendRsp(context, msg)
                 return
             }
             if (!context.member.canInteract(member) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
                 val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .replace(PLACEHOLDER_USER, member.asTag)
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_USER, member.asTag)
+                sendRsp(context, msg)
                 return
             }
         }
@@ -57,7 +61,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         val noUserArg = context
             .rawArg.removeFirst(("\"?" + Pattern.quote(context.args[0]) + "\"?").toRegex())
             .trim()
-        val durationArgs = context.args[1].split("\\s+".toRegex())
+        val durationArgs = context.args[1].split(SPACE_PATTERN)
         val muteDuration = (getDurationByArgsNMessage(context, 0, durationArgs.size, durationArgs) ?: return) * 1000
 
         var reason = noUserArg.removeFirst(("\"?" + Pattern.quote(context.args[1]) + "\"?").toRegex()).trim()
@@ -71,7 +75,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         var muteRole: Role? = context.guild.getRoleById(roleId)
         if (muteRole == null) {
             val msg = context.getTranslation("message.creatingmuterole")
-            sendMsg(context, msg)
+            sendRsp(context, msg)
 
             try {
                 muteRole = context.guild.createRole()
@@ -84,8 +88,8 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
                 roleWrapper.setRole(context.guildId, RoleType.MUTE, muteRole.idLong)
             } catch (t: Throwable) {
                 val msgFailed = context.getTranslation("message.creatingmuterole.failed")
-                    .replace("%cause%", t.message ?: "/")
-                sendMsg(context, msgFailed)
+                    .withVariable("cause", t.message ?: "/")
+                sendRsp(context, msgFailed)
             }
 
             if (muteRole == null) return
@@ -148,9 +152,9 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
             mutingMessage?.editMessage(failedMsg)?.queue()
 
             val msg = context.getTranslation("$root.failure")
-                .replace(PLACEHOLDER_USER, targetUser.asTag)
-                .replace("%cause%", t.message ?: "/")
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withVariable("cause", t.message ?: "/")
+            sendRsp(context, msg)
         }
     }
 
@@ -163,10 +167,10 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, mutedMessageLc) }
 
         val msg = context.getTranslation("$root.success" + if (activeMute != null) ".updated" else "")
-            .replace(PLACEHOLDER_USER, targetUser.asTag)
-            .replace("%endTime%", mute.endTime?.asEpochMillisToDateTime(context.getTimeZoneId()) ?: "none")
-            .replace("%reason%", mute.reason)
-        sendMsg(context, msg)
+            .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+            .withVariable("endTime", mute.endTime?.asEpochMillisToDateTime(context.getTimeZoneId()) ?: "none")
+            .withVariable("reason", mute.reason)
+        sendRsp(context, msg)
     }
 }
 

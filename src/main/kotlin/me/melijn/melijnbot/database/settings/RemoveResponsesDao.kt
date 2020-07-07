@@ -20,8 +20,8 @@ class RemoveResponsesDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
     suspend fun insert(guildId: Long, channelId: Long, seconds: Int) {
-        driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, seconds) VALUES (?, ?, ?)",
-            guildId, channelId, seconds)
+        driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, seconds) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET seconds = ?",
+            guildId, channelId, seconds, seconds)
     }
 
     suspend fun getChannels(guildId: Long): Map<Long, Int> = suspendCoroutine {

@@ -11,6 +11,8 @@ import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelById
+import me.melijn.melijnbot.objects.utils.message.escapeForLog
+import me.melijn.melijnbot.objects.utils.message.sendEmbed
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.audit.ActionType
@@ -136,7 +138,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
             if (index == ebs.size - 1) {
                 val language = getLanguage(container.daoManager, -1, event.guild.idLong)
                 val footer = i18n.getTranslation(language, "listener.message.deletion.log.footer")
-                    .replace(PLACEHOLDER_USER, messageAuthor.asTag)
+                    .withVariable(PLACEHOLDER_USER, messageAuthor.asTag)
                 eb.setFooter(footer, messageAuthor.effectiveAvatarUrl)
             }
             sendEmbed(container.daoManager.embedDisabledWrapper, sdmLogChannel, eb.build())
@@ -155,7 +157,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
             if (index == ebs.size - 1) {
                 val language = getLanguage(container.daoManager, -1, event.guild.idLong)
                 val footer = i18n.getTranslation(language, "listener.message.deletion.log.footer")
-                    .replace(PLACEHOLDER_USER, deleterMember.asTag)
+                    .withVariable(PLACEHOLDER_USER, deleterMember.asTag)
                 eb.setFooter(footer, deleterMember.user.effectiveAvatarUrl)
             }
 
@@ -181,14 +183,14 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
                     for ((key, value) in it) {
                         if (value.isEmpty()) continue
                         extra += i18n.getTranslation(language, "logging.punishmentpoints.cause.${key}")
-                            .replace("%word%", value.joinToString()) + "\n"
+                            .withVariable("word", value.joinToString()) + "\n"
                     }
                 }
 
                 eb.addField(fieldTitle, extra.take(MessageEmbed.VALUE_MAX_LENGTH), false)
 
                 val footer = i18n.getTranslation(language, "listener.message.deletion.log.footer")
-                    .replace(PLACEHOLDER_USER, event.jda.selfUser.asTag)
+                    .withVariable(PLACEHOLDER_USER, event.jda.selfUser.asTag)
                 eb.setFooter(footer, event.jda.selfUser.effectiveAvatarUrl)
             }
             sendEmbed(container.daoManager.embedDisabledWrapper, fmLogChannel, eb.build())
@@ -209,16 +211,16 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
         val language = getLanguage(container.daoManager, -1, event.guild.idLong)
         val title = i18n.getTranslation(language, "listener.message.deletion.log.title")
-            .replace(PLACEHOLDER_CHANNEL, channel?.asTag ?: "<#${msg.textChannelId}>")
+            .withVariable(PLACEHOLDER_CHANNEL, channel?.asTag ?: "<#${msg.textChannelId}>")
 
         val extra = if (msg.authorId == messageDeleterId) ".self" else ""
         val description = i18n.getTranslation(language, "listener.message.deletion.log${extra}.description")
-            .replace("%messageAuthor%", messageAuthor.asTag)
-            .replace("%messageContent%", escapeForLog(msg.content))
-            .replace("%messageAuthorId%", msg.authorId.toString())
-            .replace("%messageDeleterId%", messageDeleterId.toString())
-            .replace("%sentTime%", msg.moment.asEpochMillisToDateTime(zoneId))
-            .replace("%deletedTime%", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+            .withVariable("messageAuthor", messageAuthor.asTag)
+            .withVariable("messageContent", escapeForLog(msg.content))
+            .withVariable("messageAuthorId", msg.authorId.toString())
+            .withVariable("messageDeleterId", messageDeleterId.toString())
+            .withVariable("sentTime", msg.moment.asEpochMillisToDateTime(zoneId))
+            .withVariable("deletedTime", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         val ebs = mutableListOf<EmbedBuilder>()
 

@@ -6,7 +6,8 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.utils.getEmotejiByArgsNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.withVariable
 
 class SetVerificationEmotejiCommand : AbstractCommand("command.setverificationemoteji") {
 
@@ -27,8 +28,8 @@ class SetVerificationEmotejiCommand : AbstractCommand("command.setverificationem
                 "set"
             }
             val msg = context.getTranslation("$root.show.$part")
-                .replace("%code%", code)
-            sendMsg(context, msg)
+                .withVariable("code", code)
+            sendRsp(context, msg)
             return
         }
 
@@ -43,19 +44,19 @@ class SetVerificationEmotejiCommand : AbstractCommand("command.setverificationem
                 second != null -> {
                     wrapper.setEmoteji(context.guildId, second)
                     context.getTranslation("$root.set.emoji")
-                        .replace(PLACEHOLDER_ARG, second)
+                        .withVariable(PLACEHOLDER_ARG, second)
 
                 }
                 first != null -> {
                     wrapper.setEmoteji(context.guildId, first.id)
                     context.getTranslation("$root.set.emote")
-                        .replace("%emoteId%", first.id)
-                        .replace("%emoteName%", first.name)
+                        .withVariable("emoteId", first.id)
+                        .withVariable("emoteName", first.name)
                 }
                 else -> throw IllegalArgumentException("This should never be executed")
             }
         }
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

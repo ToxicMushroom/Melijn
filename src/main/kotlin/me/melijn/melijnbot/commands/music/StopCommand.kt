@@ -6,7 +6,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
 import me.melijn.melijnbot.objects.services.voice.VOICE_SAFE
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
 
 class StopCommand : AbstractCommand("command.stop") {
 
@@ -26,6 +26,6 @@ class StopCommand : AbstractCommand("command.stop") {
         }
 
         val msg = context.getTranslation("$root.success")
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

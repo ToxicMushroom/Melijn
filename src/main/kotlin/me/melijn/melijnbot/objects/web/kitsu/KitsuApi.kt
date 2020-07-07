@@ -1,10 +1,10 @@
 package me.melijn.melijnbot.objects.web.kitsu
 
+import io.ktor.client.HttpClient
 import me.melijn.melijnbot.objectMapper
 import me.melijn.melijnbot.objects.web.WebUtils
-import okhttp3.OkHttpClient
 
-class KitsuApi(val httpClient: OkHttpClient) {
+class KitsuApi(val httpClient: HttpClient) {
 
     companion object {
         const val kitsuApiBase = "https://kitsu.io/api/edge"

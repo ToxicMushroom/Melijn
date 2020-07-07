@@ -7,8 +7,9 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.utils.enumValueOrNull
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
 import me.melijn.melijnbot.objects.utils.toUCC
+import me.melijn.melijnbot.objects.utils.withVariable
 
 class SetVerificationTypeCommand : AbstractCommand("command.setverificationtype") {
 
@@ -25,8 +26,8 @@ class SetVerificationTypeCommand : AbstractCommand("command.setverificationtype"
             val type = wrapper.verificationTypeCache.get(context.guildId).await()
             val part = if (type == VerificationType.NONE) "unset" else "set"
             val msg = context.getTranslation("$root.show.$part")
-                .replace("%type%", type.toUCC())
-            sendMsg(context, msg)
+                .withVariable("type", type.toUCC())
+            sendRsp(context, msg)
             return
         }
 
@@ -37,13 +38,13 @@ class SetVerificationTypeCommand : AbstractCommand("command.setverificationtype"
             context.getTranslation("$root.unset")
         } else if (type == null) {
             context.getTranslation("message.unknown.verificationtype")
-                .replace(PLACEHOLDER_ARG, context.rawArg)
+                .withVariable(PLACEHOLDER_ARG, context.rawArg)
         } else {
             wrapper.setType(context.guildId, type)
             context.getTranslation("$root.set")
-                .replace(PLACEHOLDER_ARG, type.toUCC())
+                .withVariable(PLACEHOLDER_ARG, type.toUCC())
         }
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

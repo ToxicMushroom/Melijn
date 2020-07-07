@@ -4,7 +4,12 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.audio.GainProfile
 import me.melijn.melijnbot.objects.command.*
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.objects.utils.getStringFromArgsNMessage
+import me.melijn.melijnbot.objects.utils.isPositiveNumber
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
+import me.melijn.melijnbot.objects.utils.withVariable
 import kotlin.math.roundToInt
 
 class GainProfileCommand : AbstractCommand("command.gainprofile") {
@@ -51,8 +56,8 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             }
 
             val msg = context.getTranslation("$root.loaded")
-                .replace("%gainProfile%", pair.first)
-            sendMsg(context, msg)
+                .withVariable("gainProfile", pair.first)
+            sendRsp(context, msg)
         }
     }
 
@@ -83,9 +88,9 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             wrapper.add(context.guildId, newName, profile.toFloatArray())
 
             val msg = context.getTranslation("$context.copied")
-                .replace("%gainProfile1%", name)
-                .replace("%gainProfile2%", newName)
-            sendMsg(context, msg)
+                .withVariable("gainProfile1", name)
+                .withVariable("gainProfile2", newName)
+            sendRsp(context, msg)
         }
     }
 
@@ -128,7 +133,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
                 "14 - [16 kHz] - ${((profile.band14 + 0.25f) * 500).roundToInt()}" +
                 "```"
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -156,9 +161,9 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             wrapper.remove(context.guildId, profileName)
 
             val msg = context.getTranslation("$root.removed")
-                .replace(PLACEHOLDER_ARG, profileName)
+                .withVariable(PLACEHOLDER_ARG, profileName)
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -191,7 +196,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             }
             content += "```"
 
-            sendMsg(context, title + content)
+            sendRsp(context, title + content)
         }
     }
 
@@ -215,9 +220,9 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             wrapper.add(context.guildId, name, context.guildMusicPlayer.guildTrackManager.iPlayer.bands)
 
             val msg = context.getTranslation("$root.added")
-                .replace(PLACEHOLDER_ARG, name)
+                .withVariable(PLACEHOLDER_ARG, name)
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -238,9 +243,9 @@ suspend fun getGainProfileNMessage(context: CommandContext, map: Map<String, Gai
             map[name]
         } else {
             val msg = context.getTranslation("${context.commandOrder.first().root}.notfound")
-                .replace(PLACEHOLDER_ARG, name)
-                .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_ARG, name)
+                .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+            sendRsp(context, msg)
             return null
         }
     } ?: throw IllegalArgumentException("no this is bad code smh")

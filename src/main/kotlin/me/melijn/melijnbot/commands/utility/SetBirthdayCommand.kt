@@ -6,7 +6,8 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.getBirthdayByArgsNMessage
 import me.melijn.melijnbot.objects.utils.getEnumFromArgN
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.withVariable
 import java.time.LocalDate
 
 class SetBirthdayCommand : AbstractCommand("command.setbirthday") {
@@ -23,23 +24,23 @@ class SetBirthdayCommand : AbstractCommand("command.setbirthday") {
 
             if (birthday == null) {
                 val name = context.getTranslation("$root.show.unset")
-                sendMsg(context, name)
+                sendRsp(context, name)
             } else {
                 val localDate = LocalDate.ofYearDay(2019, birthday.first)
                 val dayOfMonth = localDate.dayOfMonth
                 val month = localDate.monthValue
 
                 val name = context.getTranslation("$root.show.set")
-                    .replace("%birthday%", "$dayOfMonth/$month")
-                    .replace("%birthyear%", birthday.second.toString())
-                sendMsg(context, name)
+                    .withVariable("birthday", "$dayOfMonth/$month")
+                    .withVariable("birthyear", birthday.second.toString())
+                sendRsp(context, name)
             }
             return
         }
         if (context.args[0] == "null") {
             context.daoManager.birthdayWrapper.unsetBirthday(context.authorId)
             val message = context.getTranslation("$root.unset")
-            sendMsg(context, message)
+            sendRsp(context, message)
             return
         }
 
@@ -55,13 +56,15 @@ suspend fun setBirthday(context: CommandContext, datePair: Pair<Int, Int?>) {
 
     val birthdayWrapper = context.daoManager.birthdayWrapper
     birthdayWrapper.setBirthday(context.authorId, birthday, optionalBirthYear)
+
     val localDate = LocalDate.ofYearDay(2019, birthday)
     val dayOfMonth = localDate.dayOfMonth
     val month = localDate.monthValue
     val extra = if (optionalBirthYear != null) ".year" else ""
-    val msg = context.getTranslation("${context.commandOrder.first().root}.set$extra")
-        .replace("%birthday%", "$dayOfMonth/$month")
-        .replace("%birthyear%", "$optionalBirthYear")
 
-    sendMsg(context, msg)
+    val msg = context.getTranslation("${context.commandOrder.first().root}.set$extra")
+        .withVariable("birthday", "$dayOfMonth/$month")
+        .withVariable("birthyear", "$optionalBirthYear")
+
+    sendRsp(context, msg)
 }

@@ -1,7 +1,7 @@
 package me.melijn.melijnbot.objects.threading
 
 import kotlinx.coroutines.runBlocking
-import me.melijn.melijnbot.objects.utils.sendInGuild
+import me.melijn.melijnbot.objects.utils.message.sendInGuild
 
 
 class Task(private val func: suspend () -> Unit) : KTRunnable {

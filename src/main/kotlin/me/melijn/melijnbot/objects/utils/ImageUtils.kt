@@ -2,9 +2,15 @@ package me.melijn.melijnbot.objects.utils
 
 import com.madgag.gif.fmsware.GifDecoder
 import com.squareup.gifencoder.*
+import io.ktor.client.request.get
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.readBytes
 import kotlinx.coroutines.*
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.objects.utils.message.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendMsgAwaitEL
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.image.BufferedImage
@@ -12,7 +18,6 @@ import java.awt.image.Kernel
 import java.awt.image.Raster
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.net.URL
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipInputStream
 import javax.imageio.ImageIO
@@ -39,7 +44,7 @@ object ImageUtils {
         val attachments = context.message.attachments
 
         val arg: Boolean
-        var img: ByteArray? = null
+        var img: ByteArray?
         val url: String
         if (attachments.isNotEmpty()) {
             try {
@@ -48,12 +53,14 @@ object ImageUtils {
 
                 if (!checkFormat(context, attachments[0].url, reqFormat)) return null
                 withContext(Dispatchers.IO) {
-                    img = URL(url).readBytes()
-                    if (ImageIO.read(ByteArrayInputStream(img)) == null) img = null
+                    img = context.webManager.httpClient.get<HttpResponse>(url).readBytes()
+                    ByteArrayInputStream(img).use { bis ->
+                        if (ImageIO.read(bis) == null) img = null
+                    }
                 }
             } catch (e: Throwable) {
                 val msg = context.getTranslation("message.attachmentnotanimage")
-                    .replace(PLACEHOLDER_ARG, attachments[0].url)
+                    .withVariable(PLACEHOLDER_ARG, attachments[0].url)
                 sendMsg(context, msg)
                 return null
             }
@@ -64,8 +71,10 @@ object ImageUtils {
                 url = user.effectiveAvatarUrl + "?size=2048"
                 if (!checkFormat(context, user.effectiveAvatarUrl, reqFormat)) return null
                 withContext(Dispatchers.IO) {
-                    img = URL(url).readBytes()
-                    if (ImageIO.read(ByteArrayInputStream(img)) == null) img = null
+                    img = context.webManager.httpClient.get<HttpResponse>(url).readBytes()
+                    ByteArrayInputStream(img).use { bis ->
+                        if (ImageIO.read(bis) == null) img = null
+                    }
                 }
             } else {
                 arg = true
@@ -73,14 +82,16 @@ object ImageUtils {
                 try {
                     if (!checkFormat(context, args[0], reqFormat)) return null
                     withContext(Dispatchers.IO) {
-                        img = URL(url).readBytes()
-                        if (ImageIO.read(ByteArrayInputStream(img)) == null) {
-                            img = null
+                        img = context.webManager.httpClient.get<HttpResponse>(url).readBytes()
+                        ByteArrayInputStream(img).use { bis ->
+                            if (ImageIO.read(bis) == null) {
+                                img = null
+                            }
                         }
                     }
                 } catch (e: Exception) {
                     val msg = context.getTranslation("message.notuserorurl")
-                        .replace(PLACEHOLDER_ARG, args[0])
+                        .withVariable(PLACEHOLDER_ARG, args[0])
                     sendMsg(context, msg)
                     return null
                 }
@@ -90,13 +101,13 @@ object ImageUtils {
             url = context.author.effectiveAvatarUrl + "?size=2048"
             if (!checkFormat(context, context.author.effectiveAvatarUrl, reqFormat)) return null
             withContext(Dispatchers.IO) {
-                img = URL(url).readBytes()
+                img = context.webManager.httpClient.get<HttpResponse>(url).readBytes()
             }
         }
 
         if (img == null) {
             val msg = context.getTranslation("message.notimage")
-                .replace("%url%", url)
+                .withVariable("url", url)
             sendMsg(context, msg)
             return null
         }
@@ -113,7 +124,7 @@ object ImageUtils {
         val attachments = context.message.attachments
 
         //filename, imagedata
-        val imgs: MutableMap<String, ByteArray> = mutableMapOf()
+        val imgMap: MutableMap<String, ByteArray> = mutableMapOf()
         var error = false
         var errorFile: String? = null
         var url = ""
@@ -130,51 +141,59 @@ object ImageUtils {
 
                     if (isZip) {
                         // Attachment is a zip
-                        val zip = URL(url).readBytes()
-                        val zis = ZipInputStream(zip.inputStream())
-                        var ze = zis.nextEntry
-//                        val buffer = ByteArray(4096)
-                        while (ze != null) {
-//                            var len: Int
-                            val img = zis.readAllBytes()
-//                            while (zis.read(buffer).also { len = it } > 0) {
-//                                fos.write(buffer, 0, len)
-//                            }
-                            val anImage = ImageIO.read(ByteArrayInputStream(img))
-                            if (anImage == null) {
-                                error = true
-                                errorFile = url + " > " + ze.name
-                            } else {
-                                maxWidth = max(maxWidth, anImage.width)
-                                maxHeight = max(maxHeight, anImage.height)
-                                imgs[ze.name] = img
-                            }
-                            ze = zis.nextEntry
+                        val zip = withContext(Dispatchers.IO) {
+                            context.webManager.httpClient.get<HttpResponse>(url).readBytes()
                         }
-                        zis.close()
+                        zip.inputStream().use { bais ->
+                            ZipInputStream(bais).use { zis ->
+                                var ze = zis.nextEntry
+
+                                while (ze != null) {
+
+                                    val img = zis.readAllBytes()
+
+                                    val anImage = ImageIO.read(ByteArrayInputStream(img))
+                                    if (anImage == null) {
+                                        error = true
+                                        errorFile = url + " > " + ze.name
+                                    } else {
+                                        maxWidth = max(maxWidth, anImage.width)
+                                        maxHeight = max(maxHeight, anImage.height)
+                                        imgMap[ze.name] = img
+                                    }
+                                    ze = zis.nextEntry
+                                }
+                            }
+                        }
                     } else {
                         //Attachment is an image (should be)
                         url = attachment.url + "?size=2048"
                         if (!checkFormat(context, attachment.url, reqFormat)) return null
 
-                        val img = URL(url).readBytes()
-                        if (ImageIO.read(ByteArrayInputStream(img)) == null) {
-                            error = true
-                            errorFile = url
-                            break
+                        val img = withContext(Dispatchers.IO) {
+                            context.webManager.httpClient.get<HttpResponse>(url).readBytes()
                         }
-                        imgs[attachment.fileName] = img
+
+                        ByteArrayInputStream(img).use { bais ->
+                            if (ImageIO.read(bais) == null) {
+                                error = true
+                                errorFile = url
+                            }
+                        }
+                        if (error) break
+
+                        imgMap[attachment.fileName] = img
                     }
                 } catch (e: Throwable) {
                     val msg = context.getTranslation("message.attachmentnotanimage")
-                        .replace(PLACEHOLDER_ARG, url)
+                        .withVariable(PLACEHOLDER_ARG, url)
                     sendMsg(context, msg)
                     return null
                 }
             }
         } else if (args.isNotEmpty() && args[0].isNotEmpty()) {
             arg = true
-            val urls = args[0].replace("\n", " ").split("\\s+".toRegex())
+            val urls = args[0].replace("\n", " ").split(SPACE_PATTERN)
 
             try {
                 for ((index, url1) in urls.withIndex()) {
@@ -182,46 +201,53 @@ object ImageUtils {
 
                     if (isZip) {
                         // One of the arguments is a zip file
-                        val zip = URL(url1).readBytes()
-                        val zis = ZipInputStream(zip.inputStream())
-                        var ze = zis.nextEntry
-//                        val buffer = ByteArray(4096)
-                        while (ze != null) {
-//                            var len: Int
-                            val img = zis.readAllBytes()
-//                            while (zis.read(buffer).also { len = it } > 0) {
-//                                fos.write(buffer, 0, len)
-//                            }
-                            val anImage = ImageIO.read(ByteArrayInputStream(img))
-                            if (anImage == null) {
-                                error = true
-                                errorFile = url1 + " > " + ze.name
-                            } else {
-                                maxWidth = max(maxWidth, anImage.width)
-                                maxHeight = max(maxHeight, anImage.height)
-                                imgs[ze.name] = img
-                            }
-                            ze = zis.nextEntry
+                        val zip = withContext(Dispatchers.IO) {
+                            context.webManager.httpClient.get<HttpResponse>(url).readBytes()
                         }
-                        zis.close()
+                        zip.inputStream().use { bais ->
+                            ZipInputStream(bais).use { zis ->
+                                var ze = zis.nextEntry
 
+                                while (ze != null) {
+
+                                    val img = zis.readAllBytes()
+
+                                    val anImage = ImageIO.read(ByteArrayInputStream(img))
+                                    if (anImage == null) {
+                                        error = true
+                                        errorFile = url1 + " > " + ze.name
+                                    } else {
+                                        maxWidth = max(maxWidth, anImage.width)
+                                        maxHeight = max(maxHeight, anImage.height)
+                                        imgMap[ze.name] = img
+                                    }
+                                    ze = zis.nextEntry
+                                }
+                            }
+                        }
                     } else {
                         // One of the arguments is an image
 
                         if (!checkFormat(context, url1, reqFormat)) return null
 
-                        val img = URL(url1).readBytes()
-                        if (ImageIO.read(ByteArrayInputStream(img)) == null) {
-                            error = true
-                            errorFile = url1
-                            break
+                        val img = withContext(Dispatchers.IO) {
+                            context.webManager.httpClient.get<HttpResponse>(url).readBytes()
                         }
-                        imgs["$index"] = img
+
+                        ByteArrayInputStream(img).use { bais ->
+                            if (ImageIO.read(bais) == null) {
+                                error = true
+                                errorFile = url1
+                            }
+                        }
+                        if (error) break
+
+                        imgMap["$index"] = img
                     }
                 }
             } catch (e: Throwable) {
                 val msg = context.getTranslation("message.attachmentnotanimage")
-                    .replace(PLACEHOLDER_ARG, attachments[0].url)
+                    .withVariable(PLACEHOLDER_ARG, attachments[0].url)
                 sendMsg(context, msg)
                 return null
             }
@@ -230,14 +256,14 @@ object ImageUtils {
             return null
         }
 
-        if (error && imgs.isEmpty()) {
+        if (error && imgMap.isEmpty()) {
             val msg = context.getTranslation("message.notimage")
-                .replace("%url%", errorFile ?: "")
+                .withVariable("url", errorFile ?: "")
             sendMsg(context, msg)
             return null
         }
 
-        return Triple(imgs, Pair(maxWidth, maxHeight), arg)
+        return Triple(imgMap, Pair(maxWidth, maxHeight), arg)
     }
 
     private suspend fun checkFormat(context: CommandContext, url: String, reqFormat: String?): Boolean {
@@ -248,7 +274,7 @@ object ImageUtils {
             }
 
             val msg = context.getTranslation("message.notagif")
-                .replace("%url%", url)
+                .withVariable("url", url)
             sendMsg(context, msg)
             return false
         }
@@ -365,9 +391,11 @@ object ImageUtils {
                 )
             })
         }
+
         runBlocking {
             for (job in jobs) job.join()
         }
+
         for (i in 0 until framesDone.size) {
             val frame = framesDone[i] ?: continue
             encoder.addImage(frame.rgbArr, frame.imageWidth, frame.options)
@@ -679,7 +707,7 @@ object ImageUtils {
             graphics.drawString(text, startX, startY + lineHeight)
         } else {
             val sb = StringBuilder()
-            val parts = text.split("\\s+".toRegex()).toTypedArray()
+            val parts = text.split(SPACE_PATTERN).toTypedArray()
             for (part in parts) {
                 val currentLineContent = sb.substring(max(0, sb.lastIndexOf("\n")), sb.length)
                 val possibleFutureLineContent = if (currentLineContent.isEmpty()) part else "$currentLineContent $part"

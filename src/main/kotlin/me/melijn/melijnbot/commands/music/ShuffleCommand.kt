@@ -4,7 +4,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
 
 class ShuffleCommand : AbstractCommand("command.shuffle") {
 
@@ -18,6 +18,6 @@ class ShuffleCommand : AbstractCommand("command.shuffle") {
     override suspend fun execute(context: CommandContext) {
         context.guildMusicPlayer.guildTrackManager.shuffle()
         val msg = context.getTranslation("$root.success")
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

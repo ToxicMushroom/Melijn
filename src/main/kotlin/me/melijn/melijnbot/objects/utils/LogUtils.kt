@@ -15,6 +15,7 @@ import me.melijn.melijnbot.objects.music.LavaManager
 import me.melijn.melijnbot.objects.music.TrackUserData
 import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
+import me.melijn.melijnbot.objects.utils.message.*
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
@@ -31,20 +32,20 @@ object LogUtils {
         sendRemovedChannelLog(language, zoneId, "Music", logChannel, causePath, causeArg)
     }
 
-    fun sendRemovedChannelLog(language: String, zoneId: ZoneId, type: String, logChannel: TextChannel?, causePath: String, causeArg: String) {
+    private fun sendRemovedChannelLog(language: String, zoneId: ZoneId, type: String, logChannel: TextChannel?, causePath: String, causeArg: String) {
         if (logChannel == null) return
 
         val title = i18n.getTranslation(language, "logging.removed.channel.title")
-            .replace("%type%", type)
+            .withVariable("type", type)
         val cause = i18n.getTranslation(language, "logging.removed.channel.causepath.$causePath")
-            .replace("%causeArg%", causeArg)
+            .withVariable("causeArg", causeArg)
 
 
         val eb = EmbedBuilder()
-        eb.setTitle(title)
-        eb.setColor(Color.decode("#7289DA"))
-        eb.setDescription(cause)
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+            .setTitle(title)
+            .setColor(Color.decode("#7289DA"))
+            .setDescription(cause)
+            .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         logChannel.sendMessage(eb.build())
     }
@@ -58,15 +59,15 @@ object LogUtils {
 
         val title = i18n.getTranslation(language, "logging.verification.hitverificationthroughputlimit.title")
         val cause = "```LDIF" + i18n.getTranslation(language, "logging.verification.hitverificationthroughputlimit.description")
-            .replace(PLACEHOLDER_USER, member.asTag)
-            .replace(PLACEHOLDER_USER_ID, member.id) + "```"
+            .withVariable(PLACEHOLDER_USER, member.asTag)
+            .withVariable(PLACEHOLDER_USER_ID, member.id) + "```"
 
         val eb = EmbedBuilder()
-        eb.setTitle(title)
-        eb.setColor(Color.ORANGE)
-        eb.setDescription(cause)
-        eb.setThumbnail(member.user.effectiveAvatarUrl)
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+            .setTitle(title)
+            .setColor(Color.ORANGE)
+            .setDescription(cause)
+            .setThumbnail(member.user.effectiveAvatarUrl)
+            .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
@@ -81,17 +82,17 @@ object LogUtils {
         val language = getLanguage(daoManager, -1, guild.idLong)
         val title = i18n.getTranslation(language, "logging.verification.failedaddingrole.title")
         val description = "```LDIF" + i18n.getTranslation(language, "logging.verification.failedaddingrole.description")
-            .replace(PLACEHOLDER_USER_ID, member.id)
-            .replace(PLACEHOLDER_USER, member.asTag)
-            .replace(PLACEHOLDER_ROLE, role.name)
-            .replace(PLACEHOLDER_ROLE_ID, role.id) + "```"
+            .withVariable(PLACEHOLDER_USER_ID, member.id)
+            .withVariable(PLACEHOLDER_USER, member.asTag)
+            .withVariable(PLACEHOLDER_ROLE, role.name)
+            .withVariable(PLACEHOLDER_ROLE_ID, role.id) + "```"
 
         val eb = EmbedBuilder()
-        eb.setTitle(title)
-        eb.setColor(Color.RED)
-        eb.setDescription(description)
-        eb.setThumbnail(member.user.effectiveAvatarUrl)
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+            .setTitle(title)
+            .setColor(Color.RED)
+            .setDescription(description)
+            .setThumbnail(member.user.effectiveAvatarUrl)
+            .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
@@ -105,15 +106,15 @@ object LogUtils {
 
         val title = i18n.getTranslation(language, "logging.verification.failed.title")
         val description = "```LDIF" + i18n.getTranslation(language, "logging.verification.failed.description")
-            .replace(PLACEHOLDER_USER, member.asTag)
-            .replace(PLACEHOLDER_USER_ID, member.id) + "```"
+            .withVariable(PLACEHOLDER_USER, member.asTag)
+            .withVariable(PLACEHOLDER_USER_ID, member.id) + "```"
 
         val eb = EmbedBuilder()
-        eb.setTitle(title)
-        eb.setColor(Color.RED)
-        eb.setDescription(description)
-        eb.setThumbnail(member.user.effectiveAvatarUrl)
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+            .setTitle(title)
+            .setColor(Color.RED)
+            .setDescription(description)
+            .setThumbnail(member.user.effectiveAvatarUrl)
+            .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
@@ -126,17 +127,17 @@ object LogUtils {
             ?: return
 
         val title = i18n.getTranslation(language, "logging.verification.verified.title")
-            .replace("%author%", author.asTag)
+            .withVariable("author", author.asTag)
         val description = "```LDIF" + i18n.getTranslation(language, "logging.verification.verified.description")
-            .replace(PLACEHOLDER_USER, member.asTag)
-            .replace(PLACEHOLDER_USER_ID, member.id) + "```"
+            .withVariable(PLACEHOLDER_USER, member.asTag)
+            .withVariable(PLACEHOLDER_USER_ID, member.id) + "```"
 
         val eb = EmbedBuilder()
-        eb.setTitle(title)
-        eb.setColor(Color.GREEN)
-        eb.setDescription(description)
-        eb.setThumbnail(member.user.effectiveAvatarUrl)
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+            .setTitle(title)
+            .setColor(Color.GREEN)
+            .setDescription(description)
+            .setThumbnail(member.user.effectiveAvatarUrl)
+            .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
@@ -154,14 +155,14 @@ object LogUtils {
 
         val title = i18n.getTranslation(language, "logging.music.streamurl.loadfailed.title")
         val description = "```LDIF" + i18n.getTranslation(language, "logging.music.streamurl.loadfailed.description")
-            .replace("%url%", source)
-            .replace("%cause%", exception.message ?: "/") + "```"
+            .withVariable("url", source)
+            .withVariable("cause", exception.message ?: "/") + "```"
 
         val eb = EmbedBuilder()
-        eb.setTitle(title)
-        eb.setColor(Color.RED)
-        eb.setDescription(description)
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+            .setTitle(title)
+            .setColor(Color.RED)
+            .setDescription(description)
+            .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
@@ -170,7 +171,10 @@ object LogUtils {
         val trackManager = context.guildMusicPlayer.guildTrackManager
         val zoneId = getZoneId(context.daoManager, context.guild.idLong)
         val track = trackManager.iPlayer.playingTrack ?: return
-        val eb = EmbedBuilder()
+
+        val vc = context.lavaManager.getConnectedChannel(context.guild)
+            ?: throw IllegalArgumentException("Not connected to a channel")
+
 
         val title = context.getTranslation("logging.music.resumed.title")
 
@@ -178,20 +182,16 @@ object LogUtils {
         val userIdTitle = context.getTranslation("logging.music.resumed.userIdfield.title")
         val channel = context.getTranslation("logging.music.resumed.channelfield.title")
         val channelId = context.getTranslation("logging.music.resumed.channelIdfield.title")
-        eb.setTitle(title)
 
-
-        val vc = context.lavaManager.getConnectedChannel(context.guild)
-            ?: throw IllegalArgumentException("Not connected to a channel")
-        eb.setDescription("[${track.info.title}](${track.info.uri})")
-
-        eb.addField(userTitle, context.author.asTag, true)
-        eb.addField(userIdTitle, context.author.asTag, true)
-        eb.addField(channel, vc.name, true)
-        eb.addField(channelId, vc.id, true)
-
-        eb.setColor(Color.decode("#43b581"))
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+        val eb = EmbedBuilder()
+            .setTitle(title)
+            .setDescription("[${track.info.title}](${track.info.uri})")
+            .addField(userTitle, context.author.asTag, true)
+            .addField(userIdTitle, context.author.asTag, true)
+            .addField(channel, vc.name, true)
+            .addField(channelId, vc.id, true)
+            .setColor(Color.decode("#43b581"))
+            .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         trackManager.resumeMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
     }
@@ -200,7 +200,7 @@ object LogUtils {
         val trackManager = context.guildMusicPlayer.guildTrackManager
         val zoneId = getZoneId(context.daoManager, context.guild.idLong)
         val track = trackManager.iPlayer.playingTrack ?: return
-        val eb = EmbedBuilder()
+
 
         val title = context.getTranslation("logging.music.paused.title")
 
@@ -208,19 +208,19 @@ object LogUtils {
         val userIdTitle = context.getTranslation("logging.music.paused.userIdfield.title")
         val channel = context.getTranslation("logging.music.paused.channelfield.title")
         val channelId = context.getTranslation("logging.music.paused.channelIdfield.title")
-        eb.setTitle(title)
 
         val vc = context.lavaManager.getConnectedChannel(context.guild)
             ?: throw IllegalArgumentException("Not connected to a channel")
-        eb.setDescription("[${track.info.title}](${track.info.uri})")
 
-        eb.addField(userTitle, context.author.asTag, true)
-        eb.addField(userIdTitle, context.author.asTag, true)
-        eb.addField(channel, vc.name, true)
-        eb.addField(channelId, vc.id, true)
-
-        eb.setColor(Color.decode("#c4e667"))
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+        val eb = EmbedBuilder()
+            .setTitle(title)
+            .setDescription("[${track.info.title}](${track.info.uri})")
+            .addField(userTitle, context.author.asTag, true)
+            .addField(userIdTitle, context.author.asTag, true)
+            .addField(channel, vc.name, true)
+            .addField(channelId, vc.id, true)
+            .setColor(Color.decode("#c4e667"))
+            .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         trackManager.pauseMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
     }
@@ -319,16 +319,16 @@ object LogUtils {
     fun sendRemovedLogChannelLog(language: String, zoneId: ZoneId, logChannelType: LogChannelType, logChannel: TextChannel?, causePath: String, causeArg: String) {
         if (logChannel == null) return
         val title = i18n.getTranslation(language, "logging.removed.logchannel.title")
-            .replace("%type%", logChannelType.text)
+            .withVariable("type", logChannelType.text)
         val cause = i18n.getTranslation(language, "logging.removed.logchannel.causepath.$causePath")
-            .replace("%causeArg%", causeArg)
+            .withVariable("causeArg", causeArg)
 
 
         val eb = EmbedBuilder()
-        eb.setTitle(title)
-        eb.setColor(Color.decode("#CC0000"))
-        eb.setDescription(cause)
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+            .setTitle(title)
+            .setColor(Color.decode("#CC0000"))
+            .setDescription(cause)
+            .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         logChannel.sendMessage(eb.build())
     }
@@ -336,16 +336,16 @@ object LogUtils {
     fun sendRemovedRoleLog(language: String, zoneId: ZoneId, roleType: RoleType, logChannel: TextChannel?, causePath: String, causeArg: String) {
         if (logChannel == null) return
         val title = i18n.getTranslation(language, "logging.removed.role.title")
-            .replace("%type%", roleType.toUCC())
+            .withVariable("type", roleType.toUCC())
         val cause = i18n.getTranslation(language, "logging.removed.role.causepath.$causePath")
-            .replace("%causeArg%", causeArg)
+            .withVariable("causeArg", causeArg)
 
 
         val eb = EmbedBuilder()
-        eb.setTitle(title)
-        eb.setColor(Color.decode("#CC0000"))
-        eb.setDescription(cause)
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+            .setTitle(title)
+            .setColor(Color.decode("#CC0000"))
+            .setDescription(cause)
+            .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         logChannel.sendMessage(eb.build())
     }
@@ -359,17 +359,17 @@ object LogUtils {
         val language = getLanguage(daoManager, -1, guild.idLong)
         val title = i18n.getTranslation(language, "logging.verification.failedremovingrole.title")
         val description = "```LDIF" + i18n.getTranslation(language, "logging.verification.failedremovingrole.description")
-            .replace(PLACEHOLDER_USER_ID, member.id)
-            .replace(PLACEHOLDER_USER, member.asTag)
-            .replace(PLACEHOLDER_ROLE, role.name)
-            .replace(PLACEHOLDER_ROLE_ID, role.id) + "```"
+            .withVariable(PLACEHOLDER_USER_ID, member.id)
+            .withVariable(PLACEHOLDER_USER, member.asTag)
+            .withVariable(PLACEHOLDER_ROLE, role.name)
+            .withVariable(PLACEHOLDER_ROLE_ID, role.id) + "```"
 
         val eb = EmbedBuilder()
-        eb.setTitle(title)
-        eb.setColor(Color.RED)
-        eb.setDescription(description)
-        eb.setThumbnail(member.user.effectiveAvatarUrl)
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+            .setTitle(title)
+            .setColor(Color.RED)
+            .setDescription(description)
+            .setThumbnail(member.user.effectiveAvatarUrl)
+            .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
@@ -383,12 +383,12 @@ object LogUtils {
 //        val language = getLanguage(daoManager, -1, guild.idLong)
 //        val title = i18n.getTranslation(language, "logging.role.member.added.title")
 //        val description = "```LDIF" + i18n.getTranslation(language, "logging.role.member.added.description")
-//            .replace(PLACEHOLDER_USER_ID, adder.id)
-//            .replace(PLACEHOLDER_USER, adder.asTag)
-//            .replace("%targetId%", target.id)
-//            .replace("%target%", target.asTag)
-//            .replace(PLACEHOLDER_ROLE, role.name)
-//            .replace(PLACEHOLDER_ROLE_ID, role.id) + "```"
+//            .withVariable(PLACEHOLDER_USER_ID, adder.id)
+//            .withVariable(PLACEHOLDER_USER, adder.asTag)
+//            .withVariable("targetId", target.id)
+//            .withVariable("target", target.asTag)
+//            .withVariable(PLACEHOLDER_ROLE, role.name)
+//            .withVariable(PLACEHOLDER_ROLE_ID, role.id) + "```"
 //        if (adder.idLong == adder.jda.selfUser.idLong) {
 //            container.roleAddedMap
 //        }
@@ -412,12 +412,12 @@ object LogUtils {
 //        val language = getLanguage(daoManager, -1, guild.idLong)
 //        val title = i18n.getTranslation(language, "logging.role.member.removed.title")
 //        val description = "```LDIF" + i18n.getTranslation(language, "logging.role.member.removed.description")
-//            .replace(PLACEHOLDER_USER_ID, remover.id)
-//            .replace(PLACEHOLDER_USER, remover.asTag)
-//            .replace("%targetId%", target.id)
-//            .replace("%target%", target.asTag)
-//            .replace(PLACEHOLDER_ROLE, role.name)
-//            .replace(PLACEHOLDER_ROLE_ID, role.id) + "```"
+//            .withVariable(PLACEHOLDER_USER_ID, remover.id)
+//            .withVariable(PLACEHOLDER_USER, remover.asTag)
+//            .withVariable("targetId", target.id)
+//            .withVariable("target", target.asTag)
+//            .withVariable(PLACEHOLDER_ROLE, role.name)
+//            .withVariable(PLACEHOLDER_ROLE_ID, role.id) + "```"
 //
 //        val eb = EmbedBuilder()
 //        eb.setTitle(title)
@@ -438,34 +438,34 @@ object LogUtils {
 
         val title = i18n.getTranslation(language, "logging.punishmentpoints.title")
         val lcBodyPart = i18n.getTranslation(language, "logging.punishmentpoints.description.extra.lc")
-            .replace("%target%", message.author.asTag)
-            .replace("%targetId%", message.author.id)
+            .withVariable("target", message.author.asTag)
+            .withVariable("targetId", message.author.id)
 
         var lcBody = i18n.getTranslation(language, "logging.punishmentpoints.description")
-            .replace("%channel%", message.textChannel.asTag)
-            .replace("%channelId%", message.textChannel.id)
-            .replace("%message%", message.contentRaw)
-            .replace("%messageId%", message.id)
-            .replace("%points%", "$pp")
-            .replace("%moment%", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+            .withVariable("channel", message.textChannel.asTag)
+            .withVariable("channelId", message.textChannel.id)
+            .withVariable("message", message.contentRaw)
+            .withVariable("messageId", message.id)
+            .withVariable("points", "$pp")
+            .withVariable("moment", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         var extra = ""
         for ((key, value) in causeArgs) {
             if (value.isEmpty()) continue
             extra += i18n.getTranslation(language, "logging.punishmentpoints.cause.${key}")
-                .replace("%word%", value.joinToString()) + "\n"
+                .withVariable("word", value.joinToString()) + "\n"
         }
 
-        lcBody = lcBody.replace("%extra%", extra)
-
-        val eb = EmbedBuilder()
-        eb.setTitle(title)
-        eb.setColor(Color.decode("#c596ff"))
+        lcBody = lcBody.withVariable("extra", extra)
 
         val dmBody = i18n.getTranslation(language, "logging.punishmentpoints.description.extra.dm")
-            .replace("%server%", message.guild.name)
-            .replace("%serverId%", message.guild.id) + lcBody
-        eb.setDescription("```LDIF\n$dmBody```")
+            .withVariable("server", message.guild.name)
+            .withVariable("serverId", message.guild.id) + lcBody
+
+        val eb = EmbedBuilder()
+            .setTitle(title)
+            .setColor(Color.decode("#c596ff"))
+            .setDescription("```LDIF\n$dmBody```")
 
         val pc = message.author.openPrivateChannel().awaitOrNull()
         if (pc != null) {
@@ -491,7 +491,7 @@ object LogUtils {
         var message = messageWrapper.messageCache.get(Pair(guildId, messageType)).await()
         if (message == null) {
             val msg = i18n.getTranslation(language, "logging.birthday")
-                .replace("%user%", member.asTag)
+                .withVariable("user", member.asTag)
 
             sendMsg(textChannel, msg)
         } else {
@@ -501,8 +501,8 @@ object LogUtils {
 
             val msg: Message? = message.toMessage()
             when {
-                msg == null -> sendAttachmentsAwaitN(textChannel, message.attachments)
-                message.attachments.isNotEmpty() -> sendMsgWithAttachmentsAwaitN(textChannel, msg, message.attachments)
+                msg == null -> sendAttachments(textChannel, message.attachments)
+                message.attachments.isNotEmpty() -> sendMsgWithAttachments(textChannel, msg, message.attachments)
                 else -> sendMsg(textChannel, msg, failed = { t -> t.printStackTrace() })
             }
         }
@@ -511,16 +511,16 @@ object LogUtils {
     fun sendRemovedSelfRoleLog(language: String, zoneId: ZoneId, emoteji: String, logChannel: TextChannel?, causePath: String, causeArg: String) {
         if (logChannel == null) return
         val title = i18n.getTranslation(language, "logging.removed.selfrole.title")
-            .replace("%emoteji%", emoteji)
+            .withVariable("emoteji", emoteji)
 
         val cause = i18n.getTranslation(language, "logging.removed.selfrole.causepath.$causePath")
-            .replace("%causeArg%", causeArg)
+            .withVariable("causeArg", causeArg)
 
         val eb = EmbedBuilder()
-        eb.setTitle(title)
-        eb.setColor(Color.decode("#CC0000"))
-        eb.setDescription(cause)
-        eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+            .setTitle(title)
+            .setColor(Color.decode("#CC0000"))
+            .setDescription(cause)
+            .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         logChannel.sendMessage(eb.build())
     }
@@ -570,18 +570,18 @@ object LogUtils {
 
         val language = getLanguage(daoManager, -1, guild.idLong)
         val title = i18n.getTranslation(language, "listener.message.purge.log.title")
-            .replace(PLACEHOLDER_CHANNEL, channel.asTag)
-            .replace("%amount%", "${messages.size}")
+            .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
+            .withVariable("amount", "${messages.size}")
 
         val description = i18n.getTranslation(language, "listener.message.purge.log.description")
-            .replace("%content%", sb.toString())
-            .replace("%messageDeleterId%", "${context.authorId}")
-            .replace("%deletedTime%", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
+            .withVariable("content", sb.toString())
+            .withVariable("messageDeleterId", "${context.authorId}")
+            .withVariable("deletedTime", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         val ebs = mutableListOf<EmbedBuilder>()
         val embedBuilder = EmbedBuilder()
-        embedBuilder.setTitle(title)
-        embedBuilder.setColor(Color.decode("#927ca6"))
+            .setTitle(title)
+            .setColor(Color.decode("#927ca6"))
 
         if (description.length > MessageEmbed.TEXT_MAX_LENGTH) {
             val parts = StringUtils.splitMessage(description, maxLength = MessageEmbed.TEXT_MAX_LENGTH)
@@ -602,7 +602,7 @@ object LogUtils {
 
             if (index == ebs.size - 1) {
                 val footer = i18n.getTranslation(language, "listener.message.purge.log.footer")
-                    .replace(PLACEHOLDER_USER, context.author.asTag)
+                    .withVariable(PLACEHOLDER_USER, context.author.asTag)
                 eb.setFooter(footer, context.author.effectiveAvatarUrl)
             }
 

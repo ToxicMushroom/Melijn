@@ -12,6 +12,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.i18n
+import me.melijn.melijnbot.objects.utils.message.sendMsg
 import net.dv8tion.jda.api.entities.User
 import java.awt.Color
 import java.io.BufferedReader
@@ -138,7 +139,7 @@ suspend inline fun <reified T : Enum<*>> getEnumFromArgNMessage(context: Command
     }
     if (enum == null) {
         val msg = context.getTranslation(path)
-            .replace(PLACEHOLDER_ARG, enumName)
+            .withVariable(PLACEHOLDER_ARG, enumName)
         sendMsg(context, msg)
     }
     return enum
@@ -148,7 +149,7 @@ suspend inline fun <T> getObjectFromArgNMessage(context: CommandContext, index: 
     val newObj = getObjectFromArgN(context, index, mapper)
     if (newObj == null) {
         val msg = context.getTranslation(path)
-            .replace(PLACEHOLDER_ARG, context.args[index])
+            .withVariable(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg)
     }
     return newObj
@@ -196,7 +197,7 @@ suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): S
     if (commands.isEmpty()) {
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.commandnode")
-            .replace(PLACEHOLDER_ARG, arg)
+            .withVariable(PLACEHOLDER_ARG, arg)
         sendMsg(context, msg)
         return null
     }
@@ -218,7 +219,7 @@ suspend fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set
     if (commands.isEmpty()) {
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.commands")
-            .replace(PLACEHOLDER_ARG, arg)
+            .withVariable(PLACEHOLDER_ARG, arg)
         sendMsg(context, msg)
         return null
     }
@@ -241,19 +242,19 @@ suspend fun getLongFromArgNMessage(
     val language = context.getLanguage()
     if (!arg.matches("\\d+".toRegex())) {
         val msg = i18n.getTranslation(language, "message.unknown.number")
-            .replace(PLACEHOLDER_ARG, arg)
+            .withVariable(PLACEHOLDER_ARG, arg)
         sendMsg(context, msg)
     } else if (long == null) {
         val msg = i18n.getTranslation(language, "message.unknown.long")
-            .replace(PLACEHOLDER_ARG, arg)
+            .withVariable(PLACEHOLDER_ARG, arg)
         sendMsg(context, msg)
     }
     if (long != null) {
         if (min > long || long > max) {
             val msg = i18n.getTranslation(language, "message.long.notingrange")
-                .replace("%min%", min.toString())
-                .replace("%max%", max.toString())
-                .replace(PLACEHOLDER_ARG, arg)
+                .withVariable("min", min.toString())
+                .withVariable("max", max.toString())
+                .withVariable(PLACEHOLDER_ARG, arg)
             sendMsg(context, msg)
             return null
         }
@@ -269,7 +270,7 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
             val newVal = value.toIntOrNull()
             if (newVal == null) {
                 val msg = context.getTranslation("message.unknown.number")
-                    .replace(PLACEHOLDER_ARG, value)
+                    .withVariable(PLACEHOLDER_ARG, value)
                 sendMsg(context, msg)
                 return null
             } else newVal
@@ -300,18 +301,18 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
         val birthday = list[birthdayIndex]
         if (birthday < 1 || birthday > 31) {
             val msg = context.getTranslation("message.number.notinrange")
-                .replace(PLACEHOLDER_ARG, "$birthday")
-                .replace("%start%", "1")
-                .replace("%end%", "31")
+                .withVariable(PLACEHOLDER_ARG, "$birthday")
+                .withVariable("start", "1")
+                .withVariable("end", "31")
             sendMsg(context, msg)
             return null
         }
         val birthMonth = list[monthIndex]
         if (birthMonth < 1 || birthMonth > 12) {
             val msg = context.getTranslation("message.number.notinrange")
-                .replace(PLACEHOLDER_ARG, "$birthMonth")
-                .replace("%start%", "1")
-                .replace("%end%", "12")
+                .withVariable(PLACEHOLDER_ARG, "$birthMonth")
+                .withVariable("start", "1")
+                .withVariable("end", "12")
             sendMsg(context, msg)
             return null
         }
@@ -319,9 +320,9 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
         val birthYear = if (list.size > 2) list[yearIndex] else null
         if (birthYear != null && (birthYear < 1900 || birthYear > Year.now().value - 12)) {
             val msg = context.getTranslation("message.number.notinrange")
-                .replace(PLACEHOLDER_ARG, "$birthYear")
-                .replace("%start%", "1900")
-                .replace("%end%", "2008")
+                .withVariable(PLACEHOLDER_ARG, "$birthYear")
+                .withVariable("start", "1900")
+                .withVariable("end", "2008")
             sendMsg(context, msg)
             return null
         }
@@ -330,7 +331,7 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
         return Pair(localDate.dayOfYear, birthYear)
     } else {
         val msg = context.getTranslation("message.unknown.birthday")
-            .replace(PLACEHOLDER_ARG, context.args[index])
+            .withVariable(PLACEHOLDER_ARG, context.args[index])
         sendMsg(context, msg)
         return null
     }
@@ -418,7 +419,7 @@ fun MutableList<String>.addIfNotPresent(value: String, ignoreCase: Boolean): Boo
 
 // Any space surrounded sequence of characters is considered a word
 fun String.countWords(): Int {
-    val splitted = this.split("\\S+".toRegex())
+    val splitted = this.split(SPACE_PATTERN)
     if (splitted.size == 1 && splitted[0].isBlank()) return 0
     return splitted.size
 }

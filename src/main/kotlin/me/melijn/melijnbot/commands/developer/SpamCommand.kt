@@ -4,7 +4,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.getBooleanFromArgNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
 
 class SpamCommand : AbstractCommand("command.spam") {
 
@@ -20,9 +20,9 @@ class SpamCommand : AbstractCommand("command.spam") {
 
         context.container.logToDiscord = bool
         if (bool) {
-            sendMsg(context, msg + "enabled")
+            sendRsp(context, msg + "enabled")
         } else {
-            sendMsg(context, msg + "disabled")
+            sendRsp(context, msg + "disabled")
         }
     }
 }

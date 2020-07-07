@@ -159,6 +159,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
     val bannedOrKickedTriggersLeaveWrapper: BannedOrKickedTriggersLeaveWrapper
     val botLogStateWrapper: BotLogStateWrapper
     val removeResponseWrapper: RemoveResponseWrapper
+    val removeInvokeWrapper: RemoveInvokeWrapper
 
     val voteWrapper: VoteWrapper
     var driverManager: DriverManager
@@ -255,6 +256,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
         bannedOrKickedTriggersLeaveWrapper = BannedOrKickedTriggersLeaveWrapper(taskManager, BannedOrKickedTriggersLeaveDao(driverManager))
         botLogStateWrapper = BotLogStateWrapper(taskManager, BotLogStateDao(driverManager))
         removeResponseWrapper = RemoveResponseWrapper(taskManager, RemoveResponsesDao(driverManager))
+        removeInvokeWrapper = RemoveInvokeWrapper(taskManager, RemoveInvokeDao(driverManager))
 
         voteWrapper = VoteWrapper(VoteDao(driverManager))
         //After registering wrappers

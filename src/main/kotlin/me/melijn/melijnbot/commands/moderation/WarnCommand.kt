@@ -13,6 +13,10 @@ import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
+import me.melijn.melijnbot.objects.utils.message.sendEmbed
+import me.melijn.melijnbot.objects.utils.message.sendMsgAwaitEL
+import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.*
 import java.awt.Color
@@ -35,15 +39,15 @@ class WarnCommand : AbstractCommand("command.warn") {
         val targetMember = retrieveMemberByArgsNMessage(context, 0, true, botAllowed = false) ?: return
         if (!context.guild.selfMember.canInteract(targetMember)) {
             val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-                .replace(PLACEHOLDER_USER, targetMember.asTag)
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_USER, targetMember.asTag)
+            sendRsp(context, msg)
             return
         }
 
         if (!context.member.canInteract(targetMember) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
             val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
-                .replace(PLACEHOLDER_USER, targetMember.asTag)
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_USER, targetMember.asTag)
+            sendRsp(context, msg)
             return
         }
 
@@ -96,9 +100,9 @@ class WarnCommand : AbstractCommand("command.warn") {
         }
 
         val msg = context.getTranslation("$root.success")
-            .replace(PLACEHOLDER_USER, targetMember.asTag)
-            .replace("%reason%", warn.reason)
-        sendMsg(context, msg)
+            .withVariable(PLACEHOLDER_USER, targetMember.asTag)
+            .withVariable("reason", warn.reason)
+        sendRsp(context, msg)
     }
 }
 
@@ -113,23 +117,21 @@ fun getWarnMessage(
     isBot: Boolean = false,
     received: Boolean = true
 ): MessageEmbed {
-    val eb = EmbedBuilder()
-
     var description = "```LDIF\n"
     if (!lc) {
         description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .replace("%serverName%", guild.name)
-            .replace("%serverId%", guild.id)
+            .withVariable("serverName", guild.name)
+            .withVariable("serverId", guild.id)
     }
 
     description += i18n.getTranslation(language, "message.punishment.warn.description")
-        .replace("%warnAuthor%", warnAuthor.asTag)
-        .replace("%warnAuthorId%", warnAuthor.id)
-        .replace("%warned%", warnedUser.asTag)
-        .replace("%warnedId%", warnedUser.id)
-        .replace("%reason%", warn.reason)
-        .replace("%moment%", (warn.moment.asEpochMillisToDateTime(zoneId)))
-        .replace("%warnId%", warn.warnId)
+        .withVariable("warnAuthor", warnAuthor.asTag)
+        .withVariable("warnAuthorId", warnAuthor.id)
+        .withVariable("warned", warnedUser.asTag)
+        .withVariable("warnedId", warnedUser.id)
+        .withVariable("reason", warn.reason)
+        .withVariable("moment", (warn.moment.asEpochMillisToDateTime(zoneId)))
+        .withVariable("warnId", warn.warnId)
 
     val extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,
@@ -146,12 +148,13 @@ fun getWarnMessage(
     description += "```"
 
     val author = i18n.getTranslation(language, "message.punishment.warn.author")
-        .replace(PLACEHOLDER_USER, warnAuthor.asTag)
-        .replace("%spaces%", " ".repeat(45).substring(0, 45 - warnAuthor.name.length) + "\u200B")
+        .withVariable(PLACEHOLDER_USER, warnAuthor.asTag)
+        .withVariable("spaces", " ".repeat(45).substring(0, 45 - warnAuthor.name.length) + "\u200B")
 
-    eb.setAuthor(author, null, warnAuthor.effectiveAvatarUrl)
-    eb.setDescription(description)
-    eb.setThumbnail(warnedUser.effectiveAvatarUrl)
-    eb.setColor(Color.YELLOW)
-    return eb.build()
+    return EmbedBuilder()
+        .setAuthor(author, null, warnAuthor.effectiveAvatarUrl)
+        .setDescription(description)
+        .setThumbnail(warnedUser.effectiveAvatarUrl)
+        .setColor(Color.YELLOW)
+        .build()
 }

@@ -5,7 +5,7 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.getBooleanFromArgNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
 
 class SetAllowSpacedPrefixState : AbstractCommand("command.setallowspacedprefixstate") {
 
@@ -21,13 +21,13 @@ class SetAllowSpacedPrefixState : AbstractCommand("command.setallowspacedprefixs
         if (context.args.isEmpty()) {
             val allowed = wrapper.allowSpacedPrefixGuildCache.get(context.guildId).await()
             val msg = context.getTranslation("$root.show.$allowed")
-            sendMsg(context, msg)
+            sendRsp(context, msg)
             return
         }
 
         val state = getBooleanFromArgNMessage(context, 0) ?: return
         wrapper.setGuildState(context.guildId, state)
         val msg = context.getTranslation("$root.set.$state")
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

@@ -15,6 +15,7 @@ import me.melijn.melijnbot.objects.jagtag.CCJagTagParserArgs
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.message.*
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.EmbedType
@@ -71,9 +72,15 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
     }
 
     private suspend fun commandFinder(event: MessageReceivedEvent) {
-        val prefixes = getPrefixes(event)
         val message = event.message
         if (message.contentRaw.isBlank()) return
+
+        if (event.channelType == ChannelType.TEXT) {
+            if (!event.guild.selfMember.hasPermission(event.textChannel, Permission.MESSAGE_WRITE)) return
+        }
+
+        val prefixes = getPrefixes(event)
+
 
         val ccsWithPrefix = mutableListOf<CustomCommand>()
         val ccsWithoutPrefix = mutableListOf<CustomCommand>()
@@ -90,14 +97,10 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             }
         }
 
-        if (event.channelType == ChannelType.TEXT) {
-            if (!event.guild.selfMember.hasPermission(event.textChannel, Permission.MESSAGE_WRITE)) return
-        }
-
         val ccsWithPrefixMatches = mutableListOf<CustomCommand>()
         val ccsWithoutPrefixMatches = mutableListOf<CustomCommand>()
         var commandPartsGlobal: List<String> = emptyList()
-        var spaceMap = mutableMapOf<String, Int>()
+        val spaceMap = mutableMapOf<String, Int>()
 
 
         for (prefix in prefixes) {
@@ -106,7 +109,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             val commandParts: ArrayList<String> = ArrayList(message.contentRaw
                 .removeFirst(prefix, ignoreCase = true)
                 .trimEnd()
-                .split(Regex("\\s+")))
+                .split(SPACE_PATTERN)
+            )
 
 
             if (commandParts[0].isEmpty()) {
@@ -146,7 +150,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                     ccsWithPrefixMatches.add(cc)
                 } else if (aliases != null) {
                     for (alias in aliases) {
-                        val aliasParts = alias.split("\\s+")
+                        val aliasParts = alias.split(SPACE_PATTERN)
                         if (alias.count() < commandParts.size) {
                             val matches = aliasParts.withIndex().all { commandParts[it.index + 1] == it.value }
                             if (!matches) continue
@@ -213,7 +217,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         } else {
             val prefixLessCommandParts: ArrayList<String> = ArrayList(message.contentRaw
                 .trim()
-                .split(Regex("\\s+")))
+                .split(SPACE_PATTERN)
+            )
 
             for (cc in ccsWithoutPrefix) {
                 val aliases = cc.aliases
@@ -408,8 +413,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                         val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
                         val more = if (missingPermissionCount > 1) "s" else ""
                         val msg = i18n.getTranslation(language, "message.discordchannelpermission$more.missing")
-                            .replace("%permissions%", missingPermissionMessage)
-                            .replace("%channel%", event.textChannel.asTag)
+                            .withVariable("permissions", missingPermissionMessage)
+                            .withVariable("channel", event.textChannel.asTag)
 
                         sendMsg(event.textChannel, msg)
                         return true
@@ -430,7 +435,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                         val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
                         val more = if (missingPermissionCount > 1) "s" else ""
                         val msg = i18n.getTranslation(language, "message.discordpermission$more.missing")
-                            .replace("%permissions%", missingPermissionMessage)
+                            .withVariable("permissions", missingPermissionMessage)
 
                         sendMsg(event.textChannel, msg)
                         return true
@@ -553,7 +558,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 val language = getLanguage(daoManager, userId, guildId)
                 val unReplacedCooldown = i18n.getTranslation(language, "message.cooldown")
                 val msg = unReplacedCooldown
-                    .replace("%cooldown%", ((cooldownResult - (System.currentTimeMillis() - lastExecutionBiggest)) / 1000.0).toString())
+                    .withVariable("cooldown", ((cooldownResult - (System.currentTimeMillis() - lastExecutionBiggest)) / 1000.0).toString())
                 sendMsg(event.textChannel, msg)
             }
             return bool

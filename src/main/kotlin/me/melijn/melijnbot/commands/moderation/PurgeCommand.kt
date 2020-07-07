@@ -4,7 +4,12 @@ import me.melijn.melijnbot.objects.command.AbstractCommand
 import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.objects.utils.LogUtils
+import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.objects.utils.message.sendMsgAwaitEL
+import me.melijn.melijnbot.objects.utils.message.sendSyntax
+import me.melijn.melijnbot.objects.utils.retrieveUserByArgsNMessage
+import me.melijn.melijnbot.objects.utils.withVariable
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import java.util.concurrent.TimeUnit
@@ -60,16 +65,15 @@ class PurgeCommand : AbstractCommand("command.purge") {
                     for (message in messages) {
                         context.container.purgedIds[message.idLong] = context.authorId
                     }
-
-
                     context.textChannel.purgeMessages(messages)
+
                     val userMore = if (targetUser == null) "" else ".user"
                     val more = if (amount > 1) ".more" else ".one"
                     val msg = context.getTranslation("$root.success$userMore$more")
-                        .replace("%amount%", amount.toString())
-                        .replace(PLACEHOLDER_USER, targetUser?.asTag ?: "")
+                        .withVariable("amount", amount.toString())
+                        .withVariable(PLACEHOLDER_USER, targetUser?.asTag ?: "")
 
-                    if (context.commandParts[0].equals(silentPurgeName, true) || context.commandParts[0].equals(silentPruneName, true))
+                    if (!context.commandParts[0].equals(silentPurgeName, true) && !context.commandParts[0].equals(silentPruneName, true))
                         sendMsgAwaitEL(context, msg)[0].delete().queueAfter(5, TimeUnit.SECONDS)
 
                     LogUtils.sendPurgeLog(context, messages)
