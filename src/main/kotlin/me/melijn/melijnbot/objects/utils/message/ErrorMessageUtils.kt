@@ -46,19 +46,19 @@ suspend fun Throwable.sendInGuildSuspend(
 
     val sb = StringBuilder()
 
-    sb.appendln("**CaseID**: ").append(caseId)
+    sb.append("**CaseID**: ").appendln(caseId)
     if (guild != null) {
-        sb.appendln("**Guild**: ").append(guild.name).append(" | ").append(guild.id)
+        sb.append("**Guild**: ").append(guild.name).append(" | ").appendln(guild.id)
     }
     if (channel != null) {
-        sb.appendln("**")
+        sb.append("**")
             .append(channel.type.toUCC())
-            .append("Channel**: #").append(channel.name).append(" | ").append(channel.id)
+            .append("Channel**: #").append(channel.name).append(" | ").appendln(channel.id)
     }
     if (author != null) {
-        sb.appendln("**User**: ").append(author.asTag).append(" | ").append(author.id)
+        sb.append("**User**: ").append(author.asTag).append(" | ").appendln(author.id)
     }
-    sb.appendln("**Thread**: ").append(thread.name)
+    sb.append("**Thread**: ").appendln(thread.name)
 
     val writer = StringWriter()
     val printWriter = PrintWriter(writer)
