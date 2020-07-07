@@ -11,7 +11,7 @@ import me.melijn.melijnbot.objects.command.hasPermission
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.message.getNicerUsedPrefix
-import me.melijn.melijnbot.objects.utils.message.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRspOrMsg
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
 object RunConditionUtil {
@@ -31,7 +31,7 @@ object RunConditionUtil {
         val language = getLanguage(container.daoManager, userId, if (event.isFromGuild) event.guild.idLong else -1)
         val prefix = getNicerUsedPrefix(container.settings, commandParts[0])
         return when (runCondition) {
-            RunCondition.GUILD -> checkGuild(event, language)
+            RunCondition.GUILD -> checkGuild(container, event, language)
             RunCondition.VC_BOT_ALONE_OR_USER_DJ -> checkOtherOrSameVCBotAloneOrUserDJ(container, event, command, language)
 //            RunCondition.SAME_VC_BOT_ALONE_OR_USER_DJ -> checkSameVCBotAloneOrUserDJ(container, event, command, language)
             RunCondition.VC_BOT_OR_USER_DJ -> checkVCBotOrUserDJ(container, event, command, language)
@@ -116,13 +116,13 @@ object RunConditionUtil {
         }
     }
 
-    suspend fun checkPlayingTrackNotNullMessage(container: Container, event: MessageReceivedEvent, language: String): Boolean {
+    private fun checkPlayingTrackNotNullMessage(container: Container, event: MessageReceivedEvent, language: String): Boolean {
         if (checkPlayingTrackNotNull(container, event, language)) {
             return true
         }
 
         val noSongPlaying = i18n.getTranslation(language, "message.runcondition.failed.playingtracknotnull")
-        sendMsg(event.textChannel, noSongPlaying)
+        sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, noSongPlaying)
         return false
     }
 
@@ -136,14 +136,14 @@ object RunConditionUtil {
         return true
     }
 
-    suspend fun checkVCBotOrUserDJ(container: Container, event: MessageReceivedEvent, command: AbstractCommand, language: String): Boolean {
+    private suspend fun checkVCBotOrUserDJ(container: Container, event: MessageReceivedEvent, command: AbstractCommand, language: String): Boolean {
         val member = event.member ?: return false
         val vc = member.voiceState?.channel
         val botVc = container.lavaManager.getConnectedChannel(event.guild)
 
         if (vc == null && botVc == null) {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.vc")
-            sendMsg(event.textChannel, msg)
+            sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
             return false
         }
 
@@ -152,7 +152,7 @@ object RunConditionUtil {
         else if (hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_SAMEVC.node, true)) return true
 
         val msg = i18n.getTranslation(language, "message.runcondition.failed.vcbot")
-        sendMsg(event.textChannel, msg)
+        sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
         return false
 
     }
@@ -165,7 +165,7 @@ object RunConditionUtil {
 
         if (vc == null && bc == null) {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.vc")
-            sendMsg(event.textChannel, msg)
+            sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
             return false
         }
 
@@ -175,17 +175,17 @@ object RunConditionUtil {
         else if (hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_VCBOTALONE.node, true)) true
         else {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.vcbotalone")
-            sendMsg(event.textChannel, msg)
+            sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
             false
         }
     }
 
-    suspend fun checkGuild(event: MessageReceivedEvent, language: String): Boolean {
+    private fun checkGuild(container: Container, event: MessageReceivedEvent, language: String): Boolean {
         return if (event.isFromGuild) {
             true
         } else {
             val msg = i18n.getTranslation(language, "message.runcondition.serveronly")
-            sendMsg(event.privateChannel, msg)
+            sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
             false
         }
     }
@@ -199,7 +199,7 @@ object RunConditionUtil {
             true
         } else {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.botalone")
-            sendMsg(event.textChannel, msg)
+            sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
             false
         }
     }

@@ -25,7 +25,7 @@ suspend fun sendSyntax(context: CommandContext, translationPath: String = contex
         .withVariable("syntax", context.getTranslation(translationPath)
             .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
         )
-    sendMsg(context, syntax)
+    sendRsp(context, syntax)
 }
 
 fun escapeForLog(string: String): String {
@@ -88,6 +88,14 @@ fun sendRsp(channel: TextChannel, taskManager: TaskManager, daoManager: DaoManag
 fun sendRsp(textChannel: TextChannel, context: CommandContext, msg: ModularMessage) {
     if (canResponse(textChannel, context.daoManager.supporterWrapper)) {
         sendRsp(textChannel, context.taskManager, context.daoManager, msg)
+    } else {
+        sendMsg(textChannel, msg)
+    }
+}
+
+fun sendRspOrMsg(textChannel: TextChannel, taskManager: TaskManager, daoManager: DaoManager, msg: String) {
+    if (canResponse(textChannel, daoManager.supporterWrapper)) {
+        sendRsp(textChannel, taskManager, daoManager, msg)
     } else {
         sendMsg(textChannel, msg)
     }
@@ -356,7 +364,7 @@ suspend fun sendFeatureRequiresPremiumMessage(context: CommandContext, featurePa
     val baseMsg = context.getTranslation("message.feature.requires.premium")
         .withVariable("feature", feature)
         .withVariable("prefix", context.usedPrefix)
-    sendMsg(context, baseMsg)
+    sendRsp(context, baseMsg)
 }
 
 suspend fun sendFeatureRequiresGuildPremiumMessage(context: CommandContext, featurePath: String, featureReplaceMap: Map<String, String> = emptyMap()) {
@@ -368,7 +376,7 @@ suspend fun sendFeatureRequiresGuildPremiumMessage(context: CommandContext, feat
     val baseMsg = context.getTranslation("message.feature.requires.premium.server")
         .withVariable("feature", feature)
         .withVariable("prefix", context.usedPrefix)
-    sendMsg(context, baseMsg)
+    sendRsp(context, baseMsg)
 }
 
 fun getNicerUsedPrefix(settings: Settings, prefix: String): String {

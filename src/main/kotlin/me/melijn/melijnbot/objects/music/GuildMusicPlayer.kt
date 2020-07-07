@@ -6,7 +6,7 @@ import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.utils.isPremiumGuild
-import me.melijn.melijnbot.objects.utils.message.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
 import me.melijn.melijnbot.objects.utils.withVariable
 
 
@@ -46,7 +46,7 @@ class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val gui
                 val msg = context.getTranslation("message.music.queuelimit")
                     .withVariable("amount", QUEUE_LIMIT.toString())
                     .withVariable("donateAmount", DONATE_QUEUE_LIMIT.toString())
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
         }
 
@@ -63,7 +63,7 @@ class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val gui
                     val msg = context.getTranslation("message.music.queuelimit")
                         .withVariable("amount", QUEUE_LIMIT.toString())
                         .withVariable("donateAmount", DONATE_QUEUE_LIMIT.toString())
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                 }
             }
             return true

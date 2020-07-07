@@ -6,6 +6,7 @@ import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.objects.services.Service
 import me.melijn.melijnbot.objects.threading.RunnableTask
+import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.utils.LogUtils
 import me.melijn.melijnbot.objects.utils.awaitBool
 import me.melijn.melijnbot.objects.utils.awaitEX
@@ -19,6 +20,7 @@ import java.util.concurrent.TimeUnit
 
 class BirthdayService(
     val shardManager: ShardManager,
+    val taskManager: TaskManager,
     val daoManager: DaoManager
 ) : Service("Birthday", 2, 5, TimeUnit.MINUTES) {
 
@@ -84,7 +86,7 @@ class BirthdayService(
                     }
 
                     //send birthday message
-                    LogUtils.sendBirthdayMessage(daoManager, textChannel, member, info.birthYear)
+                    LogUtils.sendBirthdayMessage(daoManager,taskManager, textChannel, member, info.birthYear)
                 }
             }
 
@@ -132,7 +134,7 @@ class BirthdayService(
                 ) {
                     if (birthdayHistory.contains(calendar.get(Calendar.YEAR), guildId, userId)) continue
 
-                    LogUtils.sendBirthdayMessage(daoManager, textChannel, member, info.birthYear)
+                    LogUtils.sendBirthdayMessage(daoManager, taskManager, textChannel, member, info.birthYear)
                     birthdayHistory.add(calendar.get(Calendar.YEAR), guildId, userId)
                 }
             }

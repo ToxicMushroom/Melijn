@@ -8,8 +8,8 @@ import io.ktor.client.statement.readBytes
 import kotlinx.coroutines.*
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.utils.message.sendMsg
 import me.melijn.melijnbot.objects.utils.message.sendMsgAwaitEL
+import me.melijn.melijnbot.objects.utils.message.sendRsp
 import me.melijn.melijnbot.objects.utils.message.sendSyntax
 import java.awt.Color
 import java.awt.Graphics
@@ -61,7 +61,7 @@ object ImageUtils {
             } catch (e: Throwable) {
                 val msg = context.getTranslation("message.attachmentnotanimage")
                     .withVariable(PLACEHOLDER_ARG, attachments[0].url)
-                sendMsg(context, msg)
+                sendRsp(context, msg)
                 return null
             }
         } else if (args.isNotEmpty() && args[0].isNotEmpty()) {
@@ -92,7 +92,7 @@ object ImageUtils {
                 } catch (e: Exception) {
                     val msg = context.getTranslation("message.notuserorurl")
                         .withVariable(PLACEHOLDER_ARG, args[0])
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                     return null
                 }
             }
@@ -108,7 +108,7 @@ object ImageUtils {
         if (img == null) {
             val msg = context.getTranslation("message.notimage")
                 .withVariable("url", url)
-            sendMsg(context, msg)
+            sendRsp(context, msg)
             return null
         }
 
@@ -187,7 +187,7 @@ object ImageUtils {
                 } catch (e: Throwable) {
                     val msg = context.getTranslation("message.attachmentnotanimage")
                         .withVariable(PLACEHOLDER_ARG, url)
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                     return null
                 }
             }
@@ -248,7 +248,7 @@ object ImageUtils {
             } catch (e: Throwable) {
                 val msg = context.getTranslation("message.attachmentnotanimage")
                     .withVariable(PLACEHOLDER_ARG, attachments[0].url)
-                sendMsg(context, msg)
+                sendRsp(context, msg)
                 return null
             }
         } else {
@@ -259,7 +259,7 @@ object ImageUtils {
         if (error && imgMap.isEmpty()) {
             val msg = context.getTranslation("message.notimage")
                 .withVariable("url", errorFile ?: "")
-            sendMsg(context, msg)
+            sendRsp(context, msg)
             return null
         }
 
@@ -268,14 +268,9 @@ object ImageUtils {
 
     private suspend fun checkFormat(context: CommandContext, url: String, reqFormat: String?): Boolean {
         if (reqFormat != null && !url.contains(reqFormat)) {
-            if (context.authorId == 223456683337318402) {
-                sendMsg(context, "<:cough:676177448290746379>")
-                return false
-            }
-
             val msg = context.getTranslation("message.notagif")
                 .withVariable("url", url)
-            sendMsg(context, msg)
+            sendRsp(context, msg)
             return false
         }
         return true

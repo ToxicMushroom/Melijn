@@ -3,7 +3,7 @@ package me.melijn.melijnbot.objects.utils
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.message.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
 import me.melijn.melijnbot.objects.utils.message.sendSyntax
 import java.time.Instant
 import java.util.*
@@ -19,20 +19,20 @@ suspend fun getIntegerFromArgNMessage(context: CommandContext, index: Int, start
         int == null -> {
             val msg = i18n.getTranslation(language, "message.unknown.integer")
                 .withVariable(PLACEHOLDER_ARG, arg)
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
         int < start -> {
             val msg = i18n.getTranslation(language, "message.tosmall.integer")
                 .withVariable(PLACEHOLDER_ARG, arg)
                 .withVariable("min", start.toString())
-            sendMsg(context, msg)
+            sendRsp(context, msg)
             return null
         }
         int > end -> {
             val msg = i18n.getTranslation(language, "message.tobig.integer")
                 .withVariable(PLACEHOLDER_ARG, arg)
                 .withVariable("max", end.toString())
-            sendMsg(context, msg)
+            sendRsp(context, msg)
             return null
         }
     }
@@ -50,19 +50,19 @@ suspend fun getFloatFromArgNMessage(context: CommandContext, index: Int, start: 
         float == null -> {
             val msg = i18n.getTranslation(language, "message.unknown.float")
                 .withVariable(PLACEHOLDER_ARG, arg)
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
         float < start -> {
             val msg = i18n.getTranslation(language, "message.tosmall.float")
                 .withVariable(PLACEHOLDER_ARG, arg)
                 .withVariable("min", start.toString())
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
         float > end -> {
             val msg = i18n.getTranslation(language, "message.tobig.float")
                 .withVariable(PLACEHOLDER_ARG, arg)
                 .withVariable("max", end.toString())
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -89,7 +89,7 @@ suspend fun getBooleanFromArgNMessage(context: CommandContext, index: Int): Bool
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.boolean")
             .withVariable(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     return bool
@@ -109,7 +109,7 @@ suspend fun getDateTimeFromArgNMessage(context: CommandContext, index: Int): Lon
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.datetime")
             .withVariable(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     return dateTime

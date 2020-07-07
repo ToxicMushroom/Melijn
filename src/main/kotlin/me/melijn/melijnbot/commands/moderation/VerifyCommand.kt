@@ -26,7 +26,7 @@ class VerifyCommand : AbstractCommand("command.verify") {
             return
         }
 
-        val role = VerificationUtils.getUnverifiedRoleNMessage(context.author, context.textChannel, context.daoManager, context.usedPrefix)
+        val role = VerificationUtils.getUnverifiedRoleNMessage(context.author, context.textChannel, context.taskManager, context.daoManager, context.usedPrefix)
             ?: return
 
         val msg = if (context.args[0] == "*") {

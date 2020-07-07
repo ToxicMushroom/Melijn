@@ -3,7 +3,7 @@ package me.melijn.melijnbot.objects.utils
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.utils.message.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -153,7 +153,7 @@ suspend fun getDurationByArgsNMessage(context: CommandContext, leftBound: Int, r
         val msg = context.getTranslation("message.unknown.timeduration")
             .withVariable("arg", timeStamps.joinToString(" "))
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
         return null
     }
 
@@ -167,7 +167,7 @@ suspend fun getDurationByArgsNMessage(context: CommandContext, leftBound: Int, r
             val msg = context.getTranslation("message.numbertobig")
                 .withVariable("arg", matcher.group(1))
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
             return null
         }
 
@@ -188,7 +188,7 @@ suspend fun getDurationByArgsNMessage(context: CommandContext, leftBound: Int, r
             val msg = context.getTranslation("message.unknown.timeunit")
                 .withVariable("arg", matcher.group(2))
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
             return null
         }
 

@@ -422,7 +422,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                             .withVariable("permissions", missingPermissionMessage)
                             .withVariable("channel", event.textChannel.asTag)
 
-                        sendMsg(event.textChannel, msg)
+                        sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
                         return true
                     }
                 }
@@ -443,7 +443,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                         val msg = i18n.getTranslation(language, "message.discordpermission$more.missing")
                             .withVariable("permissions", missingPermissionMessage)
 
-                        sendRsp(event.textChannel, container.taskManager, container.daoManager, msg)
+                        sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
                         return true
                     }
                 }
@@ -547,11 +547,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 val msg = unReplacedCooldown
                     .withVariable("cooldown", ((cooldownResult - (System.currentTimeMillis() - lastExecutionBiggest)) / 1000.0).toString())
 
-                if (canResponse(event.textChannel, daoManager.supporterWrapper)) {
-                    sendRsp(event.textChannel, taskManager, daoManager, msg)
-                } else {
-                    sendMsg(event.textChannel, msg)
-                }
+                sendRspOrMsg(event.textChannel, taskManager, daoManager, msg)
             }
             return bool
         }

@@ -13,6 +13,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.embed.Embedder
 import me.melijn.melijnbot.objects.music.LavaManager
 import me.melijn.melijnbot.objects.music.TrackUserData
+import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.translation.*
 import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.objects.utils.message.*
@@ -483,7 +484,7 @@ object LogUtils {
         sendEmbed(daoManager.embedDisabledWrapper, lc, eb.build())
     }
 
-    suspend fun sendBirthdayMessage(daoManager: DaoManager, textChannel: TextChannel, member: Member, birthYear: Int?) {
+    suspend fun sendBirthdayMessage(daoManager: DaoManager, taskManager: TaskManager, textChannel: TextChannel, member: Member, birthYear: Int?) {
         val guildId = textChannel.guild.idLong
         val messageType = MessageType.BIRTHDAY
         val language = getLanguage(daoManager, guildId)
@@ -493,7 +494,7 @@ object LogUtils {
             val msg = i18n.getTranslation(language, "logging.birthday")
                 .withVariable("user", member.asTag)
 
-            sendMsg(textChannel, msg)
+            sendRspOrMsg(textChannel, taskManager, daoManager, msg)
         } else {
             if (MessageCommandUtil.removeMessageIfEmpty(guildId, messageType, message, messageWrapper)) return
 

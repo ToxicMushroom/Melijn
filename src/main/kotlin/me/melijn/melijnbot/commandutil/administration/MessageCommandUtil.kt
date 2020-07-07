@@ -10,7 +10,7 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_TYPE
 import me.melijn.melijnbot.objects.utils.*
-import me.melijn.melijnbot.objects.utils.message.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.time.Instant
@@ -144,7 +144,7 @@ object MessageCommandUtil {
                 .replace("%${property.variableName}%", string)
         }.withVariable(PLACEHOLDER_TYPE, type.text)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
 
@@ -170,7 +170,7 @@ object MessageCommandUtil {
         val msg = context.getTranslation("message.embed.clear")
             .withVariable(PLACEHOLDER_TYPE, type.text)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
 
@@ -200,7 +200,7 @@ object MessageCommandUtil {
             content += "```"
             (title + content)
         }
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     suspend fun addAttachment(context: CommandContext, type: MessageType) {
@@ -232,7 +232,7 @@ object MessageCommandUtil {
             .withVariable("attachment", context.args[0])
             .withVariable("url", context.args[1])
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     suspend fun removeAttachment(context: CommandContext, type: MessageType) {
@@ -273,7 +273,7 @@ object MessageCommandUtil {
             }.withVariable(PLACEHOLDER_ARG, context.args[0])
                 .withVariable(PLACEHOLDER_TYPE, type.text)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setMessageContentAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -288,7 +288,7 @@ object MessageCommandUtil {
                 .withVariable(PLACEHOLDER_ARG, "```${arg.replace("`", "´")}```")
         }.withVariable(PLACEHOLDER_TYPE, type.text)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedDescriptionAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -305,7 +305,7 @@ object MessageCommandUtil {
         }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedColorAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -323,7 +323,7 @@ object MessageCommandUtil {
         }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedTimeStampMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -356,7 +356,7 @@ object MessageCommandUtil {
 
         message.extra = mmap
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedTitleAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -373,7 +373,7 @@ object MessageCommandUtil {
         }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedUrlAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -396,7 +396,7 @@ object MessageCommandUtil {
         }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedAuthorAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -413,7 +413,7 @@ object MessageCommandUtil {
         }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedAuthorIconUrlAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -447,7 +447,7 @@ object MessageCommandUtil {
         }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     suspend fun setEmbedAuthorUrlAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -466,7 +466,7 @@ object MessageCommandUtil {
         }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedThumbnailAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -498,7 +498,7 @@ object MessageCommandUtil {
         }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedImageAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -530,7 +530,7 @@ object MessageCommandUtil {
         }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedFooterAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -548,7 +548,7 @@ object MessageCommandUtil {
         }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
 
@@ -582,7 +582,7 @@ object MessageCommandUtil {
         }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
 
@@ -615,7 +615,7 @@ object MessageCommandUtil {
             .withVariable("inline", inlineString)
             .withVariable(PLACEHOLDER_TYPE, type.text)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     suspend fun setEmbedFieldTitleCC(index: Int, title: String, context: CommandContext, cc: CustomCommand) {
@@ -684,7 +684,7 @@ object MessageCommandUtil {
             .replace("%$partName%", partValue)
             .withVariable(PLACEHOLDER_TYPE, type.text)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     suspend fun removeEmbedField(index: Int, context: CommandContext, type: MessageType) {
@@ -725,7 +725,7 @@ object MessageCommandUtil {
             .withVariable("index", index.toString())
             .withVariable(PLACEHOLDER_TYPE, type.text)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
 
@@ -758,7 +758,7 @@ object MessageCommandUtil {
             (title + desc)
         }.withVariable(PLACEHOLDER_TYPE, type.text)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     suspend fun showMessagePreviewTyped(context: CommandContext, type: MessageType) {
@@ -768,7 +768,7 @@ object MessageCommandUtil {
         if (message == null) {
             val msg2 = context.getTranslation("message.view.isempty")
                 .withVariable("type", type.toUCC())
-            sendMsg(context, msg2)
+            sendRsp(context, msg2)
             return
         }
 
@@ -818,7 +818,7 @@ object MessageCommandUtil {
 
         val msg = context.getTranslation("message.pingable.set.$pingable")
             .withVariable("type", type.text)
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     suspend fun showPingable(context: CommandContext, type: MessageType) {
@@ -830,7 +830,7 @@ object MessageCommandUtil {
 
         val msg = context.getTranslation("message.pingable.show.$isPingable")
             .withVariable("type", type.text)
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     suspend fun showPingableCC(context: CommandContext, cc: CustomCommand) {
@@ -842,6 +842,6 @@ object MessageCommandUtil {
         messageWrapper.update(context.guildId, cc)
 
         val msg = context.getTranslation("message.pingable.show.$isPingable")
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

@@ -12,7 +12,7 @@ import me.melijn.melijnbot.objects.command.CommandCategory
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.message.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
 import net.dv8tion.jda.api.entities.User
 import java.awt.Color
 import java.io.BufferedReader
@@ -140,7 +140,7 @@ suspend inline fun <reified T : Enum<*>> getEnumFromArgNMessage(context: Command
     if (enum == null) {
         val msg = context.getTranslation(path)
             .withVariable(PLACEHOLDER_ARG, enumName)
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
     return enum
 }
@@ -150,7 +150,7 @@ suspend inline fun <T> getObjectFromArgNMessage(context: CommandContext, index: 
     if (newObj == null) {
         val msg = context.getTranslation(path)
             .withVariable(PLACEHOLDER_ARG, context.args[index])
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
     return newObj
 }
@@ -198,7 +198,7 @@ suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): S
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.commandnode")
             .withVariable(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg)
+        sendRsp(context, msg)
         return null
     }
     return commands
@@ -220,7 +220,7 @@ suspend fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set
         val language = context.getLanguage()
         val msg = i18n.getTranslation(language, "message.unknown.commands")
             .withVariable(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg)
+        sendRsp(context, msg)
         return null
     }
     return commands
@@ -243,11 +243,11 @@ suspend fun getLongFromArgNMessage(
     if (!arg.matches("\\d+".toRegex())) {
         val msg = i18n.getTranslation(language, "message.unknown.number")
             .withVariable(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     } else if (long == null) {
         val msg = i18n.getTranslation(language, "message.unknown.long")
             .withVariable(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
     if (long != null) {
         if (min > long || long > max) {
@@ -255,7 +255,7 @@ suspend fun getLongFromArgNMessage(
                 .withVariable("min", min.toString())
                 .withVariable("max", max.toString())
                 .withVariable(PLACEHOLDER_ARG, arg)
-            sendMsg(context, msg)
+            sendRsp(context, msg)
             return null
         }
     }
@@ -271,7 +271,7 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
             if (newVal == null) {
                 val msg = context.getTranslation("message.unknown.number")
                     .withVariable(PLACEHOLDER_ARG, value)
-                sendMsg(context, msg)
+                sendRsp(context, msg)
                 return null
             } else newVal
         }
@@ -304,7 +304,7 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
                 .withVariable(PLACEHOLDER_ARG, "$birthday")
                 .withVariable("start", "1")
                 .withVariable("end", "31")
-            sendMsg(context, msg)
+            sendRsp(context, msg)
             return null
         }
         val birthMonth = list[monthIndex]
@@ -313,7 +313,7 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
                 .withVariable(PLACEHOLDER_ARG, "$birthMonth")
                 .withVariable("start", "1")
                 .withVariable("end", "12")
-            sendMsg(context, msg)
+            sendRsp(context, msg)
             return null
         }
 
@@ -323,7 +323,7 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
                 .withVariable(PLACEHOLDER_ARG, "$birthYear")
                 .withVariable("start", "1900")
                 .withVariable("end", "2008")
-            sendMsg(context, msg)
+            sendRsp(context, msg)
             return null
         }
 
@@ -332,7 +332,7 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
     } else {
         val msg = context.getTranslation("message.unknown.birthday")
             .withVariable(PLACEHOLDER_ARG, context.args[index])
-        sendMsg(context, msg)
+        sendRsp(context, msg)
         return null
     }
 }
