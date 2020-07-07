@@ -79,6 +79,5 @@ class PurgeCommand : AbstractCommand("command.purge") {
                     LogUtils.sendPurgeLog(context, messages)
                 }
             }
-
     }
 }

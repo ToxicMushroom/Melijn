@@ -12,6 +12,7 @@ import me.melijn.melijnbot.enums.ChannelCommandState
 import me.melijn.melijnbot.objects.internals.TriState
 import me.melijn.melijnbot.objects.jagtag.CCJagTagParser
 import me.melijn.melijnbot.objects.jagtag.CCJagTagParserArgs
+import me.melijn.melijnbot.objects.threading.TaskManager
 import me.melijn.melijnbot.objects.translation.getLanguage
 import me.melijn.melijnbot.objects.translation.i18n
 import me.melijn.melijnbot.objects.utils.*
@@ -172,6 +173,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 if (event.isFromGuild) {
                     aliasesMap.putAll(aliasCache.get(event.guild.idLong).await())
                 }
+
                 for ((cmd, ls) in aliasCache.get(event.author.idLong).await()) {
                     val currentList = (aliasesMap[cmd] ?: emptyList()).toMutableList()
                     for (alias in ls) {
@@ -180,6 +182,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
                     aliasesMap[cmd] = currentList
                 }
+
                 searchedAliases = true
                 // ^ Above constructs the aliaxMap for guild and user
 
@@ -192,6 +195,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                         if (aliasParts.size < commandParts.size) {
                             val matches = aliasParts.withIndex().all { commandParts[it.index + 1] == it.value }
                             if (!matches) continue
+
                             spaceMap["$id"] = aliasParts.size - 1
                             commandList.firstOrNull {
                                 it.id == id
@@ -214,6 +218,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         if (ccsWithPrefixMatches.isNotEmpty()) {
             runCustomCommandByChance(event, commandPartsGlobal, ccsWithPrefixMatches, true)
             return
+
         } else {
             val prefixLessCommandParts: ArrayList<String> = ArrayList(message.contentRaw
                 .trim()
@@ -247,7 +252,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             getCustomCommandByChance(ccs)
         }
 
-        if (checksFailed(container.daoManager, cc, event)) return
+        if (checksFailed(container.daoManager, container.taskManager, cc, event)) return
 
         val cParts = commandParts.toMutableList()
         executeCC(cc, event, cParts, hasPrefix)
@@ -372,6 +377,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         return prefixes.toList()
     }
 
+
     companion object {
 
         /**
@@ -437,12 +443,12 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                         val msg = i18n.getTranslation(language, "message.discordpermission$more.missing")
                             .withVariable("permissions", missingPermissionMessage)
 
-                        sendMsg(event.textChannel, msg)
+                        sendRsp(event.textChannel, container.taskManager, container.daoManager, msg)
                         return true
                     }
                 }
 
-                if (commandIsOnCooldown(container.daoManager, cmdId, event)) {
+                if (commandIsOnCooldown(container.daoManager, container.taskManager, cmdId, event)) {
                     return true
                 }
             }
@@ -463,13 +469,13 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
          * [@return] returns true if the check failed
          *
          * **/
-        private suspend fun checksFailed(daoManager: DaoManager, command: CustomCommand, event: MessageReceivedEvent): Boolean {
+        private suspend fun checksFailed(daoManager: DaoManager, taskManager: TaskManager, command: CustomCommand, event: MessageReceivedEvent): Boolean {
             val cmdId = "cc.${command.id}"
             if (commandIsDisabled(daoManager, cmdId, event)) {
                 return true
             }
 
-            if (commandIsOnCooldown(daoManager, cmdId, event)) {
+            if (commandIsOnCooldown(daoManager, taskManager, cmdId, event)) {
                 return true
             }
 
@@ -477,26 +483,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
 
 
-        private suspend fun commandIsDisabled(daoManager: DaoManager, id: String, event: MessageReceivedEvent): Boolean {
-            val disabledCommandCache = daoManager.disabledCommandWrapper.disabledCommandsCache
-            val channelCommandStateCache = daoManager.channelCommandStateWrapper.channelCommandsStateCache
-
-            val disabledChannelCommands = channelCommandStateCache.get(event.channel.idLong).await()
-            if (disabledChannelCommands.contains(id)) {
-                if (disabledChannelCommands[id] == ChannelCommandState.ENABLED) {
-                    return false
-                } else if (disabledChannelCommands[id] == ChannelCommandState.DISABLED) {
-                    return true
-                }
-            }
-
-            val disabledCommands = disabledCommandCache.get(event.guild.idLong).await()
-            if (disabledCommands.contains(id)) return true
-
-            return false
-        }
-
-        private suspend fun commandIsOnCooldown(daoManager: DaoManager, id: String, event: MessageReceivedEvent): Boolean {
+        private suspend fun commandIsOnCooldown(daoManager: DaoManager, taskManager: TaskManager, id: String, event: MessageReceivedEvent): Boolean {
             val guildId = event.guild.idLong
             val userId = event.author.idLong
             val channelId = event.channel.idLong
@@ -559,9 +546,34 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 val unReplacedCooldown = i18n.getTranslation(language, "message.cooldown")
                 val msg = unReplacedCooldown
                     .withVariable("cooldown", ((cooldownResult - (System.currentTimeMillis() - lastExecutionBiggest)) / 1000.0).toString())
-                sendMsg(event.textChannel, msg)
+
+                if (canResponse(event.textChannel, daoManager.supporterWrapper)) {
+                    sendRsp(event.textChannel, taskManager, daoManager, msg)
+                } else {
+                    sendMsg(event.textChannel, msg)
+                }
             }
             return bool
+        }
+
+
+        private suspend fun commandIsDisabled(daoManager: DaoManager, id: String, event: MessageReceivedEvent): Boolean {
+            val disabledCommandCache = daoManager.disabledCommandWrapper.disabledCommandsCache
+            val channelCommandStateCache = daoManager.channelCommandStateWrapper.channelCommandsStateCache
+
+            val disabledChannelCommands = channelCommandStateCache.get(event.channel.idLong).await()
+            if (disabledChannelCommands.contains(id)) {
+                if (disabledChannelCommands[id] == ChannelCommandState.ENABLED) {
+                    return false
+                } else if (disabledChannelCommands[id] == ChannelCommandState.DISABLED) {
+                    return true
+                }
+            }
+
+            val disabledCommands = disabledCommandCache.get(event.guild.idLong).await()
+            if (disabledCommands.contains(id)) return true
+
+            return false
         }
     }
 }

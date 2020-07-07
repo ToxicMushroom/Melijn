@@ -6,6 +6,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.message.ModularMessage
+import me.melijn.melijnbot.database.supporter.SupporterWrapper
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.objects.threading.TaskManager
@@ -14,6 +15,7 @@ import me.melijn.melijnbot.objects.utils.USER_MENTION
 import me.melijn.melijnbot.objects.utils.awaitOrNull
 import me.melijn.melijnbot.objects.utils.withVariable
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.internal.entities.DataMessage
@@ -42,9 +44,14 @@ fun sendMsg(context: CommandContext, msg: String) {
     }
 }
 
+fun canResponse(messageChannel: MessageChannel, supporterWrapper: SupporterWrapper): Boolean {
+    return if (messageChannel is TextChannel)
+        supporterWrapper.guildSupporterIds.contains(messageChannel.guild.idLong)
+    else false
+}
+
 fun sendRsp(context: CommandContext, msg: String) {
-    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
-    if (premiumGuild) {
+    if (canResponse(context.messageChannel, context.daoManager.supporterWrapper)) {
         sendRsp(context.textChannel, context.taskManager, context.daoManager, msg)
     } else {
         sendMsg(context, msg)
@@ -78,10 +85,8 @@ fun sendRsp(channel: TextChannel, taskManager: TaskManager, daoManager: DaoManag
 }
 
 
-
 fun sendRsp(textChannel: TextChannel, context: CommandContext, msg: ModularMessage) {
-    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
-    if (premiumGuild) {
+    if (canResponse(textChannel, context.daoManager.supporterWrapper)) {
         sendRsp(textChannel, context.taskManager, context.daoManager, msg)
     } else {
         sendMsg(textChannel, msg)
@@ -186,8 +191,7 @@ fun sendMsg(privateChannel: PrivateChannel, msg: String) {
 }
 
 suspend fun sendRspAwaitEL(context: CommandContext, msg: String): List<Message> {
-    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
-    return if (premiumGuild) {
+    return if (canResponse(context.messageChannel, context.daoManager.supporterWrapper)) {
         sendRspAwaitEL(context.textChannel, context.daoManager, context.taskManager, msg)
     } else {
         sendMsgAwaitEL(context, msg)

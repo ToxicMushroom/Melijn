@@ -7,7 +7,7 @@ import me.melijn.melijnbot.enums.PermState
 import me.melijn.melijnbot.objects.utils.SPACE_PATTERN
 import me.melijn.melijnbot.objects.utils.addIfNotPresent
 import me.melijn.melijnbot.objects.utils.message.sendInGuild
-import me.melijn.melijnbot.objects.utils.message.sendMsg
+import me.melijn.melijnbot.objects.utils.message.sendRsp
 import me.melijn.melijnbot.objects.utils.withVariable
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
@@ -145,7 +145,7 @@ abstract class AbstractCommand(val root: String) {
     suspend fun sendMissingPermissionMessage(context: CommandContext, permission: String) {
         val msg = context.getTranslation("message.botpermission.missing")
             .withVariable("permission", permission)
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     fun isCommandFor(input: String): Boolean {
