@@ -8,7 +8,7 @@ import me.melijn.melijnbot.objects.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class SpamGroupWrapper(val taskManager: TaskManager, val spamGroupDao: SpamGroupDao) {
+class SpamGroupWrapper(val taskManager: TaskManager, private val spamGroupDao: SpamGroupDao) {
 
     val spamGroupCache = CacheBuilder.newBuilder()
         .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)

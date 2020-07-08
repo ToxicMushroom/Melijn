@@ -199,7 +199,8 @@ class CommandClientBuilder(private val container: Container) {
         RateCommand(),
         PossumCommand(),
         SetRemoveResponsesCommand(),
-        SetRemoveInvokeCommand()
+        SetRemoveInvokeCommand(),
+        ManageSupportersCommand()
     )
 
     init {
