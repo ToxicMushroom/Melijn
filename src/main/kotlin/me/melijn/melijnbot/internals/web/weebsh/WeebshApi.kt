@@ -18,7 +18,8 @@ class WeebshApi(val settings: Settings) {
         .build()
 
     suspend fun getUrl(type: String, nsfw: Boolean = false): String = suspendCoroutine {
-        weebApi.getRandomImage(type, if (nsfw) NSFWMode.ONLY_NSFW else NSFWMode.DISALLOW_NSFW).async({ image ->
+        val nsfwEnum = if (nsfw) NSFWMode.ONLY_NSFW else NSFWMode.DISALLOW_NSFW
+        weebApi.getRandomImage(type, nsfwEnum).async({ image ->
             it.resume(image.url)
         }, { _ ->
             it.resume(MISSING_IMAGE_URL)

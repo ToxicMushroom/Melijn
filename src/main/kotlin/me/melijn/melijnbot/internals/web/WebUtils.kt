@@ -1,5 +1,7 @@
 package me.melijn.melijnbot.internals.web
 
+import com.sun.org.slf4j.internal.Logger
+import com.sun.org.slf4j.internal.LoggerFactory
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
@@ -7,6 +9,8 @@ import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 
 object WebUtils {
+
+    val logger: Logger = LoggerFactory.getLogger(WebUtils.javaClass)
 
     suspend fun getResponseFromUrl(
         httpClient: HttpClient,
@@ -20,17 +24,16 @@ object WebUtils {
             }
         )
 
-        val response = httpClient.get<String>(fullUrlWithParams) {
-            headers {
-                for ((key, value) in headers) {
-                    this.append(key, value)
+        return try {
+            httpClient.get<String>(fullUrlWithParams) {
+                headers {
+                    for ((key, value) in headers) {
+                        this.append(key, value)
+                    }
                 }
             }
-        }
-
-        return try {
-            response
-        } catch (t: Throwable) {
+        } catch (e: Throwable) {
+            logger.warn("something went wrong when requesting to: $url")
             null
         }
     }

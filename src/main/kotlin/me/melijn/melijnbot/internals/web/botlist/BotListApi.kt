@@ -1,10 +1,12 @@
 package me.melijn.melijnbot.internals.web.botlist
 
 import io.ktor.client.HttpClient
+import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.content.TextContent
 import io.ktor.http.ContentType
+import kotlinx.coroutines.TimeoutCancellationException
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.*
@@ -26,10 +28,18 @@ class BotListApi(val httpClient: HttpClient, val taskManager: TaskManager, val s
                 .put("shards", DataArray.fromCollection(serversArray))
                 .toString()
 
-            httpClient.post<String>(url) {
+            postBotStats(url) {
                 header("Authorization", token)
                 this.body = TextContent(body, ContentType.Application.Json)
             }
+        }
+    }
+
+    private suspend fun postBotStats(url: String, builder: HttpRequestBuilder.() -> Unit) {
+        try {
+            httpClient.post<String>(url, builder)
+        } catch (t: TimeoutCancellationException) {
+            logger.warn("Failed to post bot stats to: $url")
         }
     }
 
@@ -42,7 +52,7 @@ class BotListApi(val httpClient: HttpClient, val taskManager: TaskManager, val s
                 .put("guildCount", "$servers")
                 .toString()
 
-            httpClient.post<String>(url) {
+            postBotStats(url) {
                 header("Authorization", token)
                 this.body = TextContent(body, ContentType.Application.Json)
             }
@@ -58,7 +68,7 @@ class BotListApi(val httpClient: HttpClient, val taskManager: TaskManager, val s
                 .put("shards", DataArray.fromCollection(serversArray))
                 .toString()
 
-            httpClient.post<String>(url) {
+            postBotStats(url) {
                 header("Authorization", token)
                 this.body = TextContent(body, ContentType.Application.Json)
             }
@@ -75,7 +85,7 @@ class BotListApi(val httpClient: HttpClient, val taskManager: TaskManager, val s
                 .put("voice_connections", voice)
                 .toString()
 
-            httpClient.post<String>(url) {
+            postBotStats(url) {
                 header("Authorization", token)
                 this.body = TextContent(body, ContentType.Application.Json)
             }
@@ -93,7 +103,7 @@ class BotListApi(val httpClient: HttpClient, val taskManager: TaskManager, val s
                 .put("shardCount", shards)
                 .toString()
 
-            httpClient.post<String>(url) {
+            postBotStats(url) {
                 header("Authorization", token)
                 this.body = TextContent(body, ContentType.Application.Json)
             }
@@ -109,7 +119,7 @@ class BotListApi(val httpClient: HttpClient, val taskManager: TaskManager, val s
                 .put("server_count", servers)
                 .toString()
 
-            httpClient.post<String>(url) {
+            postBotStats(url) {
                 header("Authorization", token)
                 this.body = TextContent(body, ContentType.Application.Json)
             }
@@ -125,7 +135,7 @@ class BotListApi(val httpClient: HttpClient, val taskManager: TaskManager, val s
                 .put("server_count", servers)
                 .toString()
 
-            httpClient.post<String>(url) {
+            postBotStats(url) {
                 header("Authorization", token)
                 this.body = TextContent(body, ContentType.Application.Json)
             }
