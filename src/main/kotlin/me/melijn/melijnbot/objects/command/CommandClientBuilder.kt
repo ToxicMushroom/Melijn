@@ -5,6 +5,7 @@ import me.melijn.melijnbot.commands.administration.*
 import me.melijn.melijnbot.commands.animal.*
 import me.melijn.melijnbot.commands.anime.*
 import me.melijn.melijnbot.commands.developer.*
+import me.melijn.melijnbot.commands.economy.BalanceCommand
 import me.melijn.melijnbot.commands.image.*
 import me.melijn.melijnbot.commands.moderation.*
 import me.melijn.melijnbot.commands.music.*
@@ -197,7 +198,9 @@ class CommandClientBuilder(private val container: Container) {
         SpeedCommand(),
         PitchCommand(),
         RateCommand(),
-        PossumCommand()
+        PossumCommand(),
+        BalanceCommand(),
+        SetBalanceCommand()
     )
 
     init {
