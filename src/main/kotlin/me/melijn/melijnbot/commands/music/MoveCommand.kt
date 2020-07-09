@@ -1,13 +1,14 @@
 package me.melijn.melijnbot.commands.music
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 
 class MoveCommand : AbstractCommand("command.move") {
@@ -32,7 +33,7 @@ class MoveCommand : AbstractCommand("command.move") {
 
         if (index1 == index2) {
             val msg = context.getTranslation("$root.sameindex")
-            sendMsg(context, msg)
+            sendRsp(context, msg)
             return
         }
 
@@ -49,10 +50,10 @@ class MoveCommand : AbstractCommand("command.move") {
         firstPart.forEach { trck -> trackManager.tracks.offer(trck) }
 
         val msg = context.getTranslation("$root.moved")
-            .replace("%pos1%", "${index1 + 1}")
-            .replace("%pos2%", "${index2 + 1}")
-            .replace("%track%", MarkdownSanitizer.escape(track.info.title))
+            .withVariable("pos1", "${index1 + 1}")
+            .withVariable("pos2", "${index2 + 1}")
+            .withVariable("track", MarkdownSanitizer.escape(track.info.title))
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

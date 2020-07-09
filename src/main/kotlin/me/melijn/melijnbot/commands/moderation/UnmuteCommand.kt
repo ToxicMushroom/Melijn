@@ -4,14 +4,17 @@ import me.melijn.melijnbot.database.mute.Mute
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.enums.SpecialPermission
-import me.melijn.melijnbot.objects.command.*
-import me.melijn.melijnbot.objects.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
-import me.melijn.melijnbot.objects.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.*
-import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
-import me.melijn.melijnbot.objects.utils.checks.getAndVerifyRoleByType
+import me.melijn.melijnbot.internals.command.*
+import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
+import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
+import me.melijn.melijnbot.internals.translation.i18n
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
+import me.melijn.melijnbot.internals.utils.checks.getAndVerifyRoleByType
+import me.melijn.melijnbot.internals.utils.message.sendEmbed
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
@@ -65,8 +68,8 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         val muteRole = guild.getAndVerifyRoleByType(daoManager, RoleType.MUTE)
         if (muteRole == null) {
             val msg = context.getTranslation("$root.nomuterole")
-                .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+            sendRsp(context, msg)
             return
         }
 
@@ -74,14 +77,14 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
 
             if (!context.guild.selfMember.canInteract(targetMember)) {
                 val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .replace(PLACEHOLDER_USER, targetMember.asTag)
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_USER, targetMember.asTag)
+                sendRsp(context, msg)
                 return
             }
             if (!context.member.canInteract(targetMember) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
                 val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .replace(PLACEHOLDER_USER, targetMember.asTag)
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_USER, targetMember.asTag)
+                sendRsp(context, msg)
                 return
             }
 
@@ -91,9 +94,9 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
                 sendUnmuteLogs(context, targetUser, muteAuthor, mute, unmuteReason)
             } else {
                 val msg = context.getTranslation("$root.failure")
-                    .replace(PLACEHOLDER_USER, targetUser.asTag)
-                    .replace("%cause%", exception.message ?: "/")
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                    .withVariable("cause", exception.message ?: "/")
+                sendRsp(context, msg)
             }
 
         } else if (targetMember == null) {
@@ -101,9 +104,9 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
 
         } else if (!targetMember.roles.contains(muteRole)) {
             val msg = context.getTranslation("$root.notmuted")
-                .replace(PLACEHOLDER_USER, targetUser.asTag)
+                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
 
         if (activeMute != null) {
@@ -138,10 +141,10 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
         logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, msgLc) }
 
         val successMsg = context.getTranslation("$root.success")
-            .replace(PLACEHOLDER_USER, targetUser.asTag)
-            .replace("%reason%", unmuteReason)
+            .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+            .withVariable("reason", unmuteReason)
 
-        sendMsg(context, successMsg)
+        sendRsp(context, successMsg)
     }
 }
 
@@ -159,9 +162,6 @@ fun getUnmuteMessage(
     received: Boolean = true,
     failedCause: String? = null
 ): MessageEmbed {
-
-    val eb = EmbedBuilder()
-
     val muteDuration = mute.endTime?.let { endTime ->
         getDurationString((endTime - mute.startTime))
     } ?: i18n.getTranslation(language, "infinite")
@@ -169,23 +169,23 @@ fun getUnmuteMessage(
     var description = "```LDIF\n"
     if (!lc) {
         description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .replace("%serverName%", guild.name)
-            .replace("%serverId%", guild.id)
+            .withVariable("serverName", guild.name)
+            .withVariable("serverId", guild.id)
     }
 
     val deletedAccount = i18n.getTranslation(language, "message.deleted.user")
     description += i18n.getTranslation(language, "message.punishment.unmute.description")
-        .replace("%muteAuthor%", muteAuthor?.asTag ?: deletedAccount)
-        .replace("%muteAuthorId%", mute.muteAuthorId.toString())
-        .replace("%unMuteAuthorId%", mute.unmuteAuthorId.toString())
-        .replace("%unMuted%", mutedUser?.asTag ?: deletedAccount)
-        .replace("%unMutedId%", mute.mutedId.toString())
-        .replace("%muteReason%", mute.reason)
-        .replace("%unmuteReason%", mute.unmuteReason ?: "/")
-        .replace("%duration%", muteDuration)
-        .replace("%startTime%", (mute.startTime.asEpochMillisToDateTime(zoneId)))
-        .replace("%endTime%", (mute.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
-        .replace("%muteId%", mute.muteId)
+        .withVariable("muteAuthor", muteAuthor?.asTag ?: deletedAccount)
+        .withVariable("muteAuthorId", mute.muteAuthorId.toString())
+        .withVariable("unMuteAuthorId", mute.unmuteAuthorId.toString())
+        .withVariable("unMuted", mutedUser?.asTag ?: deletedAccount)
+        .withVariable("unMutedId", mute.mutedId.toString())
+        .withVariable("muteReason", mute.reason)
+        .withVariable("unmuteReason", mute.unmuteReason ?: "/")
+        .withVariable("duration", muteDuration)
+        .withVariable("startTime", (mute.startTime.asEpochMillisToDateTime(zoneId)))
+        .withVariable("endTime", (mute.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
+        .withVariable("muteId", mute.muteId)
 
     var extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,
@@ -201,19 +201,20 @@ fun getUnmuteMessage(
     if (failedCause != null) {
         extraDesc += i18n.getTranslation(language,
             "message.punishment.extra.failed"
-        ).replace("%cause%", failedCause)
+        ).withVariable("cause", failedCause)
     }
 
     description += extraDesc
     description += "```"
 
     val author = i18n.getTranslation(language, "message.punishment.unmute.author")
-        .replace(PLACEHOLDER_USER, unmuteAuthor.asTag)
-        .replace("%spaces%", " ".repeat(45).substring(0, 45 - unmuteAuthor.name.length) + "\u200B")
+        .withVariable(PLACEHOLDER_USER, unmuteAuthor.asTag)
+        .withVariable("spaces", " ".repeat(45).substring(0, 45 - unmuteAuthor.name.length) + "\u200B")
 
-    eb.setAuthor(author, null, unmuteAuthor.effectiveAvatarUrl)
-    eb.setDescription(description)
-    eb.setThumbnail(mutedUser?.effectiveAvatarUrl)
-    eb.setColor(Color.GREEN)
-    return eb.build()
+    return EmbedBuilder()
+        .setAuthor(author, null, unmuteAuthor.effectiveAvatarUrl)
+        .setDescription(description)
+        .setThumbnail(mutedUser?.effectiveAvatarUrl)
+        .setColor(Color.GREEN)
+        .build()
 }

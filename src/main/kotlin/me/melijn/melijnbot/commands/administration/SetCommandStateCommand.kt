@@ -3,14 +3,17 @@ package me.melijn.melijnbot.commands.administration
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.ChannelCommandState
 import me.melijn.melijnbot.enums.CommandState
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_CHANNELCOMMANDSTATE
-import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_COMMANDSTATE
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
-import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_CHANNELCOMMANDSTATE
+import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_COMMANDSTATE
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
+import me.melijn.melijnbot.internals.translation.i18n
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
 class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
 
@@ -22,10 +25,10 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
         children = arrayOf(GlobalArg(root), ChannelArg(root), InfoArg(root))
     }
 
-    //setCommandState <global, channel, info>
-    //setCommandState global commandNode* state*
-    //setCommandState channel channel* commandNode* state*
-    //setCommandState info [channel*]
+    // setCommandState <global, channel, info>
+    // setCommandState global commandNode* state*
+    // setCommandState channel channel* commandNode* state*
+    // setCommandState info [channel*]
 
     override suspend fun execute(context: CommandContext) {
         sendSyntax(context)
@@ -55,11 +58,11 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                 ""
             }
             val msg = context.getTranslation(path)
-                .replace("%commandCount%", commands.size.toString())
-                .replace("%state%", commandState.toString())
-                .replace("%commandNode%", context.args[0])
+                .withVariable("commandCount", commands.size.toString())
+                .withVariable("state", commandState.toString())
+                .withVariable("commandNode", context.args[0])
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -97,12 +100,12 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
 
             val language = context.getLanguage()
             val msg = i18n.getTranslation(language, path)
-                .replace(PLACEHOLDER_CHANNEL, channel.asTag)
-                .replace("%commandCount%", commands.size.toString())
-                .replace("%state%", commandState.toString())
-                .replace("%commandNode%", context.args[1])
+                .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
+                .withVariable("commandCount", commands.size.toString())
+                .withVariable("state", commandState.toString())
+                .withVariable("commandNode", context.args[1])
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -142,7 +145,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                 content += "```"
 
                 val msg = title + content
-                sendMsgCodeBlock(context, msg, "INI")
+                sendRspCodeBlock(context, msg, "INI")
             } else {
                 val channel = getTextChannelByArgsNMessage(context, 0) ?: return
 
@@ -164,7 +167,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                 commandMap.putAll(filteredCCs)
 
                 val title = context.getTranslation("$root.channelstate.response1")
-                    .replace(PLACEHOLDER_CHANNEL, channel.asTag)
+                    .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
 
                 var content = "```INI"
                 for ((index, entry) in commandMap.entries.withIndex()) {
@@ -173,9 +176,8 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                 content += "```"
 
                 val msg = title + content
-                sendMsgCodeBlock(context, msg, "INI")
+                sendRspCodeBlock(context, msg, "INI")
             }
         }
     }
 }
-

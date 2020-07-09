@@ -1,11 +1,11 @@
 package me.melijn.melijnbot.commands.administration
 
 import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.utils.getBooleanFromArgNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.utils.getBooleanFromArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
 
 class SetBannedOrKickedTriggersLeaveCommand : AbstractCommand("command.setbannedorkickedtriggersleave") {
 
@@ -21,13 +21,13 @@ class SetBannedOrKickedTriggersLeaveCommand : AbstractCommand("command.setbanned
         if (context.args.isEmpty()) {
             val state = wrapper.bannedOrKickedTriggersLeaveCache.get(context.guildId).await()
             val msg = context.getTranslation("$root.show.$state")
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
 
         val newState = getBooleanFromArgNMessage(context, 0) ?: return
         wrapper.set(context.guildId, newState)
 
         val msg = context.getTranslation("$root.set.$newState")
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

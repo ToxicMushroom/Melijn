@@ -2,8 +2,14 @@ package me.melijn.melijnbot.commands.utility
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.commands.administration.AliasesCommand.Companion.getCommandPathInfo
-import me.melijn.melijnbot.objects.command.*
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.*
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.internals.utils.getStringFromArgsNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.removePrefix
+import me.melijn.melijnbot.internals.utils.withVariable
 
 const val TOTAL_ALIASES_LIMIT = 25
 const val CMD_ALIASES_LIMIT = 3
@@ -37,7 +43,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             val aliasMap = context.daoManager.aliasWrapper.aliasCache.get(context.authorId).await()
             if (aliasMap.isEmpty()) {
                 val msg = context.getTranslation("$root.empty")
-                sendMsg(context, msg)
+                sendRsp(context, msg)
                 return
             }
 
@@ -57,7 +63,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             sb.append("```")
 
             val listTitle = context.getTranslation("$root.title")
-            sendMsgCodeBlock(context, "$listTitle\n$sb", "INI", true)
+            sendRspCodeBlock(context, "$listTitle\n$sb", "INI", true)
         }
     }
 
@@ -91,9 +97,9 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             val idLessCmd = cmdPath.removePrefix("$cmdId")
 
             val msg = context.getTranslation("$root.cleared")
-                .replace("%amount%", amount)
-                .replace("%cmd%", rootCmd.name + idLessCmd.replace(".", " "))
-            sendMsg(context, msg)
+                .withVariable("amount", amount)
+                .withVariable("cmd", rootCmd.name + idLessCmd.replace(".", " "))
+            sendRsp(context, msg)
         }
     }
 
@@ -118,9 +124,9 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             aliasWrapper.clear(context.authorId, pathInfo.fullPath)
 
             val msg = context.getTranslation("$root.cleared")
-                .replace("%amount%", removed)
-                .replace("%cmd%", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
-            sendMsg(context, msg)
+                .withVariable("amount", removed)
+                .withVariable("cmd", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
+            sendRsp(context, msg)
         }
     }
 
@@ -143,10 +149,10 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             val aliases = aliasMap[pathInfo.fullPath] ?: emptyList()
             if (aliases.isEmpty()) {
                 val msg = context.getTranslation("$root.empty")
-                    .replace("%cmd%", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
-                    .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
+                    .withVariable("cmd", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
+                    .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
                 return
             }
 
@@ -156,9 +162,9 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             aliasWrapper.remove(context.authorId, pathInfo.fullPath, alias)
 
             val msg = context.getTranslation("$root.removed")
-                .replace("%alias%", alias)
-                .replace("%cmd%", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
-            sendMsg(context, msg)
+                .withVariable("alias", alias)
+                .withVariable("cmd", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
+            sendRsp(context, msg)
         }
 
     }
@@ -178,9 +184,9 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             context.daoManager.aliasWrapper.remove(context.authorId, pathInfo.fullPath, alias)
 
             val msg = context.getTranslation("$root.removed")
-                .replace("%alias%", alias)
-                .replace("%cmd%", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
-            sendMsg(context, msg)
+                .withVariable("alias", alias)
+                .withVariable("cmd", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
+            sendRsp(context, msg)
         }
     }
 
@@ -206,9 +212,9 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
 
             if (total >= TOTAL_ALIASES_LIMIT) {
                 val msg = context.getTranslation("$root.limit.total")
-                    .replace("%limit%", "$TOTAL_ALIASES_LIMIT")
+                    .withVariable("limit", "$TOTAL_ALIASES_LIMIT")
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
                 return
             }
 
@@ -219,18 +225,18 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
             val cmdTotal = (aliases[pathInfo.fullPath] ?: emptyList()).size
             if (cmdTotal >= CMD_ALIASES_LIMIT) {
                 val msg = context.getTranslation("$root.limit.cmd")
-                    .replace("%limit%", "$CMD_ALIASES_LIMIT")
+                    .withVariable("limit", "$CMD_ALIASES_LIMIT")
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
                 return
             }
 
             aliasWrapper.add(context.guildId, pathInfo.fullPath, alias)
 
             val msg = context.getTranslation("$root.added")
-                .replace("%alias%", alias)
-                .replace("%cmd%", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
-            sendMsg(context, msg)
+                .withVariable("alias", alias)
+                .withVariable("cmd", pathInfo.rootCmd.name + pathInfo.idLessCmd.replace(".", " "))
+            sendRsp(context, msg)
         }
     }
 

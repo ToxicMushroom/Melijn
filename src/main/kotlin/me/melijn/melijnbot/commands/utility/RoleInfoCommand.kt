@@ -1,14 +1,15 @@
 package me.melijn.melijnbot.commands.utility
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE_ID
-import me.melijn.melijnbot.objects.utils.asLongLongGMTString
-import me.melijn.melijnbot.objects.utils.getRoleByArgsNMessage
-import me.melijn.melijnbot.objects.utils.sendEmbed
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ROLE_ID
+import me.melijn.melijnbot.internals.utils.asLongLongGMTString
+import me.melijn.melijnbot.internals.utils.getRoleByArgsNMessage
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.Role
 import java.awt.Color
 
@@ -35,21 +36,21 @@ class RoleInfoCommand : AbstractCommand("command.roleinfo") {
         val value1 = replaceRoleVars(unReplacedValue1, role, yes, no)
 
         val eb = Embedder(context)
-        eb.addField(tile1, value1, false)
-        sendEmbed(context, eb.build())
+            .addField(tile1, value1, false)
+        sendEmbedRsp(context, eb.build())
     }
 
     private fun replaceRoleVars(string: String, role: Role, yes: String, no: String): String = string
-        .replace("%roleName%", role.name)
-        .replace(PLACEHOLDER_ROLE_ID, role.id)
-        .replace("%creationTime%", role.timeCreated.asLongLongGMTString())
-        .replace("%position%", role.position.toString() + "/" + role.guild.roleCache.size())
-        .replace("%members%", role.guild.memberCache.stream().filter { member -> member.roles.contains(role) }.count().toString())
-        .replace("%isMentionable%", if (role.isMentionable) yes else no)
-        .replace("%isHoisted%", if (role.isHoisted) yes else no)
-        .replace("%isManaged%", if (role.isManaged) yes else no)
-        .replace("%color%", getColorString(role))
-        .replace("%canMelijnInteract%", if (role.guild.selfMember.canInteract(role)) yes else no)
+        .withVariable("roleName", role.name)
+        .withVariable(PLACEHOLDER_ROLE_ID, role.id)
+        .withVariable("creationTime", role.timeCreated.asLongLongGMTString())
+        .withVariable("position", role.position.toString() + "/" + role.guild.roleCache.size())
+        .withVariable("members", role.guild.memberCache.stream().filter { member -> member.roles.contains(role) }.count().toString())
+        .withVariable("isMentionable", if (role.isMentionable) yes else no)
+        .withVariable("isHoisted", if (role.isHoisted) yes else no)
+        .withVariable("isManaged", if (role.isManaged) yes else no)
+        .withVariable("color", getColorString(role))
+        .withVariable("canMelijnInteract", if (role.guild.selfMember.canInteract(role)) yes else no)
 
     private fun getColorString(role: Role): String {
         if (role.color == null) return "none"

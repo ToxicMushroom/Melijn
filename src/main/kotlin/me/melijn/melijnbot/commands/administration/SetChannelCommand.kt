@@ -1,13 +1,15 @@
 package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.enums.ChannelType
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_CHANNELTYPE
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
-import me.melijn.melijnbot.objects.utils.*
-import me.melijn.melijnbot.objects.utils.checks.getAndVerifyChannelByType
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_CHANNELTYPE
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelByType
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
 class SetChannelCommand : AbstractCommand("command.setchannel") {
 
@@ -37,17 +39,17 @@ class SetChannelCommand : AbstractCommand("command.setchannel") {
         val channel = context.guild.getAndVerifyChannelByType(context.daoManager, type)
         if (channel == null) {
             val msg = context.getTranslation("$root.show.unset")
-                .replace("%channelType%", type.toUCC())
+                .withVariable("channelType", type.toUCC())
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
             return
         }
 
         val msg = context.getTranslation("$root.show.set")
-            .replace("%channelType%", type.toUCC())
-            .replace(PLACEHOLDER_CHANNEL, channel.asTag)
+            .withVariable("channelType", type.toUCC())
+            .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setChannel(context: CommandContext, type: ChannelType) {
@@ -67,9 +69,9 @@ class SetChannelCommand : AbstractCommand("command.setchannel") {
         } else {
             channelWrapper.setChannel(context.guildId, type, channel.idLong)
             context.getTranslation("$root.set")
-                .replace(PLACEHOLDER_CHANNEL, channel.asTag)
-        }.replace("%channelType%", type.toUCC())
+                .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
+        }.withVariable("channelType", type.toUCC())
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

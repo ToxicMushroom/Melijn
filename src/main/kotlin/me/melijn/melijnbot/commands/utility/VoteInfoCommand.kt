@@ -1,15 +1,16 @@
 package me.melijn.melijnbot.commands.utility
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER_ID
-import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
-import me.melijn.melijnbot.objects.utils.retrieveUserByArgsNMessage
-import me.melijn.melijnbot.objects.utils.sendEmbed
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER_ID
+import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
+import me.melijn.melijnbot.internals.utils.withVariable
 
 class VoteInfoCommand : AbstractCommand("command.voteinfo") {
 
@@ -32,23 +33,23 @@ class VoteInfoCommand : AbstractCommand("command.voteinfo") {
         if (userVote == null) {
             val extra = if (context.author == target) ".self" else ""
             val msg = context.getTranslation("$root$extra.novote")
-                .replace("%url%", VOTE_URL)
-            sendMsg(context, msg)
+                .withVariable("url", VOTE_URL)
+            sendRsp(context, msg)
             return
         }
 
 
         val fieldTitle = context.getTranslation("$root.field.voteinfo")
         val value = context.getTranslation("$root.field.value")
-            .replace(PLACEHOLDER_USER, target.asTag)
-            .replace(PLACEHOLDER_USER_ID, target.id)
-            .replace("%votes%", userVote.votes.toString())
-            .replace("%streak%", userVote.streak.toString())
-            .replace("%lastTime%", userVote.lastTime.asEpochMillisToDateTime(context.getTimeZoneId()))
+            .withVariable(PLACEHOLDER_USER, target.asTag)
+            .withVariable(PLACEHOLDER_USER_ID, target.id)
+            .withVariable("votes", userVote.votes.toString())
+            .withVariable("streak", userVote.streak.toString())
+            .withVariable("lastTime", userVote.lastTime.asEpochMillisToDateTime(context.getTimeZoneId()))
 
         val eb = Embedder(context)
-        eb.setThumbnail(target.effectiveAvatarUrl)
-        eb.addField(fieldTitle, value, true)
-        sendEmbed(context, eb.build())
+            .setThumbnail(target.effectiveAvatarUrl)
+            .addField(fieldTitle, value, true)
+        sendEmbedRsp(context, eb.build())
     }
 }

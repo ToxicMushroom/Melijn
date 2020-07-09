@@ -1,13 +1,12 @@
 package me.melijn.melijnbot.commands.economy
 
-import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.utils.retrieveUserByArgsNMessage
-import me.melijn.melijnbot.objects.utils.sendEmbed
-import me.melijn.melijnbot.objects.utils.withVariable
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
+import me.melijn.melijnbot.internals.utils.withVariable
 
 class BalanceCommand : AbstractCommand("command.balance") {
 
@@ -27,7 +26,7 @@ class BalanceCommand : AbstractCommand("command.balance") {
 
             val eb = Embedder(context)
                 .setDescription(description)
-            sendEmbed(context, eb.build())
+            sendEmbedRsp(context, eb.build())
 
         } else {
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
@@ -38,7 +37,7 @@ class BalanceCommand : AbstractCommand("command.balance") {
 
             val eb = Embedder(context)
                 .setDescription(description)
-            sendEmbed(context, eb.build())
+            sendEmbedRsp(context, eb.build())
         }
     }
 }

@@ -1,12 +1,18 @@
 package me.melijn.melijnbot.commands.moderation
 
 import me.melijn.melijnbot.enums.PunishmentType
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
+import me.melijn.melijnbot.internals.utils.getStringFromArgsNMessage
+import me.melijn.melijnbot.internals.utils.message.sendPaginationMsg
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
+import me.melijn.melijnbot.internals.utils.withVariable
 
 class HistoryCommand : AbstractCommand("command.history") {
 
@@ -29,8 +35,8 @@ class HistoryCommand : AbstractCommand("command.history") {
         val types = PunishmentType.getMatchingTypesFromNode(context.args[0])
         if (types.isEmpty()) {
             val msg = context.getTranslation("message.unknown.punishmenttype")
-                .replace(PLACEHOLDER_ARG, context.args[0])
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_ARG, context.args[0])
+            sendRsp(context, msg)
             return
         }
 
@@ -87,10 +93,10 @@ class HistoryCommand : AbstractCommand("command.history") {
             }
 
             val noHistory = context.getTranslation("$root.nohistory")
-                .replace(PLACEHOLDER_USER, targetUser.asTag)
-                .replace("%typeList%", readableList)
+                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withVariable("typeList", readableList)
 
-            sendMsg(context, noHistory)
+            sendRsp(context, noHistory)
         } else {
             val comment = context.getTranslation("message.pagination")
             val maxLength = 1999 - comment.length
@@ -122,8 +128,8 @@ class HistoryCommand : AbstractCommand("command.history") {
                                 paginationPart.append(part)
                             } else {
                                 paginationPart.append(comment
-                                    .replace("%page%", countr++)
-                                    .replace("%pages%", pages)
+                                    .withVariable("page", countr++)
+                                    .withVariable("pages", pages)
                                 )
                                 paginationPartList.add(paginationPart.toString())
                                 paginationPart.clear()
@@ -134,8 +140,8 @@ class HistoryCommand : AbstractCommand("command.history") {
                 }
                 if (paginationPart.isNotEmpty()) {
                     paginationPart.append(comment
-                        .replace("%page%", countr)
-                        .replace("%pages%", pages)
+                        .withVariable("page", countr)
+                        .withVariable("pages", pages)
                     )
                     paginationPartList.add(paginationPart.toString())
                     paginationPart.clear()
@@ -143,7 +149,7 @@ class HistoryCommand : AbstractCommand("command.history") {
 
                 sendPaginationMsg(context, paginationPartList, 0)
             } else {
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
         }
     }
@@ -194,7 +200,7 @@ class HistoryCommand : AbstractCommand("command.history") {
 
             //Collected all punishments
             val msg = unorderedMap.values.joinToString("")
-            sendMsgCodeBlocks(context, msg, "INI")
+            sendRspCodeBlock(context, msg, "INI")
         }
     }
 }

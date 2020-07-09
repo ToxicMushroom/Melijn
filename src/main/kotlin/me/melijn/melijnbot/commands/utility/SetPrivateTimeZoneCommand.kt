@@ -1,12 +1,13 @@
 package me.melijn.melijnbot.commands.utility
 
 import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_TIMEZONE
-import me.melijn.melijnbot.objects.utils.getObjectFromArgNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_TIMEZONE
+import me.melijn.melijnbot.internals.utils.getObjectFromArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.withVariable
 import java.time.ZoneId
 import java.util.*
 
@@ -37,9 +38,9 @@ class SetPrivateTimeZoneCommand : AbstractCommand("command.setprivatetimezone") 
             } else {
                 "$root.show.set"
             }
-        ).replace("%zone%", id)
+        ).withVariable("zone", id)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setTimeZone(context: CommandContext) {
@@ -72,8 +73,8 @@ class SetPrivateTimeZoneCommand : AbstractCommand("command.setprivatetimezone") 
         }
 
         val msg = context.getTranslation("$root.${possible}set")
-            .replace("%zone%", zone?.id ?: "")
+            .withVariable("zone", zone?.id ?: "")
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

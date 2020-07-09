@@ -1,11 +1,16 @@
 package me.melijn.melijnbot.commands.administration
 
 import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.internals.utils.isPremiumGuild
+import me.melijn.melijnbot.internals.utils.message.sendFeatureRequiresGuildPremiumMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.withVariable
 
 const val PREFIXES_LIMIT = 2
 const val PREMIUM_PREFIXES_LIMIT = 10
@@ -43,7 +48,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
                 .sortedBy { it }
 
             val defPrefixMsg = context.getTranslation("$root.defprefix")
-                .replace(PLACEHOLDER_PREFIX, context.prefix)
+                .withVariable(PLACEHOLDER_PREFIX, context.prefix)
 
             var content = "```INI"
             if (prefixes.isEmpty()) content += "\n$defPrefixMsg"
@@ -53,7 +58,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             content += "```"
 
             val msg = title + content
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -82,8 +87,8 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
                 return
             } else if (ppList.size >= PREMIUM_PREFIXES_LIMIT) {
                 val msg = context.getTranslation("$root.limit")
-                    .replace("%limit%", "$PREMIUM_PREFIXES_LIMIT")
-                sendMsg(context, msg)
+                    .withVariable("limit", "$PREMIUM_PREFIXES_LIMIT")
+                sendRsp(context, msg)
                 return
             }
 
@@ -91,8 +96,8 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             context.daoManager.guildPrefixWrapper.addPrefix(context.guildId, prefix)
 
             val msg = context.getTranslation("$root.response1")
-                .replace(PLACEHOLDER_PREFIX, prefix)
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_PREFIX, prefix)
+            sendRsp(context, msg)
         }
     }
 
@@ -113,8 +118,8 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             context.daoManager.guildPrefixWrapper.removePrefix(context.guildId, prefix)
 
             val msg = context.getTranslation("$root.response1")
-                .replace(PLACEHOLDER_PREFIX, prefix)
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_PREFIX, prefix)
+            sendRsp(context, msg)
         }
     }
 
@@ -139,8 +144,8 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             wrapper.removePrefix(context.guildId, toRemove)
 
             val msg = context.getTranslation("$root.removed")
-                .replace(PLACEHOLDER_PREFIX, toRemove)
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_PREFIX, toRemove)
+            sendRsp(context, msg)
         }
     }
 }

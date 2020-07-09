@@ -1,13 +1,14 @@
 package me.melijn.melijnbot.commands.music
 
 import com.sedmelluq.discord.lavaplayer.filter.equalizer.Equalizer.BAND_COUNT
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.withVariable
 
 class SetBandCommand : AbstractCommand("command.setband") {
 
@@ -39,9 +40,9 @@ class SetBandCommand : AbstractCommand("command.setband") {
             val gain = ((bandVal + 0.25f) * 400).toInt()
 
             val msg = context.getTranslation("$root.show")
-                .replace("%bandId%", bandId.toString())
-                .replace("%gain%", gain.toString())
-            sendMsg(context, msg)
+                .withVariable("bandId", bandId.toString())
+                .withVariable("gain", gain.toString())
+            sendRsp(context, msg)
             return
         }
         val gain = getIntegerFromArgNMessage(context, 1, 0, 500) ?: return
@@ -51,9 +52,9 @@ class SetBandCommand : AbstractCommand("command.setband") {
         iPlayer.setBand(bandId, actualGain)
 
         val msg = context.getTranslation("$root.set")
-            .replace("%bandId%", bandId.toString())
-            .replace("%gain%", gain.toString())
-        sendMsg(context, msg)
+            .withVariable("bandId", bandId.toString())
+            .withVariable("gain", gain.toString())
+        sendRsp(context, msg)
     }
 
     class AllArg(parent: String) : AbstractCommand("$parent.all") {
@@ -76,7 +77,7 @@ class SetBandCommand : AbstractCommand("command.setband") {
                 content += "```"
 
                 val msg = title + content
-                sendMsg(context, msg)
+                sendRsp(context, msg)
 
             } else {
                 val gain = getIntegerFromArgNMessage(context, 0, 0, 500) ?: return
@@ -87,8 +88,8 @@ class SetBandCommand : AbstractCommand("command.setband") {
                 }
 
                 val msg = context.getTranslation("$root.set")
-                    .replace("%gain%", gain.toString())
-                sendMsg(context, msg)
+                    .withVariable("gain", gain.toString())
+                sendRsp(context, msg)
             }
         }
     }

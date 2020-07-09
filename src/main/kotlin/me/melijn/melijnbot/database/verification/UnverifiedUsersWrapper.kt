@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.database.verification
 
-import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.internals.threading.TaskManager
 
 class UnverifiedUsersWrapper(val taskManager: TaskManager, private val unverifiedUsersDao: UnverifiedUsersDao) {
 

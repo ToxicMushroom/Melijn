@@ -2,9 +2,9 @@ package me.melijn.melijnbot.database.settings
 
 import com.google.common.cache.CacheBuilder
 import me.melijn.melijnbot.database.IMPORTANT_CACHE
-import me.melijn.melijnbot.objects.internals.TriState
-import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.loadingCacheFrom
+import me.melijn.melijnbot.internals.models.TriState
+import me.melijn.melijnbot.internals.threading.TaskManager
+import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 

@@ -6,10 +6,11 @@ import me.melijn.melijnbot.database.message.MessageWrapper
 import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.enums.ModularMessageProperty
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_TYPE
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_TYPE
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.time.Instant
@@ -141,9 +142,9 @@ object MessageCommandUtil {
         } else {
             context.getTranslation("$path.set$pathSuffix")
                 .replace("%${property.variableName}%", string)
-        }.replace(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, type.text)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
 
@@ -167,9 +168,9 @@ object MessageCommandUtil {
         modularMessage.embed = null
 
         val msg = context.getTranslation("message.embed.clear")
-            .replace(PLACEHOLDER_TYPE, type.text)
+            .withVariable(PLACEHOLDER_TYPE, type.text)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
 
@@ -187,11 +188,11 @@ object MessageCommandUtil {
     private suspend fun listAttachmentsAndMessage(context: CommandContext, message: ModularMessage?, type: MessageType) {
         val msg = if (message == null || message.attachments.isEmpty()) {
             context.getTranslation("message.attachments.list.empty")
-                .replace(PLACEHOLDER_TYPE, type.text)
+                .withVariable(PLACEHOLDER_TYPE, type.text)
 
         } else {
             val title = context.getTranslation("message.attachments.list.title")
-                .replace(PLACEHOLDER_TYPE, type.text)
+                .withVariable(PLACEHOLDER_TYPE, type.text)
             var content = "\n```INI"
             for ((index, attachment) in message.attachments.entries.withIndex()) {
                 content += "\n$index - [${attachment.key}] - ${attachment.value}"
@@ -199,7 +200,7 @@ object MessageCommandUtil {
             content += "```"
             (title + content)
         }
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     suspend fun addAttachment(context: CommandContext, type: MessageType) {
@@ -227,11 +228,11 @@ object MessageCommandUtil {
         modularMessage.attachments = newMap.toMap()
 
         val msg = context.getTranslation("message.attachments.add")
-            .replace(PLACEHOLDER_TYPE, type.text)
-            .replace("%attachment%", context.args[0])
-            .replace("%url%", context.args[1])
+            .withVariable(PLACEHOLDER_TYPE, type.text)
+            .withVariable("attachment", context.args[0])
+            .withVariable("url", context.args[1])
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     suspend fun removeAttachment(context: CommandContext, type: MessageType) {
@@ -265,14 +266,14 @@ object MessageCommandUtil {
         val msg =
             if (file == null) {
                 context.getTranslation("message.attachments.remove.notanattachment")
-                    .replace("%prefix%", context.usedPrefix)
+                    .withVariable("prefix", context.usedPrefix)
             } else {
                 context.getTranslation("message.attachments.remove.success")
-                    .replace("%file%", file)
-            }.replace(PLACEHOLDER_ARG, context.args[0])
-                .replace(PLACEHOLDER_TYPE, type.text)
+                    .withVariable("file", file)
+            }.withVariable(PLACEHOLDER_ARG, context.args[0])
+                .withVariable(PLACEHOLDER_TYPE, type.text)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setMessageContentAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -284,10 +285,10 @@ object MessageCommandUtil {
         } else {
             message.messageContent = arg
             context.getTranslation("message.content.set")
-                .replace(PLACEHOLDER_ARG, "```${arg.replace("`", "´")}```")
-        }.replace(PLACEHOLDER_TYPE, type.text)
+                .withVariable(PLACEHOLDER_ARG, "```${arg.replace("`", "´")}```")
+        }.withVariable(PLACEHOLDER_TYPE, type.text)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedDescriptionAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -300,11 +301,11 @@ object MessageCommandUtil {
         } else {
             eb.setDescription(arg)
             context.getTranslation("message.embed.description.set")
-                .replace(PLACEHOLDER_ARG, arg)
-        }.replace(PLACEHOLDER_TYPE, type.text)
+                .withVariable(PLACEHOLDER_ARG, arg)
+        }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedColorAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -318,11 +319,11 @@ object MessageCommandUtil {
         } else {
             eb.setColor(color)
             context.getTranslation("message.embed.color.set")
-                .replace(PLACEHOLDER_ARG, arg)
-        }.replace(PLACEHOLDER_TYPE, type.text)
+                .withVariable(PLACEHOLDER_ARG, arg)
+        }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedTimeStampMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -344,18 +345,18 @@ object MessageCommandUtil {
             if (state) {
                 mmap["currentTimestamp"] = ""
                 context.getTranslation("message.embed.timestamp.set.updating")
-                    .replace(PLACEHOLDER_ARG, timeArg)
+                    .withVariable(PLACEHOLDER_ARG, timeArg)
             } else {
                 mmap.remove("currentTimestamp")
                 context.getTranslation("message.embed.timestamp.set")
-                    .replace(PLACEHOLDER_ARG, timeArg)
+                    .withVariable(PLACEHOLDER_ARG, timeArg)
             }
-        }.replace(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, type.text)
 
 
         message.extra = mmap
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedTitleAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -368,11 +369,11 @@ object MessageCommandUtil {
         } else {
             eb.setTitle(arg)
             context.getTranslation("message.embed.title.set")
-                .replace(PLACEHOLDER_ARG, arg)
-        }.replace(PLACEHOLDER_TYPE, type.text)
+                .withVariable(PLACEHOLDER_ARG, arg)
+        }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedUrlAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -387,15 +388,15 @@ object MessageCommandUtil {
             try {
                 eb.setTitle(title, arg)
                 context.getTranslation("message.embed.titleurl.set")
-                    .replace(PLACEHOLDER_ARG, arg)
+                    .withVariable(PLACEHOLDER_ARG, arg)
             } catch (t: Throwable) {
                 context.getTranslation("message.embed.titleurl.invalid")
-                    .replace(PLACEHOLDER_ARG, arg)
+                    .withVariable(PLACEHOLDER_ARG, arg)
             }
-        }.replace(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedAuthorAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -408,11 +409,11 @@ object MessageCommandUtil {
         } else {
             eb.setTitle(arg)
             context.getTranslation("message.embed.authorname.set")
-                .replace(PLACEHOLDER_ARG, arg)
-        }.replace(PLACEHOLDER_TYPE, type.text)
+                .withVariable(PLACEHOLDER_ARG, arg)
+        }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedAuthorIconUrlAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -431,22 +432,22 @@ object MessageCommandUtil {
             attachments.isNotEmpty() -> {
                 eb.setAuthor(authorName, authorUrl, attachments[0].url)
                 context.getTranslation("message.embed.authoriconurl.set")
-                    .replace(PLACEHOLDER_ARG, attachments[0].url)
+                    .withVariable(PLACEHOLDER_ARG, attachments[0].url)
             }
             user != null -> {
                 eb.setAuthor(authorName, authorUrl, user.effectiveAvatarUrl)
                 context.getTranslation("message.embed.authoriconurl.set")
-                    .replace(PLACEHOLDER_ARG, user.effectiveAvatarUrl)
+                    .withVariable(PLACEHOLDER_ARG, user.effectiveAvatarUrl)
             }
             else -> {
                 eb.setAuthor(authorName, authorUrl, arg)
                 context.getTranslation("message.embed.authoriconurl.set")
-                    .replace(PLACEHOLDER_ARG, arg)
+                    .withVariable(PLACEHOLDER_ARG, arg)
             }
-        }.replace(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     suspend fun setEmbedAuthorUrlAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -461,11 +462,11 @@ object MessageCommandUtil {
         } else {
             eb.setAuthor(authorName, arg, iconUrl)
             context.getTranslation("message.embed.authorurl.set")
-                .replace(PLACEHOLDER_ARG, arg)
-        }.replace(PLACEHOLDER_TYPE, type.text)
+                .withVariable(PLACEHOLDER_ARG, arg)
+        }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedThumbnailAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -482,22 +483,22 @@ object MessageCommandUtil {
             attachments.isNotEmpty() -> {
                 eb.setThumbnail(attachments[0].url)
                 context.getTranslation("message.embed.thumbnail.set")
-                    .replace(PLACEHOLDER_ARG, attachments[0].url)
+                    .withVariable(PLACEHOLDER_ARG, attachments[0].url)
             }
             user != null -> {
                 eb.setThumbnail(user.effectiveAvatarUrl)
                 context.getTranslation("message.embed.thumbnail.set")
-                    .replace(PLACEHOLDER_ARG, user.effectiveAvatarUrl)
+                    .withVariable(PLACEHOLDER_ARG, user.effectiveAvatarUrl)
             }
             else -> {
                 eb.setThumbnail(arg)
                 context.getTranslation("message.embed.thumbnail.set")
-                    .replace(PLACEHOLDER_ARG, arg)
+                    .withVariable(PLACEHOLDER_ARG, arg)
             }
-        }.replace(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedImageAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -514,22 +515,22 @@ object MessageCommandUtil {
             attachments.isNotEmpty() -> {
                 eb.setImage(attachments[0].url)
                 context.getTranslation("message.embed.image.set")
-                    .replace(PLACEHOLDER_ARG, attachments[0].url)
+                    .withVariable(PLACEHOLDER_ARG, attachments[0].url)
             }
             user != null -> {
                 eb.setImage(user.effectiveAvatarUrl)
                 context.getTranslation("message.embed.image.set")
-                    .replace(PLACEHOLDER_ARG, user.effectiveAvatarUrl)
+                    .withVariable(PLACEHOLDER_ARG, user.effectiveAvatarUrl)
             }
             else -> {
                 eb.setImage(arg)
                 context.getTranslation("message.embed.image.set")
-                    .replace(PLACEHOLDER_ARG, arg)
+                    .withVariable(PLACEHOLDER_ARG, arg)
             }
-        }.replace(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setEmbedFooterAndMessage(context: CommandContext, message: ModularMessage, type: MessageType) {
@@ -543,11 +544,11 @@ object MessageCommandUtil {
         } else {
             eb.setFooter(arg, footerIconUrl)
             context.getTranslation("message.embed.image.set")
-                .replace(PLACEHOLDER_ARG, arg)
-        }.replace(PLACEHOLDER_TYPE, type.text)
+                .withVariable(PLACEHOLDER_ARG, arg)
+        }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
 
@@ -566,22 +567,22 @@ object MessageCommandUtil {
             attachments.isNotEmpty() -> {
                 eb.setFooter(footer, attachments[0].url)
                 context.getTranslation("message.embed.footericon.set")
-                    .replace(PLACEHOLDER_ARG, attachments[0].url)
+                    .withVariable(PLACEHOLDER_ARG, attachments[0].url)
             }
             user != null -> {
                 eb.setFooter(footer, user.effectiveAvatarUrl)
                 context.getTranslation("message.embed.footericon.set")
-                    .replace(PLACEHOLDER_ARG, user.effectiveAvatarUrl)
+                    .withVariable(PLACEHOLDER_ARG, user.effectiveAvatarUrl)
             }
             else -> {
                 eb.setFooter(footer, arg)
                 context.getTranslation("message.embed.footericon.set")
-                    .replace(PLACEHOLDER_ARG, arg)
+                    .withVariable(PLACEHOLDER_ARG, arg)
             }
-        }.replace(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, type.text)
 
         message.embed = eb.build()
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
 
@@ -609,12 +610,12 @@ object MessageCommandUtil {
 
         val inlineString = context.getTranslation(if (inline) "yes" else "no")
         val msg = context.getTranslation("message.embed.field.add")
-            .replace("%title%", title)
-            .replace("%value%", value)
-            .replace("%inline%", inlineString)
-            .replace(PLACEHOLDER_TYPE, type.text)
+            .withVariable("title", title)
+            .withVariable("value", value)
+            .withVariable("inline", inlineString)
+            .withVariable(PLACEHOLDER_TYPE, type.text)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     suspend fun setEmbedFieldTitleCC(index: Int, title: String, context: CommandContext, cc: CustomCommand) {
@@ -679,11 +680,11 @@ object MessageCommandUtil {
             else -> value.toString()
         }
         val msg = context.getTranslation("message.embed.field$partName.set")
-            .replace("%index%", index.toString())
+            .withVariable("index", index.toString())
             .replace("%$partName%", partValue)
-            .replace(PLACEHOLDER_TYPE, type.text)
+            .withVariable(PLACEHOLDER_TYPE, type.text)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     suspend fun removeEmbedField(index: Int, context: CommandContext, type: MessageType) {
@@ -721,10 +722,10 @@ object MessageCommandUtil {
         modularMessage.attachments = modularMessage1.attachments
 
         val msg = context.getTranslation("message.embed.field.removed")
-            .replace("%index%", index.toString())
-            .replace(PLACEHOLDER_TYPE, type.text)
+            .withVariable("index", index.toString())
+            .withVariable(PLACEHOLDER_TYPE, type.text)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
 
@@ -755,9 +756,9 @@ object MessageCommandUtil {
             }
             desc += "```"
             (title + desc)
-        }.replace(PLACEHOLDER_TYPE, type.text)
+        }.withVariable(PLACEHOLDER_TYPE, type.text)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     suspend fun showMessagePreviewTyped(context: CommandContext, type: MessageType) {
@@ -766,8 +767,8 @@ object MessageCommandUtil {
         val message = messageWrapper.messageCache.get(Pair(guildId, type)).await()?.toMessage()
         if (message == null) {
             val msg2 = context.getTranslation("message.view.isempty")
-                .replace("%type%", type.toUCC())
-            sendMsg(context, msg2)
+                .withVariable("type", type.toUCC())
+            sendRsp(context, msg2)
             return
         }
 
@@ -779,8 +780,8 @@ object MessageCommandUtil {
         val msg = cc.content.toMessage()
         if (msg == null) {
             val msg2 = context.getTranslation("message.view.cc.isempty")
-                .replace("%ccId%", cc.id.toString())
-                .replace("%ccName%", cc.name)
+                .withVariable("ccId", cc.id.toString())
+                .withVariable("ccName", cc.name)
 
             context.textChannel.sendMessage(msg2).queue()
         } else {
@@ -816,8 +817,8 @@ object MessageCommandUtil {
         message.extra = muteableMap
 
         val msg = context.getTranslation("message.pingable.set.$pingable")
-            .replace("%type%", type.text)
-        sendMsg(context, msg)
+            .withVariable("type", type.text)
+        sendRsp(context, msg)
     }
 
     suspend fun showPingable(context: CommandContext, type: MessageType) {
@@ -828,8 +829,8 @@ object MessageCommandUtil {
         val isPingable = message.extra.containsKey("isPingable")
 
         val msg = context.getTranslation("message.pingable.show.$isPingable")
-            .replace("%type%", type.text)
-        sendMsg(context, msg)
+            .withVariable("type", type.text)
+        sendRsp(context, msg)
     }
 
     suspend fun showPingableCC(context: CommandContext, cc: CustomCommand) {
@@ -841,6 +842,6 @@ object MessageCommandUtil {
         messageWrapper.update(context.guildId, cc)
 
         val msg = context.getTranslation("message.pingable.show.$isPingable")
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

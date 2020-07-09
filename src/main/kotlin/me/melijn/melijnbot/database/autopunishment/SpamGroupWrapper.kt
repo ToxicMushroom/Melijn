@@ -3,12 +3,12 @@ package me.melijn.melijnbot.database.autopunishment
 import com.google.common.cache.CacheBuilder
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.FREQUENTLY_USED_CACHE
-import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.loadingCacheFrom
+import me.melijn.melijnbot.internals.threading.TaskManager
+import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class SpamGroupWrapper(val taskManager: TaskManager, val spamGroupDao: SpamGroupDao) {
+class SpamGroupWrapper(val taskManager: TaskManager, private val spamGroupDao: SpamGroupDao) {
 
     val spamGroupCache = CacheBuilder.newBuilder()
         .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)

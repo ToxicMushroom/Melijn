@@ -1,11 +1,12 @@
 package me.melijn.melijnbot.commands.administration
 
 import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.withVariable
 
 class SetVerificationPasswordCommand : AbstractCommand("command.setverificationpassword") {
 
@@ -27,8 +28,8 @@ class SetVerificationPasswordCommand : AbstractCommand("command.setverificationp
             }
 
             val msg = context.getTranslation("$root.show.$part")
-                .replace("%password%", password)
-            sendMsg(context, msg)
+                .withVariable("password", password)
+            sendRsp(context, msg)
             return
         }
 
@@ -38,9 +39,9 @@ class SetVerificationPasswordCommand : AbstractCommand("command.setverificationp
         } else {
             wrapper.set(context.guildId, context.rawArg)
             context.getTranslation("$root.set")
-                .replace(PLACEHOLDER_ARG, context.rawArg)
+                .withVariable(PLACEHOLDER_ARG, context.rawArg)
         }
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

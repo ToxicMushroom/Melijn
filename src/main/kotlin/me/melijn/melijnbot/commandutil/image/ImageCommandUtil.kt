@@ -5,8 +5,13 @@ import com.squareup.gifencoder.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.utils.ImageUtils
+import me.melijn.melijnbot.internals.utils.getBooleanFromArgN
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgN
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendFileRsp
+import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.awt.Color
 import java.awt.image.BufferedImage
@@ -244,7 +249,9 @@ object ImageCommandUtil {
         val lmsg = sendMsgAwaitEL(context, loadingMsg).firstOrNull()
 
         val img = withContext(Dispatchers.IO) {
-            ImageIO.read(ByteArrayInputStream(triple.first))
+            ByteArrayInputStream(triple.first).use { bais ->
+                ImageIO.read(bais)
+            }
         }
 
         val imgData = DataObject.empty()
@@ -255,9 +262,10 @@ object ImageCommandUtil {
             return
         }
 
-        val outputStream = transform(imageByteArray, argData)
-        sendFile(context, outputStream.toByteArray(), "png")
-        lmsg?.delete()?.queue()
+        transform(imageByteArray, argData).use { baos ->
+            sendFileRsp(context, baos.toByteArray(), "png")
+            lmsg?.delete()?.queue()
+        }
     }
 
 
@@ -278,10 +286,12 @@ object ImageCommandUtil {
         val loadingMsg = context.getTranslation("message.loading.effect")
         val lmsg = sendMsgAwaitEL(context, loadingMsg).firstOrNull()
 
-
         val decoder = GifDecoder()
-        val inputStream = ByteArrayInputStream(triple.first)
-        decoder.read(inputStream)
+
+        ByteArrayInputStream(triple.first).use { bais ->
+            decoder.read(bais)
+        }
+
         val img = decoder.image
 
         val imgData = DataObject.empty()
@@ -295,8 +305,9 @@ object ImageCommandUtil {
         val repeat = getBooleanFromArgN(context, argInt + argumentAmount)
         val fps = getIntegerFromArgN(context, argInt + argumentAmount)?.toFloat()
 
-        val outputStream = transform(decoder, fps, repeat, argData)
-        sendFile(context, outputStream.toByteArray(), "gif")
-        lmsg?.delete()?.queue()
+        transform(decoder, fps, repeat, argData).use { baos ->
+            sendFileRsp(context, baos.toByteArray(), "gif")
+            lmsg?.delete()?.queue()
+        }
     }
 }

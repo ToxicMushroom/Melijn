@@ -1,11 +1,11 @@
 package me.melijn.melijnbot.commands.developer
 
 import kotlinx.coroutines.sync.withPermit
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.services.voice.VOICE_SAFE
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.services.voice.VOICE_SAFE
+import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import kotlin.system.exitProcess
 
@@ -23,7 +23,7 @@ class RestartCommand : AbstractCommand("command.restart") {
         val players = context.lavaManager.musicPlayerManager.getPlayers()
         val wrapper = context.daoManager.tracksWrapper
 
-        sendMsg(context, "Are you sure you wanna restart ?")
+        sendRsp(context, "Are you sure you wanna restart ?")
 
         context.container.eventWaiter.waitFor(GuildMessageReceivedEvent::class.java, {
             it.channel.idLong == context.channelId && it.author.idLong == context.authorId
@@ -47,14 +47,14 @@ class RestartCommand : AbstractCommand("command.restart") {
                     }
                 }
 
-                sendMsg(context, "Restarting")
+                sendRsp(context, "Restarting")
                 context.shardManager.shutdown()
 
                 context.taskManager.asyncAfter(3_000) {
                     exitProcess(0)
                 }
             } else {
-                sendMsg(context, "Alright not restarting :)")
+                sendRsp(context, "Alright not restarting :)")
             }
         })
     }

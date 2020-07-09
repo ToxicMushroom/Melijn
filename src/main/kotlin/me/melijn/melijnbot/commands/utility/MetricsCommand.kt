@@ -1,10 +1,14 @@
 package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.Container
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.utils.getCommandsFromArgNMessage
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.internals.utils.getTimespanFromArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
 class MetricsCommand : AbstractCommand("command.metrics") {
 
@@ -34,7 +38,7 @@ class MetricsCommand : AbstractCommand("command.metrics") {
         }
         msg += "```"
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     class LimitArg(root: String) : AbstractCommand("$root.limit") {
@@ -56,7 +60,7 @@ class MetricsCommand : AbstractCommand("command.metrics") {
             }
             msg += "```"
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -77,7 +81,7 @@ class MetricsCommand : AbstractCommand("command.metrics") {
             }
             msg += "```"
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 }

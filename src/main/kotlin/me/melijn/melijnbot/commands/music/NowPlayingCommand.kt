@@ -1,13 +1,14 @@
 package me.melijn.melijnbot.commands.music
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.utils.getDurationString
-import me.melijn.melijnbot.objects.utils.sendEmbed
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.utils.getDurationString
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.withVariable
 
 class NowPlayingCommand : AbstractCommand("command.nowplaying") {
 
@@ -26,21 +27,21 @@ class NowPlayingCommand : AbstractCommand("command.nowplaying") {
         val looped = context.getTranslation("looped")
         val status = context.getTranslation("$root.status")
         val title = context.getTranslation("$root.title")
-            .replace("%status%", trackStatus)
+            .withVariable("status", trackStatus)
 
         val description = context.getTranslation("$root.show.description")
-            .replace("%title%", playingTrack.info.title)
-            .replace("%url%", playingTrack.info.uri)
+            .withVariable("title", playingTrack.info.title)
+            .withVariable("url", playingTrack.info.uri)
         val progressField = context.getTranslation("$root.progress")
         val thumbnail = "https://img.youtube.com/vi/${playingTrack.identifier}/hqdefault.jpg"
 
         val eb = Embedder(context)
-        eb.setTitle(title)
-        eb.setThumbnail(thumbnail)
-        eb.setDescription(description)
-        eb.addField(progressField, getProgressBar(trackManager.iPlayer.playingTrack, trackManager.iPlayer.trackPosition), false)
-        eb.addField(status, "**$trackStatus**" + if (trackManager.loopedTrack) " & **$looped**" else "", false)
-        sendEmbed(context, eb.build())
+            .setTitle(title)
+            .setThumbnail(thumbnail)
+            .setDescription(description)
+            .addField(progressField, getProgressBar(trackManager.iPlayer.playingTrack, trackManager.iPlayer.trackPosition), false)
+            .addField(status, "**$trackStatus**" + if (trackManager.loopedTrack) " & **$looped**" else "", false)
+        sendEmbedRsp(context, eb.build())
     }
 }
 
@@ -49,9 +50,9 @@ fun getProgressBar(playingTrack: AudioTrack, playerPosition: Long): String {
         return "**" + getDurationString(playerPosition) + " | \uD83D\uDD34 Live**"
     }
     val percent = (playerPosition.toDouble() / playingTrack.duration.toDouble() * 18.0).toInt()
-    val sb = StringBuilder("▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬")
-    sb.insert(percent, "](${playingTrack.info.uri + "&t=" + (playerPosition / 1000)})<a:cool_nyan:490978764264570894>")
-    sb.append(" **").append(getDurationString(playerPosition)).append("/").append(getDurationString(playingTrack.duration)).append("**")
-    sb.insert(0, "[")
-    return sb.toString()
+    return StringBuilder("▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬")
+        .insert(percent, "](${playingTrack.info.uri + "&t=" + (playerPosition / 1000)})<a:cool_nyan:490978764264570894>")
+        .append(" **").append(getDurationString(playerPosition)).append("/").append(getDurationString(playingTrack.duration)).append("**")
+        .insert(0, "[")
+        .toString()
 }

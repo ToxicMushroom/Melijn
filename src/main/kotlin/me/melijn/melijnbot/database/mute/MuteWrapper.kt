@@ -1,10 +1,11 @@
 package me.melijn.melijnbot.database.mute
 
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
-import me.melijn.melijnbot.objects.utils.awaitOrNull
-import me.melijn.melijnbot.objects.utils.getDurationString
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.threading.TaskManager
+import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
+import me.melijn.melijnbot.internals.utils.awaitOrNull
+import me.melijn.melijnbot.internals.utils.getDurationString
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
@@ -59,17 +60,17 @@ class MuteWrapper(val taskManager: TaskManager, private val muteDao: MuteDao) {
         } ?: context.getTranslation("infinite")
 
         return context.getTranslation("message.punishmenthistory.mute")
-            .replace("%muteAuthor%", muteAuthor?.asTag ?: deletedUser)
-            .replace("%muteAuthorId%", "${mute.muteAuthorId}")
-            .replace("%unmuteAuthor%", if (mute.unmuteAuthorId == null) "/" else unmuteAuthor?.asTag ?: deletedUser)
-            .replace("%unmuteAuthorId%", mute.unmuteAuthorId?.toString() ?: "/")
-            .replace("%muteReason%", mute.reason.substring(0, min(mute.reason.length, 830)))
-            .replace("%unmuteReason%", unmuteReason?.substring(0, min(unmuteReason.length, 830)) ?: "/")
-            .replace("%startTime%", mute.startTime.asEpochMillisToDateTime(zoneId))
-            .replace("%endTime%", mute.endTime?.asEpochMillisToDateTime(zoneId) ?: "/")
-            .replace("%duration%", muteDuration)
-            .replace("%muteId%", mute.muteId)
-            .replace("%active%", "${mute.active}")
+            .withVariable("muteAuthor", muteAuthor?.asTag ?: deletedUser)
+            .withVariable("muteAuthorId", "${mute.muteAuthorId}")
+            .withVariable("unmuteAuthor", if (mute.unmuteAuthorId == null) "/" else unmuteAuthor?.asTag ?: deletedUser)
+            .withVariable("unmuteAuthorId", mute.unmuteAuthorId?.toString() ?: "/")
+            .withVariable("muteReason", mute.reason.substring(0, min(mute.reason.length, 830)))
+            .withVariable("unmuteReason", unmuteReason?.substring(0, min(unmuteReason.length, 830)) ?: "/")
+            .withVariable("startTime", mute.startTime.asEpochMillisToDateTime(zoneId))
+            .withVariable("endTime", mute.endTime?.asEpochMillisToDateTime(zoneId) ?: "/")
+            .withVariable("duration", muteDuration)
+            .withVariable("muteId", mute.muteId)
+            .withVariable("active", "${mute.active}")
     }
 
     suspend fun getMuteMap(context: CommandContext, muteId: String): Map<Long, String> {

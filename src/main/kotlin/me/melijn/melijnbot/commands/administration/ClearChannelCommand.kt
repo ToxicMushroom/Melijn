@@ -1,10 +1,15 @@
 package me.melijn.melijnbot.commands.administration
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
+import me.melijn.melijnbot.internals.utils.await
+import me.melijn.melijnbot.internals.utils.getTextChannelByArgsNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.notEnoughPermissionsAndMessage
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.Permission
 
 class ClearChannelCommand : AbstractCommand("command.clearchannel") {
@@ -48,10 +53,10 @@ class ClearChannelCommand : AbstractCommand("command.clearchannel") {
             }
             else -> {
                 val msg = context.getTranslation("$root.notconfirm")
-                    .replace("%syntax%", context.getTranslation(syntax)
-                        .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
+                    .withVariable("syntax", context.getTranslation(syntax)
+                        .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
                     )
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
         }
     }

@@ -1,10 +1,10 @@
 package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.enums.MessageType
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
 class JoinMessageCommand : AbstractCommand("command.joinmessage") {
 

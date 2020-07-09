@@ -4,15 +4,19 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.SpecialPermission
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.hasPermission
-import me.melijn.melijnbot.objects.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
-import me.melijn.melijnbot.objects.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.hasPermission
+import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
+import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
+import me.melijn.melijnbot.internals.translation.i18n
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendEmbed
+import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
@@ -43,14 +47,14 @@ class BanCommand : AbstractCommand("command.ban") {
         if (member != null) {
             if (!context.guild.selfMember.canInteract(member)) {
                 val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .replace(PLACEHOLDER_USER, targetUser.asTag)
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                sendRsp(context, msg)
                 return
             }
             if (!context.member.canInteract(member) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
                 val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .replace(PLACEHOLDER_USER, targetUser.asTag)
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                sendRsp(context, msg)
                 return
             }
         }
@@ -109,18 +113,19 @@ class BanCommand : AbstractCommand("command.ban") {
             logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
 
             context.getTranslation("$root.success" + if (activeBan != null) ".updated" else "")
-                .replace(PLACEHOLDER_USER, targetUser.asTag)
-                .replace("%reason%", ban.reason)
+                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withVariable("reason", ban.reason)
 
         } catch (t: Throwable) {
             val failedMsg = context.getTranslation("message.banning.failed")
             banningMessage?.editMessage(failedMsg)?.queue()
 
             context.getTranslation("$root.failure")
-                .replace(PLACEHOLDER_USER, targetUser.asTag)
-                .replace("%cause%", t.message ?: "/")
+                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withVariable("cause", t.message ?: "/")
         }
-        sendMsg(context, msg)
+
+        sendRsp(context, msg)
     }
 }
 
@@ -135,8 +140,6 @@ fun getBanMessage(
     isBot: Boolean = false,
     received: Boolean = true
 ): MessageEmbed {
-    val eb = EmbedBuilder()
-
     val banDuration = ban.endTime?.let { endTime ->
         getDurationString((endTime - ban.startTime))
     } ?: i18n.getTranslation(language, "infinite")
@@ -144,20 +147,20 @@ fun getBanMessage(
     var description = "```LDIF\n"
     if (!lc) {
         description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .replace("%serverName%", guild.name)
-            .replace("%serverId%", guild.id)
+            .withVariable("serverName", guild.name)
+            .withVariable("serverId", guild.id)
     }
 
     description += i18n.getTranslation(language, "message.punishment.ban.description")
-        .replace("%banAuthor%", banAuthor.asTag)
-        .replace("%banAuthorId%", banAuthor.id)
-        .replace("%banned%", bannedUser.asTag)
-        .replace("%bannedId%", bannedUser.id)
-        .replace("%reason%", ban.reason)
-        .replace("%duration%", banDuration)
-        .replace("%startTime%", (ban.startTime.asEpochMillisToDateTime(zoneId)))
-        .replace("%endTime%", (ban.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
-        .replace("%banId%", ban.banId)
+        .withVariable("banAuthor", banAuthor.asTag)
+        .withVariable("banAuthorId", banAuthor.id)
+        .withVariable("banned", bannedUser.asTag)
+        .withVariable("bannedId", bannedUser.id)
+        .withVariable("reason", ban.reason)
+        .withVariable("duration", banDuration)
+        .withVariable("startTime", (ban.startTime.asEpochMillisToDateTime(zoneId)))
+        .withVariable("endTime", (ban.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
+        .withVariable("banId", ban.banId)
 
     val extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,
@@ -174,12 +177,13 @@ fun getBanMessage(
     description += "```"
 
     val author = i18n.getTranslation(language, "message.punishment.ban.author")
-        .replace(PLACEHOLDER_USER, banAuthor.asTag)
-        .replace("%spaces%", " ".repeat(45).substring(0, 45 - banAuthor.name.length) + "\u200B")
+        .withVariable(PLACEHOLDER_USER, banAuthor.asTag)
+        .withVariable("spaces", " ".repeat(45).substring(0, 45 - banAuthor.name.length) + "\u200B")
 
-    eb.setAuthor(author, null, banAuthor.effectiveAvatarUrl)
-    eb.setThumbnail(bannedUser.effectiveAvatarUrl)
-    eb.setColor(Color.RED)
-    eb.setDescription(description)
-    return eb.build()
+    return EmbedBuilder()
+        .setAuthor(author, null, banAuthor.effectiveAvatarUrl)
+        .setThumbnail(bannedUser.effectiveAvatarUrl)
+        .setColor(Color.RED)
+        .setDescription(description)
+        .build()
 }

@@ -9,12 +9,15 @@ import me.melijn.melijnbot.anilist.FindCharacterQuery
 import me.melijn.melijnbot.anilist.FindMangaQuery
 import me.melijn.melijnbot.anilist.FindUserQuery
 import me.melijn.melijnbot.anilist.type.MediaType
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import java.awt.Color
@@ -61,8 +64,8 @@ class AniListCommand : AbstractCommand("command.anilist") {
                 override fun onFailure(e: ApolloException) {
                     context.taskManager.async {
                         val msg = context.getTranslation("$root.noresult")
-                            .replace(PLACEHOLDER_ARG, mangaName)
-                        sendMsg(context, msg)
+                            .withVariable(PLACEHOLDER_ARG, mangaName)
+                        sendRsp(context, msg)
                     }
                 }
 
@@ -78,15 +81,14 @@ class AniListCommand : AbstractCommand("command.anilist") {
         suspend fun foundManga(context: CommandContext, media: FindMangaQuery.Media) {
             if (media.isAdult == true && context.isFromGuild && !context.textChannel.isNSFW) {
                 val msg = context.getTranslation("$root.nsfw")
-                    .replace("%manga%", media.title()?.english() ?: media.title()?.romaji() ?: context.rawArg)
-                sendMsg(context, msg)
+                    .withVariable("manga", media.title()?.english() ?: media.title()?.romaji() ?: context.rawArg)
+                sendRsp(context, msg)
                 return
             }
 
             val eb = Embedder(context)
-
-            eb.setThumbnail(media.coverImage()?.extraLarge())
-            eb.setTitle(media.title()?.english() ?: media.title()?.romaji() ?: "?", media.siteUrl())
+                .setThumbnail(media.coverImage()?.extraLarge())
+                .setTitle(media.title()?.english() ?: media.title()?.romaji() ?: "?", media.siteUrl())
 
             var description: String = media.description() ?: ""
             val italicRegex = "<i>(.*?)</i>".toRegex()
@@ -147,10 +149,10 @@ class AniListCommand : AbstractCommand("command.anilist") {
             }
 
             val favourites = context.getTranslation("footer.favourites")
-                .replace("%amount%", media.favourites() ?: 0)
+                .withVariable("amount", media.favourites() ?: 0)
             eb.setFooter(favourites)
 
-            sendEmbed(context, eb.build())
+            sendEmbedRsp(context, eb.build())
         }
 
         private fun formatDate(date: FindMangaQuery.StartDate?): String {
@@ -195,8 +197,8 @@ class AniListCommand : AbstractCommand("command.anilist") {
                 override fun onFailure(e: ApolloException) {
                     context.taskManager.async {
                         val msg = context.getTranslation("$root.noresult")
-                            .replace(PLACEHOLDER_ARG, userName)
-                        sendMsg(context, msg)
+                            .withVariable(PLACEHOLDER_ARG, userName)
+                        sendRsp(context, msg)
                     }
                 }
 
@@ -210,8 +212,6 @@ class AniListCommand : AbstractCommand("command.anilist") {
         }
 
         private suspend fun foundUser(context: CommandContext, user: FindUserQuery.User) {
-            val eb = EmbedBuilder()
-
             val daoManager = context.daoManager
             val embedColorWrapper = daoManager.embedColorWrapper
             val userEmbedColorWrapper = daoManager.userEmbedColorWrapper
@@ -224,9 +224,9 @@ class AniListCommand : AbstractCommand("command.anilist") {
                 else -> context.embedColor
             }
 
-
-            eb.setThumbnail(user.avatar()?.large())
-            eb.setTitle(user.name(), user.siteUrl())
+            val eb = EmbedBuilder() // We're using custom colors below
+                .setThumbnail(user.avatar()?.large())
+                .setTitle(user.name(), user.siteUrl())
 
 
             val aboutValue = user.about()
@@ -258,6 +258,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
             eb.addField(favoriteAnimeGenres, animeStats?.genres()?.withIndex()?.joinToString("\n") { (index, genre) ->
                 "${index + 1}. ${genre.genre() ?: "error"}"
             }?.ifEmpty { "/" } ?: "/", true)
+
             eb.addField(favoriteMangaGenres, mangaStats?.genres()?.withIndex()?.joinToString("\n") { (index, genre) ->
                 "${index + 1}. ${genre.genre() ?: "error"}"
             }?.ifEmpty { "/" } ?: "/", true)
@@ -271,20 +272,20 @@ class AniListCommand : AbstractCommand("command.anilist") {
             val animePart = animeStatsTitle + if ((animeStats?.count() ?: 0) > 0) {
                 val animeValueStats = context.getTranslation("$root.animestats")
                 "\n" + animeValueStats
-                    .replace("%watched%", animeStats?.count() ?: 0)
-                    .replace("%epwatched%", animeStats?.episodesWatched() ?: 0)
-                    .replace("%meanscore%", animeStats?.meanScore()?.toString() ?: "--")
-                    .replace("%standardDeviation%", animeStats?.standardDeviation()?.toString() ?: "--")
+                    .withVariable("watched", animeStats?.count() ?: 0)
+                    .withVariable("epwatched", animeStats?.episodesWatched() ?: 0)
+                    .withVariable("meanscore", animeStats?.meanScore()?.toString() ?: "--")
+                    .withVariable("standardDeviation", animeStats?.standardDeviation()?.toString() ?: "--")
             } else ""
 
             val mangaPart = mangaStatsTitle + if ((mangaStats?.count() ?: 0) > 0) {
                 val mangaValueStats = context.getTranslation("$root.mangastats")
                 "\n" + mangaValueStats
-                    .replace("%read%", mangaStats?.count() ?: 0)
-                    .replace("%volread%", mangaStats?.volumesRead() ?: 0)
-                    .replace("%chapread%", mangaStats?.chaptersRead() ?: 0)
-                    .replace("%meanscore%", mangaStats?.meanScore()?.toString() ?: "--")
-                    .replace("%standardDeviation%", mangaStats?.standardDeviation()?.toString() ?: "--")
+                    .withVariable("read", mangaStats?.count() ?: 0)
+                    .withVariable("volread", mangaStats?.volumesRead() ?: 0)
+                    .withVariable("chapread", mangaStats?.chaptersRead() ?: 0)
+                    .withVariable("meanscore", mangaStats?.meanScore()?.toString() ?: "--")
+                    .withVariable("standardDeviation", mangaStats?.standardDeviation()?.toString() ?: "--")
             } else ""
 
             parts.add(animePart)
@@ -293,7 +294,6 @@ class AniListCommand : AbstractCommand("command.anilist") {
             val otherStats = context.getTranslation("title.otherstats")
 
             eb.addField(otherStats, parts.joinToString("\n\n"), false)
-
 
 
             user.favourites()?.let outer@{
@@ -340,7 +340,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                 }
             }
 
-            sendEmbed(context, eb.build())
+            sendEmbedRsp(context, eb.build())
         }
     }
 
@@ -371,8 +371,8 @@ class AniListCommand : AbstractCommand("command.anilist") {
                 override fun onFailure(e: ApolloException) {
                     context.taskManager.async {
                         val msg = context.getTranslation("$root.noresult")
-                            .replace(PLACEHOLDER_ARG, animeName)
-                        sendMsg(context, msg)
+                            .withVariable(PLACEHOLDER_ARG, animeName)
+                        sendRsp(context, msg)
                     }
                 }
 
@@ -388,14 +388,13 @@ class AniListCommand : AbstractCommand("command.anilist") {
         suspend fun foundAnime(context: CommandContext, media: FindAnimeQuery.Media) {
             if (media.isAdult == true && context.isFromGuild && !context.textChannel.isNSFW) {
                 val msg = context.getTranslation("$root.nsfw")
-                    .replace("%manga%", media.title()?.english() ?: media.title()?.romaji() ?: context.rawArg)
-                sendMsg(context, msg)
+                    .withVariable("manga", media.title()?.english() ?: media.title()?.romaji() ?: context.rawArg)
+                sendRsp(context, msg)
                 return
             }
             val eb = Embedder(context)
-
-            eb.setThumbnail(media.coverImage()?.extraLarge())
-            eb.setTitle(media.title()?.english() ?: media.title()?.romaji() ?: "?", media.siteUrl())
+                .setThumbnail(media.coverImage()?.extraLarge())
+                .setTitle(media.title()?.english() ?: media.title()?.romaji() ?: "?", media.siteUrl())
 
             var description: String = media.description() ?: ""
             val italicRegex = "<i>(.*?)</i>".toRegex()
@@ -406,12 +405,14 @@ class AniListCommand : AbstractCommand("command.anilist") {
 
             }
 
-            if (description.isNotBlank())
+            if (description.isNotBlank()) {
                 eb.setDescription(
                     description
                         .replace("<br>", "\n")
                         .replace(("[" + Pattern.quote("\n") + "]{3,15}").toRegex(), "\n\n")
-                        .take(MessageEmbed.TEXT_MAX_LENGTH))
+                        .take(MessageEmbed.TEXT_MAX_LENGTH)
+                )
+            }
 
             var alias = media.synonyms()?.joinToString()
             if (alias == null || alias.isBlank()) alias = "/"
@@ -432,16 +433,16 @@ class AniListCommand : AbstractCommand("command.anilist") {
 
 
             eb.addField(genres, media.genres()?.joinToString("\n") ?: "/", true)
-            eb.addField(othernames, alias, true)
-            eb.addField(rating, (media.averageScore()?.toString() ?: "?") + "%", true)
+                .addField(othernames, alias, true)
+                .addField(rating, (media.averageScore()?.toString() ?: "?") + "%", true)
 
-            eb.addField(format, media.format()?.toUCC() ?: "/", true)
-            eb.addField(episodes, media.episodes()?.toString() ?: "/", true)
-            eb.addField(avgepisodelength, media.duration()?.toString() ?: "/", true)
+                .addField(format, media.format()?.toUCC() ?: "/", true)
+                .addField(episodes, media.episodes()?.toString() ?: "/", true)
+                .addField(avgepisodelength, media.duration()?.toString() ?: "/", true)
 
-            eb.addField(status, media.status()?.toUCC() ?: "/", true)
-            eb.addField(startdate, formatDate(media.startDate()), true)
-            eb.addField(enddate, formatDate(media.endDate()), true)
+                .addField(status, media.status()?.toUCC() ?: "/", true)
+                .addField(startdate, formatDate(media.startDate()), true)
+                .addField(enddate, formatDate(media.endDate()), true)
 
             val next = media.nextAiringEpisode()
             if (next != null) {
@@ -455,10 +456,10 @@ class AniListCommand : AbstractCommand("command.anilist") {
             }
 
             val favourites = context.getTranslation("footer.favourites")
-                .replace("%amount%", media.favourites() ?: 0)
+                .withVariable("amount", media.favourites() ?: 0)
             eb.setFooter(favourites)
 
-            sendEmbed(context, eb.build())
+            sendEmbedRsp(context, eb.build())
         }
 
         private fun formatDate(date: FindAnimeQuery.StartDate?): String {
@@ -504,8 +505,8 @@ class AniListCommand : AbstractCommand("command.anilist") {
                 override fun onFailure(e: ApolloException) {
                     context.taskManager.async {
                         val msg = context.getTranslation("$root.noresult")
-                            .replace(PLACEHOLDER_ARG, characterName)
-                        sendMsg(context, msg)
+                            .withVariable(PLACEHOLDER_ARG, characterName)
+                        sendRsp(context, msg)
                     }
                 }
 
@@ -519,7 +520,6 @@ class AniListCommand : AbstractCommand("command.anilist") {
         }
 
         suspend fun foundCharacter(context: CommandContext, character: FindCharacterQuery.Character) {
-            val eb = Embedder(context)
             val nameList = mutableListOf<String>()
             character.name()?.first()?.let { nameList.add(it) }
             character.name()?.last()?.let { nameList.add(it) }
@@ -533,15 +533,13 @@ class AniListCommand : AbstractCommand("command.anilist") {
             val anime = context.getTranslation("title.anime")
             val manga = context.getTranslation("title.manga")
 
-            eb.setThumbnail(character.image()?.large())
-            eb.setTitle(fullName, character.siteUrl())
-            eb.setDescription(character.description()?.take(MessageEmbed.TEXT_MAX_LENGTH))
-
-            eb.addField(firstname, character.name()?.first() ?: "/", true)
-
-            eb.addField(lastname, character.name()?.last() ?: "/", true)
-
-            eb.addField(namekanji, character.name()?.native_() ?: "/", true)
+            val eb = Embedder(context)
+                .setThumbnail(character.image()?.large())
+                .setTitle(fullName, character.siteUrl())
+                .setDescription(character.description()?.take(MessageEmbed.TEXT_MAX_LENGTH))
+                .addField(firstname, character.name()?.first() ?: "/", true)
+                .addField(lastname, character.name()?.last() ?: "/", true)
+                .addField(namekanji, character.name()?.native_() ?: "/", true)
 
             val otherNames = character.name()?.alternative()
             if (otherNames != null && otherNames.isNotEmpty() && (otherNames.size != 1 && otherNames[0].isBlank())) {
@@ -600,7 +598,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
 
             eb.setFooter("Favourites ${character.favourites() ?: 0} 💗")
 
-            sendEmbed(context, eb.build())
+            sendEmbedRsp(context, eb.build())
         }
     }
 

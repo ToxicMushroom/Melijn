@@ -1,11 +1,12 @@
 package me.melijn.melijnbot.commands.utility
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.utils.await
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendMsgAwaitEL
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.utils.await
+import me.melijn.melijnbot.internals.utils.message.handleRspDelete
+import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
+import me.melijn.melijnbot.internals.utils.withVariable
 
 
 class PingCommand : AbstractCommand("command.ping") {
@@ -21,7 +22,7 @@ class PingCommand : AbstractCommand("command.ping") {
         val timeStamp1 = System.currentTimeMillis()
 
         val part1 = context.getTranslation("$root.response1.part1")
-            .replace("%gatewayPing%", context.jda.gatewayPing.toString())
+            .withVariable("gatewayPing", context.jda.gatewayPing.toString())
 
         val part2 = context.getTranslation("$root.response1.part2")
         val part3 = context.getTranslation("$root.response1.part3")
@@ -34,16 +35,21 @@ class PingCommand : AbstractCommand("command.ping") {
         val editedMessage = message[0].editMessage("${message[0].contentRaw}${replacePart2(part2, restPing, msgPing)}").await()
         val timeStamp3 = System.currentTimeMillis()
         val eMsgPing = timeStamp3 - timeStamp2
-        editedMessage.editMessage("${editedMessage.contentRaw}${replacePart3(part3, eMsgPing)}").queue()
+
+        editedMessage.editMessage("${editedMessage.contentRaw}${replacePart3(part3, eMsgPing)}").queue { c ->
+            context.taskManager.async {
+                handleRspDelete(context.daoManager, c)
+            }
+        }
     }
 
 
     private fun replacePart2(string: String, restPing: Long, sendMessagePing: Long): String = string
-        .replace("%restPing%", "$restPing")
-        .replace("%sendMessagePing%", "$sendMessagePing")
+        .withVariable("restPing", "$restPing")
+        .withVariable("sendMessagePing", "$sendMessagePing")
 
 
     private fun replacePart3(string: String, editMessagePing: Long): String = string
-        .replace("%editMessagePing%", "$editMessagePing")
+        .withVariable("editMessagePing", "$editMessagePing")
 
 }

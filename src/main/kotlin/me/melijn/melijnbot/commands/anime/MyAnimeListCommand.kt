@@ -3,13 +3,18 @@ package me.melijn.melijnbot.commands.anime
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.commands.utility.toUniversalDateFormat
 import me.melijn.melijnbot.commands.utility.toUniversalDateTimeFormat
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.internals.utils.StringUtils
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.remove
+import me.melijn.melijnbot.internals.utils.withVariable
 import moe.ganen.jikankt.JikanKt
 import moe.ganen.jikankt.connection.RestClient
 import moe.ganen.jikankt.exception.JikanException
@@ -59,12 +64,11 @@ class MyAnimeListCommand(jikanSettings: Settings.Jikan) : AbstractCommand("comma
                 val character = characterLite?.malId?.let { JikanKt.getCharacter(it) }
                 if (character == null) {
                     val msg = context.getTranslation("$root.noresult")
-                        .replace(PLACEHOLDER_ARG, characterName)
-                    sendMsg(context, msg)
+                        .withVariable(PLACEHOLDER_ARG, characterName)
+                    sendRsp(context, msg)
                     return
                 }
 
-                val eb = Embedder(context)
 
                 val name = context.getTranslation("title.fullname")
                 val namekanji = context.getTranslation("title.namekanji")
@@ -73,12 +77,12 @@ class MyAnimeListCommand(jikanSettings: Settings.Jikan) : AbstractCommand("comma
                 val anime = context.getTranslation("title.anime")
                 val manga = context.getTranslation("title.manga")
 
-                eb.setThumbnail(character.imageUrl)
-                eb.setTitle(character.name ?: "/", character.url)
-                eb.setDescription(character.about?.remove("\\n")?.take(MessageEmbed.TEXT_MAX_LENGTH) ?: "/")
-
-                eb.addField(name, character.name ?: "/", true)
-                eb.addField(namekanji, character.nameKanji ?: "/", true)
+                val eb = Embedder(context)
+                    .setThumbnail(character.imageUrl)
+                    .setTitle(character.name ?: "/", character.url)
+                    .setDescription(character.about?.remove("\\n")?.take(MessageEmbed.TEXT_MAX_LENGTH) ?: "/")
+                    .addField(name, character.name ?: "/", true)
+                    .addField(namekanji, character.nameKanji ?: "/", true)
 
                 val otherNames = character.nicknames
                 if (otherNames != null && otherNames.isNotEmpty() && !(otherNames.size == 1 && otherNames[0]?.isBlank() == true)) {
@@ -136,13 +140,13 @@ class MyAnimeListCommand(jikanSettings: Settings.Jikan) : AbstractCommand("comma
                 }
 
                 val favourites = context.getTranslation("footer.favourites")
-                eb.setFooter(favourites.replace("%amount%", character.memberFavorites?.toString() ?: "0"))
+                eb.setFooter(favourites.withVariable("amount", character.memberFavorites?.toString() ?: "0"))
 
-                sendEmbed(context, eb.build())
+                sendEmbedRsp(context, eb.build())
             } catch (e: JikanException) {
                 val msg = context.getTranslation("$root.noresult")
-                    .replace(PLACEHOLDER_ARG, context.args[0])
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_ARG, context.args[0])
+                sendRsp(context, msg)
             }
         }
     }
@@ -167,8 +171,8 @@ class MyAnimeListCommand(jikanSettings: Settings.Jikan) : AbstractCommand("comma
                 val result = JikanKt.searchManga(manga).results?.firstOrNull()
                 if (result == null) {
                     val msg = context.getTranslation("$root.noresult")
-                        .replace(PLACEHOLDER_ARG, manga)
-                    sendMsg(context, msg)
+                        .withVariable(PLACEHOLDER_ARG, manga)
+                    sendRsp(context, msg)
                     return
                 }
 
@@ -192,31 +196,31 @@ class MyAnimeListCommand(jikanSettings: Settings.Jikan) : AbstractCommand("comma
                 } ?: context.getTranslation("unknown")
 
                 val eb = Embedder(context)
-                eb.setTitle(result.title ?: "???", result.url)
+                    .setTitle(result.title ?: "???", result.url)
 
-                eb.addField(type, result.type?.toString() ?: "?", true)
-                eb.addField("$volumes | $chapters", "${result.volumes ?: "0"} | ${result.chapters ?: "0"}", true)
-                eb.addField(rating, "${result.score ?: "?"}/10.0", true)
+                    .addField(type, result.type?.toString() ?: "?", true)
+                    .addField("$volumes | $chapters", "${result.volumes ?: "0"} | ${result.chapters ?: "0"}", true)
+                    .addField(rating, "${result.score ?: "?"}/10.0", true)
 
-                eb.addField(startDate, result.startDate?.toUniversalDateFormat() ?: "/", true)
-                eb.addField(endDate, result.endDate?.toUniversalDateFormat() ?: "/", true)
-                eb.addField(publishing, publishingValue, true)
+                    .addField(startDate, result.startDate?.toUniversalDateFormat() ?: "/", true)
+                    .addField(endDate, result.endDate?.toUniversalDateFormat() ?: "/", true)
+                    .addField(publishing, publishingValue, true)
 
-                eb.addField(synopsis, result.synopsis ?: "/", false)
+                    .addField(synopsis, result.synopsis ?: "/", false)
 
-                eb.setThumbnail(result.imageUrl)
+                    .setThumbnail(result.imageUrl)
 
                 result.members?.let {
                     val members = context.getTranslation("footer.members")
-                    eb.setFooter(members.replace("%amount%", "$it"))
+                    eb.setFooter(members.withVariable("amount", "$it"))
                 }
 
-                sendEmbed(context, eb.build())
+                sendEmbedRsp(context, eb.build())
 
             } catch (e: JikanException) {
                 val msg = context.getTranslation("$root.noresult")
-                    .replace(PLACEHOLDER_ARG, context.args[0])
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_ARG, context.args[0])
+                sendRsp(context, msg)
             }
         }
     }
@@ -245,8 +249,8 @@ class MyAnimeListCommand(jikanSettings: Settings.Jikan) : AbstractCommand("comma
                 val result = JikanKt.searchAnime(animeName).results?.firstOrNull()
                 if (result == null) {
                     val msg = context.getTranslation("$root.noresult")
-                        .replace(PLACEHOLDER_ARG, animeName)
-                    sendMsg(context, msg)
+                        .withVariable(PLACEHOLDER_ARG, animeName)
+                    sendRsp(context, msg)
                     return
                 }
 
@@ -268,31 +272,31 @@ class MyAnimeListCommand(jikanSettings: Settings.Jikan) : AbstractCommand("comma
                 } ?: context.getTranslation("unknown")
 
                 val eb = Embedder(context)
-                eb.setTitle(result.title ?: "???", result.url)
+                    .setTitle(result.title ?: "???", result.url)
 
-                eb.addField(type, result.type?.toString() ?: "?", true)
-                eb.addField(episodes, "${result.episodes ?: "?"}", true)
-                eb.addField(rating, "${result.score ?: "?"}/10.0", true)
+                    .addField(type, result.type?.toString() ?: "?", true)
+                    .addField(episodes, "${result.episodes ?: "?"}", true)
+                    .addField(rating, "${result.score ?: "?"}/10.0", true)
 
-                eb.addField(startDate, result.startDate?.toUniversalDateFormat() ?: "/", true)
-                eb.addField(endDate, result.endDate?.toUniversalDateFormat() ?: "/", true)
-                eb.addField(airing, airingValue, true)
+                    .addField(startDate, result.startDate?.toUniversalDateFormat() ?: "/", true)
+                    .addField(endDate, result.endDate?.toUniversalDateFormat() ?: "/", true)
+                    .addField(airing, airingValue, true)
 
-                eb.addField(synopsis, result.synopsis ?: "/", false)
+                    .addField(synopsis, result.synopsis ?: "/", false)
 
-                eb.setThumbnail(result.imageUrl)
+                    .setThumbnail(result.imageUrl)
 
                 result.members?.let {
                     val members = context.getTranslation("footer.members")
-                    eb.setFooter(members.replace("%amount%", "$it"))
+                    eb.setFooter(members.withVariable("amount", "$it"))
                 }
 
-                sendEmbed(context, eb.build())
+                sendEmbedRsp(context, eb.build())
 
             } catch (e: JikanException) {
                 val msg = context.getTranslation("$root.noresult")
-                    .replace(PLACEHOLDER_ARG, context.args[0])
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_ARG, context.args[0])
+                sendRsp(context, msg)
             }
         }
     }
@@ -316,8 +320,8 @@ class MyAnimeListCommand(jikanSettings: Settings.Jikan) : AbstractCommand("comma
                 val result = JikanKt.getUser(user)
                 if (result.url == null) {
                     val msg = context.getTranslation("$root.noresult")
-                        .replace(PLACEHOLDER_ARG, user)
-                    sendMsg(context, msg)
+                        .withVariable(PLACEHOLDER_ARG, user)
+                    sendRsp(context, msg)
                     return
                 }
 
@@ -326,9 +330,9 @@ class MyAnimeListCommand(jikanSettings: Settings.Jikan) : AbstractCommand("comma
 
 
                 val eb = Embedder(context)
-                eb.setTitle(result.username, result.url)
+                    .setTitle(result.username, result.url)
+                    .addField(joinDate, result.joined?.toUniversalDateFormat() ?: "/", true)
 
-                eb.addField(joinDate, result.joined?.toUniversalDateFormat() ?: "/", true)
                 result.location?.let {
                     eb.addField(context.getTranslation("title.location"), it, true)
                 }
@@ -385,11 +389,11 @@ class MyAnimeListCommand(jikanSettings: Settings.Jikan) : AbstractCommand("comma
                 }
 
                 eb.setThumbnail(result.imageUrl)
-                sendEmbed(context, eb.build())
+                sendEmbedRsp(context, eb.build())
             } catch (e: JikanException) {
                 val msg = context.getTranslation("$root.noresult")
-                    .replace(PLACEHOLDER_ARG, context.args[0])
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_ARG, context.args[0])
+                sendRsp(context, msg)
                 return
             }
         }

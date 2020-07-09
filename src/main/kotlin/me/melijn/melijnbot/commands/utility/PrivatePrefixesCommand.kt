@@ -1,8 +1,13 @@
 package me.melijn.melijnbot.commands.utility
 
 import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.objects.command.*
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.*
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.internals.utils.isPremiumUser
+import me.melijn.melijnbot.internals.utils.message.sendFeatureRequiresPremiumMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.withVariable
 
 const val PRIVATE_PREFIXES_LIMIT = 1
 const val PREMIUM_PRIVATE_PREFIXES_LIMIT = 10
@@ -47,7 +52,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
 
 
             val msg = title + content
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -76,8 +81,8 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
                 return
             } else if (ppList.size >= PREMIUM_PRIVATE_PREFIXES_LIMIT) {
                 val msg = context.getTranslation("$root.limit")
-                    .replace("%limit%", "$PREMIUM_PRIVATE_PREFIXES_LIMIT")
-                sendMsg(context, msg)
+                    .withVariable("limit", "$PREMIUM_PRIVATE_PREFIXES_LIMIT")
+                sendRsp(context, msg)
                 return
             }
 
@@ -85,8 +90,8 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             context.daoManager.userPrefixWrapper.addPrefix(context.authorId, prefix)
 
             val msg = context.getTranslation("$root.response1")
-                .replace(PLACEHOLDER_PREFIX, prefix)
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_PREFIX, prefix)
+            sendRsp(context, msg)
         }
     }
 
@@ -107,8 +112,8 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             context.daoManager.userPrefixWrapper.removePrefix(context.authorId, prefix)
 
             val msg = context.getTranslation("$root.response1")
-                .replace(PLACEHOLDER_PREFIX, prefix)
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_PREFIX, prefix)
+            sendRsp(context, msg)
         }
     }
 
@@ -134,8 +139,8 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             wrapper.removePrefix(context.authorId, toRemove)
 
             val msg = context.getTranslation("$root.removed")
-                .replace(PLACEHOLDER_PREFIX, toRemove)
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_PREFIX, toRemove)
+            sendRsp(context, msg)
         }
     }
 }

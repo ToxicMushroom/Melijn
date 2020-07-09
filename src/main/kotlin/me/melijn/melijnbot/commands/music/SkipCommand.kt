@@ -1,15 +1,16 @@
 package me.melijn.melijnbot.commands.music
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.utils.getDurationString
-import me.melijn.melijnbot.objects.utils.getIntegerFromArgN
-import me.melijn.melijnbot.objects.utils.sendEmbed
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
+import me.melijn.melijnbot.internals.utils.getDurationString
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgN
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.withVariable
 
 class SkipCommand : AbstractCommand("command.skip") {
 
@@ -27,14 +28,14 @@ class SkipCommand : AbstractCommand("command.skip") {
         val cTrack = trackManager.iPlayer.playingTrack ?: return
         val part1 = if (amount > 1) {
             context.getTranslation("$root.skips")
-                .replace("%amount%", amount.toString())
+                .withVariable("amount", amount.toString())
         } else {
             context.getTranslation("$root.skip")
         }
-            .replace("%track%", cTrack.info.title)
-            .replace("%url%", cTrack.info.uri)
-            .replace("%position%", getDurationString(trackManager.iPlayer.trackPosition))
-            .replace("%duration%", getDurationString(cTrack.duration))
+            .withVariable("track", cTrack.info.title)
+            .withVariable("url", cTrack.info.uri)
+            .withVariable("position", getDurationString(trackManager.iPlayer.trackPosition))
+            .withVariable("duration", getDurationString(cTrack.duration))
 
         context.guildMusicPlayer.guildTrackManager.skip(amount)
         val nTrack: AudioTrack? = trackManager.iPlayer.playingTrack
@@ -43,17 +44,17 @@ class SkipCommand : AbstractCommand("command.skip") {
             context.getTranslation("$root.nonext")
         } else {
             context.getTranslation("$root.next")
-                .replace("%track%", nTrack.info.title)
-                .replace("%url%", nTrack.info.uri)
-                .replace("%duration%", getDurationString(nTrack.duration))
+                .withVariable("track", nTrack.info.title)
+                .withVariable("url", nTrack.info.uri)
+                .withVariable("duration", getDurationString(nTrack.duration))
         }
 
         val title = context.getTranslation("$root.title")
-            .replace(PLACEHOLDER_USER, context.author.asTag)
+            .withVariable(PLACEHOLDER_USER, context.author.asTag)
 
         val eb = Embedder(context)
         eb.setTitle(title)
         eb.setDescription(part1 + part2)
-        sendEmbed(context, eb.build())
+        sendEmbedRsp(context, eb.build())
     }
 }

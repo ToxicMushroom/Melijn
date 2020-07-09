@@ -1,7 +1,7 @@
 package me.melijn.melijnbot.database.embed
 
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.internals.threading.TaskManager
 
 class EmbedDisabledWrapper(val taskManager: TaskManager, private val embedDisabledDao: EmbedDisabledDao) {
 

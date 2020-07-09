@@ -1,14 +1,15 @@
 package me.melijn.melijnbot.commands.utility
 
 import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.utils.getColorFromArgNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
-import okhttp3.internal.toHexString
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.internals.utils.getColorFromArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.toHexString
+import me.melijn.melijnbot.internals.utils.withVariable
 
 class SetPrivateEmbedColorCommand : AbstractCommand("command.setprivateembedcolor") {
 
@@ -29,7 +30,7 @@ class SetPrivateEmbedColorCommand : AbstractCommand("command.setprivateembedcolo
                 context.getTranslation("$root.show.unset")
             } else {
                 context.getTranslation("$root.show.set")
-                    .replace("%color%", colorInt.toHexString())
+                    .withVariable("color", colorInt.toHexString())
             }
         } else {
             if (context.rawArg.equals("null", true)) {
@@ -41,9 +42,11 @@ class SetPrivateEmbedColorCommand : AbstractCommand("command.setprivateembedcolo
                 wrapper.setColor(context.authorId, color.rgb)
 
                 context.getTranslation("$root.set")
-                    .replace(PLACEHOLDER_ARG, color.rgb.toHexString())
+                    .withVariable(PLACEHOLDER_ARG, color.rgb.toHexString())
             }
         }
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }
+
+

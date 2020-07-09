@@ -1,10 +1,15 @@
 package me.melijn.melijnbot.commands.moderation
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
+import me.melijn.melijnbot.internals.utils.VerificationUtils
+import me.melijn.melijnbot.internals.utils.asTag
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.retrieveMemberByArgsNMessage
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.Member
 
 class VerifyCommand : AbstractCommand("command.verify") {
@@ -21,7 +26,7 @@ class VerifyCommand : AbstractCommand("command.verify") {
             return
         }
 
-        val role = VerificationUtils.getUnverifiedRoleNMessage(context.author, context.textChannel, context.daoManager, context.usedPrefix)
+        val role = VerificationUtils.getUnverifiedRoleNMessage(context.author, context.textChannel, context.taskManager, context.daoManager, context.usedPrefix)
             ?: return
 
         val msg = if (context.args[0] == "*") {
@@ -41,11 +46,11 @@ class VerifyCommand : AbstractCommand("command.verify") {
                 context.getTranslation("$root.all")
             } else {
                 context.getTranslation("$root.all.failures")
-                    .replace("%failures%", failures.joinToString("\n") { member ->
+                    .withVariable("failures", failures.joinToString("\n") { member ->
                         member.asTag + " - " + member.id
                     })
 
-            }.replace("%count%", (members.size - failures.size).toString())
+            }.withVariable("count", (members.size - failures.size).toString())
 
         } else {
             val member = retrieveMemberByArgsNMessage(context, 0) ?: return
@@ -57,9 +62,9 @@ class VerifyCommand : AbstractCommand("command.verify") {
                 }
             } catch (t: Throwable) {
                 context.getTranslation("$root.failure")
-            }.replace(PLACEHOLDER_USER, member.asTag)
+            }.withVariable(PLACEHOLDER_USER, member.asTag)
         }
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

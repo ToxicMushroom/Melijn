@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.database.message
 
-import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.internals.threading.TaskManager
 
 class MessageHistoryWrapper(val taskManager: TaskManager, private val messageHistoryDao: MessageHistoryDao) {
 
@@ -14,5 +14,9 @@ class MessageHistoryWrapper(val taskManager: TaskManager, private val messageHis
 
     suspend fun setMessage(daoMessage: DaoMessage) {
         messageHistoryDao.set(daoMessage)
+    }
+
+    suspend fun clearOldMessages() {
+        messageHistoryDao.clearOldMessages()
     }
 }

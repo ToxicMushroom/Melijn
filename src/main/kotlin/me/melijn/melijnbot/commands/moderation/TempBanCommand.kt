@@ -4,14 +4,18 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.SpecialPermission
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.hasPermission
-import me.melijn.melijnbot.objects.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
-import me.melijn.melijnbot.objects.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.hasPermission
+import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
+import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendEmbed
+import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
@@ -39,14 +43,14 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         if (member != null) {
             if (!context.guild.selfMember.canInteract(member)) {
                 val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .replace(PLACEHOLDER_USER, member.asTag)
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_USER, member.asTag)
+                sendRsp(context, msg)
                 return
             }
             if (!context.member.canInteract(member) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
                 val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
-                    .replace(PLACEHOLDER_USER, member.asTag)
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_USER, member.asTag)
+                sendRsp(context, msg)
                 return
             }
         }
@@ -54,7 +58,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         val noUserArg = context
             .rawArg.removeFirst(("\"?" + Pattern.quote(context.args[0]) + "\"?").toRegex())
             .trim()
-        val durationArgs = context.args[1].split("\\s+".toRegex())
+        val durationArgs = context.args[1].split(SPACE_PATTERN)
         val banDuration = (getDurationByArgsNMessage(context, 0, durationArgs.size, durationArgs) ?: return) * 1000
 
         var reason = noUserArg.removeFirst(("\"?" + Pattern.quote(context.args[1]) + "\"?").toRegex()).trim()
@@ -94,6 +98,7 @@ class TempBanCommand : AbstractCommand("command.tempban") {
 
         val bannedMessageDm = getBanMessage(language, privZoneId, guild, targetUser, author, ban)
         val bannedMessageLc = getBanMessage(language, zoneId, guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
+
         context.daoManager.banWrapper.setBan(ban)
 
         try {
@@ -107,21 +112,22 @@ class TempBanCommand : AbstractCommand("command.tempban") {
             val logChannel = guild.getTextChannelById(logChannelId)
             logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
 
-
             val endTime = ban.endTime?.asEpochMillisToDateTime(zoneId)
+
             val msg = context.getTranslation("$root.success" + if (activeBan != null) ".updated" else "")
-                .replace(PLACEHOLDER_USER, targetUser.asTag)
-                .replace("%endTime%", endTime ?: "none")
-                .replace("%reason%", ban.reason)
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withVariable("endTime", endTime ?: "none")
+                .withVariable("reason", ban.reason)
+            sendRsp(context, msg)
         } catch (t: Throwable) {
+
             val failedMsg = context.getTranslation("message.banning.failed")
             banningMessage?.editMessage(failedMsg)?.queue()
 
             val msg = context.getTranslation("$root.failure")
-                .replace(PLACEHOLDER_USER, targetUser.asTag)
-                .replace("%cause%", t.message ?: "/")
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                .withVariable("cause", t.message ?: "/")
+            sendRsp(context, msg)
         }
     }
 }

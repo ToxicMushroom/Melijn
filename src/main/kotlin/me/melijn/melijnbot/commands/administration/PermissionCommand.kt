@@ -3,11 +3,14 @@ package me.melijn.melijnbot.commands.administration
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.PermState
 import me.melijn.melijnbot.enums.SpecialPermission
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.*
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.translation.*
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import java.util.regex.Pattern
 
 class PermissionCommand : AbstractCommand("command.permission") {
@@ -74,12 +77,12 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
 
                 val msg = context.getTranslation("$root.response1")
-                    .replace(PLACEHOLDER_USER, user.asTag)
-                    .replace("%permissionNode%", permissionNode)
-                    .replace("%permissionCount%", permissions.size.toString())
-                    .replace("%state%", state.toString())
+                    .withVariable(PLACEHOLDER_USER, user.asTag)
+                    .withVariable("permissionNode", permissionNode)
+                    .withVariable("permissionCount", permissions.size.toString())
+                    .withVariable("state", state.toString())
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
         }
 
@@ -101,8 +104,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
 
                 val title = context.getTranslation("$root.response1.title")
-                    .replace(PLACEHOLDER_USER, user.asTag)
-                    .replace("%permissionNode%", permissionNode)
+                    .withVariable(PLACEHOLDER_USER, user.asTag)
+                    .withVariable("permissionNode", permissionNode)
 
                 var content = "\n```INI"
                 val dao = context.daoManager.userPermissionWrapper.guildUserPermissionCache
@@ -115,7 +118,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
                 content += "```"
 
-                sendMsgCodeBlock(context, title + content, "INI")
+                sendRspCodeBlock(context, title + content, "INI")
             }
         }
 
@@ -137,8 +140,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 context.daoManager.userPermissionWrapper.clear(context.guildId, user.idLong)
 
                 val msg = context.getTranslation("$root.response1")
-                    .replace(PLACEHOLDER_USER, user.asTag)
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_USER, user.asTag)
+                sendRsp(context, msg)
             }
         }
     }
@@ -190,12 +193,12 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
 
                 val msg = context.getTranslation("$root.response1")
-                    .replace(PLACEHOLDER_ROLE, role.name)
-                    .replace("%permissionNode%", permissionNode)
-                    .replace("%permissionCount%", permissions.size.toString())
-                    .replace("%state%", state.toString())
+                    .withVariable(PLACEHOLDER_ROLE, role.name)
+                    .withVariable("permissionNode", permissionNode)
+                    .withVariable("permissionCount", permissions.size.toString())
+                    .withVariable("state", state.toString())
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
 
         }
@@ -218,8 +221,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 val permissions = getPermissionsFromArgNMessage(context, permissionNode) ?: return
 
                 val title = context.getTranslation("$root.response1.title")
-                    .replace(PLACEHOLDER_ROLE, role.name)
-                    .replace("%permissionNode%", permissionNode)
+                    .withVariable(PLACEHOLDER_ROLE, role.name)
+                    .withVariable("permissionNode", permissionNode)
 
                 var content = "\n```INI"
                 val dao = context.daoManager.rolePermissionWrapper.rolePermissionCache
@@ -232,7 +235,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
                 content += "```"
 
-                sendMsgCodeBlock(context, title + content, "INI")
+                sendRspCodeBlock(context, title + content, "INI")
             }
 
         }
@@ -255,8 +258,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 context.daoManager.rolePermissionWrapper.clear(role.idLong)
 
                 val msg = context.getTranslation("$root.response1")
-                    .replace(PLACEHOLDER_ROLE, role.name)
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_ROLE, role.name)
+                sendRsp(context, msg)
             }
 
         }
@@ -274,7 +277,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            sendMsg(context, "Channel Permissions")
+            sendRsp(context, "Channel Permissions")
         }
 
         class RoleChannelCommand(parent: String) : AbstractCommand("$parent.role") {
@@ -323,13 +326,13 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     }
 
                     val msg = context.getTranslation("$root.response1")
-                        .replace("%textChannel%", channel.asTag)
-                        .replace(PLACEHOLDER_ROLE, role.name)
-                        .replace("%permissionNode%", permissionNode)
-                        .replace("%permissionCount%", permissions.size.toString())
-                        .replace("%state%", state.toString())
+                        .withVariable("textChannel", channel.asTag)
+                        .withVariable(PLACEHOLDER_ROLE, role.name)
+                        .withVariable("permissionNode", permissionNode)
+                        .withVariable("permissionCount", permissions.size.toString())
+                        .withVariable("state", state.toString())
 
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                 }
 
             }
@@ -355,9 +358,9 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
 
                     val title = context.getTranslation("$root.response1.title")
-                        .replace(PLACEHOLDER_CHANNEL, channel.asTag)
-                        .replace(PLACEHOLDER_ROLE, role.name)
-                        .replace("%permissionNode%", permissionNode)
+                        .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
+                        .withVariable(PLACEHOLDER_ROLE, role.name)
+                        .withVariable("permissionNode", permissionNode)
 
                     val channelRolePermissionCache = context.daoManager.channelRolePermissionWrapper.channelRolePermissionCache
                     val channelRole = channelRolePermissionCache.get(Pair(channel.idLong, role.idLong)).await()
@@ -372,7 +375,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     content += "```"
 
                     val msg = title + content
-                    sendMsgCodeBlock(context, msg, "INI")
+                    sendRspCodeBlock(context, msg, "INI")
                 }
             }
 
@@ -396,9 +399,9 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
 
                     val msg = context.getTranslation("$root.response1")
-                        .replace(PLACEHOLDER_ROLE, role.name)
-                        .replace(PLACEHOLDER_CHANNEL, channel.asTag)
-                    sendMsg(context, msg)
+                        .withVariable(PLACEHOLDER_ROLE, role.name)
+                        .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
+                    sendRsp(context, msg)
                 }
             }
         }
@@ -450,13 +453,13 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
 
                     val msg = context.getTranslation("$root.response1")
-                        .replace("%textChannel%", channel.asTag)
-                        .replace(PLACEHOLDER_USER, user.asTag)
-                        .replace("%permissionNode%", permissionNode)
-                        .replace("%permissionCount%", permissions.size.toString())
-                        .replace("%state%", state.toString())
+                        .withVariable("textChannel", channel.asTag)
+                        .withVariable(PLACEHOLDER_USER, user.asTag)
+                        .withVariable("permissionNode", permissionNode)
+                        .withVariable("permissionCount", permissions.size.toString())
+                        .withVariable("state", state.toString())
 
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                 }
 
             }
@@ -482,9 +485,9 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
 
                     val title = context.getTranslation("$root.response1.title")
-                        .replace(PLACEHOLDER_CHANNEL, channel.asTag)
-                        .replace(PLACEHOLDER_USER, user.asTag)
-                        .replace("%permissionNode%", permissionNode)
+                        .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
+                        .withVariable(PLACEHOLDER_USER, user.asTag)
+                        .withVariable("permissionNode", permissionNode)
                     val cache = context.daoManager.channelUserPermissionWrapper.channelUserPermissionCache
                     val channelUser = cache.get(Pair(channel.idLong, user.idLong)).await()
 
@@ -497,7 +500,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     }
                     content += "```"
 
-                    sendMsgCodeBlock(context, title + content, "INI")
+                    sendRspCodeBlock(context, title + content, "INI")
                 }
 
             }
@@ -522,9 +525,9 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
 
                     val msg = context.getTranslation("$root.response1")
-                        .replace(PLACEHOLDER_USER, user.asTag)
-                        .replace(PLACEHOLDER_CHANNEL, channel.asTag)
-                    sendMsg(context, msg)
+                        .withVariable(PLACEHOLDER_USER, user.asTag)
+                        .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
+                    sendRsp(context, msg)
                 }
 
             }
@@ -596,11 +599,11 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
 
                 val msg = context.getTranslation(path)
-                    .replace("%user1%", user1.asTag)
-                    .replace("%user2%", user2.asTag)
-                    .replace("%permissionCount%", permissions.size.toString())
+                    .withVariable("user1", user1.asTag)
+                    .withVariable("user2", user2.asTag)
+                    .withVariable("permissionCount", permissions.size.toString())
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
 
             private suspend fun copyRoleToUser(context: CommandContext) {
@@ -621,11 +624,11 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     ""
                 }
                 val msg = context.getTranslation(path)
-                    .replace(PLACEHOLDER_ROLE, role1.name)
-                    .replace(PLACEHOLDER_USER, user2.name)
-                    .replace("%permissionCount%", permissions.size.toString())
+                    .withVariable(PLACEHOLDER_ROLE, role1.name)
+                    .withVariable(PLACEHOLDER_USER, user2.name)
+                    .withVariable("permissionCount", permissions.size.toString())
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
 
             private suspend fun copyChannelUserToUser(context: CommandContext) {
@@ -648,12 +651,12 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
 
                 val msg = context.getTranslation(path)
-                    .replace("%user1%", user2.asTag)
-                    .replace(PLACEHOLDER_CHANNEL, channel1.asTag)
-                    .replace("%user2%", user3.asTag)
-                    .replace("%permissionCount%", permissions.size.toString())
+                    .withVariable("user1", user2.asTag)
+                    .withVariable(PLACEHOLDER_CHANNEL, channel1.asTag)
+                    .withVariable("user2", user3.asTag)
+                    .withVariable("permissionCount", permissions.size.toString())
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
 
             private suspend fun copyChannelRoleToUser(context: CommandContext) {
@@ -675,12 +678,12 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
 
                 val msg = context.getTranslation(path)
-                    .replace(PLACEHOLDER_ROLE, role2.name)
-                    .replace(PLACEHOLDER_CHANNEL, channel1.asTag)
-                    .replace(PLACEHOLDER_USER, user3.asTag)
-                    .replace("%permissionCount%", permissions.size.toString())
+                    .withVariable(PLACEHOLDER_ROLE, role2.name)
+                    .withVariable(PLACEHOLDER_CHANNEL, channel1.asTag)
+                    .withVariable(PLACEHOLDER_USER, user3.asTag)
+                    .withVariable("permissionCount", permissions.size.toString())
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
 
         }
@@ -735,12 +738,12 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     ""
                 }
                 val msg = context.getTranslation(path)
-                    .replace(PLACEHOLDER_USER, user1.asTag)
-                    .replace(PLACEHOLDER_ROLE, role2.name)
-                    .replace("%permissionCount%", permissions.size.toString())
+                    .withVariable(PLACEHOLDER_USER, user1.asTag)
+                    .withVariable(PLACEHOLDER_ROLE, role2.name)
+                    .withVariable("permissionCount", permissions.size.toString())
 
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
 
             private suspend fun copyRoleToRole(context: CommandContext) {
@@ -759,12 +762,12 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
 
                 val msg = context.getTranslation(path)
-                    .replace("%role1%", role1.name)
-                    .replace("%role2%", role2.name)
-                    .replace("%permissionCount%", permissions.size.toString())
+                    .withVariable("role1", role1.name)
+                    .withVariable("role2", role2.name)
+                    .withVariable("permissionCount", permissions.size.toString())
 
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
 
             private suspend fun copyChannelUserToRole(context: CommandContext) {
@@ -785,13 +788,13 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
 
                 val msg = context.getTranslation(path)
-                    .replace(PLACEHOLDER_USER, user2.asTag)
-                    .replace(PLACEHOLDER_CHANNEL, channel1.asTag)
-                    .replace(PLACEHOLDER_ROLE, role3.name)
-                    .replace("%permissionCount%", permissions.size.toString())
+                    .withVariable(PLACEHOLDER_USER, user2.asTag)
+                    .withVariable(PLACEHOLDER_CHANNEL, channel1.asTag)
+                    .withVariable(PLACEHOLDER_ROLE, role3.name)
+                    .withVariable("permissionCount", permissions.size.toString())
 
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
 
             private suspend fun copyChannelRoleToRole(context: CommandContext) {
@@ -812,13 +815,13 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
 
                 val msg = context.getTranslation(path)
-                    .replace("%role1%", role2.name)
-                    .replace(PLACEHOLDER_CHANNEL, channel1.asTag)
-                    .replace("%role2%", role3.name)
-                    .replace("%permissionCount%", permissions.size.toString())
+                    .withVariable("role1", role2.name)
+                    .withVariable(PLACEHOLDER_CHANNEL, channel1.asTag)
+                    .withVariable("role2", role3.name)
+                    .withVariable("permissionCount", permissions.size.toString())
 
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
         }
 
@@ -883,13 +886,13 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     }
 
                     val msg = context.getTranslation(path)
-                        .replace(PLACEHOLDER_USER, user1.asTag)
-                        .replace(PLACEHOLDER_CHANNEL, channel2.asTag)
-                        .replace(PLACEHOLDER_ROLE, role3.name)
-                        .replace("%permissionCount%", permissions.size.toString())
+                        .withVariable(PLACEHOLDER_USER, user1.asTag)
+                        .withVariable(PLACEHOLDER_CHANNEL, channel2.asTag)
+                        .withVariable(PLACEHOLDER_ROLE, role3.name)
+                        .withVariable("permissionCount", permissions.size.toString())
 
 
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                 }
 
                 private suspend fun copyRoleToChannelRole(context: CommandContext) {
@@ -910,13 +913,13 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     }
 
                     val msg = context.getTranslation(path)
-                        .replace("%role1%", role1.name)
-                        .replace(PLACEHOLDER_CHANNEL, channel2.asTag)
-                        .replace("%role2%", role3.name)
-                        .replace("%permissionCount%", permissions.size.toString())
+                        .withVariable("role1", role1.name)
+                        .withVariable(PLACEHOLDER_CHANNEL, channel2.asTag)
+                        .withVariable("role2", role3.name)
+                        .withVariable("permissionCount", permissions.size.toString())
 
 
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                 }
 
                 private suspend fun copyChannelUserToChannelRole(context: CommandContext) {
@@ -938,14 +941,14 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     }
 
                     val msg = context.getTranslation(path)
-                        .replace(PLACEHOLDER_USER, user2.asTag)
-                        .replace("%channel1%", channel1.asTag)
-                        .replace("%channel2%", channel3.asTag)
-                        .replace(PLACEHOLDER_ROLE, role4.name)
-                        .replace("%permissionCount%", permissions.size.toString())
+                        .withVariable(PLACEHOLDER_USER, user2.asTag)
+                        .withVariable("channel1", channel1.asTag)
+                        .withVariable("channel2", channel3.asTag)
+                        .withVariable(PLACEHOLDER_ROLE, role4.name)
+                        .withVariable("permissionCount", permissions.size.toString())
 
 
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                 }
 
                 private suspend fun copyChannelRoleToChannelRole(context: CommandContext) {
@@ -966,14 +969,14 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     }
 
                     val msg = context.getTranslation(path)
-                        .replace("%role1%", role2.name)
-                        .replace("%channel1%", channel1.asTag)
-                        .replace("%channel2%", channel3.asTag)
-                        .replace("%role2%", role4.name)
-                        .replace("%permissionCount%", permissions.size.toString())
+                        .withVariable("role1", role2.name)
+                        .withVariable("channel1", channel1.asTag)
+                        .withVariable("channel2", channel3.asTag)
+                        .withVariable("role2", role4.name)
+                        .withVariable("permissionCount", permissions.size.toString())
 
 
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                 }
             }
 
@@ -1027,13 +1030,13 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     }
 
                     val msg = context.getTranslation(path)
-                        .replace("%user1%", user1.asTag)
-                        .replace(PLACEHOLDER_CHANNEL, channel2.asTag)
-                        .replace("%user2%", user3.asTag)
-                        .replace("%permissionCount%", permissions.size.toString())
+                        .withVariable("user1", user1.asTag)
+                        .withVariable(PLACEHOLDER_CHANNEL, channel2.asTag)
+                        .withVariable("user2", user3.asTag)
+                        .withVariable("permissionCount", permissions.size.toString())
 
 
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                 }
 
                 private suspend fun copyRoleToChannelUser(context: CommandContext) {
@@ -1054,13 +1057,13 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     }
 
                     val msg = context.getTranslation(path)
-                        .replace(PLACEHOLDER_ROLE, role1.name)
-                        .replace(PLACEHOLDER_CHANNEL, channel2.asTag)
-                        .replace(PLACEHOLDER_USER, user3.asTag)
-                        .replace("%permissionCount%", permissions.size.toString())
+                        .withVariable(PLACEHOLDER_ROLE, role1.name)
+                        .withVariable(PLACEHOLDER_CHANNEL, channel2.asTag)
+                        .withVariable(PLACEHOLDER_USER, user3.asTag)
+                        .withVariable("permissionCount", permissions.size.toString())
 
 
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                 }
 
                 private suspend fun copyChannelUserToChannelUser(context: CommandContext) {
@@ -1081,14 +1084,14 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     }
 
                     val msg = context.getTranslation(path)
-                        .replace("%user1%", user2.asTag)
-                        .replace("%channel1%", channel1.asTag)
-                        .replace("%channel2%", channel3.asTag)
-                        .replace("%user2%", user4.asTag)
-                        .replace("%permissionCount%", permissions.size.toString())
+                        .withVariable("user1", user2.asTag)
+                        .withVariable("channel1", channel1.asTag)
+                        .withVariable("channel2", channel3.asTag)
+                        .withVariable("user2", user4.asTag)
+                        .withVariable("permissionCount", permissions.size.toString())
 
 
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                 }
 
                 private suspend fun copyChannelRoleToChannelUser(context: CommandContext) {
@@ -1110,14 +1113,14 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     }
 
                     val msg = context.getTranslation(path)
-                        .replace(PLACEHOLDER_ROLE, role2.name)
-                        .replace("%channel1%", channel1.asTag)
-                        .replace("%channel2%", channel3.asTag)
-                        .replace(PLACEHOLDER_USER, user4.asTag)
-                        .replace("%permissionCount%", permissions.size.toString())
+                        .withVariable(PLACEHOLDER_ROLE, role2.name)
+                        .withVariable("channel1", channel1.asTag)
+                        .withVariable("channel2", channel3.asTag)
+                        .withVariable(PLACEHOLDER_USER, user4.asTag)
+                        .withVariable("permissionCount", permissions.size.toString())
 
 
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                 }
             }
         }
@@ -1129,8 +1132,8 @@ suspend fun getPermissionsFromArgNMessage(context: CommandContext, arg: String):
     if (permissions == null) {
 
         val msg = context.getTranslation(MESSAGE_UNKNOWN_PERMISSIONNODE)
-            .replace(PLACEHOLDER_ARG, arg)
-        sendMsg(context, msg)
+            .withVariable(PLACEHOLDER_ARG, arg)
+        sendRsp(context, msg)
     }
     return permissions
 }

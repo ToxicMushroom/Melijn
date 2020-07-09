@@ -1,14 +1,15 @@
 package me.melijn.melijnbot.commands.image
 
 import com.madgag.gif.fmsware.GifDecoder
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.utils.ImageUtils
-import me.melijn.melijnbot.objects.utils.getIntegerFromArgN
-import me.melijn.melijnbot.objects.utils.sendEmbed
-import me.melijn.melijnbot.objects.utils.toHex
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.utils.ImageUtils
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgN
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.toHex
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.utils.data.DataArray
 import java.awt.Color
 import java.io.ByteArrayInputStream
@@ -32,7 +33,7 @@ class GifInfoCommand : AbstractCommand("command.gifinfo") {
         val gifInfoTitle = context.getTranslation("$root.eb.gif.title")
 
         val eb = Embedder(context)
-        eb.setThumbnail(triple.second)
+            .setThumbnail(triple.second)
 
         val loops = if (decoder.loopCount == 0) {
             "∞"
@@ -58,11 +59,11 @@ class GifInfoCommand : AbstractCommand("command.gifinfo") {
         }
 
         val gifInfoValue = context.getTranslation("$root.eb.gif.value")
-            .replace("%frames%", "$frames")
-            .replace("%loops%", loops)
-            .replace("%width%", "$width")
-            .replace("%height%", "$height")
-            .replace("%gctUrl%", globalUrl ?: "/")
+            .withVariable("frames", "$frames")
+            .withVariable("loops", loops)
+            .withVariable("width", "$width")
+            .withVariable("height", "$height")
+            .withVariable("gctUrl", globalUrl ?: "/")
 
 
 
@@ -103,32 +104,14 @@ class GifInfoCommand : AbstractCommand("command.gifinfo") {
 
             val frameInfoTitle = context.getTranslation("$root.eb.frame.title")
             val frameInfoValue = context.getTranslation("$root.eb.frame.value")
-                .replace("%delay%", frameMeta.delay.toString())
-                .replace("%transColor%", transColor?.toHex() ?: "/")
-                .replace("%bgColor%", bgColor?.toHex() ?: "/")
-                .replace("%lctUrl%", url ?: "/")
+                .withVariable("delay", frameMeta.delay.toString())
+                .withVariable("transColor", transColor?.toHex() ?: "/")
+                .withVariable("bgColor", bgColor?.toHex() ?: "/")
+                .withVariable("lctUrl", url ?: "/")
 
             eb.addField(frameInfoTitle, frameInfoValue, false)
         }
 
-
-//        val pb = ProcessBuilder("ffmpeg.exe -f image2pipe -i - -framerate 24 -".split(" "))
-//        pb.redirectInput(ProcessBuilder.Redirect.PIPE)
-//        pb.redirectOutput(ProcessBuilder.Redirect.PIPE)
-//        val p = pb.start()
-//        for (i in 0 until decoder.frameCount) {
-//            //val pb = ProcessBuilder("ffmpeg.exe -f image2 -framerate 24 -i 0%03d.png -vf scale=256x256 boo.mp4".split(" "))
-//
-//
-//            val frame1 = decoder.getFrame(i)
-//            ImageIO.write(frame1, "png", p.outputStream)
-//        }
-//
-//        delay(2000)
-//        p.destroy()
-//
-//        val output = p.inputStream.readAllBytes()
-//        sendFile(context, output, "mp4")
-        sendEmbed(context, eb.build())
+        sendEmbedRsp(context, eb.build())
     }
 }

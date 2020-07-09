@@ -1,13 +1,14 @@
 package me.melijn.melijnbot.commands.moderation
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
-import me.melijn.melijnbot.objects.utils.getVoiceChannelByArgNMessage
-import me.melijn.melijnbot.objects.utils.notEnoughPermissionsAndMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
+import me.melijn.melijnbot.internals.utils.getVoiceChannelByArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.notEnoughPermissionsAndMessage
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.Permission
 
 class MassMoveCommand : AbstractCommand("command.massmove") {
@@ -28,7 +29,6 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
 
         var total = 0
         if (context.args[0] == "all") {
-
             if (context.args[1] == "null") {
                 for (voiceChannel in context.guild.voiceChannels) {
                     voiceChannel.members.forEach {
@@ -38,8 +38,8 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
                 }
 
                 val msg = context.getTranslation("$root.kicked.all")
-                    .replace("%amount%", "$total")
-                sendMsg(context, msg)
+                    .withVariable("amount", "$total")
+                sendRsp(context, msg)
                 return
             }
 
@@ -56,9 +56,9 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
             }
 
             val msg = context.getTranslation("$root.moved.all")
-                .replace("%amount%", "$total")
-                .replace(PLACEHOLDER_CHANNEL, voiceChannelTarget.name)
-            sendMsg(context, msg)
+                .withVariable("amount", "$total")
+                .withVariable(PLACEHOLDER_CHANNEL, voiceChannelTarget.name)
+            sendRsp(context, msg)
             return
         }
 
@@ -71,9 +71,9 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
             }
 
             val msg = context.getTranslation("$root.kicked")
-                .replace("%amount%", "$total")
-                .replace(PLACEHOLDER_CHANNEL, voiceChannel.name)
-            sendMsg(context, msg)
+                .withVariable("amount", "$total")
+                .withVariable(PLACEHOLDER_CHANNEL, voiceChannel.name)
+            sendRsp(context, msg)
             return
         }
 
@@ -88,10 +88,9 @@ class MassMoveCommand : AbstractCommand("command.massmove") {
         }
 
         val msg = context.getTranslation("$root.moved")
-            .replace("%amount%", "$total")
-            .replace(PLACEHOLDER_CHANNEL, voiceChannel.name)
-            .replace("%channel1%", voiceChannelTarget.name)
-        sendMsg(context, msg)
-
+            .withVariable("amount", "$total")
+            .withVariable(PLACEHOLDER_CHANNEL, voiceChannel.name)
+            .withVariable("channel1", voiceChannelTarget.name)
+        sendRsp(context, msg)
     }
 }

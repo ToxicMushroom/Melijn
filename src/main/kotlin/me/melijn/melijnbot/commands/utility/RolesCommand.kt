@@ -1,11 +1,12 @@
 package me.melijn.melijnbot.commands.utility
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.utils.DISCORD_ID
-import me.melijn.melijnbot.objects.utils.sendMsgCodeBlock
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.utils.DISCORD_ID
+import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.Guild
 
 class RolesCommand : AbstractCommand("command.roles") {
@@ -31,7 +32,7 @@ class RolesCommand : AbstractCommand("command.roles") {
 
         val unReplacedTitle = context.getTranslation("$root.response1.title")
         val title = unReplacedTitle
-            .replace("%serverName%", guild.name)
+            .withVariable("serverName", guild.name)
 
 
         var content = "```INI"
@@ -41,6 +42,6 @@ class RolesCommand : AbstractCommand("command.roles") {
         content += "```"
 
         val msg = title + content
-        sendMsgCodeBlock(context, msg, "INI", true)
+        sendRspCodeBlock(context, msg, "INI", true)
     }
 }

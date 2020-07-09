@@ -1,12 +1,12 @@
 package me.melijn.melijnbot.commands.image
 
 import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.utils.ImageUtils
-import me.melijn.melijnbot.objects.utils.getColorFromArgNMessage
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.utils.ImageUtils
+import me.melijn.melijnbot.internals.utils.getColorFromArgNMessage
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.awt.Color

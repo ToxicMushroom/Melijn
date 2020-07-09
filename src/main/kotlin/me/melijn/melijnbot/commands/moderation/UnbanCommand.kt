@@ -2,13 +2,17 @@ package me.melijn.melijnbot.commands.moderation
 
 import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.enums.LogChannelType
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.*
-import me.melijn.melijnbot.objects.utils.checks.getAndVerifyLogChannelByType
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
+import me.melijn.melijnbot.internals.translation.i18n
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
+import me.melijn.melijnbot.internals.utils.message.sendEmbed
+import me.melijn.melijnbot.internals.utils.message.sendEmbedAwaitEL
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
@@ -84,16 +88,16 @@ class UnbanCommand : AbstractCommand("command.unban") {
             } catch (t: Throwable) {
                 //Sum ting wrong
                 val msg = context.getTranslation("$root.failure")
-                    .replace(PLACEHOLDER_USER, targetUser.asTag)
-                    .replace("%cause%", t.message ?: "/")
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+                    .withVariable("cause", t.message ?: "/")
+                sendRsp(context, msg)
             }
         } catch (t: Throwable) {
             //Not banned anymore
 
             val msg = context.getTranslation("$root.notbanned")
-                .replace(PLACEHOLDER_USER, targetUser.asTag)
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+            sendRsp(context, msg)
 
             if (activeBan != null) {
                 context.daoManager.banWrapper.setBan(ban)
@@ -118,9 +122,9 @@ class UnbanCommand : AbstractCommand("command.unban") {
 
 
         val success = context.getTranslation("$root.success")
-            .replace(PLACEHOLDER_USER, targetUser.asTag)
-            .replace("%reason%", ban.unbanReason ?: "/")
-        sendMsg(context, success)
+            .withVariable(PLACEHOLDER_USER, targetUser.asTag)
+            .withVariable("reason", ban.unbanReason ?: "/")
+        sendRsp(context, success)
     }
 }
 
@@ -137,8 +141,6 @@ fun getUnbanMessage(
     received: Boolean = true,
     failedCause: String? = null
 ): MessageEmbed {
-    val eb = EmbedBuilder()
-
     val banDuration = ban.endTime?.let { endTime ->
         getDurationString((endTime - ban.startTime))
     } ?: i18n.getTranslation(language, "infinite")
@@ -146,23 +148,23 @@ fun getUnbanMessage(
     var description = "```LDIF\n"
     if (!lc) {
         description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .replace("%serverName%", guild.name)
-            .replace("%serverId%", guild.id)
+            .withVariable("serverName", guild.name)
+            .withVariable("serverId", guild.id)
     }
 
     val deletedAccount = i18n.getTranslation(language, "message.deleted.user")
     description += i18n.getTranslation(language, "message.punishment.unban.description")
-        .replace("%banAuthor%", banAuthor?.asTag ?: deletedAccount)
-        .replace("%banAuthorId%", ban.banAuthorId.toString())
-        .replace("%unBanAuthorId%", ban.unbanAuthorId.toString())
-        .replace("%unBanned%", bannedUser.asTag)
-        .replace("%unBannedId%", ban.bannedId.toString())
-        .replace("%banReason%", ban.reason)
-        .replace("%unbanReason%", ban.unbanReason ?: "/")
-        .replace("%duration%", banDuration)
-        .replace("%startTime%", (ban.startTime.asEpochMillisToDateTime(zoneId)))
-        .replace("%endTime%", (ban.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
-        .replace("%banId%", ban.banId)
+        .withVariable("banAuthor", banAuthor?.asTag ?: deletedAccount)
+        .withVariable("banAuthorId", ban.banAuthorId.toString())
+        .withVariable("unBanAuthorId", ban.unbanAuthorId.toString())
+        .withVariable("unBanned", bannedUser.asTag)
+        .withVariable("unBannedId", ban.bannedId.toString())
+        .withVariable("banReason", ban.reason)
+        .withVariable("unbanReason", ban.unbanReason ?: "/")
+        .withVariable("duration", banDuration)
+        .withVariable("startTime", (ban.startTime.asEpochMillisToDateTime(zoneId)))
+        .withVariable("endTime", (ban.endTime?.asEpochMillisToDateTime(zoneId) ?: "none"))
+        .withVariable("banId", ban.banId)
 
     var extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,
@@ -179,19 +181,20 @@ fun getUnbanMessage(
     if (failedCause != null) {
         extraDesc += i18n.getTranslation(language,
             "message.punishment.extra.failed"
-        ).replace("%cause%", failedCause)
+        ).withVariable("cause", failedCause)
     }
 
     description += extraDesc
     description += "```"
 
     val author = i18n.getTranslation(language, "message.punishment.unban.author")
-        .replace(PLACEHOLDER_USER, unbanAuthor.asTag)
-        .replace("%spaces%", " ".repeat(45).substring(0, 45 - unbanAuthor.name.length) + "\u200B")
+        .withVariable(PLACEHOLDER_USER, unbanAuthor.asTag)
+        .withVariable("spaces", " ".repeat(45).substring(0, 45 - unbanAuthor.name.length) + "\u200B")
 
-    eb.setAuthor(author, null, unbanAuthor.effectiveAvatarUrl)
-    eb.setDescription(description)
-    eb.setThumbnail(bannedUser.effectiveAvatarUrl)
-    eb.setColor(Color.GREEN)
-    return eb.build()
+    return  EmbedBuilder()
+        .setAuthor(author, null, unbanAuthor.effectiveAvatarUrl)
+        .setDescription(description)
+        .setThumbnail(bannedUser.effectiveAvatarUrl)
+        .setColor(Color.GREEN)
+        .build()
 }

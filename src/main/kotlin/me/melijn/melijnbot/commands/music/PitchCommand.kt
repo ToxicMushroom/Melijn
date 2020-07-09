@@ -1,12 +1,12 @@
 package me.melijn.melijnbot.commands.music
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.utils.getLongFromArgNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.withVariable
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.utils.getLongFromArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.withVariable
 
 class PitchCommand : AbstractCommand("command.pitch") {
 
@@ -22,7 +22,7 @@ class PitchCommand : AbstractCommand("command.pitch") {
         if (context.args.isEmpty()) {
             val msg = context.getTranslation("$root.show")
                 .withVariable("pitch", iPlayer.speed * 100)
-            sendMsg(context, msg)
+            sendRsp(context, msg)
             return
         }
 
@@ -31,7 +31,7 @@ class PitchCommand : AbstractCommand("command.pitch") {
 
         val msg = context.getTranslation("$root.set")
             .withVariable("pitch", pitch)
-        sendMsg(context, msg)
+        sendRsp(context, msg)
         return
     }
 }

@@ -1,10 +1,12 @@
 package me.melijn.melijnbot.commands.administration
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.Permission
 
 class SetSlowModeCommand : AbstractCommand("command.setslowmode") {
@@ -23,11 +25,11 @@ class SetSlowModeCommand : AbstractCommand("command.setslowmode") {
 
             if (slowMode == 0) {
                 context.getTranslation("$root.show.unset")
-                    .replace(PLACEHOLDER_CHANNEL, channel.asTag)
+                    .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
             } else {
                 context.getTranslation("$root.show.set")
-                    .replace(PLACEHOLDER_CHANNEL, channel.asTag)
-                    .replace("%slowMode%", slowMode.toString())
+                    .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
+                    .withVariable("slowMode", slowMode.toString())
             }
         } else if (context.args.size == 1) {
             var channel = getTextChannelByArgsN(context, 0, true)
@@ -37,11 +39,11 @@ class SetSlowModeCommand : AbstractCommand("command.setslowmode") {
 
                 if (slowMode == 0) {
                     context.getTranslation("$root.show.unset")
-                        .replace(PLACEHOLDER_CHANNEL, channel.asTag)
+                        .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
                 } else {
                     context.getTranslation("$root.show.set")
-                        .replace(PLACEHOLDER_CHANNEL, channel.asTag)
-                        .replace("%slowMode%", slowMode.toString())
+                        .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
+                        .withVariable("slowMode", slowMode.toString())
                 }
             } else if (number != null) {
                 channel = context.textChannel
@@ -50,11 +52,11 @@ class SetSlowModeCommand : AbstractCommand("command.setslowmode") {
 
                 if (number == 0) {
                     context.getTranslation("$root.unset")
-                        .replace(PLACEHOLDER_CHANNEL, channel.asTag)
+                        .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
                 } else {
                     context.getTranslation("$root.set")
-                        .replace(PLACEHOLDER_CHANNEL, channel.asTag)
-                        .replace("%slowMode%", number.toString())
+                        .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
+                        .withVariable("slowMode", number.toString())
                 }
             } else {
                 sendSyntax(context)
@@ -65,16 +67,17 @@ class SetSlowModeCommand : AbstractCommand("command.setslowmode") {
             val number = getIntegerFromArgNMessage(context, 1, 0, 21600) ?: return
             if (notEnoughPermissionsAndMessage(context, channel, Permission.MANAGE_CHANNEL)) return
             channel.manager.setSlowmode(number).queue()
+
             if (number == 0) {
                 context.getTranslation("$root.unset")
-                    .replace(PLACEHOLDER_CHANNEL, channel.asTag)
+                    .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
             } else {
                 context.getTranslation("$root.set")
-                    .replace(PLACEHOLDER_CHANNEL, channel.asTag)
-                    .replace("%slowMode%", number.toString())
+                    .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
+                    .withVariable("slowMode", number.toString())
             }
 
         }
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

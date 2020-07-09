@@ -1,9 +1,10 @@
 package me.melijn.melijnbot.database.kick
 
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
-import me.melijn.melijnbot.objects.utils.awaitOrNull
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.threading.TaskManager
+import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
+import me.melijn.melijnbot.internals.utils.awaitOrNull
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
@@ -51,11 +52,11 @@ class KickWrapper(val taskManager: TaskManager, private val kickDao: KickDao) {
         val deletedUser = context.getTranslation("message.deleted.user")
         val zoneId = context.getTimeZoneId()
         return context.getTranslation("message.punishmenthistory.kick")
-            .replace("%kickAuthor%", kickAuthor?.asTag ?: deletedUser)
-            .replace("%kickAuthorId%", "${kick.kickAuthorId}")
-            .replace("%reason%", kick.reason.substring(0, min(kick.reason.length, 830)))
-            .replace("%moment%", kick.moment.asEpochMillisToDateTime(zoneId))
-            .replace("%kickId%", kick.kickId)
+            .withVariable("kickAuthor", kickAuthor?.asTag ?: deletedUser)
+            .withVariable("kickAuthorId", "${kick.kickAuthorId}")
+            .withVariable("reason", kick.reason.substring(0, min(kick.reason.length, 830)))
+            .withVariable("moment", kick.moment.asEpochMillisToDateTime(zoneId))
+            .withVariable("kickId", kick.kickId)
     }
 
     suspend fun clear(guildId: Long, kickedId: Long) {

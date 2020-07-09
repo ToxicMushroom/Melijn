@@ -1,9 +1,14 @@
 package me.melijn.melijnbot.commandutil.anime
 
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.internals.utils.awaitOrNull
+import me.melijn.melijnbot.internals.utils.getRoleByArgsN
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.retrieveUserByArgsN
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.User
 
@@ -28,8 +33,8 @@ object AnimeCommandUtil {
                     target != null -> executeAbs(context, type, author, target)
                     else -> {
                         val msg = context.getTranslation("message.unknown.userorrole")
-                            .replace(PLACEHOLDER_ARG, context.args[0])
-                        sendMsg(context, msg)
+                            .withVariable(PLACEHOLDER_ARG, context.args[0])
+                        sendRsp(context, msg)
                     }
                 }
             }
@@ -49,8 +54,8 @@ object AnimeCommandUtil {
                             }
                             else -> {
                                 val msg = context.getTranslation("message.unknown.userorrole")
-                                    .replace(PLACEHOLDER_ARG, context.args[1])
-                                sendMsg(context, msg)
+                                    .withVariable(PLACEHOLDER_ARG, context.args[1])
+                                sendRsp(context, msg)
                             }
                         }
                     }
@@ -64,15 +69,15 @@ object AnimeCommandUtil {
                             }
                             else -> {
                                 val msg = context.getTranslation("message.unknown.userorrole")
-                                    .replace(PLACEHOLDER_ARG, context.args[1])
-                                sendMsg(context, msg)
+                                    .withVariable(PLACEHOLDER_ARG, context.args[1])
+                                sendRsp(context, msg)
                             }
                         }
                     }
                     else -> {
                         val msg = context.getTranslation("message.unknown.userorrole")
-                            .replace(PLACEHOLDER_ARG, context.args[0])
-                        sendMsg(context, msg)
+                            .withVariable(PLACEHOLDER_ARG, context.args[0])
+                        sendRsp(context, msg)
                     }
                 }
             }
@@ -111,14 +116,14 @@ object AnimeCommandUtil {
             ".eb.description"
         }
         val title = context.getTranslation(path)
-            .replace("%author%", author)
-            .replace("%target%", target)
+            .withVariable("author", author)
+            .withVariable("target", target)
 
 
         val eb = Embedder(context)
-        eb.setDescription(title)
-        eb.setImage(context.webManager.weebshApi.getUrl(type))
-        sendEmbed(context, eb.build())
+            .setDescription(title)
+            .setImage(context.webManager.weebshApi.getUrl(type))
+        sendEmbedRsp(context, eb.build())
     }
 
     suspend fun executeShow(context: CommandContext, type: String, nsfw: Boolean = false) {
@@ -128,6 +133,6 @@ object AnimeCommandUtil {
         } else {
             eb.setImage(context.webManager.weebshApi.getUrl(type))
         }
-        sendEmbed(context, eb.build())
+        sendEmbedRsp(context, eb.build())
     }
 }

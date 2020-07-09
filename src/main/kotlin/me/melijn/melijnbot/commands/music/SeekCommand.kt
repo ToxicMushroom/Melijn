@@ -1,12 +1,13 @@
 package me.melijn.melijnbot.commands.music
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.utils.getDurationString
-import me.melijn.melijnbot.objects.utils.getTimeFromArgsNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.utils.getDurationString
+import me.melijn.melijnbot.internals.utils.getTimeFromArgsNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.withVariable
 
 class SeekCommand : AbstractCommand("command.seek") {
 
@@ -33,9 +34,9 @@ class SeekCommand : AbstractCommand("command.seek") {
             context.getTranslation("$root.seeked")
 
         }
-            .replace("%duration%", getDurationString(trackDuration))
-            .replace("%position%", getDurationString(trackPosition))
+            .withVariable("duration", getDurationString(trackDuration))
+            .withVariable("position", getDurationString(trackPosition))
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

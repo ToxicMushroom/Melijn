@@ -3,13 +3,14 @@ package me.melijn.melijnbot.commands.utility
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.commands.administration.SetLanguageCommand
 import me.melijn.melijnbot.enums.Language
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_LANGUAGE
-import me.melijn.melijnbot.objects.utils.getEnumFromArgNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_LANGUAGE
+import me.melijn.melijnbot.internals.utils.getEnumFromArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.withVariable
 
 class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") {
 
@@ -42,9 +43,9 @@ class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") 
             } else {
                 "$root.show.set"
             }
-        ).replace("%language%", lang)
+        ).withVariable("language", lang)
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 
     private suspend fun setLang(context: CommandContext) {
@@ -71,8 +72,8 @@ class SetPrivateLanguageCommand : AbstractCommand("command.setprivatelanguage") 
         }
 
         val msg = context.getTranslation("$root.${possible}set")
-            .replace("%language%", language.toString())
+            .withVariable("language", language.toString())
 
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

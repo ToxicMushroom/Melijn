@@ -1,13 +1,14 @@
 package me.melijn.melijnbot.commands.music
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.utils.getDurationString
-import me.melijn.melijnbot.objects.utils.getTimeFromArgsNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.utils.getDurationString
+import me.melijn.melijnbot.internals.utils.getTimeFromArgsNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.withVariable
 
 class RewindCommand : AbstractCommand("command.rewind") {
 
@@ -19,24 +20,22 @@ class RewindCommand : AbstractCommand("command.rewind") {
     }
 
     override suspend fun execute(context: CommandContext) {
+        if (context.args.isEmpty()) {
+            sendSyntax(context)
+            return
+        }
         val iPlayer = context.guildMusicPlayer.guildTrackManager.iPlayer
         val track = iPlayer.playingTrack
         val trackDuration = track.duration
         var trackPosition = iPlayer.trackPosition
 
+        trackPosition -= getTimeFromArgsNMessage(context, 0, trackDuration) ?: return
+        iPlayer.seekTo(trackPosition)
 
-        val msg = if (context.args.isEmpty()) {
-            sendSyntax(context)
-            return
-        } else {
-            trackPosition -= getTimeFromArgsNMessage(context, 0, trackDuration) ?: return
-            iPlayer.seekTo(trackPosition)
-            context.getTranslation("$root.rewinded")
+        val msg = context.getTranslation("$root.rewinded")
+            .withVariable("duration", getDurationString(trackDuration))
+            .withVariable("position", getDurationString(trackPosition))
 
-        }
-            .replace("%duration%", getDurationString(trackDuration))
-            .replace("%position%", getDurationString(trackPosition))
-
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

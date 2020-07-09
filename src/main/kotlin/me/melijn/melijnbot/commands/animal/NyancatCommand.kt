@@ -1,11 +1,11 @@
 package me.melijn.melijnbot.commands.animal
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.utils.sendEmbed
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import kotlin.random.Random
 
 
@@ -20,12 +20,12 @@ class NyancatCommand : AbstractCommand("command.nyancat") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val eb = Embedder(context)
         val title = context.getTranslation("$root.title")
 
-        eb.setTitle(title)
-        eb.setImage(getRandomNyancatUrl())
-        sendEmbed(context, eb.build())
+        val eb = Embedder(context)
+            .setTitle(title)
+            .setImage(getRandomNyancatUrl())
+        sendEmbedRsp(context, eb.build())
     }
 
     private fun getRandomNyancatUrl(): String {

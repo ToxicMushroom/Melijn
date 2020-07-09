@@ -1,10 +1,10 @@
 package me.melijn.melijnbot.commands.anime
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.utils.sendEmbed
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import kotlin.random.Random
 
 class AIWaifuCommand : AbstractCommand("command.aiwaifu") {
@@ -16,12 +16,12 @@ class AIWaifuCommand : AbstractCommand("command.aiwaifu") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val eb = Embedder(context)
         val title = context.getTranslation("$root.title")
 
-        eb.setTitle(title, "https://www.gwern.net/TWDNE")
-        eb.setImage(getRandomAiWaifuUrl())
-        sendEmbed(context, eb.build())
+        val eb = Embedder(context)
+            .setTitle(title, "https://www.gwern.net/TWDNE")
+            .setImage(getRandomAiWaifuUrl())
+        sendEmbedRsp(context, eb.build())
     }
 
     private fun getRandomAiWaifuUrl(): String {

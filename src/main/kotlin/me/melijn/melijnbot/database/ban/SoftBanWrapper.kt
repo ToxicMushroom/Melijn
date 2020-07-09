@@ -1,9 +1,10 @@
 package me.melijn.melijnbot.database.ban
 
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
-import me.melijn.melijnbot.objects.utils.awaitOrNull
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.threading.TaskManager
+import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
+import me.melijn.melijnbot.internals.utils.awaitOrNull
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
@@ -36,11 +37,11 @@ class SoftBanWrapper(val taskManager: TaskManager, private val softBanDao: SoftB
         val deletedUser = context.getTranslation("message.deleted.user")
         val zoneId = context.getTimeZoneId()
         return context.getTranslation("message.punishmenthistory.softban")
-            .replace("%softBanAuthor%", softBanAuthor?.asTag ?: deletedUser)
-            .replace("%softBanAuthorId%", "${softBan.softBanAuthorId}")
-            .replace("%reason%", softBan.reason.substring(0, min(softBan.reason.length, 830)))
-            .replace("%moment%", softBan.moment.asEpochMillisToDateTime(zoneId))
-            .replace("%softBanId%", softBan.softBanId)
+            .withVariable("softBanAuthor", softBanAuthor?.asTag ?: deletedUser)
+            .withVariable("softBanAuthorId", "${softBan.softBanAuthorId}")
+            .withVariable("reason", softBan.reason.substring(0, min(softBan.reason.length, 830)))
+            .withVariable("moment", softBan.moment.asEpochMillisToDateTime(zoneId))
+            .withVariable("softBanId", softBan.softBanId)
 
     }
 

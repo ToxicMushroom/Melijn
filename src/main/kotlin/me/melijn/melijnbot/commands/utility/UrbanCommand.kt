@@ -1,17 +1,18 @@
 package me.melijn.melijnbot.commands.utility
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.utils.remove
-import me.melijn.melijnbot.objects.utils.sendEmbed
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
-import me.melijn.melijnbot.objects.web.WebManager
-import me.melijn.melijnbot.objects.web.WebUtils
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.remove
+import me.melijn.melijnbot.internals.utils.withVariable
+import me.melijn.melijnbot.internals.web.WebManager
+import me.melijn.melijnbot.internals.web.WebUtils
 import java.lang.Integer.min
 
 class UrbanCommand : AbstractCommand("command.urban") {
@@ -37,11 +38,13 @@ class UrbanCommand : AbstractCommand("command.urban") {
 
         if (result == null) {
             val offline = context.getTranslation("$root.urbanoffline")
-            sendMsg(context, offline)
+            sendRsp(context, offline)
+
         } else if (result.first == null && result.second == null) {
             val notfound = context.getTranslation("$root.notfound")
-                .replace(PLACEHOLDER_ARG, context.rawArg)
-            sendMsg(context, notfound)
+                .withVariable(PLACEHOLDER_ARG, context.rawArg)
+            sendRsp(context, notfound)
+
         } else {
             val meaning = context.getTranslation("$root.meaning")
             val example = context.getTranslation("$root.example")
@@ -49,11 +52,13 @@ class UrbanCommand : AbstractCommand("command.urban") {
             val actualMeaning = if (first == null || first.isEmpty()) "/" else first.substring(0, min(1000, first.length))
             val actualExample = if (second == null || second.isEmpty()) "/" else second.substring(0, min(1000, second.length))
 
-            val eb = Embedder(context)
+
             val desc = "$meaning\n$actualMeaning\n\n$example\n$actualExample"
-            eb.setTitle(context.rawArg)
-            eb.setDescription(desc)
-            sendEmbed(context, eb.build())
+            val eb = Embedder(context)
+                .setTitle(context.rawArg)
+                .setDescription(desc)
+
+            sendEmbedRsp(context, eb.build())
         }
     }
 
@@ -63,6 +68,7 @@ class UrbanCommand : AbstractCommand("command.urban") {
         val results = json.getArray("list")
         if (results.isEmpty) return Pair(null, null)
         val result = results.getObject(0)
+
         return Pair(
             result.getString("definition")
                 .remove("[")

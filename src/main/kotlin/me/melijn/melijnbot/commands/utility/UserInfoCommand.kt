@@ -1,11 +1,12 @@
 package me.melijn.melijnbot.commands.utility
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER_ID
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER_ID
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
 
@@ -36,8 +37,8 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
         val value1 = replaceUserVar(unReplacedValue1, user, isSupporter, yes, no)
 
         val eb = Embedder(context)
-        eb.setThumbnail(user.effectiveAvatarUrl)
-        eb.addField(title1, value1, false)
+            .setThumbnail(user.effectiveAvatarUrl)
+            .addField(title1, value1, false)
 
         if (context.isFromGuild && member != null) {
             val title2 = context.getTranslation("$root.response1.field2.title")
@@ -45,18 +46,19 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
             val value2 = replaceMemberVar(unReplacedValue2, member, yes, no)
             eb.addField(title2, value2, false)
         }
-        sendEmbed(context, eb.build())
+
+        sendEmbedRsp(context, eb.build())
     }
 
     private fun replaceMemberVar(string: String, member: Member, yes: String, no: String): String = string
-        .replace("%nickname%", member.nickname ?: "/")
-        .replace("%roleCount%", member.roles.size.toString())
-        .replace("%isOwner%", if (member.isOwner) yes else no)
-        .replace("%joinTime%", member.timeJoined.asLongLongGMTString())
-        .replace("%boostTime%", member.timeBoosted?.asLongLongGMTString() ?: "/")
-        .replace("%onlineStatus%", member.onlineStatus.toUCSC())
-        .replace("%voiceStatus%", getVoiceStatus(member))
-        .replace("%canMelijnInteract%", if (member.guild.selfMember.canInteract(member)) yes else no)
+        .withVariable("nickname", member.nickname ?: "/")
+        .withVariable("roleCount", member.roles.size.toString())
+        .withVariable("isOwner", if (member.isOwner) yes else no)
+        .withVariable("joinTime", member.timeJoined.asLongLongGMTString())
+        .withVariable("boostTime", member.timeBoosted?.asLongLongGMTString() ?: "/")
+        .withVariable("onlineStatus", member.onlineStatus.toUCSC())
+        .withVariable("voiceStatus", getVoiceStatus(member))
+        .withVariable("canMelijnInteract", if (member.guild.selfMember.canInteract(member)) yes else no)
 
 
     private fun getVoiceStatus(member: Member): String {
@@ -78,11 +80,11 @@ class UserInfoCommand : AbstractCommand("command.userinfo") {
     }
 
     private fun replaceUserVar(string: String, user: User, isSupporter: Boolean, yes: String, no: String): String = string
-        .replace("%name%", user.name)
-        .replace(PLACEHOLDER_USER_ID, user.id)
-        .replace("%discrim%", user.discriminator)
-        .replace("%isBot%", if (user.isBot) yes else no)
-        .replace("%supportsMelijn%", if (isSupporter) yes else no)
-        .replace("%avatarUrl%", user.effectiveAvatarUrl)
-        .replace("%creationTime%", user.timeCreated.asLongLongGMTString())
+        .withVariable("name", user.name)
+        .withVariable(PLACEHOLDER_USER_ID, user.id)
+        .withVariable("discrim", user.discriminator)
+        .withVariable("isBot", if (user.isBot) yes else no)
+        .withVariable("supportsMelijn", if (isSupporter) yes else no)
+        .withVariable("avatarUrl", user.effectiveAvatarUrl)
+        .withVariable("creationTime", user.timeCreated.asLongLongGMTString())
 }

@@ -4,16 +4,16 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.RoleType
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.utils.StringUtils
-import me.melijn.melijnbot.objects.utils.sendEmbed
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.toUCSC
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.utils.StringUtils
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.toHexString
+import me.melijn.melijnbot.internals.utils.toUCSC
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
-import okhttp3.internal.toHexString
 
 
 class SettingsCommand : AbstractCommand("command.settings") {
@@ -29,7 +29,7 @@ class SettingsCommand : AbstractCommand("command.settings") {
         val guild = if (context.args.isNotEmpty() && context.botDevIds.contains(context.authorId)) {
             val guild1 = context.shardManager.getGuildById(context.args[0])
             if (guild1 == null) {
-                sendMsg(context, "unknown guildId :/")
+                sendRsp(context, "unknown guildId :/")
                 return
             }
             guild1
@@ -92,12 +92,12 @@ class SettingsCommand : AbstractCommand("command.settings") {
                 .setTitle(title)
                 .setDescription(parts[0])
 
-            sendEmbed(context, eb.build())
+            sendEmbedRsp(context, eb.build())
             parts.removeAt(0)
             eb.setTitle(null)
             for (part in parts) {
                 eb.setDescription(part)
-                sendEmbed(context, eb.build())
+                sendEmbedRsp(context, eb.build())
             }
         } else {
             val title = context.getTranslation("$root.title")
@@ -105,7 +105,7 @@ class SettingsCommand : AbstractCommand("command.settings") {
                 .setTitle(title)
                 .setDescription(description)
 
-            sendEmbed(context, eb.build())
+            sendEmbedRsp(context, eb.build())
         }
     }
 

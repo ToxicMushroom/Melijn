@@ -1,11 +1,14 @@
 package me.melijn.melijnbot.commands.administration
 
 import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
 class SetCooldownCommand : AbstractCommand("command.setcooldown") {
 
@@ -51,11 +54,11 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
                 ""
             }
             val msg = context.getTranslation(path)
-                .replace(PLACEHOLDER_CHANNEL, channel.asTag)
-                .replace("%commandCount%", commands.size.toString())
-                .replace("%commandNode%", context.args[1])
-                .replace("%cooldown%", cooldown.toString())
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
+                .withVariable("commandCount", commands.size.toString())
+                .withVariable("commandNode", context.args[1])
+                .withVariable("cooldown", cooldown.toString())
+            sendRsp(context, msg)
         }
     }
 
@@ -84,11 +87,11 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
             }
 
             val msg = context.getTranslation(path)
-                .replace("%commandCount%", commands.size.toString())
-                .replace("%commandNode%", context.args[0])
-                .replace("%cooldown%", cooldown.toString())
+                .withVariable("commandCount", commands.size.toString())
+                .withVariable("commandNode", context.args[0])
+                .withVariable("cooldown", cooldown.toString())
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -108,7 +111,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
 
                 map = daoManager.commandChannelCoolDownWrapper.commandChannelCooldownCache.get(channel.idLong).await()
                 context.getTranslation("$root.response1.title")
-                    .replace(PLACEHOLDER_CHANNEL, channel.asTag)
+                    .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
             } else {
                 map = daoManager.commandCooldownWrapper.commandCooldownCache.get(context.guildId).await()
                 context.getTranslation("$root.response2.title")
@@ -130,7 +133,7 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
             content += "```"
 
             val msg = title + content
-            sendMsgCodeBlock(context, msg, "INI")
+            sendRspCodeBlock(context, msg, "INI")
         }
     }
 }

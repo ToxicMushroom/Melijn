@@ -61,7 +61,7 @@ import me.melijn.melijnbot.database.votes.VoteDao
 import me.melijn.melijnbot.database.votes.VoteWrapper
 import me.melijn.melijnbot.database.warn.WarnDao
 import me.melijn.melijnbot.database.warn.WarnWrapper
-import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.internals.threading.TaskManager
 
 const val RAPIDLY_USED_CACHE = 1L
 const val NOT_IMPORTANT_CACHE = 2L
@@ -160,6 +160,8 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
 
     val bannedOrKickedTriggersLeaveWrapper: BannedOrKickedTriggersLeaveWrapper
     val botLogStateWrapper: BotLogStateWrapper
+    val removeResponseWrapper: RemoveResponseWrapper
+    val removeInvokeWrapper: RemoveInvokeWrapper
 
     val voteWrapper: VoteWrapper
     val balanceWrapper: BalanceWrapper
@@ -256,7 +258,8 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
 
         bannedOrKickedTriggersLeaveWrapper = BannedOrKickedTriggersLeaveWrapper(taskManager, BannedOrKickedTriggersLeaveDao(driverManager))
         botLogStateWrapper = BotLogStateWrapper(taskManager, BotLogStateDao(driverManager))
-
+        removeResponseWrapper = RemoveResponseWrapper(taskManager, RemoveResponsesDao(driverManager))
+        removeInvokeWrapper = RemoveInvokeWrapper(taskManager, RemoveInvokeDao(driverManager))
 
         voteWrapper = VoteWrapper(VoteDao(driverManager))
         balanceWrapper = BalanceWrapper(taskManager, BalanceDao(driverManager))

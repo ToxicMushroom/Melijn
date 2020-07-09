@@ -1,10 +1,10 @@
 package me.melijn.melijnbot.commands.utility
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
 class RawCommand : AbstractCommand("command.raw") {
 
@@ -19,6 +19,6 @@ class RawCommand : AbstractCommand("command.raw") {
             sendSyntax(context)
             return
         }
-        sendMsg(context, "```${context.rawArg}```")
+        sendRsp(context, "```${context.rawArg}```")
     }
 }

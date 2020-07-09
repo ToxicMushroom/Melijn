@@ -1,11 +1,12 @@
 package me.melijn.melijnbot.commands.utility
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import net.dv8tion.jda.api.entities.Guild
 import kotlin.math.roundToLong
 
@@ -47,13 +48,15 @@ class ServerInfo : AbstractCommand("command.serverinfo") {
         if (value3.isEmpty()) value3 = "/"
 
         val eb = Embedder(context)
+            .addField(title1, value1, false)
+            .addField(title2, value2, false)
+            .addField(title3, value3, false)
+
         if (guild.iconUrl != null) {
             eb.setThumbnail(guild.iconUrl)
         }
-        eb.addField(title1, value1, false)
-        eb.addField(title2, value2, false)
-        eb.addField(title3, value3, false)
-        sendEmbed(context, eb.build())
+
+        sendEmbedRsp(context, eb.build())
     }
 
     private suspend fun replaceFieldVar(context: CommandContext, guild: Guild, path: String): String {
@@ -70,29 +73,29 @@ class ServerInfo : AbstractCommand("command.serverinfo") {
             .count()
 
         return string
-            .replace("%serverName%", guild.name)
-            .replace("%serverId%", guild.id)
-            .replace("%iconUrl%", (if (guild.iconUrl != null) "${guild.iconUrl}?size=2048" else "").toString())
-            .replace("%bannerUrl%", (if (guild.bannerUrl != null) "${guild.bannerUrl}?size=2048" else "").toString())
-            .replace("%splashUrl%", (if (guild.splashUrl != null) "${guild.splashUrl}?size=2048" else "").toString())
-            .replace("%vanityUrl%", (if (guild.vanityUrl != null) "${guild.vanityUrl}?size=2048" else "").toString())
-            .replace("%creationDate%", guild.timeCreated.asLongLongGMTString())
-            .replace("%region%", guild.region.toUCC())
-            .replace("%isVip%", if (guild.region.isVip) yes else no)
-            .replace("%supportsMelijn%", if (isSupporter) yes else no)
-            .replace("%boostCount%", guild.boostCount.toString())
-            .replace("%boostTier%", guild.boostTier.key.toString())
-            .replace("%memberCount%", guild.memberCount.toString())
-            .replace("%roleCount%", guild.roleCache.size().toString())
-            .replace("%textChannelCount%", guild.textChannelCache.size().toString())
-            .replace("%voiceChannelCount%", guild.voiceChannelCache.size().toString())
-            .replace("%categoryCount%", guild.categoryCache.size().toString())
-            .replace("%owner%", guild.retrieveOwner().awaitOrNull()?.asTag ?: "NONE")
-            .replace("%verificationLevel%", guild.verificationLevel.toUCC())
-            .replace("%botCount%", botCount.toString())
-            .replace("%userCount%", (guild.memberCount - botCount).toString())
-            .replace("%botPercent%", (((botCount.toDouble() / guild.memberCount) * 10000).roundToLong() / 100.0).toString())
-            .replace("%userPercent%", ((((guild.memberCount - botCount.toDouble()) / guild.memberCount) * 10000).roundToLong() / 100.0).toString())
-            .replace("%mfa%", guild.requiredMFALevel.toUCC())
+            .withVariable("serverName", guild.name)
+            .withVariable("serverId", guild.id)
+            .withVariable("iconUrl", (if (guild.iconUrl != null) "${guild.iconUrl}?size=2048" else "").toString())
+            .withVariable("bannerUrl", (if (guild.bannerUrl != null) "${guild.bannerUrl}?size=2048" else "").toString())
+            .withVariable("splashUrl", (if (guild.splashUrl != null) "${guild.splashUrl}?size=2048" else "").toString())
+            .withVariable("vanityUrl", (if (guild.vanityUrl != null) "${guild.vanityUrl}?size=2048" else "").toString())
+            .withVariable("creationDate", guild.timeCreated.asLongLongGMTString())
+            .withVariable("region", guild.region.toUCC())
+            .withVariable("isVip", if (guild.region.isVip) yes else no)
+            .withVariable("supportsMelijn", if (isSupporter) yes else no)
+            .withVariable("boostCount", guild.boostCount.toString())
+            .withVariable("boostTier", guild.boostTier.key.toString())
+            .withVariable("memberCount", guild.memberCount.toString())
+            .withVariable("roleCount", guild.roleCache.size().toString())
+            .withVariable("textChannelCount", guild.textChannelCache.size().toString())
+            .withVariable("voiceChannelCount", guild.voiceChannelCache.size().toString())
+            .withVariable("categoryCount", guild.categoryCache.size().toString())
+            .withVariable("owner", guild.retrieveOwner().awaitOrNull()?.asTag ?: "NONE")
+            .withVariable("verificationLevel", guild.verificationLevel.toUCC())
+            .withVariable("botCount", botCount.toString())
+            .withVariable("userCount", (guild.memberCount - botCount).toString())
+            .withVariable("botPercent", (((botCount.toDouble() / guild.memberCount) * 10000).roundToLong() / 100.0).toString())
+            .withVariable("userPercent", ((((guild.memberCount - botCount.toDouble()) / guild.memberCount) * 10000).roundToLong() / 100.0).toString())
+            .withVariable("mfa", guild.requiredMFALevel.toUCC())
     }
 }

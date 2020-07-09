@@ -1,10 +1,10 @@
 package me.melijn.melijnbot.commands.utility
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.utils.sendMsg
-import me.melijn.melijnbot.objects.utils.sendSyntax
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
 
 class UnicodeCommand : AbstractCommand("command.unicode") {
@@ -41,6 +41,6 @@ class UnicodeCommand : AbstractCommand("command.unicode") {
             }
             builder.append(String(chars)).append("   _").append(Character.getName(code)).append("_\n")
         }
-        sendMsg(context, builder.toString())
+        sendRsp(context, builder.toString())
     }
 }

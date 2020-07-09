@@ -2,16 +2,19 @@ package me.melijn.melijnbot.commands.administration
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.role.SelfRoleGroup
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
-import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ROLE
+import me.melijn.melijnbot.internals.translation.i18n
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendEmbedAwaitEL
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
 import kotlin.math.max
@@ -87,11 +90,11 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                         }
 
                         val msg = context.getTranslation("$root.show.")
-                            .replace("%group%", group.groupName)
-                            .replace("%emoteji%", emoteji)
-                            .replace("%name%", dName)
+                            .withVariable("group", group.groupName)
+                            .withVariable("emoteji", emoteji)
+                            .withVariable("name", dName)
 
-                        sendMsg(context, msg)
+                        sendRsp(context, msg)
                     } else {
                         val dName = getStringFromArgsNMessage(context, 2, 1, 32) ?: return
                         val roleData = dataEntry.getArray(2)
@@ -109,11 +112,11 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                         wrapper.update(context.guildId, group.groupName, data)
 
                         val msg = context.getTranslation("$root.set")
-                            .replace("%group%", group.groupName)
-                            .replace("%emoteji%", emoteji)
-                            .replace("%name%", dName)
+                            .withVariable("group", group.groupName)
+                            .withVariable("emoteji", emoteji)
+                            .withVariable("name", dName)
 
-                        sendMsg(context, msg)
+                        sendRsp(context, msg)
                     }
 
                     break
@@ -161,10 +164,10 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     if (context.args.size == 2) {
                         val state = dataEntry.getBoolean(3)
                         val msg = context.getTranslation("$root.show.$state")
-                            .replace("%group%", group.groupName)
-                            .replace("%emoteji%", emoteji)
+                            .withVariable("group", group.groupName)
+                            .withVariable("emoteji", emoteji)
 
-                        sendMsg(context, msg)
+                        sendRsp(context, msg)
                     } else {
                         val state = getBooleanFromArgNMessage(context, 2) ?: return
                         dataEntry.remove(3)
@@ -176,10 +179,10 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                         wrapper.update(context.guildId, group.groupName, data)
 
                         val msg = context.getTranslation("$root.set.$state")
-                            .replace("%group%", group.groupName)
-                            .replace("%emoteji%", emoteji)
+                            .withVariable("group", group.groupName)
+                            .withVariable("emoteji", emoteji)
 
-                        sendMsg(context, msg)
+                        sendRsp(context, msg)
                     }
 
                     break
@@ -197,7 +200,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            sendMsg(context, "WIP")
+            sendRsp(context, "WIP")
 //            if (context.args.isEmpty()) {
 //                sendSyntax(context)
 //                return
@@ -212,7 +215,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 //                getTextChannelByArgsNMessage(context, 1)
 //            } ?: return
 //
-//            val messages: List<Message> = sendMsg(channel, "test ${group.groupName}")
+//            val messages: List<Message> = sendRsp(channel, "test ${group.groupName}")
 
 
         }
@@ -239,8 +242,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
             if (selfRoles == null || selfRoles.isEmpty) {
                 val msg = context.getTranslation("$root.noselfroles.forgroup")
-                    .replace("%group%", group.groupName)
-                sendMsg(context, msg)
+                    .withVariable("group", group.groupName)
+                sendRsp(context, msg)
                 return
             }
 
@@ -278,15 +281,15 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
                 body += if (isEmoji) {
                     bodyFormat
-                        .replace("%name%", name)
-                        .replace("%role%", roleMention)
-                        .replace("%emoteji%", emoteji)
+                        .withVariable("name", name)
+                        .withVariable("role", roleMention)
+                        .withVariable("emoteji", emoteji)
                 } else {
                     val emote = context.guild.getEmoteById(emoteji) ?: context.shardManager.getEmoteById(emoteji)
                     bodyFormat
-                        .replace("%name%", name)
-                        .replace("%role%", roleMention)
-                        .replace("%emoteji%", emote?.asMention ?: "error")
+                        .withVariable("name", name)
+                        .withVariable("role", roleMention)
+                        .withVariable("emoteji", emote?.asMention ?: "error")
                 }
             }
 
@@ -303,8 +306,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 for ((index, part) in splitted.withIndex()) {
 
                     embedder.setTitle(titleFormat
-                        .replace("%group%", group.groupName)
-                        .replace("%part%", index + 1)
+                        .withVariable("group", group.groupName)
+                        .withVariable("part", index + 1)
                     )
 
                     embedder.setDescription(part)
@@ -331,7 +334,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 messages.toList()
             } else {
                 val titleFormat = context.getTranslation("$root.titleformat")
-                embedder.setTitle(titleFormat.replace("%group%", group.groupName))
+                embedder.setTitle(titleFormat.withVariable("group", group.groupName))
                 embedder.setDescription(body)
                 val messagesPart = sendEmbedAwaitEL(context.daoManager.embedDisabledWrapper, channel, embedder.build())
 
@@ -362,9 +365,9 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             wrapper.insertOrUpdate(context.guildId, group)
 
             val msg = context.getTranslation("$root.sent")
-                .replace("%group%", group.groupName)
-                .replace(PLACEHOLDER_CHANNEL, channel.asTag)
-            sendMsg(context, msg)
+                .withVariable("group", group.groupName)
+                .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
+            sendRsp(context, msg)
         }
     }
 
@@ -380,16 +383,16 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 //            if (context.args.isEmpty()) {
 //                val mode = wrapper.selfRoleModeCache.get(context.guildId).await().toUCC()
 //                val msg = context.getTranslation("$root.show")
-//                    .replace("%mode%", mode)
-//                sendMsg(context, msg)
+//                    .withVariable("mode", mode)
+//                sendRsp(context, msg)
 //                return
 //            }
 //
 //            val mode = getEnumFromArgNMessage<SelfRoleMode>(context, 0, UNKNOWN_SELFROLEMODE_PATH) ?: return
 //            wrapper.set(context.guildId, mode)
 //            val msg = context.getTranslation("$root.set")
-//                .replace("%mode%", mode.toUCC())
-//            sendMsg(context, msg)
+//                .withVariable("mode", mode.toUCC())
+//            sendRsp(context, msg)
 //        }
 //    }
 
@@ -430,10 +433,10 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     val unset = if (group.pattern == null) ".unset" else ""
 
                     val msg = context.getTranslation("$root.show$unset")
-                        .replace("%group%", group.groupName)
-                        .replace("%pattern%", group.pattern ?: "null")
+                        .withVariable("group", group.groupName)
+                        .withVariable("pattern", group.pattern ?: "null")
 
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                     return
                 }
 
@@ -442,9 +445,9 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     wrapper.insertOrUpdate(context.guildId, group)
 
                     val msg = context.getTranslation("$root.unset")
-                        .replace("%group%", group.groupName)
+                        .withVariable("group", group.groupName)
 
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                     return
                 } else {
                     val newPattern = getStringFromArgsNMessage(context, 1, 1, 256) ?: return
@@ -453,10 +456,10 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     wrapper.insertOrUpdate(context.guildId, group)
 
                     val msg = context.getTranslation("$root.set")
-                        .replace("%group%", group.groupName)
-                        .replace("%pattern%", newPattern)
+                        .withVariable("group", group.groupName)
+                        .withVariable("pattern", newPattern)
 
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                     return
                 }
             }
@@ -484,10 +487,10 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                         context.getTranslation("$root.show.unset")
                     } else {
                         context.getTranslation("$root.show")
-                            .replace("%group%", group.groupName)
-                            .replace("%channel%", textChannel.asTag)
+                            .withVariable("group", group.groupName)
+                            .withVariable("channel", textChannel.asTag)
                     }
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                     return
                 }
 
@@ -496,8 +499,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     wrapper.insertOrUpdate(context.guildId, group)
 
                     val msg = context.getTranslation("$root.unset")
-                        .replace("%group%", group.groupName)
-                    sendMsg(context, msg)
+                        .withVariable("group", group.groupName)
+                    sendRsp(context, msg)
                     return
                 }
 
@@ -507,9 +510,9 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 wrapper.insertOrUpdate(context.guildId, group)
 
                 val msg = context.getTranslation("$root.set")
-                    .replace("%group%", group.groupName)
-                    .replace(PLACEHOLDER_CHANNEL, channel.asTag)
-                sendMsg(context, msg)
+                    .withVariable("group", group.groupName)
+                    .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
+                sendRsp(context, msg)
                 return
             }
         }
@@ -549,10 +552,10 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     wrapper.insertOrUpdate(context.guildId, group)
 
                     val msg = context.getTranslation("$root.added")
-                        .replace("%group%", group.groupName)
-                        .replace("%messageId%", "$argument")
+                        .withVariable("group", group.groupName)
+                        .withVariable("messageId", "$argument")
 
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                 }
             }
 
@@ -577,10 +580,10 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     wrapper.insertOrUpdate(context.guildId, group)
 
                     val msg = context.getTranslation("$root.removed")
-                        .replace("%group%", group.groupName)
-                        .replace("%messageId%", "$messageId")
+                        .withVariable("group", group.groupName)
+                        .withVariable("messageId", "$messageId")
 
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                 }
             }
 
@@ -610,11 +613,11 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     wrapper.insertOrUpdate(context.guildId, group)
 
                     val msg = context.getTranslation("$root.removed")
-                        .replace("%group%", group.groupName)
-                        .replace("%index%", "$index")
-                        .replace("%messageId%", "$messageId")
+                        .withVariable("group", group.groupName)
+                        .withVariable("index", "$index")
+                        .withVariable("messageId", "$messageId")
 
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                 }
             }
 
@@ -639,9 +642,9 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
 
                     val msg = context.getTranslation("$root.cleared")
-                        .replace("%group%", group.groupName)
+                        .withVariable("group", group.groupName)
 
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                 }
             }
 
@@ -662,13 +665,13 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
                     if (group.messageIds.isEmpty()) {
                         val msg = context.getTranslation("$context.empty")
-                            .replace("%group%", group.groupName)
-                        sendMsg(context, msg)
+                            .withVariable("group", group.groupName)
+                        sendRsp(context, msg)
                         return
                     }
 
                     val title = context.getTranslation("$root.title")
-                        .replace("%group%", group.groupName)
+                        .withVariable("group", group.groupName)
                     val content = StringBuilder("```INI\n[index] - [messageId]")
 
                     for ((index, id) in group.messageIds.sorted().withIndex()) {
@@ -678,7 +681,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     content.append("```")
 
                     val msg = title + content.toString()
-                    sendMsg(context, msg)
+                    sendRsp(context, msg)
                 }
             }
 
@@ -698,8 +701,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                 if (context.args.size < 2) {
                     val msg = context.getTranslation("$root.show.${group.isEnabled}")
-                        .replace("%group%", group.groupName)
-                    sendMsg(context, msg)
+                        .withVariable("group", group.groupName)
+                    sendRsp(context, msg)
                     return
                 }
 
@@ -710,9 +713,9 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 wrapper.insertOrUpdate(context.guildId, group)
 
                 val msg = context.getTranslation("$root.set.$state")
-                    .replace("%group%", group.groupName)
+                    .withVariable("group", group.groupName)
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
         }
 
@@ -727,8 +730,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                 if (context.args.size < 2) {
                     val msg = context.getTranslation("$root.show.${group.isEnabled}")
-                        .replace("%group%", group.groupName)
-                    sendMsg(context, msg)
+                        .withVariable("group", group.groupName)
+                    sendRsp(context, msg)
                     return
                 }
 
@@ -739,9 +742,9 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 wrapper.insertOrUpdate(context.guildId, group)
 
                 val msg = context.getTranslation("$root.set.$state")
-                    .replace("%group%", group.groupName)
+                    .withVariable("group", group.groupName)
 
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
         }
 
@@ -759,9 +762,9 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 val sr = getSelfRoleGroupByGroupNameN(context, name)
                 if (sr != null) {
                     val msg = context.getTranslation("$parent.exists")
-                        .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
-                        .replace(PLACEHOLDER_ARG, name)
-                    sendMsg(context, msg)
+                        .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                        .withVariable(PLACEHOLDER_ARG, name)
+                    sendRsp(context, msg)
                     return
                 }
 
@@ -769,8 +772,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 wrapper.insertOrUpdate(context.guildId, newSr)
 
                 val msg = context.getTranslation("$root.added")
-                    .replace("%name%", name)
-                sendMsg(context, msg)
+                    .withVariable("name", name)
+                sendRsp(context, msg)
             }
         }
 
@@ -787,8 +790,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 wrapper.delete(context.guildId, selfRoleGroup.groupName)
 
                 val msg = context.getTranslation("$root.removed")
-                    .replace("%name%", name)
-                sendMsg(context, msg)
+                    .withVariable("name", name)
+                sendRsp(context, msg)
             }
         }
 
@@ -815,7 +818,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
                 content.append("```")
                 val msg = title + content.toString()
-                sendMsg(context, msg)
+                sendRsp(context, msg)
             }
         }
 
@@ -834,9 +837,9 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 val selfRoleGroup2 = getSelfRoleGroupByGroupNameN(context, name)
                 if (selfRoleGroup2 != null) {
                     val msg = context.getTranslation("$parent.exists")
-                        .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
-                        .replace(PLACEHOLDER_ARG, name)
-                    sendMsg(context, msg)
+                        .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                        .withVariable(PLACEHOLDER_ARG, name)
+                    sendRsp(context, msg)
                     return
                 }
 
@@ -846,9 +849,9 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                     wrapper.insertOrUpdate(context.guildId, newSr)
 
                     val msg = context.getTranslation("$root.updated")
-                        .replace("%oldName%", groupName)
-                        .replace("%newName%", newSr.groupName)
-                    sendMsg(context, msg)
+                        .withVariable("oldName", groupName)
+                        .withVariable("newName", newSr.groupName)
+                    sendRsp(context, msg)
                 }
             }
         }
@@ -896,22 +899,22 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 context.daoManager.selfRoleWrapper.set(context.guildId, group.groupName, id, role.idLong, chance)
 
                 context.getTranslation("$root.success.chance")
-                    .replace("%group%", group.groupName)
-                    .replace("%emoteji%", name)
-                    .replace(PLACEHOLDER_ROLE, role.name)
-                    .replace("%chance%", "$chance")
+                    .withVariable("group", group.groupName)
+                    .withVariable("emoteji", name)
+                    .withVariable(PLACEHOLDER_ROLE, role.name)
+                    .withVariable("chance", "$chance")
             } else {
                 context.daoManager.selfRoleWrapper.set(context.guildId, group.groupName, id, role.idLong, 100)
 
                 context.getTranslation("$root.success")
-                    .replace("%group%", group.groupName)
-                    .replace("%emoteji%", name)
-                    .replace(PLACEHOLDER_ROLE, role.name)
+                    .withVariable("group", group.groupName)
+                    .withVariable("emoteji", name)
+                    .withVariable(PLACEHOLDER_ROLE, role.name)
             }
 
 
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -960,9 +963,9 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
             if (!emotejis.contains(emoteji)) {
                 val msg = context.getTranslation("$root.emotejivoid")
-                    .replace("%emoteji%", emoteName)
-                    .replace("%group%", group.groupName)
-                sendMsg(context, msg)
+                    .withVariable("emoteji", emoteName)
+                    .withVariable("group", group.groupName)
+                sendRsp(context, msg)
                 return
             }
 
@@ -979,11 +982,11 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
 
             val msg = context.getTranslation("$root.success")
-                .replace("%group%", group.groupName)
-                .replace("%emoteName%", emoteName)
-                .replace("%role%", roles)
+                .withVariable("group", group.groupName)
+                .withVariable("emoteName", emoteName)
+                .withVariable("role", roles)
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -1021,12 +1024,12 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
 
             val msg = context.getTranslation("$root.success")
-                .replace("%group%", group.groupName)
-                .replace("%index%", index)
-                .replace("%emoteji%", emoteji)
-                .replace("%role%", roleString)
+                .withVariable("group", group.groupName)
+                .withVariable("index", index)
+                .withVariable("emoteji", emoteji)
+                .withVariable("role", roleString)
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -1079,7 +1082,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             } else {
                 i18n.getTranslation(language, "$root.empty")
             }
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 }
@@ -1106,8 +1109,8 @@ suspend fun getSelfRoleGroupByArgNMessage(context: CommandContext, index: Int): 
     }
     if (selfRoleGroup == null) {
         val msg = context.getTranslation("message.unknown.selfrolegroup")
-            .replace(PLACEHOLDER_ARG, group)
-        sendMsg(context, msg)
+            .withVariable(PLACEHOLDER_ARG, group)
+        sendRsp(context, msg)
     }
     return selfRoleGroup
 }

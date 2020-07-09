@@ -3,12 +3,15 @@ package me.melijn.melijnbot.commands.administration
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.autopunishment.PunishGroup
 import me.melijn.melijnbot.enums.PointsTriggerType
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
 const val UNKNOWN_POINTSTRIGGERTTYPE_PATH: String = "message.unknown.pointstriggertype"
 
@@ -45,14 +48,14 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
 
                 if (punishGroup == null) {
                     val msg = context.getTranslation("message.pgremoved")
-                        .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
-                    sendMsg(context, msg)
+                        .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                    sendRsp(context, msg)
                 }
                 punishGroup
             } else {
                 val msg = context.getTranslation("message.nopgselected")
-                    .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                sendRsp(context, msg)
                 null
             }
         }
@@ -76,8 +79,8 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             wrapper.add(context.guildId, name)
 
             val msg = context.getTranslation("$root.added")
-                .replace("%name%", name)
-            sendMsg(context, msg)
+                .withVariable("name", name)
+            sendRsp(context, msg)
         }
     }
 
@@ -93,8 +96,8 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             wrapper.remove(context.guildId, name)
 
             val msg = context.getTranslation("$root.removed")
-                .replace("%name%", name)
-            sendMsg(context, msg)
+                .withVariable("name", name)
+            sendRsp(context, msg)
         }
     }
 
@@ -129,7 +132,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             content += "```"
             val msg = title + content
 
-            sendMsgCodeBlock(context, msg, "INI")
+            sendRspCodeBlock(context, msg, "INI")
         }
     }
 
@@ -145,8 +148,8 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             selectionMap[context.guildId to context.authorId] = group.groupName
 
             val msg = context.getTranslation("$root.selected")
-                .replace("%group%", group.groupName)
-            sendMsg(context, msg)
+                .withVariable("group", group.groupName)
+            sendRsp(context, msg)
         }
     }
 
@@ -174,9 +177,9 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
 
             val extra = if (state) "enabled" else "disabled"
             val msg = context.getTranslation("$root.set.$extra")
-                .replace("%group%", pg.groupName)
-                .replace("%type%", type.name)
-            sendMsg(context, msg)
+                .withVariable("group", pg.groupName)
+                .withVariable("type", type.name)
+            sendRsp(context, msg)
         }
     }
 
@@ -202,11 +205,11 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             wrapper.setPointGoalMap(context.guildId, pg.groupName, map)
 
             val msg = context.getTranslation("$root.set")
-                .replace("%groupName%", pg.groupName)
-                .replace("%points%", points.toString())
-                .replace("%punishment%", punishment.name)
+                .withVariable("groupName", pg.groupName)
+                .withVariable("points", points.toString())
+                .withVariable("punishment", punishment.name)
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -230,9 +233,9 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             val punishment = map[points]
             if (punishment == null) {
                 val msg = context.getTranslation("$root.notanentry")
-                    .replace("%groupName%", pg.groupName)
-                    .replace("%points%", points.toString())
-                sendMsg(context, msg)
+                    .withVariable("groupName", pg.groupName)
+                    .withVariable("points", points.toString())
+                sendRsp(context, msg)
                 return
             }
 
@@ -240,11 +243,11 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             wrapper.setPointGoalMap(context.guildId, pg.groupName, map)
 
             val msg = context.getTranslation("$root.removed")
-                .replace("%groupName%", pg.groupName)
-                .replace("%points%", points.toString())
-                .replace("%punishment%", punishment)
+                .withVariable("groupName", pg.groupName)
+                .withVariable("points", points.toString())
+                .withVariable("punishment", punishment)
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 
@@ -271,9 +274,9 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
 
             if (exists) {
                 val msg = context.getTranslation("$root.exists")
-                    .replace(PLACEHOLDER_ARG, newName)
-                    .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_ARG, newName)
+                    .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                sendRsp(context, msg)
                 return
             }
 
@@ -282,10 +285,10 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             wrapper.setTriggerTypes(context.guildId, newName, group.enabledTypes)
 
             val msg = context.getTranslation("$root.copied")
-                .replace("%source%", group.groupName)
-                .replace(PLACEHOLDER_ARG, newName)
+                .withVariable("source", group.groupName)
+                .withVariable(PLACEHOLDER_ARG, newName)
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
         }
     }
 }
@@ -299,8 +302,8 @@ suspend fun getPunishmentGroupByArgNMessage(context: CommandContext, index: Int)
     }
     if (punishGroup == null) {
         val msg = context.getTranslation("message.unknown.punishgroup")
-            .replace(PLACEHOLDER_ARG, group)
-        sendMsg(context, msg)
+            .withVariable(PLACEHOLDER_ARG, group)
+        sendRsp(context, msg)
     }
     return punishGroup
 }

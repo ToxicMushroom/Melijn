@@ -47,6 +47,10 @@ class MessageHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
         }, messageId)
     }
 
+    suspend fun clearOldMessages() {
+        driverManager.executeUpdate("DELETE FROM $table WHERE moment < ?", (System.currentTimeMillis() - 86_400_000 * 7))
+    }
+
 }
 
 data class DaoMessage(

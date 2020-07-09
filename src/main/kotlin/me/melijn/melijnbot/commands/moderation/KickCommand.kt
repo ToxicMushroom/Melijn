@@ -4,15 +4,19 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.kick.Kick
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.SpecialPermission
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.hasPermission
-import me.melijn.melijnbot.objects.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
-import me.melijn.melijnbot.objects.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_USER
-import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.hasPermission
+import me.melijn.melijnbot.internals.translation.MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION
+import me.melijn.melijnbot.internals.translation.MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
+import me.melijn.melijnbot.internals.translation.i18n
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendEmbed
+import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.*
 import java.awt.Color
@@ -35,15 +39,15 @@ class KickCommand : AbstractCommand("command.kick") {
         val targetMember = retrieveMemberByArgsNMessage(context, 0, true, botAllowed = false) ?: return
         if (!context.guild.selfMember.canInteract(targetMember)) {
             val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-                .replace(PLACEHOLDER_USER, targetMember.asTag)
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_USER, targetMember.asTag)
+            sendRsp(context, msg)
             return
         }
 
         if (!context.member.canInteract(targetMember) && !hasPermission(context, SpecialPermission.PUNISH_BYPASS_HIGHER.node, true)) {
             val msg = context.getTranslation(MESSAGE_INTERACT_MEMBER_HIARCHYEXCEPTION)
-                .replace(PLACEHOLDER_USER, targetMember.asTag)
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_USER, targetMember.asTag)
+            sendRsp(context, msg)
             return
         }
 
@@ -94,19 +98,19 @@ class KickCommand : AbstractCommand("command.kick") {
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, warnedMessageLc) }
 
             context.getTranslation("$root.success")
-                .replace(PLACEHOLDER_USER, targetMember.asTag)
-                .replace("%reason%", kick.reason)
+                .withVariable(PLACEHOLDER_USER, targetMember.asTag)
+                .withVariable("reason", kick.reason)
 
         } catch (t: Throwable) {
             val failedMsg = context.getTranslation("message.kicking.failed")
             kickingMessage?.editMessage(failedMsg)?.queue()
 
             context.getTranslation("$root.failure")
-                .replace(PLACEHOLDER_USER, targetMember.asTag)
-                .replace("%cause%", t.message ?: "/")
+                .withVariable(PLACEHOLDER_USER, targetMember.asTag)
+                .withVariable("cause", t.message ?: "/")
 
         }
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }
 
@@ -121,23 +125,21 @@ fun getKickMessage(
     isBot: Boolean = false,
     received: Boolean = true
 ): MessageEmbed {
-    val eb = EmbedBuilder()
-
     var description = "```LDIF\n"
     if (!lc) {
         description += i18n.getTranslation(language, "message.punishment.description.nlc")
-            .replace("%serverName%", guild.name)
-            .replace("%serverId%", guild.id)
+            .withVariable("serverName", guild.name)
+            .withVariable("serverId", guild.id)
     }
 
     description += i18n.getTranslation(language, "message.punishment.kick.description")
-        .replace("%kickAuthor%", kickAuthor.asTag)
-        .replace("%kickAuthorId%", kickAuthor.id)
-        .replace("%kicked%", kickedUser.asTag)
-        .replace("%kickedId%", kickedUser.id)
-        .replace("%reason%", kick.reason)
-        .replace("%moment%", (kick.moment.asEpochMillisToDateTime(zoneId)))
-        .replace("%kickId%", kick.kickId)
+        .withVariable("kickAuthor", kickAuthor.asTag)
+        .withVariable("kickAuthorId", kickAuthor.id)
+        .withVariable("kicked", kickedUser.asTag)
+        .withVariable("kickedId", kickedUser.id)
+        .withVariable("reason", kick.reason)
+        .withVariable("moment", (kick.moment.asEpochMillisToDateTime(zoneId)))
+        .withVariable("kickId", kick.kickId)
 
     val extraDesc: String = if (!received || isBot) {
         i18n.getTranslation(language,
@@ -154,12 +156,13 @@ fun getKickMessage(
     description += "```"
 
     val author = i18n.getTranslation(language, "message.punishment.kick.author")
-        .replace(PLACEHOLDER_USER, kickAuthor.asTag)
-        .replace("%spaces%", " ".repeat(45).substring(0, 45 - kickAuthor.name.length) + "\u200B")
+        .withVariable(PLACEHOLDER_USER, kickAuthor.asTag)
+        .withVariable("spaces", " ".repeat(45).substring(0, 45 - kickAuthor.name.length) + "\u200B")
 
-    eb.setAuthor(author, null, kickAuthor.effectiveAvatarUrl)
-    eb.setDescription(description)
-    eb.setThumbnail(kickedUser.effectiveAvatarUrl)
-    eb.setColor(Color.ORANGE)
-    return eb.build()
+    return EmbedBuilder()
+        .setAuthor(author, null, kickAuthor.effectiveAvatarUrl)
+        .setDescription(description)
+        .setThumbnail(kickedUser.effectiveAvatarUrl)
+        .setColor(Color.ORANGE)
+        .build()
 }

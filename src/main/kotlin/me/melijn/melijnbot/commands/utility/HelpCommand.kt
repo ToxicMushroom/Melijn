@@ -1,16 +1,19 @@
 package me.melijn.melijnbot.commands.utility
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.jagtag.BirthdayMethods
-import me.melijn.melijnbot.objects.jagtag.CCMethods
-import me.melijn.melijnbot.objects.jagtag.DiscordMethods
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.translation.i18n
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.jagtag.BirthdayMethods
+import me.melijn.melijnbot.internals.jagtag.CCMethods
+import me.melijn.melijnbot.internals.jagtag.DiscordMethods
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.internals.translation.i18n
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -50,26 +53,29 @@ class HelpCommand : AbstractCommand("command.help") {
             val path = "help.arg.${context.rawArg.toLowerCase()}"
             val pathExtra = "help.arg.${context.rawArg.toLowerCase()}.examples"
             val translation = context.getTranslation(path)
-                .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
+                .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
             val translationExtra = context.getTranslation(pathExtra)
             val hasExtra = translationExtra != pathExtra
             if (path == translation) {
                 val msg = context.getTranslation("$root.missing")
-                    .replace(PLACEHOLDER_ARG, context.rawArg)
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_ARG, context.rawArg)
+                sendRsp(context, msg)
                 return
             }
 
             val title = context.getTranslation("$root.embed.title")
-                .replace("%argName%", context.rawArg)
+                .withVariable("argName", context.rawArg)
+
             val embedder = Embedder(context)
-            embedder.setTitle(title)
-            embedder.setDescription(translation)
+                .setTitle(title)
+                .setDescription(translation)
+
             if (hasExtra) {
                 val examples = context.getTranslation("$root.embed.examples")
                 embedder.addField(examples, translationExtra, false)
             }
-            sendEmbed(context, embedder.build())
+
+            sendEmbedRsp(context, embedder.build())
         }
 
         class ListArg(parent: String) : AbstractCommand("$parent.list") {
@@ -101,7 +107,7 @@ class HelpCommand : AbstractCommand("command.help") {
                     eb.addField(title, s, false)
                 }
 
-                sendEmbed(context, eb.build())
+                sendEmbedRsp(context, eb.build())
             }
         }
     }
@@ -125,18 +131,19 @@ class HelpCommand : AbstractCommand("command.help") {
             val translation = context.getTranslation(path)
             if (path == translation) {
                 val msg = context.getTranslation("$root.missing")
-                    .replace(PLACEHOLDER_ARG, context.rawArg)
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_ARG, context.rawArg)
+                sendRsp(context, msg)
                 return
             }
 
             val title = context.getTranslation("$root.embed.title")
-                .replace("%varName%", "{${context.rawArg.remove("{", "}")}}")
-            val embedder = Embedder(context)
-            embedder.setTitle(title)
-            embedder.setDescription(translation)
+                .withVariable("varName", "{${context.rawArg.remove("{", "}")}}")
 
-            sendEmbed(context, embedder.build())
+            val embedder = Embedder(context)
+                .setTitle(title)
+                .setDescription(translation)
+
+            sendEmbedRsp(context, embedder.build())
         }
 
         class ListArg(parent: String) : AbstractCommand("$parent.list") {
@@ -150,12 +157,13 @@ class HelpCommand : AbstractCommand("command.help") {
                 val dList = DiscordMethods.getMethods().map { method -> method.name }
                 val ccList = CCMethods.getMethods().map { method -> method.name }
                 val bList = BirthdayMethods.getMethods().map { method -> method.name }
-                val eb = Embedder(context)
 
-                eb.addField("CustomCommand", ccList.joinToString("}`, `{", "`{", "}`"), false)
-                eb.addField("Discord", dList.joinToString("}`, `{", "`{", "}`"), false)
-                eb.addField("Birthday", bList.joinToString("}`, `{", "`{", "}`"), false)
-                sendEmbed(context, eb.build())
+                val eb = Embedder(context)
+                    .addField("CustomCommand", ccList.joinToString("}`, `{", "`{", "}`"), false)
+                    .addField("Discord", dList.joinToString("}`, `{", "`{", "}`"), false)
+                    .addField("Birthday", bList.joinToString("}`, `{", "`{", "}`"), false)
+
+                sendEmbedRsp(context, eb.build())
             }
         }
     }
@@ -165,13 +173,14 @@ class HelpCommand : AbstractCommand("command.help") {
         if (args.isEmpty()) {
             val title = context.getTranslation("$root.embed.title")
             val description = context.getTranslation("$root.embed.description")
-                .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
-                .replace("%melijnMention%", if (context.isFromGuild) context.selfMember.asMention else context.selfUser.asMention)
-            val embedder = Embedder(context)
-            embedder.setTitle(title)
-            embedder.setDescription(description)
+                .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                .withVariable("melijnMention", if (context.isFromGuild) context.selfMember.asMention else context.selfUser.asMention)
 
-            sendEmbed(context, embedder.build())
+            val embedder = Embedder(context)
+                .setTitle(title)
+                .setDescription(description)
+
+            sendEmbedRsp(context, embedder.build())
             return
         }
         val commandList = context.commandList
@@ -185,7 +194,7 @@ class HelpCommand : AbstractCommand("command.help") {
 
         val name = parentChildList.joinToString(" ") { cmd -> cmd.name }
         val cmdTitle = context.getTranslation("$root.cmd.title")
-            .replace("%cmdName%", name)
+            .withVariable("cmdName", name)
         val cmdSyntax = context.getTranslation("$root.cmd.syntax")
         val cmdAliases = context.getTranslation("$root.cmd.aliases")
         val cmdDesc = context.getTranslation("$root.cmd.description")
@@ -194,22 +203,23 @@ class HelpCommand : AbstractCommand("command.help") {
         val cmdExamples = context.getTranslation("$root.cmd.examples")
         val cmdCategory = context.getTranslation("$root.cmd.category")
         val cmdHelpValue = i18n.getTranslationN(context.getLanguage(), command.help, false)
-            ?.replace(PLACEHOLDER_PREFIX, context.usedPrefix)
+            ?.withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
         val cmdArgumentsValue = i18n.getTranslationN(context.getLanguage(), command.arguments, false)
-            ?.replace(PLACEHOLDER_PREFIX, context.usedPrefix)
+            ?.withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
         val cmdExamplesValue = i18n.getTranslationN(context.getLanguage(), command.examples, false)
-            ?.replace(PLACEHOLDER_PREFIX, context.usedPrefix)
+            ?.withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
 
         val embedder = Embedder(context)
-        embedder.setTitle(cmdTitle)
-        embedder.addField(
-            cmdSyntax,
-            MarkdownSanitizer.escape(
-                context.getTranslation(command.syntax)
-                    .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
+            .setTitle(cmdTitle)
+            .addField(
+                cmdSyntax,
+                MarkdownSanitizer.escape(
+                    context.getTranslation(command.syntax)
+                        .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+                ),
+                false
             )
-            , false
-        )
+
         if (command.aliases.isNotEmpty()) {
             embedder.addField(cmdAliases, command.aliases.joinToString(), false)
         }
@@ -217,18 +227,18 @@ class HelpCommand : AbstractCommand("command.help") {
         embedder.addField(
             cmdDesc,
             context.getTranslation(command.description)
-                .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
+                .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
             , false
         )
 
         cmdArgumentsValue?.let {
-            var help = it.replace(PLACEHOLDER_PREFIX, context.usedPrefix)
+            var help = it.withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
 
             val matcher = Pattern.compile("%(help\\.arg\\..+)%").matcher(help)
             while (matcher.find()) {
                 val og = matcher.group(0)
                 val path = matcher.group(1)
-                help = help.replace(og, "*" + context.getTranslation(path).replace(PLACEHOLDER_PREFIX, context.usedPrefix))
+                help = help.replace(og, "*" + context.getTranslation(path).withVariable(PLACEHOLDER_PREFIX, context.usedPrefix))
             }
             for (argumentsPart in StringUtils.splitMessage(help, splitAtLeast = 750, maxLength = 1024)) {
                 embedder.addField(cmdArguments, argumentsPart, false)
@@ -249,7 +259,7 @@ class HelpCommand : AbstractCommand("command.help") {
 
         embedder.addField(cmdCategory, parent.commandCategory.toLCC(), false)
 
-        sendEmbed(context, embedder.build())
+        sendEmbedRsp(context, embedder.build())
     }
 
     //Converts ("ping", "pong", "dunste") into a list of (PingCommand, PongArg, DunsteArg) if the args are matching an existing parent child sequence
@@ -304,18 +314,17 @@ class HelpCommand : AbstractCommand("command.help") {
             }
 
             val commandAmount = context.getTranslation("$root.footer")
-                .replace("%cmdCount%", commandList.size.toString())
+                .withVariable("cmdCount", commandList.size.toString())
 
             val eb = Embedder(context)
-            eb.setTitle(title, "https://melijn.com/commands")
+                .setTitle(title, "https://melijn.com/commands")
+                .setFooter(commandAmount, null)
 
             categoryPathMap.forEach { entry ->
                 eb.addField(context.getTranslation(entry.value), commandListString(commandList, entry.key), false)
             }
 
-            eb.setFooter(commandAmount, null)
-
-            sendEmbed(context, eb.build())
+            sendEmbedRsp(context, eb.build())
         }
     }
 }

@@ -2,7 +2,7 @@ package me.melijn.melijnbot.database.command
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
-import me.melijn.melijnbot.objects.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.AbstractCommand
 
 class CommandDao(driverManager: DriverManager) : Dao(driverManager) {
 

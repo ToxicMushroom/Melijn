@@ -1,12 +1,15 @@
 package me.melijn.melijnbot.commands.music
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
 class RemoveCommand : AbstractCommand("command.remove") {
 
@@ -27,7 +30,7 @@ class RemoveCommand : AbstractCommand("command.remove") {
         val removed = trackManager.removeAt(indexes)
 
         var msg = context.getTranslation("$root.removed")
-            .replace("%count%", removed.size.toString())
+            .withVariable("count", removed.size.toString())
         for ((index, track) in removed) {
             msg += "\n[#${index + 1}](${track.info.uri}) - ${track.info.title}"
         }
@@ -35,7 +38,7 @@ class RemoveCommand : AbstractCommand("command.remove") {
         val eb = Embedder(context)
         for (queue in queueParts) {
             eb.setDescription(queue)
-            sendEmbed(context, eb.build())
+            sendEmbedRsp(context, eb.build())
         }
     }
 
@@ -58,8 +61,8 @@ class RemoveCommand : AbstractCommand("command.remove") {
                         }
                     } else {
                         val msg = context.getTranslation("message.unknown.numberornumberrange")
-                            .replace(PLACEHOLDER_ARG, arg)
-                        sendMsg(context, msg)
+                            .withVariable(PLACEHOLDER_ARG, arg)
+                        sendRsp(context, msg)
                         return null
                     }
                 } else if (arg.isNumber()) {
@@ -68,25 +71,25 @@ class RemoveCommand : AbstractCommand("command.remove") {
                     }
                 } else {
                     val msg = context.getTranslation("message.unknown.numberornumberrange")
-                        .replace(PLACEHOLDER_ARG, arg)
-                    sendMsg(context, msg)
+                        .withVariable(PLACEHOLDER_ARG, arg)
+                    sendRsp(context, msg)
                     return null
                 }
             }
 
         } catch (e: NumberFormatException) {
             val msg = context.getTranslation("message.numbertobig")
-                .replace(PLACEHOLDER_ARG, e.message ?: "/")
-            sendMsg(context, msg)
+                .withVariable(PLACEHOLDER_ARG, e.message ?: "/")
+            sendRsp(context, msg)
             return null
         }
         for (i in ints) {
             if (i < start - 1 || i > end - 1) {
                 val msg = context.getTranslation("message.number.notinrange")
-                    .replace(PLACEHOLDER_ARG, (i + 1).toString())
-                    .replace("%start%", start.toString())
-                    .replace("%end%", end.toString())
-                sendMsg(context, msg)
+                    .withVariable(PLACEHOLDER_ARG, (i + 1).toString())
+                    .withVariable("start", start.toString())
+                    .withVariable("end", end.toString())
+                sendRsp(context, msg)
                 return null
             }
         }

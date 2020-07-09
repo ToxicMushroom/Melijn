@@ -1,12 +1,12 @@
 package me.melijn.melijnbot.commands.administration
 
 import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.utils.getBooleanFromArgNMessage
-import me.melijn.melijnbot.objects.utils.sendMsg
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.utils.getBooleanFromArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
 
 class SetMusic247Command : AbstractCommand("command.setmusic247") {
 
@@ -25,7 +25,7 @@ class SetMusic247Command : AbstractCommand("command.setmusic247") {
             val extra = if (enabled) "enabled" else "disabled"
             val msg = context.getTranslation("$root.show.$extra")
 
-            sendMsg(context, msg)
+            sendRsp(context, msg)
             return
         }
 
@@ -39,6 +39,6 @@ class SetMusic247Command : AbstractCommand("command.setmusic247") {
 
         val extra = if (newState) "enabled" else "disabled"
         val msg = context.getTranslation("$root.set.$extra")
-        sendMsg(context, msg)
+        sendRsp(context, msg)
     }
 }

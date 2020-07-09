@@ -3,7 +3,7 @@ package me.melijn.melijnbot.database
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import me.melijn.melijnbot.Settings
-import me.melijn.melijnbot.objects.utils.sendInGuild
+import me.melijn.melijnbot.internals.utils.message.sendInGuild
 import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.sql.ResultSet

@@ -3,13 +3,16 @@ package me.melijn.melijnbot.commands.administration
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.autopunishment.Punishment
 import me.melijn.melijnbot.enums.PunishmentType
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
-import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_PERMISSIONTYPE
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.utils.*
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
+import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_PERMISSIONTYPE
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.escapeForLog
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.utils.data.DataObject
 
 class PunishmentCommand : AbstractCommand("command.punishment") {
@@ -70,9 +73,9 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 val extra = if (seconds == 0L) ".infinite" else ""
 
                 val msg = context.getTranslation("$root.set$extra")
-                    .replace("%name%", name)
-                    .replace("%duration%", "$seconds")
-                sendMsg(context, msg)
+                    .withVariable("name", name)
+                    .withVariable("duration", "$seconds")
+                sendRsp(context, msg)
             }
         }
 
@@ -100,9 +103,9 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 wrapper.put(context.guildId, item)
 
                 val msg = context.getTranslation("$root.set")
-                    .replace("%name%", name)
-                    .replace("%role%", role.name)
-                sendMsg(context, msg)
+                    .withVariable("name", name)
+                    .withVariable("role", role.name)
+                sendRsp(context, msg)
             }
         }
 
@@ -171,9 +174,9 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                     wrapper.put(context.guildId, item)
 
                     val msg = context.getTranslation("$root.deldays")
-                        .replace("%name%", name)
-                        .replace("%deldays%", "$days")
-                    sendMsg(context, msg)
+                        .withVariable("name", name)
+                        .withVariable("deldays", "$days")
+                    sendRsp(context, msg)
                 }
             }
         }
@@ -226,9 +229,9 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
 
 
                     val msg = context.getTranslation("$root.deldays")
-                        .replace("%name%", item.name)
-                        .replace("%deldays%", "$days")
-                    sendMsg(context, msg)
+                        .withVariable("name", item.name)
+                        .withVariable("deldays", "$days")
+                    sendRsp(context, msg)
                 }
             }
         }
@@ -254,10 +257,10 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             if (context.args.size == 1) {
                 val reason = item.reason
                 val msg = context.getTranslation("$root.show")
-                    .replace("%name%", item.name)
-                    .replace("%type%", item.punishmentType.toUCC())
-                    .replace("%reason%", reason)
-                sendMsg(context, msg)
+                    .withVariable("name", item.name)
+                    .withVariable("type", item.punishmentType.toUCC())
+                    .withVariable("reason", reason)
+                sendRsp(context, msg)
                 return
             }
 
@@ -268,10 +271,10 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             wrapper.put(context.guildId, item)
 
             val msg = context.getTranslation("$root.set")
-                .replace("%name%", item.name)
-                .replace("%type%", item.punishmentType.toUCC())
-                .replace("%reason%", reason)
-            sendMsg(context, msg)
+                .withVariable("name", item.name)
+                .withVariable("type", item.punishmentType.toUCC())
+                .withVariable("reason", reason)
+            sendRsp(context, msg)
         }
     }
 
@@ -300,10 +303,10 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
             wrapper.put(context.guildId, punishment)
 
             val msg = context.getTranslation("$root.added")
-                .replace("%name%", name)
-                .replace("%type%", punishmentType.toUCC())
-                .replace("%reason%", escapeForLog(reason))
-            sendMsg(context, msg)
+                .withVariable("name", name)
+                .withVariable("type", punishmentType.toUCC())
+                .withVariable("reason", escapeForLog(reason))
+            sendRsp(context, msg)
         }
     }
 
@@ -325,7 +328,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 val punishmentType = getEnumFromArgNMessage<PunishmentType>(context, 0, MESSAGE_UNKNOWN_PERMISSIONTYPE)
                     ?: return
                 msg = context.getTranslation("$root.typedtitle")
-                    .replace("%type%", punishmentType.toUCC())
+                    .withVariable("type", punishmentType.toUCC())
                 list.filter { punishment ->
                     punishment.punishmentType == punishmentType
                 }
@@ -338,7 +341,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
                 content += "\n  " + d.toString().replace("\n", "\n  ")
             }
             content += "```"
-            sendMsg(context, msg + content)
+            sendRsp(context, msg + content)
         }
     }
 
@@ -360,9 +363,9 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
 
             wrapper.remove(context.guildId, name)
             val msg = context.getTranslation("$root.removed")
-                .replace("%name%", item.name)
-                .replace("%type%", item.punishmentType.toUCC())
-            sendMsg(context, msg)
+                .withVariable("name", item.name)
+                .withVariable("type", item.punishmentType.toUCC())
+            sendRsp(context, msg)
         }
     }
 }
@@ -379,10 +382,10 @@ suspend fun getPunishmentNMessage(context: CommandContext, position: Int, punish
     if (item == null || (punishmentType != null && item.punishmentType != punishmentType)) {
         val extra = if (punishmentType == null) "" else ".typed"
         val msg = context.getTranslation("command.punishment.nomatch$extra")
-            .replace(PLACEHOLDER_ARG, name)
-            .replace(PLACEHOLDER_PREFIX, context.usedPrefix)
-            .replace("%type%", item?.punishmentType?.toUCC() ?: "error")
-        sendMsg(context, msg)
+            .withVariable(PLACEHOLDER_ARG, name)
+            .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
+            .withVariable("type", item?.punishmentType?.toUCC() ?: "error")
+        sendRsp(context, msg)
     }
     return item
 }
