@@ -7,8 +7,8 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.withPermit
-import lavalink.client.player.IPlayer
-import lavalink.client.player.event.AudioEventAdapterWrapped
+import me.melijn.llklient.player.IPlayer
+import me.melijn.llklient.player.event.AudioEventAdapterWrapped
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.commands.music.NextSongPosition
@@ -52,7 +52,7 @@ class GuildTrackManager(
     fun trackSize() = tracks.size
 
 
-    private fun nextTrack(lastTrack: AudioTrack) {
+    private suspend fun nextTrack(lastTrack: AudioTrack) {
         votedUsers.clear()
         if (tracks.isEmpty()) {
             if (loopedQueue || loopedTrack) {
@@ -61,14 +61,14 @@ class GuildTrackManager(
             }
 
             val mNodeWrapper = daoManager.musicNodeWrapper
-            runBlocking {
-                VOICE_SAFE.withPermit {
-                    Task {
-                        val isPremium = mNodeWrapper.isPremium(guildId)
-                        lavaManager.closeConnection(guildId, isPremium)
-                    }.run()
-                }
+
+            VOICE_SAFE.withPermit {
+                Task {
+                    val isPremium = mNodeWrapper.isPremium(guildId)
+                    lavaManager.closeConnection(guildId, isPremium)
+                }.run()
             }
+
             return
         }
 
@@ -90,7 +90,7 @@ class GuildTrackManager(
     }
 
     /** returns the song postition **/
-    fun queue(track: AudioTrack, nextPos: NextSongPosition) {
+    suspend fun queue(track: AudioTrack, nextPos: NextSongPosition) {
         if (track.userData == null) throw IllegalArgumentException("no")
         if (iPlayer.playingTrack == null) {
             iPlayer.playTrack(track)
@@ -197,8 +197,9 @@ class GuildTrackManager(
 
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack, endReason: AudioTrackEndReason) {
         //logger.debug("track ended eventStartNext:" + endReason.mayStartNext)
+
         if (endReason.mayStartNext) {
-            nextTrack(track)
+            Container.instance.taskManager.async { nextTrack(track) }
         }
     }
 
@@ -214,28 +215,25 @@ class GuildTrackManager(
         }
 
     //PLEASE RUN IN VOICE_SAFE
-    fun stopAndDestroy() {
+    suspend fun stopAndDestroy() {
         clear()
         iPlayer.stopTrack()
-        runBlocking {
-            Task {
-                val isPremium = daoManager.musicNodeWrapper.isPremium(guildId)
-                lavaManager.closeConnection(guildId, isPremium)
-            }.run()
-        }
+
+        Task {
+            val isPremium = daoManager.musicNodeWrapper.isPremium(guildId)
+            lavaManager.closeConnection(guildId, isPremium)
+        }.run()
     }
 
 
-    fun skip(amount: Int) {
+    suspend fun skip(amount: Int) {
         var nextTrack: AudioTrack? = null
         for (i in 0 until amount) {
             nextTrack = tracks.poll()
         }
         if (nextTrack == null) {
-            runBlocking {
-                VOICE_SAFE.withPermit {
-                    stopAndDestroy()
-                }
+            VOICE_SAFE.withPermit {
+                stopAndDestroy()
             }
         } else {
             iPlayer.stopTrack()
@@ -244,7 +242,7 @@ class GuildTrackManager(
     }
 
     fun setPaused(paused: Boolean) {
-        iPlayer.isPaused = paused
+        iPlayer.paused = paused
     }
 
     fun removeAt(indexes: IntArray): Map<Int, AudioTrack> {

@@ -1,8 +1,9 @@
 package me.melijn.melijnbot.internals.music
 
-import lavalink.client.io.jda.JdaLavalink
-import lavalink.client.player.IPlayer
-import lavalink.client.player.LavaplayerPlayerWrapper
+
+import me.melijn.llklient.io.jda.JDALavalink
+import me.melijn.llklient.player.IPlayer
+import me.melijn.llklient.player.LavaplayerPlayerWrapper
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.utils.notEnoughPermissionsAndMessage
@@ -18,8 +19,8 @@ class LavaManager(
     val lavalinkEnabled: Boolean,
     val daoManager: DaoManager,
     val shardManager: ShardManager,
-    val jdaLavaLink: JdaLavalink?,
-    val premiumLavaLink: JdaLavalink?
+    val jdaLavaLink: JDALavalink?,
+    val premiumLavaLink: JDALavalink?
 ) {
     private val logger: Logger = LoggerFactory.getLogger(LavaManager::class.java)
 
@@ -28,7 +29,7 @@ class LavaManager(
     fun getIPlayer(guildId: Long, premium: Boolean): IPlayer {
         val ll = if (premium) premiumLavaLink else jdaLavaLink
         return if (lavalinkEnabled && ll != null) {
-            ll.getLink(guildId.toString()).player
+            ll.getLink(guildId).player
         } else {
             LavaplayerPlayerWrapper(musicPlayerManager.getLPPlayer())
         }
@@ -43,7 +44,7 @@ class LavaManager(
                 channel.guild.audioManager.openAudioConnection(channel)
             }
         } else {
-            ll.getLink(channel.guild).connect(channel)
+            ll.getLink(channel.guild.idLong).connect(channel)
         }
 
         musicPlayerManager.getGuildMusicPlayer(channel.guild)
@@ -80,7 +81,7 @@ class LavaManager(
     }
 
     // run with VOICE_SAFE pls
-    fun closeConnection(guildId: Long, premium: Boolean) {
+    suspend fun closeConnection(guildId: Long, premium: Boolean) {
         closeConnectionLite(guildId, premium)
 
         if (MusicPlayerManager.guildMusicPlayers.containsKey(guildId)) {
@@ -90,7 +91,7 @@ class LavaManager(
         }
     }
 
-    fun closeConnectionAngry(guildId: Long, premium: Boolean) {
+    suspend fun closeConnectionAngry(guildId: Long, premium: Boolean) {
         closeConnectionLiteAngry(guildId, premium)
 
         if (MusicPlayerManager.guildMusicPlayers.containsKey(guildId)) {
@@ -100,29 +101,29 @@ class LavaManager(
         }
     }
 
-    fun closeConnectionLite(guildId: Long, premium: Boolean) {
+    suspend fun closeConnectionLite(guildId: Long, premium: Boolean) {
         val ll = if (premium) premiumLavaLink else jdaLavaLink
         val guild = shardManager.getGuildById(guildId)
 
         if (ll == null) {
             guild?.audioManager?.closeAudioConnection()
         } else {
-            guild?.let {
-                ll.getLink(it).destroy()
-            }
+
+            ll.getLink(guildId).destroy()
+
         }
     }
 
-    fun closeConnectionLiteAngry(guildId: Long, premium: Boolean) {
+    suspend fun closeConnectionLiteAngry(guildId: Long, premium: Boolean) {
         val ll = if (premium) premiumLavaLink else jdaLavaLink
         val guild = shardManager.getGuildById(guildId)
 
         if (ll == null) {
             guild?.audioManager?.closeAudioConnection()
         } else {
-            guild?.let {
-                ll.getLink(it).destroy()
-            }
+
+            ll.getLink(guildId).destroy()
+
         }
     }
 
