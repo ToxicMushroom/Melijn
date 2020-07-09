@@ -16,7 +16,8 @@ class JoinMessageCommand : AbstractCommand("command.joinmessage") {
             LeaveMessageCommand.SetContentArg(root, MessageType.JOIN),
             LeaveMessageCommand.EmbedArg(root, MessageType.JOIN),
             LeaveMessageCommand.AttachmentsArg(root, MessageType.JOIN),
-            LeaveMessageCommand.ViewArg(root, MessageType.JOIN)
+            LeaveMessageCommand.ViewArg(root, MessageType.JOIN),
+            LeaveMessageCommand.SetPingableArg(root, MessageType.JOIN)
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }

@@ -11,8 +11,8 @@ class TestDaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
         val afterTableFunctions = mutableListOf<() -> Unit>()
     }
 
-    lateinit var dbVersion: String
-    lateinit var connectorVersion: String
+    var dbVersion: String
+    var connectorVersion: String
 
     var driverManager: DriverManager
 

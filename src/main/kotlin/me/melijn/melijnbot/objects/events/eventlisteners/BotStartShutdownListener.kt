@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.objects.events.eventlisteners
 
-import io.jooby.ServerOptions
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.objects.events.AbstractListener
@@ -22,46 +21,41 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
     private suspend fun onStatusChange(event: StatusChangeEvent) {
         val shardManager = event.jda.shardManager
         if (shardManager == null) {
-            logger.info("angry " + event.newStatus)
+            logger.info("please use sharding")
             return
         }
 
         if (event.newStatus == JDA.Status.CONNECTED) {
             val readyShards = shardManager.shards.count { jda -> jda.status == JDA.Status.CONNECTED }
-            val loadedAllShards = readyShards == container.settings.shardCount
+            logger.info("$readyShards/${shardManager.shards.size} shards ready")
 
-            if (!loadedAllShards) {
-                logger.info("$readyShards shard(s) ready")
-                return
-            }
+            if (readyShards != container.settings.shardCount) return
 
-            logger.info("All shards ready")
+
+
             if (!container.serviceManager.started) {
                 container.taskManager.async {
                     logger.info("Starting music clients..")
                     VoiceUtil.resumeMusic(event, container)
                     logger.info("Started music clients")
                 }
+
                 container.startTime = System.currentTimeMillis()
+
                 logger.info("Starting services..")
                 container.serviceManager.init(container, shardManager)
                 container.serviceManager.startServices()
                 logger.info("Services ready")
-                logger.info("Starting Jooby rest server..")
-                val restServer = RestServer(container)
 
+                container.taskManager.async {
+                    logger.info("Starting rest-server..")
 
-                restServer
-                    .apply {
-                        serverOptions = ServerOptions()
-                            .setPort(container.settings.restPort)
-                            .setIoThreads(2)
-                            .setWorkerThreads(4)
-                    }
-                    .start()
+                    val restServer = RestServer(container)
+                    restServer.start()
 
-                container.restServer = restServer
-                logger.info("Started Jooby rest server")
+                    container.restServer = restServer
+                    logger.info("Started rest-server")
+                }
             }
         }
     }

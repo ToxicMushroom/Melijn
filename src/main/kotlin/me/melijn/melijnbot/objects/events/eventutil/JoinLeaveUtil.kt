@@ -70,6 +70,7 @@ object JoinLeaveUtil {
         }
 
         newMessage.attachments = newAttachments
+        newMessage.extra = modularMessage.extra
         return newMessage
     }
 

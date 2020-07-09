@@ -29,7 +29,10 @@ class ServiceManager(val taskManager: TaskManager, val daoManager: DaoManager, v
         services.add(StatsService(shardManager, webManager.botListApi))
         services.add(BirthdayService(shardManager, daoManager))
         //services.add(MemSpammerService())
-        services.add(SpotifyService(webManager.spotifyApi))
+        webManager.spotifyApi?.let { spotifyApi ->
+            services.add(SpotifyService(spotifyApi))
+        }
+
         services.add(SongCacheCleanerService(daoManager.songCacheWrapper))
         services.add(VoiceService(container, shardManager))
         services.add(VoiceScoutService(container, shardManager))

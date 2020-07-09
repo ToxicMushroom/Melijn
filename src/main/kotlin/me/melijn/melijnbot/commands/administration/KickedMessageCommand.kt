@@ -16,7 +16,8 @@ class KickedMessageCommand : AbstractCommand("command.kickedmessage") {
             LeaveMessageCommand.SetContentArg(root, MessageType.KICKED),
             LeaveMessageCommand.EmbedArg(root, MessageType.KICKED),
             LeaveMessageCommand.AttachmentsArg(root, MessageType.KICKED),
-            LeaveMessageCommand.ViewArg(root, MessageType.KICKED)
+            LeaveMessageCommand.ViewArg(root, MessageType.KICKED),
+            LeaveMessageCommand.SetPingableArg(root, MessageType.KICKED)
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }

@@ -27,6 +27,8 @@ import net.dv8tion.jda.internal.JDAImpl
 import java.util.stream.Collectors
 import kotlin.random.Random
 
+val SPACE_REGEX = "\\s+".toRegex()
+
 class CommandClient(private val commandList: Set<AbstractCommand>, private val container: Container) : ListenerAdapter() {
 
     private val guildPrefixCache = container.daoManager.guildPrefixWrapper.prefixCache
@@ -95,6 +97,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         val ccsWithPrefixMatches = mutableListOf<CustomCommand>()
         val ccsWithoutPrefixMatches = mutableListOf<CustomCommand>()
         var commandPartsGlobal: List<String> = emptyList()
+        var spaceMap = mutableMapOf<String, Int>()
+
 
         for (prefix in prefixes) {
             if (!message.contentRaw.startsWith(prefix, true)) continue
@@ -103,6 +107,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 .removeFirst(prefix, ignoreCase = true)
                 .trimEnd()
                 .split(Regex("\\s+")))
+
 
             if (commandParts[0].isEmpty()) {
                 // Used a space :angry:
@@ -133,6 +138,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             }
             if (commandParts.size < 2) return // if only a prefix is found -> abort
 
+            // CC Finder
             for (cc in ccsWithPrefix) {
                 val aliases = cc.aliases
                 if (cc.name.equals(commandParts[1], true)) {
@@ -140,17 +146,24 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                     ccsWithPrefixMatches.add(cc)
                 } else if (aliases != null) {
                     for (alias in aliases) {
-                        if (alias.equals(commandParts[1], true)) {
+                        val aliasParts = alias.split("\\s+")
+                        if (alias.count() < commandParts.size) {
+                            val matches = aliasParts.withIndex().all { commandParts[it.index + 1] == it.value }
+                            if (!matches) continue
+                            val spaceCount = aliasParts.size - 1
+
                             commandPartsGlobal = commandParts
+                            spaceMap["cc.${cc.id}"] = spaceCount
                             ccsWithPrefixMatches.add(cc)
-                        }
+                        } else continue
                     }
                 }
             }
 
             var command = commandMap.getOrElse(commandParts[1].toLowerCase(), { null })
+            val aliasesMap = mutableMapOf<String, List<String>>()
+            var searchedAliases = false
             if (command == null) {
-                val aliasesMap = mutableMapOf<String, List<String>>()
                 val aliasCache = container.daoManager.aliasWrapper.aliasCache
                 if (event.isFromGuild) {
                     aliasesMap.putAll(aliasCache.get(event.guild.idLong).await())
@@ -163,16 +176,24 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
                     aliasesMap[cmd] = currentList
                 }
+                searchedAliases = true
+                // ^ Above constructs the aliaxMap for guild and user
 
+                // Find command by custom alias v
                 for ((cmd, aliases) in aliasesMap) {
                     val id = cmd.toIntOrNull() ?: continue
-                    for (alias in aliases) {
-                        if (!alias.equals(commandParts[1], true)) continue
 
-                        commandList.firstOrNull {
-                            it.id == id
-                        }?.let {
-                            command = it
+                    for (alias in aliases) {
+                        val aliasParts = alias.split(SPACE_REGEX)
+                        if (aliasParts.size < commandParts.size) {
+                            val matches = aliasParts.withIndex().all { commandParts[it.index + 1] == it.value }
+                            if (!matches) continue
+                            spaceMap["$id"] = aliasParts.size - 1
+                            commandList.firstOrNull {
+                                it.id == id
+                            }?.let {
+                                command = it
+                            }
                         }
                     }
                 }
@@ -181,7 +202,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             if (command != null) {
                 val finalCommand = command ?: return
                 if (checksFailed(container, finalCommand, event, false, commandParts)) return
-                finalCommand.run(CommandContext(event, commandParts, container, commandList))
+                finalCommand.run(CommandContext(event, commandParts, container, commandList, spaceMap, aliasesMap, searchedAliases))
                 return
             }
         }

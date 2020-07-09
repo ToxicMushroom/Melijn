@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.EmbedType
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.Message.MentionType
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
@@ -94,6 +95,13 @@ data class ModularMessage(
         val mb = MessageBuilder()
             .setEmbed(membed)
             .setContent(messageContent)
+
+        // Timestamp handler
+        if (extra.containsKey("isPingable")) {
+            mb.setAllowedMentions(MentionType.values().toSet())
+        } else {
+            mb.setAllowedMentions(emptyList())
+        }
 
         return mb.build()
     }

@@ -7,19 +7,21 @@ import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.services.voice.VOICE_SAFE
 import me.melijn.melijnbot.objects.utils.sendMsg
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import kotlin.system.exitProcess
 
-class ShutdownCommand : AbstractCommand("command.shutdown") {
+
+class RestartCommand : AbstractCommand("command.restart") {
 
     init {
-        id = 123
-        name = "shutdown"
+        id = 181
+        name = "restart"
         commandCategory = CommandCategory.DEVELOPER
     }
 
     override suspend fun execute(context: CommandContext) {
+
         val players = context.lavaManager.musicPlayerManager.getPlayers()
         val wrapper = context.daoManager.tracksWrapper
-        wrapper.clear()
 
         sendMsg(context, "Are you sure you wanna restart ?")
 
@@ -45,9 +47,14 @@ class ShutdownCommand : AbstractCommand("command.shutdown") {
                     }
                 }
 
-                sendMsg(context, "Detached all listeners, saved queues. Ready for termination.")
+                sendMsg(context, "Restarting")
+                context.shardManager.shutdown()
+
+                context.taskManager.asyncAfter(3_000) {
+                    exitProcess(0)
+                }
             } else {
-                sendMsg(context, "Okay, not shutting down :p")
+                sendMsg(context, "Alright not restarting :)")
             }
         })
     }

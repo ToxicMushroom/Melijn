@@ -47,6 +47,7 @@ class QueueCommand : AbstractCommand("command.queue") {
         description += context.getTranslation("$root.fakefooter")
             .replace("%duration%", getDurationString(totalDuration - trackManager.iPlayer.trackPosition))
             .replace("%amount%", (allTracks.size + 1).toString())
+
         val footerPagination = context.getTranslation("message.pagination")
 
         val modularMessages = mutableListOf<ModularMessage>()

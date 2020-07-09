@@ -3,7 +3,7 @@ package me.melijn.melijnbot.objects.services.stats
 import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
 import me.melijn.melijnbot.objects.services.Service
 import me.melijn.melijnbot.objects.threading.RunnableTask
-import me.melijn.melijnbot.objects.web.cancer.BotListApi
+import me.melijn.melijnbot.objects.web.botlist.BotListApi
 import net.dv8tion.jda.api.sharding.ShardManager
 import java.util.concurrent.TimeUnit
 

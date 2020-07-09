@@ -2,14 +2,11 @@ package me.melijn.melijnbot.objects.utils
 
 import me.melijn.melijnbot.objects.command.CommandContext
 import me.melijn.melijnbot.objects.translation.*
-import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.requests.RestAction
 import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.concurrent.Task
-import net.dv8tion.jda.api.utils.data.DataObject
-import net.dv8tion.jda.internal.JDAImpl
 import java.awt.Color
 import java.util.*
 import java.util.regex.Pattern
@@ -21,8 +18,8 @@ import kotlin.coroutines.suspendCoroutine
 val DISCORD_ID: Pattern = Pattern.compile("\\d{17,20}") // ID
 val FULL_USER_REF: Pattern = Pattern.compile("(\\S.{0,30}\\S)\\s*#(\\d{4})") // $1 -> username, $2 -> discriminator
 val USER_MENTION: Pattern = Pattern.compile("<@!?(\\d{17,20})>") // $1 -> ID
-val CHANNEL_MENTION: Pattern = Pattern.compile("<#(\\d{17,20})>") // $1 -> ID
-val ROLE_MENTION: Pattern = Pattern.compile("<@&(\\d{17,20})>") // $1 -> ID
+//val CHANNEL_MENTION: Pattern = Pattern.compile("<#(\\d{17,20})>") // $1 -> ID
+//val ROLE_MENTION: Pattern = Pattern.compile("<@&(\\d{17,20})>") // $1 -> ID
 val EMOTE_MENTION: Pattern = Pattern.compile("<a?:(.{2,32}):(\\d{17,20})>") // $1 -> NAME, $2 -> ID
 
 val Member.asTag: String
@@ -145,64 +142,51 @@ fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String): User
 
 }
 
-suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? = suspendCoroutine {
+suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? {
     val user1: User? = getUserByArgsN(context, index)
-    when {
-        user1 != null -> it.resume(user1)
+    return when {
+        user1 != null -> user1
         context.args.size > index -> {
             val arg = context.args[index]
             val idMatcher = DISCORD_ID.matcher(arg)
             val mentionMatcher = USER_MENTION.matcher(arg)
 
+
             when {
-                idMatcher.matches() -> context.jda.shardManager?.retrieveUserById(arg)
+                idMatcher.matches() -> context.jda.shardManager?.retrieveUserById(arg)?.awaitOrNull()
                 mentionMatcher.find() -> {
                     val id = mentionMatcher.group(1).toLong()
-                    context.jda.shardManager?.retrieveUserById(id)
+                    context.jda.shardManager?.retrieveUserById(id)?.awaitOrNull()
                 }
-                else -> null
-            }?.queue({ user ->
-                it.resume(user)
-            }, { _ ->
-                it.resume(null)
-            }) ?: it.resume(null)
-
+                else -> context.guild.retrieveMembersByPrefix(arg, 1).awaitOrNull()?.firstOrNull()?.user
+            }
         }
-        else -> it.resume(null)
+        else -> null
     }
 
 }
 
-suspend fun retrieveUserByArgsN(guild: Guild, arg: String): User? = suspendCoroutine {
-    val shardManager = guild.jda.shardManager
-    if (shardManager == null) {
-        it.resume(null)
-        return@suspendCoroutine
-    }
+suspend fun retrieveUserByArgsN(guild: Guild, arg: String): User? {
+    val shardManager = guild.jda.shardManager ?: return null
+
     val user1: User? = getUserByArgsN(shardManager, guild, arg)
     if (user1 != null) {
-        it.resume(user1)
-        return@suspendCoroutine
+        return user1
     }
 
     val idMatcher = DISCORD_ID.matcher(arg)
     val mentionMatcher = USER_MENTION.matcher(arg)
 
-    when {
+    return when {
         idMatcher.matches() -> shardManager.retrieveUserById(arg)
         mentionMatcher.matches() -> {
             shardManager.retrieveUserById(mentionMatcher.group(1))
         }
 
         else -> {
-            it.resume(null)
-            return@suspendCoroutine
+            return guild.retrieveMembersByPrefix(arg, 1).awaitOrNull()?.firstOrNull()?.user
         }
-    }.queue({ user ->
-        it.resume(user)
-    }, { _ ->
-        it.resume(null)
-    })
+    }.awaitOrNull()
 }
 
 suspend fun retrieveUserByArgsNMessage(context: CommandContext, index: Int): User? {
@@ -216,17 +200,6 @@ suspend fun retrieveUserByArgsNMessage(context: CommandContext, index: Int): Use
     return possibleUser
 }
 
-suspend fun getUserByArgsNMessage(context: CommandContext, index: Int): User? {
-    val user = getUserByArgsN(context, index)
-    if (user == null) {
-        val language = context.getLanguage()
-        val msg = i18n.getTranslation(language, MESSAGE_UNKNOWN_USER)
-
-            .replace(PLACEHOLDER_ARG, context.args[index])
-        sendMsg(context, msg)
-    }
-    return user
-}
 
 fun getRoleByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): Role? {
     var role: Role? = null
@@ -340,17 +313,6 @@ suspend fun getStringFromArgsNMessage(
     return arg
 }
 
-suspend fun getEmoteByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): Emote? {
-    val emote = getEmoteByArgsN(context, index, sameGuildAsContext)
-    if (emote == null) {
-        val language = context.getLanguage()
-        val msg = i18n.getTranslation(language, "message.unknown.emote")
-            .replace(PLACEHOLDER_ARG, context.args[index])
-        sendMsg(context, msg)
-    }
-    return emote
-}
-
 suspend fun getEmotejiByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = false): Pair<Emote?, String?>? {
     val emoteji = getEmotejiByArgsN(context, index, sameGuildAsContext)
     if (emoteji == null) {
@@ -459,20 +421,6 @@ suspend fun getColorFromArgNMessage(context: CommandContext, index: Int): Color?
         sendMsg(context, msg)
     }
     return color
-}
-
-suspend fun JDA.messageByJSONNMessage(context: CommandContext, json: String): MessageEmbed? {
-    val jdaImpl = (this as JDAImpl)
-
-    return try {
-        jdaImpl.entityBuilder.createMessageEmbed(DataObject.fromJson(json))
-    } catch (e: Exception) {
-        val language = context.getLanguage()
-        val msg = i18n.getTranslation(language, "message.invalidJSONStruct")
-            .replace("%cause%", e.message ?: "unknown")
-        sendMsg(context, msg)
-        null
-    }
 }
 
 fun getTextChannelByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): TextChannel? {
@@ -604,45 +552,6 @@ suspend fun retrieveMemberByArgsNMessage(context: CommandContext, index: Int, in
     return member
 }
 
-suspend fun getMemberByArgsNMessage(context: CommandContext, index: Int, interactable: Boolean = false, botAllowed: Boolean = true): Member? {
-    val user = getUserByArgsN(context, index)
-    val member =
-        if (user == null) null
-        else context.guild.retrieveMember(user).awaitOrNull()
-
-    if (member == null) {
-        val language = context.getLanguage()
-        val msg = i18n.getTranslation(language, "message.unknown.member")
-            .replace(PLACEHOLDER_ARG, context.args[index])
-        sendMsg(context, msg)
-        return null
-    }
-
-    if (interactable && !member.guild.selfMember.canInteract(member)) {
-        val msg = context.getTranslation(MESSAGE_SELFINTERACT_MEMBER_HIARCHYEXCEPTION)
-            .replace(PLACEHOLDER_USER, member.asTag)
-        sendMsg(context, msg)
-        return null
-    }
-
-    if (!botAllowed && member.user.isBot) {
-        val msg = context.getTranslation("message.interact.member.isbot")
-            .replace(PLACEHOLDER_USER, member.asTag)
-        sendMsg(context, msg)
-        return null
-    }
-
-
-    return member
-}
-
-suspend fun getMemberByArgsN(guild: Guild, arg: String): Member? {
-    val shardManager = guild.jda.shardManager ?: return null
-    val user = getUserByArgsN(shardManager, guild, arg)
-
-    return if (user == null) null
-    else guild.retrieveMember(user).awaitOrNull()
-}
 
 suspend fun notEnoughPermissionsAndMessage(context: CommandContext, channel: GuildChannel, vararg perms: Permission): Boolean {
     val member = channel.guild.selfMember

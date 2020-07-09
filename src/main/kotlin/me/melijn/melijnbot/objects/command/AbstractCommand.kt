@@ -3,6 +3,7 @@ package me.melijn.melijnbot.objects.command
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.PermState
+import me.melijn.melijnbot.objects.utils.addIfNotPresent
 import me.melijn.melijnbot.objects.utils.sendInGuild
 import me.melijn.melijnbot.objects.utils.sendMsg
 import net.dv8tion.jda.api.Permission
@@ -33,12 +34,66 @@ abstract class AbstractCommand(val root: String) {
     }
 
     protected abstract suspend fun execute(context: CommandContext)
-    suspend fun run(context: CommandContext, commandPartInvoke: Int = 1) {
+    suspend fun run(context: CommandContext) {
         context.commandOrder = ArrayList(context.commandOrder + this).toList()
-        if (context.commandParts.size > commandPartInvoke + 1 && children.isNotEmpty()) {
+
+        val indexedCommand = context.commandOrder.withIndex().sortedBy { it.index }.last()
+        val cmd = indexedCommand.value
+
+        if (context.calculatedRoot.isEmpty()) context.calculatedRoot += cmd.id
+        else context.calculatedRoot += "." + cmd.name
+
+        context.calculatedCommandPartsOffset += (context.partSpaceMap[context.calculatedRoot]
+            ?: 0) + 1 // +1 is for the index of the commandpart
+
+        // Check for child commands
+        if (context.commandParts.size > context.calculatedCommandPartsOffset && children.isNotEmpty()) {
+            val currentRoot = context.calculatedRoot
+            val currentOffset = context.calculatedCommandPartsOffset
+
+            // Searches if needed for aliases
+            if (!context.searchedAliases) {
+                val aliasCache = context.daoManager.aliasWrapper.aliasCache
+                if (context.isFromGuild) {
+                    context.aliasMap.putAll(aliasCache.get(context.guildId).await())
+                }
+                for ((cmd2, ls) in aliasCache.get(context.authorId).await()) {
+                    val currentList = (context.aliasMap[cmd2] ?: emptyList()).toMutableList()
+                    for (alias in ls) {
+                        currentList.addIfNotPresent(alias)
+                    }
+
+                    context.aliasMap[cmd2] = currentList
+                }
+                context.searchedAliases = true
+            }
+
+            // Searched for correct child that matches a custom alias
             for (child in children) {
-                if (child.isCommandFor(context.commandParts[commandPartInvoke + 1])) {
-                    child.run(context, commandPartInvoke + 1)
+                for ((cmdPath, aliases) in context.aliasMap) {
+                    val subRoot = currentRoot + "." + child.name
+                    if (cmdPath == subRoot) {
+                        for (alias in aliases) {
+                            val aliasParts = alias.split(SPACE_REGEX)
+                            if (aliasParts.size <= (context.commandParts.size - currentOffset)) {
+                                val matches = aliasParts.withIndex().all {
+                                    context.commandParts[it.index + currentOffset] == it.value
+                                }
+                                if (!matches) continue
+
+                                // Matched a subcommand v
+                                context.partSpaceMap[subRoot] = aliasParts.size - 1
+                                child.run(context)
+                                return
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (child in children) {
+                if (child.isCommandFor(context.commandParts[currentOffset])) {
+                    child.run(context)
                     return
                 }
             }
@@ -48,6 +103,7 @@ abstract class AbstractCommand(val root: String) {
         if (hasPermission(context, permission)) {
             context.initArgs()
             if (context.isFromGuild) {
+                // Check for cooldowns
                 val pair1 = Pair(context.channelId, context.authorId)
                 val map1 = context.daoManager.commandChannelCoolDownWrapper.executions[pair1]?.toMutableMap()
                     ?: hashMapOf()
@@ -63,8 +119,8 @@ abstract class AbstractCommand(val root: String) {
             try {
                 if (CommandClient.checksFailed(context.container, context.commandOrder.last(), context.event, true, context.commandParts)) return
                 execute(context)
-            } catch (e: Exception) {
-                e.sendInGuild(context)
+            } catch (t: Throwable) {
+                t.sendInGuild(context)
             }
             context.daoManager.commandUsageWrapper.addUse(context.commandOrder[0].id)
         } else sendMissingPermissionMessage(context, permission)

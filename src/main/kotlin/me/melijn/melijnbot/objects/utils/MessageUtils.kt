@@ -18,6 +18,7 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.requests.restaction.MessageAction
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
+import net.dv8tion.jda.internal.entities.DataMessage
 import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
@@ -253,7 +254,7 @@ suspend fun sendMsgWithAttachmentsAwaitN(channel: MessageChannel, message: Messa
     return messageAction?.awaitOrNull()
 }
 
-suspend fun sendEmbed(context: CommandContext, embed: MessageEmbed) {
+fun sendEmbed(context: CommandContext, embed: MessageEmbed) {
     if (context.isFromGuild) {
         sendEmbed(context.daoManager.embedDisabledWrapper, context.textChannel, embed)
     } else {
@@ -300,7 +301,7 @@ suspend fun sendEmbedAwaitEL(embedDisabledWrapper: EmbedDisabledWrapper, textCha
     }
 }
 
-suspend fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChannel, embed: MessageEmbed) {
+fun sendEmbed(embedDisabledWrapper: EmbedDisabledWrapper, textChannel: TextChannel, embed: MessageEmbed) {
     val guild = textChannel.guild
     if (!textChannel.canTalk()) {
         throw IllegalArgumentException("No permission to talk in this channel")
@@ -613,6 +614,7 @@ fun addPaginationEmotes(message: Message, morePages: Boolean) {
 
 suspend fun sendMsgAwaitEL(privateChannel: PrivateChannel, msg: String): List<Message> {
     val messageList = mutableListOf<Message>()
+    if (privateChannel.user.isBot) return emptyList()
     if (msg.length <= 2000) {
         privateChannel.sendMessage(msg).awaitOrNull()?.let { messageList.add(it) }
     } else {
@@ -626,6 +628,7 @@ suspend fun sendMsgAwaitEL(privateChannel: PrivateChannel, msg: String): List<Me
 }
 
 fun sendMsg(privateChannel: PrivateChannel, msg: String) {
+    if (privateChannel.user.isBot) return
     if (msg.length <= 2000) {
         privateChannel.sendMessage(msg).queue()
     } else {
@@ -733,22 +736,34 @@ suspend fun sendMsgAwaitN(channel: TextChannel, msg: Message): Message? {
     require(channel.canTalk()) {
         "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
     }
+
     var action = if (msg.contentRaw.isNotBlank()) channel.sendMessage(msg.contentRaw) else null
     for (embed in msg.embeds) {
         if (action == null) action = channel.sendMessage(embed)
         else action.embed(embed)
     }
 
+    if (msg is DataMessage) {
+        action?.allowedMentions(msg.allowedMentions)
+    }
+
     return action?.awaitOrNull()
 }
 
 suspend fun sendMsgAwaitN(channel: PrivateChannel, msg: Message): Message? {
+    if (channel.user.isBot) return null
+
     var action = if (msg.contentRaw.isNotBlank()) {
         channel.sendMessage(msg.contentRaw)
     } else null
+
     for (embed in msg.embeds) {
         if (action == null) action = channel.sendMessage(embed)
         else action.embed(embed)
+    }
+
+    if (msg is DataMessage) {
+        action?.allowedMentions(msg.allowedMentions)
     }
 
     return action?.awaitOrNull()
@@ -785,6 +800,7 @@ suspend fun sendMsgAwaitEL(textChannel: TextChannel, msg: String, image: Buffere
 }
 
 suspend fun sendMsgAwaitEL(privateChannel: PrivateChannel, msg: String, image: BufferedImage?, extension: String): List<Message> {
+    if (privateChannel.user.isBot) return emptyList()
 
     val messageList = mutableListOf<Message>()
     val byteArrayOutputStream = ByteArrayOutputStream()

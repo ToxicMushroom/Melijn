@@ -6,6 +6,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.withPermit
 import lavalink.client.player.IPlayer
 import lavalink.client.player.event.AudioEventAdapterWrapped
 import me.melijn.melijnbot.Container
@@ -32,7 +33,8 @@ class GuildTrackManager(
     var iPlayer: IPlayer
 ) : AudioEventAdapterWrapped() {
 
-    var votes: Int = 0
+    var votedUsers = mutableListOf<Long>()
+
     val playingTrack: AudioTrack?
         get() = iPlayer.playingTrack
 
@@ -51,7 +53,7 @@ class GuildTrackManager(
 
 
     private fun nextTrack(lastTrack: AudioTrack) {
-        votes = 0
+        votedUsers.clear()
         if (tracks.isEmpty()) {
             if (loopedQueue || loopedTrack) {
                 iPlayer.playTrack(lastTrack.makeClone())
@@ -60,12 +62,12 @@ class GuildTrackManager(
 
             val mNodeWrapper = daoManager.musicNodeWrapper
             runBlocking {
-                VOICE_SAFE.acquire()
-                Task {
-                    val isPremium = mNodeWrapper.isPremium(guildId)
-                    lavaManager.closeConnection(guildId, isPremium)
-                }.run()
-                VOICE_SAFE.release()
+                VOICE_SAFE.withPermit {
+                    Task {
+                        val isPremium = mNodeWrapper.isPremium(guildId)
+                        lavaManager.closeConnection(guildId, isPremium)
+                    }.run()
+                }
             }
             return
         }
@@ -231,9 +233,9 @@ class GuildTrackManager(
         }
         if (nextTrack == null) {
             runBlocking {
-                VOICE_SAFE.acquire()
-                stopAndDestroy()
-                VOICE_SAFE.release()
+                VOICE_SAFE.withPermit {
+                    stopAndDestroy()
+                }
             }
         } else {
             iPlayer.stopTrack()
@@ -264,9 +266,9 @@ class GuildTrackManager(
         val guild = MelijnBot.shardManager.getGuildById(guildId)
         if (guild == null) {
             runBlocking {
-                VOICE_SAFE.acquire()
-                stopAndDestroy()
-                VOICE_SAFE.release()
+                VOICE_SAFE.withPermit {
+                    stopAndDestroy()
+                }
             }
         }
         return guild

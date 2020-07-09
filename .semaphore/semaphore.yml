@@ -1,0 +1,18 @@
+version: v1.0
+name: Main pipeline
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+blocks:
+  - name: Build Docker Image
+    task:
+      secrets:
+        - name: docker-details
+      jobs:
+        - name: Build Docker image
+          commands:
+            - checkout
+            - docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
+            - docker build -t ${DOCKER_USERNAME}/${DOCKER_IMAGE}:latest .
+            - docker push ${DOCKER_USERNAME}/${DOCKER_IMAGE}:latest

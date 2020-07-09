@@ -16,7 +16,8 @@ class BoostMessageCommand : AbstractCommand("command.boostmessage") {
             LeaveMessageCommand.SetContentArg(root, MessageType.BOOST),
             LeaveMessageCommand.EmbedArg(root, MessageType.BOOST),
             LeaveMessageCommand.AttachmentsArg(root, MessageType.BOOST),
-            LeaveMessageCommand.ViewArg(root, MessageType.BOOST)
+            LeaveMessageCommand.ViewArg(root, MessageType.BOOST),
+            LeaveMessageCommand.SetPingableArg(root, MessageType.BOOST)
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }
