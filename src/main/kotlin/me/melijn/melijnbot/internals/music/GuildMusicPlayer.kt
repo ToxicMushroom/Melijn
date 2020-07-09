@@ -28,7 +28,7 @@ class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val gui
     }
 
     fun getSendHandler(): AudioPlayerSendHandler = AudioPlayerSendHandler(guildTrackManager.iPlayer)
-    fun safeQueueSilent(daoManager: DaoManager, track: AudioTrack, nextPos: NextSongPosition): Boolean {
+    suspend fun safeQueueSilent(daoManager: DaoManager, track: AudioTrack, nextPos: NextSongPosition): Boolean {
         if (
             (guildTrackManager.trackSize() <= DONATE_QUEUE_LIMIT && isPremiumGuild(daoManager, guildId)) ||
             guildTrackManager.tracks.size + 1 <= QUEUE_LIMIT
@@ -39,7 +39,7 @@ class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val gui
         return false
     }
 
-    fun safeQueue(context: CommandContext, track: AudioTrack, nextPos: NextSongPosition): Boolean {
+    suspend fun safeQueue(context: CommandContext, track: AudioTrack, nextPos: NextSongPosition): Boolean {
         val success = safeQueueSilent(context.daoManager, track, nextPos)
         if (!success) {
             context.taskManager.async {
