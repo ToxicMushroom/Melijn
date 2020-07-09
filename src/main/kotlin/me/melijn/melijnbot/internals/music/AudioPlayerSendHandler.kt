@@ -1,8 +1,8 @@
 package me.melijn.melijnbot.internals.music
 
 import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame
-import lavalink.client.player.IPlayer
-import lavalink.client.player.LavaplayerPlayerWrapper
+import me.melijn.llklient.player.IPlayer
+import me.melijn.llklient.player.LavaplayerPlayerWrapper
 import net.dv8tion.jda.api.audio.AudioSendHandler
 import java.nio.ByteBuffer
 

@@ -1,7 +1,7 @@
 package me.melijn.melijnbot
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import lavalink.client.io.jda.JdaLavalink
+import me.melijn.llklient.io.jda.JDALavalink
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.RoleUpdateCause
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -72,8 +72,8 @@ class Container {
     //messageId
     val botDeletedMessageIds = mutableSetOf<Long>()
 
-    var jdaLavaLink: JdaLavalink? = null
-    var premiumJdaLavaLink: JdaLavalink? = null
+    var jdaLavaLink: JDALavalink? = null
+    var premiumJdaLavaLink: JDALavalink? = null
 
     init {
         instance = this
@@ -88,7 +88,7 @@ class Container {
     }
 
 
-    fun initLava(jdaLavaLink: JdaLavalink?, premiumJdaLavaLink: JdaLavalink?) {
+    fun initLava(jdaLavaLink: JDALavalink?, premiumJdaLavaLink: JDALavalink?) {
         this.jdaLavaLink = jdaLavaLink
         this.premiumJdaLavaLink = premiumJdaLavaLink
     }

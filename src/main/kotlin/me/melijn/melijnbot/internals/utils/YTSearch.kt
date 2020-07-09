@@ -3,8 +3,10 @@ package me.melijn.melijnbot.internals.utils
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.BasicAudioPlaylist
-import lavalink.client.LavalinkUtil
-import lavalink.client.io.LavalinkRestClient
+import kotlinx.coroutines.future.await
+import me.melijn.llklient.io.LavalinkRestClient
+import me.melijn.llklient.utils.LavalinkUtil
+
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.SearchType
 import me.melijn.melijnbot.internals.music.SuspendingAudioLoadResultHandler
@@ -35,7 +37,7 @@ class YTSearch {
                 lManager.jdaLavaLink
             }
 
-            val restClient = llink?.getLink(guild)?.getNode(true)?.restClient
+            val restClient = llink?.getLink(guild.idLong)?.getNode(true)?.restClient
             val tracks = when (searchType) {
                 SearchType.SC -> {
                     restClient?.getSoundCloudSearchResult(query)?.await()
