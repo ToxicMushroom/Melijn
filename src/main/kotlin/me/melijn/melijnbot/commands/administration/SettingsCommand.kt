@@ -4,15 +4,15 @@ import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.RoleType
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.utils.StringUtils
-import me.melijn.melijnbot.objects.utils.message.sendEmbedRsp
-import me.melijn.melijnbot.objects.utils.message.sendRsp
-import me.melijn.melijnbot.objects.utils.toHexString
-import me.melijn.melijnbot.objects.utils.toUCSC
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.utils.StringUtils
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.toHexString
+import me.melijn.melijnbot.internals.utils.toUCSC
 import net.dv8tion.jda.api.utils.MarkdownSanitizer
 
 

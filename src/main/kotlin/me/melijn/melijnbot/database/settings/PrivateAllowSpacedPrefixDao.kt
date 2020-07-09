@@ -2,7 +2,7 @@ package me.melijn.melijnbot.database.settings
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
-import me.melijn.melijnbot.objects.internals.TriState
+import me.melijn.melijnbot.internals.models.TriState
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 

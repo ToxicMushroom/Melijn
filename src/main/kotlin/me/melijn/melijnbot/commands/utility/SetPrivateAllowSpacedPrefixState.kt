@@ -1,13 +1,13 @@
 package me.melijn.melijnbot.commands.utility
 
 import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.internals.TriState
-import me.melijn.melijnbot.objects.utils.getEnumFromArgNMessage
-import me.melijn.melijnbot.objects.utils.message.sendRsp
-import me.melijn.melijnbot.objects.utils.toLC
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.models.TriState
+import me.melijn.melijnbot.internals.utils.getEnumFromArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.toLC
 
 
 const val MESSAGE_UNKNOWN_TRISTATE = "message.unknown.tristate"

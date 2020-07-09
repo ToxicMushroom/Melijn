@@ -1,18 +1,18 @@
 package me.melijn.melijnbot.commands.music
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.PLACEHOLDER_PREFIX
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.KSOFT_SI
-import me.melijn.melijnbot.objects.utils.RunConditionUtil
-import me.melijn.melijnbot.objects.utils.countWords
-import me.melijn.melijnbot.objects.utils.message.sendEmbedRsp
-import me.melijn.melijnbot.objects.utils.message.sendRsp
-import me.melijn.melijnbot.objects.utils.remove
-import me.melijn.melijnbot.objects.utils.withVariable
-import me.melijn.melijnbot.objects.web.WebUtils
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.translation.KSOFT_SI
+import me.melijn.melijnbot.internals.utils.RunConditionUtil
+import me.melijn.melijnbot.internals.utils.countWords
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.remove
+import me.melijn.melijnbot.internals.utils.withVariable
+import me.melijn.melijnbot.internals.web.WebUtils
 import net.dv8tion.jda.api.entities.MessageEmbed
 
 class LyricsCommand : AbstractCommand("command.lyrics") {

@@ -2,14 +2,14 @@ package me.melijn.melijnbot.commands.utility
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.commands.administration.AliasesCommand.Companion.getCommandPathInfo
-import me.melijn.melijnbot.objects.command.*
-import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
-import me.melijn.melijnbot.objects.utils.getStringFromArgsNMessage
-import me.melijn.melijnbot.objects.utils.message.sendRsp
-import me.melijn.melijnbot.objects.utils.message.sendRspCodeBlock
-import me.melijn.melijnbot.objects.utils.message.sendSyntax
-import me.melijn.melijnbot.objects.utils.removePrefix
-import me.melijn.melijnbot.objects.utils.withVariable
+import me.melijn.melijnbot.internals.command.*
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.internals.utils.getStringFromArgsNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.removePrefix
+import me.melijn.melijnbot.internals.utils.withVariable
 
 const val TOTAL_ALIASES_LIMIT = 25
 const val CMD_ALIASES_LIMIT = 3

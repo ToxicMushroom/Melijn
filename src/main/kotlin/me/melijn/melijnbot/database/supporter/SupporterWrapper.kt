@@ -1,7 +1,7 @@
 package me.melijn.melijnbot.database.supporter
 
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.internals.threading.TaskManager
 
 class SupporterWrapper(val taskManager: TaskManager, private val userSupporterDao: UserSupporterDao) {
 

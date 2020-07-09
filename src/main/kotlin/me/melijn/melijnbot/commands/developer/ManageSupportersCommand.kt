@@ -1,15 +1,15 @@
 package me.melijn.melijnbot.commands.developer
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.utils.asEpochMillisToDateTime
-import me.melijn.melijnbot.objects.utils.awaitOrNull
-import me.melijn.melijnbot.objects.utils.getLongFromArgNMessage
-import me.melijn.melijnbot.objects.utils.message.sendMsg
-import me.melijn.melijnbot.objects.utils.message.sendRspCodeBlock
-import me.melijn.melijnbot.objects.utils.message.sendSyntax
-import me.melijn.melijnbot.objects.utils.retrieveUserByArgsNMessage
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
+import me.melijn.melijnbot.internals.utils.awaitOrNull
+import me.melijn.melijnbot.internals.utils.getLongFromArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendMsg
+import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
 
 class ManageSupportersCommand : AbstractCommand("command.managesupporters") {
 

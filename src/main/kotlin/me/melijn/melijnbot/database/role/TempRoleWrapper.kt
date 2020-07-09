@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.database.role
 
-import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.internals.threading.TaskManager
 
 class TempRoleWrapper(val taskManager: TaskManager, private val tempRoleDao: TempRoleDao) {
 

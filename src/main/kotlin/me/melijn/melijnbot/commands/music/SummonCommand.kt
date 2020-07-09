@@ -1,15 +1,15 @@
 package me.melijn.melijnbot.commands.music
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.hasPermission
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_CHANNEL
-import me.melijn.melijnbot.objects.utils.RunConditionUtil
-import me.melijn.melijnbot.objects.utils.getVoiceChannelByArgNMessage
-import me.melijn.melijnbot.objects.utils.message.sendRsp
-import me.melijn.melijnbot.objects.utils.notEnoughPermissionsAndMessage
-import me.melijn.melijnbot.objects.utils.withVariable
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.hasPermission
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
+import me.melijn.melijnbot.internals.utils.RunConditionUtil
+import me.melijn.melijnbot.internals.utils.getVoiceChannelByArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.notEnoughPermissionsAndMessage
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.Permission
 
 class SummonCommand : AbstractCommand("command.summon") {

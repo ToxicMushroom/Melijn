@@ -1,11 +1,11 @@
 package me.melijn.melijnbot.commands.developer
 
 import kotlinx.coroutines.sync.withPermit
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.services.voice.VOICE_SAFE
-import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.services.voice.VOICE_SAFE
+import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 class ShutdownCommand : AbstractCommand("command.shutdown") {

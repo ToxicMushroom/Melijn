@@ -1,18 +1,18 @@
 package me.melijn.melijnbot.commands.administration
 
 import me.melijn.melijnbot.enums.RoleType
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.translation.MESSAGE_UNKNOWN_ROLETYPE
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ROLE
-import me.melijn.melijnbot.objects.utils.checks.getAndVerifyRoleByType
-import me.melijn.melijnbot.objects.utils.getEnumFromArgNMessage
-import me.melijn.melijnbot.objects.utils.getRoleByArgsNMessage
-import me.melijn.melijnbot.objects.utils.message.sendRsp
-import me.melijn.melijnbot.objects.utils.message.sendSyntax
-import me.melijn.melijnbot.objects.utils.toUCC
-import me.melijn.melijnbot.objects.utils.withVariable
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_ROLETYPE
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ROLE
+import me.melijn.melijnbot.internals.utils.checks.getAndVerifyRoleByType
+import me.melijn.melijnbot.internals.utils.getEnumFromArgNMessage
+import me.melijn.melijnbot.internals.utils.getRoleByArgsNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.toUCC
+import me.melijn.melijnbot.internals.utils.withVariable
 
 class SetRoleCommand : AbstractCommand("command.setrole") {
 

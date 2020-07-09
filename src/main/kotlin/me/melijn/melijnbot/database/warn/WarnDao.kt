@@ -2,7 +2,7 @@ package me.melijn.melijnbot.database.warn
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
-import me.melijn.melijnbot.objects.utils.StringUtils.toBase64
+import me.melijn.melijnbot.internals.utils.StringUtils.toBase64
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 

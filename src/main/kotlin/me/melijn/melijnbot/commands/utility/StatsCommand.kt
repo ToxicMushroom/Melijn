@@ -1,13 +1,13 @@
 package me.melijn.melijnbot.commands.utility
 
 import com.sun.management.OperatingSystemMXBean
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.events.eventutil.VoiceUtil
-import me.melijn.melijnbot.objects.utils.*
-import me.melijn.melijnbot.objects.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
+import me.melijn.melijnbot.internals.utils.*
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import java.lang.management.ManagementFactory
 import java.text.DecimalFormat
 import java.util.concurrent.ThreadPoolExecutor

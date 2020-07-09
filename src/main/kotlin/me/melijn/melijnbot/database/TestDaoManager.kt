@@ -2,7 +2,7 @@ package me.melijn.melijnbot.database
 
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Settings
-import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.internals.threading.TaskManager
 
 
 class TestDaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {

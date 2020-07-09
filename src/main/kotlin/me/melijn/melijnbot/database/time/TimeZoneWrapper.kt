@@ -2,8 +2,8 @@ package me.melijn.melijnbot.database.time
 
 import com.google.common.cache.CacheBuilder
 import me.melijn.melijnbot.database.FREQUENTLY_USED_CACHE
-import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.loadingCacheFrom
+import me.melijn.melijnbot.internals.threading.TaskManager
+import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit

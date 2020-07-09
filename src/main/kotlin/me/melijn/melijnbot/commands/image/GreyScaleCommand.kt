@@ -1,10 +1,10 @@
 package me.melijn.melijnbot.commands.image
 
 import me.melijn.melijnbot.commandutil.image.ImageCommandUtil
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.utils.ImageUtils
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.utils.ImageUtils
 import net.dv8tion.jda.api.Permission
 
 class GreyScaleCommand : AbstractCommand("command.greyscale") {

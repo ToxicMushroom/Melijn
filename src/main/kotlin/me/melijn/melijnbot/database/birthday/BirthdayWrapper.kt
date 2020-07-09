@@ -1,6 +1,6 @@
 package me.melijn.melijnbot.database.birthday
 
-import me.melijn.melijnbot.objects.utils.isLeapYear
+import me.melijn.melijnbot.internals.utils.isLeapYear
 import java.util.*
 
 

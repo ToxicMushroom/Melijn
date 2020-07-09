@@ -1,12 +1,12 @@
 package me.melijn.melijnbot.commands.utility
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.utils.await
-import me.melijn.melijnbot.objects.utils.message.handleRspDelete
-import me.melijn.melijnbot.objects.utils.message.sendMsgAwaitEL
-import me.melijn.melijnbot.objects.utils.withVariable
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.utils.await
+import me.melijn.melijnbot.internals.utils.message.handleRspDelete
+import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
+import me.melijn.melijnbot.internals.utils.withVariable
 
 
 class PingCommand : AbstractCommand("command.ping") {

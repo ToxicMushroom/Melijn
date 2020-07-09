@@ -1,14 +1,14 @@
 package me.melijn.melijnbot.commandutil.anime
 
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.embed.Embedder
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.utils.awaitOrNull
-import me.melijn.melijnbot.objects.utils.getRoleByArgsN
-import me.melijn.melijnbot.objects.utils.message.sendEmbedRsp
-import me.melijn.melijnbot.objects.utils.message.sendRsp
-import me.melijn.melijnbot.objects.utils.retrieveUserByArgsN
-import me.melijn.melijnbot.objects.utils.withVariable
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.internals.utils.awaitOrNull
+import me.melijn.melijnbot.internals.utils.getRoleByArgsN
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.retrieveUserByArgsN
+import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.User
 

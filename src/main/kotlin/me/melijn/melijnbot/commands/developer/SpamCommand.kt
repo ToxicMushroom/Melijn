@@ -1,10 +1,10 @@
 package me.melijn.melijnbot.commands.developer
 
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.utils.getBooleanFromArgNMessage
-import me.melijn.melijnbot.objects.utils.message.sendRsp
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.utils.getBooleanFromArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
 
 class SpamCommand : AbstractCommand("command.spam") {
 

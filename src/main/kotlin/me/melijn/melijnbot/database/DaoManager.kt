@@ -59,7 +59,7 @@ import me.melijn.melijnbot.database.votes.VoteDao
 import me.melijn.melijnbot.database.votes.VoteWrapper
 import me.melijn.melijnbot.database.warn.WarnDao
 import me.melijn.melijnbot.database.warn.WarnWrapper
-import me.melijn.melijnbot.objects.threading.TaskManager
+import me.melijn.melijnbot.internals.threading.TaskManager
 
 const val RAPIDLY_USED_CACHE = 1L
 const val NOT_IMPORTANT_CACHE = 2L

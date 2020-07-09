@@ -2,14 +2,14 @@ package me.melijn.melijnbot.commands.music
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.audio.GainProfile
-import me.melijn.melijnbot.objects.command.*
-import me.melijn.melijnbot.objects.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
-import me.melijn.melijnbot.objects.utils.getStringFromArgsNMessage
-import me.melijn.melijnbot.objects.utils.isPositiveNumber
-import me.melijn.melijnbot.objects.utils.message.sendRsp
-import me.melijn.melijnbot.objects.utils.message.sendSyntax
-import me.melijn.melijnbot.objects.utils.withVariable
+import me.melijn.melijnbot.internals.command.*
+import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.internals.utils.getStringFromArgsNMessage
+import me.melijn.melijnbot.internals.utils.isPositiveNumber
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.withVariable
 import kotlin.math.roundToInt
 
 class GainProfileCommand : AbstractCommand("command.gainprofile") {

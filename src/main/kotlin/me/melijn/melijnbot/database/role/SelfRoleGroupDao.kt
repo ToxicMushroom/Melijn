@@ -2,7 +2,7 @@ package me.melijn.melijnbot.database.role
 
 import me.melijn.melijnbot.database.Dao
 import me.melijn.melijnbot.database.DriverManager
-import me.melijn.melijnbot.objects.utils.splitIETEL
+import me.melijn.melijnbot.internals.utils.splitIETEL
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 

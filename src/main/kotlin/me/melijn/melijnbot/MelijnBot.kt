@@ -4,7 +4,7 @@ import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory
 import kotlinx.coroutines.runBlocking
 import lavalink.client.io.jda.JdaLavalink
 import me.melijn.melijnbot.commands.music.MusicNodeCommand
-import me.melijn.melijnbot.objects.events.EventManager
+import me.melijn.melijnbot.internals.events.EventManager
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.hooks.VoiceDispatchInterceptor
 import net.dv8tion.jda.api.requests.GatewayIntent

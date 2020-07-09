@@ -1,14 +1,14 @@
 package me.melijn.melijnbot.commands.image
 
 import com.squareup.gifencoder.*
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.command.RunCondition
-import me.melijn.melijnbot.objects.utils.ImageUtils
-import me.melijn.melijnbot.objects.utils.getIntegerFromArgN
-import me.melijn.melijnbot.objects.utils.getLongFromArgN
-import me.melijn.melijnbot.objects.utils.message.sendFileRsp
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.command.RunCondition
+import me.melijn.melijnbot.internals.utils.ImageUtils
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgN
+import me.melijn.melijnbot.internals.utils.getLongFromArgN
+import me.melijn.melijnbot.internals.utils.message.sendFileRsp
 import java.awt.Color
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream

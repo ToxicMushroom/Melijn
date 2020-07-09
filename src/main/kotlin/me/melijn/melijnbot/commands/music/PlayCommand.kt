@@ -1,14 +1,14 @@
 package me.melijn.melijnbot.commands.music
 
-import me.melijn.melijnbot.objects.command.*
-import me.melijn.melijnbot.objects.music.AudioLoader
-import me.melijn.melijnbot.objects.music.LavaManager
-import me.melijn.melijnbot.objects.translation.SC_SELECTOR
-import me.melijn.melijnbot.objects.translation.YT_SELECTOR
-import me.melijn.melijnbot.objects.utils.message.sendInGuild
-import me.melijn.melijnbot.objects.utils.message.sendRsp
-import me.melijn.melijnbot.objects.utils.message.sendSyntax
-import me.melijn.melijnbot.objects.utils.replacePrefix
+import me.melijn.melijnbot.internals.command.*
+import me.melijn.melijnbot.internals.music.AudioLoader
+import me.melijn.melijnbot.internals.music.LavaManager
+import me.melijn.melijnbot.internals.translation.SC_SELECTOR
+import me.melijn.melijnbot.internals.translation.YT_SELECTOR
+import me.melijn.melijnbot.internals.utils.message.sendInGuild
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.replacePrefix
 import net.dv8tion.jda.api.entities.VoiceChannel
 
 class PlayCommand : AbstractCommand("command.play") {

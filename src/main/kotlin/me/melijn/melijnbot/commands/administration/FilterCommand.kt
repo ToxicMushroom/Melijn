@@ -4,14 +4,14 @@ import com.google.common.cache.LoadingCache
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.FilterType
-import me.melijn.melijnbot.objects.command.AbstractCommand
-import me.melijn.melijnbot.objects.command.CommandCategory
-import me.melijn.melijnbot.objects.command.CommandContext
-import me.melijn.melijnbot.objects.utils.getIntegerFromArgNMessage
-import me.melijn.melijnbot.objects.utils.message.sendRsp
-import me.melijn.melijnbot.objects.utils.message.sendSyntax
-import me.melijn.melijnbot.objects.utils.removeFirst
-import me.melijn.melijnbot.objects.utils.withVariable
+import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
+import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.removeFirst
+import me.melijn.melijnbot.internals.utils.withVariable
 import java.util.concurrent.CompletableFuture
 
 class FilterCommand : AbstractCommand("command.filter") {
