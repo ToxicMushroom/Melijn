@@ -22,3 +22,5 @@ config.json
 /avatar.png
 /Melijn-2.0.0-all.jar
 /config_local.json
+
+config_self.json
