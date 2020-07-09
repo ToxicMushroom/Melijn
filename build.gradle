@@ -44,7 +44,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.2.0_174') {
+    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.2.0_175') {
         exclude module: 'opus-java'
     }
 
