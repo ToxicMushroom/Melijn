@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.economy
 
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
