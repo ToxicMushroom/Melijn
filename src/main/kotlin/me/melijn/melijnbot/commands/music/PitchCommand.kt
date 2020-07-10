@@ -21,13 +21,13 @@ class PitchCommand : AbstractCommand("command.pitch") {
         val iPlayer = context.guildMusicPlayer.guildTrackManager.iPlayer
         if (context.args.isEmpty()) {
             val msg = context.getTranslation("$root.show")
-                .withVariable("pitch", iPlayer.speed * 100)
+                .withVariable("pitch", iPlayer.pitch * 100)
             sendRsp(context, msg)
             return
         }
 
         val pitch = getLongFromArgNMessage(context, 0, 0, ignore = *arrayOf("%")) ?: return
-        iPlayer.pitch = pitch / 100.0
+        iPlayer.setPitch(pitch / 100.0)
 
         val msg = context.getTranslation("$root.set")
             .withVariable("pitch", pitch)

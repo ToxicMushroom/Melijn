@@ -241,8 +241,8 @@ class GuildTrackManager(
         }
     }
 
-    fun setPaused(paused: Boolean) {
-        iPlayer.paused = paused
+    suspend fun setPaused(paused: Boolean) {
+        iPlayer.setPaused(paused)
     }
 
     fun removeAt(indexes: IntArray): Map<Int, AudioTrack> {

@@ -44,7 +44,7 @@ class VoiceLeaveListener(container: Container) : AbstractListener(container) {
         container.lavaManager.tryToConnectToVCSilent(channel, premium)
 
         trackManager.iPlayer.playTrack(track)
-        trackManager.iPlayer.volume = nodeInfo.volume
+        trackManager.iPlayer.setVolume(nodeInfo.volume)
         try {
             trackManager.iPlayer.seekTo(pos)
         } catch (t: Throwable) {
