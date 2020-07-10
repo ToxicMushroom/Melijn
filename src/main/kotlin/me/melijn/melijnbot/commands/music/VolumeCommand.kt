@@ -38,7 +38,7 @@ class VolumeCommand : AbstractCommand("command.volume") {
             return
         }
 
-        iPlayer.volume = amount
+        iPlayer.setVolume(amount)
 
         val msg = context.getTranslation("$root.set")
             .withVariable("volume", amount.toString())
