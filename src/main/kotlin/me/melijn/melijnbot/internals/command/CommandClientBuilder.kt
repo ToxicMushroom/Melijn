@@ -6,6 +6,7 @@ import me.melijn.melijnbot.commands.animal.*
 import me.melijn.melijnbot.commands.anime.*
 import me.melijn.melijnbot.commands.developer.*
 import me.melijn.melijnbot.commands.economy.BalanceCommand
+import me.melijn.melijnbot.commands.economy.DailyCommand
 import me.melijn.melijnbot.commands.economy.FlipCommand
 import me.melijn.melijnbot.commands.image.*
 import me.melijn.melijnbot.commands.moderation.*
@@ -205,7 +206,8 @@ class CommandClientBuilder(private val container: Container) {
         SetRemoveResponsesCommand(),
         SetRemoveInvokeCommand(),
         ManageSupportersCommand(),
-        FlipCommand()
+        FlipCommand(),
+        DailyCommand()
     )
 
     init {
