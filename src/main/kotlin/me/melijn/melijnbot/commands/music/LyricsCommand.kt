@@ -47,15 +47,16 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
     }
 
     private suspend fun formatAndSendLyrics(context: CommandContext, title: String, name: String, lyrics: String) {
-        val embed = Embedder(context)
-        embed.setTitle(name.take(MessageEmbed.TITLE_MAX_LENGTH))
-        embed.setDescription(lyrics.take(MessageEmbed.TEXT_MAX_LENGTH))
-
         val words = context.getTranslation("$root.words")
         val characters = context.getTranslation("$root.characters")
+        val powered = context.getTranslation("$root.powered")
 
-        embed.addField(words, "${lyrics.countWords()}", true)
-        embed.addField(characters, "${lyrics.remove(" ").length}", true)
+        val embed = Embedder(context)
+            .setTitle(name.take(MessageEmbed.TITLE_MAX_LENGTH))
+            .setDescription(lyrics.take(MessageEmbed.TEXT_MAX_LENGTH))
+            .addField(words, "${lyrics.countWords()}", true)
+            .addField(characters, "${lyrics.remove(" ").length}", true)
+            .setFooter(powered.withVariable("url", "api.ksoft.si"))
 
         sendEmbedRsp(context, embed.build())
     }
