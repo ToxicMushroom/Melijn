@@ -26,6 +26,8 @@ import me.melijn.melijnbot.database.disabled.DisabledCommandDao
 import me.melijn.melijnbot.database.disabled.DisabledCommandWrapper
 import me.melijn.melijnbot.database.economy.BalanceDao
 import me.melijn.melijnbot.database.economy.BalanceWrapper
+import me.melijn.melijnbot.database.economy.DailyCooldownDao
+import me.melijn.melijnbot.database.economy.DailyCooldownWrapper
 import me.melijn.melijnbot.database.embed.*
 import me.melijn.melijnbot.database.filter.FilterDao
 import me.melijn.melijnbot.database.filter.FilterGroupDao
@@ -165,6 +167,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
 
     val voteWrapper: VoteWrapper
     val balanceWrapper: BalanceWrapper
+    val dailyCooldownWrapper: DailyCooldownWrapper
     var driverManager: DriverManager
 
     init {
@@ -263,6 +266,7 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
 
         voteWrapper = VoteWrapper(VoteDao(driverManager))
         balanceWrapper = BalanceWrapper(taskManager, BalanceDao(driverManager))
+        dailyCooldownWrapper = DailyCooldownWrapper(taskManager, DailyCooldownDao(driverManager))
         //After registering wrappers
         driverManager.executeTableRegistration()
         for (func in afterTableFunctions) {
