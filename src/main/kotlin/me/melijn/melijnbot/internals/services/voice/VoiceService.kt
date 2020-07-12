@@ -4,7 +4,6 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
-import me.melijn.melijnbot.internals.music.MusicPlayerManager
 import me.melijn.melijnbot.internals.services.Service
 import me.melijn.melijnbot.internals.threading.RunnableTask
 import me.melijn.melijnbot.internals.utils.listeningMembers
@@ -33,10 +32,6 @@ class VoiceService(
                     continue
                 }
 
-                val guildMPlayer = MusicPlayerManager.guildMusicPlayers.getOrElse(guildId) {
-                    null
-                }
-
                 val connectedChannel = guild.selfMember.voiceState?.channel
                 if (connectedChannel != null && listeningMembers(connectedChannel) > 0) {
                     VoiceUtil.disconnectQueue.remove(guildId)
@@ -44,15 +39,7 @@ class VoiceService(
                     continue
                 }
 
-                if (guildMPlayer?.guildTrackManager != null) {
-                    guildMPlayer.guildTrackManager.stopAndDestroy()
-                    //logger.info("$guildId stopped player & left")
-
-                } else {
-                    val isPremium = container.daoManager.musicNodeWrapper.isPremium(guildId)
-                    container.lavaManager.closeConnection(guildId, isPremium)
-                    //logger.info("$guildId left")
-                }
+                container.lavaManager.musicPlayerManager.getGuildMusicPlayer(guild).guildTrackManager.stopAndDestroy()
 
                 VoiceUtil.disconnectQueue.remove(guildId)
             }

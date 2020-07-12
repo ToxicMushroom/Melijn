@@ -17,6 +17,7 @@ import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.internals.services.voice.VOICE_SAFE
 import me.melijn.melijnbot.internals.threading.Task
 import me.melijn.melijnbot.internals.utils.LogUtils
+import me.melijn.melijnbot.internals.utils.YTSearch
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import net.dv8tion.jda.api.entities.Guild
@@ -30,7 +31,8 @@ class GuildTrackManager(
     val guildId: Long,
     val daoManager: DaoManager,
     val lavaManager: LavaManager,
-    var iPlayer: IPlayer
+    var iPlayer: IPlayer,
+    var groupId: String
 ) : AudioEventAdapterWrapped() {
 
     var votedUsers = mutableListOf<Long>()
@@ -56,16 +58,15 @@ class GuildTrackManager(
         votedUsers.clear()
         if (tracks.isEmpty()) {
             if (loopedQueue || loopedTrack) {
+                chekNChangeGroup(lastTrack.info.uri)
                 iPlayer.playTrack(lastTrack.makeClone())
                 return
             }
 
-            val mNodeWrapper = daoManager.musicNodeWrapper
 
             VOICE_SAFE.withPermit {
                 Task {
-                    val isPremium = mNodeWrapper.isPremium(guildId)
-                    lavaManager.closeConnection(guildId, isPremium)
+                    lavaManager.closeConnection(guildId, groupId)
                 }.run()
             }
 
@@ -73,11 +74,13 @@ class GuildTrackManager(
         }
 
         if (loopedTrack) {
+            chekNChangeGroup(lastTrack.info.uri)
             iPlayer.playTrack(lastTrack.makeClone())
             return
         }
 
         val track: AudioTrack = tracks.poll()
+        chekNChangeGroup(track.info.uri)
         if (track == lastTrack) {
             iPlayer.playTrack(track.makeClone())
         } else {
@@ -89,10 +92,23 @@ class GuildTrackManager(
         }
     }
 
+    private suspend fun chekNChangeGroup(uri: String) {
+        if (YTSearch.isUnknownHTTP(uri)) {
+            if (groupId == "normal") {
+                lavaManager.changeGroup(guildId, "http")
+                groupId = "http"
+            }
+        } else if (groupId == "http") {
+            lavaManager.changeGroup(guildId, "normal")
+            groupId = "normal"
+        }
+    }
+
     /** returns the song postition **/
     suspend fun queue(track: AudioTrack, nextPos: NextSongPosition) {
         if (track.userData == null) throw IllegalArgumentException("no")
         if (iPlayer.playingTrack == null) {
+            chekNChangeGroup(track.info.uri)
             iPlayer.playTrack(track)
         } else {
             when (nextPos) {
@@ -162,7 +178,7 @@ class GuildTrackManager(
         }
     }
 
-    suspend fun getStartEmbedFromMap(time: Long, nesting: Int = 0, nestCountLimit: Int = 5): MessageEmbed? {
+    private suspend fun getStartEmbedFromMap(time: Long, nesting: Int = 0, nestCountLimit: Int = 5): MessageEmbed? {
         return startMomentMessageMap.getOrElse(time) {
             delay(500)
             return if (nesting >= nestCountLimit) {
@@ -173,7 +189,7 @@ class GuildTrackManager(
         }
     }
 
-    suspend fun getPausedEmbedFromMap(time: Long, nesting: Int = 0, nestCountLimit: Int = 5): MessageEmbed? {
+    private suspend fun getPausedEmbedFromMap(time: Long, nesting: Int = 0, nestCountLimit: Int = 5): MessageEmbed? {
         return pauseMomentMessageMap.getOrElse(time) {
             delay(100)
             return if (nesting >= nestCountLimit) {
@@ -184,7 +200,7 @@ class GuildTrackManager(
         }
     }
 
-    suspend fun getResumedEmbedFromMap(time: Long, nesting: Int = 0, nestCountLimit: Int = 5): MessageEmbed? {
+    private suspend fun getResumedEmbedFromMap(time: Long, nesting: Int = 0, nestCountLimit: Int = 5): MessageEmbed? {
         return resumeMomentMessageMap.getOrElse(time) {
             delay(100)
             return if (nesting >= nestCountLimit) {
@@ -220,8 +236,7 @@ class GuildTrackManager(
         iPlayer.stopTrack()
 
         Task {
-            val isPremium = daoManager.musicNodeWrapper.isPremium(guildId)
-            lavaManager.closeConnection(guildId, isPremium)
+            lavaManager.closeConnection(guildId, groupId)
         }.run()
     }
 
@@ -237,6 +252,7 @@ class GuildTrackManager(
             }
         } else {
             iPlayer.stopTrack()
+            chekNChangeGroup(nextTrack.info.uri)
             iPlayer.playTrack(nextTrack)
         }
     }

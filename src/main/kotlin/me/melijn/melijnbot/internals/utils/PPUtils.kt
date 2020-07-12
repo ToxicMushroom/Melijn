@@ -53,7 +53,7 @@ object PPUtils {
     // Applies the correct punishment to the member
     private suspend fun applyPunishment(member: Member, punishment: Punishment, container: Container) {
         when (punishment.punishmentType) {
-            //TODO ("Permission checks and logging in case of missing stuff")
+            // TODO Permission checks and logging in case of missing stuff
             PunishmentType.BAN -> {
                 val delDays = punishment.extraMap.getInt("delDays", 0)
                 val duration = punishment.extraMap.getLong("duration", -1)
