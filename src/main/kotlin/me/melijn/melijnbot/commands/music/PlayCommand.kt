@@ -57,13 +57,13 @@ class PlayCommand : AbstractCommand("command.play") {
             NextSongPosition.BOTTOM
         }
 
-        val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
+        val groupId = context.guildMusicPlayer.groupId
         if (songArg.startsWith("https://") || songArg.startsWith("http://")) {
             if (!hasPermission(context, "$root.url")) {
                 sendMissingPermissionMessage(context, "$root.url")
                 return
             }
-            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
+            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
             if (songArg.contains("open.spotify.com") && context.webManager.spotifyApi != null) {
                 spotifySearchNLoad(context.audioLoader, context, songArg, songPosition)
             } else {
@@ -74,7 +74,7 @@ class PlayCommand : AbstractCommand("command.play") {
                 sendMissingPermissionMessage(context, "$root.yt")
                 return
             }
-            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
+            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
 
             if (songArg.matches("spotify:(.*)".toRegex()) && context.webManager.spotifyApi != null) {
                 spotifySearchNLoad(context.audioLoader, context, songArg, songPosition)
@@ -87,7 +87,7 @@ class PlayCommand : AbstractCommand("command.play") {
                 sendMissingPermissionMessage(context, "$root.attachment")
                 return
             }
-            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
+            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
             for (url in tracks) {
                 context.audioLoader.loadNewTrackNMessage(context, url, false, songPosition)
             }
@@ -125,8 +125,8 @@ class PlayCommand : AbstractCommand("command.play") {
                 }
             }
 
-            val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
-            if (!lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
+            val groupId = context.guildMusicPlayer.groupId
+            if (!lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
             context.audioLoader.loadNewTrackNMessage(context, "${YT_SELECTOR}$songArg", false, songPosition)
         }
 
@@ -162,8 +162,8 @@ class PlayCommand : AbstractCommand("command.play") {
                 }
             }
 
-            val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
-            if (!lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
+            val groupId = context.guildMusicPlayer.groupId
+            if (!lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
             context.audioLoader.loadNewTrackNMessage(context, "${SC_SELECTOR}$songArg", false, songPosition)
         }
     }
@@ -203,8 +203,8 @@ class PlayCommand : AbstractCommand("command.play") {
 
             val tracks = context.message.attachments.map { attachment -> attachment.url }
 
-            val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
-            if (!lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
+            val groupId = context.guildMusicPlayer.groupId
+            if (!lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
             for (url in tracks) {
                 context.audioLoader.loadNewTrackNMessage(context, url, false, songPosition)
             }

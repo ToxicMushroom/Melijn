@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.internals.music
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -10,10 +9,27 @@ import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.withVariable
 
 
-class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val guildId: Long) {
+class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val guildId: Long, groupId: String) {
+
+    val guildTrackManager: GuildTrackManager = GuildTrackManager(
+        guildId,
+        daoManager,
+        lavaManager,
+        lavaManager.getIPlayer(guildId, groupId),
+        groupId
+    )
+
+    var groupId: String
+        get() = guildTrackManager.groupId
+        set(value) {
+            guildTrackManager.groupId = value
+        }
+
+    init {
+        this.groupId = groupId
+    }
 
     val searchMenus: MutableMap<Long, TracksForQueue> = mutableMapOf()
-    val guildTrackManager: GuildTrackManager = GuildTrackManager(guildId, daoManager, lavaManager, lavaManager.getIPlayer(guildId, runBlocking { daoManager.musicNodeWrapper.isPremium(guildId) }))
 
     init {
         addTrackManagerListener()

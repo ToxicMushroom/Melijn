@@ -41,7 +41,7 @@ class MusicPlayerManager(
     fun getGuildMusicPlayer(guild: Guild): GuildMusicPlayer {
         val cachedMusicPlayer = guildMusicPlayers[guild.idLong]
         if (cachedMusicPlayer == null) {
-            val newMusicPlayer = GuildMusicPlayer(daoManager, lavaManager, guild.idLong)
+            val newMusicPlayer = GuildMusicPlayer(daoManager, lavaManager, guild.idLong, "normal")
             runBlocking {
                 VOICE_SAFE.withPermit {
                     guildMusicPlayers[guild.idLong] = newMusicPlayer

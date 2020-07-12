@@ -159,7 +159,7 @@ class MyAnimeListCommand(jikanSettings: Settings.Jikan) : AbstractCommand("comma
             runConditions = arrayOf(RunCondition.CHANNEL_NSFW)
         }
 
-        //TODO ("get the actual manga entry")
+        // TODO get the actual manga entry
         override suspend fun execute(context: CommandContext) {
             if (context.args.isEmpty()) {
                 sendSyntax(context)
@@ -233,7 +233,7 @@ class MyAnimeListCommand(jikanSettings: Settings.Jikan) : AbstractCommand("comma
             runConditions = arrayOf(RunCondition.CHANNEL_NSFW)
         }
 
-        //TODO ("get the actual anime entry")
+        // TODO get the actual anime entry
         override suspend fun execute(context: CommandContext) {
             showSeries(context)
         }

@@ -19,32 +19,29 @@ class LavaManager(
     val lavalinkEnabled: Boolean,
     val daoManager: DaoManager,
     val shardManager: ShardManager,
-    val jdaLavaLink: JDALavalink?,
-    val premiumLavaLink: JDALavalink?
+    val jdaLavaLink: JDALavalink?
 ) {
     private val logger: Logger = LoggerFactory.getLogger(LavaManager::class.java)
 
     val musicPlayerManager: MusicPlayerManager = MusicPlayerManager(daoManager, this)
 
-    fun getIPlayer(guildId: Long, premium: Boolean): IPlayer {
-        val ll = if (premium) premiumLavaLink else jdaLavaLink
-        return if (lavalinkEnabled && ll != null) {
-            ll.getLink(guildId).player
+    fun getIPlayer(guildId: Long, groupId: String): IPlayer {
+        return if (lavalinkEnabled && jdaLavaLink != null) {
+            jdaLavaLink.getLink(guildId, groupId).player
         } else {
             LavaplayerPlayerWrapper(musicPlayerManager.getLPPlayer())
         }
     }
 
-    fun openConnection(channel: VoiceChannel, premium: Boolean) {
-        val ll = if (premium) premiumLavaLink else jdaLavaLink
-        if (ll == null) {
+    fun openConnection(channel: VoiceChannel, groupId: String) {
+        if (jdaLavaLink == null) {
             val selfMember = channel.guild.selfMember
             if (selfMember.hasPermission(channel, Permission.VOICE_CONNECT)) {
-                channel.guild.audioManager.sendingHandler = AudioPlayerSendHandler(getIPlayer(channel.guild.idLong, premium))
+                channel.guild.audioManager.sendingHandler = AudioPlayerSendHandler(getIPlayer(channel.guild.idLong, groupId))
                 channel.guild.audioManager.openAudioConnection(channel)
             }
         } else {
-            ll.getLink(channel.guild.idLong).connect(channel)
+            jdaLavaLink.getLink(channel.guild.idLong, groupId).connect(channel)
         }
 
         musicPlayerManager.getGuildMusicPlayer(channel.guild)
@@ -56,24 +53,24 @@ class LavaManager(
      * @param channel This is the voice channel you want to join
      * @return returns true on success and false when failed
      */
-    suspend fun tryToConnectToVCNMessage(context: CommandContext, channel: VoiceChannel, premium: Boolean): Boolean {
+    suspend fun tryToConnectToVCNMessage(context: CommandContext, channel: VoiceChannel, groupId: String): Boolean {
         if (notEnoughPermissionsAndMessage(context, channel, Permission.VOICE_CONNECT)) return false
         return if (channel.userLimit == 0 || channel.userLimit > channel.members.size || notEnoughPermissionsAndMessage(context, channel, Permission.VOICE_MOVE_OTHERS)) {
-            openConnection(channel, premium)
+            openConnection(channel, groupId)
             true
         } else {
             false
         }
     }
 
-    fun tryToConnectToVCSilent(voiceChannel: VoiceChannel, premium: Boolean): Boolean {
+    fun tryToConnectToVCSilent(voiceChannel: VoiceChannel, groupId: String): Boolean {
         val guild: Guild = voiceChannel.guild
         if (!guild.selfMember.hasPermission(voiceChannel, Permission.VOICE_CONNECT)) {
             return false
         }
 
         return if (voiceChannel.userLimit == 0 || voiceChannel.userLimit > voiceChannel.members.size || guild.selfMember.hasPermission(voiceChannel, Permission.VOICE_MOVE_OTHERS)) {
-            openConnection(voiceChannel, premium)
+            openConnection(voiceChannel, groupId)
             true
         } else {
             false
@@ -81,8 +78,8 @@ class LavaManager(
     }
 
     // run with VOICE_SAFE pls
-    suspend fun closeConnection(guildId: Long, premium: Boolean) {
-        closeConnectionLite(guildId, premium)
+    suspend fun closeConnection(guildId: Long, groupId: String) {
+        closeConnectionLite(guildId, groupId)
 
         if (MusicPlayerManager.guildMusicPlayers.containsKey(guildId)) {
             MusicPlayerManager.guildMusicPlayers[guildId]?.removeTrackManagerListener()
@@ -91,8 +88,8 @@ class LavaManager(
         }
     }
 
-    suspend fun closeConnectionAngry(guildId: Long, premium: Boolean) {
-        closeConnectionLiteAngry(guildId, premium)
+    suspend fun closeConnectionAngry(guildId: Long, groupId: String) {
+        closeConnectionLiteAngry(guildId, groupId)
 
         if (MusicPlayerManager.guildMusicPlayers.containsKey(guildId)) {
             MusicPlayerManager.guildMusicPlayers[guildId]?.removeTrackManagerListener()
@@ -101,29 +98,31 @@ class LavaManager(
         }
     }
 
-    suspend fun closeConnectionLite(guildId: Long, premium: Boolean) {
-        val ll = if (premium) premiumLavaLink else jdaLavaLink
+    suspend fun closeConnectionLite(guildId: Long, groupId: String) {
         val guild = shardManager.getGuildById(guildId)
 
-        if (ll == null) {
+        if (jdaLavaLink == null) {
             guild?.audioManager?.closeAudioConnection()
         } else {
-            ll.getLink(guildId).destroy()
+            jdaLavaLink.getLink(guildId, groupId).destroy()
         }
     }
 
-    suspend fun closeConnectionLiteAngry(guildId: Long, premium: Boolean) {
-        val ll = if (premium) premiumLavaLink else jdaLavaLink
+    suspend fun closeConnectionLiteAngry(guildId: Long, groupId: String) {
         val guild = shardManager.getGuildById(guildId)
 
-        if (ll == null) {
+        if (jdaLavaLink == null) {
             guild?.audioManager?.closeAudioConnection()
+
         } else {
-
-            ll.getLink(guildId).destroy()
-
+            jdaLavaLink.getLink(guildId, groupId).destroy()
         }
     }
 
     fun getConnectedChannel(guild: Guild): VoiceChannel? = guild.selfMember.voiceState?.channel
+
+    suspend fun changeGroup(guildId: Long, groupId: String) {
+        val link = jdaLavaLink?.getLink(guildId, groupId) ?: throw IllegalArgumentException("wtf")
+        link.changeGroup(groupId)
+    }
 }

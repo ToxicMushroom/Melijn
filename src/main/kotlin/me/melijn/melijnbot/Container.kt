@@ -73,7 +73,6 @@ class Container {
     val botDeletedMessageIds = mutableSetOf<Long>()
 
     var jdaLavaLink: JDALavalink? = null
-    var premiumJdaLavaLink: JDALavalink? = null
 
     init {
         instance = this
@@ -84,13 +83,12 @@ class Container {
     }
 
     fun initShardManager(shardManager: ShardManager) {
-        lavaManager = LavaManager(settings.lavalink.enabled, daoManager, shardManager, jdaLavaLink, premiumJdaLavaLink)
+        lavaManager = LavaManager(settings.lavalink.enabled, daoManager, shardManager, jdaLavaLink)
     }
 
 
-    fun initLava(jdaLavaLink: JDALavalink?, premiumJdaLavaLink: JDALavalink?) {
+    fun initLava(jdaLavaLink: JDALavalink?) {
         this.jdaLavaLink = jdaLavaLink
-        this.premiumJdaLavaLink = premiumJdaLavaLink
     }
 
     val uptimeMillis: Long
