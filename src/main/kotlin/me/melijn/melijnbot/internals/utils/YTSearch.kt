@@ -6,7 +6,6 @@ import com.sedmelluq.discord.lavaplayer.track.BasicAudioPlaylist
 import kotlinx.coroutines.future.await
 import me.melijn.llklient.io.LavalinkRestClient
 import me.melijn.llklient.utils.LavalinkUtil
-
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.SearchType
 import me.melijn.melijnbot.internals.music.SuspendingAudioLoadResultHandler
@@ -18,15 +17,21 @@ import java.util.concurrent.Executors
 
 val http = Regex("^(?:(?:https?)://)(?:\\S+(?::\\S*)?@)?(?:(?!10(?:\\.\\d{1,3}){3})(?!127(?:\\.\\d{1,3}){3})(?!169\\.254(?:\\.\\d{1,3}){2})(?!192\\.168(?:\\.\\d{1,3}){2})(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\x{00a1}-\\x{ffff}0-9]+-?)*[a-z\\x{00a1}-\\x{ffff}0-9]+)(?:\\.(?:[a-z\\x{00a1}-\\x{ffff}0-9]+-?)*[a-z\\x{00a1}-\\x{ffff}0-9]+)*(?:\\.(?:[a-z\\x{00a1}-\\x{ffff}]{2,})))(?::\\d{2,5})?(?:/[^\\s]*)?$")
 
+
+private const val PROTOCOL_REGEX = "(?:http://|https://|)"
+private const val DOMAIN_REGEX = "(?:www\\.|m\\.|music\\.|)youtube\\.com"
+private const val SHORT_DOMAIN_REGEX = "(?:www\\.|)youtu\\.be"
+val yt1 = Regex("^${PROTOCOL_REGEX}${DOMAIN_REGEX}/.*", RegexOption.IGNORE_CASE)
+val yt2 = Regex("^${PROTOCOL_REGEX}${SHORT_DOMAIN_REGEX}/.*", RegexOption.IGNORE_CASE)
+
 class YTSearch {
 
     companion object {
         fun isUnknownHTTP(query: String): Boolean {
             return if (http.matches(query)) {
                 !(query.startsWith("https://twitch.tv/", true) ||
-                    query.startsWith("https://wwww.youtube.com/", true) ||
-                    query.startsWith("https://youtube.com/", true) ||
-                    query.startsWith("https://youtu.be/", true) ||
+                    yt1.matches(query) ||
+                    yt2.matches(query) ||
                     query.startsWith("https://soundcloud.com/", true) ||
                     query.startsWith("https://vimeo.com/", true) ||
                     query.startsWith("https://getyarn.io/", true))
