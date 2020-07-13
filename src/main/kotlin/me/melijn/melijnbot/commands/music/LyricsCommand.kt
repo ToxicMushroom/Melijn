@@ -32,7 +32,7 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
 
                 val lyrics = getLyricsNMessage(context, info.title, info.author) ?: return
 
-                formatAndSendLyrics(context, info.title + " " + info.author, lyrics.first, lyrics.second)
+                formatAndSendLyrics(context, lyrics.first, lyrics.second)
             } else {
                 val msg = context.getTranslation("$root.extrahelp")
                     .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
@@ -42,11 +42,11 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
             val title = context.rawArg
             val lyrics = getLyricsNMessage(context, title, null) ?: return
 
-            formatAndSendLyrics(context, title, lyrics.first, lyrics.second)
+            formatAndSendLyrics(context, lyrics.first, lyrics.second)
         }
     }
 
-    private suspend fun formatAndSendLyrics(context: CommandContext, title: String, name: String, lyrics: String) {
+    private suspend fun formatAndSendLyrics(context: CommandContext, name: String, lyrics: String) {
         val words = context.getTranslation("$root.words")
         val characters = context.getTranslation("$root.characters")
         val powered = context.getTranslation("$root.powered")
@@ -66,7 +66,7 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
         val json = WebUtils.getJsonFromUrl(context.webManager.httpClient,
             "$KSOFT_SI/lyrics/search",
             mutableMapOf(
-                Pair("q", title + author?.let { " $author" }),
+                Pair("q", title + (author?.let { " $author" } ?: "")),
                 Pair("limit", "1")
             ),
             mutableMapOf(Pair("Authorization", context.container.settings.tokens.kSoftApi))
