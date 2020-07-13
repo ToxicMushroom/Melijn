@@ -523,9 +523,14 @@ object MessageCommandUtil {
                     .withVariable(PLACEHOLDER_ARG, user.effectiveAvatarUrl)
             }
             else -> {
-                eb.setImage(arg)
-                context.getTranslation("message.embed.image.set")
-                    .withVariable(PLACEHOLDER_ARG, arg)
+                try {
+                    eb.setImage(arg)
+                    context.getTranslation("message.embed.image.set")
+                        .withVariable(PLACEHOLDER_ARG, arg)
+                } catch (t: IllegalArgumentException) {
+                    context.getTranslation("message.embed.image.urlerror")
+                        .withVariable(PLACEHOLDER_ARG, arg)
+                }
             }
         }.withVariable(PLACEHOLDER_TYPE, type.text)
 
