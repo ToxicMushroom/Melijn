@@ -119,7 +119,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
 
         try {
-            ytSearch.search(context.guild, rawInput, searchType, { tracks ->
+            ytSearch.search(rawInput, searchType, { tracks ->
                 if (tracks.isNotEmpty()) {
                     foundTracks(context, guildMusicPlayer, wrapper, tracks, rawInput, isPlaylist, nextPos)
                 } else {

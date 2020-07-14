@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
 
 object WebUtils {
 
-    val logger: Logger = LoggerFactory.getLogger(WebUtils.javaClass)
+    private val logger: Logger = LoggerFactory.getLogger(WebUtils.javaClass)
 
     suspend fun getResponseFromUrl(
         httpClient: HttpClient,

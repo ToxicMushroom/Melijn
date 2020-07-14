@@ -21,7 +21,7 @@ class AngryCommand : AbstractCommand("command.angry") {
         }
         val guildId = getLongFromArgNMessage(context, 0) ?: return
 
-        context.lavaManager.closeConnectionAngry(guildId, context.guildMusicPlayer.groupId)
+        context.lavaManager.closeConnectionLite(guildId)
         sendRsp(context, "Closed connection: Angry $guildId")
     }
 }

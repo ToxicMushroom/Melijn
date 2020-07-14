@@ -9,7 +9,6 @@ import me.melijn.llklient.utils.LavalinkUtil
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.SearchType
 import me.melijn.melijnbot.internals.music.SuspendingAudioLoadResultHandler
-import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -45,17 +44,15 @@ class YTSearch {
 
 
     fun search(
-        guild: Guild, query: String, searchType: SearchType,
-        audioTrackCallBack: suspend (audioTrack: List<AudioTrack>) -> Unit,
+        query: String, searchType: SearchType, audioTrackCallBack: suspend (audioTrack: List<AudioTrack>) -> Unit,
         llDisabledAndNotYT: suspend () -> Unit,
         lpCallback: SuspendingAudioLoadResultHandler
     ) = youtubeService.launch {
         val lManager = Container.instance.lavaManager
         if (lManager.lavalinkEnabled) {
-            val prem = Container.instance.daoManager.musicNodeWrapper.isPremium(guild.idLong)
             val llink = lManager.jdaLavaLink
 
-            val restClient = llink?.getLink(guild.idLong, "normal")?.getNode(true)?.restClient
+            val restClient = llink?.loadBalancer?.getRandomSocket("normal")?.restClient
             val tracks = when (searchType) {
                 SearchType.SC -> {
                     restClient?.getSoundCloudSearchResult(query)?.await()
@@ -64,8 +61,8 @@ class YTSearch {
                     restClient?.getYoutubeSearchResult(query)?.await()
                 }
                 else -> {
-                    if (isUnknownHTTP(query) && prem) {
-                        val httpRestClient = llink?.getLink(guild.idLong, "http")?.getNode(true)?.restClient
+                    if (isUnknownHTTP(query)) {
+                        val httpRestClient = llink?.loadBalancer?.getRandomSocket("http")?.restClient
                         httpRestClient?.loadItem(query, lpCallback)
                     } else {
                         restClient?.loadItem(query, lpCallback)
