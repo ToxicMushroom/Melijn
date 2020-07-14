@@ -16,6 +16,8 @@ import me.melijn.melijnbot.internals.web.WebManager
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.sharding.ShardManager
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.File
 
 val objectMapper = ObjectMapper()
@@ -74,7 +76,10 @@ class Container {
 
     var jdaLavaLink: JDALavalink? = null
 
+    private val logger: Logger = LoggerFactory.getLogger(Container::class.java)
+
     init {
+        logger.info("Using ${System.getenv("CONFIG_NAME") ?: "config"}.json as config")
         instance = this
     }
 

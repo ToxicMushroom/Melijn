@@ -10,6 +10,7 @@ import me.melijn.melijnbot.internals.utils.checks.getAndVerifyMusicChannel
 import me.melijn.melijnbot.internals.utils.listeningMembers
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.events.StatusChangeEvent
 import net.dv8tion.jda.api.sharding.ShardManager
@@ -111,5 +112,9 @@ object VoiceUtil {
         }
         wrapper.clearChannels()
         wrapper.clear()
+    }
+
+    suspend fun destroyLink(container: Container, member: Member) {
+        container.lavaManager.closeConnection(member.guild.idLong)
     }
 }

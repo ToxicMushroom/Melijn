@@ -66,7 +66,7 @@ class GuildTrackManager(
 
             VOICE_SAFE.withPermit {
                 Task {
-                    lavaManager.closeConnection(guildId, groupId)
+                    lavaManager.closeConnection(guildId)
                 }.run()
             }
 
@@ -236,7 +236,7 @@ class GuildTrackManager(
         iPlayer.stopTrack()
 
         Task {
-            lavaManager.closeConnection(guildId, groupId)
+            lavaManager.closeConnection(guildId)
         }.run()
     }
 

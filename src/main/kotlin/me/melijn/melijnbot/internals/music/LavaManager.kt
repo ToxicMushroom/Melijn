@@ -78,8 +78,8 @@ class LavaManager(
     }
 
     // run with VOICE_SAFE pls
-    suspend fun closeConnection(guildId: Long, groupId: String) {
-        closeConnectionLite(guildId, groupId)
+    suspend fun closeConnection(guildId: Long) {
+        closeConnectionLite(guildId)
 
         if (MusicPlayerManager.guildMusicPlayers.containsKey(guildId)) {
             MusicPlayerManager.guildMusicPlayers[guildId]?.removeTrackManagerListener()
@@ -88,36 +88,18 @@ class LavaManager(
         }
     }
 
-    suspend fun closeConnectionAngry(guildId: Long, groupId: String) {
-        closeConnectionLiteAngry(guildId, groupId)
 
-        if (MusicPlayerManager.guildMusicPlayers.containsKey(guildId)) {
-            MusicPlayerManager.guildMusicPlayers[guildId]?.removeTrackManagerListener()
-            MusicPlayerManager.guildMusicPlayers.remove(guildId)
-            //logger.info("removed guildmusicplayer for $guildId")
-        }
-    }
-
-    suspend fun closeConnectionLite(guildId: Long, groupId: String) {
-        val guild = shardManager.getGuildById(guildId)
-
-        if (jdaLavaLink == null) {
-            guild?.audioManager?.closeAudioConnection()
-        } else {
-            jdaLavaLink.getLink(guildId, groupId).destroy()
-        }
-    }
-
-    suspend fun closeConnectionLiteAngry(guildId: Long, groupId: String) {
+    suspend fun closeConnectionLite(guildId: Long) {
         val guild = shardManager.getGuildById(guildId)
 
         if (jdaLavaLink == null) {
             guild?.audioManager?.closeAudioConnection()
 
         } else {
-            jdaLavaLink.getLink(guildId, groupId).destroy()
+            jdaLavaLink.getExistingLink(guildId)?.destroy()
         }
     }
+
 
     fun getConnectedChannel(guild: Guild): VoiceChannel? = guild.selfMember.voiceState?.channel
 
