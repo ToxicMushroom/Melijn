@@ -1,7 +1,7 @@
 package me.melijn.melijnbot
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import lavalink.client.io.jda.JdaLavalink
+import me.melijn.llklient.io.jda.JDALavalink
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.RoleUpdateCause
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -16,6 +16,8 @@ import me.melijn.melijnbot.internals.web.WebManager
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.sharding.ShardManager
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.File
 
 val objectMapper = ObjectMapper()
@@ -72,10 +74,12 @@ class Container {
     //messageId
     val botDeletedMessageIds = mutableSetOf<Long>()
 
-    var jdaLavaLink: JdaLavalink? = null
-    var premiumJdaLavaLink: JdaLavalink? = null
+    var jdaLavaLink: JDALavalink? = null
+
+    private val logger: Logger = LoggerFactory.getLogger(Container::class.java)
 
     init {
+        logger.info("Using ${System.getenv("CONFIG_NAME") ?: "config"}.json as config")
         instance = this
     }
 
@@ -84,13 +88,12 @@ class Container {
     }
 
     fun initShardManager(shardManager: ShardManager) {
-        lavaManager = LavaManager(settings.lavalink.enabled, daoManager, shardManager, jdaLavaLink, premiumJdaLavaLink)
+        lavaManager = LavaManager(settings.lavalink.enabled, daoManager, shardManager, jdaLavaLink)
     }
 
 
-    fun initLava(jdaLavaLink: JdaLavalink?, premiumJdaLavaLink: JdaLavalink?) {
+    fun initLava(jdaLavaLink: JDALavalink?) {
         this.jdaLavaLink = jdaLavaLink
-        this.premiumJdaLavaLink = premiumJdaLavaLink
     }
 
     val uptimeMillis: Long

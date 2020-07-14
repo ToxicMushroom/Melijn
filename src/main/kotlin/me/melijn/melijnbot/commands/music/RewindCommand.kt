@@ -25,7 +25,7 @@ class RewindCommand : AbstractCommand("command.rewind") {
             return
         }
         val iPlayer = context.guildMusicPlayer.guildTrackManager.iPlayer
-        val track = iPlayer.playingTrack
+        val track = iPlayer.playingTrack ?: throw IllegalArgumentException("checks failed")
         val trackDuration = track.duration
         var trackPosition = iPlayer.trackPosition
 

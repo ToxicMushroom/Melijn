@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.internals.music
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -10,10 +9,27 @@ import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.withVariable
 
 
-class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val guildId: Long) {
+class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val guildId: Long, groupId: String) {
+
+    val guildTrackManager: GuildTrackManager = GuildTrackManager(
+        guildId,
+        daoManager,
+        lavaManager,
+        lavaManager.getIPlayer(guildId, groupId),
+        groupId
+    )
+
+    var groupId: String
+        get() = guildTrackManager.groupId
+        set(value) {
+            guildTrackManager.groupId = value
+        }
+
+    init {
+        this.groupId = groupId
+    }
 
     val searchMenus: MutableMap<Long, TracksForQueue> = mutableMapOf()
-    val guildTrackManager: GuildTrackManager = GuildTrackManager(guildId, daoManager, lavaManager, lavaManager.getIPlayer(guildId, runBlocking { daoManager.musicNodeWrapper.isPremium(guildId) }))
 
     init {
         addTrackManagerListener()
@@ -28,7 +44,7 @@ class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val gui
     }
 
     fun getSendHandler(): AudioPlayerSendHandler = AudioPlayerSendHandler(guildTrackManager.iPlayer)
-    fun safeQueueSilent(daoManager: DaoManager, track: AudioTrack, nextPos: NextSongPosition): Boolean {
+    suspend fun safeQueueSilent(daoManager: DaoManager, track: AudioTrack, nextPos: NextSongPosition): Boolean {
         if (
             (guildTrackManager.trackSize() <= DONATE_QUEUE_LIMIT && isPremiumGuild(daoManager, guildId)) ||
             guildTrackManager.tracks.size + 1 <= QUEUE_LIMIT
@@ -39,7 +55,7 @@ class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val gui
         return false
     }
 
-    fun safeQueue(context: CommandContext, track: AudioTrack, nextPos: NextSongPosition): Boolean {
+    suspend fun safeQueue(context: CommandContext, track: AudioTrack, nextPos: NextSongPosition): Boolean {
         val success = safeQueueSilent(context.daoManager, track, nextPos)
         if (!success) {
             context.taskManager.async {

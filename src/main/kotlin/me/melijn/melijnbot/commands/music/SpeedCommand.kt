@@ -27,7 +27,7 @@ class SpeedCommand : AbstractCommand("command.speed") {
         }
 
         val speed = getLongFromArgNMessage(context, 0, 0, ignore = *arrayOf("%")) ?: return
-        iPlayer.speed = speed / 100.0
+        iPlayer.setSpeed(speed / 100.0)
 
         val msg = context.getTranslation("$root.set")
             .withVariable("speed", speed)

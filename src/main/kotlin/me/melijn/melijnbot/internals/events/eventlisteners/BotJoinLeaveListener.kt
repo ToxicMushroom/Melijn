@@ -18,10 +18,7 @@ class BotJoinLeaveListener(container: Container) : AbstractListener(container) {
     }
 
     private suspend fun onBotLeaveGuild(event: GuildLeaveEvent) {
-        container.lavaManager.closeConnection(
-            event.guild.idLong,
-            container.daoManager.musicNodeWrapper.isPremium(event.guild.idLong)
-        )
+        container.lavaManager.closeConnection(event.guild.idLong)
 
         logger.info("{}Left the '{}' guild, id: {}, shard: {}{}",
             ConsoleColor.BLUE,

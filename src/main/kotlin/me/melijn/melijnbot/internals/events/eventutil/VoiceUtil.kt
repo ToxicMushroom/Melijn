@@ -10,6 +10,7 @@ import me.melijn.melijnbot.internals.utils.checks.getAndVerifyMusicChannel
 import me.melijn.melijnbot.internals.utils.listeningMembers
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.events.StatusChangeEvent
 import net.dv8tion.jda.api.sharding.ShardManager
@@ -50,8 +51,8 @@ object VoiceUtil {
 
         } else if (botChannel == null && musicChannel.id == channelUpdate.id) {
             if (listeningMembers(musicChannel, container.settings.id) > 0) {
-                val premium = daoManager.musicNodeWrapper.isPremium(guild.idLong)
-                if (container.lavaManager.tryToConnectToVCSilent(musicChannel, premium)) {
+                val groupId = trackManager.groupId
+                if (container.lavaManager.tryToConnectToVCSilent(musicChannel, groupId)) {
                     audioLoader.loadNewTrack(daoManager, container.lavaManager, channelUpdate, guild.jda.selfUser, musicUrl, NextSongPosition.BOTTOM)
                 }
             }
@@ -101,8 +102,8 @@ object VoiceUtil {
             val guild = shardManager.getGuildById(guildId) ?: continue
             val channel = channelMap[guildId]?.let { guild.getVoiceChannelById(it) } ?: continue
 
-            val premium = container.daoManager.musicNodeWrapper.isPremium(guild.idLong)
-            if (container.lavaManager.tryToConnectToVCSilent(channel, premium)) {
+            val groupId = container.lavaManager.musicPlayerManager.getGuildMusicPlayer(guild).groupId
+            if (container.lavaManager.tryToConnectToVCSilent(channel, groupId)) {
                 val mp = mpm.getGuildMusicPlayer(guild)
                 for (track in tracks) {
                     mp.safeQueueSilent(container.daoManager, track, NextSongPosition.BOTTOM)
@@ -111,5 +112,9 @@ object VoiceUtil {
         }
         wrapper.clearChannels()
         wrapper.clear()
+    }
+
+    suspend fun destroyLink(container: Container, member: Member) {
+        container.lavaManager.closeConnection(member.guild.idLong)
     }
 }

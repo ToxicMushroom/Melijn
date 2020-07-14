@@ -1,12 +1,12 @@
 package me.melijn.melijnbot.database.audio
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import lavalink.client.LavalinkUtil
+import me.melijn.llklient.utils.LavalinkUtil
 import me.melijn.melijnbot.internals.music.TrackUserData
 import me.melijn.melijnbot.internals.music.toMessage
 import java.util.*
 
-class TracksWrapper(val tracksDao: TracksDao, val lastVoiceChannelDao: LastVoiceChannelDao) {
+class TracksWrapper(private val tracksDao: TracksDao, private val lastVoiceChannelDao: LastVoiceChannelDao) {
 
     suspend fun getMap(): Map<Long, List<AudioTrack>> {
         val map = tracksDao.getMap()

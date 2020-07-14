@@ -7,8 +7,8 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.withPermit
-import lavalink.client.player.IPlayer
-import lavalink.client.player.event.AudioEventAdapterWrapped
+import me.melijn.llklient.player.IPlayer
+import me.melijn.llklient.player.event.AudioEventAdapterWrapped
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.commands.music.NextSongPosition
@@ -17,6 +17,7 @@ import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.internals.services.voice.VOICE_SAFE
 import me.melijn.melijnbot.internals.threading.Task
 import me.melijn.melijnbot.internals.utils.LogUtils
+import me.melijn.melijnbot.internals.utils.YTSearch
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
 import me.melijn.melijnbot.internals.utils.message.sendEmbed
 import net.dv8tion.jda.api.entities.Guild
@@ -30,7 +31,8 @@ class GuildTrackManager(
     val guildId: Long,
     val daoManager: DaoManager,
     val lavaManager: LavaManager,
-    var iPlayer: IPlayer
+    var iPlayer: IPlayer,
+    var groupId: String
 ) : AudioEventAdapterWrapped() {
 
     var votedUsers = mutableListOf<Long>()
@@ -52,32 +54,33 @@ class GuildTrackManager(
     fun trackSize() = tracks.size
 
 
-    private fun nextTrack(lastTrack: AudioTrack) {
+    private suspend fun nextTrack(lastTrack: AudioTrack) {
         votedUsers.clear()
         if (tracks.isEmpty()) {
             if (loopedQueue || loopedTrack) {
+                chekNChangeGroup(lastTrack.info.uri)
                 iPlayer.playTrack(lastTrack.makeClone())
                 return
             }
 
-            val mNodeWrapper = daoManager.musicNodeWrapper
-            runBlocking {
-                VOICE_SAFE.withPermit {
-                    Task {
-                        val isPremium = mNodeWrapper.isPremium(guildId)
-                        lavaManager.closeConnection(guildId, isPremium)
-                    }.run()
-                }
+
+            VOICE_SAFE.withPermit {
+                Task {
+                    lavaManager.closeConnection(guildId)
+                }.run()
             }
+
             return
         }
 
         if (loopedTrack) {
+            chekNChangeGroup(lastTrack.info.uri)
             iPlayer.playTrack(lastTrack.makeClone())
             return
         }
 
         val track: AudioTrack = tracks.poll()
+        chekNChangeGroup(track.info.uri)
         if (track == lastTrack) {
             iPlayer.playTrack(track.makeClone())
         } else {
@@ -89,10 +92,23 @@ class GuildTrackManager(
         }
     }
 
+    private suspend fun chekNChangeGroup(uri: String) {
+        if (YTSearch.isUnknownHTTP(uri)) {
+            if (groupId == "normal") {
+                lavaManager.changeGroup(guildId, "http")
+                groupId = "http"
+            }
+        } else if (groupId == "http") {
+            lavaManager.changeGroup(guildId, "normal")
+            groupId = "normal"
+        }
+    }
+
     /** returns the song postition **/
-    fun queue(track: AudioTrack, nextPos: NextSongPosition) {
+    suspend fun queue(track: AudioTrack, nextPos: NextSongPosition) {
         if (track.userData == null) throw IllegalArgumentException("no")
         if (iPlayer.playingTrack == null) {
+            chekNChangeGroup(track.info.uri)
             iPlayer.playTrack(track)
         } else {
             when (nextPos) {
@@ -162,7 +178,7 @@ class GuildTrackManager(
         }
     }
 
-    suspend fun getStartEmbedFromMap(time: Long, nesting: Int = 0, nestCountLimit: Int = 5): MessageEmbed? {
+    private suspend fun getStartEmbedFromMap(time: Long, nesting: Int = 0, nestCountLimit: Int = 5): MessageEmbed? {
         return startMomentMessageMap.getOrElse(time) {
             delay(500)
             return if (nesting >= nestCountLimit) {
@@ -173,7 +189,7 @@ class GuildTrackManager(
         }
     }
 
-    suspend fun getPausedEmbedFromMap(time: Long, nesting: Int = 0, nestCountLimit: Int = 5): MessageEmbed? {
+    private suspend fun getPausedEmbedFromMap(time: Long, nesting: Int = 0, nestCountLimit: Int = 5): MessageEmbed? {
         return pauseMomentMessageMap.getOrElse(time) {
             delay(100)
             return if (nesting >= nestCountLimit) {
@@ -184,7 +200,7 @@ class GuildTrackManager(
         }
     }
 
-    suspend fun getResumedEmbedFromMap(time: Long, nesting: Int = 0, nestCountLimit: Int = 5): MessageEmbed? {
+    private suspend fun getResumedEmbedFromMap(time: Long, nesting: Int = 0, nestCountLimit: Int = 5): MessageEmbed? {
         return resumeMomentMessageMap.getOrElse(time) {
             delay(100)
             return if (nesting >= nestCountLimit) {
@@ -197,8 +213,9 @@ class GuildTrackManager(
 
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack, endReason: AudioTrackEndReason) {
         //logger.debug("track ended eventStartNext:" + endReason.mayStartNext)
+
         if (endReason.mayStartNext) {
-            nextTrack(track)
+            Container.instance.taskManager.async { nextTrack(track) }
         }
     }
 
@@ -214,37 +231,34 @@ class GuildTrackManager(
         }
 
     //PLEASE RUN IN VOICE_SAFE
-    fun stopAndDestroy() {
+    suspend fun stopAndDestroy() {
         clear()
         iPlayer.stopTrack()
-        runBlocking {
-            Task {
-                val isPremium = daoManager.musicNodeWrapper.isPremium(guildId)
-                lavaManager.closeConnection(guildId, isPremium)
-            }.run()
-        }
+
+        Task {
+            lavaManager.closeConnection(guildId)
+        }.run()
     }
 
 
-    fun skip(amount: Int) {
+    suspend fun skip(amount: Int) {
         var nextTrack: AudioTrack? = null
         for (i in 0 until amount) {
             nextTrack = tracks.poll()
         }
         if (nextTrack == null) {
-            runBlocking {
-                VOICE_SAFE.withPermit {
-                    stopAndDestroy()
-                }
+            VOICE_SAFE.withPermit {
+                stopAndDestroy()
             }
         } else {
             iPlayer.stopTrack()
+            chekNChangeGroup(nextTrack.info.uri)
             iPlayer.playTrack(nextTrack)
         }
     }
 
-    fun setPaused(paused: Boolean) {
-        iPlayer.isPaused = paused
+    suspend fun setPaused(paused: Boolean) {
+        iPlayer.setPaused(paused)
     }
 
     fun removeAt(indexes: IntArray): Map<Int, AudioTrack> {

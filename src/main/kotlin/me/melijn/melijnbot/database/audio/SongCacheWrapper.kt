@@ -1,7 +1,7 @@
 package me.melijn.melijnbot.database.audio
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import lavalink.client.LavalinkUtil
+import me.melijn.llklient.utils.LavalinkUtil
 
 class SongCacheWrapper(private val songCacheDao: SongCacheDao) {
 
