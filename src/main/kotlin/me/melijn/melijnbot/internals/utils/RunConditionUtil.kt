@@ -116,8 +116,8 @@ object RunConditionUtil {
         }
     }
 
-    private fun checkPlayingTrackNotNullMessage(container: Container, event: MessageReceivedEvent, language: String): Boolean {
-        if (checkPlayingTrackNotNull(container, event, language)) {
+    private suspend fun checkPlayingTrackNotNullMessage(container: Container, event: MessageReceivedEvent, language: String): Boolean {
+        if (checkPlayingTrackNotNull(container, event)) {
             return true
         }
 
@@ -127,7 +127,7 @@ object RunConditionUtil {
     }
 
 
-    fun checkPlayingTrackNotNull(container: Container, event: MessageReceivedEvent, language: String): Boolean {
+    suspend fun checkPlayingTrackNotNull(container: Container, event: MessageReceivedEvent): Boolean {
         val trackManager = container.lavaManager.musicPlayerManager.getGuildMusicPlayer(event.guild).guildTrackManager
         val cTrack: AudioTrack? = trackManager.iPlayer.playingTrack
         if (cTrack == null || event.guild.selfMember.voiceState?.inVoiceChannel() != true) {

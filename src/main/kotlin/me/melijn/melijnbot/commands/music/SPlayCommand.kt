@@ -52,7 +52,7 @@ class SPlayCommand : AbstractCommand("command.splay") {
             return
         }
 
-        val groupId = context.guildMusicPlayer.groupId
+        val groupId = context.getGuildMusicPlayer().groupId
         if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
 
         context.audioLoader.loadNewTrackPickerNMessage(context, "$YT_SELECTOR$songArg", songPosition)
@@ -86,7 +86,7 @@ class SPlayCommand : AbstractCommand("command.splay") {
                 }
             }
 
-            val groupId = context.guildMusicPlayer.groupId
+            val groupId = context.getGuildMusicPlayer().groupId
             if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
             context.audioLoader.loadNewTrackPickerNMessage(context, "$YT_SELECTOR$songArg", songPosition)
         }
@@ -121,7 +121,7 @@ class SPlayCommand : AbstractCommand("command.splay") {
                 }
             }
 
-            val groupId = context.guildMusicPlayer.groupId
+            val groupId = context.getGuildMusicPlayer().groupId
             if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
             context.audioLoader.loadNewTrackPickerNMessage(context, "$SC_SELECTOR$songArg", songPosition)
         }

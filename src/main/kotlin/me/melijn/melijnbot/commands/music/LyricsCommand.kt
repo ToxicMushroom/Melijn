@@ -26,8 +26,8 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
-            if (RunConditionUtil.checkPlayingTrackNotNull(context.container, context.event, context.getLanguage())) {
-                val info = context.guildMusicPlayer.guildTrackManager.playingTrack?.info
+            if (RunConditionUtil.checkPlayingTrackNotNull(context.container, context.event)) {
+                val info = context.getGuildMusicPlayer().guildTrackManager.playingTrack?.info
                     ?: throw IllegalArgumentException("angry pepe")
 
                 val lyrics = getLyricsNMessage(context, info.title, info.author) ?: return

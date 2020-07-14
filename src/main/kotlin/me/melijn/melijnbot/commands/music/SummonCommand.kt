@@ -27,7 +27,7 @@ class SummonCommand : AbstractCommand("command.summon") {
             val vc = context.member.voiceState?.channel ?: throw IllegalStateException("I messed up")
             if (notEnoughPermissionsAndMessage(context, vc, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)) return
 
-            context.lavaManager.openConnection(vc, context.guildMusicPlayer.groupId)
+            context.lavaManager.openConnection(vc, context.getGuildMusicPlayer().groupId)
             val msg = context.getTranslation("$root.summoned")
             sendRsp(context, msg)
 
@@ -40,7 +40,7 @@ class SummonCommand : AbstractCommand("command.summon") {
             if (notEnoughPermissionsAndMessage(context, vc, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)) return
             if (!RunConditionUtil.checkBotAloneOrUserDJ(context.container, context.event, this, context.getLanguage())) return
 
-            context.lavaManager.openConnection(vc, context.guildMusicPlayer.groupId)
+            context.lavaManager.openConnection(vc, context.getGuildMusicPlayer().groupId)
             val msg = context.getTranslation("$root.summoned.other")
                 .withVariable(PLACEHOLDER_CHANNEL, vc.name)
             sendRsp(context, msg)

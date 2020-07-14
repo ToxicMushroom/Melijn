@@ -18,7 +18,7 @@ class SpeedCommand : AbstractCommand("command.speed") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val iPlayer = context.guildMusicPlayer.guildTrackManager.iPlayer
+        val iPlayer = context.getGuildMusicPlayer().guildTrackManager.iPlayer
         if (context.args.isEmpty()) {
             val msg = context.getTranslation("$root.show")
                 .withVariable("speed", iPlayer.speed * 100)

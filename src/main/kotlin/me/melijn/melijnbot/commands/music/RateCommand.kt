@@ -18,7 +18,7 @@ class RateCommand : AbstractCommand("command.rate") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val iPlayer = context.guildMusicPlayer.guildTrackManager.iPlayer
+        val iPlayer = context.getGuildMusicPlayer().guildTrackManager.iPlayer
         if (context.args.isEmpty()) {
             val msg = context.getTranslation("$root.show")
                 .withVariable("rate", iPlayer.rate * 100)

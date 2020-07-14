@@ -5,8 +5,6 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.withPermit
 import me.melijn.llklient.player.IPlayer
 import me.melijn.llklient.player.event.AudioEventAdapterWrapped
 import me.melijn.melijnbot.Container
@@ -14,7 +12,6 @@ import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.LogChannelType
-import me.melijn.melijnbot.internals.services.voice.VOICE_SAFE
 import me.melijn.melijnbot.internals.threading.Task
 import me.melijn.melijnbot.internals.utils.LogUtils
 import me.melijn.melijnbot.internals.utils.YTSearch
@@ -64,11 +61,9 @@ class GuildTrackManager(
             }
 
 
-            VOICE_SAFE.withPermit {
-                Task {
-                    lavaManager.closeConnection(guildId)
-                }.run()
-            }
+            Task {
+                lavaManager.closeConnection(guildId)
+            }.run()
 
             return
         }
@@ -160,8 +155,8 @@ class GuildTrackManager(
     }
 
     override fun onTrackException(player: AudioPlayer?, track: AudioTrack, exception: FriendlyException) {
-        val guild = getAndCheckGuild() ?: return
-        runBlocking {
+        Container.instance.taskManager.async {
+            val guild = getAndCheckGuild() ?: return@async
             LogUtils.sendMusicPlayerException(daoManager, guild, track, exception)
         }
     }
@@ -247,9 +242,7 @@ class GuildTrackManager(
             nextTrack = tracks.poll()
         }
         if (nextTrack == null) {
-            VOICE_SAFE.withPermit {
-                stopAndDestroy()
-            }
+            stopAndDestroy()
         } else {
             iPlayer.stopTrack()
             chekNChangeGroup(nextTrack.info.uri)
@@ -276,14 +269,10 @@ class GuildTrackManager(
         return removed
     }
 
-    private fun getAndCheckGuild(): Guild? {
+    private suspend fun getAndCheckGuild(): Guild? {
         val guild = MelijnBot.shardManager.getGuildById(guildId)
         if (guild == null) {
-            runBlocking {
-                VOICE_SAFE.withPermit {
-                    stopAndDestroy()
-                }
-            }
+            stopAndDestroy()
         }
         return guild
     }

@@ -11,8 +11,6 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.sharding.ShardManager
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 
 class LavaManager(
@@ -21,7 +19,6 @@ class LavaManager(
     val shardManager: ShardManager,
     val jdaLavaLink: JDALavalink?
 ) {
-    private val logger: Logger = LoggerFactory.getLogger(LavaManager::class.java)
 
     val musicPlayerManager: MusicPlayerManager = MusicPlayerManager(daoManager, this)
 
@@ -33,7 +30,7 @@ class LavaManager(
         }
     }
 
-    fun openConnection(channel: VoiceChannel, groupId: String) {
+    suspend fun openConnection(channel: VoiceChannel, groupId: String) {
         if (jdaLavaLink == null) {
             val selfMember = channel.guild.selfMember
             if (selfMember.hasPermission(channel, Permission.VOICE_CONNECT)) {
@@ -63,7 +60,7 @@ class LavaManager(
         }
     }
 
-    fun tryToConnectToVCSilent(voiceChannel: VoiceChannel, groupId: String): Boolean {
+    suspend fun tryToConnectToVCSilent(voiceChannel: VoiceChannel, groupId: String): Boolean {
         val guild: Guild = voiceChannel.guild
         if (!guild.selfMember.hasPermission(voiceChannel, Permission.VOICE_CONNECT)) {
             return false

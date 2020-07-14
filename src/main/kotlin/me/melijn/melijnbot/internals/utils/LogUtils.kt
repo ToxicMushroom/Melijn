@@ -169,7 +169,7 @@ object LogUtils {
     }
 
     suspend fun addMusicPlayerResumed(context: CommandContext) {
-        val trackManager = context.guildMusicPlayer.guildTrackManager
+        val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val zoneId = getZoneId(context.daoManager, context.guild.idLong)
         val track = trackManager.iPlayer.playingTrack ?: return
 
@@ -198,7 +198,7 @@ object LogUtils {
     }
 
     suspend fun addMusicPlayerPaused(context: CommandContext) {
-        val trackManager = context.guildMusicPlayer.guildTrackManager
+        val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val zoneId = getZoneId(context.daoManager, context.guild.idLong)
         val track = trackManager.iPlayer.playingTrack ?: return
 
@@ -254,7 +254,7 @@ object LogUtils {
     }
 
     suspend fun addMusicPlayerNewTrack(context: CommandContext, track: AudioTrack) {
-        val trackManager = context.guildMusicPlayer.guildTrackManager
+        val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val eb = Embedder(context.daoManager, context.guildId, -1, Color.decode("#2f3136").rgb)
         val zoneId = getZoneId(context.daoManager, context.guild.idLong)
         val title = context.getTranslation("logging.music.newtrack.title")

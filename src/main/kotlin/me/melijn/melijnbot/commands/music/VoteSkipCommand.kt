@@ -26,7 +26,7 @@ class VoteSkipCommand : AbstractCommand("command.voteskip") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val guildMusicPlayer = context.guildMusicPlayer.guildTrackManager
+        val guildMusicPlayer = context.getGuildMusicPlayer().guildTrackManager
         val vc = context.lavaManager.getConnectedChannel(context.guild)
         if (vc == null) {
             sendRsp(context, "wtf")
@@ -45,7 +45,7 @@ class VoteSkipCommand : AbstractCommand("command.voteskip") {
                 .withVariable("votes", "${guildMusicPlayer.votedUsers.size}")
 
 
-            val iPlayer = context.guildMusicPlayer.guildTrackManager.iPlayer
+            val iPlayer = context.getGuildMusicPlayer().guildTrackManager.iPlayer
             val cTrack = iPlayer.playingTrack ?: return
             val desc = context.getTranslation("$root.playing")
                 .withVariable("track", cTrack.info.title)
@@ -62,7 +62,7 @@ class VoteSkipCommand : AbstractCommand("command.voteskip") {
     }
 
     private suspend fun doSkip(context: CommandContext, votes: Int) {
-        val trackManager = context.guildMusicPlayer.guildTrackManager
+        val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val cTrack = trackManager.iPlayer.playingTrack ?: return
         val part1 =
             context.getTranslation("$root.skip")
