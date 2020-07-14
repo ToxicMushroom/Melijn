@@ -1,11 +1,9 @@
 package me.melijn.melijnbot.internals.events.eventutil
 
 import kotlinx.coroutines.future.await
-import kotlinx.coroutines.sync.withPermit
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
-import me.melijn.melijnbot.internals.services.voice.VOICE_SAFE
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyMusicChannel
 import me.melijn.melijnbot.internals.utils.listeningMembers
 import net.dv8tion.jda.api.JDA
@@ -27,9 +25,7 @@ object VoiceUtil {
 
         // Leave channel timer stuff
         botChannel?.let {
-            VOICE_SAFE.withPermit {
-                checkShouldDisconnectAndApply(it, daoManager)
-            }
+            checkShouldDisconnectAndApply(it, daoManager)
         }
 
         // Radio stuff

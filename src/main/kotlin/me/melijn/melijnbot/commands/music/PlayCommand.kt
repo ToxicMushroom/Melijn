@@ -57,7 +57,7 @@ class PlayCommand : AbstractCommand("command.play") {
             NextSongPosition.BOTTOM
         }
 
-        val groupId = context.guildMusicPlayer.groupId
+        val groupId = context.getGuildMusicPlayer().groupId
         if (songArg.startsWith("https://") || songArg.startsWith("http://")) {
             if (!hasPermission(context, "$root.url")) {
                 sendMissingPermissionMessage(context, "$root.url")
@@ -125,7 +125,7 @@ class PlayCommand : AbstractCommand("command.play") {
                 }
             }
 
-            val groupId = context.guildMusicPlayer.groupId
+            val groupId = context.getGuildMusicPlayer().groupId
             if (!lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
             context.audioLoader.loadNewTrackNMessage(context, "${YT_SELECTOR}$songArg", false, songPosition)
         }
@@ -162,7 +162,7 @@ class PlayCommand : AbstractCommand("command.play") {
                 }
             }
 
-            val groupId = context.guildMusicPlayer.groupId
+            val groupId = context.getGuildMusicPlayer().groupId
             if (!lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
             context.audioLoader.loadNewTrackNMessage(context, "${SC_SELECTOR}$songArg", false, songPosition)
         }
@@ -203,7 +203,7 @@ class PlayCommand : AbstractCommand("command.play") {
 
             val tracks = context.message.attachments.map { attachment -> attachment.url }
 
-            val groupId = context.guildMusicPlayer.groupId
+            val groupId = context.getGuildMusicPlayer().groupId
             if (!lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
             for (url in tracks) {
                 context.audioLoader.loadNewTrackNMessage(context, url, false, songPosition)

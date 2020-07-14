@@ -25,7 +25,7 @@ class RemoveCommand : AbstractCommand("command.remove") {
             sendSyntax(context)
             return
         }
-        val trackManager = context.guildMusicPlayer.guildTrackManager
+        val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val indexes = getIntegersFromArgsNMessage(context, 1, trackManager.trackSize()) ?: return
         val removed = trackManager.removeAt(indexes)
 

@@ -22,7 +22,7 @@ class TrackInfoCommand : AbstractCommand("command.trackinfo") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val player = context.guildMusicPlayer
+        val player = context.getGuildMusicPlayer()
         val trackManager = player.guildTrackManager
         if (context.args.isEmpty()) {
             sendSyntax(context)
@@ -30,12 +30,12 @@ class TrackInfoCommand : AbstractCommand("command.trackinfo") {
         }
         val index = getIntegerFromArgNMessage(context, 0, 0, trackManager.trackSize()) ?: return
 
-        val playingTrack =  trackManager.iPlayer.playingTrack?: throw IllegalArgumentException("checks failed")
+        val playingTrack = trackManager.iPlayer.playingTrack ?: throw IllegalArgumentException("checks failed")
         val track = if (index == 0) {
             playingTrack
         } else {
             trackManager.tracks[index - 1]
-        } ?: throw IllegalArgumentException("checks failed")
+        }
 
         val trackUserData = (track.userData as TrackUserData)
         val title = context.getTranslation("$root.title")

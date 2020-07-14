@@ -1,10 +1,8 @@
 package me.melijn.melijnbot.commands.developer
 
-import kotlinx.coroutines.sync.withPermit
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
-import me.melijn.melijnbot.internals.services.voice.VOICE_SAFE
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
@@ -40,9 +38,7 @@ class ShutdownCommand : AbstractCommand("command.shutdown") {
                     wrapper.put(guildId, context.selfUser.idLong, pTrack, trackManager.tracks)
                     wrapper.addChannel(guildId, channel.idLong)
 
-                    VOICE_SAFE.withPermit {
                         trackManager.stopAndDestroy()
-                    }
                 }
 
                 sendRsp(context, "Detached all listeners, saved queues. Ready for termination.")

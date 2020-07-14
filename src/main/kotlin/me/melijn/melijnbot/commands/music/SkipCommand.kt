@@ -24,7 +24,7 @@ class SkipCommand : AbstractCommand("command.skip") {
 
     override suspend fun execute(context: CommandContext) {
         val amount = getIntegerFromArgN(context, 0, 1) ?: 1
-        val trackManager = context.guildMusicPlayer.guildTrackManager
+        val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val cTrack = trackManager.iPlayer.playingTrack ?: return
         val part1 = if (amount > 1) {
             context.getTranslation("$root.skips")
@@ -37,7 +37,7 @@ class SkipCommand : AbstractCommand("command.skip") {
             .withVariable("position", getDurationString(trackManager.iPlayer.trackPosition))
             .withVariable("duration", getDurationString(cTrack.duration))
 
-        context.guildMusicPlayer.guildTrackManager.skip(amount)
+        context.getGuildMusicPlayer().guildTrackManager.skip(amount)
         val nTrack: AudioTrack? = trackManager.iPlayer.playingTrack
 
         val part2 = if (nTrack == null) {

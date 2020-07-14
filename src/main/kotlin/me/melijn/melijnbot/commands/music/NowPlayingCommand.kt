@@ -21,7 +21,7 @@ class NowPlayingCommand : AbstractCommand("command.nowplaying") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val trackManager = context.guildMusicPlayer.guildTrackManager
+        val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val playingTrack = trackManager.iPlayer.playingTrack ?: throw IllegalArgumentException("Checks failed")
         val trackStatus = context.getTranslation(if (trackManager.iPlayer.paused) "paused" else "playing")
         val looped = context.getTranslation("looped")

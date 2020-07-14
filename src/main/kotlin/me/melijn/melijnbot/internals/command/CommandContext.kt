@@ -2,7 +2,6 @@ package me.melijn.melijnbot.internals.command
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
-import me.melijn.melijnbot.internals.music.GuildMusicPlayer
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.SPACE_PATTERN
 import me.melijn.melijnbot.internals.utils.USER_MENTION
@@ -214,6 +213,6 @@ class CommandContext(
         return userTimezone ?: guildTimezone ?: ZoneId.of("GMT")
     }
 
-    val guildMusicPlayer: GuildMusicPlayer
-        get() = musicPlayerManager.getGuildMusicPlayer(guild)
+
+    fun getGuildMusicPlayer() = musicPlayerManager.getGuildMusicPlayer(guild)
 }

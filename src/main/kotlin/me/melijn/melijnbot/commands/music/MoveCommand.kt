@@ -21,7 +21,7 @@ class MoveCommand : AbstractCommand("command.move") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val player = context.guildMusicPlayer
+        val player = context.getGuildMusicPlayer()
         val trackManager = player.guildTrackManager
         if (context.args.size < 2) {
             sendSyntax(context)

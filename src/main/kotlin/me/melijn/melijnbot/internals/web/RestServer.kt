@@ -10,13 +10,11 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.engine.stop
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
-import kotlinx.coroutines.sync.withPermit
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
-import me.melijn.melijnbot.internals.services.voice.VOICE_SAFE
 import me.melijn.melijnbot.internals.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
@@ -83,37 +81,35 @@ class RestServer(container: Container) {
                 val players = container.lavaManager.musicPlayerManager.getPlayers()
 
 
-                VOICE_SAFE.withPermit {
-                    for (shard in shardManager.shardCache) {
-                        var queuedTracks = 0
-                        var musicPlayers = 0
+                for (shard in shardManager.shardCache) {
+                    var queuedTracks = 0
+                    var musicPlayers = 0
 
 
-                        for (player in players.values) {
-                            if (shard.guildCache.getElementById(player.guildId) != null) {
-                                if (player.guildTrackManager.iPlayer.playingTrack != null) {
-                                    musicPlayers++
-                                }
-                                queuedTracks += player.guildTrackManager.trackSize()
+                    for (player in players.values) {
+                        if (shard.guildCache.getElementById(player.guildId) != null) {
+                            if (player.guildTrackManager.iPlayer.playingTrack != null) {
+                                musicPlayers++
                             }
+                            queuedTracks += player.guildTrackManager.trackSize()
                         }
-
-
-                        val dataObject = DataObject.empty()
-                        dataObject
-                            .put("guildCount", shard.guildCache.size())
-                            .put("userCount", shard.userCache.size())
-                            .put("connectedVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shard))
-                            .put("listeningVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shard, true))
-                            .put("ping", shard.gatewayPing)
-                            .put("status", shard.status)
-                            .put("queuedTracks", queuedTracks)
-                            .put("musicPlayers", musicPlayers)
-                            .put("responses", shard.responseTotal)
-                            .put("id", shard.shardInfo.shardId)
-
-                        dataArray.add(dataObject)
                     }
+
+
+                    val dataObject = DataObject.empty()
+                    dataObject
+                        .put("guildCount", shard.guildCache.size())
+                        .put("userCount", shard.userCache.size())
+                        .put("connectedVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shard))
+                        .put("listeningVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shard, true))
+                        .put("ping", shard.gatewayPing)
+                        .put("status", shard.status)
+                        .put("queuedTracks", queuedTracks)
+                        .put("musicPlayers", musicPlayers)
+                        .put("responses", shard.responseTotal)
+                        .put("id", shard.shardInfo.shardId)
+
+                    dataArray.add(dataObject)
                 }
                 call.respondText(dataArray.toString(), jsonType)
             }
