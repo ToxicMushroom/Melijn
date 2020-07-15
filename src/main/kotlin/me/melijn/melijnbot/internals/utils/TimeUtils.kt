@@ -130,15 +130,16 @@ fun getDurationString(milliseconds: Double): String {
     return sb.toString()
 }
 
+val holyPattern = Pattern.compile("(\\d+)([a-zA-Z]+)")
 suspend fun getDurationByArgsNMessage(context: CommandContext, leftBound: Int, rightBound: Int, timeStamps: List<String> = context.args): Long? {
     val corruptTimeStamps = timeStamps.subList(leftBound, rightBound).toMutableList()
     val holyTimeStamps = mutableListOf<String>()
     var totalTime = 0L
-    val holyPattern = Pattern.compile("(\\d+)([a-zA-Z]+)")
+
 
     //merge numbed with their right neighbour so the number type is present along with the number itself
     for ((index, corruptTimeStamp) in corruptTimeStamps.withIndex()) {
-        if (corruptTimeStamp.matches("\\d+".toRegex())) {
+        if (corruptTimeStamp.isPositiveNumber()) {
             if (corruptTimeStamps.size >= index + 1) continue
             val corruptTimeType = corruptTimeStamps[index + 1]
             if (!corruptTimeType.matches("[a-zA-Z]+".toRegex())) continue

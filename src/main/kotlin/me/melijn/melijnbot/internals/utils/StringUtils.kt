@@ -90,6 +90,7 @@ object StringUtils {
         var amount = 0
         var almostMostRight = 0
         var mostRight = 0
+
         for (result in backTicks.findAll(findLastNewline)) {
             amount++
             almostMostRight = mostRight

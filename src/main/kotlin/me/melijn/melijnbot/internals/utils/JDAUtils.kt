@@ -10,18 +10,17 @@ import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.concurrent.Task
 import java.awt.Color
 import java.util.*
-import java.util.regex.Pattern
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 
-val DISCORD_ID: Pattern = Pattern.compile("\\d{17,20}") // ID
-val FULL_USER_REF: Pattern = Pattern.compile("(\\S.{0,30}\\S)\\s*#(\\d{4})") // $1 -> username, $2 -> discriminator
-val USER_MENTION: Pattern = Pattern.compile("<@!?(\\d{17,20})>") // $1 -> ID
-val CHANNEL_MENTION: Pattern = Pattern.compile("<#(\\d{17,20})>") // $1 -> ID
-val ROLE_MENTION: Pattern = Pattern.compile("<@&(\\d{17,20})>") // $1 -> ID
-val EMOTE_MENTION: Pattern = Pattern.compile("<a?:(.{2,32}):(\\d{17,20})>") // $1 -> NAME, $2 -> ID
+val DISCORD_ID = Regex("\\d{17,20}") // ID
+val FULL_USER_REF = Regex("(\\S.{0,30}\\S)\\s*#(\\d{4})") // $1 -> username, $2 -> discriminator
+val USER_MENTION = Regex("<@!?(\\d{17,20})>") // $1 -> ID
+val CHANNEL_MENTION = Regex("<#(\\d{17,20})>") // $1 -> ID
+val ROLE_MENTION = Regex("<@&(\\d{17,20})>") // $1 -> ID
+val EMOTE_MENTION = Regex("<a?:(.{2,32}):(\\d{17,20})>") // $1 -> NAME, $2 -> ID
 
 val Member.asTag: String
     get() = this.user.asTag
@@ -102,15 +101,12 @@ fun getUserByArgsN(context: CommandContext, index: Int): User? {//With null
 }
 
 fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String): User? {
-    val idMatcher = DISCORD_ID.matcher(arg)
-    val argMentionMatcher = USER_MENTION.matcher(arg)
-    val fullUserRefMatcher = FULL_USER_REF.matcher(arg)
 
-    return if (idMatcher.matches()) {
+    return if (DISCORD_ID.matches(arg)) {
         shardManager.getUserById(arg)
-    } else if (argMentionMatcher.matches()) {
-        shardManager.getUserById(argMentionMatcher.group(1))
-    } else if (guild != null && fullUserRefMatcher.matches()) {
+    } else if (USER_MENTION.matches(arg)) {
+        shardManager.getUserById((USER_MENTION.find(arg) ?: return null).groupValues[0])
+    } else if (guild != null && FULL_USER_REF.matches(arg)) {
         shardManager.getUserByTag(arg)
     } else if (guild != null && guild.getMembersByName(arg, true).isNotEmpty()) {
         guild.getMembersByName(arg, true)[0].user
@@ -135,15 +131,14 @@ suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? {
         user1 != null -> user1
         context.args.size > index -> {
             val arg = context.args[index]
-            val idMatcher = DISCORD_ID.matcher(arg)
-            val mentionMatcher = USER_MENTION.matcher(arg)
-
 
             when {
-                idMatcher.matches() -> context.jda.shardManager?.retrieveUserById(arg)?.awaitOrNull()
-                mentionMatcher.find() -> {
-                    val id = mentionMatcher.group(1).toLong()
-                    context.jda.shardManager?.retrieveUserById(id)?.awaitOrNull()
+                DISCORD_ID.matches(arg) -> {
+                    context.shardManager.retrieveUserById(arg).awaitOrNull()
+                }
+                USER_MENTION.matches(arg) -> {
+                    val id = USER_MENTION.toPattern().matcher(arg).group(1)
+                    context.shardManager.retrieveUserById(id).awaitOrNull()
                 }
                 else -> context.guild.retrieveMembersByPrefix(arg, 1).awaitOrNull()?.firstOrNull()?.user
             }
@@ -161,13 +156,10 @@ suspend fun retrieveUserByArgsN(guild: Guild, arg: String): User? {
         return user1
     }
 
-    val idMatcher = DISCORD_ID.matcher(arg)
-    val mentionMatcher = USER_MENTION.matcher(arg)
-
     return when {
-        idMatcher.matches() -> shardManager.retrieveUserById(arg)
-        mentionMatcher.matches() -> {
-            shardManager.retrieveUserById(mentionMatcher.group(1))
+        DISCORD_ID.matches(arg) -> shardManager.retrieveUserById(arg)
+        USER_MENTION.matches(arg) -> {
+            shardManager.retrieveUserById((USER_MENTION.find(arg) ?: return null).groupValues[1])
         }
 
         else -> {
@@ -179,8 +171,7 @@ suspend fun retrieveUserByArgsN(guild: Guild, arg: String): User? {
 suspend fun retrieveUserByArgsNMessage(context: CommandContext, index: Int): User? {
     val possibleUser = retrieveUserByArgsN(context, index)
     if (possibleUser == null) {
-        val language = context.getLanguage()
-        val msg = i18n.getTranslation(language, MESSAGE_UNKNOWN_USER)
+        val msg = context.getTranslation(MESSAGE_UNKNOWN_USER)
             .withVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
     }
@@ -197,19 +188,15 @@ fun getRoleByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Bool
     val arg = context.args[index]
 
     role = if (arg.isPositiveNumber() && context.jda.shardManager?.getRoleById(arg) != null) {
-        context.jda.shardManager?.getRoleById(arg)
+        context.shardManager.getRoleById(arg)
 
     } else if (context.isFromGuild && context.guild.getRolesByName(arg, true).size > 0) {
         context.guild.getRolesByName(arg, true)[0]
 
-    } else if (ROLE_MENTION.matcher(arg).matches()) {
+    } else if (ROLE_MENTION.matches(arg)) {
+        val id = (ROLE_MENTION.find(arg) ?: return null).groupValues[1]
+        context.shardManager.getRoleById(id)
 
-        val matcher = ROLE_MENTION.matcher(arg)
-        if (matcher.find()) {
-
-            val id = matcher.group(1)
-            context.jda.shardManager?.getRoleById(id)
-        } else null
     } else role
 
     if (sameGuildAsContext && !context.guild.roles.contains(role)) return null
@@ -224,14 +211,13 @@ suspend fun getRoleByArgsNMessage(
 ): Role? {
     val role = getRoleByArgsN(context, index, sameGuildAsContext)
     if (role == null) {
-        val language = context.getLanguage()
-        val msg = i18n.getTranslation(language, "message.unknown.role")
+        val msg = context.getTranslation("message.unknown.role")
             .withVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
+
     } else if (canInteract) {
         if (!context.guild.selfMember.canInteract(role)) {
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, MESSAGE_SELFINTERACT_ROLE_HIARCHYEXCEPTION)
+            val msg = context.getTranslation(MESSAGE_SELFINTERACT_ROLE_HIARCHYEXCEPTION)
                 .withVariable(PLACEHOLDER_ROLE, context.args[index])
             sendRsp(context, msg)
             return null
@@ -304,8 +290,7 @@ suspend fun getStringFromArgsNMessage(
 suspend fun getEmotejiByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = false): Pair<Emote?, String?>? {
     val emoteji = getEmotejiByArgsN(context, index, sameGuildAsContext)
     if (emoteji == null) {
-        val language = context.getLanguage()
-        val msg = i18n.getTranslation(language, "message.unknown.emojioremote")
+        val msg = context.getTranslation("message.unknown.emojioremote")
             .withVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
     }
@@ -333,18 +318,27 @@ suspend fun getEmotejiByArgsN(context: CommandContext, index: Int, sameGuildAsCo
     return Pair(emote, emoji)
 }
 
+suspend fun getEmoteByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean):  Emote? {
+    val emote = getEmoteByArgsN(context, index, sameGuildAsContext)
+    if (emote == null) {
+        val msg = context.getTranslation("message.unknown.emote")
+            .withVariable(PLACEHOLDER_ARG, context.args[index])
+        sendRsp(context, msg)
+    }
+    return emote
+}
+
 
 suspend fun getEmoteByArgsN(context: CommandContext, index: Int, sameGuildAsContext: Boolean): Emote? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
-    val matcher = DISCORD_ID.matcher(arg)
-    val emoteMatcher = EMOTE_MENTION.matcher(arg)
     var emote: Emote? = null
-    if (matcher.matches()) {
+
+    if (DISCORD_ID.matches(arg)) {
         emote = context.shardManager.getEmoteById(arg)
 
-    } else if (emoteMatcher.find()) {
-        val id = emoteMatcher.group(2).toLong()
+    } else if (EMOTE_MENTION.matches(arg)) {
+        val id = (EMOTE_MENTION.find(arg) ?: return null).groupValues[2].toLong()
         emote = context.shardManager.getEmoteById(id)
 
     } else {
@@ -369,15 +363,18 @@ suspend fun getEmoteByArgsN(context: CommandContext, index: Int, sameGuildAsCont
     }
 }
 
+val hexColorRegex = Regex("#?([a-f]|\\d){3}(([a-f]|\\d){3})?", RegexOption.IGNORE_CASE)
+val rgbColorRegex = Regex("\\s*\\d+,\\s*\\d+,\\s*\\d+")
+
 suspend fun getColorFromArgNMessage(context: CommandContext, index: Int): Color? {
     if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     val color: Color? = when {
-        arg.matches("(?i)#?([a-f]|\\d){6}".toRegex()) -> {
+        hexColorRegex.matches(arg) -> {
             if (arg.startsWith("#")) Color.decode(arg)
             else Color.decode("#$arg")
         }
-        arg.matches("\\s*\\d+,\\s*\\d+,\\s*\\d+".toRegex()) -> {
+        rgbColorRegex.matches(arg) -> {
             val parts = arg.split(",")
             val r = parts[0]
                 .trim()
@@ -403,8 +400,7 @@ suspend fun getColorFromArgNMessage(context: CommandContext, index: Int): Color?
         }
     }
     if (color == null) {
-        val language = context.getLanguage()
-        val msg = i18n.getTranslation(language, "message.unknown.color")
+        val msg = context.getTranslation("message.unknown.color")
             .withVariable(PLACEHOLDER_ARG, arg)
         sendRsp(context, msg)
     }
@@ -418,17 +414,14 @@ fun getTextChannelByArgsN(context: CommandContext, index: Int, sameGuildAsContex
         val arg = context.args[index]
 
         channel = if (arg.isPositiveNumber()) {
-            context.jda.shardManager?.getTextChannelById(arg)
+            context.shardManager.getTextChannelById(arg)
 
         } else if (context.isFromGuild && context.guild.getTextChannelsByName(arg, true).size > 0) {
             context.guild.getTextChannelsByName(arg, true)[0]
 
-        } else if (CHANNEL_MENTION.matcher(arg).matches()) {
-            val matcher = CHANNEL_MENTION.matcher(arg)
-            if (matcher.find()) {
-                val id = matcher.group(1)
-                context.jda.shardManager?.getTextChannelById(id)
-            } else null
+        } else if (CHANNEL_MENTION.matches(arg)) {
+            val id = (CHANNEL_MENTION.find(arg) ?: return null).groupValues[1]
+            context.shardManager.getTextChannelById(id)
 
         } else channel
     }
@@ -440,8 +433,7 @@ suspend fun getTextChannelByArgsNMessage(context: CommandContext, index: Int, sa
     if (argSizeCheckFailed(context, index)) return null
     val textChannel = getTextChannelByArgsN(context, index, sameGuildAsContext)
     if (textChannel == null) {
-        val language = context.getLanguage()
-        val msg = i18n.getTranslation(language, "message.unknown.textchannel")
+        val msg = context.getTranslation("message.unknown.textchannel")
             .withVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
     }
@@ -455,20 +447,15 @@ fun getVoiceChannelByArgsN(context: CommandContext, index: Int, sameGuildAsConte
     if (context.args.size > index && context.isFromGuild) {
         val arg = context.args[index]
 
-        channel = if (arg.isPositiveNumber()) {
-            context.jda.shardManager?.getVoiceChannelById(arg)
+        channel = if (DISCORD_ID.matches(arg)) {
+            context.shardManager.getVoiceChannelById(arg)
 
         } else if (context.isFromGuild && context.guild.getVoiceChannelsByName(arg, true).size > 0) {
             context.guild.getVoiceChannelsByName(arg, true)[0]
 
-        } else if (CHANNEL_MENTION.matcher(arg).matches()) {
-            val matcher = CHANNEL_MENTION.matcher(arg)
-            if (matcher.find()) {
-                val id = matcher.group(1)
-                context.jda.shardManager?.getVoiceChannelById(id)
-            } else {
-                null
-            }
+        } else if (CHANNEL_MENTION.matches(arg)) {
+            val id = (CHANNEL_MENTION.find(arg) ?: return null).groupValues[1]
+            context.shardManager.getVoiceChannelById(id)
 
         } else channel
     }
@@ -479,8 +466,7 @@ fun getVoiceChannelByArgsN(context: CommandContext, index: Int, sameGuildAsConte
 suspend fun getVoiceChannelByArgNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): VoiceChannel? {
     val voiceChannel = getVoiceChannelByArgsN(context, index, sameGuildAsContext)
     if (voiceChannel == null) {
-        val language = context.getLanguage()
-        val msg = i18n.getTranslation(language, "message.unknown.voicechannel")
+        val msg = context.getTranslation("message.unknown.voicechannel")
             .withVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
     }
@@ -503,8 +489,7 @@ suspend fun retrieveMemberByArgsNMessage(context: CommandContext, index: Int, in
         else context.guild.retrieveMember(user).awaitOrNull()
 
     if (member == null) {
-        val language = context.getLanguage()
-        val msg = i18n.getTranslation(language, "message.unknown.member")
+        val msg = context.getTranslation("message.unknown.member")
             .withVariable(PLACEHOLDER_ARG, context.args[index])
         sendRsp(context, msg)
         return null
@@ -668,7 +653,7 @@ suspend fun getTimeFromArgsNMessage(context: CommandContext, start: Long = Long.
             }
         }
     } catch (ex: NumberFormatException) {
-        val path = if (workingPart.matches("\\d+".toRegex())) {
+        val path = if (workingPart.isPositiveNumber()) {
             "message.numbertobig"
         } else {
             "message.unknown.number"

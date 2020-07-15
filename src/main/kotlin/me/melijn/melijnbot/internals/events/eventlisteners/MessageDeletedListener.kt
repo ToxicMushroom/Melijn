@@ -133,7 +133,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
         val ebs = getGeneralEmbedBuilder(msg, event, messageAuthor, messageAuthor.idLong)
         for ((index, eb) in ebs.withIndex()) {
-            eb.setColor(Color.decode("#000001"))
+            eb.setColor(Color(0x000001))
 
             if (index == ebs.size - 1) {
                 val language = getLanguage(container.daoManager, -1, event.guild.idLong)
@@ -153,7 +153,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
         val ebs = getGeneralEmbedBuilder(msg, event, messageAuthor, deleterMember.idLong)
         for ((index, eb) in ebs.withIndex()) {
-            eb.setColor(Color.decode("#000001"))
+            eb.setColor(Color(0x000001))
             if (index == ebs.size - 1) {
                 val language = getLanguage(container.daoManager, -1, event.guild.idLong)
                 val footer = i18n.getTranslation(language, "listener.message.deletion.log.footer")

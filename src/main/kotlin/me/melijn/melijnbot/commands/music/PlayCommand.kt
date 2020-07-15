@@ -11,6 +11,8 @@ import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.replacePrefix
 import net.dv8tion.jda.api.entities.VoiceChannel
 
+val spotifyURIRegex = Regex("spotify:(\\w+):(\\w+)")
+
 class PlayCommand : AbstractCommand("command.play") {
 
     init {
@@ -76,7 +78,7 @@ class PlayCommand : AbstractCommand("command.play") {
             }
             if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
 
-            if (songArg.matches("spotify:(.*)".toRegex()) && context.webManager.spotifyApi != null) {
+            if (spotifyURIRegex.matches(songArg) && context.webManager.spotifyApi != null) {
                 spotifySearchNLoad(context.audioLoader, context, songArg, songPosition)
             } else {
                 context.audioLoader.loadNewTrackNMessage(context, "${YT_SELECTOR}$songArg", false, songPosition)
