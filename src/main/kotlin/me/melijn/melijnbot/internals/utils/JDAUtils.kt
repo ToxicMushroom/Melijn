@@ -105,7 +105,7 @@ fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String): User
     return if (DISCORD_ID.matches(arg)) {
         shardManager.getUserById(arg)
     } else if (USER_MENTION.matches(arg)) {
-        shardManager.getUserById((USER_MENTION.find(arg) ?: return null).groupValues[0])
+        shardManager.getUserById((USER_MENTION.find(arg) ?: return null).groupValues[1])
     } else if (guild != null && FULL_USER_REF.matches(arg)) {
         shardManager.getUserByTag(arg)
     } else if (guild != null && guild.getMembersByName(arg, true).isNotEmpty()) {
@@ -137,7 +137,7 @@ suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? {
                     context.shardManager.retrieveUserById(arg).awaitOrNull()
                 }
                 USER_MENTION.matches(arg) -> {
-                    val id = USER_MENTION.toPattern().matcher(arg).group(1)
+                    val id = (USER_MENTION.find(arg) ?: return null).groupValues[1]
                     context.shardManager.retrieveUserById(id).awaitOrNull()
                 }
                 else -> context.guild.retrieveMembersByPrefix(arg, 1).awaitOrNull()?.firstOrNull()?.user
@@ -318,7 +318,7 @@ suspend fun getEmotejiByArgsN(context: CommandContext, index: Int, sameGuildAsCo
     return Pair(emote, emoji)
 }
 
-suspend fun getEmoteByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean):  Emote? {
+suspend fun getEmoteByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean): Emote? {
     val emote = getEmoteByArgsN(context, index, sameGuildAsContext)
     if (emote == null) {
         val msg = context.getTranslation("message.unknown.emote")
