@@ -5,6 +5,7 @@ import me.melijn.melijnbot.database.message.ModularMessage
 data class PaginationInfo(
     val guildId: Long,
     val channelId: Long,
+    val authorId: Long,
     val messageId: Long,
     val messageList: List<String>,
     var currentPage: Int
@@ -13,6 +14,7 @@ data class PaginationInfo(
 data class ModularPaginationInfo(
     val guildId: Long,
     val channelId: Long,
+    val authorId: Long,
     val messageId: Long,
     val messageList: List<ModularMessage>,
     var currentPage: Int
