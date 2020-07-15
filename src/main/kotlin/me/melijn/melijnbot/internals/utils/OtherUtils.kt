@@ -11,7 +11,6 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.entities.User
 import java.awt.Color
@@ -31,7 +30,7 @@ val linuxUptimePattern: Pattern = Pattern.compile(
     "(?:\\s+)?\\d+:\\d+:\\d+ up(?: (\\d+) days?,)?(?:\\s+(\\d+):(\\d+)|\\s+?(\\d+)\\s+?min).*"
 )
 
-//Thx xavin
+// Thx xavin
 val linuxRamPattern: Pattern = Pattern.compile("([0-9]+$)")
 
 fun getSystemUptime(): Long {
@@ -55,7 +54,7 @@ fun Calendar.isLeapYear(): Boolean {
 }
 
 
-//EPIC CODE DO NOT TOUCH
+// EPIC CODE, DO NOT TOUCH
 fun <K, V> loadingCacheFrom(function: (K) -> CompletableFuture<V>): CacheLoader<K, CompletableFuture<V>> {
     return CacheLoader.from { k ->
         if (k == null) throw IllegalArgumentException("BRO CRINGE")
@@ -63,15 +62,13 @@ fun <K, V> loadingCacheFrom(function: (K) -> CompletableFuture<V>): CacheLoader<
     }
 }
 
-fun commandFromContext(context: CommandContext): AbstractCommand = context.commandOrder.last()
-
 fun getUnixUptime(): Long {
-    val uptimeProc = Runtime.getRuntime().exec("uptime") //Parse time to groups if possible
+    val uptimeProc = Runtime.getRuntime().exec("uptime") // Parse time to groups if possible
     val `in` = BufferedReader(InputStreamReader(uptimeProc.inputStream))
     val line = `in`.readLine() ?: return -1
     val matcher = linuxUptimePattern.matcher(line)
 
-    if (!matcher.find()) return -1 //Extract ints out of groups
+    if (!matcher.find()) return -1 // Extract ints out of groups
     val days2 = matcher.group(1)
     val hours2 = matcher.group(2)
     val minutes2 = if (matcher.group(3) == null) {
@@ -86,35 +83,42 @@ fun getUnixUptime(): Long {
 }
 
 fun getUnixRam(): Int {
-    val uptimeProc = Runtime.getRuntime().exec("free -m") //Parse time to groups if possible
-    val `in` = BufferedReader(InputStreamReader(uptimeProc.inputStream))
-    `in`.readLine() ?: return -1
-    val lineTwo = `in`.readLine() ?: return -1
+    val uptimeProc = Runtime.getRuntime().exec("free -m") // Parse time to groups if possible
+    uptimeProc.inputStream.use { `is` ->
+        `is`.bufferedReader().use { br ->
+            br.readLine() ?: return -1
+            val lineTwo = br.readLine() ?: return -1
 
-    val matcher = linuxRamPattern.matcher(lineTwo)
+            val matcher = linuxRamPattern.matcher(lineTwo)
 
-    if (!matcher.find()) return -1 //Extract ints out of groups
-    val group = matcher.group(1)
-    return group.toInt()
+            if (!matcher.find()) return -1 // Extract ints out of groups
+            val group = matcher.group(1)
+            return group.toInt()
+        }
+    }
 }
 
 
 fun getWindowsUptime(): Long {
     val uptimeProc = Runtime.getRuntime().exec("net stats workstation")
-    val `in` = BufferedReader(InputStreamReader(uptimeProc.inputStream))
-    for (line in `in`.readLines()) {
-        if (line.startsWith("Statistieken vanaf")) {
-            val format = SimpleDateFormat("'Statistieken vanaf' dd/MM/yyyy hh:mm:ss") //Dutch windows version
-            val bootTime = format.parse(line.remove("?"))
-            return System.currentTimeMillis() - bootTime.time
+    uptimeProc.inputStream.use { `is` ->
+        `is`.bufferedReader().use {br ->
+            for (line in br.readLines()) {
+                if (line.startsWith("Statistieken vanaf")) {
+                    val format = SimpleDateFormat("'Statistieken vanaf' dd/MM/yyyy hh:mm:ss") //Dutch windows version
+                    val bootTime = format.parse(line.remove("?"))
+                    return System.currentTimeMillis() - bootTime.time
 
-        } else if (line.startsWith("Statistics since")) {
-            val format = SimpleDateFormat("'Statistics since' MM/dd/yyyy hh:mm:ss") //English windows version
-            val bootTime = format.parse(line.remove("?"))
-            return System.currentTimeMillis() - bootTime.time
+                } else if (line.startsWith("Statistics since")) {
+                    val format = SimpleDateFormat("'Statistics since' MM/dd/yyyy hh:mm:ss") //English windows version
+                    val bootTime = format.parse(line.remove("?"))
+                    return System.currentTimeMillis() - bootTime.time
 
+                }
+            }
         }
     }
+
     return -1
 }
 
@@ -195,8 +199,7 @@ suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): S
     }
 
     if (commands.isEmpty()) {
-        val language = context.getLanguage()
-        val msg = i18n.getTranslation(language, "message.unknown.commandnode")
+        val msg = context.getTranslation("message.unknown.commandnode")
             .withVariable(PLACEHOLDER_ARG, arg)
         sendRsp(context, msg)
         return null
@@ -217,8 +220,7 @@ suspend fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set
     }.toMutableSet()
 
     if (commands.isEmpty()) {
-        val language = context.getLanguage()
-        val msg = i18n.getTranslation(language, "message.unknown.commands")
+        val msg = context.getTranslation("message.unknown.commands")
             .withVariable(PLACEHOLDER_ARG, arg)
         sendRsp(context, msg)
         return null
@@ -239,21 +241,20 @@ suspend fun getLongFromArgNMessage(
         arg = arg.remove(a)
     }
     val long = arg.toLongOrNull()
-    val language = context.getLanguage()
-    if (!arg.matches("\\d+".toRegex())) {
-        val msg = i18n.getTranslation(language, "message.unknown.number")
+    if (!arg.isNumber()) {
+        val msg = context.getTranslation("message.unknown.number")
             .withVariable(PLACEHOLDER_ARG, arg)
         sendRsp(context, msg)
     } else if (long == null) {
-        val msg = i18n.getTranslation(language, "message.unknown.long")
+        val msg = context.getTranslation("message.unknown.long")
             .withVariable(PLACEHOLDER_ARG, arg)
         sendRsp(context, msg)
     }
     if (long != null) {
         if (min > long || long > max) {
-            val msg = i18n.getTranslation(language, "message.long.notingrange")
-                .withVariable("min", min.toString())
-                .withVariable("max", max.toString())
+            val msg = context.getTranslation("message.long.notingrange")
+                .withVariable("min", min)
+                .withVariable("max", max)
                 .withVariable(PLACEHOLDER_ARG, arg)
             sendRsp(context, msg)
             return null

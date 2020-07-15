@@ -192,7 +192,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
 
         embedBuilder.setFooter(footer, event.author.effectiveAvatarUrl)
 
-        embedBuilder.setColor(Color.decode("#DC143C"))
+        embedBuilder.setColor(Color(0xDC143C))
         embedBuilder.setImage(attachment.url)
 
         embedBuilder.setTitle(title)

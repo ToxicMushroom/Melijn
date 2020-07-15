@@ -10,7 +10,6 @@ import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ROLE
-import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendEmbedAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -1044,9 +1043,9 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val wrapper = context.daoManager.selfRoleWrapper
             val map = wrapper.selfRoleCache.get(context.guildId).await()
 
-            val language = context.getLanguage()
+
             val msg = if (map.isNotEmpty()) {
-                val title = i18n.getTranslation(language, "$root.title")
+                val title = context.getTranslation("$root.title")
                 val content = StringBuilder("```ini\n[group]:\n [index] - [emoteji] - [name] -> [(chance, roleId, roleName), ...] - [getAll]")
 
                 for ((group, dataArray) in map.toSortedMap()) {
@@ -1080,7 +1079,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 content.append("```")
                 title + content
             } else {
-                i18n.getTranslation(language, "$root.empty")
+                context.getTranslation("$root.empty")
             }
             sendRsp(context, msg)
         }
@@ -1092,12 +1091,6 @@ suspend fun getSelfRoleGroupByGroupNameN(context: CommandContext, group: String)
     return wrapper.selfRoleGroupCache[context.guildId].await().firstOrNull { (groupName) ->
         groupName == group
     }
-}
-
-suspend fun getSelfRoleGroupByArgN(context: CommandContext, index: Int): SelfRoleGroup? {
-    val group = getStringFromArgsNMessage(context, index, 1, 64)
-        ?: return null
-    return getSelfRoleGroupByGroupNameN(context, group)
 }
 
 suspend fun getSelfRoleGroupByArgNMessage(context: CommandContext, index: Int): SelfRoleGroup? {

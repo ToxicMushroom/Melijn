@@ -60,9 +60,7 @@ class BanCommand : AbstractCommand("command.ban") {
         }
 
 
-        var reason = context.rawArg
-            .removeFirst(context.args[0])
-            .trim()
+        var reason = context.getRawArgPart(1)
 
         if (reason.isBlank()) reason = "/"
         reason = reason.trim()

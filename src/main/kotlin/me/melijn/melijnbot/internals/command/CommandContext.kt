@@ -15,7 +15,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.ZoneId
-import java.util.regex.Pattern
 
 class CommandContext(
     private val messageReceivedEvent: MessageReceivedEvent,
@@ -41,13 +40,12 @@ class CommandContext(
 
 
     val webManager: WebManager = container.webManager
-
     val usedPrefix: String = getNicerUsedPrefix()
-    val mentionOffset: Int = retrieveOffset()
+
 
     private fun getNicerUsedPrefix(): String {
         val prefix = commandParts[0]
-        return if (prefix.contains(container.settings.id.toString()) && USER_MENTION.matcher(prefix).matches()) {
+        return if (prefix.contains(container.settings.id.toString()) && USER_MENTION.matches(prefix)) {
             "@${container.settings.name} "
         } else {
             prefix
@@ -146,19 +144,6 @@ class CommandContext(
             emptyList()
         }
         logger = LoggerFactory.getLogger(commandOrder.first().javaClass.name)
-    }
-
-    private fun retrieveOffset(): Int {
-        var count = 0
-        val pattern = Pattern.compile("<@!?(\\d+)>")
-        val matcher = pattern.matcher(commandParts[0])
-
-        while (matcher.find()) {
-            val str = matcher.group(1)
-            if (jda.shardManager?.getUserById(str) != null) count++
-        }
-
-        return count
     }
 
     fun reply(something: Any) {

@@ -380,7 +380,7 @@ suspend fun sendFeatureRequiresGuildPremiumMessage(context: CommandContext, feat
 }
 
 fun getNicerUsedPrefix(settings: Settings, prefix: String): String {
-    return if (prefix.contains(settings.id.toString()) && USER_MENTION.matcher(prefix).matches()) {
+    return if (prefix.contains(settings.id.toString()) && USER_MENTION.matches(prefix)) {
         "@${settings.name} "
     } else {
         prefix
