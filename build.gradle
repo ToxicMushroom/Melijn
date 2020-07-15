@@ -57,7 +57,7 @@ dependencies {
     // implementation group: 'com.github.Melijn', name: 'lavaplayer', version: '18000a1479'
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Client
-    implementation group: 'com.github.ToxicMushroom', name: 'Lavalink-Klient', version: '6a268a2466'
+    implementation group: 'com.github.ToxicMushroom', name: 'Lavalink-Klient', version: '63d2c30b7a'
 
     // https://github.com/ToxicMushroom/JagTag-Kotlin
     implementation group: 'com.github.ToxicMushroom', name: 'JagTag-Kotlin', version: '0.6.2'
