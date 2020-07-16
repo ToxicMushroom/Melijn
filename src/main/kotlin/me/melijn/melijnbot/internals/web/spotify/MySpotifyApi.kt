@@ -33,14 +33,14 @@ class MySpotifyApi(val taskManager: TaskManager, spotifySettings: Settings.Spoti
 
 
     companion object {
-        private val spotifyTrackUrl = Regex("https://open\\.spotify\\.com/track/(\\S+)(?:\\?\\S+)?")
-        private val spotifyTrackUri = Regex("spotify:track:(\\S+)")
-        private val spotifyPlaylistUrl = Regex("https://open\\.spotify\\.com(?:/user/\\S+)?/playlist/(\\S+)(?:\\?\\S+)?")
-        private val spotifyPlaylistUri = Regex("spotify:(?:user:\\S+:)?playlist:(\\S+)")
-        private val spotifyAlbumUrl = Regex("https://open\\.spotify\\.com/album/(\\S+)(?:\\?\\S+)?")
-        private val spotifyAlbumUri = Regex("spotify:album:(\\S+)")
-        private val spotifyArtistUrl = Regex("https://open\\.spotify\\.com/artist/(\\S+)(?:\\?\\S+)?")
-        private val spotifyArtistUri = Regex("spotify:artist:(\\S+)")
+        private val spotifyTrackUrl = Regex("https://open\\.spotify\\.com/track/(\\w+)(?:\\?\\S+)?")
+        private val spotifyTrackUri = Regex("spotify:track:(\\w+)")
+        private val spotifyPlaylistUrl = Regex("https://open\\.spotify\\.com(?:/user/\\w+)?/playlist/(\\w+)(?:\\?\\S+)?")
+        private val spotifyPlaylistUri = Regex("spotify:(?:user:\\S+:)?playlist:(\\w+)")
+        private val spotifyAlbumUrl = Regex("https://open\\.spotify\\.com/album/(\\w+)(?:\\?\\S+)?")
+        private val spotifyAlbumUri = Regex("spotify:album:(\\w+)")
+        private val spotifyArtistUrl = Regex("https://open\\.spotify\\.com/artist/(\\w+)(?:\\?\\S+)?")
+        private val spotifyArtistUri = Regex("spotify:artist:(\\w+)")
     }
 
 
