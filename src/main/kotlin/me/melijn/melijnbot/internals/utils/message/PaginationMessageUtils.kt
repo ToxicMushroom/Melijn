@@ -60,8 +60,8 @@ fun registerPaginationModularMessage(textChannel: TextChannel, authorId: Long, m
     Container.instance.modularPaginationMap[System.nanoTime()] = ModularPaginationInfo(
         textChannel.guild.idLong,
         textChannel.idLong,
-        message.idLong,
         authorId,
+        message.idLong,
         msgList,
         index
     )
@@ -73,8 +73,8 @@ fun registerPaginationModularMessage(privateChannel: PrivateChannel, authorId: L
     Container.instance.modularPaginationMap[System.nanoTime()] = ModularPaginationInfo(
         -1,
         privateChannel.idLong,
-        message.idLong,
         authorId,
+        message.idLong,
         msgList,
         index
     )
@@ -99,8 +99,8 @@ fun registerPaginationMessage(privateChannel: PrivateChannel, authorId: Long, me
     Container.instance.paginationMap[System.nanoTime()] = PaginationInfo(
         -1,
         privateChannel.idLong,
-        message.idLong,
         authorId,
+        message.idLong,
         msgList,
         index
     )
