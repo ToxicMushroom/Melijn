@@ -52,8 +52,8 @@ class SPlayCommand : AbstractCommand("command.splay") {
             return
         }
 
-        val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
-        if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
+        val groupId = context.getGuildMusicPlayer().groupId
+        if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
 
         context.audioLoader.loadNewTrackPickerNMessage(context, "$YT_SELECTOR$songArg", songPosition)
     }
@@ -86,8 +86,8 @@ class SPlayCommand : AbstractCommand("command.splay") {
                 }
             }
 
-            val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
-            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
+            val groupId = context.getGuildMusicPlayer().groupId
+            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
             context.audioLoader.loadNewTrackPickerNMessage(context, "$YT_SELECTOR$songArg", songPosition)
         }
 
@@ -121,8 +121,8 @@ class SPlayCommand : AbstractCommand("command.splay") {
                 }
             }
 
-            val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
-            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, premium)) return
+            val groupId = context.getGuildMusicPlayer().groupId
+            if (botChannel == null && senderVoiceChannel != null && !lava.tryToConnectToVCNMessage(context, senderVoiceChannel, groupId)) return
             context.audioLoader.loadNewTrackPickerNMessage(context, "$SC_SELECTOR$songArg", songPosition)
         }
     }

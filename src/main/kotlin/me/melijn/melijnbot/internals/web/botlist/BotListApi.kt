@@ -1,6 +1,8 @@
 package me.melijn.melijnbot.internals.web.botlist
 
 import io.ktor.client.HttpClient
+import io.ktor.client.features.ClientRequestException
+import io.ktor.client.features.ServerResponseException
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -39,6 +41,10 @@ class BotListApi(val httpClient: HttpClient, val taskManager: TaskManager, val s
         try {
             httpClient.post<String>(url, builder)
         } catch (t: TimeoutCancellationException) {
+            logger.warn("Failed to post bot stats to: $url")
+        } catch (t: ClientRequestException) {
+            logger.warn("Failed to post bot stats to: $url")
+        } catch (t: ServerResponseException) {
             logger.warn("Failed to post bot stats to: $url")
         }
     }

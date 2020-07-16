@@ -22,7 +22,7 @@ class TrackInfoCommand : AbstractCommand("command.trackinfo") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val player = context.guildMusicPlayer
+        val player = context.getGuildMusicPlayer()
         val trackManager = player.guildTrackManager
         if (context.args.isEmpty()) {
             sendSyntax(context)
@@ -30,10 +30,11 @@ class TrackInfoCommand : AbstractCommand("command.trackinfo") {
         }
         val index = getIntegerFromArgNMessage(context, 0, 0, trackManager.trackSize()) ?: return
 
+        val playingTrack = trackManager.iPlayer.playingTrack ?: throw IllegalArgumentException("checks failed")
         val track = if (index == 0) {
-            trackManager.iPlayer.playingTrack
+            playingTrack
         } else {
-            trackManager.tracks.toList()[index - 1]
+            trackManager.tracks[index - 1]
         }
 
         val trackUserData = (track.userData as TrackUserData)
@@ -44,7 +45,7 @@ class TrackInfoCommand : AbstractCommand("command.trackinfo") {
         val timeuntil = context.getTranslation("$root.timeuntil")
         val progress = context.getTranslation("$root.progress")
         val desc = "**[${track.info.title}](${track.info.uri})**"
-        var timeUntilTime = trackManager.iPlayer.playingTrack.duration - trackManager.iPlayer.trackPosition
+        var timeUntilTime = playingTrack.duration - trackManager.iPlayer.trackPosition
         trackManager.tracks.toList().subList(0, max(index - 1, 0)).forEach { tr -> timeUntilTime += tr.duration }
         if (trackManager.loopedTrack) timeUntilTime = Long.MAX_VALUE
         if (index == 0) timeUntilTime = 0

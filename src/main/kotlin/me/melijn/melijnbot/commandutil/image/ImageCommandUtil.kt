@@ -180,12 +180,23 @@ object ImageCommandUtil {
         }, 0)
     }
 
-    private fun addFrameToEncoderReverseThingie(decoder: GifDecoder, debug: Boolean, gct: IntArray, index: Int, width: Int, height: Int, encoder: GifEncoder, context: CommandContext, fps: Float?, isSecondIteration: Boolean) {
+    private fun addFrameToEncoderReverseThingie(
+        decoder: GifDecoder,
+        debug: Boolean,
+        gct: IntArray,
+        index: Int,
+        width: Int,
+        height: Int,
+        encoder: GifEncoder,
+        context: CommandContext,
+        fps: Float?,
+        isSecondIteration: Boolean
+    ) {
         val options = ImageOptions()
-        options.setColorQuantizer(MedianCutQuantizer.INSTANCE)
-        options.setDitherer(FloydSteinbergDitherer.INSTANCE)
-        options.setTransparencyColor(Color.WHITE.rgb)
-        options.setDisposalMethod(DisposalMethod.DO_NOT_DISPOSE)
+            .setColorQuantizer(MedianCutQuantizer.INSTANCE)
+            .setDitherer(FloydSteinbergDitherer.INSTANCE)
+            .setTransparencyColor(Color.WHITE.rgb)
+            .setDisposalMethod(DisposalMethod.DO_NOT_DISPOSE)
 
 
         val frameMeta = decoder.getFrameMeta(index)

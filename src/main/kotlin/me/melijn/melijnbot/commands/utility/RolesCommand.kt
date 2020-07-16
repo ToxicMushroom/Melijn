@@ -24,14 +24,14 @@ class RolesCommand : AbstractCommand("command.roles") {
             return
         }
 
-        val guild: Guild = if (context.args.isNotEmpty() && context.args[0].matches(DISCORD_ID.toRegex())) {
-            context.jda.shardManager?.getGuildById(context.args[0]) ?: context.guild
+
+        val guild: Guild = if (context.args.isNotEmpty() && DISCORD_ID.matches(context.args[0])) {
+            context.shardManager.getGuildById(context.args[0]) ?: context.guild
         } else {
             context.guild
         }
 
-        val unReplacedTitle = context.getTranslation("$root.response1.title")
-        val title = unReplacedTitle
+        val title = context.getTranslation("$root.response1.title")
             .withVariable("serverName", guild.name)
 
 

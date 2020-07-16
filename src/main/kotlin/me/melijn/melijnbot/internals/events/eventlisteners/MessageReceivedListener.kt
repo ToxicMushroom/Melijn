@@ -142,7 +142,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
     }
 
     private suspend fun handleMessageReceivedStoring(event: GuildMessageReceivedEvent) {
-        // TODO ("Add switch for bot logging 'premium feature'")
+        // TODO Add switch for bot logging 'premium feature
 //        if (event.author.isBot && event.author.idLong != container.settings.id) return
         val guildId = event.guild.idLong
         val logChannelWrapper = container.daoManager.logChannelWrapper
@@ -192,7 +192,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
 
         embedBuilder.setFooter(footer, event.author.effectiveAvatarUrl)
 
-        embedBuilder.setColor(Color.decode("#DC143C"))
+        embedBuilder.setColor(Color(0xDC143C))
         embedBuilder.setImage(attachment.url)
 
         embedBuilder.setTitle(title)

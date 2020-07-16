@@ -22,7 +22,7 @@ package me.melijn.melijnbot.commands.administration
 //        }
 //
 //        override suspend fun execute(context: CommandContext) {
-//            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+//
 //        }
 //    }
 //

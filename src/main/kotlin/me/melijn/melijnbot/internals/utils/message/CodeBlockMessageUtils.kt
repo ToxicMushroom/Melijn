@@ -17,13 +17,13 @@ import net.dv8tion.jda.api.entities.TextChannel
 suspend fun sendRspCodeBlock(context: CommandContext, msg: String, lang: String, shouldPaginate: Boolean = false) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
     if (premiumGuild) {
-        sendRspCodeBlock(context.textChannel, context.daoManager, context.taskManager, msg, lang, shouldPaginate)
+        sendRspCodeBlock(context.textChannel, context.authorId, context.daoManager, context.taskManager, msg, lang, shouldPaginate)
     } else {
         sendMsgCodeBlock(context, msg, lang, shouldPaginate)
     }
 }
 
-fun sendRspCodeBlock(textChannel: TextChannel, daoManager: DaoManager, taskManager: TaskManager, msg: String, lang: String, shouldPaginate: Boolean) {
+fun sendRspCodeBlock(textChannel: TextChannel, authorId: Long, daoManager: DaoManager, taskManager: TaskManager, msg: String, lang: String, shouldPaginate: Boolean) {
     if (!textChannel.canTalk()) return
     if (msg.length <= 2000) {
         taskManager.async {
@@ -39,7 +39,7 @@ fun sendRspCodeBlock(textChannel: TextChannel, daoManager: DaoManager, taskManag
 
     } else {
         val parts = StringUtils.splitMessage(msg, maxLength = 2000 - (8 + lang.length) - if (shouldPaginate) 100 else 0)
-        sendRspCodeBlocks(textChannel, daoManager, taskManager, parts, lang, shouldPaginate)
+        sendRspCodeBlocks(textChannel, authorId, daoManager, taskManager, parts, lang, shouldPaginate)
     }
 }
 
@@ -50,13 +50,13 @@ suspend fun sendRspCodeBlocks(
 ) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
     if (premiumGuild) {
-        sendRspCodeBlocks(context.textChannel, context.daoManager, context.taskManager, parts, lang, true)
+        sendRspCodeBlocks(context.textChannel, context.authorId, context.daoManager, context.taskManager, parts, lang, true)
     } else {
-        sendMsgCodeBlocks(context.messageChannel, parts, lang, true)
+        sendMsgCodeBlocks(context.messageChannel, context.authorId, parts, lang, true)
     }
 }
 
-fun sendRspCodeBlocks(textChannel: TextChannel, daoManager: DaoManager, taskManager: TaskManager, parts: List<String>, lang: String, shouldPaginate: Boolean) {
+fun sendRspCodeBlocks(textChannel: TextChannel, authorId: Long, daoManager: DaoManager, taskManager: TaskManager, parts: List<String>, lang: String, shouldPaginate: Boolean) {
     if (shouldPaginate && parts.size > 1) {
         val paginatedParts = parts.mapIndexed { index, s ->
             when {
@@ -68,7 +68,7 @@ fun sendRspCodeBlocks(textChannel: TextChannel, daoManager: DaoManager, taskMana
 
         taskManager.async {
             val message = textChannel.sendMessage(paginatedParts[0]).awaitOrNull() ?: return@async
-            registerPaginationMessage(textChannel, message, paginatedParts, 0)
+            registerPaginationMessage(textChannel, authorId, message, paginatedParts, 0)
 
             val timeMap = daoManager.removeResponseWrapper.removeResponseCache.get(textChannel.guild.idLong).await()
             val seconds = timeMap[textChannel.idLong] ?: return@async
@@ -122,7 +122,7 @@ suspend fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String,
             channel.sendMessage(msg).queue()
         } else {
             val parts = StringUtils.splitMessage(msg, maxLength = 2000 - (8 + lang.length) - if (shouldPaginate) 100 else 0)
-            sendMsgCodeBlocks(channel, parts, lang, shouldPaginate)
+            sendMsgCodeBlocks(channel, context.authorId, parts, lang, shouldPaginate)
         }
 
     } else {
@@ -132,12 +132,12 @@ suspend fun sendMsgCodeBlock(context: CommandContext, msg: String, lang: String,
             privateChannel.sendMessage(msg).queue()
         } else {
             val parts = StringUtils.splitMessage(msg, maxLength = 2000 - (8 + lang.length))
-            sendMsgCodeBlocks(privateChannel, parts, lang, shouldPaginate)
+            sendMsgCodeBlocks(privateChannel, context.authorId, parts, lang, shouldPaginate)
         }
     }
 }
 
-suspend fun sendMsgCodeBlocks(messageChannel: MessageChannel, parts: List<String>, lang: String, shouldPaginate: Boolean) {
+suspend fun sendMsgCodeBlocks(messageChannel: MessageChannel, authorId: Long, parts: List<String>, lang: String, shouldPaginate: Boolean) {
     if (shouldPaginate && parts.size > 1) {
         val paginatedParts = parts.mapIndexed { index, s ->
             when {
@@ -150,9 +150,9 @@ suspend fun sendMsgCodeBlocks(messageChannel: MessageChannel, parts: List<String
         val message = messageChannel.sendMessage(paginatedParts[0]).awaitOrNull()
         message?.let {
             if (messageChannel is TextChannel) {
-                registerPaginationMessage(messageChannel, it, paginatedParts, 0)
+                registerPaginationMessage(messageChannel, authorId, it, paginatedParts, 0)
             } else if (messageChannel is PrivateChannel) {
-                registerPaginationMessage(messageChannel, it, paginatedParts, 0)
+                registerPaginationMessage(messageChannel, authorId, it, paginatedParts, 0)
             }
         }
     } else {

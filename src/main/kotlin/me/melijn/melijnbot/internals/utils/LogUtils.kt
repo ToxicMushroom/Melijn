@@ -44,7 +44,7 @@ object LogUtils {
 
         val eb = EmbedBuilder()
             .setTitle(title)
-            .setColor(Color.decode("#7289DA"))
+            .setColor(Color(0x7289DA))
             .setDescription(cause)
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
@@ -169,7 +169,7 @@ object LogUtils {
     }
 
     suspend fun addMusicPlayerResumed(context: CommandContext) {
-        val trackManager = context.guildMusicPlayer.guildTrackManager
+        val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val zoneId = getZoneId(context.daoManager, context.guild.idLong)
         val track = trackManager.iPlayer.playingTrack ?: return
 
@@ -191,14 +191,14 @@ object LogUtils {
             .addField(userIdTitle, context.author.asTag, true)
             .addField(channel, vc.name, true)
             .addField(channelId, vc.id, true)
-            .setColor(Color.decode("#43b581"))
+            .setColor(Color(0x43b581))
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         trackManager.resumeMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
     }
 
     suspend fun addMusicPlayerPaused(context: CommandContext) {
-        val trackManager = context.guildMusicPlayer.guildTrackManager
+        val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val zoneId = getZoneId(context.daoManager, context.guild.idLong)
         val track = trackManager.iPlayer.playingTrack ?: return
 
@@ -220,7 +220,7 @@ object LogUtils {
             .addField(userIdTitle, context.author.asTag, true)
             .addField(channel, vc.name, true)
             .addField(channelId, vc.id, true)
-            .setColor(Color.decode("#c4e667"))
+            .setColor(Color(0xc4e667))
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         trackManager.pauseMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
@@ -247,15 +247,15 @@ object LogUtils {
         eb.addField(channelId, vc?.id ?: "null", true)
         eb.addField(cause, exception.message ?: "/", false)
 
-        eb.setColor(Color.decode("#cc1010"))
+        eb.setColor(Color(0xcc1010))
         eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 
     suspend fun addMusicPlayerNewTrack(context: CommandContext, track: AudioTrack) {
-        val trackManager = context.guildMusicPlayer.guildTrackManager
-        val eb = Embedder(context.daoManager, context.guildId, -1, Color.decode("#2f3136").rgb)
+        val trackManager = context.getGuildMusicPlayer().guildTrackManager
+        val eb = Embedder(context.daoManager, context.guildId, -1, Color(0x2f3136).rgb)
         val zoneId = getZoneId(context.daoManager, context.guild.idLong)
         val title = context.getTranslation("logging.music.newtrack.title")
 
@@ -272,7 +272,7 @@ object LogUtils {
         eb.setDescription("[${track.info.title}](${track.info.uri})")
         eb.addField(userTitle, context.author.asTag, true)
         eb.addField(userIdTitle, context.author.id, true)
-        eb.setColor(Color.decode("#2f3136"))
+        eb.setColor(Color(0x2f3136))
         eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         if (vc == null) {
@@ -295,7 +295,7 @@ object LogUtils {
         val zoneId = getZoneId(daoManager, guild.idLong)
 
         val trackManager = lavaManager.musicPlayerManager.getGuildMusicPlayer(guild).guildTrackManager
-        val eb = Embedder(daoManager, guild.idLong, -1, Color.decode("#2f3136").rgb)
+        val eb = Embedder(daoManager, guild.idLong, -1, Color(0x2f3136).rgb)
 
         val title = i18n.getTranslation(language, "logging.music.newtrack.title")
 
@@ -327,7 +327,7 @@ object LogUtils {
 
         val eb = EmbedBuilder()
             .setTitle(title)
-            .setColor(Color.decode("#CC0000"))
+            .setColor(Color(0xCC0000))
             .setDescription(cause)
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
@@ -344,7 +344,7 @@ object LogUtils {
 
         val eb = EmbedBuilder()
             .setTitle(title)
-            .setColor(Color.decode("#CC0000"))
+            .setColor(Color(0xCC0000))
             .setDescription(cause)
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
@@ -465,7 +465,7 @@ object LogUtils {
 
         val eb = EmbedBuilder()
             .setTitle(title)
-            .setColor(Color.decode("#c596ff"))
+            .setColor(Color(0xc596ff))
             .setDescription("```LDIF\n$dmBody```")
 
         val pc = message.author.openPrivateChannel().awaitOrNull()
@@ -519,7 +519,7 @@ object LogUtils {
 
         val eb = EmbedBuilder()
             .setTitle(title)
-            .setColor(Color.decode("#CC0000"))
+            .setColor(Color(0xCC0000))
             .setDescription(cause)
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
@@ -582,7 +582,7 @@ object LogUtils {
         val ebs = mutableListOf<EmbedBuilder>()
         val embedBuilder = EmbedBuilder()
             .setTitle(title)
-            .setColor(Color.decode("#927ca6"))
+            .setColor(Color(0x927ca6))
 
         if (description.length > MessageEmbed.TEXT_MAX_LENGTH) {
             val parts = StringUtils.splitMessage(description, maxLength = MessageEmbed.TEXT_MAX_LENGTH)
@@ -590,7 +590,7 @@ object LogUtils {
             ebs.add(embedBuilder)
             for (part in parts.subList(1, parts.size)) {
                 val embedBuilder2 = EmbedBuilder()
-                embedBuilder2.setColor(Color.decode("#927ca6"))
+                embedBuilder2.setColor(Color(0x927ca6))
                 embedBuilder2.setDescription(part)
                 ebs.add(embedBuilder2)
             }

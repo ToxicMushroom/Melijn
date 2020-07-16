@@ -14,18 +14,18 @@ import net.dv8tion.jda.api.entities.TextChannel
 suspend fun sendPaginationModularRsp(context: CommandContext, modularMessages: List<ModularMessage>, index: Int) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
     if (premiumGuild) {
-        sendPaginationModularRsp(context.textChannel, context.daoManager, context.taskManager, modularMessages, index)
+        sendPaginationModularRsp(context.textChannel, context.authorId, context.daoManager, context.taskManager, modularMessages, index)
     } else {
         sendPaginationModularMsg(context, modularMessages, index)
     }
 }
 
-suspend fun sendPaginationModularRsp(textChannel: TextChannel, daoManager: DaoManager, taskManager: TaskManager, modularMessages: List<ModularMessage>, index: Int) {
+suspend fun sendPaginationModularRsp(textChannel: TextChannel, authorId: Long, daoManager: DaoManager, taskManager: TaskManager, modularMessages: List<ModularMessage>, index: Int) {
     val msg = modularMessages[index]
 
     val message = sendRspAwaitN(textChannel, daoManager, taskManager, msg)
         ?: throw IllegalArgumentException("Couldn't send the message")
-    registerPaginationModularMessage(textChannel, message, modularMessages, index)
+    registerPaginationModularMessage(textChannel, authorId, message, modularMessages, index)
 }
 
 suspend fun sendPaginationMsg(context: CommandContext, msgList: List<String>, index: Int) {
@@ -34,10 +34,10 @@ suspend fun sendPaginationMsg(context: CommandContext, msgList: List<String>, in
 
     if (context.isFromGuild) {
         val message = sendMsgAwaitEL(context.textChannel, msg).first()
-        registerPaginationMessage(context.textChannel, message, msgList, index)
+        registerPaginationMessage(context.textChannel, context.authorId, message, msgList, index)
     } else {
         val message = sendMsgAwaitEL(context.privateChannel, msg).first()
-        registerPaginationMessage(context.privateChannel, message, msgList, index)
+        registerPaginationMessage(context.privateChannel, context.authorId, message, msgList, index)
     }
 }
 
@@ -47,20 +47,21 @@ suspend fun sendPaginationModularMsg(context: CommandContext, msgList: List<Modu
     if (context.isFromGuild) {
         val message = sendMsgAwaitN(context.textChannel, msg)
             ?: throw IllegalArgumentException("Couldn't send the message")
-        registerPaginationModularMessage(context.textChannel, message, msgList, index)
+        registerPaginationModularMessage(context.textChannel, context.authorId, message, msgList, index)
     } else {
         val message = sendMsgAwaitN(context.privateChannel, msg)
             ?: throw IllegalArgumentException("Couldn't send the message")
-        registerPaginationModularMessage(context.privateChannel, message, msgList, index)
+        registerPaginationModularMessage(context.privateChannel, context.authorId, message, msgList, index)
     }
 }
 
 
-fun registerPaginationModularMessage(textChannel: TextChannel, message: Message, msgList: List<ModularMessage>, index: Int) {
+fun registerPaginationModularMessage(textChannel: TextChannel, authorId: Long, message: Message, msgList: List<ModularMessage>, index: Int) {
     Container.instance.modularPaginationMap[System.nanoTime()] = ModularPaginationInfo(
         textChannel.guild.idLong,
         textChannel.idLong,
         message.idLong,
+        authorId,
         msgList,
         index
     )
@@ -68,11 +69,12 @@ fun registerPaginationModularMessage(textChannel: TextChannel, message: Message,
     addPaginationEmotes(message, msgList.size > 2)
 }
 
-fun registerPaginationModularMessage(privateChannel: PrivateChannel, message: Message, msgList: List<ModularMessage>, index: Int) {
+fun registerPaginationModularMessage(privateChannel: PrivateChannel, authorId: Long, message: Message, msgList: List<ModularMessage>, index: Int) {
     Container.instance.modularPaginationMap[System.nanoTime()] = ModularPaginationInfo(
         -1,
         privateChannel.idLong,
         message.idLong,
+        authorId,
         msgList,
         index
     )
@@ -80,10 +82,11 @@ fun registerPaginationModularMessage(privateChannel: PrivateChannel, message: Me
     addPaginationEmotes(message, msgList.size > 2)
 }
 
-fun registerPaginationMessage(textChannel: TextChannel, message: Message, msgList: List<String>, index: Int) {
+fun registerPaginationMessage(textChannel: TextChannel, authorId: Long, message: Message, msgList: List<String>, index: Int) {
     Container.instance.paginationMap[System.nanoTime()] = PaginationInfo(
         textChannel.guild.idLong,
         textChannel.idLong,
+        authorId,
         message.idLong,
         msgList,
         index
@@ -92,11 +95,12 @@ fun registerPaginationMessage(textChannel: TextChannel, message: Message, msgLis
     addPaginationEmotes(message, msgList.size > 2)
 }
 
-fun registerPaginationMessage(privateChannel: PrivateChannel, message: Message, msgList: List<String>, index: Int) {
+fun registerPaginationMessage(privateChannel: PrivateChannel, authorId: Long, message: Message, msgList: List<String>, index: Int) {
     Container.instance.paginationMap[System.nanoTime()] = PaginationInfo(
         -1,
         privateChannel.idLong,
         message.idLong,
+        authorId,
         msgList,
         index
     )

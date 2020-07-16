@@ -12,6 +12,7 @@ import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ROLE
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
 class ForceRoleCommand : AbstractCommand("command.forcerole") {
@@ -23,9 +24,79 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
         children = arrayOf(
             AddArg(root),
             RemoveArg(root),
+            ViewUserArg(root),
+            ViewRoleArg(root),
             ListArg(root)
         )
         commandCategory = CommandCategory.MODERATION
+    }
+
+    class ViewRoleArg(parent: String) : AbstractCommand("$parent.viewrole") {
+
+        init {
+            name = "viewRole"
+            aliases = arrayOf("roleInfo")
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+
+            val role = getRoleByArgsNMessage(context, 0) ?: return
+
+            val userIds = context.daoManager.forceRoleWrapper.forceRoleCache.get(context.guildId).await()
+                .filter { it.value.contains(role.idLong) }.keys
+
+            var content = "```INI\n[user] - [userId]"
+            for (userId in userIds) {
+                content += if (userIds.size < 100) {
+                    val member = context.shardManager.retrieveUserById(userId).awaitOrNull()
+                    if (member == null) "\n- $userId"
+                    else "\n- [${member.asTag}] - $userId"
+                } else {
+                    "\n- $userId"
+                }
+            }
+            if (userIds.isEmpty()) content += "/"
+            content += "```"
+
+            val msg = context.getTranslation("$root.title")
+                .withVariable(PLACEHOLDER_ROLE, role.name) + content
+            sendRspCodeBlock(context, msg, "INI", true)
+        }
+    }
+
+    class ViewUserArg(parent: String) : AbstractCommand("$parent.viewuser") {
+
+        init {
+            name = "viewUser"
+            aliases = arrayOf("userInfo")
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+            val user = retrieveUserByArgsNMessage(context, 0) ?: return
+
+            val roleIds = context.daoManager.forceRoleWrapper.forceRoleCache.get(context.guildId).await()
+                .getOrDefault(user.idLong, emptyList())
+
+            var content = "```INI\n[role] - [roleId]"
+            for (roleId in roleIds) {
+                val role = context.guild.getRoleById(roleId)
+                content += "\n- [${role?.name}] - $roleId"
+            }
+            if (roleIds.isEmpty()) content += "\n/"
+            content += "```"
+
+            val msg = context.getTranslation("$root.title")
+                .withVariable(PLACEHOLDER_USER, user.asTag) + content
+            sendRspCodeBlock(context, msg, "INI", true)
+        }
     }
 
     override suspend fun execute(context: CommandContext) {
@@ -111,26 +182,25 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            if (context.args.isEmpty()) {
-                sendSyntax(context)
-                return
+            val userRolesMap = context.daoManager.forceRoleWrapper.forceRoleCache.get(context.guildId).await()
+            val reverseMap = mutableMapOf<Long, Int>()
+
+            for ((_, roleIds) in userRolesMap) {
+                for (roleId in roleIds) {
+                    reverseMap[roleId] = (reverseMap[roleId] ?: 0) + 1
+                }
             }
-            val user = retrieveUserByArgsNMessage(context, 0) ?: return
 
-            val roleIds = context.daoManager.forceRoleWrapper.forceRoleCache.get(context.guildId).await()
-                .getOrDefault(user.idLong, emptyList())
-
-            var content = "```INI"
-            for (roleId in roleIds) {
+            var content = "```INI\n[role] - [users]"
+            for ((roleId, users) in reverseMap) {
                 val role = context.guild.getRoleById(roleId)
-                content += "\n[${role?.name} - $roleId"
+                content += "\n[${role?.name}] - $users"
             }
-            if (roleIds.isEmpty()) content += "/"
+            if (reverseMap.isEmpty()) content += "\n/"
             content += "```"
 
-            val msg = context.getTranslation("$root.title")
-                .withVariable(PLACEHOLDER_USER, user.asTag)
-            sendRsp(context, msg)
+            val msg = context.getTranslation("$root.title") + content
+            sendRspCodeBlock(context, msg, "INI", true)
         }
     }
 }

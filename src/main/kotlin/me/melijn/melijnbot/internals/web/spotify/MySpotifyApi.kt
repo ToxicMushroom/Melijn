@@ -11,10 +11,7 @@ import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.removeFirst
 import java.io.IOException
-import java.util.regex.Matcher
-import java.util.regex.Pattern
 
 class MySpotifyApi(val taskManager: TaskManager, spotifySettings: Settings.Spotify) {
 
@@ -36,15 +33,16 @@ class MySpotifyApi(val taskManager: TaskManager, spotifySettings: Settings.Spoti
 
 
     companion object {
-        private val spotifyTrackUrl: Pattern = Pattern.compile("https://open\\.spotify\\.com/track/(\\S+)")
-        private val spotifyTrackUri: Pattern = Pattern.compile("spotify:track:(\\S+)")
-        private val spotifyPlaylistUrl: Pattern = Pattern.compile("https://open\\.spotify\\.com(?:/user/\\S+)?/playlist/(\\S+)")
-        private val spotifyPlaylistUri: Pattern = Pattern.compile("spotify:(?:user:\\S+:)?playlist:(\\S+)")
-        private val spotifyAlbumUrl: Pattern = Pattern.compile("https://open\\.spotify\\.com/album/(\\S+)")
-        private val spotifyAlbumUri: Pattern = Pattern.compile("spotify:album:(\\S+)")
-        private val spotifyArtistUrl: Pattern = Pattern.compile("https://open\\.spotify\\.com/artist/(\\S+)")
-        private val spotifyArtistUri: Pattern = Pattern.compile("spotify:artist:(\\S+)")
+        private val spotifyTrackUrl = Regex("https://open\\.spotify\\.com/track/(\\S+)(?:\\?\\S+)?")
+        private val spotifyTrackUri = Regex("spotify:track:(\\S+)")
+        private val spotifyPlaylistUrl = Regex("https://open\\.spotify\\.com(?:/user/\\S+)?/playlist/(\\S+)(?:\\?\\S+)?")
+        private val spotifyPlaylistUri = Regex("spotify:(?:user:\\S+:)?playlist:(\\S+)")
+        private val spotifyAlbumUrl = Regex("https://open\\.spotify\\.com/album/(\\S+)(?:\\?\\S+)?")
+        private val spotifyAlbumUri = Regex("spotify:album:(\\S+)")
+        private val spotifyArtistUrl = Regex("https://open\\.spotify\\.com/artist/(\\S+)(?:\\?\\S+)?")
+        private val spotifyArtistUri = Regex("spotify:artist:(\\S+)")
     }
+
 
     fun getTracksFromSpotifyUrl(
         songArg: String,
@@ -54,31 +52,18 @@ class MySpotifyApi(val taskManager: TaskManager, spotifySettings: Settings.Spoti
         error: suspend (Throwable) -> Unit
     ) = taskManager.async {
         try {
-            //Tracks
             when {
-                spotifyTrackUrl.matcher(songArg).matches() -> {
-                    val trackId = songArg
-                        .removeFirst("https://open.spotify.com/track/")
-                        .removeFirst("\\?\\S+".toRegex())
-                    track.invoke(spotifyApi.getTrack(trackId).build().executeAsync().await())
-                }
-                spotifyTrackUri.matcher(songArg).matches() -> {
-                    val trackId = songArg
-                        .removeFirst("spotify:track:")
-                        .removeFirst("\\?\\S+".toRegex())
-                    track.invoke(spotifyApi.getTrack(trackId).build().executeAsync().await())
-                }
+                spotifyTrackUrl.matches(songArg) -> acceptTrackResult(songArg, track, spotifyTrackUrl)
+                spotifyTrackUri.matches(songArg) -> acceptTrackResult(songArg, track, spotifyTrackUri)
 
-                //Playlists
-                spotifyPlaylistUrl.matcher(songArg).matches() -> acceptTracksIfMatchesPattern(songArg, trackList, spotifyPlaylistUrl)
-                spotifyPlaylistUri.matcher(songArg).matches() -> acceptTracksIfMatchesPattern(songArg, trackList, spotifyPlaylistUri)
+                spotifyPlaylistUrl.matches(songArg) -> acceptPlaylistResults(songArg, trackList, spotifyPlaylistUrl)
+                spotifyPlaylistUri.matches(songArg) -> acceptPlaylistResults(songArg, trackList, spotifyPlaylistUri)
 
-                //Albums
-                spotifyAlbumUrl.matcher(songArg).matches() -> acceptIfMatchesPattern(songArg, simpleTrack, spotifyAlbumUrl)
-                spotifyAlbumUri.matcher(songArg).matches() -> acceptIfMatchesPattern(songArg, simpleTrack, spotifyAlbumUri)
+                spotifyAlbumUrl.matches(songArg) -> acceptAlbumResults(songArg, simpleTrack, spotifyAlbumUrl)
+                spotifyAlbumUri.matches(songArg) -> acceptAlbumResults(songArg, simpleTrack, spotifyAlbumUri)
 
-                spotifyArtistUrl.matcher(songArg).matches() -> fetchTracksFromArtist(songArg, trackList, spotifyArtistUrl)
-                spotifyArtistUri.matcher(songArg).matches() -> fetchTracksFromArtist(songArg, trackList, spotifyArtistUri)
+                spotifyArtistUrl.matches(songArg) -> acceptArtistResults(songArg, trackList, spotifyArtistUrl)
+                spotifyArtistUri.matches(songArg) -> acceptArtistResults(songArg, trackList, spotifyArtistUri)
                 else -> error.invoke(IllegalArgumentException("That is not a valid spotify link"))
             }
         } catch (ignored: IOException) {
@@ -88,41 +73,38 @@ class MySpotifyApi(val taskManager: TaskManager, spotifySettings: Settings.Spoti
         }
     }
 
-    private suspend fun fetchTracksFromArtist(songArg: String, trackList: suspend(Array<Track>) -> Unit, spotifyArtistUrl: Pattern) {
-        val matcher: Matcher = spotifyArtistUrl.matcher(songArg)
-        while (matcher.find()) {
-            if (matcher.group(1) == null) continue
+    private suspend fun acceptTrackResult(songArg: String, track: suspend (Track) -> Unit, regex: Regex) {
+        val result = requireNotNull(regex.find(songArg)) { "bruh" }
+        val trackId = result.groupValues[1]
 
-            val id = matcher.group(1).removeFirst("\\?\\S+".toRegex())
-            val tracks = spotifyApi.getArtistsTopTracks(id, CountryCode.US).build().executeAsync().await()
-            trackList(tracks)
-        }
+        track.invoke(spotifyApi.getTrack(trackId).build().executeAsync().await())
     }
 
+    private suspend fun acceptArtistResults(songArg: String, trackList: suspend (Array<Track>) -> Unit, regex: Regex) {
+        val result = requireNotNull(regex.find(songArg)) { "bruh" }
+        val id = result.groupValues[1]
 
-    private suspend fun acceptTracksIfMatchesPattern(url: String, trackList: suspend (Array<Track>) -> Unit, pattern: Pattern) {
-        val matcher: Matcher = pattern.matcher(url)
-        while (matcher.find()) {
-            if (matcher.group(1) == null) continue
-
-            val id = matcher.group(1).removeFirst("\\?\\S+".toRegex())
-            val tracks = spotifyApi.getPlaylistsItems(id).build().executeAsync().await().items.map { playlistTrack ->
-                (playlistTrack.track as Track)
-            }
-
-            trackList(tracks.toTypedArray())
-        }
+        val tracks = spotifyApi.getArtistsTopTracks(id, CountryCode.US).build().executeAsync().await()
+        trackList(tracks)
     }
 
-    private suspend fun acceptIfMatchesPattern(url: String, simpleTrack: suspend (Array<TrackSimplified>) -> Unit, pattern: Pattern) {
-        val matcher: Matcher = pattern.matcher(url)
-        while (matcher.find()) {
-            if (matcher.group(1) == null) continue
-
-            val id = matcher.group(1).removeFirst("\\?\\S+".toRegex())
-            val simpleTracks = spotifyApi.getAlbumsTracks(id).build().executeAsync().await().items
-            simpleTrack(simpleTracks)
+    private suspend fun acceptPlaylistResults(songArg: String, trackList: suspend (Array<Track>) -> Unit, regex: Regex) {
+        val result = requireNotNull(regex.find(songArg)) { "bruh" }
+        val id = result.groupValues[1]
+        val tracks = spotifyApi.getPlaylistsItems(id).build().executeAsync().await().items.map { playlistTrack ->
+            (playlistTrack.track as Track)
         }
+
+        trackList(tracks.toTypedArray())
+
+    }
+
+    private suspend fun acceptAlbumResults(songArg: String, simpleTrack: suspend (Array<TrackSimplified>) -> Unit, regex: Regex) {
+        val result = requireNotNull(regex.find(songArg)) { "bruh" }
+        val id = result.groupValues[1]
+        val simpleTracks = spotifyApi.getAlbumsTracks(id).build().executeAsync().await().items
+
+        simpleTrack(simpleTracks)
     }
 
 }

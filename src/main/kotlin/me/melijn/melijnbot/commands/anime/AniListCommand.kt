@@ -238,13 +238,13 @@ class AniListCommand : AbstractCommand("command.anilist") {
             }
 
             val chosenColor = when (user.options()?.profileColor()?.toLowerCase() ?: "null") {
-                "green" -> Color.decode("#4CCA51")
-                "blue" -> Color.decode("#3DB4F2")
-                "purple" -> Color.decode("#C063FF")
-                "pink" -> Color.decode("#FC9DD6")
-                "orange" -> Color.decode("#EF881A")
-                "red" -> Color.decode("#E13333")
-                "gray" -> Color.decode("#677B94")
+                "green" -> Color(0x4CCA51)
+                "blue" -> Color(0x3DB4F2)
+                "purple" -> Color(0xC063FF)
+                "pink" -> Color(0xFC9DD6)
+                "orange" -> Color(0xEF881A)
+                "red" -> Color(0xE13333)
+                "gray" -> Color(0x677B94)
                 else -> Color(defaultColor)
             }
             eb.setColor(chosenColor)

@@ -20,9 +20,9 @@ class ForwardCommand : AbstractCommand("command.forward") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val iPlayer = context.guildMusicPlayer.guildTrackManager.iPlayer
+        val iPlayer = context.getGuildMusicPlayer().guildTrackManager.iPlayer
         val track = iPlayer.playingTrack
-        val trackDuration = track.duration
+        val trackDuration = track?.duration ?: throw IllegalArgumentException("angry check failed")
         var trackPosition = iPlayer.trackPosition
 
 

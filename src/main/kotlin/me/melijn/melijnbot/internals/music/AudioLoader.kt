@@ -119,7 +119,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         }
 
         try {
-            ytSearch.search(context.guild, rawInput, searchType, { tracks ->
+            ytSearch.search(rawInput, searchType, { tracks ->
                 if (tracks.isNotEmpty()) {
                     foundTracks(context, guildMusicPlayer, wrapper, tracks, rawInput, isPlaylist, nextPos)
                 } else {
@@ -179,7 +179,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         sendEmbedRsp(context, eb.build())
     }
 
-    private fun getQueuePosition(context: CommandContext, audioTrack: AudioTrack): Int =
+    private suspend fun getQueuePosition(context: CommandContext, audioTrack: AudioTrack): Int =
         context.musicPlayerManager.getGuildMusicPlayer(context.guild).guildTrackManager.getPosition(audioTrack)
 
     suspend fun loadSpotifyTrack(
@@ -191,8 +191,10 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         nextPos: NextSongPosition,
         loaded: (suspend (Boolean) -> Unit)? = null
     ) {
-        val player: GuildMusicPlayer = context.guildMusicPlayer
-        val title: String = query.removeFirst("$SC_SELECTOR|$YT_SELECTOR".toRegex())
+        val player: GuildMusicPlayer = context.getGuildMusicPlayer()
+        val title: String = query
+            .removeFirst(SC_SELECTOR)
+            .removeFirst(YT_SELECTOR)
         val source = StringBuilder(query)
         val artistNames = mutableListOf<String>()
         if (player.queueIsFull(context, 1, silent)) {
@@ -297,7 +299,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     suspend fun loadSpotifyPlaylist(context: CommandContext, tracks: Array<Track>, nextPos: NextSongPosition) {
-        if (tracks.size + context.guildMusicPlayer.guildTrackManager.tracks.size > QUEUE_LIMIT) {
+        if (tracks.size + context.getGuildMusicPlayer().guildTrackManager.tracks.size > QUEUE_LIMIT) {
             val msg = context.getTranslation("$root.queuelimit")
                 .withVariable("amount", QUEUE_LIMIT.toString())
 
@@ -330,7 +332,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     suspend fun loadSpotifyAlbum(context: CommandContext, simpleTracks: Array<TrackSimplified>, nextPos: NextSongPosition) {
-        if (simpleTracks.size + context.guildMusicPlayer.guildTrackManager.tracks.size > QUEUE_LIMIT) {
+        if (simpleTracks.size + context.getGuildMusicPlayer().guildTrackManager.tracks.size > QUEUE_LIMIT) {
             val msg = context.getTranslation("$root.queuelimit")
                 .withVariable("amount", QUEUE_LIMIT.toString())
                 .withVariable("donateAmount", DONATE_QUEUE_LIMIT.toString())
@@ -361,7 +363,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     suspend fun loadNewTrackPickerNMessage(context: CommandContext, query: String, nextPos: NextSongPosition) {
-        val guildMusicPlayer = context.guildMusicPlayer
+        val guildMusicPlayer = context.getGuildMusicPlayer()
         val rawInput = query
             .replace(YT_SELECTOR, "")
             .replace(SC_SELECTOR, "")
@@ -388,8 +390,8 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         audioPlayerManager.loadItemOrdered(guildMusicPlayer, query, resultHandler)
     }
 
-    private fun prepareSearchMenu(context: CommandContext, trackList: List<AudioTrack>, nextPos: NextSongPosition) {
-        val guildMusicPlayer = context.guildMusicPlayer
+    private suspend fun prepareSearchMenu(context: CommandContext, trackList: List<AudioTrack>, nextPos: NextSongPosition) {
+        val guildMusicPlayer = context.getGuildMusicPlayer()
         if (guildMusicPlayer.queueIsFull(context, 1)) return
 
         val tracks = trackList.filterIndexed { index, _ -> index < 5 }.toMutableList()
