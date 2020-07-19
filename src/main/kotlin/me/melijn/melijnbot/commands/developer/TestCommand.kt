@@ -17,7 +17,7 @@ class TestCommand : AbstractCommand("command.test") {
     override suspend fun execute(context: CommandContext) {
         val start = System.currentTimeMillis()
         context.daoManager.messageHistoryWrapper.clearOldMessages()
-        sendRsp(context, "Done, this took: ${(System.currentTimeMillis() - start) / 1000.0}ms")
+        sendRsp(context, "Done, this took: ${(System.currentTimeMillis() - start) / 1000.0}s")
     }
 }
 
