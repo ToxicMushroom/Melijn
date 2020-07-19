@@ -122,7 +122,7 @@ class GuildTrackManager(
     }
 
     fun shuffle() {
-        tracks = LinkedList(tracks.shuffled())
+        tracks.shuffle()
     }
 
 
@@ -255,17 +255,12 @@ class GuildTrackManager(
     }
 
     fun removeAt(indexes: IntArray): Map<Int, AudioTrack> {
-        val newQueue = LinkedList<AudioTrack>()
         val removed = HashMap<Int, AudioTrack>()
 
-        tracks.forEachIndexed { index, track ->
-            if (!indexes.contains(index)) {
-                newQueue.add(track)
-            } else {
-                removed[index] = track
-            }
+        for (index in indexes) {
+            removed[index] = tracks.removeAt(index)
         }
-        tracks = newQueue
+
         return removed
     }
 
