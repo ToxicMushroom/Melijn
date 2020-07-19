@@ -209,7 +209,8 @@ class CommandClientBuilder(private val container: Container) {
         ManageSupportersCommand(),
         FlipCommand(),
         DailyCommand(),
-        PayCommand()
+        PayCommand(),
+        BassBoostCommand(),
     )
 
     init {
