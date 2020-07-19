@@ -15,6 +15,7 @@ plugins {
     id 'com.apollographql.apollo' version '2.2.2'
 }
 
+group = 'me.melijn.melijnbot'
 mainClassName = 'me.melijn.melijnbot.MelijnBotKt'
 version = '2.0.8'
 
@@ -44,7 +45,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.2.0_179') {
+    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.2.0_180') {
         exclude module: 'opus-java'
     }
 
@@ -57,7 +58,7 @@ dependencies {
     // implementation group: 'com.github.Melijn', name: 'lavaplayer', version: '18000a1479'
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Client
-    implementation group: 'com.github.ToxicMushroom', name: 'Lavalink-Klient', version: 'a3cf40e15f'
+    implementation group: 'com.github.ToxicMushroom', name: 'Lavalink-Klient', version: 'bd636b0572'
 
     // https://github.com/ToxicMushroom/JagTag-Kotlin
     implementation group: 'com.github.ToxicMushroom', name: 'JagTag-Kotlin', version: '0.6.2'
