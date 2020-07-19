@@ -37,17 +37,9 @@ class MoveCommand : AbstractCommand("command.move") {
             return
         }
 
-        val trackList = trackManager.tracks.toList().toMutableList()
-        val track = trackList[index1]
-        trackList.removeAt(index1)
-        val lastPart = trackList.subList(index2, trackList.size)
-        val firstPart = mutableListOf<AudioTrack>()
-        firstPart.addAll(trackList.subList(0, index2))
-        firstPart.add(track)
-        firstPart.addAll(lastPart)
-
-        trackManager.tracks.clear()
-        firstPart.forEach { trck -> trackManager.tracks.offer(trck) }
+        val trackList = trackManager.tracks
+        val track = trackList.removeAt(index1)
+        trackList.add(index2, track)
 
         val msg = context.getTranslation("$root.moved")
             .withVariable("pos1", "${index1 + 1}")

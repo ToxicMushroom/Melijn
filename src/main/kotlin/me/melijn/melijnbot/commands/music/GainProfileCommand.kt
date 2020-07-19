@@ -51,9 +51,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             val floatArray = profile.toFloatArray()
 
             val player = context.getGuildMusicPlayer().guildTrackManager.iPlayer
-            for (i in 0..14) {
-                player.setBand(i, floatArray[i])
-            }
+            player.setBands(floatArray)
 
             val msg = context.getTranslation("$root.loaded")
                 .withVariable("gainProfile", pair.first)
