@@ -211,6 +211,7 @@ class CommandClientBuilder(private val container: Container) {
         DailyCommand(),
         PayCommand(),
         BassBoostCommand(),
+        NightcoreCommand()
     )
 
     init {
