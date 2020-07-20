@@ -34,7 +34,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     val root = "message.music"
     private val audioPlayerManager = musicPlayerManager.audioPlayerManager
     private val ytSearch = YTSearch()
-    private val spotifyTrackDiff = 2000
+    private val spotifyTrackDiff = 10_000
 
 
     suspend fun foundSingleTrack(
