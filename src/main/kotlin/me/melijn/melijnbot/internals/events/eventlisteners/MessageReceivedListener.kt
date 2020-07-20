@@ -52,22 +52,20 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             cmd is HelpCommand
         } ?: return
 
-        if (event is GuildMessageReceivedEvent) {
-            val guildEvent: GuildMessageReceivedEvent = event
-            if (!guildEvent.channel.canTalk()) {
-                try {
-                    val pChannel = guildEvent.author.openPrivateChannel().awaitOrNull()
-                    val language = getLanguage(container.daoManager, guildEvent.author.idLong)
-                    val msg = i18n.getTranslation(language, "message.melijnping.nowriteperms")
-                        .withVariable("server", guildEvent.guild.name)
-                        .withVariable(PLACEHOLDER_CHANNEL, guildEvent.channel.asMention)
 
-                    pChannel?.sendMessage(msg)?.queue({}, {})
-                } catch (t: Throwable) {
-                    t.printStackTrace()
-                }
-                return
+        if (event.isFromGuild && !event.textChannel.canTalk()) {
+            try {
+                val pChannel = event.author.openPrivateChannel().awaitOrNull()
+                val language = getLanguage(container.daoManager, event.author.idLong)
+                val msg = i18n.getTranslation(language, "message.melijnping.nowriteperms")
+                    .withVariable("server", event.guild.name)
+                    .withVariable(PLACEHOLDER_CHANNEL, event.textChannel.asMention)
+
+                pChannel?.sendMessage(msg)?.queue({}, {})
+            } catch (t: Throwable) {
+                t.printStackTrace()
             }
+            return
         }
 
         container.taskManager.async {
