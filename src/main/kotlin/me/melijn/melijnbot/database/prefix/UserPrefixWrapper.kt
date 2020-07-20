@@ -8,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class UserPrefixWrapper(private val taskManager: TaskManager, private val userPrefixDao: UserPrefixDao) {
+class UserPrefixWrapper(private val userPrefixDao: UserPrefixDao) {
 
     val prefixCache = CacheBuilder.newBuilder()
         .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
@@ -18,7 +18,7 @@ class UserPrefixWrapper(private val taskManager: TaskManager, private val userPr
 
     private fun getPrefixes(userId: Long): CompletableFuture<List<String>> {
         val prefixes = CompletableFuture<List<String>>()
-        taskManager.async {
+       TaskManager.async {
             val prefixesString = userPrefixDao.get(userId)
             val list: List<String> = if (prefixesString == "") emptyList() else prefixesString.split("%SPLIT%")
             prefixes.complete(list)

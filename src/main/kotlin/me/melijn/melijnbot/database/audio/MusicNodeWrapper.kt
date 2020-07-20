@@ -8,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class MusicNodeWrapper(val taskManager: TaskManager, private val musicNodeDao: MusicNodeDao) {
+class MusicNodeWrapper(private val musicNodeDao: MusicNodeDao) {
 
     val musicNodeCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NORMAL_CACHE, TimeUnit.MINUTES)
@@ -19,7 +19,7 @@ class MusicNodeWrapper(val taskManager: TaskManager, private val musicNodeDao: M
     private fun getGainProfile(guildId: Long): CompletableFuture<String> {
         val future = CompletableFuture<String>()
 
-        taskManager.async {
+       TaskManager.async {
             val profile = musicNodeDao.get(guildId)
             future.complete(profile)
         }

@@ -4,19 +4,18 @@ package me.melijn.melijnbot.internals.music
 import me.melijn.llklient.io.jda.JDALavalink
 import me.melijn.llklient.player.IPlayer
 import me.melijn.llklient.player.LavaplayerPlayerWrapper
+import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.utils.notEnoughPermissionsAndMessage
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.VoiceChannel
-import net.dv8tion.jda.api.sharding.ShardManager
 
 
 class LavaManager(
     val lavalinkEnabled: Boolean,
     val daoManager: DaoManager,
-    val shardManager: ShardManager,
     val jdaLavaLink: JDALavalink?
 ) {
 
@@ -87,7 +86,7 @@ class LavaManager(
 
 
     suspend fun closeConnectionLite(guildId: Long) {
-        val guild = shardManager.getGuildById(guildId)
+        val guild = MelijnBot.shardManager.getGuildById(guildId)
 
         if (jdaLavaLink == null) {
             guild?.audioManager?.closeAudioConnection()

@@ -7,7 +7,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class VerificationUserFlowRateWrapper(val taskManager: TaskManager, private val verificationUserFlowRateDao: VerificationUserFlowRateDao) {
+class VerificationUserFlowRateWrapper(private val verificationUserFlowRateDao: VerificationUserFlowRateDao) {
 
     val verificationUserFlowRateCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -17,7 +17,7 @@ class VerificationUserFlowRateWrapper(val taskManager: TaskManager, private val 
 
     private fun getUserFlowRate(guildId: Long): CompletableFuture<Long> {
         val future = CompletableFuture<Long>()
-        taskManager.async {
+       TaskManager.async {
             val flowRate = verificationUserFlowRateDao.get(guildId)
             future.complete(flowRate)
         }

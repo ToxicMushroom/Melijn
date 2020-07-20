@@ -7,7 +7,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class StreamUrlWrapper(val taskManager: TaskManager, private val streamUrlDao: StreamUrlDao) {
+class StreamUrlWrapper(private val streamUrlDao: StreamUrlDao) {
 
     val streamUrlCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -17,7 +17,7 @@ class StreamUrlWrapper(val taskManager: TaskManager, private val streamUrlDao: S
 
     private fun getCode(guildId: Long): CompletableFuture<String> {
         val future = CompletableFuture<String>()
-        taskManager.async {
+       TaskManager.async {
             val url = streamUrlDao.get(guildId)
             future.complete(url)
         }

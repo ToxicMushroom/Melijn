@@ -13,6 +13,7 @@ import me.melijn.melijnbot.commands.image.*
 import me.melijn.melijnbot.commands.moderation.*
 import me.melijn.melijnbot.commands.music.*
 import me.melijn.melijnbot.commands.utility.*
+import me.melijn.melijnbot.internals.threading.TaskManager
 import org.slf4j.LoggerFactory
 
 
@@ -224,7 +225,7 @@ class CommandClientBuilder(private val container: Container) {
 
     private fun addCommand(command: AbstractCommand): CommandClientBuilder {
         commands.add(command)
-        container.taskManager.async {
+        TaskManager.async {
             container.daoManager.commandWrapper.insert(command)
         }
         return this

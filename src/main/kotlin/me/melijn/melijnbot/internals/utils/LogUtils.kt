@@ -276,7 +276,7 @@ object LogUtils {
         eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         if (vc == null) {
-            context.taskManager.asyncAfter(2000) {
+            TaskManager.asyncAfter(2000) {
                 val vc2 = context.lavaManager.getConnectedChannel(context.guild)
                 eb.addField(channel, vc2?.name ?: "null", true)
                 eb.addField(channelId, vc2?.id ?: "null", true)
@@ -484,7 +484,7 @@ object LogUtils {
         sendEmbed(daoManager.embedDisabledWrapper, lc, eb.build())
     }
 
-    suspend fun sendBirthdayMessage(daoManager: DaoManager, taskManager: TaskManager, textChannel: TextChannel, member: Member, birthYear: Int?) {
+    suspend fun sendBirthdayMessage(daoManager: DaoManager, textChannel: TextChannel, member: Member, birthYear: Int?) {
         val guildId = textChannel.guild.idLong
         val messageType = MessageType.BIRTHDAY
         val language = getLanguage(daoManager, guildId)
@@ -494,7 +494,7 @@ object LogUtils {
             val msg = i18n.getTranslation(language, "logging.birthday")
                 .withVariable("user", member.asTag)
 
-            sendRspOrMsg(textChannel, taskManager, daoManager, msg)
+            sendRspOrMsg(textChannel, daoManager, msg)
         } else {
             if (MessageCommandUtil.removeMessageIfEmpty(guildId, messageType, message, messageWrapper)) return
 

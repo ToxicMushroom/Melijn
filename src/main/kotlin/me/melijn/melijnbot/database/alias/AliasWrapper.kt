@@ -9,7 +9,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class AliasWrapper(val taskManager: TaskManager, private val aliasDao: AliasDao) {
+class AliasWrapper(private val aliasDao: AliasDao) {
 
 
     val aliasCache = CacheBuilder.newBuilder()
@@ -21,7 +21,7 @@ class AliasWrapper(val taskManager: TaskManager, private val aliasDao: AliasDao)
     private fun getAliases(id: Long): CompletableFuture<Map<String, List<String>>> {
         val future = CompletableFuture<Map<String, List<String>>>()
 
-        taskManager.async {
+        TaskManager.async {
             val profileMap = aliasDao.getAliases(id)
             future.complete(profileMap)
         }

@@ -3,6 +3,7 @@ package me.melijn.melijnbot.internals.events.eventlisteners
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.ConsoleColor
 import me.melijn.melijnbot.internals.events.AbstractListener
+import me.melijn.melijnbot.internals.threading.TaskManager
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent
@@ -13,7 +14,7 @@ class BotJoinLeaveListener(container: Container) : AbstractListener(container) {
         if (event is GuildJoinEvent) {
             onBotJoinGuild(event)
         } else if (event is GuildLeaveEvent) {
-            container.taskManager.async {
+            TaskManager.async {
                 onBotLeaveGuild(event)
             }
         }

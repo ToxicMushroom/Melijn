@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.database.mute
 
 import me.melijn.melijnbot.internals.command.CommandContext
-import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.getDurationString
@@ -9,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
-class MuteWrapper(val taskManager: TaskManager, private val muteDao: MuteDao) {
+class MuteWrapper(private val muteDao: MuteDao) {
 
     suspend fun getUnmuteableMutes(): List<Mute> {
         return muteDao.getUnmuteableMutes()

@@ -6,6 +6,7 @@ import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.events.eventutil.FilterUtil
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.*
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
@@ -48,7 +49,7 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
         val oldContent = daoMessage.content
         daoMessage.content = newContent
 
-        container.taskManager.async {
+        TaskManager.async {
             messageWrapper.setMessage(daoMessage)
 
             val channel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.EDITED_MESSAGE, true)

@@ -12,6 +12,7 @@ import me.melijn.melijnbot.internals.events.eventutil.SelfRoleUtil
 import me.melijn.melijnbot.internals.music.DONATE_QUEUE_LIMIT
 import me.melijn.melijnbot.internals.music.QUEUE_LIMIT
 import me.melijn.melijnbot.internals.music.TrackUserData
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.*
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelByType
@@ -33,7 +34,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         if (event is PrivateMessageReactionAddEvent) onPrivateMessageReactionAdd(event)
     }
 
-    private fun onPrivateMessageReactionAdd(event: PrivateMessageReactionAddEvent) = container.taskManager.async {
+    private fun onPrivateMessageReactionAdd(event: PrivateMessageReactionAddEvent) = TaskManager.async {
         paginationHandler(event)
     }
 
@@ -112,7 +113,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         }
     }
 
-    private fun onGuildMessageReactionAdd(event: GuildMessageReactionAddEvent) = container.taskManager.async {
+    private fun onGuildMessageReactionAdd(event: GuildMessageReactionAddEvent) = TaskManager.async {
         selfRoleHandler(event)
         postReactionAddedLog(event)
         verificationHandler(event)

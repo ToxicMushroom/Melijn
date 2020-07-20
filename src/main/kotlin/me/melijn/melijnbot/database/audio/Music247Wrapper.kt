@@ -7,7 +7,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class Music247Wrapper(val taskManager: TaskManager, val music247Dao: Music247Dao) {
+class Music247Wrapper(val music247Dao: Music247Dao) {
 
     val music247Cache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -18,7 +18,7 @@ class Music247Wrapper(val taskManager: TaskManager, val music247Dao: Music247Dao
     private fun is247Mode(guildId: Long): CompletableFuture<Boolean> {
         val future = CompletableFuture<Boolean>()
 
-        taskManager.async {
+       TaskManager.async {
             val contains = music247Dao.contains(guildId)
             future.complete(contains)
         }

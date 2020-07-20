@@ -8,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class ChannelRolePermissionWrapper(val taskManager: TaskManager, private val channelRolePermissionDao: ChannelRolePermissionDao) {
+class ChannelRolePermissionWrapper(private val channelRolePermissionDao: ChannelRolePermissionDao) {
 
     val channelRolePermissionCache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -18,7 +18,7 @@ class ChannelRolePermissionWrapper(val taskManager: TaskManager, private val cha
 
     private fun getPermissionList(channelId: Long, roleId: Long): CompletableFuture<Map<String, PermState>> {
         val languageFuture = CompletableFuture<Map<String, PermState>>()
-        taskManager.async {
+       TaskManager.async {
             val map = channelRolePermissionDao.getMap(channelId, roleId)
             languageFuture.complete(map)
         }

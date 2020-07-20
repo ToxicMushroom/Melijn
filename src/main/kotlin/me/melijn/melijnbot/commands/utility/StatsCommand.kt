@@ -6,6 +6,7 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import java.lang.management.ManagementFactory
@@ -46,8 +47,8 @@ class StatsCommand : AbstractCommand("command.stats") {
             queuedTracks += player.guildTrackManager.trackSize()
         }
 
-        val threadPoolExecutor = context.taskManager.executorService as ThreadPoolExecutor
-        val scheduledExecutorService = context.taskManager.scheduledExecutorService as ThreadPoolExecutor
+        val threadPoolExecutor = TaskManager.executorService as ThreadPoolExecutor
+        val scheduledExecutorService = TaskManager.scheduledExecutorService as ThreadPoolExecutor
 
 
         val title1 = context.getTranslation("$root.response.field1.title")

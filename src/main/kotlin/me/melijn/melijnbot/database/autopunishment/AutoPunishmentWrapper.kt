@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 //keep track of who did what and when
-class AutoPunishmentWrapper(val taskManager: TaskManager, private val autoPunishmentDao: AutoPunishmentDao) {
+class AutoPunishmentWrapper(private val autoPunishmentDao: AutoPunishmentDao) {
 
     //guildId, userId, pointsMap
     val autoPunishmentCache = CacheBuilder.newBuilder()
@@ -21,7 +21,7 @@ class AutoPunishmentWrapper(val taskManager: TaskManager, private val autoPunish
     fun getPointsMap(pair: Pair<Long, Long>): CompletableFuture<Map<String, Long>> {
         val future = CompletableFuture<Map<String, Long>>()
 
-        taskManager.async {
+        TaskManager.async {
             val pointsMap = autoPunishmentDao.get(pair.first, pair.second)
                 .removePrefix("[")
                 .removeSuffix("]")

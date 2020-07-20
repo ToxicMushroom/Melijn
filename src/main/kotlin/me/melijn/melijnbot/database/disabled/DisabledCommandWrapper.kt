@@ -9,7 +9,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class DisabledCommandWrapper(val taskManager: TaskManager, private val disabledCommandDao: DisabledCommandDao) {
+class DisabledCommandWrapper(private val disabledCommandDao: DisabledCommandDao) {
 
     //guildId | commandId (or ccId)
     val disabledCommandsCache = CacheBuilder.newBuilder()
@@ -20,7 +20,7 @@ class DisabledCommandWrapper(val taskManager: TaskManager, private val disabledC
 
     private fun getDisabledCommandSet(guildId: Long): CompletableFuture<Set<String>> {
         val future = CompletableFuture<Set<String>>()
-        taskManager.async {
+       TaskManager.async {
             val id = disabledCommandDao.get(guildId)
             future.complete(id)
         }

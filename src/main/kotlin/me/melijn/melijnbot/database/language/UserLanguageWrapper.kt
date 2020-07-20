@@ -7,7 +7,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class UserLanguageWrapper(val taskManager: TaskManager, private val userLanguageDao: UserLanguageDao) {
+class UserLanguageWrapper(private val userLanguageDao: UserLanguageDao) {
 
     val languageCache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -17,7 +17,7 @@ class UserLanguageWrapper(val taskManager: TaskManager, private val userLanguage
 
     private fun getLanguage(userId: Long): CompletableFuture<String> {
         val languageFuture = CompletableFuture<String>()
-        taskManager.async {
+       TaskManager.async {
             val language = userLanguageDao.get(userId)
             languageFuture.complete(language)
         }

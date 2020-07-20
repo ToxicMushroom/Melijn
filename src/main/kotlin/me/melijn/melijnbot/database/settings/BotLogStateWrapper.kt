@@ -8,7 +8,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 class BotLogStateWrapper(
-    private val taskManager: TaskManager,
+
     private val botLogStateDao: BotLogStateDao
 ) {
 
@@ -21,7 +21,7 @@ class BotLogStateWrapper(
 
     private fun shouldLog(guildId: Long): CompletableFuture<Boolean> {
         val future = CompletableFuture<Boolean>()
-        taskManager.async {
+       TaskManager.async {
             val state = botLogStateDao.contains(guildId)
             future.complete(state)
         }

@@ -4,6 +4,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.PermState
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.SPACE_PATTERN
 import me.melijn.melijnbot.internals.utils.addIfNotPresent
 import me.melijn.melijnbot.internals.utils.message.sendInGuild
@@ -124,15 +125,15 @@ abstract class AbstractCommand(val root: String) {
                 if (CommandClient.checksFailed(context.container, context.commandOrder.last(), context.event, true, context.commandParts)) return
                 execute(context)
                 if (context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)) {
-                    context.taskManager.async {
+                    TaskManager.async {
                         val timeMap = context.daoManager.removeResponseWrapper.removeResponseCache.get(context.guildId).await()
                         val seconds = timeMap[context.textChannel.idLong] ?: timeMap[context.guildId] ?: return@async
 
                         delay(seconds * 1000L)
                         val message = context.message
-                        Container.instance.botDeletedMessageIds.add(message.idLong)
+                        context.container.botDeletedMessageIds.add(message.idLong)
 
-                        message.delete().queue(null, { Container.instance.botDeletedMessageIds.remove(message.idLong) })
+                        message.delete().queue(null, { context.container.botDeletedMessageIds.remove(message.idLong) })
                     }
                 }
             } catch (t: Throwable) {

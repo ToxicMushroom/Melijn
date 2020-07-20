@@ -15,6 +15,7 @@ import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
@@ -52,8 +53,8 @@ class RestServer(container: Container) {
                 }
                 val totalJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.max shr 20
                 val usedJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.used shr 20
-                val threadPoolExecutor = container.taskManager.executorService as ThreadPoolExecutor
-                val scheduledExecutorService = container.taskManager.scheduledExecutorService as ThreadPoolExecutor
+                val threadPoolExecutor = TaskManager.executorService as ThreadPoolExecutor
+                val scheduledExecutorService = TaskManager.scheduledExecutorService as ThreadPoolExecutor
 
                 val dataObject = DataObject.empty()
                 dataObject.put("bot", DataObject.empty()

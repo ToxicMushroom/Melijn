@@ -7,7 +7,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class SelfRoleModeWrapper(val taskManager: TaskManager, private val selfRoleModeDao: SelfRoleModeDao) {
+class SelfRoleModeWrapper(private val selfRoleModeDao: SelfRoleModeDao) {
 
     val selfRoleModeCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -17,7 +17,7 @@ class SelfRoleModeWrapper(val taskManager: TaskManager, private val selfRoleMode
 
     fun getMap(guildId: Long): CompletableFuture<SelfRoleMode> {
         val future = CompletableFuture<SelfRoleMode>()
-        taskManager.async {
+       TaskManager.async {
             val map = selfRoleModeDao.getMode(guildId)
             future.complete(SelfRoleMode.valueOf(map))
         }

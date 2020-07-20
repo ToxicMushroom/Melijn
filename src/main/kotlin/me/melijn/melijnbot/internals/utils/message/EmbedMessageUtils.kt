@@ -19,13 +19,13 @@ import java.time.format.DateTimeFormatter
 suspend fun sendEmbedRspAwaitEL(context: CommandContext, embed: MessageEmbed): List<Message> {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
     return if (premiumGuild) {
-        sendEmbedRspAwaitEL(context.daoManager, context.taskManager, context.textChannel, embed)
+        sendEmbedRspAwaitEL(context.daoManager, context.textChannel, embed)
     } else {
         sendEmbedAwaitEL(context, embed)
     }
 }
 
-suspend fun sendEmbedRspAwaitEL(daoManager: DaoManager, taskManager: TaskManager, textChannel: TextChannel, embed: MessageEmbed): List<Message> {
+suspend fun sendEmbedRspAwaitEL(daoManager: DaoManager, textChannel: TextChannel, embed: MessageEmbed): List<Message> {
     val guild = textChannel.guild
     if (!textChannel.canTalk()) {
         throw IllegalArgumentException("No permission to talk in this channel")
@@ -38,13 +38,13 @@ suspend fun sendEmbedRspAwaitEL(daoManager: DaoManager, taskManager: TaskManager
         val message = textChannel.sendMessage(embed).awaitOrNull()
             ?: return emptyList()
 
-        taskManager.async {
+       TaskManager.async {
             handleRspDelete(daoManager, message)
         }
 
         listOf(message)
     } else {
-        sendEmbedAsResponseAwaitEL(textChannel, daoManager, taskManager, embed)
+        sendEmbedAsResponseAwaitEL(textChannel, daoManager, embed)
     }
 }
 
@@ -59,20 +59,20 @@ fun sendEmbed(context: CommandContext, embed: MessageEmbed) {
 fun sendEmbedRsp(context: CommandContext, embed: MessageEmbed) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
     if (premiumGuild) {
-        sendEmbedRsp(context.daoManager, context.taskManager, context.textChannel, embed)
+        sendEmbedRsp(context.daoManager, context.textChannel, embed)
     } else {
         sendEmbed(context, embed)
     }
 }
 
-fun sendEmbedRsp(daoManager: DaoManager, taskManager: TaskManager, textChannel: TextChannel, embed: MessageEmbed) {
+fun sendEmbedRsp(daoManager: DaoManager, textChannel: TextChannel, embed: MessageEmbed) {
     val guild = textChannel.guild
     if (!textChannel.canTalk()) {
         throw IllegalArgumentException("No permission to talk in this channel")
     }
     if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
         !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
-        taskManager.async {
+       TaskManager.async {
             val message = textChannel.sendMessage(embed).awaitOrNull() ?: return@async
 
             val timeMap = daoManager.removeResponseWrapper.removeResponseCache.get(textChannel.guild.idLong).await()
@@ -85,7 +85,7 @@ fun sendEmbedRsp(daoManager: DaoManager, taskManager: TaskManager, textChannel: 
         }
 
     } else {
-        sendEmbedAsMessageRsp(daoManager, taskManager, textChannel, embed)
+        sendEmbedAsMessageRsp(daoManager, textChannel, embed)
     }
 }
 
@@ -181,8 +181,8 @@ fun MessageEmbed.toMessage(): String {
     return sb.toString()
 }
 
-fun sendEmbedAsMessageRsp(daoManager: DaoManager, taskManager: TaskManager, textChannel: TextChannel, embed: MessageEmbed) {
-    sendRsp(textChannel, taskManager, daoManager, embed.toMessage())
+fun sendEmbedAsMessageRsp(daoManager: DaoManager, textChannel: TextChannel, embed: MessageEmbed) {
+    sendRsp(textChannel, daoManager, embed.toMessage())
 }
 
 fun sendEmbedAsMessage(textChannel: TextChannel, embed: MessageEmbed) {
@@ -193,6 +193,6 @@ suspend fun sendEmbedAsMessageAwaitEL(textChannel: TextChannel, embed: MessageEm
     return sendMsgAwaitEL(textChannel, embed.toMessage())
 }
 
-suspend fun sendEmbedAsResponseAwaitEL(textChannel: TextChannel, daoManager: DaoManager, taskManager: TaskManager, embed: MessageEmbed): List<Message> {
-    return sendRspAwaitEL(textChannel, daoManager, taskManager, embed.toMessage())
+suspend fun sendEmbedAsResponseAwaitEL(textChannel: TextChannel, daoManager: DaoManager, embed: MessageEmbed): List<Message> {
+    return sendRspAwaitEL(textChannel, daoManager, embed.toMessage())
 }

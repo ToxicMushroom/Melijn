@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.database.ban
 
 import me.melijn.melijnbot.internals.command.CommandContext
-import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.getDurationString
@@ -9,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
-class BanWrapper(val taskManager: TaskManager, private val banDao: BanDao) {
+class BanWrapper(private val banDao: BanDao) {
 
     suspend fun getUnbannableBans(): List<Ban> {
         return banDao.getUnbannableBans()

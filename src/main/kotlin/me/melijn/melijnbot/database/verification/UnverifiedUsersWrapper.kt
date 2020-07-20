@@ -1,8 +1,6 @@
 package me.melijn.melijnbot.database.verification
 
-import me.melijn.melijnbot.internals.threading.TaskManager
-
-class UnverifiedUsersWrapper(val taskManager: TaskManager, private val unverifiedUsersDao: UnverifiedUsersDao) {
+class UnverifiedUsersWrapper(private val unverifiedUsersDao: UnverifiedUsersDao) {
 
     suspend fun getMoment(guildId: Long, userId: Long): Long {
         return unverifiedUsersDao.getMoment(guildId, userId)

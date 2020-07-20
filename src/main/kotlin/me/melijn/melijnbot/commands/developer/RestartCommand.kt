@@ -3,6 +3,7 @@ package me.melijn.melijnbot.commands.developer
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import kotlin.system.exitProcess
@@ -46,7 +47,7 @@ class RestartCommand : AbstractCommand("command.restart") {
                 sendRsp(context, "Restarting")
                 context.shardManager.shutdown()
 
-                context.taskManager.asyncAfter(3_000) {
+                TaskManager.asyncAfter(3_000) {
                     exitProcess(0)
                 }
             } else {

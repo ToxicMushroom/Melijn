@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 
 val objectMapper = jacksonObjectMapper()
 
-class SpamWrapper(val taskManager: TaskManager, private val spamDao: SpamDao) {
+class SpamWrapper(private val spamDao: SpamDao) {
 
     //guildId, spamGroupName, spamInfo
     val fastMessageCache = CacheBuilder.newBuilder()
@@ -64,7 +64,7 @@ class SpamWrapper(val taskManager: TaskManager, private val spamDao: SpamDao) {
 
     private fun <T> getSpams(guildId: Long, spamGroupName: String, type: SpamType, func: (String) -> T): CompletableFuture<T> {
         val future = CompletableFuture<T>()
-        taskManager.async {
+       TaskManager.async {
             val filters = spamDao.get(guildId, spamGroupName, type)
             future.complete(func(filters))
         }

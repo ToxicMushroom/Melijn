@@ -10,7 +10,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class FilterWrapper(val taskManager: TaskManager, private val filterDao: FilterDao) {
+class FilterWrapper(private val filterDao: FilterDao) {
 
     //guildId, filterName, filter
     val allowedFilterCache = CacheBuilder.newBuilder()
@@ -28,7 +28,7 @@ class FilterWrapper(val taskManager: TaskManager, private val filterDao: FilterD
 
     private fun getFilters(guildId: Long, filterGroupName: String, filterType: FilterType): CompletableFuture<List<String>> {
         val future = CompletableFuture<List<String>>()
-        taskManager.async {
+       TaskManager.async {
             val filters = filterDao.get(guildId, filterGroupName, filterType)
             future.complete(filters)
         }

@@ -1,14 +1,13 @@
 package me.melijn.melijnbot.database.warn
 
 import me.melijn.melijnbot.internals.command.CommandContext
-import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
-class WarnWrapper(val taskManager: TaskManager, private val warnDao: WarnDao) {
+class WarnWrapper(private val warnDao: WarnDao) {
 
     suspend fun addWarn(warn: Warn) {
         warnDao.add(warn)

@@ -8,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class UserPermissionWrapper(val taskManager: TaskManager, private val userPermissionDao: UserPermissionDao) {
+class UserPermissionWrapper(private val userPermissionDao: UserPermissionDao) {
 
     val guildUserPermissionCache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -18,7 +18,7 @@ class UserPermissionWrapper(val taskManager: TaskManager, private val userPermis
 
     private fun getPermissionList(guildAndUser: Pair<Long, Long>): CompletableFuture<Map<String, PermState>> {
         val languageFuture = CompletableFuture<Map<String, PermState>>()
-        taskManager.async {
+       TaskManager.async {
             val map = userPermissionDao.getMap(guildAndUser.first, guildAndUser.second)
             languageFuture.complete(map)
         }

@@ -10,7 +10,7 @@ import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
 
-class TaskManager {
+object TaskManager {
 
     private val threadFactory = { name: String ->
         ThreadFactoryBuilder().setNameFormat("[$name-Pool-%d]").build()
@@ -21,17 +21,15 @@ class TaskManager {
     val scheduledExecutorService: ScheduledExecutorService = Executors.newScheduledThreadPool(15, threadFactory.invoke("Repeater"))
 
     fun async(block: suspend CoroutineScope.() -> Unit) = CoroutineScope(dispatcher).launch {
-        val task = Task {
+        Task {
             block.invoke(this)
-        }
-        task.run()
+        }.run()
     }
 
     inline fun asyncInline(crossinline block: CoroutineScope.() -> Unit) = CoroutineScope(dispatcher).launch {
-        val task = TaskInline {
+        TaskInline {
             block.invoke(this)
-        }
-        task.run()
+        }.run()
     }
 
     inline fun asyncAfter(afterMillis: Long, crossinline func: () -> Unit) {
