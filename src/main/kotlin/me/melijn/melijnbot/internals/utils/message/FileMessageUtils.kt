@@ -251,7 +251,7 @@ suspend fun sendRspAwaitN(channel: TextChannel, daoManager: DaoManager, taskMana
 
     val message = action?.awaitOrNull() ?: return null
     taskManager.async {
-        handleRspDelete(daoManager, msg)
+        handleRspDelete(daoManager, message)
     }
     return message
 }
