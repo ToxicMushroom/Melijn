@@ -3,6 +3,7 @@ package me.melijn.melijnbot.commands.moderation
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.utils.LogUtils
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
@@ -61,7 +62,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
                 }
             }
             .thenRun {
-                context.taskManager.async {
+                TaskManager.async {
                     for (message in messages) {
                         context.container.purgedIds[message.idLong] = context.authorId
                     }

@@ -8,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class FilterGroupWrapper(val taskManager: TaskManager, val filterGroupDao: FilterGroupDao) {
+class FilterGroupWrapper(val filterGroupDao: FilterGroupDao) {
 
     val filterGroupCache = CacheBuilder.newBuilder()
         .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
@@ -18,7 +18,7 @@ class FilterGroupWrapper(val taskManager: TaskManager, val filterGroupDao: Filte
 
     private fun getGroups(guildId: Long): CompletableFuture<List<FilterGroup>> {
         val future = CompletableFuture<List<FilterGroup>>()
-        taskManager.async {
+       TaskManager.async {
             val mode = filterGroupDao.get(guildId)
             future.complete(mode)
         }

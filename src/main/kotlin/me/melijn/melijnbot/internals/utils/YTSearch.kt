@@ -70,6 +70,7 @@ class YTSearch {
                     return@launch
                 }
             }
+
             if (tracks != null) {
                 audioTrackCallBack(tracks)
                 return@launch

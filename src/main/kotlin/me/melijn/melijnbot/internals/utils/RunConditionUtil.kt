@@ -122,7 +122,7 @@ object RunConditionUtil {
         }
 
         val noSongPlaying = i18n.getTranslation(language, "message.runcondition.failed.playingtracknotnull")
-        sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, noSongPlaying)
+        sendRspOrMsg(event.textChannel, container.daoManager, noSongPlaying)
         return false
     }
 
@@ -143,7 +143,7 @@ object RunConditionUtil {
 
         if (vc == null && botVc == null) {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.vc")
-            sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
+            sendRspOrMsg(event.textChannel, container.daoManager, msg)
             return false
         }
 
@@ -152,7 +152,7 @@ object RunConditionUtil {
         else if (hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_SAMEVC.node, true)) return true
 
         val msg = i18n.getTranslation(language, "message.runcondition.failed.vcbot")
-        sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
+        sendRspOrMsg(event.textChannel, container.daoManager, msg)
         return false
 
     }
@@ -165,7 +165,7 @@ object RunConditionUtil {
 
         if (vc == null && bc == null) {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.vc")
-            sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
+            sendRspOrMsg(event.textChannel, container.daoManager, msg)
             return false
         }
 
@@ -175,7 +175,7 @@ object RunConditionUtil {
         else if (hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_VCBOTALONE.node, true)) true
         else {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.vcbotalone")
-            sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
+            sendRspOrMsg(event.textChannel, container.daoManager, msg)
             false
         }
     }
@@ -185,7 +185,7 @@ object RunConditionUtil {
             true
         } else {
             val msg = i18n.getTranslation(language, "message.runcondition.serveronly")
-            sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
+            sendRspOrMsg(event.textChannel, container.daoManager, msg)
             false
         }
     }
@@ -199,7 +199,7 @@ object RunConditionUtil {
             true
         } else {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.botalone")
-            sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
+            sendRspOrMsg(event.textChannel, container.daoManager, msg)
             false
         }
     }

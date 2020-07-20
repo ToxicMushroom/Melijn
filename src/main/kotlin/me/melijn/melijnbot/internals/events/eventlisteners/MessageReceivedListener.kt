@@ -10,6 +10,7 @@ import me.melijn.melijnbot.enums.VerificationType
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.events.eventutil.FilterUtil
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.*
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelByType
@@ -28,7 +29,7 @@ import java.awt.Color
 class MessageReceivedListener(container: Container) : AbstractListener(container) {
 
     override fun onEvent(event: GenericEvent) {
-        container.taskManager.async {
+        TaskManager.async {
             if (event is GuildMessageReceivedEvent) {
                 handleMessageReceivedStoring(event)
                 handleAttachmentLog(event)
@@ -68,7 +69,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             return
         }
 
-        container.taskManager.async {
+        TaskManager.async {
             val cmdContext = CommandContext(event, listOf(usedMention, "help"), container, container.commandMap.values.toSet(),
                 mutableMapOf(), mutableMapOf(), true, "${usedMention}help")
             helpCmd.run(cmdContext)
@@ -160,7 +161,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             content += "\n${embed.toMessage()}"
         }
 
-        container.taskManager.async {
+        TaskManager.async {
             messageWrapper.addMessage(DaoMessage(
                 guildId,
                 event.channel.idLong,

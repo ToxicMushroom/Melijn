@@ -3,6 +3,7 @@ package me.melijn.melijnbot.commands.utility
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.await
 import me.melijn.melijnbot.internals.utils.message.handleRspDelete
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
@@ -37,7 +38,7 @@ class PingCommand : AbstractCommand("command.ping") {
         val eMsgPing = timeStamp3 - timeStamp2
 
         editedMessage.editMessage("${editedMessage.contentRaw}${replacePart3(part3, eMsgPing)}").queue { c ->
-            context.taskManager.async {
+            TaskManager.async {
                 handleRspDelete(context.daoManager, c)
             }
         }

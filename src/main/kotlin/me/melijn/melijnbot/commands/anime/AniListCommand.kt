@@ -13,6 +13,7 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
@@ -62,7 +63,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                     .build()
             ).enqueue(object : ApolloCall.Callback<FindMangaQuery.Data>() {
                 override fun onFailure(e: ApolloException) {
-                    context.taskManager.async {
+                    TaskManager.async {
                         val msg = context.getTranslation("$root.noresult")
                             .withVariable(PLACEHOLDER_ARG, mangaName)
                         sendRsp(context, msg)
@@ -70,7 +71,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                 }
 
                 override fun onResponse(response: Response<FindMangaQuery.Data>) {
-                    context.taskManager.async {
+                    TaskManager.async {
                         val char: FindMangaQuery.Media = response.data?.Media() ?: return@async
                         foundManga(context, char)
                     }
@@ -195,7 +196,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                     .build()
             ).enqueue(object : ApolloCall.Callback<FindUserQuery.Data>() {
                 override fun onFailure(e: ApolloException) {
-                    context.taskManager.async {
+                    TaskManager.async {
                         val msg = context.getTranslation("$root.noresult")
                             .withVariable(PLACEHOLDER_ARG, userName)
                         sendRsp(context, msg)
@@ -203,7 +204,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                 }
 
                 override fun onResponse(response: Response<FindUserQuery.Data>) {
-                    context.taskManager.async {
+                    TaskManager.async {
                         val user: FindUserQuery.User = response.data?.User() ?: return@async
                         foundUser(context, user)
                     }
@@ -369,7 +370,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                     .build()
             ).enqueue(object : ApolloCall.Callback<FindAnimeQuery.Data>() {
                 override fun onFailure(e: ApolloException) {
-                    context.taskManager.async {
+                    TaskManager.async {
                         val msg = context.getTranslation("$root.noresult")
                             .withVariable(PLACEHOLDER_ARG, animeName)
                         sendRsp(context, msg)
@@ -377,7 +378,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                 }
 
                 override fun onResponse(response: Response<FindAnimeQuery.Data>) {
-                    context.taskManager.async {
+                    TaskManager.async {
                         val char: FindAnimeQuery.Media = response.data?.Media() ?: return@async
                         foundAnime(context, char)
                     }
@@ -503,7 +504,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                     .build()
             ).enqueue(object : ApolloCall.Callback<FindCharacterQuery.Data>() {
                 override fun onFailure(e: ApolloException) {
-                    context.taskManager.async {
+                    TaskManager.async {
                         val msg = context.getTranslation("$root.noresult")
                             .withVariable(PLACEHOLDER_ARG, characterName)
                         sendRsp(context, msg)
@@ -511,7 +512,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                 }
 
                 override fun onResponse(response: Response<FindCharacterQuery.Data>) {
-                    context.taskManager.async {
+                    TaskManager.async {
                         val char: FindCharacterQuery.Character = response.data?.Character() ?: return@async
                         foundCharacter(context, char)
                     }

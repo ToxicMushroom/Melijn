@@ -7,7 +7,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class VerificationEmotejiWrapper(val taskManager: TaskManager, private val verificationEmotejiDao: VerificationEmotejiDao) {
+class VerificationEmotejiWrapper(private val verificationEmotejiDao: VerificationEmotejiDao) {
 
     val verificationEmotejiCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -17,7 +17,7 @@ class VerificationEmotejiWrapper(val taskManager: TaskManager, private val verif
 
     private fun getEmoteji(guildId: Long): CompletableFuture<String> {
         val future = CompletableFuture<String>()
-        taskManager.async {
+       TaskManager.async {
             val emoteji = verificationEmotejiDao.get(guildId)
             future.complete(emoteji)
         }

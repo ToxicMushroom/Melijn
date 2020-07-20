@@ -8,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class RoleWrapper(private val taskManager: TaskManager, private val roleDao: RoleDao) {
+class RoleWrapper(private val roleDao: RoleDao) {
 
     val roleCache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -18,7 +18,7 @@ class RoleWrapper(private val taskManager: TaskManager, private val roleDao: Rol
 
     private fun getRoleId(guildId: Long, roleType: RoleType): CompletableFuture<Long> {
         val future = CompletableFuture<Long>()
-        taskManager.async {
+       TaskManager.async {
             val roleId = roleDao.get(guildId, roleType)
             future.complete(roleId)
         }

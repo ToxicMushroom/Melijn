@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class MessageWrapper(val taskManager: TaskManager, private val messageDao: MessageDao) {
+class MessageWrapper(private val messageDao: MessageDao) {
 
     val messageCache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -19,7 +19,7 @@ class MessageWrapper(val taskManager: TaskManager, private val messageDao: Messa
 
     private fun getMessage(pair: Pair<Long, MessageType>): CompletableFuture<ModularMessage?> {
         val future = CompletableFuture<ModularMessage?>()
-        taskManager.async {
+       TaskManager.async {
             val json = messageDao.get(pair.first, pair.second)
             if (json == null) {
                 future.complete(null)

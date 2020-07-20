@@ -8,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class ForceRoleWrapper(private val taskManager: TaskManager, private val forceRoleDao: ForceRoleDao) {
+class ForceRoleWrapper(private val forceRoleDao: ForceRoleDao) {
 
     val forceRoleCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -18,7 +18,7 @@ class ForceRoleWrapper(private val taskManager: TaskManager, private val forceRo
 
     private fun getForceRoles(guildId: Long): CompletableFuture<Map<Long, List<Long>>> {
         val future = CompletableFuture<Map<Long, List<Long>>>()
-        taskManager.async {
+       TaskManager.async {
             val roleId = forceRoleDao.getMap(guildId)
             future.complete(roleId)
         }

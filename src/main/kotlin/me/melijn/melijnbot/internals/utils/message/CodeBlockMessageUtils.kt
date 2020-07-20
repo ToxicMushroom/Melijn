@@ -17,16 +17,16 @@ import net.dv8tion.jda.api.entities.TextChannel
 suspend fun sendRspCodeBlock(context: CommandContext, msg: String, lang: String, shouldPaginate: Boolean = false) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
     if (premiumGuild) {
-        sendRspCodeBlock(context.textChannel, context.authorId, context.daoManager, context.taskManager, msg, lang, shouldPaginate)
+        sendRspCodeBlock(context.textChannel, context.authorId, context.daoManager, msg, lang, shouldPaginate)
     } else {
         sendMsgCodeBlock(context, msg, lang, shouldPaginate)
     }
 }
 
-fun sendRspCodeBlock(textChannel: TextChannel, authorId: Long, daoManager: DaoManager, taskManager: TaskManager, msg: String, lang: String, shouldPaginate: Boolean) {
+fun sendRspCodeBlock(textChannel: TextChannel, authorId: Long, daoManager: DaoManager, msg: String, lang: String, shouldPaginate: Boolean) {
     if (!textChannel.canTalk()) return
     if (msg.length <= 2000) {
-        taskManager.async {
+       TaskManager.async {
             val message = textChannel.sendMessage(msg).awaitOrNull() ?: return@async
             val timeMap = daoManager.removeResponseWrapper.removeResponseCache.get(textChannel.guild.idLong).await()
             val seconds = timeMap[textChannel.idLong] ?: return@async
@@ -39,7 +39,7 @@ fun sendRspCodeBlock(textChannel: TextChannel, authorId: Long, daoManager: DaoMa
 
     } else {
         val parts = StringUtils.splitMessage(msg, maxLength = 2000 - (8 + lang.length) - if (shouldPaginate) 100 else 0)
-        sendRspCodeBlocks(textChannel, authorId, daoManager, taskManager, parts, lang, shouldPaginate)
+        sendRspCodeBlocks(textChannel, authorId, daoManager, parts, lang, shouldPaginate)
     }
 }
 
@@ -50,13 +50,13 @@ suspend fun sendRspCodeBlocks(
 ) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
     if (premiumGuild) {
-        sendRspCodeBlocks(context.textChannel, context.authorId, context.daoManager, context.taskManager, parts, lang, true)
+        sendRspCodeBlocks(context.textChannel, context.authorId, context.daoManager, parts, lang, true)
     } else {
         sendMsgCodeBlocks(context.messageChannel, context.authorId, parts, lang, true)
     }
 }
 
-fun sendRspCodeBlocks(textChannel: TextChannel, authorId: Long, daoManager: DaoManager, taskManager: TaskManager, parts: List<String>, lang: String, shouldPaginate: Boolean) {
+fun sendRspCodeBlocks(textChannel: TextChannel, authorId: Long, daoManager: DaoManager, parts: List<String>, lang: String, shouldPaginate: Boolean) {
     if (shouldPaginate && parts.size > 1) {
         val paginatedParts = parts.mapIndexed { index, s ->
             when {
@@ -66,7 +66,7 @@ fun sendRspCodeBlocks(textChannel: TextChannel, authorId: Long, daoManager: DaoM
             }
         }.toMutableList()
 
-        taskManager.async {
+       TaskManager.async {
             val message = textChannel.sendMessage(paginatedParts[0]).awaitOrNull() ?: return@async
             registerPaginationMessage(textChannel, authorId, message, paginatedParts, 0)
 
@@ -79,7 +79,7 @@ fun sendRspCodeBlocks(textChannel: TextChannel, authorId: Long, daoManager: DaoM
             message.delete().queue(null, { Container.instance.botDeletedMessageIds.remove(message.idLong) })
         }
     } else if (parts.size > 1) {
-        taskManager.async {
+       TaskManager.async {
             parts.forEachIndexed { index, msgPart ->
                 val message = textChannel.sendMessage(when {
                     index == 0 -> "$msgPart```"
@@ -100,7 +100,7 @@ fun sendRspCodeBlocks(textChannel: TextChannel, authorId: Long, daoManager: DaoM
         }
 
     } else {
-        taskManager.async {
+       TaskManager.async {
             val message = textChannel.sendMessage(parts[0]).awaitOrNull() ?: return@async
 
             val timeMap = daoManager.removeResponseWrapper.removeResponseCache.get(textChannel.guild.idLong).await()

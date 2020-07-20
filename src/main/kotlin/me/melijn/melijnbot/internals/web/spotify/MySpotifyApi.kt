@@ -13,7 +13,7 @@ import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.threading.TaskManager
 import java.io.IOException
 
-class MySpotifyApi(val taskManager: TaskManager, spotifySettings: Settings.Spotify) {
+class MySpotifyApi(spotifySettings: Settings.Spotify) {
 
     private var spotifyApi: SpotifyApi = SpotifyApi.Builder()
         .setClientId(spotifySettings.clientId)
@@ -50,7 +50,7 @@ class MySpotifyApi(val taskManager: TaskManager, spotifySettings: Settings.Spoti
         trackList: suspend (Array<Track>) -> Unit,
         simpleTrack: suspend (Array<TrackSimplified>) -> Unit,
         error: suspend (Throwable) -> Unit
-    ) = taskManager.async {
+    ) = TaskManager.async {
         try {
             when {
                 spotifyTrackUrl.matches(songArg) -> acceptTrackResult(songArg, track, spotifyTrackUrl)
@@ -92,11 +92,10 @@ class MySpotifyApi(val taskManager: TaskManager, spotifySettings: Settings.Spoti
         val result = requireNotNull(regex.find(songArg)) { "bruh" }
         val id = result.groupValues[1]
         val tracks = spotifyApi.getPlaylistsItems(id).build().executeAsync().await().items.map { playlistTrack ->
-            (playlistTrack.track as Track)
-        }
+            (playlistTrack.track as Track?)
+        }.filterNotNull()
 
         trackList(tracks.toTypedArray())
-
     }
 
     private suspend fun acceptAlbumResults(songArg: String, simpleTrack: suspend (Array<TrackSimplified>) -> Unit, regex: Regex) {

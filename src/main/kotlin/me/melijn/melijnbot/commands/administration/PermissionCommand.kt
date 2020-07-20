@@ -118,7 +118,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
                 content += "```"
 
-                sendRspCodeBlock(context, title + content, "INI")
+                sendRspCodeBlock(context, title + content, "INI", true)
             }
         }
 
@@ -235,7 +235,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
                 content += "```"
 
-                sendRspCodeBlock(context, title + content, "INI")
+                sendRspCodeBlock(context, title + content, "INI", true)
             }
 
         }
@@ -375,7 +375,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     content += "```"
 
                     val msg = title + content
-                    sendRspCodeBlock(context, msg, "INI")
+                    sendRspCodeBlock(context, msg, "INI", true)
                 }
             }
 
@@ -500,7 +500,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     }
                     content += "```"
 
-                    sendRspCodeBlock(context, title + content, "INI")
+                    sendRspCodeBlock(context, title + content, "INI", true)
                 }
 
             }

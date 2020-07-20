@@ -7,7 +7,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class DailyCooldownWrapper(val taskManager: TaskManager, private val dailyCooldownDao: DailyCooldownDao) {
+class DailyCooldownWrapper(private val dailyCooldownDao: DailyCooldownDao) {
 
     val cooldownCache = CacheBuilder.newBuilder()
         .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
@@ -17,7 +17,7 @@ class DailyCooldownWrapper(val taskManager: TaskManager, private val dailyCooldo
 
     private fun getCooldown(userId: Long): CompletableFuture<Long> {
         val time = CompletableFuture<Long>()
-        taskManager.async {
+       TaskManager.async {
             time.complete(dailyCooldownDao.get(userId))
 
         }

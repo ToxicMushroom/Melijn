@@ -59,7 +59,6 @@ class CommandContext(
     var oldArgs: List<String> = emptyList()
     val botDevIds: LongArray = container.settings.developerIds
     val daoManager = container.daoManager
-    val taskManager = container.taskManager
     var rawArg: String = ""
     val contextTime = System.currentTimeMillis()
     val lavaManager = container.lavaManager

@@ -7,6 +7,7 @@ import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.events.eventutil.JoinLeaveUtil
 import me.melijn.melijnbot.internals.events.eventutil.JoinLeaveUtil.joinRole
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.VerificationUtils
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelByType
@@ -28,7 +29,7 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
         else if (event is GuildMemberRemoveEvent) onGuildMemberLeave(event)
     }
 
-    private fun onGuildMemberJoin(event: GuildMemberJoinEvent) = container.taskManager.async {
+    private fun onGuildMemberJoin(event: GuildMemberJoinEvent) = TaskManager.async {
         val daoManager = container.daoManager
         val member = event.member
         JoinLeaveUtil.reAddMute(daoManager, event)
@@ -49,7 +50,7 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
         return channel == null
     }
 
-    private fun onGuildMemberLeave(event: GuildMemberRemoveEvent) = container.taskManager.async {
+    private fun onGuildMemberLeave(event: GuildMemberRemoveEvent) = TaskManager.async {
         val daoManager = container.daoManager
         val user = event.user
 

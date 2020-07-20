@@ -8,6 +8,7 @@ import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.jagtag.WelcomeJagTagParser
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelByType
 import me.melijn.melijnbot.internals.utils.message.sendAttachments
 import me.melijn.melijnbot.internals.utils.message.sendMsg
@@ -26,7 +27,7 @@ class BoostListener(container: Container) : AbstractListener(container) {
 
     override fun onEvent(event: GenericEvent) {
         if (event is GuildUpdateBoostCountEvent) {
-            container.taskManager.async { onBoost(event) }
+            TaskManager.async { onBoost(event) }
         }
     }
 

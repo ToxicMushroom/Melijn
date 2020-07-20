@@ -2,10 +2,9 @@ package me.melijn.melijnbot.database
 
 import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.internals.Settings
-import me.melijn.melijnbot.internals.threading.TaskManager
 
 
-class TestDaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
+class TestDaoManager(dbSettings: Settings.Database) {
 
     companion object {
         val afterTableFunctions = mutableListOf<() -> Unit>()

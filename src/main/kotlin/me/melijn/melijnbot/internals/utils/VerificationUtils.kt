@@ -6,7 +6,6 @@ import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
 import me.melijn.melijnbot.enums.RoleType
 import me.melijn.melijnbot.internals.events.eventutil.JoinLeaveUtil
-import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.getLanguage
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyRoleByType
@@ -21,11 +20,11 @@ object VerificationUtils {
     //guildId, userId, time
     private val memberJoinTimes = HashMap<Long, HashMap<Long, Long>>()
 
-    suspend fun getUnverifiedRoleNMessage(user: User?, textChannel: TextChannel, taskManager: TaskManager, daoManager: DaoManager, prefix: String): Role? {
+    suspend fun getUnverifiedRoleNMessage(user: User?, textChannel: TextChannel, daoManager: DaoManager, prefix: String): Role? {
         val role = getUnverifiedRoleN(textChannel, daoManager)
 
         if (role == null) {
-            sendNoUnverifiedRoleIsSetMessage(daoManager, taskManager, user, textChannel, prefix)
+            sendNoUnverifiedRoleIsSetMessage(daoManager, user, textChannel, prefix)
         }
 
         return role
@@ -42,12 +41,12 @@ object VerificationUtils {
         }
     }
 
-    private suspend fun sendNoUnverifiedRoleIsSetMessage(daoManager: DaoManager, taskManager: TaskManager, user: User?, textChannel: TextChannel, prefix: String) {
+    private suspend fun sendNoUnverifiedRoleIsSetMessage(daoManager: DaoManager, user: User?, textChannel: TextChannel, prefix: String) {
         val language = getLanguage(daoManager, user?.idLong ?: -1L, textChannel.guild.idLong)
         val msg = i18n.getTranslation(language, "message.notset.role.unverified")
             .withVariable("prefix", prefix)
 
-        sendRspOrMsg(textChannel, taskManager, daoManager, msg)
+        sendRspOrMsg(textChannel, daoManager, msg)
     }
 
     suspend fun verify(daoManager: DaoManager, unverifiedRole: Role, author: User, member: Member): Boolean {

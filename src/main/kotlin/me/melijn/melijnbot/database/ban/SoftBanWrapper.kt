@@ -1,14 +1,13 @@
 package me.melijn.melijnbot.database.ban
 
 import me.melijn.melijnbot.internals.command.CommandContext
-import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
 import me.melijn.melijnbot.internals.utils.awaitOrNull
 import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.User
 import kotlin.math.min
 
-class SoftBanWrapper(val taskManager: TaskManager, private val softBanDao: SoftBanDao) {
+class SoftBanWrapper(private val softBanDao: SoftBanDao) {
 
     suspend fun addSoftBan(softBan: SoftBan) {
         softBanDao.addSoftBan(softBan)

@@ -8,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class SelfRoleGroupWrapper(val taskManager: TaskManager, private val selfRoleGroupDao: SelfRoleGroupDao) {
+class SelfRoleGroupWrapper(private val selfRoleGroupDao: SelfRoleGroupDao) {
 
     val selfRoleGroupCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -18,7 +18,7 @@ class SelfRoleGroupWrapper(val taskManager: TaskManager, private val selfRoleGro
 
     fun getMap(guildId: Long): CompletableFuture<List<SelfRoleGroup>> {
         val future = CompletableFuture<List<SelfRoleGroup>>()
-        taskManager.async {
+       TaskManager.async {
             val map = selfRoleGroupDao.get(guildId)
             future.complete(map)
         }

@@ -7,7 +7,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class VerificationPasswordWrapper(val taskManager: TaskManager, private val verificationPasswordDao: VerificationPasswordDao) {
+class VerificationPasswordWrapper(private val verificationPasswordDao: VerificationPasswordDao) {
 
     val verificationPasswordCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -17,7 +17,7 @@ class VerificationPasswordWrapper(val taskManager: TaskManager, private val veri
 
     private fun getCode(guildId: Long): CompletableFuture<String> {
         val future = CompletableFuture<String>()
-        taskManager.async {
+       TaskManager.async {
             val password = verificationPasswordDao.get(guildId)
             future.complete(password)
         }

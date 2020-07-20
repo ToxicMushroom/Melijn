@@ -7,7 +7,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class MusicChannelWrapper(val taskManager: TaskManager, val musicChannelDao: MusicChannelDao) {
+class MusicChannelWrapper(val musicChannelDao: MusicChannelDao) {
 
     val musicChannelCache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -18,7 +18,7 @@ class MusicChannelWrapper(val taskManager: TaskManager, val musicChannelDao: Mus
     private fun getChannelId(guildId: Long): CompletableFuture<Long> {
         val future = CompletableFuture<Long>()
 
-        taskManager.async {
+       TaskManager.async {
             val channelId = musicChannelDao.get(guildId)
             future.complete(channelId)
         }

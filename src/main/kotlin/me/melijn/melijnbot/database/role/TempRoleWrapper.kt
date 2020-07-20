@@ -1,8 +1,6 @@
 package me.melijn.melijnbot.database.role
 
-import me.melijn.melijnbot.internals.threading.TaskManager
-
-class TempRoleWrapper(val taskManager: TaskManager, private val tempRoleDao: TempRoleDao) {
+class TempRoleWrapper(private val tempRoleDao: TempRoleDao) {
 
     suspend fun addTempRole(guildId: Long, userId: Long, roleId: Long, duration: Long, added: Boolean) {
         val start = System.currentTimeMillis()

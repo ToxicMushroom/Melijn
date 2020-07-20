@@ -7,12 +7,12 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import kotlinx.coroutines.delay
 import me.melijn.llklient.player.IPlayer
 import me.melijn.llklient.player.event.AudioEventAdapterWrapped
-import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.internals.threading.Task
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.LogUtils
 import me.melijn.melijnbot.internals.utils.YTSearch
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
@@ -127,7 +127,7 @@ class GuildTrackManager(
 
 
     override fun onPlayerResume(player: AudioPlayer?) {
-        Container.instance.taskManager.async {
+        TaskManager.async {
             val data = playingTrack?.userData as TrackUserData? ?: return@async
             val embed = getResumedEmbedFromMap(data.currentTime) ?: return@async
             val guild = getAndCheckGuild() ?: return@async
@@ -139,7 +139,7 @@ class GuildTrackManager(
     }
 
     override fun onPlayerPause(player: AudioPlayer?) {
-        Container.instance.taskManager.async {
+        TaskManager.async {
             val data = playingTrack?.userData as TrackUserData? ?: return@async
             val embed = getPausedEmbedFromMap(data.currentTime) ?: return@async
             val guild = getAndCheckGuild() ?: return@async
@@ -155,14 +155,14 @@ class GuildTrackManager(
     }
 
     override fun onTrackException(player: AudioPlayer?, track: AudioTrack, exception: FriendlyException) {
-        Container.instance.taskManager.async {
+        TaskManager.async {
             val guild = getAndCheckGuild() ?: return@async
             LogUtils.sendMusicPlayerException(daoManager, guild, track, exception)
         }
     }
 
     override fun onTrackStart(player: AudioPlayer?, track: AudioTrack) {
-        Container.instance.taskManager.async {
+        TaskManager.async {
             val data = track.userData as TrackUserData? ?: return@async
             val embed = getStartEmbedFromMap(data.currentTime) ?: return@async
             val guild = getAndCheckGuild() ?: return@async
@@ -210,7 +210,7 @@ class GuildTrackManager(
         //logger.debug("track ended eventStartNext:" + endReason.mayStartNext)
 
         if (endReason.mayStartNext) {
-            Container.instance.taskManager.async { nextTrack(track) }
+            TaskManager.async { nextTrack(track) }
         }
     }
 

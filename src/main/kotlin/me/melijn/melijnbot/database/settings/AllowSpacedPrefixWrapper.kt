@@ -9,10 +9,8 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 class AllowSpacedPrefixWrapper(
-    val taskManager: TaskManager,
     private val allowSpacedPrefixDao: AllowSpacedPrefixDao,
     private val privateAllowSpacedPrefixDao: PrivateAllowSpacedPrefixDao
-
 ) {
 
     val allowSpacedPrefixGuildCache = CacheBuilder.newBuilder()
@@ -29,7 +27,7 @@ class AllowSpacedPrefixWrapper(
 
     private fun containsGuild(guildId: Long): CompletableFuture<Boolean> {
         val future = CompletableFuture<Boolean>()
-        taskManager.async {
+        TaskManager.async {
             val result = allowSpacedPrefixDao.contains(guildId)
             future.complete(result)
         }
@@ -38,7 +36,7 @@ class AllowSpacedPrefixWrapper(
 
     private fun getUserTriState(userId: Long): CompletableFuture<TriState> {
         val future = CompletableFuture<TriState>()
-        taskManager.async {
+        TaskManager.async {
             val result = privateAllowSpacedPrefixDao.getState(userId)
             future.complete(result)
         }

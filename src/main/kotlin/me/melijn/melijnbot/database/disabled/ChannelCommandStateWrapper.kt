@@ -9,7 +9,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class ChannelCommandStateWrapper(val taskManager: TaskManager, private val channelCommandStateDao: ChannelCommandStateDao) {
+class ChannelCommandStateWrapper(private val channelCommandStateDao: ChannelCommandStateDao) {
 
     val channelCommandsStateCache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -19,7 +19,7 @@ class ChannelCommandStateWrapper(val taskManager: TaskManager, private val chann
 
     private fun getCommandStateMap(channelId: Long): CompletableFuture<Map<String, ChannelCommandState>> {
         val future = CompletableFuture<Map<String, ChannelCommandState>>()
-        taskManager.async {
+       TaskManager.async {
             val id = channelCommandStateDao.get(channelId)
             future.complete(id)
         }

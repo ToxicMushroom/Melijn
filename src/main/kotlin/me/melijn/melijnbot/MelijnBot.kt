@@ -66,7 +66,6 @@ class MelijnBot {
 
         eventManager.start()
         shardManager = defaultShardManagerBuilder.build()
-        container.initShardManager(shardManager)
     }
 
     private suspend fun generateJdaLinkFromNodes(container: Container, nodeMap: Map<String, Array<Settings.Lavalink.Node>>): JDALavalink? {

@@ -4,7 +4,6 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.internals.command.CommandContext
-import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.ModularPaginationInfo
 import me.melijn.melijnbot.internals.utils.PaginationInfo
 import net.dv8tion.jda.api.entities.Message
@@ -14,16 +13,16 @@ import net.dv8tion.jda.api.entities.TextChannel
 suspend fun sendPaginationModularRsp(context: CommandContext, modularMessages: List<ModularMessage>, index: Int) {
     val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
     if (premiumGuild) {
-        sendPaginationModularRsp(context.textChannel, context.authorId, context.daoManager, context.taskManager, modularMessages, index)
+        sendPaginationModularRsp(context.textChannel, context.authorId, context.daoManager, modularMessages, index)
     } else {
         sendPaginationModularMsg(context, modularMessages, index)
     }
 }
 
-suspend fun sendPaginationModularRsp(textChannel: TextChannel, authorId: Long, daoManager: DaoManager, taskManager: TaskManager, modularMessages: List<ModularMessage>, index: Int) {
+suspend fun sendPaginationModularRsp(textChannel: TextChannel, authorId: Long, daoManager: DaoManager, modularMessages: List<ModularMessage>, index: Int) {
     val msg = modularMessages[index]
 
-    val message = sendRspAwaitN(textChannel, daoManager, taskManager, msg)
+    val message = sendRspAwaitN(textChannel, daoManager, msg)
         ?: throw IllegalArgumentException("Couldn't send the message")
     registerPaginationModularMessage(textChannel, authorId, message, modularMessages, index)
 }

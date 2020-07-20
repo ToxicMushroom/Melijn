@@ -8,7 +8,7 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class TimeZoneWrapper(private val taskManager: TaskManager, private val timeZoneDao: TimeZoneDao) {
+class TimeZoneWrapper(private val timeZoneDao: TimeZoneDao) {
 
     val timeZoneCache = CacheBuilder.newBuilder()
         .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
@@ -18,7 +18,7 @@ class TimeZoneWrapper(private val taskManager: TaskManager, private val timeZone
 
     private fun getTimeZone(id: Long): CompletableFuture<String> {
         val future = CompletableFuture<String>()
-        taskManager.async {
+       TaskManager.async {
             val roleId = timeZoneDao.getZoneId(id)
             future.complete(roleId)
         }

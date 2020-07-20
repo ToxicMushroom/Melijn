@@ -8,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class PunishmentWrapper(val taskManager: TaskManager, val punishmentDao: PunishmentDao) {
+class PunishmentWrapper(val punishmentDao: PunishmentDao) {
 
     val punishmentCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -18,7 +18,7 @@ class PunishmentWrapper(val taskManager: TaskManager, val punishmentDao: Punishm
 
     private fun getList(guildId: Long): CompletableFuture<List<Punishment>> {
         val future = CompletableFuture<List<Punishment>>()
-        taskManager.async {
+       TaskManager.async {
             val map = punishmentDao.get(guildId)
             future.complete(map)
         }

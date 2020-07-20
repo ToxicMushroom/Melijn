@@ -23,7 +23,7 @@ class NightcoreCommand : AbstractCommand("command.nightcore") {
 
         if (state) {
             val player = context.getGuildMusicPlayer().guildTrackManager.iPlayer
-            player.setRate(1.2)
+            player.setRate(1.25)
 
             val msg = context.getTranslation("$root.enabled")
             sendRsp(context, msg)
@@ -32,10 +32,10 @@ class NightcoreCommand : AbstractCommand("command.nightcore") {
 
             val player = context.getGuildMusicPlayer().guildTrackManager.iPlayer
             player.setRate(1.0)
+            player.setPitch(1.0)
 
             val msg = context.getTranslation("$root.disabled")
             sendRsp(context, msg)
         }
     }
-
 }

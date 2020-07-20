@@ -2,12 +2,11 @@ package me.melijn.melijnbot.database.command
 
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.command.AbstractCommand
-import me.melijn.melijnbot.internals.threading.TaskManager
 import java.util.*
 import kotlin.Comparator
 import kotlin.math.max
 
-class CommandUsageWrapper(private val taskManager: TaskManager, private val commandUsageDao: CommandUsageDao) {
+class CommandUsageWrapper(private val commandUsageDao: CommandUsageDao) {
 
 
     suspend fun addUse(commandId: Int) {

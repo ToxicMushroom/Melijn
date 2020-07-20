@@ -5,6 +5,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.internals.events.AbstractListener
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.getLanguage
@@ -35,7 +36,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
     override fun onEvent(event: GenericEvent) {
         if (event is GuildMessageDeleteEvent) {
-            container.taskManager.async {
+            TaskManager.async {
                 onGuildMessageDelete(event)
                 removePurgeIdMaybe(event)
             }

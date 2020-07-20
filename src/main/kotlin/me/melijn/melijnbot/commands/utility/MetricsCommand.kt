@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.utility
 
-import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -49,7 +48,7 @@ class MetricsCommand : AbstractCommand("command.metrics") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            val limit = getIntegerFromArgNMessage(context, 0, 0, Container.instance.commandMap.size) ?: return
+            val limit = getIntegerFromArgNMessage(context, 0, 0, context.container.commandMap.size) ?: return
             val timespan: Pair<Long, Long> = getTimespanFromArgNMessage(context, 1)
             val wrapper = context.daoManager.commandUsageWrapper
             val result = wrapper.getTopUsageWithinPeriod(timespan.first, timespan.second, limit)
