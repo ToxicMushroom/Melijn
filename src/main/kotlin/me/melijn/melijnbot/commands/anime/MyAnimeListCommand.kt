@@ -1,8 +1,8 @@
 package me.melijn.melijnbot.commands.anime
 
-import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.commands.utility.toUniversalDateFormat
 import me.melijn.melijnbot.commands.utility.toUniversalDateTimeFormat
+import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext

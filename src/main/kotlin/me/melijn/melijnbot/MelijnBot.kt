@@ -3,6 +3,7 @@ package me.melijn.melijnbot
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory
 import kotlinx.coroutines.runBlocking
 import me.melijn.llklient.io.jda.JDALavalink
+import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.events.EventManager
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
