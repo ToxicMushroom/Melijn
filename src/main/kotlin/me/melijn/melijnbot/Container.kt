@@ -1,9 +1,10 @@
 package me.melijn.melijnbot
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import me.melijn.llklient.io.jda.JDALavalink
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.RoleUpdateCause
+import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.events.eventlisteners.EventWaiter
 import me.melijn.melijnbot.internals.music.LavaManager
@@ -20,7 +21,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
 
-val objectMapper = ObjectMapper()
+val objectMapper = jacksonObjectMapper()
 
 class Container {
 

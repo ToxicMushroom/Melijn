@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.database
 
 import kotlinx.coroutines.runBlocking
-import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.database.alias.AliasDao
 import me.melijn.melijnbot.database.alias.AliasWrapper
 import me.melijn.melijnbot.database.audio.*
@@ -63,6 +62,7 @@ import me.melijn.melijnbot.database.votes.VoteDao
 import me.melijn.melijnbot.database.votes.VoteWrapper
 import me.melijn.melijnbot.database.warn.WarnDao
 import me.melijn.melijnbot.database.warn.WarnWrapper
+import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.threading.TaskManager
 
 const val RAPIDLY_USED_CACHE = 1L

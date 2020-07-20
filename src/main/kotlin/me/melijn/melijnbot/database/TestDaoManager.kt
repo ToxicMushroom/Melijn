@@ -1,7 +1,7 @@
 package me.melijn.melijnbot.database
 
 import kotlinx.coroutines.runBlocking
-import me.melijn.melijnbot.Settings
+import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.threading.TaskManager
 
 

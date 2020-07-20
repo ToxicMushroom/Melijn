@@ -9,7 +9,7 @@ import io.ktor.client.request.post
 import io.ktor.content.TextContent
 import io.ktor.http.ContentType
 import kotlinx.coroutines.TimeoutCancellationException
-import me.melijn.melijnbot.Settings
+import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.*
 import net.dv8tion.jda.api.utils.data.DataArray

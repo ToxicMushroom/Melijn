@@ -3,7 +3,7 @@ package me.melijn.melijnbot.internals.web
 
 import com.apollographql.apollo.ApolloClient
 import io.ktor.client.HttpClient
-import me.melijn.melijnbot.Settings
+import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.web.bins.BinApis
 import me.melijn.melijnbot.internals.web.botlist.BotListApi
