@@ -25,7 +25,7 @@ class QueueCommand : AbstractCommand("command.queue") {
 
     override suspend fun execute(context: CommandContext) {
         val trackManager = context.getGuildMusicPlayer().guildTrackManager
-        val allTracks = trackManager.tracks.toMutableList()
+        val allTracks = trackManager.tracks
 
         var description = ""
 

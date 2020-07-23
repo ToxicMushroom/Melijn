@@ -47,7 +47,7 @@ class GuildTrackManager(
     var loopedTrack = false
     var loopedQueue = false
 
-    var tracks: LinkedList<AudioTrack> = LinkedList()
+    val tracks: LinkedList<AudioTrack> = LinkedList()
     fun trackSize() = tracks.size
 
 
