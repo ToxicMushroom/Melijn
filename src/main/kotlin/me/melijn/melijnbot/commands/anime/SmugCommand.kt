@@ -14,6 +14,6 @@ class SmugCommand : AbstractCommand("command.smug") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        AnimeCommandUtil.executeShow(context, "cry")
+        AnimeCommandUtil.executeShow(context, "smug")
     }
 }
