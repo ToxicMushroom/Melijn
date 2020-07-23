@@ -38,7 +38,7 @@ class ShutdownCommand : AbstractCommand("command.shutdown") {
                     wrapper.put(guildId, context.selfUser.idLong, pTrack, trackManager.tracks)
                     wrapper.addChannel(guildId, channel.idLong)
 
-                        trackManager.stopAndDestroy()
+                    trackManager.stopAndDestroy()
                 }
 
                 sendRsp(context, "Detached all listeners, saved queues. Ready for termination.")
