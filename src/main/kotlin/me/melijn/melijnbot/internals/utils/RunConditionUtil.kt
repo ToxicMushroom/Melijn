@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.translation.getLanguage
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.message.getNicerUsedPrefix
+import me.melijn.melijnbot.internals.utils.message.sendMsg
 import me.melijn.melijnbot.internals.utils.message.sendRspOrMsg
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
@@ -185,7 +186,7 @@ object RunConditionUtil {
             true
         } else {
             val msg = i18n.getTranslation(language, "message.runcondition.serveronly")
-            sendRspOrMsg(event.textChannel, container.daoManager, msg)
+            sendMsg(event.privateChannel, msg)
             false
         }
     }
