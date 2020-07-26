@@ -38,7 +38,7 @@ class PingCommand : AbstractCommand("command.ping") {
         val eMsgPing = timeStamp3 - timeStamp2
 
         editedMessage.editMessage("${editedMessage.contentRaw}${replacePart3(part3, eMsgPing)}").queue { c ->
-            TaskManager.async {
+            TaskManager.async(context) {
                 handleRspDelete(context.daoManager, c)
             }
         }

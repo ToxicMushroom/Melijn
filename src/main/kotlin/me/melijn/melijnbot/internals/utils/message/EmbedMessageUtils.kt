@@ -38,7 +38,7 @@ suspend fun sendEmbedRspAwaitEL(daoManager: DaoManager, textChannel: TextChannel
         val message = textChannel.sendMessage(embed).awaitOrNull()
             ?: return emptyList()
 
-       TaskManager.async {
+        TaskManager.async(textChannel) {
             handleRspDelete(daoManager, message)
         }
 
@@ -72,7 +72,7 @@ fun sendEmbedRsp(daoManager: DaoManager, textChannel: TextChannel, embed: Messag
     }
     if (guild.selfMember.hasPermission(textChannel, Permission.MESSAGE_EMBED_LINKS) &&
         !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guild.idLong)) {
-       TaskManager.async {
+        TaskManager.async(textChannel) {
             val message = textChannel.sendMessage(embed).awaitOrNull() ?: return@async
 
             val timeMap = daoManager.removeResponseWrapper.removeResponseCache.get(textChannel.guild.idLong).await()

@@ -19,7 +19,7 @@ import java.util.regex.Pattern
 
 object FilterUtil {
 
-    suspend fun handleFilter(container: Container, message: Message) = TaskManager.async {
+    suspend fun handleFilter(container: Container, message: Message) = TaskManager.async(message.author, message.channel) {
         if (message.author.isBot) return@async
         val guild = message.guild
         val member = message.member ?: return@async

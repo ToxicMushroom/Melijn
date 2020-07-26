@@ -441,7 +441,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             tracks[index] = track
         }
 
-        TaskManager.async {
+        TaskManager.async(context) {
             val msg = sendMessageSearchMenu(context, tracks).last()
             guildMusicPlayer.searchMenus[msg.idLong] = TracksForQueue(tracks, nextPos)
 

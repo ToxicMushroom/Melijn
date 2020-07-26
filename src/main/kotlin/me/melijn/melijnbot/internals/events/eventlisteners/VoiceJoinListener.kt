@@ -12,7 +12,7 @@ class VoiceJoinListener(container: Container) : AbstractListener(container) {
     override fun onEvent(event: GenericEvent) {
         if (event is GuildVoiceJoinEvent) {
             if (!event.member.user.isBot) {
-                TaskManager.async {
+                TaskManager.async(event.member.user, event.guild) {
                     VoiceUtil.channelUpdate(container, event.channelJoined)
                 }
             }

@@ -18,7 +18,7 @@ class SelfRoleGroupWrapper(private val selfRoleGroupDao: SelfRoleGroupDao) {
 
     fun getMap(guildId: Long): CompletableFuture<List<SelfRoleGroup>> {
         val future = CompletableFuture<List<SelfRoleGroup>>()
-       TaskManager.async {
+        TaskManager.async {
             val map = selfRoleGroupDao.get(guildId)
             future.complete(map)
         }

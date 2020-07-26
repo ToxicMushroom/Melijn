@@ -36,7 +36,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
     override fun onEvent(event: GenericEvent) {
         if (event is GuildMessageDeleteEvent) {
-            TaskManager.async {
+            TaskManager.async(event.channel) {
                 onGuildMessageDelete(event)
                 removePurgeIdMaybe(event)
             }

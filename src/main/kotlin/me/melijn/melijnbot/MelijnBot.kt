@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import me.melijn.llklient.io.jda.JDALavalink
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.events.EventManager
+import net.dv8tion.jda.api.GatewayEncoding
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
@@ -57,6 +58,7 @@ class MelijnBot {
             .disableCache(CacheFlag.CLIENT_STATUS, CacheFlag.ACTIVITY)
             .setChunkingFilter(ChunkingFilter.NONE)
             .setEventManagerProvider { eventManager }
+            .setGatewayEncoding(GatewayEncoding.ETF)
 
         if (!container.settings.lavalink.enabled) {
             defaultShardManagerBuilder.setAudioSendFactory(NativeAudioSendFactory())

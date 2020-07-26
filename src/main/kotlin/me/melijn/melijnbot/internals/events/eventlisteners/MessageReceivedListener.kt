@@ -29,15 +29,17 @@ import java.awt.Color
 class MessageReceivedListener(container: Container) : AbstractListener(container) {
 
     override fun onEvent(event: GenericEvent) {
-        TaskManager.async {
-            if (event is GuildMessageReceivedEvent) {
+        if (event is GuildMessageReceivedEvent) {
+            TaskManager.async(event.author, event.channel) {
                 handleMessageReceivedStoring(event)
                 handleAttachmentLog(event)
                 handleVerification(event)
                 FilterUtil.handleFilter(container, event.message)
                 // SpammingUtil.handleSpam(container, event.message)
             }
-            if (event is MessageReceivedEvent) {
+        }
+        if (event is MessageReceivedEvent) {
+            TaskManager.async(event.author, event.channel) {
                 handleSimpleMelijnPing(event)
             }
         }
@@ -69,11 +71,9 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             return
         }
 
-        TaskManager.async {
-            val cmdContext = CommandContext(event, listOf(usedMention, "help"), container, container.commandMap.values.toSet(),
-                mutableMapOf(), mutableMapOf(), true, "${usedMention}help")
-            helpCmd.run(cmdContext)
-        }
+        val cmdContext = CommandContext(event, listOf(usedMention, "help"), container, container.commandMap.values.toSet(),
+            mutableMapOf(), mutableMapOf(), true, "${usedMention}help")
+        helpCmd.run(cmdContext)
     }
 
     private suspend fun handleVerification(event: GuildMessageReceivedEvent) {
@@ -161,7 +161,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             content += "\n${embed.toMessage()}"
         }
 
-        TaskManager.async {
+        TaskManager.async(event.author, event.channel) {
             messageWrapper.addMessage(DaoMessage(
                 guildId,
                 event.channel.idLong,
