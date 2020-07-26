@@ -18,7 +18,7 @@ class ChannelRolePermissionWrapper(private val channelRolePermissionDao: Channel
 
     private fun getPermissionList(channelId: Long, roleId: Long): CompletableFuture<Map<String, PermState>> {
         val languageFuture = CompletableFuture<Map<String, PermState>>()
-       TaskManager.async {
+        TaskManager.async {
             val map = channelRolePermissionDao.getMap(channelId, roleId)
             languageFuture.complete(map)
         }

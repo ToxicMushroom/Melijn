@@ -97,7 +97,7 @@ fun sendFileRsp(textChannel: TextChannel, daoManager: DaoManager, language: Stri
         return
     }
 
-   TaskManager.async {
+    TaskManager.async(textChannel) {
         val message = textChannel.sendFile(bytes, "finished.$extension").awaitOrNull()
             ?: return@async
 
@@ -220,7 +220,7 @@ private fun msgWithAttachmentsAction(channel: MessageChannel, message: Message, 
 
 suspend fun sendAttachmentsRspAwaitN(textChannel: TextChannel, daoManager: DaoManager, attachments: Map<String, String>): Message? {
     val message = attachmentsAction(textChannel, attachments)?.awaitOrNull() ?: return null
-   TaskManager.async {
+    TaskManager.async(textChannel) {
         handleRspDelete(daoManager, message)
     }
     return message
@@ -228,7 +228,7 @@ suspend fun sendAttachmentsRspAwaitN(textChannel: TextChannel, daoManager: DaoMa
 
 suspend fun sendRspWithAttachmentsAwaitN(textChannel: TextChannel, daoManager: DaoManager, message: Message, attachments: Map<String, String>): Message? {
     val msg = msgWithAttachmentsAction(textChannel, message, attachments)?.awaitOrNull() ?: return null
-   TaskManager.async {
+    TaskManager.async(textChannel) {
         handleRspDelete(daoManager, msg)
     }
     return msg
@@ -250,7 +250,7 @@ suspend fun sendRspAwaitN(channel: TextChannel, daoManager: DaoManager, msg: Mes
     }
 
     val message = action?.awaitOrNull() ?: return null
-   TaskManager.async {
+    TaskManager.async(channel) {
         handleRspDelete(daoManager, message)
     }
     return message
@@ -261,7 +261,7 @@ fun sendAttachments(textChannel: MessageChannel, urls: Map<String, String>) {
 }
 
 fun sendRspAttachments(daoManager: DaoManager, textChannel: TextChannel, urls: Map<String, String>) {
-   TaskManager.async {
+    TaskManager.async(textChannel) {
         val message = attachmentsAction(textChannel, urls)?.awaitOrNull() ?: return@async
 
         handleRspDelete(daoManager, message)
@@ -269,7 +269,7 @@ fun sendRspAttachments(daoManager: DaoManager, textChannel: TextChannel, urls: M
 }
 
 fun sendRspWithAttachments(daoManager: DaoManager, textChannel: TextChannel, message: Message, attachments: Map<String, String>) {
-   TaskManager.async {
+    TaskManager.async(textChannel) {
         val msg = msgWithAttachmentsAction(textChannel, message, attachments)?.awaitOrNull() ?: return@async
 
         handleRspDelete(daoManager, msg)

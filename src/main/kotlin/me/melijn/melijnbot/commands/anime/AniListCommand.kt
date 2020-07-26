@@ -63,7 +63,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                     .build()
             ).enqueue(object : ApolloCall.Callback<FindMangaQuery.Data>() {
                 override fun onFailure(e: ApolloException) {
-                    TaskManager.async {
+                    TaskManager.async(context) {
                         val msg = context.getTranslation("$root.noresult")
                             .withVariable(PLACEHOLDER_ARG, mangaName)
                         sendRsp(context, msg)
@@ -71,7 +71,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                 }
 
                 override fun onResponse(response: Response<FindMangaQuery.Data>) {
-                    TaskManager.async {
+                    TaskManager.async(context) {
                         val char: FindMangaQuery.Media = response.data?.Media() ?: return@async
                         foundManga(context, char)
                     }
@@ -196,7 +196,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                     .build()
             ).enqueue(object : ApolloCall.Callback<FindUserQuery.Data>() {
                 override fun onFailure(e: ApolloException) {
-                    TaskManager.async {
+                    TaskManager.async(context) {
                         val msg = context.getTranslation("$root.noresult")
                             .withVariable(PLACEHOLDER_ARG, userName)
                         sendRsp(context, msg)
@@ -204,7 +204,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                 }
 
                 override fun onResponse(response: Response<FindUserQuery.Data>) {
-                    TaskManager.async {
+                    TaskManager.async(context) {
                         val user: FindUserQuery.User = response.data?.User() ?: return@async
                         foundUser(context, user)
                     }
@@ -370,7 +370,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                     .build()
             ).enqueue(object : ApolloCall.Callback<FindAnimeQuery.Data>() {
                 override fun onFailure(e: ApolloException) {
-                    TaskManager.async {
+                    TaskManager.async(context) {
                         val msg = context.getTranslation("$root.noresult")
                             .withVariable(PLACEHOLDER_ARG, animeName)
                         sendRsp(context, msg)
@@ -378,7 +378,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                 }
 
                 override fun onResponse(response: Response<FindAnimeQuery.Data>) {
-                    TaskManager.async {
+                    TaskManager.async(context) {
                         val char: FindAnimeQuery.Media = response.data?.Media() ?: return@async
                         foundAnime(context, char)
                     }
@@ -504,7 +504,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                     .build()
             ).enqueue(object : ApolloCall.Callback<FindCharacterQuery.Data>() {
                 override fun onFailure(e: ApolloException) {
-                    TaskManager.async {
+                    TaskManager.async(context) {
                         val msg = context.getTranslation("$root.noresult")
                             .withVariable(PLACEHOLDER_ARG, characterName)
                         sendRsp(context, msg)
@@ -512,7 +512,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                 }
 
                 override fun onResponse(response: Response<FindCharacterQuery.Data>) {
-                    TaskManager.async {
+                    TaskManager.async(context) {
                         val char: FindCharacterQuery.Character = response.data?.Character() ?: return@async
                         foundCharacter(context, char)
                     }

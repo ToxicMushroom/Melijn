@@ -62,7 +62,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
                 }
             }
             .thenRun {
-                TaskManager.async {
+                TaskManager.async(context) {
                     for (message in messages) {
                         context.container.purgedIds[message.idLong] = context.authorId
                     }

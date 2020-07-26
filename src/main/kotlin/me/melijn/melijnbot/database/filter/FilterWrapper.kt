@@ -28,7 +28,7 @@ class FilterWrapper(private val filterDao: FilterDao) {
 
     private fun getFilters(guildId: Long, filterGroupName: String, filterType: FilterType): CompletableFuture<List<String>> {
         val future = CompletableFuture<List<String>>()
-       TaskManager.async {
+        TaskManager.async {
             val filters = filterDao.get(guildId, filterGroupName, filterType)
             future.complete(filters)
         }

@@ -4,7 +4,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.internals.command.CommandContext
-import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.isPremiumGuild
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.withVariable
@@ -59,29 +58,25 @@ class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val gui
     suspend fun safeQueue(context: CommandContext, track: AudioTrack, nextPos: NextSongPosition): Boolean {
         val success = safeQueueSilent(context.daoManager, track, nextPos)
         if (!success) {
-            TaskManager.async {
-                val msg = context.getTranslation("message.music.queuelimit")
-                    .withVariable("amount", QUEUE_LIMIT.toString())
-                    .withVariable("donateAmount", DONATE_QUEUE_LIMIT.toString())
-                sendRsp(context, msg)
-            }
+            val msg = context.getTranslation("message.music.queuelimit")
+                .withVariable("amount", QUEUE_LIMIT.toString())
+                .withVariable("donateAmount", DONATE_QUEUE_LIMIT.toString())
+            sendRsp(context, msg)
         }
 
         return success
     }
 
-    fun queueIsFull(context: CommandContext, add: Int, silent: Boolean = false): Boolean {
+    suspend fun queueIsFull(context: CommandContext, add: Int, silent: Boolean = false): Boolean {
         if (
             guildTrackManager.tracks.size + add > QUEUE_LIMIT ||
             (guildTrackManager.tracks.size + add > DONATE_QUEUE_LIMIT && isPremiumGuild(context))
         ) {
             if (!silent) {
-                TaskManager.async {
-                    val msg = context.getTranslation("message.music.queuelimit")
-                        .withVariable("amount", QUEUE_LIMIT.toString())
-                        .withVariable("donateAmount", DONATE_QUEUE_LIMIT.toString())
-                    sendRsp(context, msg)
-                }
+                val msg = context.getTranslation("message.music.queuelimit")
+                    .withVariable("amount", QUEUE_LIMIT.toString())
+                    .withVariable("donateAmount", DONATE_QUEUE_LIMIT.toString())
+                sendRsp(context, msg)
             }
             return true
         }

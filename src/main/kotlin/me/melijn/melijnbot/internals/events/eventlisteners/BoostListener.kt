@@ -27,7 +27,7 @@ class BoostListener(container: Container) : AbstractListener(container) {
 
     override fun onEvent(event: GenericEvent) {
         if (event is GuildUpdateBoostCountEvent) {
-            TaskManager.async { onBoost(event) }
+            TaskManager.async(event.guild) { onBoost(event) }
         }
     }
 

@@ -14,7 +14,7 @@ class BotJoinLeaveListener(container: Container) : AbstractListener(container) {
         if (event is GuildJoinEvent) {
             onBotJoinGuild(event)
         } else if (event is GuildLeaveEvent) {
-            TaskManager.async {
+            TaskManager.async(event.guild) {
                 onBotLeaveGuild(event)
             }
         }

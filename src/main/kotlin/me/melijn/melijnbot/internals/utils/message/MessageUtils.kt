@@ -64,22 +64,21 @@ fun sendRsp(channel: TextChannel, daoManager: DaoManager, msg: String) {
 
     if (msg.length <= 2000) {
         channel.sendMessage(msg).queue { message ->
-           TaskManager.async {
+            TaskManager.async(channel) {
                 handleRspDelete(daoManager, message)
             }
         }
     } else {
         val msgParts = StringUtils.splitMessage(msg)
 
-       TaskManager.async {
+        TaskManager.async(channel) {
             val msgList = mutableListOf<Message>()
             for (text in msgParts) {
                 val oneMessage = channel.sendMessage(text).awaitOrNull() ?: continue
                 msgList.add(oneMessage)
             }
-           TaskManager.async {
-                handleRspDelete(daoManager, msgList)
-            }
+
+            handleRspDelete(daoManager, msgList)
         }
     }
 }
@@ -126,7 +125,7 @@ fun sendRsp(channel: TextChannel, daoManager: DaoManager, message: Message) {
         else action.embed(embed)
     }
 
-   TaskManager.async {
+    TaskManager.async(channel) {
         val msg = action?.awaitOrNull() ?: return@async
 
         handleRspDelete(daoManager, msg)
@@ -214,7 +213,7 @@ suspend fun sendRspAwaitEL(channel: TextChannel, daoManager: DaoManager, msg: St
         val message = channel.sendMessage(msg).awaitOrNull() ?: return messageList
         messageList.add(message)
 
-       TaskManager.async {
+        TaskManager.async(channel) {
             handleRspDelete(daoManager, message)
         }
 
@@ -224,7 +223,7 @@ suspend fun sendRspAwaitEL(channel: TextChannel, daoManager: DaoManager, msg: St
             val message = channel.sendMessage(text).awaitOrNull() ?: continue
             messageList.add(index, message)
 
-           TaskManager.async {
+            TaskManager.async(channel) {
                 handleRspDelete(daoManager, message)
             }
         }

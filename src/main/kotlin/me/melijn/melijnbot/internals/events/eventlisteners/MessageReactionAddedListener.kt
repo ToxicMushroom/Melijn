@@ -34,7 +34,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         if (event is PrivateMessageReactionAddEvent) onPrivateMessageReactionAdd(event)
     }
 
-    private fun onPrivateMessageReactionAdd(event: PrivateMessageReactionAddEvent) = TaskManager.async {
+    private fun onPrivateMessageReactionAdd(event: PrivateMessageReactionAddEvent) = TaskManager.async(event.channel) {
         paginationHandler(event)
     }
 
@@ -113,7 +113,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         }
     }
 
-    private fun onGuildMessageReactionAdd(event: GuildMessageReactionAddEvent) = TaskManager.async {
+    private fun onGuildMessageReactionAdd(event: GuildMessageReactionAddEvent) = TaskManager.async(event.user, event.channel) {
         selfRoleHandler(event)
         postReactionAddedLog(event)
         verificationHandler(event)

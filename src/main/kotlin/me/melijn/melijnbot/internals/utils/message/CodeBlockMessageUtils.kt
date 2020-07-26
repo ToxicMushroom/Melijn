@@ -26,7 +26,7 @@ suspend fun sendRspCodeBlock(context: CommandContext, msg: String, lang: String,
 fun sendRspCodeBlock(textChannel: TextChannel, authorId: Long, daoManager: DaoManager, msg: String, lang: String, shouldPaginate: Boolean) {
     if (!textChannel.canTalk()) return
     if (msg.length <= 2000) {
-       TaskManager.async {
+        TaskManager.async(textChannel) {
             val message = textChannel.sendMessage(msg).awaitOrNull() ?: return@async
             val timeMap = daoManager.removeResponseWrapper.removeResponseCache.get(textChannel.guild.idLong).await()
             val seconds = timeMap[textChannel.idLong] ?: return@async
@@ -66,7 +66,7 @@ fun sendRspCodeBlocks(textChannel: TextChannel, authorId: Long, daoManager: DaoM
             }
         }.toMutableList()
 
-       TaskManager.async {
+        TaskManager.async(textChannel) {
             val message = textChannel.sendMessage(paginatedParts[0]).awaitOrNull() ?: return@async
             registerPaginationMessage(textChannel, authorId, message, paginatedParts, 0)
 
@@ -79,7 +79,7 @@ fun sendRspCodeBlocks(textChannel: TextChannel, authorId: Long, daoManager: DaoM
             message.delete().queue(null, { Container.instance.botDeletedMessageIds.remove(message.idLong) })
         }
     } else if (parts.size > 1) {
-       TaskManager.async {
+        TaskManager.async(textChannel) {
             parts.forEachIndexed { index, msgPart ->
                 val message = textChannel.sendMessage(when {
                     index == 0 -> "$msgPart```"
@@ -100,7 +100,7 @@ fun sendRspCodeBlocks(textChannel: TextChannel, authorId: Long, daoManager: DaoM
         }
 
     } else {
-       TaskManager.async {
+        TaskManager.async(textChannel) {
             val message = textChannel.sendMessage(parts[0]).awaitOrNull() ?: return@async
 
             val timeMap = daoManager.removeResponseWrapper.removeResponseCache.get(textChannel.guild.idLong).await()

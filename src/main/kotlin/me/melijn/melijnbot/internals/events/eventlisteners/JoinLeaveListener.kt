@@ -29,7 +29,7 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
         else if (event is GuildMemberRemoveEvent) onGuildMemberLeave(event)
     }
 
-    private fun onGuildMemberJoin(event: GuildMemberJoinEvent) = TaskManager.async {
+    private fun onGuildMemberJoin(event: GuildMemberJoinEvent) = TaskManager.async(event.member) {
         val daoManager = container.daoManager
         val member = event.member
         JoinLeaveUtil.reAddMute(daoManager, event)
@@ -50,7 +50,7 @@ class JoinLeaveListener(container: Container) : AbstractListener(container) {
         return channel == null
     }
 
-    private fun onGuildMemberLeave(event: GuildMemberRemoveEvent) = TaskManager.async {
+    private fun onGuildMemberLeave(event: GuildMemberRemoveEvent) = TaskManager.async(event.user, event.guild) {
         val daoManager = container.daoManager
         val user = event.user
 

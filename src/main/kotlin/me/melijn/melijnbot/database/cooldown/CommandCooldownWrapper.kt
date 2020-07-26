@@ -18,7 +18,7 @@ class CommandCooldownWrapper(private val commandCooldownDao: CommandCooldownDao)
 
     private fun getMap(guildId: Long): CompletableFuture<Map<String, Long>> {
         val future = CompletableFuture<Map<String, Long>>()
-       TaskManager.async {
+        TaskManager.async {
             val map = commandCooldownDao.getCooldowns(guildId)
             future.complete(map)
         }
