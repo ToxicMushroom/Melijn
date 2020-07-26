@@ -46,7 +46,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.2.0_181') {
+    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.2.0_182') {
         exclude module: 'opus-java'
     }
 
@@ -59,8 +59,8 @@ dependencies {
     // implementation group: 'com.github.Melijn', name: 'lavaplayer', version: '18000a1479'
 
     // https://jitpack.io/#ToxicMushroom/Lavalink-Client
-//    implementation group: 'com.github.ToxicMushroom', name: 'Lavalink-Klient', version: '2271cb2b92'
-      implementation group: 'me.melijn.llklient', name: 'Lavalink-Klient', version: '1.0.3-okhttp'
+    //implementation group: 'com.github.ToxicMushroom', name: 'Lavalink-Klient', version: 'b8b964b7dd'
+    implementation group: 'me.melijn.llklient', name: 'Lavalink-Klient', version: '1.0.3-okhttp'
 
 
     // https://github.com/ToxicMushroom/JagTag-Kotlin
