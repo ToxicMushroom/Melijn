@@ -117,8 +117,10 @@ object JoinLeaveUtil {
                 val immutableEntry = entryWon ?: continue
 
                 val role = immutableEntry.roleId?.let { guild.getRoleById(it) } ?: continue
-                if (guild.selfMember.canInteract(member)) {
+                if (guild.selfMember.canInteract(role)) {
                     guild.addRoleToMember(member, role).reason("joinrole $group").queue()
+                } else {
+                    LogUtils.sendMessageFailedToAddRoleToMember(daoManager, member, role)
                 }
             }
         }
