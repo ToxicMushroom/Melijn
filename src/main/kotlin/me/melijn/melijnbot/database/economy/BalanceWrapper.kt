@@ -27,4 +27,12 @@ class BalanceWrapper(private val balanceDao: BalanceDao) {
         balanceDao.setBalance(userId, money)
         balanceCache.put(userId, CompletableFuture.completedFuture(money))
     }
+
+    suspend fun getTop(users: Int, offset: Int): Map<Long, Long> {
+        return balanceDao.getTop(users, offset)
+    }
+
+    suspend fun getRowCount(): Long {
+        return balanceDao.getRowCount()
+    }
 }

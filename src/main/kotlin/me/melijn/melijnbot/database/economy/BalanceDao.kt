@@ -28,4 +28,16 @@ class BalanceDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.executeUpdate("INSERT INTO $table (userId, money) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET money=?",
             userId, money, money)
     }
+
+    suspend fun getTop(users: Int, offset: Int): Map<Long, Long> = suspendCoroutine {
+        driverManager.executeQuery("SELECT * FROM $table ORDER BY money DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY", { rs ->
+            val map = mutableMapOf<Long, Long>()
+
+            while (rs.next()) {
+                map[rs.getLong("userId")] = rs.getLong("money")
+            }
+
+            it.resume(map)
+        }, offset, users)
+    }
 }
