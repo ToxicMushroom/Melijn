@@ -150,6 +150,7 @@ suspend inline fun <reified T : Enum<*>> getEnumFromArgNMessage(context: Command
 }
 
 suspend inline fun <T> getObjectFromArgNMessage(context: CommandContext, index: Int, mapper: (String) -> T?, path: String): T? {
+    if (argSizeCheckFailed(context, index)) return null
     val newObj = getObjectFromArgN(context, index, mapper)
     if (newObj == null) {
         val msg = context.getTranslation(path)
@@ -176,6 +177,7 @@ suspend inline fun <reified T : Enum<*>> getEnumFromArgN(context: CommandContext
 
 val ccTagPattern = Pattern.compile("cc\\.(\\d+)")
 suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): Set<String>? {
+    if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     val category: CommandCategory? = enumValueOrNull(arg)
     val matcher = ccTagPattern.matcher(arg)
@@ -208,6 +210,7 @@ suspend fun getCommandIdsFromArgNMessage(context: CommandContext, index: Int): S
 }
 
 suspend fun getCommandsFromArgNMessage(context: CommandContext, index: Int): Set<AbstractCommand>? {
+    if (argSizeCheckFailed(context, index)) return null
     val arg = context.args[index]
     val category: CommandCategory? = enumValueOrNull(arg)
 
@@ -236,6 +239,7 @@ suspend fun getLongFromArgNMessage(
     max: Long = Long.MAX_VALUE,
     vararg ignore: String
 ): Long? {
+    if (argSizeCheckFailed(context, index)) return null
     var arg = context.args[index]
     for (a in ignore) {
         arg = arg.remove(a)
@@ -266,7 +270,8 @@ suspend fun getLongFromArgNMessage(
 
 //Dayofyear, year
 suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, format: DateFormat = DateFormat.DMY): Pair<Int, Int?>? {
-    val list: List<Int> = context.args[0].split("/", "-")
+    if (argSizeCheckFailed(context, index)) return null
+    val list: List<Int> = context.args[index].split("/", "-")
         .map { value ->
             val newVal = value.toIntOrNull()
             if (newVal == null) {

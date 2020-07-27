@@ -150,7 +150,6 @@ suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? {
 
 suspend fun retrieveUserByArgsN(guild: Guild, arg: String): User? {
     val shardManager = guild.jda.shardManager ?: return null
-
     val user1: User? = getUserByArgsN(shardManager, guild, arg)
     if (user1 != null) {
         return user1
@@ -169,6 +168,7 @@ suspend fun retrieveUserByArgsN(guild: Guild, arg: String): User? {
 }
 
 suspend fun retrieveUserByArgsNMessage(context: CommandContext, index: Int): User? {
+    if (argSizeCheckFailed(context, index)) return null
     val possibleUser = retrieveUserByArgsN(context, index)
     if (possibleUser == null) {
         val msg = context.getTranslation(MESSAGE_UNKNOWN_USER)
@@ -209,6 +209,7 @@ suspend fun getRoleByArgsNMessage(
     sameGuildAsContext: Boolean = true,
     canInteract: Boolean = false
 ): Role? {
+    if (argSizeCheckFailed(context, index)) return null
     val role = getRoleByArgsN(context, index, sameGuildAsContext)
     if (role == null) {
         val msg = context.getTranslation("message.unknown.role")
@@ -288,6 +289,7 @@ suspend fun getStringFromArgsNMessage(
 }
 
 suspend fun getEmotejiByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = false): Pair<Emote?, String?>? {
+    if (argSizeCheckFailed(context, index)) return null
     val emoteji = getEmotejiByArgsN(context, index, sameGuildAsContext)
     if (emoteji == null) {
         val msg = context.getTranslation("message.unknown.emojioremote")
@@ -319,6 +321,7 @@ suspend fun getEmotejiByArgsN(context: CommandContext, index: Int, sameGuildAsCo
 }
 
 suspend fun getEmoteByArgsNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean): Emote? {
+    if (argSizeCheckFailed(context, index)) return null
     val emote = getEmoteByArgsN(context, index, sameGuildAsContext)
     if (emote == null) {
         val msg = context.getTranslation("message.unknown.emote")
@@ -464,6 +467,7 @@ fun getVoiceChannelByArgsN(context: CommandContext, index: Int, sameGuildAsConte
 }
 
 suspend fun getVoiceChannelByArgNMessage(context: CommandContext, index: Int, sameGuildAsContext: Boolean = true): VoiceChannel? {
+    if (argSizeCheckFailed(context, index)) return null
     val voiceChannel = getVoiceChannelByArgsN(context, index, sameGuildAsContext)
     if (voiceChannel == null) {
         val msg = context.getTranslation("message.unknown.voicechannel")
@@ -483,6 +487,7 @@ suspend fun retrieveMemberByArgsN(guild: Guild, arg: String): Member? {
 
 
 suspend fun retrieveMemberByArgsNMessage(context: CommandContext, index: Int, interactable: Boolean = false, botAllowed: Boolean = true): Member? {
+    if (argSizeCheckFailed(context, index)) return null
     val user = retrieveUserByArgsN(context, index)
     val member =
         if (user == null) null
