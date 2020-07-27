@@ -538,7 +538,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 override suspend fun execute(context: CommandContext) {
-                    if (context.args.isEmpty()) {
+                    if (context.args.size < 2) {
                         sendSyntax(context)
                         return
                     }
@@ -566,7 +566,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 override suspend fun execute(context: CommandContext) {
-                    if (context.args.isEmpty()) {
+                    if (context.args.size < 2) {
                         sendSyntax(context)
                         return
                     }
@@ -594,7 +594,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
                 }
 
                 override suspend fun execute(context: CommandContext) {
-                    if (context.args.isEmpty()) {
+                    if (context.args.size < 2) {
                         sendSyntax(context)
                         return
                     }
@@ -697,6 +697,10 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: CommandContext) {
+                if (context.args.isEmpty()) {
+                    sendSyntax(context)
+                    return
+                }
                 val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                 if (context.args.size < 2) {
                     val msg = context.getTranslation("$root.show.${group.isEnabled}")
@@ -726,6 +730,11 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: CommandContext) {
+                if (context.args.isEmpty()){
+                    sendSyntax(context)
+                    return
+                }
+
                 val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                 if (context.args.size < 2) {
                     val msg = context.getTranslation("$root.show.${group.isEnabled}")
@@ -755,6 +764,11 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: CommandContext) {
+                if (context.args.isEmpty()) {
+                    sendSyntax(context)
+                    return
+                }
+
                 val name = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
                 val wrapper = context.daoManager.selfRoleGroupWrapper
 
@@ -784,6 +798,11 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: CommandContext) {
+                if (context.args.isEmpty()) {
+                    sendSyntax(context)
+                    return
+                }
+
                 val selfRoleGroup = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                 val wrapper = context.daoManager.selfRoleGroupWrapper
                 wrapper.delete(context.guildId, selfRoleGroup.groupName)
@@ -829,6 +848,11 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: CommandContext) {
+                if (context.args.size < 2) {
+                    sendSyntax(context)
+                    return
+                }
+
                 val selfRoleGroup1 = getSelfRoleGroupByArgNMessage(context, 0) ?: return
                 val name = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
                 val wrapper = context.daoManager.selfRoleGroupWrapper
