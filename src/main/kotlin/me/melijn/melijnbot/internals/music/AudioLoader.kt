@@ -205,7 +205,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
         appendArtists(artists, source, artistNames)
 
         val fullQuery = source.toString()
-        var justQuery = fullQuery.removePrefix(YT_SELECTOR)
+        var justQuery = fullQuery.removePrefix(SC_SELECTOR)
         val type = if (justQuery == fullQuery) {
             justQuery = fullQuery.removePrefix(YT_SELECTOR)
             SearchType.YT
