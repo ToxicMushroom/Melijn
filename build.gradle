@@ -3,7 +3,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.apollographql.apollo:apollo-gradle-plugin:2.2.2'
+        classpath 'com.apollographql.apollo:apollo-gradle-plugin:2.2.3'
     }
 }
 
