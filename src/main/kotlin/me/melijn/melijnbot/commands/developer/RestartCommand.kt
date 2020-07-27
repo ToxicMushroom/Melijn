@@ -5,7 +5,7 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import kotlin.system.exitProcess
 
 
@@ -18,13 +18,12 @@ class RestartCommand : AbstractCommand("command.restart") {
     }
 
     override suspend fun execute(context: CommandContext) {
-
         val players = context.lavaManager.musicPlayerManager.getPlayers()
         val wrapper = context.daoManager.tracksWrapper
 
         sendRsp(context, "Are you sure you wanna restart ?")
 
-        context.container.eventWaiter.waitFor(GuildMessageReceivedEvent::class.java, {
+        context.container.eventWaiter.waitFor(MessageReceivedEvent::class.java, {
             it.channel.idLong == context.channelId && it.author.idLong == context.authorId
         }, {
             if (it.message.contentRaw == "yes") {

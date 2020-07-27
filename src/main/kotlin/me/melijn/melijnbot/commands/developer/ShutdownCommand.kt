@@ -4,7 +4,7 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.utils.message.sendRsp
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
 class ShutdownCommand : AbstractCommand("command.shutdown") {
 
@@ -21,7 +21,7 @@ class ShutdownCommand : AbstractCommand("command.shutdown") {
 
         sendRsp(context, "Are you sure you wanna shutdown ?")
 
-        context.container.eventWaiter.waitFor(GuildMessageReceivedEvent::class.java, {
+        context.container.eventWaiter.waitFor(MessageReceivedEvent::class.java, {
             it.channel.idLong == context.channelId && it.author.idLong == context.authorId
         }, {
             if (it.message.contentRaw == "yes") {
