@@ -81,7 +81,11 @@ class SoftBanCommand : AbstractCommand("command.softban") {
 
         val softBanning = context.getTranslation("message.softbanning")
 
-        val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
+        val privateChannel = if (context.guild.isMember(targetUser)) {
+            targetUser.openPrivateChannel().awaitOrNull()
+        } else {
+            null
+        }
         val message: Message? = privateChannel?.let {
             sendMsgAwaitEL(it, softBanning)
         }?.firstOrNull()

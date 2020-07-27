@@ -74,7 +74,11 @@ class UnbanCommand : AbstractCommand("command.unban") {
                 val msgLc = getUnbanMessage(language, zoneId, context.guild, targetUser, banAuthor, context.author, ban, true)
 
 
-                val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
+                val privateChannel = if (context.guild.isMember(targetUser)) {
+                    targetUser.openPrivateChannel().awaitOrNull()
+                } else {
+                    null
+                }
                 privateChannel?.let {
                     try {
                         val msg = sendEmbedAwaitEL(it, msgLc)

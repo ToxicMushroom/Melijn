@@ -79,7 +79,11 @@ class BanCommand : AbstractCommand("command.ban") {
         }
 
         val banning = context.getTranslation("message.banning")
-        val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
+        val privateChannel = if (context.guild.isMember(targetUser)) {
+            targetUser.openPrivateChannel().awaitOrNull()
+        } else {
+            null
+        }
         val message: Message? = privateChannel?.let {
             sendMsgAwaitEL(it, banning)
         }?.firstOrNull()

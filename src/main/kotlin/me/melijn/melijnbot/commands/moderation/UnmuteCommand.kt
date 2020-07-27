@@ -124,7 +124,11 @@ class UnmuteCommand : AbstractCommand("command.unmute") {
 
         //Normal success path
         val msg = getUnmuteMessage(language, zoneId, guild, targetUser, muteAuthor, context.author, mute)
-        val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
+        val privateChannel = if (context.guild.isMember(targetUser)) {
+            targetUser.openPrivateChannel().awaitOrNull()
+        } else {
+            null
+        }
 
         val success = try {
             privateChannel?.let {
