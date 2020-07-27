@@ -256,7 +256,7 @@ suspend fun getLongFromArgNMessage(
     }
     if (long != null) {
         if (min > long || long > max) {
-            val msg = context.getTranslation("message.long.notingrange")
+            val msg = context.getTranslation("message.number.notingrange")
                 .withVariable("min", min)
                 .withVariable("max", max)
                 .withVariable(PLACEHOLDER_ARG, arg)
