@@ -5,10 +5,7 @@ import me.melijn.melijnbot.commands.administration.*
 import me.melijn.melijnbot.commands.animal.*
 import me.melijn.melijnbot.commands.anime.*
 import me.melijn.melijnbot.commands.developer.*
-import me.melijn.melijnbot.commands.economy.BalanceCommand
-import me.melijn.melijnbot.commands.economy.DailyCommand
-import me.melijn.melijnbot.commands.economy.FlipCommand
-import me.melijn.melijnbot.commands.economy.PayCommand
+import me.melijn.melijnbot.commands.economy.*
 import me.melijn.melijnbot.commands.image.*
 import me.melijn.melijnbot.commands.moderation.*
 import me.melijn.melijnbot.commands.music.*
@@ -212,7 +209,9 @@ class CommandClientBuilder(private val container: Container) {
         DailyCommand(),
         PayCommand(),
         BassBoostCommand(),
-        NightcoreCommand()
+        NightcoreCommand(),
+        LeaderBoardCommand(),
+        TopVotersCommand()
     )
 
     init {

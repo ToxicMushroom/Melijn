@@ -19,7 +19,7 @@ class ShardsCommand : AbstractCommand("command.shards") {
     override suspend fun execute(context: CommandContext) {
         val shardManager = context.shardManager
         val tableBuilder = TableBuilder(true)
-            .setColumns(listOf("Shard ID", "Ping", "Users", "Guilds", "VCs"))
+            .setColumns("Shard ID", "Ping", "Users", "Guilds", "VCs")
 
         var averagePing = 0L
         var totalVCs = 0L
@@ -38,13 +38,11 @@ class ShardsCommand : AbstractCommand("command.shards") {
                 averagePing += jda.gatewayPing
                 totalVCs += vcs
                 tableBuilder.addRow(
-                    listOf(
-                        shardId.toString() + shardInfo,
-                        jda.gatewayPing.toString(),
-                        jda.userCache.size().toString(),
-                        jda.guildCache.size().toString(),
-                        vcs.toString()
-                    )
+                    shardId.toString() + shardInfo,
+                    jda.gatewayPing.toString(),
+                    jda.userCache.size().toString(),
+                    jda.guildCache.size().toString(),
+                    vcs.toString()
                 )
             }
 
@@ -52,13 +50,11 @@ class ShardsCommand : AbstractCommand("command.shards") {
         averagePing /= shardManager.shardsTotal
 
         tableBuilder.setFooterRow(
-            listOf(
-                "Sum/Avg",
-                averagePing.toString(),
-                shardManager.userCache.size().toString(),
-                shardManager.guildCache.size().toString(),
-                totalVCs.toString()
-            )
+            "Sum/Avg",
+            averagePing.toString(),
+            shardManager.userCache.size().toString(),
+            shardManager.guildCache.size().toString(),
+            totalVCs.toString()
         )
 
         for (part in tableBuilder.build()) {
