@@ -33,10 +33,10 @@ class LeaderBoardCommand : AbstractCommand("command.leaderboard") {
         }
 
         val tableBuilder = TableBuilder(true)
-        tableBuilder.setColumns("Rank", "User", "Mel")
+        tableBuilder.setColumns("Rank", "Mel", "User")
         for ((index, pair) in userMap.toList().withIndex()) {
             val user = context.shardManager.retrieveUserById(pair.first).await()
-            tableBuilder.addRow("${index + 1 + (10 * page)}", user.asTag, "${pair.second}")
+            tableBuilder.addRow("${index + 1 + (10 * page)}", "${pair.second}", user.asTag)
         }
         val msgs = tableBuilder.build()
 
