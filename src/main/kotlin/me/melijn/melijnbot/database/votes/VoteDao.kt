@@ -34,6 +34,18 @@ class VoteDao(driverManager: DriverManager) : Dao(driverManager) {
         val sql = "INSERT INTO $table (userId, votes, streak, lastTime) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET votes = ?, streak = ?, lastTime = ?"
         driverManager.executeUpdate(sql, userId, votes, streak, lastTime, votes, streak, lastTime)
     }
+
+    suspend fun getTop(users: Int, offset: Int): Map<Long, Long> = suspendCoroutine {
+        driverManager.executeQuery("SELECT * FROM $table ORDER BY votes DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY", { rs ->
+            val map = mutableMapOf<Long, Long>()
+
+            while (rs.next()) {
+                map[rs.getLong("userId")] = rs.getLong("votes")
+            }
+
+            it.resume(map)
+        }, offset, users)
+    }
 }
 
 data class UserVote(
