@@ -6,6 +6,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.wrapper.spotify.model_objects.specification.ArtistSimplified
 import com.wrapper.spotify.model_objects.specification.Track
 import com.wrapper.spotify.model_objects.specification.TrackSimplified
+import kotlinx.coroutines.delay
 import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.audio.SongCacheWrapper
@@ -26,8 +27,8 @@ import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.VoiceChannel
 import java.lang.Integer.min
 
-const val QUEUE_LIMIT = 150
-const val DONATE_QUEUE_LIMIT = 1000
+const val QUEUE_LIMIT = 500
+const val DONATE_QUEUE_LIMIT = 5000
 
 class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
 
@@ -298,6 +299,7 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
             //LLDisabledAndNotYTSearch
             audioPlayerManager.loadItemOrdered(player, query, resultHandler)
         }, resultHandler)
+        delay(100)
     }
 
     private suspend fun loadSpotifyTrackOther(
@@ -339,22 +341,16 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     suspend fun loadSpotifyPlaylist(context: CommandContext, tracks: Array<Track>, nextPos: NextSongPosition) {
-        if (tracks.size + context.getGuildMusicPlayer().guildTrackManager.tracks.size > QUEUE_LIMIT) {
-            val msg = context.getTranslation("$root.queuelimit")
-                .withVariable("amount", QUEUE_LIMIT.toString())
-
-            sendRsp(context, msg)
-            return
-        }
+        val limit = if (isPremiumGuild(context)) QUEUE_LIMIT else DONATE_QUEUE_LIMIT
+        val slotsLeft = limit - context.getGuildMusicPlayer().guildTrackManager.trackSize()
 
         val loadedTracks = mutableListOf<Track>()
         val failedTracks = mutableListOf<Track>()
         val msg = context.getTranslation("command.play.loadingtrack" + if (tracks.size > 1) "s" else "")
-            .withVariable("trackCount", tracks.size.toString())
-            .withVariable("donateAmount", DONATE_QUEUE_LIMIT.toString())
+            .withVariable("trackCount", if (slotsLeft < tracks.size) "${slotsLeft}/${tracks.size}" else "${tracks.size}")
 
         val message = sendRspAwaitEL(context, msg)
-        for (track in tracks) {
+        for (track in tracks.take(slotsLeft)) {
             loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, true, nextPos) {
                 if (it) {
                     loadedTracks.add(track)
@@ -372,20 +368,16 @@ class AudioLoader(private val musicPlayerManager: MusicPlayerManager) {
     }
 
     suspend fun loadSpotifyAlbum(context: CommandContext, simpleTracks: Array<TrackSimplified>, nextPos: NextSongPosition) {
-        if (simpleTracks.size + context.getGuildMusicPlayer().guildTrackManager.tracks.size > QUEUE_LIMIT) {
-            val msg = context.getTranslation("$root.queuelimit")
-                .withVariable("amount", QUEUE_LIMIT.toString())
-                .withVariable("donateAmount", DONATE_QUEUE_LIMIT.toString())
-            sendRsp(context, msg)
-            return
-        }
+        val limit = if (isPremiumGuild(context)) QUEUE_LIMIT else DONATE_QUEUE_LIMIT
+        val slotsLeft = limit - context.getGuildMusicPlayer().guildTrackManager.trackSize()
 
         val loadedTracks = mutableListOf<TrackSimplified>()
         val failedTracks = mutableListOf<TrackSimplified>()
         val msg = context.getTranslation("command.play.loadingtrack" + if (simpleTracks.size > 1) "s" else "")
-            .withVariable("trackCount", simpleTracks.size.toString())
+            .withVariable("trackCount", if (slotsLeft < simpleTracks.size) "${slotsLeft}/${simpleTracks.size}" else "${simpleTracks.size}")
+
         val message = sendRspAwaitEL(context, msg)
-        for (track in simpleTracks) {
+        for (track in simpleTracks.take(slotsLeft)) {
             loadSpotifyTrack(context, YT_SELECTOR + track.name, track.artists, track.durationMs, true, nextPos) {
                 if (it) {
                     loadedTracks.add(track)
