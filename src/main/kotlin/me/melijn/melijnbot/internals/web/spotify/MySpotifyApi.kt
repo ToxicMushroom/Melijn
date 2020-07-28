@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.threading.TaskManager
 import java.io.IOException
+import kotlin.math.min
 
 class MySpotifyApi(spotifySettings: Settings.Spotify) {
 
@@ -35,7 +36,7 @@ class MySpotifyApi(spotifySettings: Settings.Spotify) {
     companion object {
         private val spotifyTrackUrl = Regex("https://open\\.spotify\\.com/track/(\\w+)(?:\\?\\S+)?")
         private val spotifyTrackUri = Regex("spotify:track:(\\w+)")
-        private val spotifyPlaylistUrl = Regex("https://open\\.spotify\\.com(?:/user/\\w+)?/playlist/(\\w+)(?:\\?\\S+)?")
+        private val spotifyPlaylistUrl = Regex("https://open\\.spotify\\.com(?:/user/.*)?/playlist/(\\w+)(?:\\?\\S+)?")
         private val spotifyPlaylistUri = Regex("spotify:(?:user:\\S+:)?playlist:(\\w+)")
         private val spotifyAlbumUrl = Regex("https://open\\.spotify\\.com/album/(\\w+)(?:\\?\\S+)?")
         private val spotifyAlbumUri = Regex("spotify:album:(\\w+)")
@@ -44,6 +45,8 @@ class MySpotifyApi(spotifySettings: Settings.Spotify) {
     }
 
 
+    // TODO provide info about current queue size and size limit -> get the correct amount of spotify tracks
+    // TODO return if all tracks were obtained from the playlist or not -> send message if not that the queue is now full
     fun getTracksFromSpotifyUrl(
         songArg: String,
         track: suspend (Track) -> Unit,
@@ -91,9 +94,34 @@ class MySpotifyApi(spotifySettings: Settings.Spotify) {
     private suspend fun acceptPlaylistResults(songArg: String, trackList: suspend (Array<Track>) -> Unit, regex: Regex) {
         val result = requireNotNull(regex.find(songArg)) { "bruh" }
         val id = result.groupValues[1]
-        val tracks = spotifyApi.getPlaylistsItems(id).build().executeAsync().await().items.map { playlistTrack ->
-            (playlistTrack.track as Track?)
-        }.filterNotNull()
+        val paginTracks = spotifyApi
+            .getPlaylistsItems(id)
+            .limit(100)
+            .build()
+            .executeAsync()
+            .await()
+        val tracks = mutableListOf<Track>()
+        tracks.addAll(
+            paginTracks.items
+                .mapNotNull { playlistTrack ->
+                    (playlistTrack.track as Track?)
+                }
+        )
+        val trackTotal = min(paginTracks.total, 1000)
+        var tracksGottenOffset = 100
+        while (trackTotal > tracksGottenOffset) {
+
+            val moreTracks = spotifyApi.getPlaylistsItems(id).limit(100).offset(tracksGottenOffset)
+                .build().executeAsync().await().items
+
+            tracksGottenOffset += moreTracks.size
+            tracks.addAll(
+                moreTracks.mapNotNull { playlistTrack ->
+                    (playlistTrack.track as Track?)
+                }
+            )
+        }
+
 
         trackList(tracks.toTypedArray())
     }

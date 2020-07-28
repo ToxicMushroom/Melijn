@@ -61,6 +61,7 @@ class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val gui
             val msg = context.getTranslation("message.music.queuelimit")
                 .withVariable("amount", QUEUE_LIMIT.toString())
                 .withVariable("donateAmount", DONATE_QUEUE_LIMIT.toString())
+                .withVariable("prefix", context.usedPrefix)
             sendRsp(context, msg)
         }
 
@@ -76,6 +77,7 @@ class GuildMusicPlayer(daoManager: DaoManager, lavaManager: LavaManager, val gui
                 val msg = context.getTranslation("message.music.queuelimit")
                     .withVariable("amount", QUEUE_LIMIT.toString())
                     .withVariable("donateAmount", DONATE_QUEUE_LIMIT.toString())
+                    .withVariable("prefix", context.usedPrefix)
                 sendRsp(context, msg)
             }
             return true
