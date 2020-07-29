@@ -80,7 +80,7 @@ object JoinLeaveUtil {
 
     suspend fun joinRole(daoManager: DaoManager, member: Member) {
         val guild = member.guild
-        if (!guild.selfMember.canInteract(member)) return
+        if (!guild.selfMember.canInteract(member) || !guild.selfMember.hasPermission(Permission.MANAGE_ROLES)) return
 
         val groups = daoManager.joinRoleGroupWrapper.joinRoleGroupCache[guild.idLong].await()
         val joinRoleInfo = daoManager.joinRoleWrapper.joinRoleCache.get(guild.idLong).await()
