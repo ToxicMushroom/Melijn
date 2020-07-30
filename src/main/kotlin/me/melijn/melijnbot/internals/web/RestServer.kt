@@ -3,8 +3,10 @@ package me.melijn.melijnbot.internals.web
 import com.sun.management.OperatingSystemMXBean
 import io.ktor.application.call
 import io.ktor.http.ContentType
+import io.ktor.request.receiveText
 import io.ktor.response.respondText
 import io.ktor.routing.get
+import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.engine.stop
@@ -166,6 +168,73 @@ class RestServer(container: Container) {
                     .toString(), jsonType)
             }
 
+            post("/guild/{id}") {
+                val id = call.parameters["id"] ?: return@post
+                if (!id.isPositiveNumber()) return@post
+
+                val guild = MelijnBot.shardManager.getGuildById(id)
+
+                val userId = call.receiveText()
+                val member = guild?.retrieveMemberById(userId)?.awaitOrNull()
+                if (member == null) {
+                    call.respondText(DataObject.empty()
+                        .put("error", "guild invalidated")
+                        .toString(), jsonType)
+                    return@post
+                }
+
+                val hasPerm = (member.hasPermission(Permission.ADMINISTRATOR) ||
+                    member.hasPermission(Permission.MANAGE_SERVER) ||
+                    member.isOwner)
+
+                if (!hasPerm) {
+                    call.respondText(DataObject.empty()
+                        .put("error", "guild invalidated")
+                        .toString(), jsonType)
+                    return@post
+                }
+
+                val guildData = DataObject.empty()
+                    .put("id", id)
+                    .put("name", guild.name)
+                    .put("icon", guild.iconId)
+
+                call.respondText { guildData.toString() }
+            }
+
+            post("/upgradeGuilds") {
+                val partialGuilds = DataArray.fromJson(call.receiveText())
+                val shardManager = MelijnBot.shardManager
+
+                val upgradedGuilds = DataArray.empty()
+
+                for (i in 0 until partialGuilds.length()) {
+                    val upgradedGuild = DataObject.empty()
+                    val partialGuild = partialGuilds.getObject(i)
+                    val isOwner = partialGuild.getBoolean("owner")
+                    val name = partialGuild.getString("name")
+                    val icon = partialGuild.getString("icon", "null")
+                    val permissions = partialGuild.getInt("permissions")
+                    val id = partialGuild.getLong("id")
+
+                    // Owner, admin or manage_guild
+                    val hasPerms = isOwner || (permissions and 0x00000020) != 0 || (permissions and 0x00000008) != 0
+                    if (!hasPerms) continue
+
+                    val fullGuild = shardManager.getGuildById(id)
+                    val hasMelijn = fullGuild?.let { true } ?: false
+                    if (!hasMelijn) continue
+
+                    upgradedGuild.put("id", "$id")
+                    upgradedGuild.put("name", name)
+                    upgradedGuild.put("icon", icon)
+
+                    upgradedGuilds.add(upgradedGuild)
+                }
+
+
+                call.respondText(upgradedGuilds.toString())
+            }
 
             get("/member/{guildId}/{userId}") {
 
