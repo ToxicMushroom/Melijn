@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.music
 
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
