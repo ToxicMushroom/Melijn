@@ -13,6 +13,7 @@ import me.melijn.melijnbot.internals.services.roles.RolesService
 import me.melijn.melijnbot.internals.services.stats.StatsService
 import me.melijn.melijnbot.internals.services.voice.VoiceScoutService
 import me.melijn.melijnbot.internals.services.voice.VoiceService
+import me.melijn.melijnbot.internals.services.votes.VoteReminderService
 import me.melijn.melijnbot.internals.web.WebManager
 import net.dv8tion.jda.api.sharding.ShardManager
 
@@ -39,6 +40,7 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
         services.add(VoiceScoutService(container, shardManager))
         services.add(DonatorService(container, shardManager))
         services.add(RolesService(daoManager.tempRoleWrapper, shardManager))
+        services.add(VoteReminderService(daoManager))
         //services.add(BrokenService(container, shardManager))
     }
 

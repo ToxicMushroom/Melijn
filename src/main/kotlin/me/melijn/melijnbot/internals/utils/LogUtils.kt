@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.*
@@ -609,5 +610,38 @@ object LogUtils {
 
             sendEmbed(daoManager.embedDisabledWrapper, pmLogChannel, eb.build())
         }
+    }
+
+    suspend fun sendReceivedVoteRewards(container: Container, userId: Long, newBalance: Long, credits: Long, streak: Int, votes: Int) {
+        val user = MelijnBot.shardManager.retrieveUserById(userId).await()
+        val pc = user.openPrivateChannel().awaitOrNull() ?: return
+
+        val extraMel = if (credits - 100 > 0) {
+            "100 + ${credits - 100}"
+        } else "100"
+        val embedder = Embedder(container.daoManager, -1, userId, container.settings.embedColor)
+            .setTitle("Vote Received")
+            .setDescription("Thanks for voting, you received **$extraMel** mel. Your new balance is **$newBalance** mel")
+            .addField("Current Streak", "$streak (${credits - 100} mel)", true)
+            .addField("Total Votes", votes.toString(), true)
+            .build()
+
+        sendEmbed(pc, embedder)
+    }
+
+    suspend fun sendVoteReminder(daoManager: DaoManager, userId: Long) {
+        val user = MelijnBot.shardManager.retrieveUserById(userId).await()
+        val pc = user.openPrivateChannel().awaitOrNull() ?: return
+
+        val streak = daoManager.voteWrapper.getUserVote(userId)?.streak ?: 0
+
+        val embedder = Embedder(daoManager, -1, userId, Container.instance.settings.embedColor)
+            .setTitle("Your vote is ready (o゜▽゜)o☆", "https://top.gg/bot/melijn/vote")
+            .setDescription("This is a reminder that you can [vote](https://top.gg/bot/melijn/vote) again.\nIn 24 hours from receiving this message your streak will otherwise be lost :c")
+            .addField("Current Streak", "$streak", true)
+            .setFooter("You can disable this reminder with >toggleVoteReminder")
+            .build()
+
+        sendEmbed(pc, embedder)
     }
 }

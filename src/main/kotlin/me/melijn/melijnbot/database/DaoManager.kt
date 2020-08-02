@@ -59,6 +59,8 @@ import me.melijn.melijnbot.database.time.TimeZoneDao
 import me.melijn.melijnbot.database.time.TimeZoneWrapper
 import me.melijn.melijnbot.database.verification.*
 import me.melijn.melijnbot.database.votes.VoteDao
+import me.melijn.melijnbot.database.votes.VoteReminderDao
+import me.melijn.melijnbot.database.votes.VoteReminderWrapper
 import me.melijn.melijnbot.database.votes.VoteWrapper
 import me.melijn.melijnbot.database.warn.WarnDao
 import me.melijn.melijnbot.database.warn.WarnWrapper
@@ -163,6 +165,8 @@ class DaoManager(dbSettings: Settings.Database) {
     val botLogStateWrapper: BotLogStateWrapper
     val removeResponseWrapper: RemoveResponseWrapper
     val removeInvokeWrapper: RemoveInvokeWrapper
+    val denyVoteReminderWrapper: DenyVoteReminderWrapper
+    val voteReminderWrapper: VoteReminderWrapper
 
     val voteWrapper: VoteWrapper
     val balanceWrapper: BalanceWrapper
@@ -261,6 +265,8 @@ class DaoManager(dbSettings: Settings.Database) {
         botLogStateWrapper = BotLogStateWrapper(BotLogStateDao(driverManager))
         removeResponseWrapper = RemoveResponseWrapper(RemoveResponsesDao(driverManager))
         removeInvokeWrapper = RemoveInvokeWrapper(RemoveInvokeDao(driverManager))
+        denyVoteReminderWrapper = DenyVoteReminderWrapper(DenyVoteReminderDao(driverManager))
+        voteReminderWrapper = VoteReminderWrapper(VoteReminderDao(driverManager))
 
         voteWrapper = VoteWrapper(VoteDao(driverManager))
         balanceWrapper = BalanceWrapper(BalanceDao(driverManager))

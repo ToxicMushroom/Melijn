@@ -3,6 +3,8 @@ package me.melijn.melijnbot.internals.web
 import com.sun.management.OperatingSystemMXBean
 import io.ktor.application.call
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.request.header
 import io.ktor.request.receiveText
 import io.ktor.response.respondText
 import io.ktor.routing.get
@@ -12,6 +14,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.engine.stop
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -311,6 +314,29 @@ class RestServer(container: Container) {
 
             get("/timezones") {
                 call.respondText(TimeZone.getAvailableIDs().toString(), jsonType)
+            }
+
+            post("/voted") {
+                if (call.request.header("Authorization") != container.settings.tokens.melijnRest) {
+                    call.respondText(status = HttpStatusCode.Forbidden) { "bruh" }
+                    return@post
+                }
+
+                val body = DataObject.fromJson(call.receiveText())
+                TaskManager.async {
+                    val credits = body.getLong("mel")
+                    val userId = body.getLong("user")
+                    val votes = body.getInt("votes")
+                    val streak = body.getInt("streak")
+                    val wrapper = container.daoManager.balanceWrapper
+
+                    val newBalance = wrapper.balanceCache[userId].await() + credits
+                    wrapper.setBalance(userId, newBalance)
+
+                    LogUtils.sendReceivedVoteRewards(container, userId, newBalance, credits, streak, votes)
+                }
+
+                call.respondText { "success" }
             }
 
             //Has to be registered last to not override other paths
