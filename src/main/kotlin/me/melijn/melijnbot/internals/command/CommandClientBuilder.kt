@@ -211,7 +211,8 @@ class CommandClientBuilder(private val container: Container) {
         BassBoostCommand(),
         NightcoreCommand(),
         LeaderBoardCommand(),
-        TopVotersCommand()
+        TopVotersCommand(),
+        ToggleVoteReminderCommand()
     )
 
     init {
@@ -222,18 +223,10 @@ class CommandClientBuilder(private val container: Container) {
         return CommandClient(commands.toSet(), container)
     }
 
-    private fun addCommand(command: AbstractCommand): CommandClientBuilder {
-        commands.add(command)
-        TaskManager.async {
-            container.daoManager.commandWrapper.insert(command)
-        }
-        return this
-    }
-
     fun loadCommands(): CommandClientBuilder {
         logger.info("Loading ${commands.size} commands...")
-        commands.forEach { command ->
-            addCommand(command)
+        TaskManager.async {
+            container.daoManager.commandWrapper.bulkInsert(commands)
         }
         logger.info("Loaded ${commands.size} commands")
         return this
