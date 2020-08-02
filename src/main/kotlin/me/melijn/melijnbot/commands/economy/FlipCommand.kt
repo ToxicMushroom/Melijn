@@ -5,6 +5,7 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.utils.getLongFromArgNMessage
+import me.melijn.melijnbot.internals.utils.isInside
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.withVariable
@@ -45,10 +46,10 @@ class FlipCommand : AbstractCommand("command.flip") {
         val heads = context.getTranslation("$root.heads")
         val tails = context.getTranslation("$root.tails")
         when {
-            context.args[1].equals("heads", true) -> {
+            context.args[1].isInside("heads", "head", ignoreCase = true) -> {
                 flipCoin(context, amount, cash, heads, tails, 1)
             }
-            context.args[1].equals("tails", true) -> {
+            context.args[1].isInside("tails", "tail", ignoreCase = true) -> {
                 flipCoin(context, amount, cash, tails, heads, 0)
             }
             else -> {
@@ -56,7 +57,6 @@ class FlipCommand : AbstractCommand("command.flip") {
                 return
             }
         }
-
     }
 
     private suspend fun flipCoin(context: CommandContext, bet: Long, cash: Long, winning: String, losing: String, winCon: Int) {
