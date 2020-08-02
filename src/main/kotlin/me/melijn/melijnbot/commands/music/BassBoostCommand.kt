@@ -37,8 +37,8 @@ class BassBoostCommand : AbstractCommand("command.bassboost") {
             val mode = context.getTranslation("$root." + when (id) {
                 0 -> "normal"
                 1 -> "light"
-                2 -> "hard"
-                3 -> "extreme"
+                2 -> "harder"
+                3 -> "hard"
                 else -> return
             })
 
@@ -68,8 +68,8 @@ class BassBoostCommand : AbstractCommand("command.bassboost") {
                 val mode = context.getTranslation("$parent." + when (id) {
                     0 -> "normal"
                     1 -> "light"
-                    2 -> "hard"
-                    3 -> "extreme"
+                    2 -> "harder"
+                    3 -> "hard"
                     else -> return
                 })
 
@@ -88,13 +88,13 @@ class BassBoostCommand : AbstractCommand("command.bassboost") {
                         customBass[context.guildId] = 1
                         "light"
                     }
-                    "hard" -> {
+                    "harder" -> {
                         customBass[context.guildId] = 2
-                        "hard"
+                        "harder"
                     }
-                    "extreme" -> {
+                    "hard" -> {
                         customBass[context.guildId] = 3
-                        "extreme"
+                        "hard"
                     }
                     else -> {
                         sendSyntax(context)
@@ -112,10 +112,10 @@ class BassBoostCommand : AbstractCommand("command.bassboost") {
     companion object {
         val customBass = mutableMapOf<Long, Int>()
         val bassProfiles = listOf(
-            GainProfile(0.25f, 0.25f, 0.25f, 0.25f, 0.125f, 0.0625f, 0.05f, 0.025f, 0.0f, -0.025f, -0.0625f, -0.0625f, -0.0625f, -0.0625f, -0.0625f), // 0 - normal
-            GainProfile(), // 1 - light
-            GainProfile(0.4f, 0.3f, 0.15f, 0.05f, 0.0f, -0.05f, -0.1f, -0.15f, -0.15f, -0.15f, -0.15f, -0.15f, -0.15f, -0.15f, -0.15f), // 2 - harder
-            GainProfile() // 3 - hard
+            GainProfile(0.25f, 0.15f), // 0 - normal
+            GainProfile(0.20f, 0.10f), // 1 - light
+            GainProfile(0.35f, 0.20f), // 2 - harder
+            GainProfile(0.50f, 0.25f)  // 3 - hard
         )
     }
 
