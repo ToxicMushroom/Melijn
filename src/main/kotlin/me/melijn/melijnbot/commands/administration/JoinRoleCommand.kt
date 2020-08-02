@@ -172,8 +172,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 val list = wrapper.joinRoleGroupCache[context.guildId].await().sortedBy { (groupName) ->
                     groupName
                 }
-                val index = getIntegerFromArgNMessage(context, 0, 1, list.size)
-                    ?: return
+                val index = (getIntegerFromArgNMessage(context, 0, 1, list.size) ?: return) - 1
 
                 val group = list[index]
 
