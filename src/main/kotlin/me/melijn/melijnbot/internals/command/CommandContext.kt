@@ -182,7 +182,7 @@ class CommandContext(
 
     suspend fun getTranslation(path: String): String = i18n.getTranslation(this, path)
     suspend fun getTimeZoneId(): ZoneId {
-        val guildTimezone = guildId.let {
+        val guildTimezone = guildN?.idLong?.let {
             val zoneId = daoManager.timeZoneWrapper.timeZoneCache.get(it).await()
             if (zoneId?.isBlank() == true) null
             else ZoneId.of(zoneId)
