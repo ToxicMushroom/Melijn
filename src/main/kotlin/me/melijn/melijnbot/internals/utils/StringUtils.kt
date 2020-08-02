@@ -245,3 +245,6 @@ fun Int.toHexString(size: Int = 6): String {
     return String.format("#%0${size}X", 0xFFFFFF and this)
 }
 
+fun String.isInside(vararg stringList: String, ignoreCase: Boolean): Boolean {
+    return stringList.any { it.equals(this, ignoreCase) }
+}
