@@ -14,8 +14,8 @@ class VoteReminderService(val daoManager: DaoManager) : Service("vote-reminder",
         val denyVoteWrapper = daoManager.denyVoteReminderWrapper
 
         for (userId in votes) {
-            val shouldRemind = denyVoteWrapper.contains(userId)
-            if (!shouldRemind) continue
+            val denied = denyVoteWrapper.contains(userId)
+            if (denied) continue
             LogUtils.sendVoteReminder(daoManager, userId)
         }
 
