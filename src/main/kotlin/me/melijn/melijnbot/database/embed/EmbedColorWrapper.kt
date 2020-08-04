@@ -7,7 +7,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class EmbedColorWrapper(val taskManager: TaskManager, private val embedColorDao: EmbedColorDao) {
+class EmbedColorWrapper(private val embedColorDao: EmbedColorDao) {
 
     val embedColorCache = CacheBuilder.newBuilder()
         .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
@@ -17,7 +17,7 @@ class EmbedColorWrapper(val taskManager: TaskManager, private val embedColorDao:
 
     private fun getColor(guildId: Long): CompletableFuture<Int> {
         val future = CompletableFuture<Int>()
-        taskManager.async {
+       TaskManager.async {
             val int = embedColorDao.get(guildId)
             future.complete(int)
         }

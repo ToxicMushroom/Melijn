@@ -24,8 +24,8 @@ class QueueCommand : AbstractCommand("command.queue") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val trackManager = context.musicPlayerManager.getGuildMusicPlayer(context.guild).guildTrackManager
-        val allTracks = trackManager.tracks.toMutableList()
+        val trackManager = context.getGuildMusicPlayer().guildTrackManager
+        val allTracks = trackManager.tracks
 
         var description = ""
 
@@ -39,7 +39,7 @@ class QueueCommand : AbstractCommand("command.queue") {
 
         var totalDuration = cTrack.duration
 
-        val status = context.getTranslation(if (trackManager.iPlayer.isPaused) "paused" else "playing")
+        val status = context.getTranslation(if (trackManager.iPlayer.paused) "paused" else "playing")
         description += "[$status](${cTrack.info.uri}) - **${cTrack.info.title}** `[${getDurationString(trackManager.iPlayer.trackPosition)} / ${getDurationString(cTrack.duration)}]`"
         for ((index, track) in allTracks.withIndex()) {
             totalDuration += track.duration

@@ -1,11 +1,11 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
-import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.events.eventutil.FilterUtil
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.*
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyLogChannelByType
@@ -19,10 +19,12 @@ import java.awt.Color
 
 class MessageUpdateListener(container: Container) : AbstractListener(container) {
 
-    override fun onEvent(event: GenericEvent) = runBlocking {
+    override fun onEvent(event: GenericEvent) {
         if (event is GuildMessageUpdateEvent) {
-            onMessageUpdate(event)
-            FilterUtil.handleFilter(container, event.message)
+            TaskManager.async(event.author, event.channel) {
+                onMessageUpdate(event)
+                FilterUtil.handleFilter(container, event.message)
+            }
         }
     }
 
@@ -48,7 +50,7 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
         val oldContent = daoMessage.content
         daoMessage.content = newContent
 
-        container.taskManager.async {
+        TaskManager.async(event.author, event.channel) {
             messageWrapper.setMessage(daoMessage)
 
             val channel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.EDITED_MESSAGE, true)
@@ -58,7 +60,6 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
     }
 
     private suspend fun postMessageUpdateLog(event: GuildMessageUpdateEvent, logChannel: TextChannel, daoMessage: DaoMessage, oldContent: String) {
-        val embedBuilder = EmbedBuilder()
         val daoManager = container.daoManager
         val zoneId = getZoneId(daoManager, event.guild.idLong)
         val language = getLanguage(daoManager, -1, event.guild.idLong)
@@ -74,10 +75,10 @@ class MessageUpdateListener(container: Container) : AbstractListener(container) 
             .withVariable("editedTime", System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
             .withVariable("link", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.message.id}")
 
-        embedBuilder.setColor(Color.decode("#A1DAC3"))
-        embedBuilder.setThumbnail(event.author.effectiveAvatarUrl)
-
-        embedBuilder.setTitle(title)
+        val embedBuilder = EmbedBuilder()
+            .setColor(Color(0xA1DAC3))
+            .setThumbnail(event.author.effectiveAvatarUrl)
+            .setTitle(title)
 
         if (description.length > 2048) {
             val parts = StringUtils.splitMessageWithCodeBlocks(description, lang = "LDIF").toMutableList()

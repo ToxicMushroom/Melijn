@@ -8,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class VerificationTypeWrapper(val taskManager: TaskManager, private val verificationTypeDao: VerificationTypeDao) {
+class VerificationTypeWrapper(private val verificationTypeDao: VerificationTypeDao) {
 
     val verificationTypeCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -18,7 +18,7 @@ class VerificationTypeWrapper(val taskManager: TaskManager, private val verifica
 
     private fun getType(guildId: Long): CompletableFuture<VerificationType> {
         val future = CompletableFuture<VerificationType>()
-        taskManager.async {
+       TaskManager.async {
             val type = verificationTypeDao.get(guildId)
             future.complete(type)
         }

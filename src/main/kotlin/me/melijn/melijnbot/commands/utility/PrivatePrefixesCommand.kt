@@ -70,7 +70,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             }
 
             val wrapper = context.daoManager.userPrefixWrapper
-            val ppList = wrapper.prefixCache[context.guildId].await()
+            val ppList = wrapper.prefixCache[context.authorId].await()
             if (ppList.size >= PRIVATE_PREFIXES_LIMIT && !isPremiumUser(context)) {
                 val replaceMap = mapOf(
                     "limit" to "$PRIVATE_PREFIXES_LIMIT",

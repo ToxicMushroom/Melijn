@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
+import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.*
@@ -44,7 +45,7 @@ object LogUtils {
 
         val eb = EmbedBuilder()
             .setTitle(title)
-            .setColor(Color.decode("#7289DA"))
+            .setColor(Color(0x7289DA))
             .setDescription(cause)
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
@@ -169,7 +170,7 @@ object LogUtils {
     }
 
     suspend fun addMusicPlayerResumed(context: CommandContext) {
-        val trackManager = context.guildMusicPlayer.guildTrackManager
+        val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val zoneId = getZoneId(context.daoManager, context.guild.idLong)
         val track = trackManager.iPlayer.playingTrack ?: return
 
@@ -191,14 +192,14 @@ object LogUtils {
             .addField(userIdTitle, context.author.asTag, true)
             .addField(channel, vc.name, true)
             .addField(channelId, vc.id, true)
-            .setColor(Color.decode("#43b581"))
+            .setColor(Color(0x43b581))
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         trackManager.resumeMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
     }
 
     suspend fun addMusicPlayerPaused(context: CommandContext) {
-        val trackManager = context.guildMusicPlayer.guildTrackManager
+        val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val zoneId = getZoneId(context.daoManager, context.guild.idLong)
         val track = trackManager.iPlayer.playingTrack ?: return
 
@@ -220,7 +221,7 @@ object LogUtils {
             .addField(userIdTitle, context.author.asTag, true)
             .addField(channel, vc.name, true)
             .addField(channelId, vc.id, true)
-            .setColor(Color.decode("#c4e667"))
+            .setColor(Color(0xc4e667))
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         trackManager.pauseMomentMessageMap[(track.userData as TrackUserData).currentTime] = eb.build()
@@ -247,15 +248,15 @@ object LogUtils {
         eb.addField(channelId, vc?.id ?: "null", true)
         eb.addField(cause, exception.message ?: "/", false)
 
-        eb.setColor(Color.decode("#cc1010"))
+        eb.setColor(Color(0xcc1010))
         eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         sendEmbed(daoManager.embedDisabledWrapper, logChannel, eb.build())
     }
 
     suspend fun addMusicPlayerNewTrack(context: CommandContext, track: AudioTrack) {
-        val trackManager = context.guildMusicPlayer.guildTrackManager
-        val eb = Embedder(context.daoManager, context.guildId, -1, Color.decode("#2f3136").rgb)
+        val trackManager = context.getGuildMusicPlayer().guildTrackManager
+        val eb = Embedder(context.daoManager, context.guildId, -1, Color(0x2f3136).rgb)
         val zoneId = getZoneId(context.daoManager, context.guild.idLong)
         val title = context.getTranslation("logging.music.newtrack.title")
 
@@ -272,11 +273,11 @@ object LogUtils {
         eb.setDescription("[${track.info.title}](${track.info.uri})")
         eb.addField(userTitle, context.author.asTag, true)
         eb.addField(userIdTitle, context.author.id, true)
-        eb.setColor(Color.decode("#2f3136"))
+        eb.setColor(Color(0x2f3136))
         eb.setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
         if (vc == null) {
-            context.taskManager.asyncAfter(2000) {
+            TaskManager.asyncAfter(2000) {
                 val vc2 = context.lavaManager.getConnectedChannel(context.guild)
                 eb.addField(channel, vc2?.name ?: "null", true)
                 eb.addField(channelId, vc2?.id ?: "null", true)
@@ -295,7 +296,7 @@ object LogUtils {
         val zoneId = getZoneId(daoManager, guild.idLong)
 
         val trackManager = lavaManager.musicPlayerManager.getGuildMusicPlayer(guild).guildTrackManager
-        val eb = Embedder(daoManager, guild.idLong, -1, Color.decode("#2f3136").rgb)
+        val eb = Embedder(daoManager, guild.idLong, -1, Color(0x2f3136).rgb)
 
         val title = i18n.getTranslation(language, "logging.music.newtrack.title")
 
@@ -327,7 +328,7 @@ object LogUtils {
 
         val eb = EmbedBuilder()
             .setTitle(title)
-            .setColor(Color.decode("#CC0000"))
+            .setColor(Color(0xCC0000))
             .setDescription(cause)
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
@@ -344,7 +345,7 @@ object LogUtils {
 
         val eb = EmbedBuilder()
             .setTitle(title)
-            .setColor(Color.decode("#CC0000"))
+            .setColor(Color(0xCC0000))
             .setDescription(cause)
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
@@ -465,7 +466,7 @@ object LogUtils {
 
         val eb = EmbedBuilder()
             .setTitle(title)
-            .setColor(Color.decode("#c596ff"))
+            .setColor(Color(0xc596ff))
             .setDescription("```LDIF\n$dmBody```")
 
         val pc = message.author.openPrivateChannel().awaitOrNull()
@@ -484,7 +485,7 @@ object LogUtils {
         sendEmbed(daoManager.embedDisabledWrapper, lc, eb.build())
     }
 
-    suspend fun sendBirthdayMessage(daoManager: DaoManager, taskManager: TaskManager, textChannel: TextChannel, member: Member, birthYear: Int?) {
+    suspend fun sendBirthdayMessage(daoManager: DaoManager, textChannel: TextChannel, member: Member, birthYear: Int?) {
         val guildId = textChannel.guild.idLong
         val messageType = MessageType.BIRTHDAY
         val language = getLanguage(daoManager, guildId)
@@ -494,7 +495,7 @@ object LogUtils {
             val msg = i18n.getTranslation(language, "logging.birthday")
                 .withVariable("user", member.asTag)
 
-            sendRspOrMsg(textChannel, taskManager, daoManager, msg)
+            sendRspOrMsg(textChannel, daoManager, msg)
         } else {
             if (MessageCommandUtil.removeMessageIfEmpty(guildId, messageType, message, messageWrapper)) return
 
@@ -519,7 +520,7 @@ object LogUtils {
 
         val eb = EmbedBuilder()
             .setTitle(title)
-            .setColor(Color.decode("#CC0000"))
+            .setColor(Color(0xCC0000))
             .setDescription(cause)
             .setFooter(System.currentTimeMillis().asEpochMillisToDateTime(zoneId))
 
@@ -582,7 +583,7 @@ object LogUtils {
         val ebs = mutableListOf<EmbedBuilder>()
         val embedBuilder = EmbedBuilder()
             .setTitle(title)
-            .setColor(Color.decode("#927ca6"))
+            .setColor(Color(0x927ca6))
 
         if (description.length > MessageEmbed.TEXT_MAX_LENGTH) {
             val parts = StringUtils.splitMessage(description, maxLength = MessageEmbed.TEXT_MAX_LENGTH)
@@ -590,7 +591,7 @@ object LogUtils {
             ebs.add(embedBuilder)
             for (part in parts.subList(1, parts.size)) {
                 val embedBuilder2 = EmbedBuilder()
-                embedBuilder2.setColor(Color.decode("#927ca6"))
+                embedBuilder2.setColor(Color(0x927ca6))
                 embedBuilder2.setDescription(part)
                 ebs.add(embedBuilder2)
             }
@@ -609,5 +610,38 @@ object LogUtils {
 
             sendEmbed(daoManager.embedDisabledWrapper, pmLogChannel, eb.build())
         }
+    }
+
+    suspend fun sendReceivedVoteRewards(container: Container, userId: Long, newBalance: Long, credits: Long, streak: Int, votes: Int) {
+        val user = MelijnBot.shardManager.retrieveUserById(userId).await()
+        val pc = user.openPrivateChannel().awaitOrNull() ?: return
+
+        val extraMel = if (credits - 100 > 0) {
+            "100 + ${credits - 100}"
+        } else "100"
+        val embedder = Embedder(container.daoManager, -1, userId, container.settings.embedColor)
+            .setTitle("Vote Received")
+            .setDescription("Thanks for voting, you received **$extraMel** mel. Your new balance is **$newBalance** mel")
+            .addField("Current Streak", "$streak (${credits - 100} mel)", true)
+            .addField("Total Votes", votes.toString(), true)
+            .build()
+
+        sendEmbed(pc, embedder)
+    }
+
+    suspend fun sendVoteReminder(daoManager: DaoManager, userId: Long) {
+        val user = MelijnBot.shardManager.retrieveUserById(userId).await()
+        val pc = user.openPrivateChannel().awaitOrNull() ?: return
+
+        val streak = daoManager.voteWrapper.getUserVote(userId)?.streak ?: 0
+
+        val embedder = Embedder(daoManager, -1, userId, Container.instance.settings.embedColor)
+            .setTitle("Your vote is ready (o゜▽゜)o☆", "https://top.gg/bot/melijn/vote")
+            .setDescription("This is a reminder that you can [vote](https://top.gg/bot/melijn/vote) again.\nIn 24 hours from receiving this message your streak will otherwise be lost :c")
+            .addField("Current Streak", "$streak", true)
+            .setFooter("You can disable this reminder with >toggleVoteReminder")
+            .build()
+
+        sendEmbed(pc, embedder)
     }
 }

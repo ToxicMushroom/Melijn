@@ -3,39 +3,56 @@ package me.melijn.melijnbot.internals.utils
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.BasicAudioPlaylist
-import lavalink.client.LavalinkUtil
-import lavalink.client.io.LavalinkRestClient
+import kotlinx.coroutines.future.await
+import me.melijn.llklient.io.LavalinkRestClient
+import me.melijn.llklient.utils.LavalinkUtil
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.SearchType
 import me.melijn.melijnbot.internals.music.SuspendingAudioLoadResultHandler
-import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+val http = Regex("^(?:(?:https?)://)(?:\\S+(?::\\S*)?@)?(?:(?!10(?:\\.\\d{1,3}){3})(?!127(?:\\.\\d{1,3}){3})(?!169\\.254(?:\\.\\d{1,3}){2})(?!192\\.168(?:\\.\\d{1,3}){2})(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\x{00a1}-\\x{ffff}0-9]+-?)*[a-z\\x{00a1}-\\x{ffff}0-9]+)(?:\\.(?:[a-z\\x{00a1}-\\x{ffff}0-9]+-?)*[a-z\\x{00a1}-\\x{ffff}0-9]+)*(?:\\.(?:[a-z\\x{00a1}-\\x{ffff}]{2,})))(?::\\d{2,5})?(?:/[^\\s]*)?$")
+
+
+private const val PROTOCOL_REGEX = "(?:http://|https://|)"
+private const val DOMAIN_REGEX = "(?:www\\.|m\\.|music\\.|)youtube\\.com"
+private const val SHORT_DOMAIN_REGEX = "(?:www\\.|)youtu\\.be"
+val yt1 = Regex("^${PROTOCOL_REGEX}${DOMAIN_REGEX}/.*", RegexOption.IGNORE_CASE)
+val yt2 = Regex("^${PROTOCOL_REGEX}${SHORT_DOMAIN_REGEX}/.*", RegexOption.IGNORE_CASE)
 
 class YTSearch {
+
+    companion object {
+        fun isUnknownHTTP(query: String): Boolean {
+            return if (http.matches(query)) {
+                !(query.startsWith("https://twitch.tv/", true) ||
+                    yt1.matches(query) ||
+                    yt2.matches(query) ||
+                    query.startsWith("https://soundcloud.com/", true) ||
+                    query.startsWith("https://vimeo.com/", true) ||
+                    query.startsWith("https://getyarn.io/", true))
+            } else {
+                false
+            }
+        }
+    }
 
     private val youtubeService: ExecutorService = Executors.newCachedThreadPool { r: Runnable? -> Thread(r, "Youtube-Search-Thread") }
 
 
     fun search(
-        guild: Guild, query: String, searchType: SearchType,
-        audioTrackCallBack: suspend (audioTrack: List<AudioTrack>) -> Unit,
+        query: String, searchType: SearchType, audioTrackCallBack: suspend (audioTrack: List<AudioTrack>) -> Unit,
         llDisabledAndNotYT: suspend () -> Unit,
         lpCallback: SuspendingAudioLoadResultHandler
     ) = youtubeService.launch {
         val lManager = Container.instance.lavaManager
         if (lManager.lavalinkEnabled) {
-            val prem = Container.instance.daoManager.musicNodeWrapper.isPremium(guild.idLong)
-            val llink = if (prem && lManager.premiumLavaLink != null) {
-                lManager.premiumLavaLink
-            } else {
-                lManager.jdaLavaLink
-            }
+            val llink = lManager.jdaLavaLink
 
-            val restClient = llink?.getLink(guild)?.getNode(true)?.restClient
+            val restClient = llink?.loadBalancer?.getRandomSocket("normal")?.restClient
             val tracks = when (searchType) {
                 SearchType.SC -> {
                     restClient?.getSoundCloudSearchResult(query)?.await()
@@ -44,10 +61,16 @@ class YTSearch {
                     restClient?.getYoutubeSearchResult(query)?.await()
                 }
                 else -> {
-                    restClient?.loadItem(query, lpCallback)
+                    if (isUnknownHTTP(query)) {
+                        val httpRestClient = llink?.loadBalancer?.getRandomSocket("http")?.restClient
+                        httpRestClient?.loadItem(query, lpCallback)
+                    } else {
+                        restClient?.loadItem(query, lpCallback)
+                    }
                     return@launch
                 }
             }
+
             if (tracks != null) {
                 audioTrackCallBack(tracks)
                 return@launch
@@ -69,8 +92,7 @@ suspend fun consumeCallback(callback: SuspendingAudioLoadResultHandler): suspend
             return@label
         }
         try {
-            val loadType = loadResult.getString("loadType")
-            when (loadType) {
+            when (val loadType = loadResult.getString("loadType")) {
                 "TRACK_LOADED" -> {
                     val trackDataSingle = loadResult.getArray("tracks")
                     val trackObject = trackDataSingle.getObject(0)

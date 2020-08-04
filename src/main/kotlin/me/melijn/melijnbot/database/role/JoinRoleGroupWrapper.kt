@@ -8,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class JoinRoleGroupWrapper(val taskManager: TaskManager, private val joinRoleGroupDao: JoinRoleGroupDao) {
+class JoinRoleGroupWrapper(private val joinRoleGroupDao: JoinRoleGroupDao) {
 
     val joinRoleGroupCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -18,7 +18,7 @@ class JoinRoleGroupWrapper(val taskManager: TaskManager, private val joinRoleGro
 
     private fun getList(guildId: Long): CompletableFuture<List<JoinRoleGroupInfo>> {
         val future = CompletableFuture<List<JoinRoleGroupInfo>>()
-        taskManager.async {
+       TaskManager.async {
             val list = joinRoleGroupDao.get(guildId)
             future.complete(list)
         }

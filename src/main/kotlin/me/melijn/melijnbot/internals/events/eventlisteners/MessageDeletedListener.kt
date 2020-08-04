@@ -5,6 +5,7 @@ import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.internals.events.AbstractListener
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.translation.getLanguage
@@ -35,7 +36,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
     override fun onEvent(event: GenericEvent) {
         if (event is GuildMessageDeleteEvent) {
-            container.taskManager.async {
+            TaskManager.async(event.channel) {
                 onGuildMessageDelete(event)
                 removePurgeIdMaybe(event)
             }
@@ -133,7 +134,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
         val ebs = getGeneralEmbedBuilder(msg, event, messageAuthor, messageAuthor.idLong)
         for ((index, eb) in ebs.withIndex()) {
-            eb.setColor(Color.decode("#000001"))
+            eb.setColor(Color(0x000001))
 
             if (index == ebs.size - 1) {
                 val language = getLanguage(container.daoManager, -1, event.guild.idLong)
@@ -153,7 +154,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
 
         val ebs = getGeneralEmbedBuilder(msg, event, messageAuthor, deleterMember.idLong)
         for ((index, eb) in ebs.withIndex()) {
-            eb.setColor(Color.decode("#000001"))
+            eb.setColor(Color(0x000001))
             if (index == ebs.size - 1) {
                 val language = getLanguage(container.daoManager, -1, event.guild.idLong)
                 val footer = i18n.getTranslation(language, "listener.message.deletion.log.footer")

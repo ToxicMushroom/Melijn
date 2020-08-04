@@ -8,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class SpamGroupWrapper(val taskManager: TaskManager, private val spamGroupDao: SpamGroupDao) {
+class SpamGroupWrapper(private val spamGroupDao: SpamGroupDao) {
 
     val spamGroupCache = CacheBuilder.newBuilder()
         .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
@@ -18,7 +18,7 @@ class SpamGroupWrapper(val taskManager: TaskManager, private val spamGroupDao: S
 
     private fun getGroups(guildId: Long): CompletableFuture<List<SpamGroup>> {
         val future = CompletableFuture<List<SpamGroup>>()
-        taskManager.async {
+       TaskManager.async {
             val mode = spamGroupDao.get(guildId)
             future.complete(mode)
         }

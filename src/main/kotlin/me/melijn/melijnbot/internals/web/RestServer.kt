@@ -3,20 +3,26 @@ package me.melijn.melijnbot.internals.web
 import com.sun.management.OperatingSystemMXBean
 import io.ktor.application.call
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.request.header
+import io.ktor.request.receiveText
 import io.ktor.response.respondText
 import io.ktor.routing.get
+import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.engine.stop
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
-import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.future.await
+import kotlinx.coroutines.joinAll
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
-import me.melijn.melijnbot.internals.services.voice.VOICE_SAFE
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
@@ -54,8 +60,8 @@ class RestServer(container: Container) {
                 }
                 val totalJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.max shr 20
                 val usedJVMMem = ManagementFactory.getMemoryMXBean().heapMemoryUsage.used shr 20
-                val threadPoolExecutor = container.taskManager.executorService as ThreadPoolExecutor
-                val scheduledExecutorService = container.taskManager.scheduledExecutorService as ThreadPoolExecutor
+                val threadPoolExecutor = TaskManager.executorService as ThreadPoolExecutor
+                val scheduledExecutorService = TaskManager.scheduledExecutorService as ThreadPoolExecutor
 
                 val dataObject = DataObject.empty()
                 dataObject.put("bot", DataObject.empty()
@@ -83,37 +89,35 @@ class RestServer(container: Container) {
                 val players = container.lavaManager.musicPlayerManager.getPlayers()
 
 
-                VOICE_SAFE.withPermit {
-                    for (shard in shardManager.shardCache) {
-                        var queuedTracks = 0
-                        var musicPlayers = 0
+                for (shard in shardManager.shardCache) {
+                    var queuedTracks = 0
+                    var musicPlayers = 0
 
 
-                        for (player in players.values) {
-                            if (shard.guildCache.getElementById(player.guildId) != null) {
-                                if (player.guildTrackManager.iPlayer.playingTrack != null) {
-                                    musicPlayers++
-                                }
-                                queuedTracks += player.guildTrackManager.trackSize()
+                    for (player in players.values) {
+                        if (shard.guildCache.getElementById(player.guildId) != null) {
+                            if (player.guildTrackManager.iPlayer.playingTrack != null) {
+                                musicPlayers++
                             }
+                            queuedTracks += player.guildTrackManager.trackSize()
                         }
-
-
-                        val dataObject = DataObject.empty()
-                        dataObject
-                            .put("guildCount", shard.guildCache.size())
-                            .put("userCount", shard.userCache.size())
-                            .put("connectedVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shard))
-                            .put("listeningVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shard, true))
-                            .put("ping", shard.gatewayPing)
-                            .put("status", shard.status)
-                            .put("queuedTracks", queuedTracks)
-                            .put("musicPlayers", musicPlayers)
-                            .put("responses", shard.responseTotal)
-                            .put("id", shard.shardInfo.shardId)
-
-                        dataArray.add(dataObject)
                     }
+
+
+                    val dataObject = DataObject.empty()
+                    dataObject
+                        .put("guildCount", shard.guildCache.size())
+                        .put("userCount", shard.userCache.size())
+                        .put("connectedVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shard))
+                        .put("listeningVoiceChannels", VoiceUtil.getConnectedChannelsAmount(shard, true))
+                        .put("ping", shard.gatewayPing)
+                        .put("status", shard.status)
+                        .put("queuedTracks", queuedTracks)
+                        .put("musicPlayers", musicPlayers)
+                        .put("responses", shard.responseTotal)
+                        .put("id", shard.shardInfo.shardId)
+
+                    dataArray.add(dataObject)
                 }
                 call.respondText(dataArray.toString(), jsonType)
             }
@@ -169,6 +173,73 @@ class RestServer(container: Container) {
                     .toString(), jsonType)
             }
 
+            post("/guild/{id}") {
+                val id = call.parameters["id"] ?: return@post
+                if (!id.isPositiveNumber()) return@post
+
+                val guild = MelijnBot.shardManager.getGuildById(id)
+
+                val userId = call.receiveText()
+                val member = guild?.retrieveMemberById(userId)?.awaitOrNull()
+                if (member == null) {
+                    call.respondText(DataObject.empty()
+                        .put("error", "guild invalidated")
+                        .toString(), jsonType)
+                    return@post
+                }
+
+                val hasPerm = (member.hasPermission(Permission.ADMINISTRATOR) ||
+                    member.hasPermission(Permission.MANAGE_SERVER) ||
+                    member.isOwner)
+
+                if (!hasPerm) {
+                    call.respondText(DataObject.empty()
+                        .put("error", "guild invalidated")
+                        .toString(), jsonType)
+                    return@post
+                }
+
+                val guildData = DataObject.empty()
+                    .put("id", id)
+                    .put("name", guild.name)
+                    .put("icon", guild.iconId)
+
+                call.respondText { guildData.toString() }
+            }
+
+            post("/upgradeGuilds") {
+                val partialGuilds = DataArray.fromJson(call.receiveText())
+                val shardManager = MelijnBot.shardManager
+
+                val upgradedGuilds = DataArray.empty()
+
+                for (i in 0 until partialGuilds.length()) {
+                    val upgradedGuild = DataObject.empty()
+                    val partialGuild = partialGuilds.getObject(i)
+                    val isOwner = partialGuild.getBoolean("owner")
+                    val name = partialGuild.getString("name")
+                    val icon = partialGuild.getString("icon", "null")
+                    val permissions = partialGuild.getInt("permissions")
+                    val id = partialGuild.getLong("id")
+
+                    // Owner, admin or manage_guild
+                    val hasPerms = isOwner || (permissions and 0x00000020) != 0 || (permissions and 0x00000008) != 0
+                    if (!hasPerms) continue
+
+                    val fullGuild = shardManager.getGuildById(id)
+                    val hasMelijn = fullGuild?.let { true } ?: false
+                    if (!hasMelijn) continue
+
+                    upgradedGuild.put("id", "$id")
+                    upgradedGuild.put("name", name)
+                    upgradedGuild.put("icon", icon)
+
+                    upgradedGuilds.add(upgradedGuild)
+                }
+
+
+                call.respondText(upgradedGuilds.toString())
+            }
 
             get("/member/{guildId}/{userId}") {
 
@@ -208,7 +279,6 @@ class RestServer(container: Container) {
                     .toString(), jsonType)
             }
 
-
             get("/translate/{language}/{path}") {
                 val lang = call.parameters["language"] ?: return@get
                 val path = call.parameters["path"] ?: return@get
@@ -225,7 +295,6 @@ class RestServer(container: Container) {
                 val data = i18n.getTranslations(lang)
                 call.respondText(data.toString(), jsonType)
             }
-
 
             get("/fullCommands") {
                 val dataObject = DataObject.empty()
@@ -244,7 +313,105 @@ class RestServer(container: Container) {
             }
 
             get("/timezones") {
-                call.respondText(TimeZone.getAvailableIDs().toString(), jsonType)
+                call.respondText(DataArray.fromCollection(TimeZone.getAvailableIDs().toList()).toString(), jsonType)
+            }
+
+            post("/voted") {
+                if (call.request.header("Authorization") != container.settings.tokens.melijnRest) {
+                    call.respondText(status = HttpStatusCode.Forbidden) { "bruh" }
+                    return@post
+                }
+
+                val body = DataObject.fromJson(call.receiveText())
+                TaskManager.async {
+                    val credits = body.getLong("mel")
+                    val userId = body.getLong("user")
+                    val votes = body.getInt("votes")
+                    val streak = body.getInt("streak")
+                    val wrapper = container.daoManager.balanceWrapper
+
+                    val newBalance = wrapper.balanceCache[userId].await() + credits
+                    wrapper.setBalance(userId, newBalance)
+
+                    LogUtils.sendReceivedVoteRewards(container, userId, newBalance, credits, streak, votes)
+                }
+
+                call.respondText { "success" }
+            }
+
+            post("/getsettings/general/{guildId}") {
+                val id = call.parameters["guildId"] ?: return@post
+                if (!id.isPositiveNumber()) return@post
+
+                val guild = MelijnBot.shardManager.getGuildById(id)
+
+                val userId = call.receiveText()
+                val member = guild?.retrieveMemberById(userId)?.awaitOrNull()
+                if (member == null) {
+                    call.respondText(DataObject.empty()
+                        .put("error", "guild invalidated")
+                        .toString(), jsonType)
+                    return@post
+                }
+
+                val idLong = guild.idLong
+
+                val hasPerm = (member.hasPermission(Permission.ADMINISTRATOR) ||
+                    member.hasPermission(Permission.MANAGE_SERVER) ||
+                    member.isOwner)
+
+                if (!hasPerm) {
+                    call.respondText(DataObject.empty()
+                        .put("error", "guild invalidated")
+                        .toString(), jsonType)
+                    return@post
+                }
+
+                val guildData = DataObject.empty()
+                    .put("id", id)
+                    .put("name", guild.name)
+                    .put("icon", guild.iconId)
+
+                val jobs = mutableListOf<Job>()
+                val settings = DataObject.empty()
+                val daoManager = container.daoManager
+
+                jobs.add(TaskManager.async {
+                    val prefixes = DataArray.fromCollection(daoManager.guildPrefixWrapper.prefixCache.get(idLong).await())
+                    settings.put("prefixes", prefixes)
+                })
+
+                jobs.add(TaskManager.async {
+                    val allowed = daoManager.allowSpacedPrefixWrapper.allowSpacedPrefixGuildCache.get(idLong).await()
+                    settings.put("allowSpacePrefix", allowed)
+                })
+
+                jobs.add(TaskManager.async {
+                    val ec = daoManager.embedColorWrapper.embedColorCache.get(idLong).await()
+                    settings.put("embedColor", ec)
+                })
+
+                jobs.add(TaskManager.async {
+                    val tz = daoManager.timeZoneWrapper.timeZoneCache.get(idLong).await()
+                    settings.put("timeZone", tz)
+                })
+
+                jobs.add(TaskManager.async {
+                    val language = daoManager.guildLanguageWrapper.languageCache.get(idLong).await()
+                    settings.put("language", language)
+                })
+
+                val disabled = daoManager.embedDisabledWrapper.embedDisabledCache.contains(idLong)
+                settings.put("embedsDisabled", disabled)
+
+                jobs.joinAll()
+
+                call.respondText {
+                    DataObject.empty()
+                        .put("guild", guildData)
+                        .put("settings", settings)
+                        .toString()
+                }
             }
 
             //Has to be registered last to not override other paths

@@ -1,9 +1,9 @@
 package me.melijn.melijnbot.database.audio
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import lavalink.client.LavalinkUtil
-import me.melijn.melijnbot.objects.music.TrackUserData
-import me.melijn.melijnbot.objects.music.toMessage
+import me.melijn.llklient.utils.LavalinkUtil
+import me.melijn.melijnbot.internals.music.TrackUserData
+import me.melijn.melijnbot.internals.music.toMessage
 import java.util.*
 
 class PlaylistWrapper(val tracksDao: TracksDao, val playlistDao: PlaylistDao) {

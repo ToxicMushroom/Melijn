@@ -1,24 +1,25 @@
 package me.melijn.melijnbot
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import lavalink.client.io.jda.JdaLavalink
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import me.melijn.llklient.io.jda.JDALavalink
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.RoleUpdateCause
+import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.events.eventlisteners.EventWaiter
 import me.melijn.melijnbot.internals.music.LavaManager
 import me.melijn.melijnbot.internals.services.ServiceManager
-import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.ModularPaginationInfo
 import me.melijn.melijnbot.internals.utils.PaginationInfo
 import me.melijn.melijnbot.internals.web.RestServer
 import me.melijn.melijnbot.internals.web.WebManager
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
-import net.dv8tion.jda.api.sharding.ShardManager
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.File
 
-val objectMapper = ObjectMapper()
+val objectMapper = jacksonObjectMapper()
 
 class Container {
 
@@ -50,14 +51,15 @@ class Container {
     var startTime = System.currentTimeMillis()
 
     var settings: Settings = objectMapper.readValue(File("${System.getenv("CONFIG_NAME") ?: "config"}.json"), Settings::class.java)
-    val taskManager = TaskManager()
 
     //Used by events
-    val daoManager = DaoManager(taskManager, settings.database)
-    val webManager = WebManager(taskManager, settings)
+    val daoManager = DaoManager(settings.database)
+    val webManager = WebManager(settings)
 
     //enabled on event
-    val serviceManager = ServiceManager(taskManager, daoManager, webManager)
+    val serviceManager = ServiceManager(daoManager, webManager)
+
+    var jdaLavaLink: JDALavalink? = null
 
     lateinit var lavaManager: LavaManager
 
@@ -72,10 +74,11 @@ class Container {
     //messageId
     val botDeletedMessageIds = mutableSetOf<Long>()
 
-    var jdaLavaLink: JdaLavalink? = null
-    var premiumJdaLavaLink: JdaLavalink? = null
+
+    private val logger: Logger = LoggerFactory.getLogger(Container::class.java)
 
     init {
+        logger.info("Using ${System.getenv("CONFIG_NAME") ?: "config"}.json as config")
         instance = this
     }
 
@@ -83,14 +86,9 @@ class Container {
         lateinit var instance: Container
     }
 
-    fun initShardManager(shardManager: ShardManager) {
-        lavaManager = LavaManager(settings.lavalink.enabled, daoManager, shardManager, jdaLavaLink, premiumJdaLavaLink)
-    }
-
-
-    fun initLava(jdaLavaLink: JdaLavalink?, premiumJdaLavaLink: JdaLavalink?) {
+    fun initLava(jdaLavaLink: JDALavalink?) {
         this.jdaLavaLink = jdaLavaLink
-        this.premiumJdaLavaLink = premiumJdaLavaLink
+        this.lavaManager = LavaManager(settings.lavalink.enabled, daoManager, jdaLavaLink)
     }
 
     val uptimeMillis: Long

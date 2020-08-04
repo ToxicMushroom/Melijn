@@ -1,8 +1,6 @@
 package me.melijn.melijnbot.database.message
 
-import me.melijn.melijnbot.internals.threading.TaskManager
-
-class MessageHistoryWrapper(val taskManager: TaskManager, private val messageHistoryDao: MessageHistoryDao) {
+class MessageHistoryWrapper(private val messageHistoryDao: MessageHistoryDao) {
 
     suspend fun getMessageById(messageId: Long): DaoMessage? {
         return messageHistoryDao.get(messageId)

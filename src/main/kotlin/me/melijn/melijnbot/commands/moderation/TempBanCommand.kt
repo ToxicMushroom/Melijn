@@ -19,7 +19,6 @@ import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
-import java.util.regex.Pattern
 
 class TempBanCommand : AbstractCommand("command.tempban") {
 
@@ -55,13 +54,10 @@ class TempBanCommand : AbstractCommand("command.tempban") {
             }
         }
 
-        val noUserArg = context
-            .rawArg.removeFirst(("\"?" + Pattern.quote(context.args[0]) + "\"?").toRegex())
-            .trim()
         val durationArgs = context.args[1].split(SPACE_PATTERN)
         val banDuration = (getDurationByArgsNMessage(context, 0, durationArgs.size, durationArgs) ?: return) * 1000
 
-        var reason = noUserArg.removeFirst(("\"?" + Pattern.quote(context.args[1]) + "\"?").toRegex()).trim()
+        var reason = context.getRawArgPart(2)
         if (reason.isBlank()) reason = "/"
 
         val activeBan: Ban? = context.daoManager.banWrapper.getActiveBan(context.guildId, targetUser.idLong)
@@ -80,7 +76,11 @@ class TempBanCommand : AbstractCommand("command.tempban") {
 
         val banning = context.getTranslation("message.banning")
 
-        val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
+        val privateChannel = if (context.guild.isMember(targetUser)) {
+            targetUser.openPrivateChannel().awaitOrNull()
+        } else {
+            null
+        }
         val message: Message? = privateChannel?.let {
             sendMsgAwaitEL(it, banning)
         }?.firstOrNull()

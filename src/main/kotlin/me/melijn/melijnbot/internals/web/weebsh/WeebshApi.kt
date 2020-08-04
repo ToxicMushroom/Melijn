@@ -4,7 +4,7 @@ import me.duncte123.weebJava.WeebApiBuilder
 import me.duncte123.weebJava.models.WeebApi
 import me.duncte123.weebJava.types.NSFWMode
 import me.duncte123.weebJava.types.TokenType
-import me.melijn.melijnbot.Settings
+import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.internals.utils.toLCC
 import kotlin.coroutines.resume

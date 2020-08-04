@@ -8,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class CommandCooldownWrapper(val taskManager: TaskManager, private val commandCooldownDao: CommandCooldownDao) {
+class CommandCooldownWrapper(private val commandCooldownDao: CommandCooldownDao) {
 
     val commandCooldownCache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -18,7 +18,7 @@ class CommandCooldownWrapper(val taskManager: TaskManager, private val commandCo
 
     private fun getMap(guildId: Long): CompletableFuture<Map<String, Long>> {
         val future = CompletableFuture<Map<String, Long>>()
-        taskManager.async {
+        TaskManager.async {
             val map = commandCooldownDao.getCooldowns(guildId)
             future.complete(map)
         }

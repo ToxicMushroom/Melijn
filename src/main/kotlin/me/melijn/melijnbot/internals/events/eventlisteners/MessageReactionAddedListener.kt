@@ -2,7 +2,6 @@ package me.melijn.melijnbot.internals.events.eventlisteners
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import kotlinx.coroutines.future.await
-import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
@@ -13,6 +12,7 @@ import me.melijn.melijnbot.internals.events.eventutil.SelfRoleUtil
 import me.melijn.melijnbot.internals.music.DONATE_QUEUE_LIMIT
 import me.melijn.melijnbot.internals.music.QUEUE_LIMIT
 import me.melijn.melijnbot.internals.music.TrackUserData
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.*
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelByType
@@ -34,10 +34,11 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         if (event is PrivateMessageReactionAddEvent) onPrivateMessageReactionAdd(event)
     }
 
-    private fun onPrivateMessageReactionAdd(event: PrivateMessageReactionAddEvent) = runBlocking {
+    private fun onPrivateMessageReactionAdd(event: PrivateMessageReactionAddEvent) = TaskManager.async(event.channel) {
         paginationHandler(event)
     }
 
+    // TODO fix duplicate code in this file
     private suspend fun paginationHandler(event: PrivateMessageReactionAddEvent) {
         val user = event.user ?: return
         if (event.reactionEmote.isEmote || user.isBot) return
@@ -112,7 +113,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         }
     }
 
-    private fun onGuildMessageReactionAdd(event: GuildMessageReactionAddEvent) = runBlocking {
+    private fun onGuildMessageReactionAdd(event: GuildMessageReactionAddEvent) = TaskManager.async(event.user, event.channel) {
         selfRoleHandler(event)
         postReactionAddedLog(event)
         verificationHandler(event)
@@ -125,11 +126,13 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         if (event.reactionEmote.isEmote || event.user.isBot) return
         val emoji = event.reactionEmote.emoji
         if (!listOf("⏪", "◀️", "▶️", "⏩").contains(emoji)) return
+
         val entry = container.paginationMap.entries.firstOrNull { (_, info) ->
-            info.messageId == event.messageIdLong
+            info.messageId == event.messageIdLong && info.authorId == event.userIdLong
         }
+
         val modularEntry = container.modularPaginationMap.entries.firstOrNull { (_, info) ->
-            info.messageId == event.messageIdLong
+            info.messageId == event.messageIdLong && info.authorId == event.userIdLong
         }
 
         if (entry != null) {
@@ -150,6 +153,9 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
             pagination.currentPage = newIndex
             container.paginationMap[entry.key] = pagination
+
+            if (event.guild.selfMember.hasPermission(event.channel, Permission.MESSAGE_MANAGE))
+                event.reaction.removeReaction(event.user).queue()
 
             val time = System.nanoTime()
             if (time.minus(lastCheck) > 60_000_000_000) {
@@ -181,6 +187,9 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
             pagination.currentPage = newIndex
             container.modularPaginationMap[modularEntry.key] = pagination
+
+            if (event.guild.selfMember.hasPermission(event.channel, Permission.MESSAGE_MANAGE))
+                event.reaction.removeReaction(event.user).queue()
 
             val time = System.nanoTime()
             if (time.minus(lastCheck) > 60_000_000_000) {
@@ -226,8 +235,8 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
                 val title = i18n.getTranslation(language, "message.music.searchmenu")
                 val desc = i18n.getTranslation(language, "message.music.search.cancelled.description")
                 val eb = Embedder(container.daoManager, guild.idLong, event.user.idLong, container.settings.embedColor)
-                eb.setTitle(title)
-                eb.setDescription(desc)
+                    .setTitle(title)
+                    .setDescription(desc)
                 message.editMessage(eb.build()).queue()
             }
             guildPlayer.safeQueueSilent(container.daoManager, track, menu.nextPosition) -> {
@@ -313,7 +322,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
 
 
         val zoneId = getZoneId(dao, event.guild.idLong)
-        val embedBuilder = EmbedBuilder()
+
         val language = getLanguage(dao, -1, event.guild.idLong)
         val title = i18n.getTranslation(language, "listener.message.reaction.log.title")
             .withVariable(PLACEHOLDER_CHANNEL, event.channel.asTag)
@@ -329,13 +338,15 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
             .withVariable("messageUrl", "https://discordapp.com/channels/${event.guild.id}/${event.channel.id}/${event.messageId}")
             .withVariable("emoteUrl", if (isEmote) event.reactionEmote.emote.imageUrl else "/")
 
-        embedBuilder.setTitle(title)
-        embedBuilder.setDescription(description)
-        embedBuilder.setThumbnail(if (isEmote) event.reactionEmote.emote.imageUrl else null)
         val footer = i18n.getTranslation(language, "listener.message.reaction.log.footer")
             .withVariable(PLACEHOLDER_USER, event.member.asTag)
-        embedBuilder.setFooter(footer, event.member.user.effectiveAvatarUrl)
-        embedBuilder.setColor(Color.WHITE)
+
+        val embedBuilder = EmbedBuilder()
+            .setTitle(title)
+            .setDescription(description)
+            .setThumbnail(if (isEmote) event.reactionEmote.emote.imageUrl else null)
+            .setFooter(footer, event.member.user.effectiveAvatarUrl)
+            .setColor(Color.WHITE)
 
         sendEmbed(dao.embedDisabledWrapper, logChannel, embedBuilder.build())
     }

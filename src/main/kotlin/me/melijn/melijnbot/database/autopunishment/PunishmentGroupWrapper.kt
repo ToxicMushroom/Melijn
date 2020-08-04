@@ -9,7 +9,7 @@ import me.melijn.melijnbot.internals.utils.splitIETEL
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class PunishmentGroupWrapper(val taskManager: TaskManager, private val punishmentGroupDao: PunishmentGroupDao) {
+class PunishmentGroupWrapper(private val punishmentGroupDao: PunishmentGroupDao) {
 
     val autoPunishmentCache = CacheBuilder.newBuilder()
         .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -21,7 +21,7 @@ class PunishmentGroupWrapper(val taskManager: TaskManager, private val punishmen
     private fun getPunishGroups(guildId: Long): CompletableFuture<List<PunishGroup>> {
         val future = CompletableFuture<List<PunishGroup>>()
 
-        taskManager.async {
+       TaskManager.async {
             val valuePairs = punishmentGroupDao.getAll(guildId)
             val list = mutableListOf<PunishGroup>()
             for ((group, valuePair) in valuePairs) {

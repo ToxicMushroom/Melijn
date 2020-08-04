@@ -4,11 +4,9 @@ import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
-import me.melijn.melijnbot.internals.translation.i18n
-import me.melijn.melijnbot.internals.utils.asLongLongGMTString
+import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
-import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.entities.Emote
 
 class EmoteCommand : AbstractCommand("command.emote") {
@@ -21,69 +19,65 @@ class EmoteCommand : AbstractCommand("command.emote") {
     }
 
     override suspend fun execute(context: CommandContext) {
-        val args = context.rawArg
-        if (args.isBlank()) {
+        if (context.args.isEmpty()) {
             sendSyntax(context)
             return
         }
 
-        val language = context.getLanguage()
+        val trans1 = context.getTranslation("$root.response1.part1")
+        val trans2 = context.getTranslation("$root.response1.part2")
+        val transExtra = context.getTranslation("$root.response1.extra")
 
-        val trans1 = i18n.getTranslation(language, "$root.response1.part1")
-        val trans2 = i18n.getTranslation(language, "$root.response1.part2")
-        val transExtra = i18n.getTranslation(language, "$root.response1.extra")
-        val id: String
-        var emote: Emote? = null
-        if (args.matches("<.?:.*:\\d+>".toRegex())) {
-            id = args.replace("<.?:.*:(\\d+)>".toRegex(), "$1")
-            emote = context.shardManager.getEmoteById(id)
+        var emote: Emote? = getEmoteByArgsN(context, 0, false)
+        val arg = context.args[0]
+
+        if (emote == null && EMOTE_MENTION.matches(arg)) {
+            val result = (EMOTE_MENTION.find(arg) ?: return).groupValues
+            emote = context.shardManager.getEmoteById(result[2])
 
             if (emote == null) {
-                val name = args.replace("<.?:(.*):\\d+>".toRegex(), "$1")
-                val animated = args.replace("<(.?):.*:\\d+>".toRegex(), "$1").isNotEmpty()
+                val animated = arg.startsWith("<a")
                 val msg = replaceMissingEmoteVars(
                     trans1 + trans2,
                     context,
-                    id,
-                    name,
+                    result[2],
+                    result[1],
                     animated
                 )
 
                 sendRsp(context, msg)
                 return
             }
-        } else if (args.matches("\\d+".toRegex())) {
-            id = args
-            emote = context.shardManager.getEmoteById(id)
+        } else if (arg.isPositiveNumber()) {
+            emote = context.shardManager.getEmoteById(arg)
         }
 
-        if (emote == null) {
-            val msg = i18n.getTranslation(language, "$root.notanemote")
-                .withVariable(PLACEHOLDER_ARG, args)
+        if (emote != null) {
+            val msg = replaceEmoteVars(
+                trans1 + transExtra + trans2,
+                context,
+                emote
+            )
+
             sendRsp(context, msg)
-            return
+
+        } else {
+            val msg = context.getTranslation("$root.notanemote")
+                .withVariable(PLACEHOLDER_ARG, arg)
+            sendRsp(context, msg)
         }
-
-        val msg = replaceEmoteVars(
-            trans1 + transExtra + trans2,
-            context,
-            emote
-        )
-        sendRsp(context, msg)
-        return
-
     }
 
 
     private suspend fun replaceMissingEmoteVars(string: String, context: CommandContext, id: String, name: String, animated: Boolean): String = string
         .withVariable("id", id)
         .withVariable("name", name)
-        .withVariable("isAnimated", i18n.getTranslation(context.getLanguage(), if (animated) "yes" else "no"))
+        .withVariable("isAnimated", context.getTranslation(if (animated) "yes" else "no"))
         .withVariable("url", "https://cdn.discordapp.com/emojis/$id." + (if (animated) "gif" else "png") + "?size=2048")
 
 
     private suspend fun replaceEmoteVars(string: String, context: CommandContext, emote: Emote): String =
         replaceMissingEmoteVars(string, context, emote.id, emote.name, emote.isAnimated)
-            .withVariable("creationTime", emote.timeCreated.asLongLongGMTString())
+            .withVariable("creationTime", emote.timeCreated.asEpochMillisToDate(context.getTimeZoneId()))
 
 }

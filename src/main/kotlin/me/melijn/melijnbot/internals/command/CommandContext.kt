@@ -2,7 +2,6 @@ package me.melijn.melijnbot.internals.command
 
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
-import me.melijn.melijnbot.internals.music.GuildMusicPlayer
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.SPACE_PATTERN
 import me.melijn.melijnbot.internals.utils.USER_MENTION
@@ -16,7 +15,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.ZoneId
-import java.util.regex.Pattern
 
 class CommandContext(
     private val messageReceivedEvent: MessageReceivedEvent,
@@ -42,13 +40,12 @@ class CommandContext(
 
 
     val webManager: WebManager = container.webManager
-
     val usedPrefix: String = getNicerUsedPrefix()
-    val mentionOffset: Int = retrieveOffset()
+
 
     private fun getNicerUsedPrefix(): String {
         val prefix = commandParts[0]
-        return if (prefix.contains(container.settings.id.toString()) && USER_MENTION.matcher(prefix).matches()) {
+        return if (prefix.contains(container.settings.id.toString()) && USER_MENTION.matches(prefix)) {
             "@${container.settings.name} "
         } else {
             prefix
@@ -62,7 +59,6 @@ class CommandContext(
     var oldArgs: List<String> = emptyList()
     val botDevIds: LongArray = container.settings.developerIds
     val daoManager = container.daoManager
-    val taskManager = container.taskManager
     var rawArg: String = ""
     val contextTime = System.currentTimeMillis()
     val lavaManager = container.lavaManager
@@ -149,19 +145,6 @@ class CommandContext(
         logger = LoggerFactory.getLogger(commandOrder.first().javaClass.name)
     }
 
-    private fun retrieveOffset(): Int {
-        var count = 0
-        val pattern = Pattern.compile("<@!?(\\d+)>")
-        val matcher = pattern.matcher(commandParts[0])
-
-        while (matcher.find()) {
-            val str = matcher.group(1)
-            if (jda.shardManager?.getUserById(str) != null) count++
-        }
-
-        return count
-    }
-
     fun reply(something: Any) {
         require(!(isFromGuild && !selfMember.hasPermission(textChannel, Permission.MESSAGE_WRITE))) {
             "No MESSAGE_WRITE permission"
@@ -199,7 +182,7 @@ class CommandContext(
 
     suspend fun getTranslation(path: String): String = i18n.getTranslation(this, path)
     suspend fun getTimeZoneId(): ZoneId {
-        val guildTimezone = guildId.let {
+        val guildTimezone = guildN?.idLong?.let {
             val zoneId = daoManager.timeZoneWrapper.timeZoneCache.get(it).await()
             if (zoneId?.isBlank() == true) null
             else ZoneId.of(zoneId)
@@ -214,6 +197,6 @@ class CommandContext(
         return userTimezone ?: guildTimezone ?: ZoneId.of("GMT")
     }
 
-    val guildMusicPlayer: GuildMusicPlayer
-        get() = musicPlayerManager.getGuildMusicPlayer(guild)
+
+    fun getGuildMusicPlayer() = musicPlayerManager.getGuildMusicPlayer(guild)
 }

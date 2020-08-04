@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.utils.data.DataArray
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class SelfRoleWrapper(val taskManager: TaskManager, private val selfRoleDao: SelfRoleDao) {
+class SelfRoleWrapper(private val selfRoleDao: SelfRoleDao) {
 
     // guildId -> <selfRoleGroupName -> emotejiInfo (see SelfRoleDao for example)
     val selfRoleCache = CacheBuilder.newBuilder()
@@ -20,7 +20,7 @@ class SelfRoleWrapper(val taskManager: TaskManager, private val selfRoleDao: Sel
 
     fun getMap(guildId: Long): CompletableFuture<Map<String, DataArray>> {
         val future = CompletableFuture<Map<String, DataArray>>()
-        taskManager.async {
+       TaskManager.async {
             val map = selfRoleDao.getMap(guildId)
             future.complete(map)
         }

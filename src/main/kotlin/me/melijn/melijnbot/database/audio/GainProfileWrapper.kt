@@ -8,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class GainProfileWrapper(val taskManager: TaskManager, private val gainProfileDao: GainProfileDao) {
+class GainProfileWrapper(private val gainProfileDao: GainProfileDao) {
 
     val gainProfileCache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -19,7 +19,7 @@ class GainProfileWrapper(val taskManager: TaskManager, private val gainProfileDa
     private fun getGainProfile(id: Long): CompletableFuture<Map<String, GainProfile>> {
         val future = CompletableFuture<Map<String, GainProfile>>()
 
-        taskManager.async {
+       TaskManager.async {
             val profileMap = gainProfileDao.get(id)
             future.complete(profileMap)
         }

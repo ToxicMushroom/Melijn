@@ -8,6 +8,7 @@ import me.melijn.melijnbot.enums.FilterMode
 import me.melijn.melijnbot.enums.FilterType
 import me.melijn.melijnbot.enums.PointsTriggerType
 import me.melijn.melijnbot.internals.jagtag.RegexJagTagParser
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.LogUtils
 import me.melijn.melijnbot.internals.utils.PPUtils
 import me.melijn.melijnbot.internals.utils.addIfNotPresent
@@ -18,7 +19,7 @@ import java.util.regex.Pattern
 
 object FilterUtil {
 
-    suspend fun handleFilter(container: Container, message: Message) = container.taskManager.async {
+    suspend fun handleFilter(container: Container, message: Message) = TaskManager.async(message.author, message.channel) {
         if (message.author.isBot) return@async
         val guild = message.guild
         val member = message.member ?: return@async

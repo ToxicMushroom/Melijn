@@ -5,11 +5,12 @@ import me.melijn.melijnbot.commands.administration.*
 import me.melijn.melijnbot.commands.animal.*
 import me.melijn.melijnbot.commands.anime.*
 import me.melijn.melijnbot.commands.developer.*
-import me.melijn.melijnbot.commands.economy.BalanceCommand
+import me.melijn.melijnbot.commands.economy.*
 import me.melijn.melijnbot.commands.image.*
 import me.melijn.melijnbot.commands.moderation.*
 import me.melijn.melijnbot.commands.music.*
 import me.melijn.melijnbot.commands.utility.*
+import me.melijn.melijnbot.internals.threading.TaskManager
 import org.slf4j.LoggerFactory
 
 
@@ -86,7 +87,7 @@ class CommandClientBuilder(private val container: Container) {
         PermissionCommand(),
         WarnCommand(),
         T2eCommand(),
-        FlipCommand(),
+        FlipImgCommand(),
         ClearChannelCommand(),
         ServerInfo(),
         PatCommand(),
@@ -203,7 +204,15 @@ class CommandClientBuilder(private val container: Container) {
         SetBalanceCommand(),
         SetRemoveResponsesCommand(),
         SetRemoveInvokeCommand(),
-        ManageSupportersCommand()
+        ManageSupportersCommand(),
+        FlipCommand(),
+        DailyCommand(),
+        PayCommand(),
+        BassBoostCommand(),
+        NightcoreCommand(),
+        LeaderBoardCommand(),
+        TopVotersCommand(),
+        ToggleVoteReminderCommand()
     )
 
     init {
@@ -214,18 +223,10 @@ class CommandClientBuilder(private val container: Container) {
         return CommandClient(commands.toSet(), container)
     }
 
-    private fun addCommand(command: AbstractCommand): CommandClientBuilder {
-        commands.add(command)
-        container.taskManager.async {
-            container.daoManager.commandWrapper.insert(command)
-        }
-        return this
-    }
-
     fun loadCommands(): CommandClientBuilder {
         logger.info("Loading ${commands.size} commands...")
-        commands.forEach { command ->
-            addCommand(command)
+        TaskManager.async {
+            container.daoManager.commandWrapper.bulkInsert(commands)
         }
         logger.info("Loaded ${commands.size} commands")
         return this

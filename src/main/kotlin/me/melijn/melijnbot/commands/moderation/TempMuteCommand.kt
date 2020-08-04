@@ -23,7 +23,6 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.User
-import java.util.regex.Pattern
 
 class TempMuteCommand : AbstractCommand("command.tempmute") {
 
@@ -58,13 +57,10 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
             }
         }
 
-        val noUserArg = context
-            .rawArg.removeFirst(("\"?" + Pattern.quote(context.args[0]) + "\"?").toRegex())
-            .trim()
         val durationArgs = context.args[1].split(SPACE_PATTERN)
         val muteDuration = (getDurationByArgsNMessage(context, 0, durationArgs.size, durationArgs) ?: return) * 1000
 
-        var reason = noUserArg.removeFirst(("\"?" + Pattern.quote(context.args[1]) + "\"?").toRegex()).trim()
+        var reason = context.getRawArgPart(2)
         if (reason.isBlank()) reason = "/"
 
 
@@ -115,7 +111,11 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
 
         val muting = context.getTranslation("message.muting")
 
-        val privateChannel = targetUser.openPrivateChannel().awaitOrNull()
+        val privateChannel = if (context.guild.isMember(targetUser)) {
+            targetUser.openPrivateChannel().awaitOrNull()
+        } else {
+            null
+        }
         val message: Message? = privateChannel?.let {
             sendMsgAwaitEL(it, muting)
         }?.firstOrNull()

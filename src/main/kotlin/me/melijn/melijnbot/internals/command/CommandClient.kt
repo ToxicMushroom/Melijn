@@ -12,7 +12,6 @@ import me.melijn.melijnbot.enums.ChannelCommandState
 import me.melijn.melijnbot.internals.jagtag.CCJagTagParser
 import me.melijn.melijnbot.internals.jagtag.CCJagTagParserArgs
 import me.melijn.melijnbot.internals.models.TriState
-import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.getLanguage
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
@@ -252,7 +251,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             getCustomCommandByChance(ccs)
         }
 
-        if (checksFailed(container.daoManager, container.taskManager, cc, event)) return
+        if (checksFailed(container.daoManager, cc, event)) return
 
         val cParts = commandParts.toMutableList()
         executeCC(cc, event, cParts, hasPrefix)
@@ -422,7 +421,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                             .withVariable("permissions", missingPermissionMessage)
                             .withVariable("channel", event.textChannel.asTag)
 
-                        sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
+                        sendRspOrMsg(event.textChannel, container.daoManager, msg)
                         return true
                     }
                 }
@@ -443,12 +442,12 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                         val msg = i18n.getTranslation(language, "message.discordpermission$more.missing")
                             .withVariable("permissions", missingPermissionMessage)
 
-                        sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
+                        sendRspOrMsg(event.textChannel, container.daoManager, msg)
                         return true
                     }
                 }
 
-                if (commandIsOnCooldown(container.daoManager, container.taskManager, cmdId, event)) {
+                if (commandIsOnCooldown(container.daoManager, cmdId, event)) {
                     return true
                 }
             }
@@ -469,13 +468,13 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
          * [@return] returns true if the check failed
          *
          * **/
-        private suspend fun checksFailed(daoManager: DaoManager, taskManager: TaskManager, command: CustomCommand, event: MessageReceivedEvent): Boolean {
+        private suspend fun checksFailed(daoManager: DaoManager, command: CustomCommand, event: MessageReceivedEvent): Boolean {
             val cmdId = "cc.${command.id}"
             if (commandIsDisabled(daoManager, cmdId, event)) {
                 return true
             }
 
-            if (commandIsOnCooldown(daoManager, taskManager, cmdId, event)) {
+            if (commandIsOnCooldown(daoManager, cmdId, event)) {
                 return true
             }
 
@@ -483,7 +482,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
 
 
-        private suspend fun commandIsOnCooldown(daoManager: DaoManager, taskManager: TaskManager, id: String, event: MessageReceivedEvent): Boolean {
+        private suspend fun commandIsOnCooldown(daoManager: DaoManager, id: String, event: MessageReceivedEvent): Boolean {
             val guildId = event.guild.idLong
             val userId = event.author.idLong
             val channelId = event.channel.idLong
@@ -547,7 +546,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 val msg = unReplacedCooldown
                     .withVariable("cooldown", ((cooldownResult - (System.currentTimeMillis() - lastExecutionBiggest)) / 1000.0).toString())
 
-                sendRspOrMsg(event.textChannel, taskManager, daoManager, msg)
+                sendRspOrMsg(event.textChannel, daoManager, msg)
             }
             return bool
         }

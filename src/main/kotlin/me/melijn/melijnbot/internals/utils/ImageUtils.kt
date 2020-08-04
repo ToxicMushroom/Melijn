@@ -432,11 +432,13 @@ object ImageUtils {
     }
 
     fun addEffectToStaticImage(imageByteArray: ByteArray, effect: (BufferedImage) -> Unit): ByteArrayOutputStream {
-        val byteArrayInputStream = ByteArrayInputStream(imageByteArray)
-        val image = ImageIO.read(byteArrayInputStream)
-        val outputStream = ByteArrayOutputStream()
+        val image = ByteArrayInputStream(imageByteArray).use { bais ->
+            ImageIO.read(bais)
+        }
 
         effect(image)
+
+        val outputStream = ByteArrayOutputStream()
         ImageIO.write(image, "png", outputStream)
         return outputStream
     }
@@ -704,17 +706,17 @@ object ImageUtils {
             val sb = StringBuilder()
             val parts = text.split(SPACE_PATTERN).toTypedArray()
             for (part in parts) {
-                val currentLineContent = sb.substring(max(0, sb.lastIndexOf("\n")), sb.length)
+                val currentLineContent = sb.substring(max(0, sb.lastIndexOf('\n')), sb.length)
                 val possibleFutureLineContent = if (currentLineContent.isEmpty()) part else "$currentLineContent $part"
                 when {
                     fontMetrics.stringWidth(part) > lineWidth -> {
                         var contentWidth = fontMetrics.stringWidth("$currentLineContent ")
                         val dashWidth = fontMetrics.charWidth('-')
-                        sb.append(" ")
+                        sb.append(' ')
                         for ((partProgress, c) in part.toCharArray().withIndex()) {
                             val charWidth = fontMetrics.charWidth(c)
                             if (contentWidth + dashWidth + charWidth > lineWidth) {
-                                if (partProgress != 0) sb.append("-\n") else sb.append("\n")
+                                if (partProgress != 0) sb.append("-\n") else sb.appendln()
                                 contentWidth = 0
                             }
                             sb.append(c)
@@ -722,16 +724,16 @@ object ImageUtils {
                         }
                     }
                     fontMetrics.stringWidth(possibleFutureLineContent) > lineWidth -> {
-                        sb.append("\n").append(part)
+                        sb.appendln().append(part)
                     }
                     else -> {
-                        if (sb.isNotEmpty()) sb.append(" ")
+                        if (sb.isNotEmpty()) sb.append(' ')
                         sb.append(part)
                     }
                 }
             }
             var i = 0
-            for (line in sb.toString().split("\n".toRegex()).toTypedArray()) {
+            for (line in sb.toString().split('\n').toTypedArray()) {
                 i++
                 graphics.drawString(line, 1133, 82 + lineHeight * i)
             }

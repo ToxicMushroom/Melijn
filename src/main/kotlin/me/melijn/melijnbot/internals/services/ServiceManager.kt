@@ -13,11 +13,11 @@ import me.melijn.melijnbot.internals.services.roles.RolesService
 import me.melijn.melijnbot.internals.services.stats.StatsService
 import me.melijn.melijnbot.internals.services.voice.VoiceScoutService
 import me.melijn.melijnbot.internals.services.voice.VoiceService
-import me.melijn.melijnbot.internals.threading.TaskManager
+import me.melijn.melijnbot.internals.services.votes.VoteReminderService
 import me.melijn.melijnbot.internals.web.WebManager
 import net.dv8tion.jda.api.sharding.ShardManager
 
-class ServiceManager(val taskManager: TaskManager, val daoManager: DaoManager, val webManager: WebManager) {
+class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
 
     var started = false
     var shardManager: ShardManager? = null
@@ -28,7 +28,7 @@ class ServiceManager(val taskManager: TaskManager, val daoManager: DaoManager, v
         services.add(BanService(shardManager, daoManager))
         services.add(MuteService(shardManager, daoManager))
         services.add(StatsService(shardManager, webManager.botListApi))
-        services.add(BirthdayService(shardManager, taskManager, daoManager))
+        services.add(BirthdayService(shardManager, daoManager))
         //services.add(MemSpammerService())
         webManager.spotifyApi?.let { spotifyApi ->
             services.add(SpotifyService(spotifyApi))
@@ -40,6 +40,7 @@ class ServiceManager(val taskManager: TaskManager, val daoManager: DaoManager, v
         services.add(VoiceScoutService(container, shardManager))
         services.add(DonatorService(container, shardManager))
         services.add(RolesService(daoManager.tempRoleWrapper, shardManager))
+        services.add(VoteReminderService(daoManager))
         //services.add(BrokenService(container, shardManager))
     }
 

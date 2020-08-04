@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.translation.getLanguage
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.message.getNicerUsedPrefix
+import me.melijn.melijnbot.internals.utils.message.sendMsg
 import me.melijn.melijnbot.internals.utils.message.sendRspOrMsg
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
@@ -116,18 +117,18 @@ object RunConditionUtil {
         }
     }
 
-    private fun checkPlayingTrackNotNullMessage(container: Container, event: MessageReceivedEvent, language: String): Boolean {
-        if (checkPlayingTrackNotNull(container, event, language)) {
+    private suspend fun checkPlayingTrackNotNullMessage(container: Container, event: MessageReceivedEvent, language: String): Boolean {
+        if (checkPlayingTrackNotNull(container, event)) {
             return true
         }
 
         val noSongPlaying = i18n.getTranslation(language, "message.runcondition.failed.playingtracknotnull")
-        sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, noSongPlaying)
+        sendRspOrMsg(event.textChannel, container.daoManager, noSongPlaying)
         return false
     }
 
 
-    fun checkPlayingTrackNotNull(container: Container, event: MessageReceivedEvent, language: String): Boolean {
+    suspend fun checkPlayingTrackNotNull(container: Container, event: MessageReceivedEvent): Boolean {
         val trackManager = container.lavaManager.musicPlayerManager.getGuildMusicPlayer(event.guild).guildTrackManager
         val cTrack: AudioTrack? = trackManager.iPlayer.playingTrack
         if (cTrack == null || event.guild.selfMember.voiceState?.inVoiceChannel() != true) {
@@ -143,16 +144,16 @@ object RunConditionUtil {
 
         if (vc == null && botVc == null) {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.vc")
-            sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
+            sendRspOrMsg(event.textChannel, container.daoManager, msg)
             return false
         }
 
         if (vc?.id == botVc?.id) return true
         else if (vc != null && botVc == null) return true
-        else if (hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_SAMEVC.node, true)) return true
+        else if (hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_SAMEVC.node, false)) return true
 
         val msg = i18n.getTranslation(language, "message.runcondition.failed.vcbot")
-        sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
+        sendRspOrMsg(event.textChannel, container.daoManager, msg)
         return false
 
     }
@@ -165,17 +166,17 @@ object RunConditionUtil {
 
         if (vc == null && bc == null) {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.vc")
-            sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
+            sendRspOrMsg(event.textChannel, container.daoManager, msg)
             return false
         }
 
         return if (vc?.id == bc?.id && vc?.let { listeningMembers(it, member.idLong) } == 0) true
         else if (vc != null && bc == null) true
         else if (vc?.id != bc?.id && bc != null && listeningMembers(bc) == 0) true
-        else if (hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_VCBOTALONE.node, true)) true
+        else if (hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_VCBOTALONE.node, false)) true
         else {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.vcbotalone")
-            sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
+            sendRspOrMsg(event.textChannel, container.daoManager, msg)
             false
         }
     }
@@ -185,7 +186,7 @@ object RunConditionUtil {
             true
         } else {
             val msg = i18n.getTranslation(language, "message.runcondition.serveronly")
-            sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
+            sendMsg(event.privateChannel, msg)
             false
         }
     }
@@ -195,11 +196,11 @@ object RunConditionUtil {
         val selfMember = guild.selfMember
         val vc = selfMember.voiceState?.channel
         val botAlone = vc == null || listeningMembers(vc, event.author.idLong) == 0
-        return if (botAlone || hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_BOTALONE.node, true)) {
+        return if (botAlone || hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_BOTALONE.node, false)) {
             true
         } else {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.botalone")
-            sendRspOrMsg(event.textChannel, container.taskManager, container.daoManager, msg)
+            sendRspOrMsg(event.textChannel, container.daoManager, msg)
             false
         }
     }

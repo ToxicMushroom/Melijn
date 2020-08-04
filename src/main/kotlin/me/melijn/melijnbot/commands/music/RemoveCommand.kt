@@ -25,7 +25,7 @@ class RemoveCommand : AbstractCommand("command.remove") {
             sendSyntax(context)
             return
         }
-        val trackManager = context.guildMusicPlayer.guildTrackManager
+        val trackManager = context.getGuildMusicPlayer().guildTrackManager
         val indexes = getIntegersFromArgsNMessage(context, 1, trackManager.trackSize()) ?: return
         val removed = trackManager.removeAt(indexes)
 
@@ -49,7 +49,7 @@ class RemoveCommand : AbstractCommand("command.remove") {
             for (arg in args) {
                 if (arg.contains("-")) {
 
-                    val list: List<String> = arg.split("-".toRegex())
+                    val list: List<String> = arg.split("-")
                     if (list.size == 2) {
                         val first = list[0]
                         val second = list[1]
@@ -86,9 +86,9 @@ class RemoveCommand : AbstractCommand("command.remove") {
         for (i in ints) {
             if (i < start - 1 || i > end - 1) {
                 val msg = context.getTranslation("message.number.notinrange")
-                    .withVariable(PLACEHOLDER_ARG, (i + 1).toString())
-                    .withVariable("start", start.toString())
-                    .withVariable("end", end.toString())
+                    .withVariable(PLACEHOLDER_ARG, i + 1)
+                    .withVariable("start", start)
+                    .withVariable("end", end)
                 sendRsp(context, msg)
                 return null
             }

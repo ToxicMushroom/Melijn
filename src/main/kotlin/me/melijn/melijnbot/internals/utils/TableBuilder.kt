@@ -16,26 +16,26 @@ class TableBuilder(private val split: Boolean) {
         const val LINE = "══════════════════════════════════════════════════════════════════════════════════"
     }
 
-    fun setColumns(headerNames: Collection<String>): TableBuilder {
-        headerRow.addAll(headerNames)
-        findWidest(headerNames)
+    fun setColumns(vararg headerElements: String): TableBuilder {
+        headerRow.addAll(headerElements)
+        findWidest(*headerElements)
         return this
     }
 
-    fun addRow(rowValues: Collection<String>): TableBuilder {
-        valueRows[valueRows.size] = ArrayList(rowValues)
-        findWidest(rowValues)
+    fun addRow(vararg rowElements: String): TableBuilder {
+        valueRows[valueRows.size] = listOf(*rowElements)
+        findWidest(*rowElements)
         return this
     }
 
-    fun setFooterRow(footerNames: Collection<String>): TableBuilder {
-        footerRow.addAll(footerNames)
-        findWidest(footerNames)
+    fun setFooterRow(vararg footerElements: String): TableBuilder {
+        footerRow.addAll(footerElements)
+        findWidest(*footerElements)
         return this
     }
 
-    private fun findWidest(footerNames: Collection<String>) {
-        for ((temp, s) in footerNames.withIndex()) {
+    private fun findWidest(vararg rowElements: String) {
+        for ((temp, s) in rowElements.withIndex()) {
             if (columnWidth.getOrDefault(temp, 0) < s.length) {
                 columnWidth[temp] = s.length
             }

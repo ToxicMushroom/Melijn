@@ -3,6 +3,7 @@ package me.melijn.melijnbot.commands.moderation
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_USER
 import me.melijn.melijnbot.internals.utils.LogUtils
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
@@ -61,7 +62,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
                 }
             }
             .thenRun {
-                context.taskManager.async {
+                TaskManager.async(context) {
                     for (message in messages) {
                         context.container.purgedIds[message.idLong] = context.authorId
                     }
@@ -73,7 +74,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
                         .withVariable("amount", amount.toString())
                         .withVariable(PLACEHOLDER_USER, targetUser?.asTag ?: "")
 
-                    if (!context.commandParts[0].equals(silentPurgeName, true) && !context.commandParts[0].equals(silentPruneName, true))
+                    if (!context.commandParts[1].equals(silentPurgeName, true) && !context.commandParts[1].equals(silentPruneName, true))
                         sendMsgAwaitEL(context, msg)[0].delete().queueAfter(5, TimeUnit.SECONDS)
 
                     LogUtils.sendPurgeLog(context, messages)

@@ -10,6 +10,7 @@ import me.melijn.melijnbot.enums.VerificationType
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.events.eventutil.FilterUtil
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.*
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.checks.getAndVerifyChannelByType
@@ -28,15 +29,17 @@ import java.awt.Color
 class MessageReceivedListener(container: Container) : AbstractListener(container) {
 
     override fun onEvent(event: GenericEvent) {
-        container.taskManager.async {
-            if (event is GuildMessageReceivedEvent) {
+        if (event is GuildMessageReceivedEvent) {
+            TaskManager.async(event.author, event.channel) {
                 handleMessageReceivedStoring(event)
                 handleAttachmentLog(event)
                 handleVerification(event)
                 FilterUtil.handleFilter(container, event.message)
                 // SpammingUtil.handleSpam(container, event.message)
             }
-            if (event is MessageReceivedEvent) {
+        }
+        if (event is MessageReceivedEvent) {
+            TaskManager.async(event.author, event.channel) {
                 handleSimpleMelijnPing(event)
             }
         }
@@ -52,29 +55,25 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             cmd is HelpCommand
         } ?: return
 
-        if (event is GuildMessageReceivedEvent) {
-            val guildEvent: GuildMessageReceivedEvent = event
-            if (!guildEvent.channel.canTalk()) {
-                try {
-                    val pChannel = guildEvent.author.openPrivateChannel().awaitOrNull()
-                    val language = getLanguage(container.daoManager, guildEvent.author.idLong)
-                    val msg = i18n.getTranslation(language, "message.melijnping.nowriteperms")
-                        .withVariable("server", guildEvent.guild.name)
-                        .withVariable(PLACEHOLDER_CHANNEL, guildEvent.channel.asMention)
 
-                    pChannel?.sendMessage(msg)?.queue({}, {})
-                } catch (t: Throwable) {
-                    t.printStackTrace()
-                }
-                return
+        if (event.isFromGuild && !event.textChannel.canTalk()) {
+            try {
+                val pChannel = event.author.openPrivateChannel().awaitOrNull()
+                val language = getLanguage(container.daoManager, event.author.idLong)
+                val msg = i18n.getTranslation(language, "message.melijnping.nowriteperms")
+                    .withVariable("server", event.guild.name)
+                    .withVariable(PLACEHOLDER_CHANNEL, event.textChannel.asMention)
+
+                pChannel?.sendMessage(msg)?.queue({}, {})
+            } catch (t: Throwable) {
+                t.printStackTrace()
             }
+            return
         }
 
-        container.taskManager.async {
-            val cmdContext = CommandContext(event, listOf(usedMention, "help"), container, container.commandMap.values.toSet(),
-                mutableMapOf(), mutableMapOf(), true, "${usedMention}help")
-            helpCmd.run(cmdContext)
-        }
+        val cmdContext = CommandContext(event, listOf(usedMention, "help"), container, container.commandMap.values.toSet(),
+            mutableMapOf(), mutableMapOf(), true, "${usedMention}help")
+        helpCmd.run(cmdContext)
     }
 
     private suspend fun handleVerification(event: GuildMessageReceivedEvent) {
@@ -142,7 +141,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
     }
 
     private suspend fun handleMessageReceivedStoring(event: GuildMessageReceivedEvent) {
-        // TODO ("Add switch for bot logging 'premium feature'")
+        // TODO Add switch for bot logging 'premium feature
 //        if (event.author.isBot && event.author.idLong != container.settings.id) return
         val guildId = event.guild.idLong
         val logChannelWrapper = container.daoManager.logChannelWrapper
@@ -162,7 +161,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             content += "\n${embed.toMessage()}"
         }
 
-        container.taskManager.async {
+        TaskManager.async(event.author, event.channel) {
             messageWrapper.addMessage(DaoMessage(
                 guildId,
                 event.channel.idLong,
@@ -192,7 +191,7 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
 
         embedBuilder.setFooter(footer, event.author.effectiveAvatarUrl)
 
-        embedBuilder.setColor(Color.decode("#DC143C"))
+        embedBuilder.setColor(Color(0xDC143C))
         embedBuilder.setImage(attachment.url)
 
         embedBuilder.setTitle(title)

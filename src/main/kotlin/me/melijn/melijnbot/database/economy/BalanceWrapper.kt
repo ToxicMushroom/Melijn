@@ -2,12 +2,12 @@ package me.melijn.melijnbot.database.economy
 
 import com.google.common.cache.CacheBuilder
 import me.melijn.melijnbot.database.FREQUENTLY_USED_CACHE
-import me.melijn.melijnbot.objects.threading.TaskManager
-import me.melijn.melijnbot.objects.utils.loadingCacheFrom
+import me.melijn.melijnbot.internals.threading.TaskManager
+import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class BalanceWrapper(val taskManager: TaskManager, private val balanceDao: BalanceDao) {
+class BalanceWrapper(private val balanceDao: BalanceDao) {
 
     val balanceCache = CacheBuilder.newBuilder()
         .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
@@ -17,9 +17,8 @@ class BalanceWrapper(val taskManager: TaskManager, private val balanceDao: Balan
 
     private fun getBalance(userId: Long): CompletableFuture<Long> {
         val balance = CompletableFuture<Long>()
-        taskManager.async {
+        TaskManager.async {
             balance.complete(balanceDao.getBalance(userId))
-
         }
         return balance
     }
@@ -27,5 +26,13 @@ class BalanceWrapper(val taskManager: TaskManager, private val balanceDao: Balan
     suspend fun setBalance(userId: Long, money: Long) {
         balanceDao.setBalance(userId, money)
         balanceCache.put(userId, CompletableFuture.completedFuture(money))
+    }
+
+    suspend fun getTop(users: Int, offset: Int): Map<Long, Long> {
+        return balanceDao.getTop(users, offset)
+    }
+
+    suspend fun getRowCount(): Long {
+        return balanceDao.getRowCount()
     }
 }

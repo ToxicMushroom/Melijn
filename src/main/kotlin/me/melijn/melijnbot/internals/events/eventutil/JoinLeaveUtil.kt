@@ -80,7 +80,7 @@ object JoinLeaveUtil {
 
     suspend fun joinRole(daoManager: DaoManager, member: Member) {
         val guild = member.guild
-        if (!guild.selfMember.canInteract(member)) return
+        if (!guild.selfMember.canInteract(member) || !guild.selfMember.hasPermission(Permission.MANAGE_ROLES)) return
 
         val groups = daoManager.joinRoleGroupWrapper.joinRoleGroupCache[guild.idLong].await()
         val joinRoleInfo = daoManager.joinRoleWrapper.joinRoleCache.get(guild.idLong).await()
@@ -117,8 +117,10 @@ object JoinLeaveUtil {
                 val immutableEntry = entryWon ?: continue
 
                 val role = immutableEntry.roleId?.let { guild.getRoleById(it) } ?: continue
-                if (guild.selfMember.canInteract(member)) {
+                if (guild.selfMember.canInteract(role)) {
                     guild.addRoleToMember(member, role).reason("joinrole $group").queue()
+                } else {
+                    LogUtils.sendMessageFailedToAddRoleToMember(daoManager, member, role)
                 }
             }
         }

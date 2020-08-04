@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.database
 
 import kotlinx.coroutines.runBlocking
-import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.database.alias.AliasDao
 import me.melijn.melijnbot.database.alias.AliasWrapper
 import me.melijn.melijnbot.database.audio.*
@@ -26,6 +25,8 @@ import me.melijn.melijnbot.database.disabled.DisabledCommandDao
 import me.melijn.melijnbot.database.disabled.DisabledCommandWrapper
 import me.melijn.melijnbot.database.economy.BalanceDao
 import me.melijn.melijnbot.database.economy.BalanceWrapper
+import me.melijn.melijnbot.database.economy.DailyCooldownDao
+import me.melijn.melijnbot.database.economy.DailyCooldownWrapper
 import me.melijn.melijnbot.database.embed.*
 import me.melijn.melijnbot.database.filter.FilterDao
 import me.melijn.melijnbot.database.filter.FilterGroupDao
@@ -58,10 +59,12 @@ import me.melijn.melijnbot.database.time.TimeZoneDao
 import me.melijn.melijnbot.database.time.TimeZoneWrapper
 import me.melijn.melijnbot.database.verification.*
 import me.melijn.melijnbot.database.votes.VoteDao
+import me.melijn.melijnbot.database.votes.VoteReminderDao
+import me.melijn.melijnbot.database.votes.VoteReminderWrapper
 import me.melijn.melijnbot.database.votes.VoteWrapper
 import me.melijn.melijnbot.database.warn.WarnDao
 import me.melijn.melijnbot.database.warn.WarnWrapper
-import me.melijn.melijnbot.internals.threading.TaskManager
+import me.melijn.melijnbot.internals.Settings
 
 const val RAPIDLY_USED_CACHE = 1L
 const val NOT_IMPORTANT_CACHE = 2L
@@ -73,7 +76,7 @@ const val LARGE_CACHE = 200L
 const val NORMAL_CACHE = 100L
 const val SMALL_CACHE = 50L
 
-class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
+class DaoManager(dbSettings: Settings.Database) {
 
     companion object {
         val afterTableFunctions = mutableListOf<() -> Unit>()
@@ -162,9 +165,12 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
     val botLogStateWrapper: BotLogStateWrapper
     val removeResponseWrapper: RemoveResponseWrapper
     val removeInvokeWrapper: RemoveInvokeWrapper
+    val denyVoteReminderWrapper: DenyVoteReminderWrapper
+    val voteReminderWrapper: VoteReminderWrapper
 
     val voteWrapper: VoteWrapper
     val balanceWrapper: BalanceWrapper
+    val dailyCooldownWrapper: DailyCooldownWrapper
     var driverManager: DriverManager
 
     init {
@@ -179,90 +185,92 @@ class DaoManager(taskManager: TaskManager, dbSettings: Settings.Database) {
 
         tracksWrapper = TracksWrapper(TracksDao(driverManager), LastVoiceChannelDao(driverManager))
         songCacheWrapper = SongCacheWrapper(SongCacheDao(driverManager))
-        gainProfileWrapper = GainProfileWrapper(taskManager, GainProfileDao(driverManager))
-        musicNodeWrapper = MusicNodeWrapper(taskManager, MusicNodeDao(driverManager))
-        music247Wrapper = Music247Wrapper(taskManager, Music247Dao(driverManager))
+        gainProfileWrapper = GainProfileWrapper(GainProfileDao(driverManager))
+        musicNodeWrapper = MusicNodeWrapper(MusicNodeDao(driverManager))
+        music247Wrapper = Music247Wrapper(Music247Dao(driverManager))
 
-        streamUrlWrapper = StreamUrlWrapper(taskManager, StreamUrlDao(driverManager))
+        streamUrlWrapper = StreamUrlWrapper(StreamUrlDao(driverManager))
 
-        commandWrapper = CommandWrapper(taskManager, CommandDao(driverManager))
-        commandUsageWrapper = CommandUsageWrapper(taskManager, CommandUsageDao(driverManager))
-        customCommandWrapper = CustomCommandWrapper(taskManager, CustomCommandDao((driverManager)))
+        commandWrapper = CommandWrapper(CommandDao(driverManager))
+        commandUsageWrapper = CommandUsageWrapper(CommandUsageDao(driverManager))
+        customCommandWrapper = CustomCommandWrapper(CustomCommandDao((driverManager)))
 
-        guildLanguageWrapper = GuildLanguageWrapper(taskManager, GuildLanguageDao(driverManager))
-        userLanguageWrapper = UserLanguageWrapper(taskManager, UserLanguageDao(driverManager))
+        guildLanguageWrapper = GuildLanguageWrapper(GuildLanguageDao(driverManager))
+        userLanguageWrapper = UserLanguageWrapper(UserLanguageDao(driverManager))
 
-        rolePermissionWrapper = RolePermissionWrapper(taskManager, RolePermissionDao(driverManager))
-        userPermissionWrapper = UserPermissionWrapper(taskManager, UserPermissionDao(driverManager))
-        channelRolePermissionWrapper = ChannelRolePermissionWrapper(taskManager, ChannelRolePermissionDao(driverManager))
-        channelUserPermissionWrapper = ChannelUserPermissionWrapper(taskManager, ChannelUserPermissionDao(driverManager))
+        rolePermissionWrapper = RolePermissionWrapper(RolePermissionDao(driverManager))
+        userPermissionWrapper = UserPermissionWrapper(UserPermissionDao(driverManager))
+        channelRolePermissionWrapper = ChannelRolePermissionWrapper(ChannelRolePermissionDao(driverManager))
+        channelUserPermissionWrapper = ChannelUserPermissionWrapper(ChannelUserPermissionDao(driverManager))
 
-        disabledCommandWrapper = DisabledCommandWrapper(taskManager, DisabledCommandDao(driverManager))
+        disabledCommandWrapper = DisabledCommandWrapper(DisabledCommandDao(driverManager))
 
-        channelCommandStateWrapper = ChannelCommandStateWrapper(taskManager, ChannelCommandStateDao(driverManager))
+        channelCommandStateWrapper = ChannelCommandStateWrapper(ChannelCommandStateDao(driverManager))
 
-        commandCooldownWrapper = CommandCooldownWrapper(taskManager, CommandCooldownDao(driverManager))
-        commandChannelCoolDownWrapper = CommandChannelCooldownWrapper(taskManager, CommandChannelCooldownDao(driverManager))
+        commandCooldownWrapper = CommandCooldownWrapper(CommandCooldownDao(driverManager))
+        commandChannelCoolDownWrapper = CommandChannelCooldownWrapper(CommandChannelCooldownDao(driverManager))
 
-        guildPrefixWrapper = GuildPrefixWrapper(taskManager, GuildPrefixDao(driverManager))
-        userPrefixWrapper = UserPrefixWrapper(taskManager, UserPrefixDao(driverManager))
-        allowSpacedPrefixWrapper = AllowSpacedPrefixWrapper(taskManager,
-            AllowSpacedPrefixDao(driverManager), PrivateAllowSpacedPrefixDao(driverManager)
+        guildPrefixWrapper = GuildPrefixWrapper(GuildPrefixDao(driverManager))
+        userPrefixWrapper = UserPrefixWrapper(UserPrefixDao(driverManager))
+        allowSpacedPrefixWrapper = AllowSpacedPrefixWrapper(AllowSpacedPrefixDao(driverManager), PrivateAllowSpacedPrefixDao(driverManager)
         )
-        aliasWrapper = AliasWrapper(taskManager, AliasDao(driverManager))
+        aliasWrapper = AliasWrapper(AliasDao(driverManager))
 
-        supporterWrapper = SupporterWrapper(taskManager, UserSupporterDao(driverManager))
+        supporterWrapper = SupporterWrapper(UserSupporterDao(driverManager))
 
-        embedDisabledWrapper = EmbedDisabledWrapper(taskManager, EmbedDisabledDao(driverManager))
-        embedColorWrapper = EmbedColorWrapper(taskManager, EmbedColorDao(driverManager))
-        userEmbedColorWrapper = UserEmbedColorWrapper(taskManager, UserEmbedColorDao(driverManager))
+        embedDisabledWrapper = EmbedDisabledWrapper(EmbedDisabledDao(driverManager))
+        embedColorWrapper = EmbedColorWrapper(EmbedColorDao(driverManager))
+        userEmbedColorWrapper = UserEmbedColorWrapper(UserEmbedColorDao(driverManager))
 
-        logChannelWrapper = LogChannelWrapper(taskManager, LogChannelDao(driverManager))
-        channelWrapper = ChannelWrapper(taskManager, ChannelDao(driverManager))
-        musicChannelWrapper = MusicChannelWrapper(taskManager, MusicChannelDao(driverManager))
-        roleWrapper = RoleWrapper(taskManager, RoleDao(driverManager))
-        joinRoleWrapper = JoinRoleWrapper(taskManager, JoinRoleDao(driverManager))
-        joinRoleGroupWrapper = JoinRoleGroupWrapper(taskManager, JoinRoleGroupDao(driverManager))
-        selfRoleWrapper = SelfRoleWrapper(taskManager, SelfRoleDao(driverManager))
-        selfRoleGroupWrapper = SelfRoleGroupWrapper(taskManager, SelfRoleGroupDao(driverManager))
-        selfRoleModeWrapper = SelfRoleModeWrapper(taskManager, SelfRoleModeDao(driverManager))
-        tempRoleWrapper = TempRoleWrapper(taskManager, TempRoleDao(driverManager))
+        logChannelWrapper = LogChannelWrapper(LogChannelDao(driverManager))
+        channelWrapper = ChannelWrapper(ChannelDao(driverManager))
+        musicChannelWrapper = MusicChannelWrapper(MusicChannelDao(driverManager))
+        roleWrapper = RoleWrapper(RoleDao(driverManager))
+        joinRoleWrapper = JoinRoleWrapper(JoinRoleDao(driverManager))
+        joinRoleGroupWrapper = JoinRoleGroupWrapper(JoinRoleGroupDao(driverManager))
+        selfRoleWrapper = SelfRoleWrapper(SelfRoleDao(driverManager))
+        selfRoleGroupWrapper = SelfRoleGroupWrapper(SelfRoleGroupDao(driverManager))
+        selfRoleModeWrapper = SelfRoleModeWrapper(SelfRoleModeDao(driverManager))
+        tempRoleWrapper = TempRoleWrapper(TempRoleDao(driverManager))
 
-        banWrapper = BanWrapper(taskManager, BanDao(driverManager))
-        muteWrapper = MuteWrapper(taskManager, MuteDao(driverManager))
-        kickWrapper = KickWrapper(taskManager, KickDao(driverManager))
-        warnWrapper = WarnWrapper(taskManager, WarnDao(driverManager))
-        softBanWrapper = SoftBanWrapper(taskManager, SoftBanDao(driverManager))
+        banWrapper = BanWrapper(BanDao(driverManager))
+        muteWrapper = MuteWrapper(MuteDao(driverManager))
+        kickWrapper = KickWrapper(KickDao(driverManager))
+        warnWrapper = WarnWrapper(WarnDao(driverManager))
+        softBanWrapper = SoftBanWrapper(SoftBanDao(driverManager))
 
-        messageHistoryWrapper = MessageHistoryWrapper(taskManager, MessageHistoryDao(driverManager))
-        messageWrapper = MessageWrapper(taskManager, MessageDao(driverManager))
-        forceRoleWrapper = ForceRoleWrapper(taskManager, ForceRoleDao(driverManager))
+        messageHistoryWrapper = MessageHistoryWrapper(MessageHistoryDao(driverManager))
+        messageWrapper = MessageWrapper(MessageDao(driverManager))
+        forceRoleWrapper = ForceRoleWrapper(ForceRoleDao(driverManager))
 
-        verificationPasswordWrapper = VerificationPasswordWrapper(taskManager, VerificationPasswordDao(driverManager))
-        verificationEmotejiWrapper = VerificationEmotejiWrapper(taskManager, VerificationEmotejiDao(driverManager))
-        verificationTypeWrapper = VerificationTypeWrapper(taskManager, VerificationTypeDao(driverManager))
-        verificationUserFlowRateWrapper = VerificationUserFlowRateWrapper(taskManager, VerificationUserFlowRateDao(driverManager))
-        unverifiedUsersWrapper = UnverifiedUsersWrapper(taskManager, UnverifiedUsersDao(driverManager))
+        verificationPasswordWrapper = VerificationPasswordWrapper(VerificationPasswordDao(driverManager))
+        verificationEmotejiWrapper = VerificationEmotejiWrapper(VerificationEmotejiDao(driverManager))
+        verificationTypeWrapper = VerificationTypeWrapper(VerificationTypeDao(driverManager))
+        verificationUserFlowRateWrapper = VerificationUserFlowRateWrapper(VerificationUserFlowRateDao(driverManager))
+        unverifiedUsersWrapper = UnverifiedUsersWrapper(UnverifiedUsersDao(driverManager))
 
-        filterWrapper = FilterWrapper(taskManager, FilterDao(driverManager))
-        filterGroupWrapper = FilterGroupWrapper(taskManager, FilterGroupDao(driverManager))
-        spamWrapper = SpamWrapper(taskManager, SpamDao(driverManager))
-        spamGroupWrapper = SpamGroupWrapper(taskManager, SpamGroupDao(driverManager))
-        autoPunishmentWrapper = AutoPunishmentWrapper(taskManager, AutoPunishmentDao(driverManager))
-        autoPunishmentGroupWrapper = PunishmentGroupWrapper(taskManager, PunishmentGroupDao(driverManager))
-        punishmentWrapper = PunishmentWrapper(taskManager, PunishmentDao(driverManager))
+        filterWrapper = FilterWrapper(FilterDao(driverManager))
+        filterGroupWrapper = FilterGroupWrapper(FilterGroupDao(driverManager))
+        spamWrapper = SpamWrapper(SpamDao(driverManager))
+        spamGroupWrapper = SpamGroupWrapper(SpamGroupDao(driverManager))
+        autoPunishmentWrapper = AutoPunishmentWrapper(AutoPunishmentDao(driverManager))
+        autoPunishmentGroupWrapper = PunishmentGroupWrapper(PunishmentGroupDao(driverManager))
+        punishmentWrapper = PunishmentWrapper(PunishmentDao(driverManager))
 
         birthdayWrapper = BirthdayWrapper(BirthdayDao(driverManager))
         birthdayHistoryWrapper = BirthdayHistoryWrapper(BirthdayHistoryDao(driverManager))
-        timeZoneWrapper = TimeZoneWrapper(taskManager, TimeZoneDao(driverManager))
+        timeZoneWrapper = TimeZoneWrapper(TimeZoneDao(driverManager))
 
-        bannedOrKickedTriggersLeaveWrapper = BannedOrKickedTriggersLeaveWrapper(taskManager, BannedOrKickedTriggersLeaveDao(driverManager))
-        botLogStateWrapper = BotLogStateWrapper(taskManager, BotLogStateDao(driverManager))
-        removeResponseWrapper = RemoveResponseWrapper(taskManager, RemoveResponsesDao(driverManager))
-        removeInvokeWrapper = RemoveInvokeWrapper(taskManager, RemoveInvokeDao(driverManager))
+        bannedOrKickedTriggersLeaveWrapper = BannedOrKickedTriggersLeaveWrapper(BannedOrKickedTriggersLeaveDao(driverManager))
+        botLogStateWrapper = BotLogStateWrapper(BotLogStateDao(driverManager))
+        removeResponseWrapper = RemoveResponseWrapper(RemoveResponsesDao(driverManager))
+        removeInvokeWrapper = RemoveInvokeWrapper(RemoveInvokeDao(driverManager))
+        denyVoteReminderWrapper = DenyVoteReminderWrapper(DenyVoteReminderDao(driverManager))
+        voteReminderWrapper = VoteReminderWrapper(VoteReminderDao(driverManager))
 
         voteWrapper = VoteWrapper(VoteDao(driverManager))
-        balanceWrapper = BalanceWrapper(taskManager, BalanceDao(driverManager))
+        balanceWrapper = BalanceWrapper(BalanceDao(driverManager))
+        dailyCooldownWrapper = DailyCooldownWrapper(DailyCooldownDao(driverManager))
         //After registering wrappers
         driverManager.executeTableRegistration()
         for (func in afterTableFunctions) {

@@ -4,6 +4,7 @@ import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.events.AbstractListener
 import me.melijn.melijnbot.internals.events.eventutil.VoiceUtil
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.web.RestServer
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.GenericEvent
@@ -34,7 +35,7 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
 
 
             if (!container.serviceManager.started) {
-                container.taskManager.async {
+                TaskManager.async {
                     logger.info("Starting music clients..")
                     VoiceUtil.resumeMusic(event, container)
                     logger.info("Started music clients")
@@ -47,7 +48,7 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
                 container.serviceManager.startServices()
                 logger.info("Services ready")
 
-                container.taskManager.async {
+                TaskManager.async {
                     logger.info("Starting rest-server..")
 
                     val restServer = RestServer(container)

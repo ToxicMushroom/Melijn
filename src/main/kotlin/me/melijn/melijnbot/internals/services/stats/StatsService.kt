@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 class StatsService(
     val shardManager: ShardManager,
     private val botListApi: BotListApi
-) : Service("Stats", 2, 3, TimeUnit.MINUTES) {
+) : Service("Stats", 3, 3, TimeUnit.MINUTES) {
 
     override val service = RunnableTask {
         val shards = shardManager.shardCache.size()

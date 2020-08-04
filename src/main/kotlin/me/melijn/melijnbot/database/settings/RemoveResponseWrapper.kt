@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 class RemoveResponseWrapper(
-    val taskManager: TaskManager,
+
     private val removeResponsesDao: RemoveResponsesDao
 ) {
 
@@ -21,7 +21,7 @@ class RemoveResponseWrapper(
 
     private fun getMap(guildId: Long): CompletableFuture<Map<Long, Int>> {
         val future = CompletableFuture<Map<Long, Int>>()
-        taskManager.async {
+       TaskManager.async {
             val result = removeResponsesDao.getChannels(guildId)
             future.complete(result)
         }

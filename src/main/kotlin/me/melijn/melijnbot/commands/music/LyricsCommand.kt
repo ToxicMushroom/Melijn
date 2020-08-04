@@ -26,13 +26,13 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
-            if (RunConditionUtil.checkPlayingTrackNotNull(context.container, context.event, context.getLanguage())) {
-                val info = context.guildMusicPlayer.guildTrackManager.playingTrack?.info
+            if (RunConditionUtil.checkPlayingTrackNotNull(context.container, context.event)) {
+                val info = context.getGuildMusicPlayer().guildTrackManager.playingTrack?.info
                     ?: throw IllegalArgumentException("angry pepe")
 
                 val lyrics = getLyricsNMessage(context, info.title, info.author) ?: return
 
-                formatAndSendLyrics(context, info.title + " " + info.author, lyrics.first, lyrics.second)
+                formatAndSendLyrics(context, lyrics.first, lyrics.second)
             } else {
                 val msg = context.getTranslation("$root.extrahelp")
                     .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
@@ -42,20 +42,21 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
             val title = context.rawArg
             val lyrics = getLyricsNMessage(context, title, null) ?: return
 
-            formatAndSendLyrics(context, title, lyrics.first, lyrics.second)
+            formatAndSendLyrics(context, lyrics.first, lyrics.second)
         }
     }
 
-    private suspend fun formatAndSendLyrics(context: CommandContext, title: String, name: String, lyrics: String) {
-        val embed = Embedder(context)
-        embed.setTitle(name.take(MessageEmbed.TITLE_MAX_LENGTH))
-        embed.setDescription(lyrics.take(MessageEmbed.TEXT_MAX_LENGTH))
-
+    private suspend fun formatAndSendLyrics(context: CommandContext, name: String, lyrics: String) {
         val words = context.getTranslation("$root.words")
         val characters = context.getTranslation("$root.characters")
+        val powered = context.getTranslation("$root.powered")
 
-        embed.addField(words, "${lyrics.countWords()}", true)
-        embed.addField(characters, "${lyrics.remove(" ").length}", true)
+        val embed = Embedder(context)
+            .setTitle(name.take(MessageEmbed.TITLE_MAX_LENGTH))
+            .setDescription(lyrics.take(MessageEmbed.TEXT_MAX_LENGTH))
+            .addField(words, "${lyrics.countWords()}", true)
+            .addField(characters, "${lyrics.remove(" ").length}", true)
+            .setFooter(powered.withVariable("url", "api.ksoft.si"))
 
         sendEmbedRsp(context, embed.build())
     }
@@ -65,7 +66,7 @@ class LyricsCommand : AbstractCommand("command.lyrics") {
         val json = WebUtils.getJsonFromUrl(context.webManager.httpClient,
             "$KSOFT_SI/lyrics/search",
             mutableMapOf(
-                Pair("q", title + author?.let { " $author" }),
+                Pair("q", title + (author?.let { " $author" } ?: "")),
                 Pair("limit", "1")
             ),
             mutableMapOf(Pair("Authorization", context.container.settings.tokens.kSoftApi))

@@ -3,10 +3,10 @@ package me.melijn.melijnbot.internals.utils.message
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
-import me.melijn.melijnbot.Settings
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.message.ModularMessage
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
+import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.threading.TaskManager
@@ -52,34 +52,33 @@ fun canResponse(messageChannel: MessageChannel, supporterWrapper: SupporterWrapp
 
 fun sendRsp(context: CommandContext, msg: String) {
     if (canResponse(context.messageChannel, context.daoManager.supporterWrapper)) {
-        sendRsp(context.textChannel, context.taskManager, context.daoManager, msg)
+        sendRsp(context.textChannel, context.daoManager, msg)
     } else {
         sendMsg(context, msg)
     }
 }
 
 
-fun sendRsp(channel: TextChannel, taskManager: TaskManager, daoManager: DaoManager, msg: String) {
+fun sendRsp(channel: TextChannel, daoManager: DaoManager, msg: String) {
     require(channel.canTalk()) { "Cannot talk in this channel " + channel.name }
 
     if (msg.length <= 2000) {
         channel.sendMessage(msg).queue { message ->
-            taskManager.async {
+            TaskManager.async(channel) {
                 handleRspDelete(daoManager, message)
             }
         }
     } else {
         val msgParts = StringUtils.splitMessage(msg)
 
-        taskManager.async {
+        TaskManager.async(channel) {
             val msgList = mutableListOf<Message>()
             for (text in msgParts) {
                 val oneMessage = channel.sendMessage(text).awaitOrNull() ?: continue
                 msgList.add(oneMessage)
             }
-            taskManager.async {
-                handleRspDelete(daoManager, msgList)
-            }
+
+            handleRspDelete(daoManager, msgList)
         }
     }
 }
@@ -87,30 +86,30 @@ fun sendRsp(channel: TextChannel, taskManager: TaskManager, daoManager: DaoManag
 
 fun sendRsp(textChannel: TextChannel, context: CommandContext, msg: ModularMessage) {
     if (canResponse(textChannel, context.daoManager.supporterWrapper)) {
-        sendRsp(textChannel, context.taskManager, context.daoManager, msg)
+        sendRsp(textChannel, context.daoManager, msg)
     } else {
         sendMsg(textChannel, msg)
     }
 }
 
-fun sendRspOrMsg(textChannel: TextChannel, taskManager: TaskManager, daoManager: DaoManager, msg: String) {
+fun sendRspOrMsg(textChannel: TextChannel, daoManager: DaoManager, msg: String) {
     if (canResponse(textChannel, daoManager.supporterWrapper)) {
-        sendRsp(textChannel, taskManager, daoManager, msg)
+        sendRsp(textChannel, daoManager, msg)
     } else {
         sendMsg(textChannel, msg)
     }
 }
 
-fun sendRsp(channel: TextChannel, taskManager: TaskManager, daoManager: DaoManager, msg: ModularMessage) {
+fun sendRsp(channel: TextChannel, daoManager: DaoManager, msg: ModularMessage) {
     val message: Message? = msg.toMessage()
     when {
-        message == null -> sendRspAttachments(daoManager, taskManager, channel, msg.attachments)
-        msg.attachments.isNotEmpty() -> sendRspWithAttachments(daoManager, taskManager, channel, message, msg.attachments)
-        else -> sendRsp(channel, taskManager, daoManager, message)
+        message == null -> sendRspAttachments(daoManager, channel, msg.attachments)
+        msg.attachments.isNotEmpty() -> sendRspWithAttachments(daoManager, channel, message, msg.attachments)
+        else -> sendRsp(channel, daoManager, message)
     }
 }
 
-fun sendRsp(channel: TextChannel, taskManager: TaskManager, daoManager: DaoManager, message: Message) {
+fun sendRsp(channel: TextChannel, daoManager: DaoManager, message: Message) {
     require(channel.canTalk()) {
         "Cannot talk in this channel: #(${channel.name}, ${channel.id}) - ${channel.guild.id}"
     }
@@ -126,7 +125,7 @@ fun sendRsp(channel: TextChannel, taskManager: TaskManager, daoManager: DaoManag
         else action.embed(embed)
     }
 
-    taskManager.async {
+    TaskManager.async(channel) {
         val msg = action?.awaitOrNull() ?: return@async
 
         handleRspDelete(daoManager, msg)
@@ -142,12 +141,12 @@ suspend fun sendMsgAwaitN(privateChannel: PrivateChannel, msg: ModularMessage): 
     }
 }
 
-suspend fun sendRspAwaitN(textChannel: TextChannel, daoManager: DaoManager, taskManager: TaskManager, msg: ModularMessage): Message? {
+suspend fun sendRspAwaitN(textChannel: TextChannel, daoManager: DaoManager, msg: ModularMessage): Message? {
     val message: Message? = msg.toMessage()
     return when {
-        message == null -> sendAttachmentsRspAwaitN(textChannel, daoManager, taskManager, msg.attachments)
-        msg.attachments.isNotEmpty() -> sendRspWithAttachmentsAwaitN(textChannel, daoManager, taskManager, message, msg.attachments)
-        else -> sendRspAwaitN(textChannel, daoManager, taskManager, message)
+        message == null -> sendAttachmentsRspAwaitN(textChannel, daoManager, msg.attachments)
+        msg.attachments.isNotEmpty() -> sendRspWithAttachmentsAwaitN(textChannel, daoManager, message, msg.attachments)
+        else -> sendRspAwaitN(textChannel, daoManager, message)
     }
 }
 
@@ -200,13 +199,13 @@ fun sendMsg(privateChannel: PrivateChannel, msg: String) {
 
 suspend fun sendRspAwaitEL(context: CommandContext, msg: String): List<Message> {
     return if (canResponse(context.messageChannel, context.daoManager.supporterWrapper)) {
-        sendRspAwaitEL(context.textChannel, context.daoManager, context.taskManager, msg)
+        sendRspAwaitEL(context.textChannel, context.daoManager, msg)
     } else {
         sendMsgAwaitEL(context, msg)
     }
 }
 
-suspend fun sendRspAwaitEL(channel: TextChannel, daoManager: DaoManager, taskManager: TaskManager, msg: String): List<Message> {
+suspend fun sendRspAwaitEL(channel: TextChannel, daoManager: DaoManager, msg: String): List<Message> {
     require(channel.canTalk()) { "Cannot talk in this channel " + channel.name }
 
     val messageList = mutableListOf<Message>()
@@ -214,7 +213,7 @@ suspend fun sendRspAwaitEL(channel: TextChannel, daoManager: DaoManager, taskMan
         val message = channel.sendMessage(msg).awaitOrNull() ?: return messageList
         messageList.add(message)
 
-        taskManager.async {
+        TaskManager.async(channel) {
             handleRspDelete(daoManager, message)
         }
 
@@ -224,7 +223,7 @@ suspend fun sendRspAwaitEL(channel: TextChannel, daoManager: DaoManager, taskMan
             val message = channel.sendMessage(text).awaitOrNull() ?: continue
             messageList.add(index, message)
 
-            taskManager.async {
+            TaskManager.async(channel) {
                 handleRspDelete(daoManager, message)
             }
         }
@@ -380,7 +379,7 @@ suspend fun sendFeatureRequiresGuildPremiumMessage(context: CommandContext, feat
 }
 
 fun getNicerUsedPrefix(settings: Settings, prefix: String): String {
-    return if (prefix.contains(settings.id.toString()) && USER_MENTION.matcher(prefix).matches()) {
+    return if (prefix.contains(settings.id.toString()) && USER_MENTION.matches(prefix)) {
         "@${settings.name} "
     } else {
         prefix

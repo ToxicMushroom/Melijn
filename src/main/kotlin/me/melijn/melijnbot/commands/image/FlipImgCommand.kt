@@ -8,11 +8,11 @@ import me.melijn.melijnbot.internals.utils.ImageUtils
 import net.dv8tion.jda.api.Permission
 import java.awt.image.BufferedImage
 
-class FlipCommand : AbstractCommand("command.flip") {
+class FlipImgCommand : AbstractCommand("command.flipimg") {
 
     init {
         id = 129
-        name = "flip"
+        name = "flipImg"
         aliases = arrayOf("flipGif")
         discordChannelPermissions = arrayOf(Permission.MESSAGE_ATTACH_FILES)
         commandCategory = CommandCategory.IMAGE

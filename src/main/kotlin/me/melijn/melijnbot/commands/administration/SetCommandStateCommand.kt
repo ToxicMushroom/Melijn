@@ -9,7 +9,6 @@ import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_CHANNELCOMMANDSTATE
 import me.melijn.melijnbot.internals.translation.MESSAGE_UNKNOWN_COMMANDSTATE
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
-import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
@@ -98,11 +97,10 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                 ""
             }
 
-            val language = context.getLanguage()
-            val msg = i18n.getTranslation(language, path)
+            val msg = context.getTranslation(path)
                 .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
-                .withVariable("commandCount", commands.size.toString())
-                .withVariable("state", commandState.toString())
+                .withVariable("commandCount", commands.size)
+                .withVariable("state", commandState)
                 .withVariable("commandNode", context.args[1])
 
             sendRsp(context, msg)
@@ -134,9 +132,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                 commandNames.addAll(filteredCommands)
                 commandNames.addAll(filteredCCs)
 
-
-                val language = context.getLanguage()
-                val title = i18n.getTranslation(language, "$root.globaldisabled.response1")
+                val title = context.getTranslation("$root.globaldisabled.response1")
 
                 var content = "```INI"
                 for ((index, name) in commandNames.withIndex()) {

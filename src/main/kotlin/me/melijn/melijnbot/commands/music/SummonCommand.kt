@@ -27,10 +27,10 @@ class SummonCommand : AbstractCommand("command.summon") {
             val vc = context.member.voiceState?.channel ?: throw IllegalStateException("I messed up")
             if (notEnoughPermissionsAndMessage(context, vc, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)) return
 
-            val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
-            context.lavaManager.openConnection(vc, premium)
+            context.lavaManager.openConnection(vc, context.getGuildMusicPlayer().groupId)
             val msg = context.getTranslation("$root.summoned")
             sendRsp(context, msg)
+
         } else {
             val vc = getVoiceChannelByArgNMessage(context, 0) ?: return
             if (!hasPermission(context, "summon.other", true)) {
@@ -40,8 +40,7 @@ class SummonCommand : AbstractCommand("command.summon") {
             if (notEnoughPermissionsAndMessage(context, vc, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)) return
             if (!RunConditionUtil.checkBotAloneOrUserDJ(context.container, context.event, this, context.getLanguage())) return
 
-            val premium = context.daoManager.musicNodeWrapper.isPremium(context.guildId)
-            context.lavaManager.openConnection(vc, premium)
+            context.lavaManager.openConnection(vc, context.getGuildMusicPlayer().groupId)
             val msg = context.getTranslation("$root.summoned.other")
                 .withVariable(PLACEHOLDER_CHANNEL, vc.name)
             sendRsp(context, msg)

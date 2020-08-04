@@ -8,7 +8,7 @@ import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class ChannelWrapper(private val taskManager: TaskManager, private val channelDao: ChannelDao) {
+class ChannelWrapper(private val channelDao: ChannelDao) {
 
     val channelCache = CacheBuilder.newBuilder()
         .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
@@ -19,7 +19,7 @@ class ChannelWrapper(private val taskManager: TaskManager, private val channelDa
     private fun getChannelId(guildId: Long, channelType: ChannelType): CompletableFuture<Long> {
         val future = CompletableFuture<Long>()
 
-        taskManager.async {
+       TaskManager.async {
             val channelId = channelDao.get(guildId, channelType)
             future.complete(channelId)
         }

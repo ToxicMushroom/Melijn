@@ -40,21 +40,21 @@ class GainProfileDao(driverManager: DriverManager) : Dao(driverManager) {
 }
 
 data class GainProfile(
-    val band0: Float = 0.0f,
-    val band1: Float = 0.0f,
-    val band2: Float = 0.0f,
-    val band3: Float = 0.0f,
-    val band4: Float = 0.0f,
-    val band5: Float = 0.0f,
-    val band6: Float = 0.0f,
-    val band7: Float = 0.0f,
-    val band8: Float = 0.0f,
-    val band9: Float = 0.0f,
-    val band10: Float = 0.0f,
-    val band11: Float = 0.0f,
-    val band12: Float = 0.0f,
-    val band13: Float = 0.0f,
-    val band14: Float = 0.0f
+    val band0: Float = 0.0f, // 25Hz
+    val band1: Float = 0.0f, // 40Hz
+    val band2: Float = 0.0f, // 63Hz
+    val band3: Float = 0.0f, // 100Hz
+    val band4: Float = 0.0f, // 160Hz
+    val band5: Float = 0.0f, // 250Hz
+    val band6: Float = 0.0f, // 400Hz
+    val band7: Float = 0.0f, // 630Hz
+    val band8: Float = 0.0f, // 1kHz
+    val band9: Float = 0.0f, // 1.6kHz
+    val band10: Float = 0.0f, // 2.5kHz
+    val band11: Float = 0.0f, // 4kHz
+    val band12: Float = 0.0f, // 6.3kHz
+    val band13: Float = 0.0f, // 10kHz
+    val band14: Float = 0.0f // 16kHz
 ) {
 
     fun toFloatArray(): FloatArray = floatArrayOf(
