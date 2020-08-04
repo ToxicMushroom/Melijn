@@ -16,19 +16,19 @@ class ToggleVoteReminderCommand : AbstractCommand("command.togglevotereminder") 
 
     override suspend fun execute(context: CommandContext) {
         val wrapper = context.daoManager.denyVoteReminderWrapper
-        val current = wrapper.contains(context.authorId)
+        val denied = wrapper.contains(context.authorId)
         if (context.args.isEmpty() || context.args[0] != "view") {
-            if (current) {
+            if (denied) {
                 wrapper.remove(context.authorId)
             } else {
                 wrapper.add(context.authorId)
             }
 
-            val msg = context.getTranslation("$root.set.${!current}")
+            val msg = context.getTranslation("$root.set.${!denied}")
             sendRsp(context, msg)
         } else {
 
-            val msg = context.getTranslation("$root.show.$current")
+            val msg = context.getTranslation("$root.show.$denied")
             sendRsp(context, msg)
         }
     }
