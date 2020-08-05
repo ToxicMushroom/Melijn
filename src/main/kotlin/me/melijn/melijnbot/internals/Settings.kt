@@ -16,6 +16,7 @@ data class Settings(
     val exceptionChannel: Long,
     val jikan: Jikan,
     val melijnCDN: MelijnCDN,
+    val imghoard: Imghoard,
     val spotify: Spotify,
     val lavalink: Lavalink,
     val tokens: Tokens,
@@ -72,6 +73,10 @@ data class Settings(
     )
 
     data class MelijnCDN(
+        var token: String
+    )
+
+    data class Imghoard(
         var token: String
     )
 }
