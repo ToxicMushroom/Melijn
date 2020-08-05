@@ -158,7 +158,7 @@ object RunConditionUtil {
 
     }
 
-    //passes if the bot is in the same vc with one listener
+    // passes if the bot is in the same vc with one listener
     suspend fun checkOtherOrSameVCBotAloneOrUserDJ(container: Container, event: MessageReceivedEvent, command: AbstractCommand, language: String): Boolean {
         val member = event.member ?: return false
         val vc = member.voiceState?.channel
@@ -200,6 +200,29 @@ object RunConditionUtil {
             true
         } else {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.botalone")
+            sendRspOrMsg(event.textChannel, container.daoManager, msg)
+            false
+        }
+    }
+
+    // Used by summon command without args
+    suspend fun checkOtherBotAloneOrDJOrSameVC(container: Container, event: MessageReceivedEvent, command: AbstractCommand, language: String): Boolean {
+        val member = event.member ?: return false
+        val vc = member.voiceState?.channel
+        val bc = member.guild.selfMember.voiceState?.channel
+
+        if (vc == null) {
+            val msg = i18n.getTranslation(language, "message.runcondition.failed.vc")
+            sendRspOrMsg(event.textChannel, container.daoManager, msg)
+            return false
+        }
+
+        return if (bc == null) true
+        else if (vc.idLong == bc.idLong) true
+        else if (vc.idLong != bc.idLong && listeningMembers(bc) == 0) true
+        else if (hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_VCBOTALONE.node, false)) true
+        else {
+            val msg = i18n.getTranslation(language, "message.runcondition.failed.vcbotalone")
             sendRspOrMsg(event.textChannel, container.daoManager, msg)
             false
         }
