@@ -18,11 +18,15 @@ object WebUtils {
         params: Map<String, String> = emptyMap(),
         headers: Map<String, String>
     ): String? {
-        val fullUrlWithParams = url + params.entries.joinToString("&", "?",
-            transform = { entry ->
-                entry.key + "=" + entry.value
-            }
-        )
+        val fullUrlWithParams = url +
+            if (params.isNotEmpty()) {
+                params.entries.joinToString("&", "?",
+                    transform = { entry ->
+                        entry.key + "=" + entry.value
+                    })
+            } else ""
+
+
 
         return try {
             httpClient.get<String>(fullUrlWithParams) {
