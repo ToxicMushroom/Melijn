@@ -24,12 +24,12 @@ class PenguinCommand : AbstractCommand("command.penguin") {
 
         val eb = Embedder(context)
             .setTitle(title)
-            .setImage(getRandomPandaUrl(web, context.container.settings.melijnCDN.token))
+            .setImage(getRandomPenguinUrl(web, context.container.settings.melijnCDN.token))
         sendEmbedRsp(context, eb.build())
     }
 
-    private suspend fun getRandomPandaUrl(webManager: WebManager, token: String): String {
-        val reply = WebUtils.getJsonFromUrl(webManager.httpClient, "https://cdnapi.melijn.com/img/penguin", headers =
+    private suspend fun getRandomPenguinUrl(webManager: WebManager, token: String): String {
+        val reply = WebUtils.getJsonFromUrl(webManager.httpClient, "https://api.miki.bot/images/random?tags=penguin", headers =
         mapOf(Pair("token", token))) ?: return MISSING_IMAGE_URL
         return reply.getString("url")
     }
