@@ -534,7 +534,11 @@ object MessageCommandUtil {
             }
         }.withVariable(PLACEHOLDER_TYPE, type.text)
 
-        message.embed = eb.build()
+        try { // Fixes the cannot build empty embed error
+            message.embed = eb.build()
+        } catch (t: IllegalStateException) {
+            message.embed = null
+        }
         sendRsp(context, msg)
     }
 

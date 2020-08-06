@@ -103,7 +103,12 @@ data class ModularMessage(
             mb.setAllowedMentions(emptyList())
         }
 
-        return mb.build()
+        return try {
+            mb.build()
+        } catch (t: IllegalStateException) { // Fixes: Cannot build a Message with no content
+            mb.setContent("This message had no content. (This is placeholder text for empty messages)")
+                .build()
+        }
     }
 
     companion object {
