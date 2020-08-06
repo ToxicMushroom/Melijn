@@ -212,7 +212,8 @@ class CommandClientBuilder(private val container: Container) {
         NightcoreCommand(),
         LeaderBoardCommand(),
         TopVotersCommand(),
-        ToggleVoteReminderCommand()
+        ToggleVoteReminderCommand(),
+        MikuCommand()
     )
 
     init {
