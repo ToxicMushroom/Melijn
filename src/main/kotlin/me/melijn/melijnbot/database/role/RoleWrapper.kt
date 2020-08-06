@@ -18,7 +18,7 @@ class RoleWrapper(private val roleDao: RoleDao) {
 
     private fun getRoleId(guildId: Long, roleType: RoleType): CompletableFuture<Long> {
         val future = CompletableFuture<Long>()
-       TaskManager.async {
+        TaskManager.async {
             val roleId = roleDao.get(guildId, roleType)
             future.complete(roleId)
         }

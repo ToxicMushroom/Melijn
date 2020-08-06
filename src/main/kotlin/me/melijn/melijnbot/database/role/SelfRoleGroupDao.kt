@@ -1,16 +1,18 @@
 package me.melijn.melijnbot.database.role
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.internals.utils.splitIETEL
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class SelfRoleGroupDao(driverManager: DriverManager) : Dao(driverManager) {
+class SelfRoleGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "selfRoleGroups"
     override val tableStructure: String = "guildId bigint, groupName varchar(64), messageIds varchar(1024), channelId bigint, isEnabled boolean, pattern varchar(256), isSelfRoleable boolean"
     override val primaryKey: String = "guildId, groupName"
+
+    override val cacheName: String = "selfrole:group"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
@@ -37,14 +39,14 @@ class SelfRoleGroupDao(driverManager: DriverManager) : Dao(driverManager) {
     }
 
 
-    suspend fun set(guildId: Long, groupName: String, messageIds: String, channelId: Long, isEnabled: Boolean, pattern: String, isSelfRoleable: Boolean) {
+    fun set(guildId: Long, groupName: String, messageIds: String, channelId: Long, isEnabled: Boolean, pattern: String, isSelfRoleable: Boolean) {
         driverManager.executeUpdate(
             "INSERT INTO $table (guildId, groupName, messageIds, channelId, isEnabled, pattern, isSelfRoleable) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO " +
                 "UPDATE SET messageIds = ?, channelId = ?, isEnabled = ?, pattern = ?, isSelfRoleable = ?",
             guildId, groupName, messageIds, channelId, isEnabled, pattern, isSelfRoleable, messageIds, channelId, isEnabled, pattern, isSelfRoleable)
     }
 
-    suspend fun remove(guildId: Long, groupName: String) {
+    fun remove(guildId: Long, groupName: String) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND groupName = ?",
             guildId, groupName)
     }

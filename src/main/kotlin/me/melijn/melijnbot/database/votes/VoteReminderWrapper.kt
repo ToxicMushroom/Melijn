@@ -2,7 +2,7 @@ package me.melijn.melijnbot.database.votes
 
 class VoteReminderWrapper(private val voteReminderDao: VoteReminderDao) {
 
-    suspend fun addReminder(userId: Long, remindAt: Long) {
+    fun addReminder(userId: Long, remindAt: Long) {
         voteReminderDao.addReminder(userId, remindAt)
     }
 
@@ -10,7 +10,7 @@ class VoteReminderWrapper(private val voteReminderDao: VoteReminderDao) {
         return voteReminderDao.getReminders(beforeMillis)
     }
 
-    suspend fun removeReminders(beforeMillis: Long) {
+    fun removeReminders(beforeMillis: Long) {
         voteReminderDao.removeReminders(beforeMillis)
     }
 }

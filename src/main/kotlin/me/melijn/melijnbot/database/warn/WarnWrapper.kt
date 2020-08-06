@@ -9,7 +9,7 @@ import kotlin.math.min
 
 class WarnWrapper(private val warnDao: WarnDao) {
 
-    suspend fun addWarn(warn: Warn) {
+    fun addWarn(warn: Warn) {
         warnDao.add(warn)
     }
 
@@ -60,7 +60,7 @@ class WarnWrapper(private val warnDao: WarnDao) {
         return map
     }
 
-    suspend fun clear(guildId: Long, warnedId: Long) {
+    fun clear(guildId: Long, warnedId: Long) {
         warnDao.clear(guildId, warnedId)
     }
 
@@ -68,7 +68,7 @@ class WarnWrapper(private val warnDao: WarnDao) {
         return warnDao.getWarns(guildId, warnedId)
     }
 
-    suspend fun remove(warn: Warn) {
+    fun remove(warn: Warn) {
         warnDao.remove(warn)
     }
 }

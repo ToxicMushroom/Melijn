@@ -18,7 +18,7 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey, uniqueKey)
     }
 
-    suspend fun add(warn: Warn) {
+    fun add(warn: Warn) {
         warn.apply {
             driverManager.executeUpdate("INSERT INTO $table (warnId, guildId, warnedId, warnAuthorId, warnReason, warnMoment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
                 warnId, guildId, warnedId, warnAuthorId, reason, moment)
@@ -73,12 +73,12 @@ class WarnDao(driverManager: DriverManager) : Dao(driverManager) {
         }, warnId)
     }
 
-    suspend fun clear(guildId: Long, warnedId: Long) {
+    fun clear(guildId: Long, warnedId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND warnedId = ?",
             guildId, warnedId)
     }
 
-    suspend fun remove(warn: Warn) {
+    fun remove(warn: Warn) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND warnedId = ? AND warnId = ?",
             warn.guildId, warn.warnedId, warn.warnId)
     }

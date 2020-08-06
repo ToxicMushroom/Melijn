@@ -40,7 +40,7 @@ object SelfRoleUtil {
             reaction.reactionEmote.emoji
         }
 
-        val selfRoleGroups = daoManager.selfRoleGroupWrapper.getMap(guildId).await()
+        val selfRoleGroups = daoManager.selfRoleGroupWrapper.getMap(guildId)
         val selfRoleGroupMatches = selfRoleGroups.filter {
             it.channelId == channelId && (it.messageIds.contains(event.messageIdLong) || it.messageIds.isEmpty())
         }
@@ -51,7 +51,7 @@ object SelfRoleUtil {
 
 
         val roles = mutableListOf<Role>()
-        val selfRoles = daoManager.selfRoleWrapper.selfRoleCache.get(guildId).await()
+        val selfRoles = daoManager.selfRoleWrapper.getMap(guildId)
         for ((groupName) in selfRoleGroupMatches) {
             val subMap = selfRoles[groupName] ?: continue
 
