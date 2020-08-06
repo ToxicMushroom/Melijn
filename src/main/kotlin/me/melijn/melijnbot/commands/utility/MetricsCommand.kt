@@ -6,7 +6,7 @@ import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.utils.getCommandsFromArgNMessage
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.internals.utils.getTimespanFromArgNMessage
-import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.utils.message.sendRspCodeBlock
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 
 class MetricsCommand : AbstractCommand("command.metrics") {
@@ -37,7 +37,7 @@ class MetricsCommand : AbstractCommand("command.metrics") {
         }
         msg += "```"
 
-        sendRsp(context, msg)
+        sendRspCodeBlock(context, msg, "INI", true)
     }
 
     class LimitArg(root: String) : AbstractCommand("$root.limit") {
@@ -59,7 +59,7 @@ class MetricsCommand : AbstractCommand("command.metrics") {
             }
             msg += "```"
 
-            sendRsp(context, msg)
+            sendRspCodeBlock(context, msg, "INI", true)
         }
     }
 
@@ -80,7 +80,7 @@ class MetricsCommand : AbstractCommand("command.metrics") {
             }
             msg += "```"
 
-            sendRsp(context, msg)
+            sendRspCodeBlock(context, msg, "INI", true)
         }
     }
 }
