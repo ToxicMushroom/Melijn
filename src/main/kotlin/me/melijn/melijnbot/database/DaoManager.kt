@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.database
 
-import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.database.alias.AliasDao
 import me.melijn.melijnbot.database.alias.AliasWrapper
 import me.melijn.melijnbot.database.audio.*
@@ -65,6 +64,7 @@ import me.melijn.melijnbot.database.votes.VoteWrapper
 import me.melijn.melijnbot.database.warn.WarnDao
 import me.melijn.melijnbot.database.warn.WarnWrapper
 import me.melijn.melijnbot.internals.Settings
+import me.melijn.melijnbot.internals.threading.TaskManager
 
 const val RAPIDLY_USED_CACHE = 1L
 const val NOT_IMPORTANT_CACHE = 2L
@@ -76,7 +76,7 @@ const val LARGE_CACHE = 200L
 const val NORMAL_CACHE = 100L
 const val SMALL_CACHE = 50L
 
-class DaoManager(dbSettings: Settings.Database) {
+class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
 
     companion object {
         val afterTableFunctions = mutableListOf<() -> Unit>()
@@ -129,8 +129,8 @@ class DaoManager(dbSettings: Settings.Database) {
     val selfRoleGroupWrapper: SelfRoleGroupWrapper
     val selfRoleModeWrapper: SelfRoleModeWrapper
 
-    var dbVersion: String
-    var connectorVersion: String
+    lateinit var dbVersion: String
+    lateinit var connectorVersion: String
 
     val banWrapper: BanWrapper
     val muteWrapper: MuteWrapper
@@ -174,11 +174,9 @@ class DaoManager(dbSettings: Settings.Database) {
     var driverManager: DriverManager
 
     init {
-        driverManager = DriverManager(dbSettings
-            //, dbSettings.mySQL
-        )
+        driverManager = DriverManager(dbSettings, redisSettings)
 
-        runBlocking {
+        TaskManager.async {
             dbVersion = driverManager.getDBVersion()
             connectorVersion = driverManager.getConnectorVersion()
         }

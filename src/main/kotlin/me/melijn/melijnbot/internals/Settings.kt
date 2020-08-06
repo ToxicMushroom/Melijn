@@ -21,6 +21,7 @@ data class Settings(
     val lavalink: Lavalink,
     val tokens: Tokens,
     val database: Database,
+    val redis: Redis,
     val unLoggedThreads: Array<String>
 ) {
 
@@ -78,5 +79,10 @@ data class Settings(
 
     data class Imghoard(
         var token: String
+    )
+
+    data class Redis(
+        val host: String,
+        val port: Int
     )
 }
