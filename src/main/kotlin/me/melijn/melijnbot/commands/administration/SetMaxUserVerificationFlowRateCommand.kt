@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -21,7 +20,7 @@ class SetMaxUserVerificationFlowRateCommand : AbstractCommand("command.setmaxuse
     override suspend fun execute(context: CommandContext) {
         val wrapper = context.daoManager.verificationUserFlowRateWrapper
         if (context.args.isEmpty()) {
-            val flowRate = wrapper.verificationUserFlowRateCache.get(context.guildId).await()
+            val flowRate = wrapper.getFlowRate(context.guildId)
             val part = if (flowRate == -1L) {
                 "unset"
             } else {

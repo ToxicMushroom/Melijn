@@ -2,7 +2,7 @@ package me.melijn.melijnbot.database.audio
 
 import com.google.common.cache.CacheBuilder
 import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE_SIZE
 import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import java.util.concurrent.CompletableFuture
@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 class MusicNodeWrapper(private val musicNodeDao: MusicNodeDao) {
 
     val musicNodeCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(NORMAL_CACHE, TimeUnit.MINUTES)
+        .expireAfterAccess(NORMAL_CACHE_SIZE, TimeUnit.MINUTES)
         .build(loadingCacheFrom<Long, String> { guildId ->
             getGainProfile(guildId)
         })

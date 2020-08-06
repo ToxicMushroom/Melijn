@@ -60,7 +60,7 @@ object VoiceUtil {
         if (
             listeningMembers(botChannel) == 0 &&
             !(daoManager.music247Wrapper.music247Cache.get(guildId).await() &&
-                daoManager.supporterWrapper.guildSupporterIds.contains(guildId))
+                daoManager.supporterWrapper.getUsers().contains(guildId))
         ) {
             if (!disconnectQueue.containsKey(guildId)) {
                 disconnectQueue[guildId] = System.currentTimeMillis() + 600_000

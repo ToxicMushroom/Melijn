@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.VerificationType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
@@ -23,7 +22,7 @@ class SetVerificationTypeCommand : AbstractCommand("command.setverificationtype"
     override suspend fun execute(context: CommandContext) {
         val wrapper = context.daoManager.verificationTypeWrapper
         if (context.args.isEmpty()) {
-            val type = wrapper.verificationTypeCache.get(context.guildId).await()
+            val type = wrapper.getType(context.guildId)
             val part = if (type == VerificationType.NONE) "unset" else "set"
             val msg = context.getTranslation("$root.show.$part")
                 .withVariable("type", type.toUCC())

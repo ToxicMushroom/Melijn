@@ -64,17 +64,17 @@ class SettingsCommand : AbstractCommand("command.settings") {
             "\n**PreVerificationLeaveChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.PRE_VERIFICATION_LEAVE)).await()) +
             "\n$logChannels" +
             "\n" +
-            "\n**VerificationPassword:** " + stringToString(daoManager.verificationPasswordWrapper.verificationPasswordCache.get(guildId).await()) +
-            "\n**VerificationEmoteji:** " + stringToString(daoManager.verificationEmotejiWrapper.verificationEmotejiCache.get(guildId).await()) +
-            "\n**VerificationType:** " + stringToString(daoManager.verificationTypeWrapper.verificationTypeCache.get(guildId).await().toUCSC()) +
-            "\n**MaxVerificationFlowRate:** " + daoManager.verificationUserFlowRateWrapper.verificationUserFlowRateCache.get(guildId).await() +
+            "\n**VerificationPassword:** " + stringToString(daoManager.verificationPasswordWrapper.getPassword(guildId)) +
+            "\n**VerificationEmoteji:** " + stringToString(daoManager.verificationEmotejiWrapper.getEmoteji(guildId)) +
+            "\n**VerificationType:** " + stringToString(daoManager.verificationTypeWrapper.getType(guildId).toUCSC()) +
+            "\n**MaxVerificationFlowRate:** " + daoManager.verificationUserFlowRateWrapper.getFlowRate(guildId) +
             "\n" +
             "\n**Prefixes:" +
-            daoManager.guildPrefixWrapper.prefixCache.get(guildId).await().joinToString { pref ->
+            daoManager.guildPrefixWrapper.getPrefixes(guildId).joinToString { pref ->
                 "\n  - **" + MarkdownSanitizer.escape(pref) + "**"
             } +
             "\nPrivatePrefixes:" +
-            daoManager.userPrefixWrapper.prefixCache.get(context.authorId).await().joinToString { pref ->
+            daoManager.userPrefixWrapper.getPrefixes(context.authorId).joinToString { pref ->
                 "\n  - **" + MarkdownSanitizer.escape(pref) + "**"
             } +
             "\nEmbedState: **" + booleanToString(context, !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guildId)) +

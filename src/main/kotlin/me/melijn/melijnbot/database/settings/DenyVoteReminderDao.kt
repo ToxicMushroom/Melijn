@@ -15,18 +15,18 @@ class DenyVoteReminderDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun add(userId: Long) {
+    fun add(userId: Long) {
         driverManager.executeUpdate("INSERT INTO $table (userId) VALUES (?) ON CONFLICT ($primaryKey) DO NOTHING",
             userId)
+    }
+
+    fun delete(userId: Long) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ?", userId)
     }
 
     suspend fun contains(userId: Long): Boolean = suspendCoroutine {
         driverManager.executeQuery("SELECT * FROM $table WHERE userId = ?", { rs ->
             it.resume(rs.next())
         }, userId)
-    }
-
-    suspend fun remove(userId: Long) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ?", userId)
     }
 }

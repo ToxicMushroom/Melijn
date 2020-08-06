@@ -1,36 +1,28 @@
 package me.melijn.melijnbot.database.verification
 
-import com.google.common.cache.CacheBuilder
-import me.melijn.melijnbot.database.NOT_IMPORTANT_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 
 class VerificationPasswordWrapper(private val verificationPasswordDao: VerificationPasswordDao) {
 
-    val verificationPasswordCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, String> { key ->
-            getCode(key)
-        })
 
-    private fun getCode(guildId: Long): CompletableFuture<String> {
-        val future = CompletableFuture<String>()
-       TaskManager.async {
+    suspend fun getPassword(guildId: Long): String {
+        val cached = verificationPasswordDao.getCacheEntry(guildId, HIGHER_CACHE)
+        if (cached == null) {
             val password = verificationPasswordDao.get(guildId)
-            future.complete(password)
+            verificationPasswordDao.setCacheEntry(guildId, password, NORMAL_CACHE)
+            return password
         }
-        return future
+        return cached
     }
 
-    suspend fun set(guildId: Long, password: String) {
-        verificationPasswordCache.put(guildId, CompletableFuture.completedFuture(password))
+    fun set(guildId: Long, password: String) {
+        verificationPasswordDao.setCacheEntry(guildId, password, NORMAL_CACHE)
         verificationPasswordDao.set(guildId, password)
     }
 
-    suspend fun remove(guildId: Long) {
-        verificationPasswordCache.put(guildId, CompletableFuture.completedFuture(""))
+    fun remove(guildId: Long) {
+        verificationPasswordDao.setCacheEntry(guildId, "")
         verificationPasswordDao.remove(guildId)
     }
 

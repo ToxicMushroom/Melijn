@@ -1,21 +1,23 @@
 package me.melijn.melijnbot.database.settings
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class BannedOrKickedTriggersLeaveDao(driverManager: DriverManager) : Dao(driverManager) {
+class BannedOrKickedTriggersLeaveDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "bannedOrKickedTriggersLeaveStates"
     override val tableStructure: String = "guildId bigint"
     override val primaryKey: String = "guildId"
 
+    override val cacheName: String = "banorkickleavemsgstate"
+
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun add(guildId: Long) {
+    fun add(guildId: Long) {
         driverManager.executeUpdate("INSERT INTO $table (guildId) VALUES (?) ON CONFLICT ($primaryKey) DO NOTHING", guildId)
     }
 
@@ -25,7 +27,7 @@ class BannedOrKickedTriggersLeaveDao(driverManager: DriverManager) : Dao(driverM
         }, guildId)
     }
 
-    suspend fun remove(guildId: Long) {
+    fun remove(guildId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ?", guildId)
     }
 

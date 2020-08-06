@@ -1,40 +1,30 @@
 package me.melijn.melijnbot.database.settings
 
-import com.google.common.cache.CacheBuilder
-import me.melijn.melijnbot.database.NOT_IMPORTANT_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 
 class BotLogStateWrapper(
-
     private val botLogStateDao: BotLogStateDao
 ) {
 
-    // true will log bot stuff
-    val botLogStateCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, Boolean> { key ->
-            shouldLog(key)
-        })
+    suspend fun shouldLog(guildId: Long): Boolean {
+        val result = botLogStateDao.getCacheEntry("$guildId", HIGHER_CACHE)?.toBoolean()
 
-    private fun shouldLog(guildId: Long): CompletableFuture<Boolean> {
-        val future = CompletableFuture<Boolean>()
-       TaskManager.async {
+        if (result == null) {
             val state = botLogStateDao.contains(guildId)
-            future.complete(state)
+            botLogStateDao.setCacheEntry(guildId, state, NORMAL_CACHE)
+            return state
         }
-        return future
+
+        return result
     }
 
-    suspend fun set(guildId: Long, state: Boolean) {
+    fun set(guildId: Long, state: Boolean) {
         if (state) {
             botLogStateDao.add(guildId)
         } else {
-            botLogStateDao.remove(guildId)
+            botLogStateDao.delete(guildId)
         }
-
-        botLogStateCache.put(guildId, CompletableFuture.completedFuture(state))
+        botLogStateDao.setCacheEntry(guildId, state, NORMAL_CACHE)
     }
 }

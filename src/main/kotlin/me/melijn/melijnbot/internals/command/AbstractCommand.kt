@@ -124,9 +124,9 @@ abstract class AbstractCommand(val root: String) {
             try {
                 if (CommandClient.checksFailed(context.container, context.commandOrder.last(), context.event, true, context.commandParts)) return
                 execute(context)
-                if (context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)) {
+                if (context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)) {
                     TaskManager.async {
-                        val timeMap = context.daoManager.removeResponseWrapper.removeResponseCache.get(context.guildId).await()
+                        val timeMap = context.daoManager.removeResponseWrapper.getMap(context.guildId)
                         val seconds = timeMap[context.textChannel.idLong] ?: timeMap[context.guildId] ?: return@async
 
                         delay(seconds * 1000L)

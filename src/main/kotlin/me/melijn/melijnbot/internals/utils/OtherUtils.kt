@@ -343,17 +343,17 @@ suspend fun getBirthdayByArgsNMessage(context: CommandContext, index: Int, forma
     }
 }
 
-fun isPremiumUser(context: CommandContext, user: User = context.author): Boolean {
-    return context.daoManager.supporterWrapper.userSupporterIds.contains(user.idLong) ||
+suspend fun isPremiumUser(context: CommandContext, user: User = context.author): Boolean {
+    return context.daoManager.supporterWrapper.getUsers().contains(user.idLong) ||
         context.container.settings.developerIds.contains(user.idLong)
 }
 
-fun isPremiumGuild(context: CommandContext): Boolean {
+suspend fun isPremiumGuild(context: CommandContext): Boolean {
     return isPremiumGuild(context.daoManager, context.guildId)
 }
 
-fun isPremiumGuild(daoManager: DaoManager, guildId: Long): Boolean {
-    return daoManager.supporterWrapper.guildSupporterIds.contains(guildId)
+suspend fun isPremiumGuild(daoManager: DaoManager, guildId: Long): Boolean {
+    return daoManager.supporterWrapper.getGuilds().contains(guildId)
 }
 
 

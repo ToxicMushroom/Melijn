@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.utility
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.*
 import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
 import me.melijn.melijnbot.internals.utils.isPremiumUser
@@ -44,7 +43,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             val title = context.getTranslation("$root.response1.title")
 
             var content = "```INI"
-            val prefixes = context.daoManager.userPrefixWrapper.prefixCache.get(context.authorId).await()
+            val prefixes = context.daoManager.userPrefixWrapper.getPrefixes(context.authorId)
             for ((index, prefix) in prefixes.withIndex()) {
                 content += "\n$index - [$prefix]"
             }
@@ -70,7 +69,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             }
 
             val wrapper = context.daoManager.userPrefixWrapper
-            val ppList = wrapper.prefixCache[context.authorId].await()
+            val ppList = wrapper.getPrefixes(context.authorId)
             if (ppList.size >= PRIVATE_PREFIXES_LIMIT && !isPremiumUser(context)) {
                 val replaceMap = mapOf(
                     "limit" to "$PRIVATE_PREFIXES_LIMIT",
@@ -132,7 +131,7 @@ class PrivatePrefixesCommand : AbstractCommand("command.privateprefixes") {
             }
 
             val wrapper = context.daoManager.userPrefixWrapper
-            val list = wrapper.prefixCache.get(context.authorId).await()
+            val list = wrapper.getPrefixes(context.authorId)
             val index = getIntegerFromArgNMessage(context, 0, 0, list.size - 1) ?: return
 
             val toRemove = list[index]

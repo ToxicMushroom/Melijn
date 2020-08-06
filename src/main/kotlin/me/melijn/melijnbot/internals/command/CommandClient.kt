@@ -25,15 +25,14 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
-import java.util.stream.Collectors
 import kotlin.random.Random
 
 val SPACE_REGEX = "\\s+".toRegex()
 
 class CommandClient(private val commandList: Set<AbstractCommand>, private val container: Container) : ListenerAdapter() {
 
-    private val guildPrefixCache = container.daoManager.guildPrefixWrapper.prefixCache
-    private val userPrefixCache = container.daoManager.userPrefixWrapper.prefixCache
+    private val guildPrefixWrapper = container.daoManager.guildPrefixWrapper
+    private val userPrefixWrapper = container.daoManager.userPrefixWrapper
     private val melijnMentions = arrayOf("<@${container.settings.id}>", "<@!${container.settings.id}>")
 
     private val commandMap: HashMap<String, AbstractCommand> = HashMap()
@@ -45,11 +44,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 commandMap[alias.toLowerCase()] = command
             }
         }
-        container.commandMap = commandList.stream().collect(Collectors.toMap({ cmd: AbstractCommand ->
-            cmd.id
-        }, { cmd: AbstractCommand ->
-            cmd
-        }))
+        container.commandMap = commandList.map { it.id to it }.toMap()
     }
 
 
@@ -117,11 +112,11 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 // Used a space :angry:
                 if (!melijnMentions.contains(prefix)) {
                     val userTriState = container.daoManager.allowSpacedPrefixWrapper
-                        .privateAllowSpacedPrefixGuildCache.get(event.author.idLong).await()
+                        .getUserTriState(event.author.idLong)
                     val allowSpace = if (userTriState == TriState.DEFAULT) {
                         if (event.isFromGuild) {
                             val guildAllows = container.daoManager.allowSpacedPrefixWrapper
-                                .allowSpacedPrefixGuildCache.get(event.guild.idLong).await()
+                                .getGuildState(event.guild.idLong)
                             guildAllows
 
                         } else false
@@ -343,7 +338,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
     private suspend fun getPrefixes(event: MessageReceivedEvent): List<String> {
         var prefixes = if (event.isFromGuild) {
-            guildPrefixCache.get(event.guild.idLong).await().toMutableList()
+            guildPrefixWrapper.getPrefixes(event.guild.idLong).toMutableList()
         } else {
             mutableListOf()
         }
@@ -354,7 +349,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
 
         //registering private prefixes
-        prefixes.addAll(userPrefixCache.get(event.author.idLong).await())
+        prefixes.addAll(userPrefixWrapper.getPrefixes(event.author.idLong))
 
 
         //mentioning the bot will always work

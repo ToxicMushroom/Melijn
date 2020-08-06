@@ -15,12 +15,12 @@ class UnverifiedUsersDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun add(guildId: Long, userId: Long) {
+    fun add(guildId: Long, userId: Long) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, userId, moment, triesAmount) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
             guildId, userId, System.currentTimeMillis(), 0)
     }
 
-    suspend fun remove(guildId: Long, userId: Long) {
+    fun remove(guildId: Long, userId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND userId = ?",
             guildId, userId)
     }
@@ -51,10 +51,8 @@ class UnverifiedUsersDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId, userId)
     }
 
-    suspend fun update(guildId: Long, userId: Long, tries: Long) {
+    fun update(guildId: Long, userId: Long, tries: Long) {
         driverManager.executeUpdate("UPDATE $table SET triesAmount = ? WHERE guildId = ? AND userId = ?",
             tries, guildId, userId)
     }
-
-
 }

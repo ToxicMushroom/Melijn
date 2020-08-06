@@ -377,12 +377,12 @@ class RestServer(container: Container) {
                 val daoManager = container.daoManager
 
                 jobs.add(TaskManager.async {
-                    val prefixes = DataArray.fromCollection(daoManager.guildPrefixWrapper.prefixCache.get(idLong).await())
+                    val prefixes = DataArray.fromCollection(daoManager.guildPrefixWrapper.getPrefixes(idLong))
                     settings.put("prefixes", prefixes)
                 })
 
                 jobs.add(TaskManager.async {
-                    val allowed = daoManager.allowSpacedPrefixWrapper.allowSpacedPrefixGuildCache.get(idLong).await()
+                    val allowed = daoManager.allowSpacedPrefixWrapper.getGuildState(idLong)
                     settings.put("allowSpacePrefix", allowed)
                 })
 
@@ -392,7 +392,7 @@ class RestServer(container: Container) {
                 })
 
                 jobs.add(TaskManager.async {
-                    val tz = daoManager.timeZoneWrapper.timeZoneCache.get(idLong).await()
+                    val tz = daoManager.timeZoneWrapper.getTimeZone(idLong)
                     settings.put("timeZone", tz)
                 })
 

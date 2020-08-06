@@ -6,17 +6,13 @@ import me.melijn.llklient.utils.LavalinkUtil
 class SongCacheWrapper(private val songCacheDao: SongCacheDao) {
 
     suspend fun getTrackInfo(song: String): AudioTrack? {
-        val trackInfo = songCacheDao.getTrackInfo(song)
-        return trackInfo?.let { LavalinkUtil.toAudioTrack(it) }
+        return songCacheDao.getCacheEntry(song, 10080)?.let {
+            LavalinkUtil.toAudioTrack(it)
+        }
     }
 
-    suspend fun addTrack(song: String, track: AudioTrack) {
+    fun addTrack(song: String, track: AudioTrack) {
         val trackInfo = LavalinkUtil.toMessage(track)
-        songCacheDao.addTrack(song, trackInfo)
+        songCacheDao.setCacheEntry(song, trackInfo, 4320)
     }
-
-    suspend fun clearOldTracks() {
-        songCacheDao.clearOldTracks()
-    }
-
 }

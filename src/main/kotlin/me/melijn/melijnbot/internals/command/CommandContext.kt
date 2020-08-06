@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.command
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.translation.i18n
 import me.melijn.melijnbot.internals.utils.SPACE_PATTERN
@@ -183,14 +182,14 @@ class CommandContext(
     suspend fun getTranslation(path: String): String = i18n.getTranslation(this, path)
     suspend fun getTimeZoneId(): ZoneId {
         val guildTimezone = guildN?.idLong?.let {
-            val zoneId = daoManager.timeZoneWrapper.timeZoneCache.get(it).await()
-            if (zoneId?.isBlank() == true) null
+            val zoneId = daoManager.timeZoneWrapper.getTimeZone(it)
+            if (zoneId.isBlank()) null
             else ZoneId.of(zoneId)
         }
 
         val userTimezone = authorId.let {
-            val zoneId = daoManager.timeZoneWrapper.timeZoneCache.get(it).await()
-            if (zoneId?.isBlank() == true) null
+            val zoneId = daoManager.timeZoneWrapper.getTimeZone(it)
+            if (zoneId.isBlank()) null
             else ZoneId.of(zoneId)
         }
 

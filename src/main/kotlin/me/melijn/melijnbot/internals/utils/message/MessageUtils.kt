@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.internals.utils.message
 
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.message.ModularMessage
@@ -44,13 +43,13 @@ fun sendMsg(context: CommandContext, msg: String) {
     }
 }
 
-fun canResponse(messageChannel: MessageChannel, supporterWrapper: SupporterWrapper): Boolean {
+suspend fun canResponse(messageChannel: MessageChannel, supporterWrapper: SupporterWrapper): Boolean {
     return if (messageChannel is TextChannel)
-        supporterWrapper.guildSupporterIds.contains(messageChannel.guild.idLong)
+        supporterWrapper.getGuilds().contains(messageChannel.guild.idLong)
     else false
 }
 
-fun sendRsp(context: CommandContext, msg: String) {
+suspend fun sendRsp(context: CommandContext, msg: String) {
     if (canResponse(context.messageChannel, context.daoManager.supporterWrapper)) {
         sendRsp(context.textChannel, context.daoManager, msg)
     } else {
@@ -84,7 +83,7 @@ fun sendRsp(channel: TextChannel, daoManager: DaoManager, msg: String) {
 }
 
 
-fun sendRsp(textChannel: TextChannel, context: CommandContext, msg: ModularMessage) {
+suspend fun sendRsp(textChannel: TextChannel, context: CommandContext, msg: ModularMessage) {
     if (canResponse(textChannel, context.daoManager.supporterWrapper)) {
         sendRsp(textChannel, context.daoManager, msg)
     } else {
@@ -92,7 +91,7 @@ fun sendRsp(textChannel: TextChannel, context: CommandContext, msg: ModularMessa
     }
 }
 
-fun sendRspOrMsg(textChannel: TextChannel, daoManager: DaoManager, msg: String) {
+suspend fun sendRspOrMsg(textChannel: TextChannel, daoManager: DaoManager, msg: String) {
     if (canResponse(textChannel, daoManager.supporterWrapper)) {
         sendRsp(textChannel, daoManager, msg)
     } else {
@@ -388,7 +387,7 @@ fun getNicerUsedPrefix(settings: Settings, prefix: String): String {
 
 suspend fun handleRspDelete(daoManager: DaoManager, msgList: MutableList<Message>) {
     val channel = msgList.first().textChannel
-    val timeMap = daoManager.removeResponseWrapper.removeResponseCache.get(channel.guild.idLong).await()
+    val timeMap = daoManager.removeResponseWrapper.getMap(channel.guild.idLong)
     val seconds = timeMap[channel.idLong] ?: return
     delay(seconds * 1000L)
 
@@ -402,7 +401,7 @@ suspend fun handleRspDelete(daoManager: DaoManager, msgList: MutableList<Message
 }
 
 suspend fun handleRspDelete(daoManager: DaoManager, message: Message) {
-    val timeMap = daoManager.removeResponseWrapper.removeResponseCache.get(message.textChannel.guild.idLong).await()
+    val timeMap = daoManager.removeResponseWrapper.getMap(message.textChannel.guild.idLong)
     val seconds = timeMap[message.textChannel.idLong] ?: timeMap[message.guild.idLong] ?: return
 
     delay(seconds * 1000L)

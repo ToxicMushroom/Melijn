@@ -100,30 +100,28 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             return
         }
 
-        val verificationType = dao.verificationTypeWrapper.verificationTypeCache[guild.idLong].await()
-        verificationType?.let {
-            when (it) {
-                VerificationType.PASSWORD -> {
-                    val password = dao.verificationPasswordWrapper.verificationPasswordCache[guild.idLong].await()
-                    if (event.message.contentRaw == password) {
-                        VerificationUtils.verify(dao, unverifiedRole, guild.selfMember.user, member)
-                    } else {
-                        VerificationUtils.failedVerification(dao, member)
-                    }
-                }
-
-                VerificationType.GOOGLE_RECAPTCHAV2 -> {
-                    val code = dao.unverifiedUsersWrapper.getMoment(guild.idLong, member.idLong)
-                    if (event.message.contentRaw == code.toString()) {
-                        VerificationUtils.verify(dao, unverifiedRole, guild.selfMember.user, member)
-                    } else {
-                        VerificationUtils.failedVerification(dao, member)
-                    }
-                }
-                else -> {
+        when (dao.verificationTypeWrapper.getType(guild.idLong)) {
+            VerificationType.PASSWORD -> {
+                val password = dao.verificationPasswordWrapper.getPassword(guild.idLong)
+                if (event.message.contentRaw == password) {
+                    VerificationUtils.verify(dao, unverifiedRole, guild.selfMember.user, member)
+                } else {
+                    VerificationUtils.failedVerification(dao, member)
                 }
             }
+
+            VerificationType.GOOGLE_RECAPTCHAV2 -> {
+                val code = dao.unverifiedUsersWrapper.getMoment(guild.idLong, member.idLong)
+                if (event.message.contentRaw == code.toString()) {
+                    VerificationUtils.verify(dao, unverifiedRole, guild.selfMember.user, member)
+                } else {
+                    VerificationUtils.failedVerification(dao, member)
+                }
+            }
+            else -> {
+            }
         }
+
         container.botDeletedMessageIds.add(event.messageIdLong)
         event.message.delete().reason("verification channel").queue({}, {})
     }

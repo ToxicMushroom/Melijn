@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.internals.utils.message
 
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
@@ -15,7 +14,7 @@ import net.dv8tion.jda.api.entities.TextChannel
 
 
 suspend fun sendRspCodeBlock(context: CommandContext, msg: String, lang: String, shouldPaginate: Boolean = false) {
-    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
+    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
         sendRspCodeBlock(context.textChannel, context.authorId, context.daoManager, msg, lang, shouldPaginate)
     } else {
@@ -28,7 +27,7 @@ fun sendRspCodeBlock(textChannel: TextChannel, authorId: Long, daoManager: DaoMa
     if (msg.length <= 2000) {
         TaskManager.async(textChannel) {
             val message = textChannel.sendMessage(msg).awaitOrNull() ?: return@async
-            val timeMap = daoManager.removeResponseWrapper.removeResponseCache.get(textChannel.guild.idLong).await()
+            val timeMap = daoManager.removeResponseWrapper.getMap(textChannel.guild.idLong)
             val seconds = timeMap[textChannel.idLong] ?: return@async
 
             delay(seconds * 1000L)
@@ -48,7 +47,7 @@ suspend fun sendRspCodeBlocks(
     parts: List<String>,
     lang: String
 ) {
-    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
+    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
         sendRspCodeBlocks(context.textChannel, context.authorId, context.daoManager, parts, lang, true)
     } else {
@@ -70,7 +69,7 @@ fun sendRspCodeBlocks(textChannel: TextChannel, authorId: Long, daoManager: DaoM
             val message = textChannel.sendMessage(paginatedParts[0]).awaitOrNull() ?: return@async
             registerPaginationMessage(textChannel, authorId, message, paginatedParts, 0)
 
-            val timeMap = daoManager.removeResponseWrapper.removeResponseCache.get(textChannel.guild.idLong).await()
+            val timeMap = daoManager.removeResponseWrapper.getMap(textChannel.guild.idLong)
             val seconds = timeMap[textChannel.idLong] ?: return@async
 
             delay(seconds * 1000L)
@@ -88,7 +87,7 @@ fun sendRspCodeBlocks(textChannel: TextChannel, authorId: Long, daoManager: DaoM
                 }).awaitOrNull() ?: return@async
 
                 launch {
-                    val timeMap = daoManager.removeResponseWrapper.removeResponseCache.get(textChannel.guild.idLong).await()
+                    val timeMap = daoManager.removeResponseWrapper.getMap(textChannel.guild.idLong)
                     val seconds = timeMap[textChannel.idLong] ?: return@launch
 
                     delay(seconds * 1000L)
@@ -103,7 +102,7 @@ fun sendRspCodeBlocks(textChannel: TextChannel, authorId: Long, daoManager: DaoM
         TaskManager.async(textChannel) {
             val message = textChannel.sendMessage(parts[0]).awaitOrNull() ?: return@async
 
-            val timeMap = daoManager.removeResponseWrapper.removeResponseCache.get(textChannel.guild.idLong).await()
+            val timeMap = daoManager.removeResponseWrapper.getMap(textChannel.guild.idLong)
             val seconds = timeMap[textChannel.idLong] ?: return@async
 
             delay(seconds * 1000L)

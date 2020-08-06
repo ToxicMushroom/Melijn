@@ -46,8 +46,8 @@ object RunConditionUtil {
         }
     }
 
-    private fun checkGuildSupporter(container: Container, event: MessageReceivedEvent, language: String, prefix: String): Boolean {
-        val supporterGuilds = container.daoManager.supporterWrapper.guildSupporterIds
+    private suspend fun checkGuildSupporter(container: Container, event: MessageReceivedEvent, language: String, prefix: String): Boolean {
+        val supporterGuilds = container.daoManager.supporterWrapper.getGuilds()
         return if (!supporterGuilds.contains(event.guild.idLong)) {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.server.supporter")
                 .replacePrefix(prefix)
@@ -58,8 +58,8 @@ object RunConditionUtil {
         }
     }
 
-    private fun checkUserSupporter(container: Container, event: MessageReceivedEvent, language: String, prefix: String): Boolean {
-        val supporters = container.daoManager.supporterWrapper.userSupporterIds
+    private suspend fun checkUserSupporter(container: Container, event: MessageReceivedEvent, language: String, prefix: String): Boolean {
+        val supporters = container.daoManager.supporterWrapper.getUsers()
         return if (
             supporters.contains(event.author.idLong) ||
             container.settings.developerIds.contains(event.author.idLong)
@@ -76,7 +76,7 @@ object RunConditionUtil {
     private suspend fun checkVoted(container: Container, event: MessageReceivedEvent, language: String): Boolean {
         return if (
             container.settings.developerIds.contains(event.author.idLong) ||
-            container.daoManager.supporterWrapper.userSupporterIds.contains(event.author.idLong) ||
+            container.daoManager.supporterWrapper.getUsers().contains(event.author.idLong) ||
             container.settings.environment == Environment.TESTING
         ) {
             true

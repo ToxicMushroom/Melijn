@@ -532,7 +532,7 @@ object LogUtils {
         val daoManager = context.daoManager
         val pmLogChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.PURGED_MESSAGE)
             ?: return
-        val botLogState = daoManager.botLogStateWrapper.botLogStateCache[pmLogChannel.guild.idLong].await()
+        val botLogState = daoManager.botLogStateWrapper.shouldLog(pmLogChannel.guild.idLong)
         val zoneId = getZoneId(daoManager, guild.idLong)
 
         val channel: TextChannel = messages.first().textChannel
@@ -642,6 +642,9 @@ object LogUtils {
             .setFooter("You can disable this reminder with >toggleVoteReminder")
             .build()
 
-        sendEmbed(pc, embedder)
+        try { // Handle closed dms
+            sendEmbed(pc, embedder)
+        } catch (t: Throwable) {
+        }
     }
 }

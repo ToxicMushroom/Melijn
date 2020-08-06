@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.utility
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -24,7 +23,7 @@ class SetPrivateAllowSpacedPrefixState : AbstractCommand("command.setprivateallo
     override suspend fun execute(context: CommandContext) {
         val wrapper = context.daoManager.allowSpacedPrefixWrapper
         if (context.args.isEmpty()) {
-            val allowed = wrapper.privateAllowSpacedPrefixGuildCache.get(context.authorId).await()
+            val allowed = wrapper.getUserTriState(context.authorId)
             val msg = context.getTranslation("$root.show.${allowed.toLC()}")
             sendRsp(context, msg)
             return

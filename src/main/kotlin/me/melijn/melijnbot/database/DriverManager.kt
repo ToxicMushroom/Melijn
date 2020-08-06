@@ -97,7 +97,7 @@ class DriverManager(
      *   objects: true, 6
      *   return value: 1
      * **/
-    suspend fun executeUpdate(query: String, vararg objects: Any?): Int = suspendCoroutine {
+    suspend fun executeUpdateGetChanged(query: String, vararg objects: Any?): Int = suspendCoroutine {
         try {
             getUsableConnection { connection ->
                 connection.prepareStatement(query).use { preparedStatement ->
@@ -106,6 +106,33 @@ class DriverManager(
                     }
                     val rows = preparedStatement.executeUpdate()
                     it.resume(rows)
+                }
+            }
+        } catch (e: SQLException) {
+            logger.error("Something went wrong when executing the query: $query\nObjects: ${objects.joinToString { o -> o.toString() }}")
+            e.sendInGuild()
+            e.printStackTrace()
+        }
+    }
+
+    /** returns the amount of rows affected by the query
+     * [query] the sql query that needs execution
+     * [objects] the arguments of the query
+     * [Int] returns the amount of affected rows
+     * example:
+     *   query: "UPDATE apples SET bad = ? WHERE id = ?"
+     *   objects: true, 6
+     *   return value: 1
+     * **/
+    fun executeUpdate(query: String, vararg objects: Any?) {
+        try {
+            getUsableConnection { connection ->
+                connection.prepareStatement(query).use { preparedStatement ->
+                    for ((index, value) in objects.withIndex()) {
+                        preparedStatement.setObject(index + 1, value)
+                    }
+                    preparedStatement.executeUpdate()
+
                 }
             }
         } catch (e: SQLException) {

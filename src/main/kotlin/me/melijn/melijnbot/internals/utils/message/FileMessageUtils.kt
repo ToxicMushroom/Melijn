@@ -22,7 +22,7 @@ import javax.imageio.ImageIO
 
 
 suspend fun sendRsp(context: CommandContext, image: BufferedImage, extension: String) {
-    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
+    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
         sendRsp(context.textChannel, context.daoManager, context.getLanguage(), image, extension)
     } else {
@@ -75,7 +75,7 @@ suspend fun sendMsg(textChannel: TextChannel, image: BufferedImage, extension: S
 }
 
 suspend fun sendFileRsp(context: CommandContext, bytes: ByteArray, extension: String) {
-    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
+    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
         sendFileRsp(context.textChannel, context.daoManager, context.getLanguage(), bytes, extension)
     } else {

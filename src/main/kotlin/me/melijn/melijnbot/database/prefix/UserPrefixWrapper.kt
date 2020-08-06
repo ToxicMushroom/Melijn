@@ -1,46 +1,38 @@
 package me.melijn.melijnbot.database.prefix
 
-import com.google.common.cache.CacheBuilder
-import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.FREQUENTLY_USED_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.internals.utils.splitIETEL
 
 class UserPrefixWrapper(private val userPrefixDao: UserPrefixDao) {
 
-    val prefixCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, List<String>> { key ->
-            getPrefixes(key)
-        })
+    suspend fun getPrefixes(userId: Long): List<String> {
+        val result = userPrefixDao.getCacheEntry(userId, HIGHER_CACHE)?.splitIETEL("%SPLIT%")
 
-    private fun getPrefixes(userId: Long): CompletableFuture<List<String>> {
-        val prefixes = CompletableFuture<List<String>>()
-       TaskManager.async {
-            val prefixesString = userPrefixDao.get(userId)
-            val list: List<String> = if (prefixesString == "") emptyList() else prefixesString.split("%SPLIT%")
-            prefixes.complete(list)
+        if (result == null) {
+            val prefixes = userPrefixDao.get(userId)
+            userPrefixDao.setCacheEntry(userId, prefixes)
+            return prefixes.splitIETEL("%SPLIT%")
         }
-        return prefixes
+
+        return result
     }
 
     suspend fun addPrefix(userId: Long, prefix: String) {
-        val prefixList = prefixCache.get(userId).await().toMutableList()
+        val prefixList = getPrefixes(userId).toMutableList()
         if (!prefixList.contains(prefix))
             prefixList.add(prefix)
         setPrefixes(userId, prefixList)
     }
 
-    private suspend fun setPrefixes(userId: Long, prefixList: List<String>) {
+    private fun setPrefixes(userId: Long, prefixList: List<String>) {
         val prefixes = prefixList.joinToString("%SPLIT%")
         userPrefixDao.set(userId, prefixes)
-        prefixCache.put(userId, CompletableFuture.completedFuture(prefixList))
+        userPrefixDao.setCacheEntry(userId, prefixList, NORMAL_CACHE)
     }
 
     suspend fun removePrefix(userId: Long, prefix: String) {
-        val prefixList = prefixCache.get(userId).await().toMutableList()
+        val prefixList = getPrefixes(userId).toMutableList()
         prefixList.remove(prefix)
         setPrefixes(userId, prefixList)
     }

@@ -52,8 +52,8 @@ import me.melijn.melijnbot.database.prefix.UserPrefixDao
 import me.melijn.melijnbot.database.prefix.UserPrefixWrapper
 import me.melijn.melijnbot.database.role.*
 import me.melijn.melijnbot.database.settings.*
+import me.melijn.melijnbot.database.supporter.SupporterDao
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
-import me.melijn.melijnbot.database.supporter.UserSupporterDao
 import me.melijn.melijnbot.database.time.TimeZoneDao
 import me.melijn.melijnbot.database.time.TimeZoneWrapper
 import me.melijn.melijnbot.database.verification.*
@@ -70,10 +70,14 @@ const val RAPIDLY_USED_CACHE = 1L
 const val NOT_IMPORTANT_CACHE = 2L
 const val FREQUENTLY_USED_CACHE = 5L
 const val IMPORTANT_CACHE = 10L
+const val HIGHER_CACHE = 10
+const val NORMAL_CACHE = 5
+const val SHORT_CACHE = 3
+const val RAPID_CACHE = 1
 
 const val HUGE_CACHE = 500L
 const val LARGE_CACHE = 200L
-const val NORMAL_CACHE = 100L
+const val NORMAL_CACHE_SIZE = 100L
 const val SMALL_CACHE = 50L
 
 class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
@@ -214,7 +218,7 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         )
         aliasWrapper = AliasWrapper(AliasDao(driverManager))
 
-        supporterWrapper = SupporterWrapper(UserSupporterDao(driverManager))
+        supporterWrapper = SupporterWrapper(SupporterDao(driverManager))
 
         embedDisabledWrapper = EmbedDisabledWrapper(EmbedDisabledDao(driverManager))
         embedColorWrapper = EmbedColorWrapper(EmbedColorDao(driverManager))

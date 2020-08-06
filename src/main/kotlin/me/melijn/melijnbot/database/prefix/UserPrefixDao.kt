@@ -1,21 +1,23 @@
 package me.melijn.melijnbot.database.prefix
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class UserPrefixDao(driverManager: DriverManager) : Dao(driverManager) {
+class UserPrefixDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "userPrefixes"
     override val tableStructure: String = "userId bigint, prefixes varchar(256)"
     override val primaryKey: String = "userId"
 
+    override val cacheName: String = "prefixes:user"
+
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun set(userId: Long, prefixes: String) {
+    fun set(userId: Long, prefixes: String) {
         driverManager.executeUpdate("INSERT INTO $table (userId, prefixes) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET prefixes = ?",
             userId, prefixes, prefixes)
     }

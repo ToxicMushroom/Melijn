@@ -129,7 +129,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
     private suspend fun postDeletedBySelfLog(sdmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent) {
         if (sdmLogChannel == null) return
         val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull() ?: return
-        val botLogState = container.daoManager.botLogStateWrapper.botLogStateCache[sdmLogChannel.guild.idLong].await()
+        val botLogState = container.daoManager.botLogStateWrapper.shouldLog(sdmLogChannel.guild.idLong)
         if (!botLogState && messageAuthor.isBot) return
 
         val ebs = getGeneralEmbedBuilder(msg, event, messageAuthor, messageAuthor.idLong)
@@ -149,7 +149,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
     private suspend fun postDeletedByOtherLog(odmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent, deleterMember: Member) {
         if (odmLogChannel == null) return
         val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull() ?: return
-        val botLogState = container.daoManager.botLogStateWrapper.botLogStateCache[odmLogChannel.guild.idLong].await()
+        val botLogState = container.daoManager.botLogStateWrapper.shouldLog(odmLogChannel.guild.idLong)
         if (!botLogState && messageAuthor.isBot) return
 
         val ebs = getGeneralEmbedBuilder(msg, event, messageAuthor, deleterMember.idLong)
@@ -169,7 +169,7 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
     private suspend fun postDeletedByFilterLog(fmLogChannel: TextChannel?, msg: DaoMessage, event: GuildMessageDeleteEvent, causeArgs: Map<String, List<String>>?) {
         if (fmLogChannel == null) return
         val messageAuthor = event.jda.shardManager?.retrieveUserById(msg.authorId)?.awaitOrNull() ?: return
-        val botLogState = container.daoManager.botLogStateWrapper.botLogStateCache[fmLogChannel.guild.idLong].await()
+        val botLogState = container.daoManager.botLogStateWrapper.shouldLog(fmLogChannel.guild.idLong)
         if (!botLogState && messageAuthor.isBot) return
 
         val ebs = getGeneralEmbedBuilder(msg, event, messageAuthor, event.jda.selfUser.idLong)

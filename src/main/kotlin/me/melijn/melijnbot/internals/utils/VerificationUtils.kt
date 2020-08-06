@@ -83,7 +83,7 @@ object VerificationUtils {
 
     private suspend fun hasHitThroughputLimit(daoManager: DaoManager, member: Member): Boolean {
         val guild = member.guild
-        val max = daoManager.verificationUserFlowRateWrapper.verificationUserFlowRateCache[guild.idLong].await()
+        val max = daoManager.verificationUserFlowRateWrapper.getFlowRate(guild.idLong)
         if (max == -1L) return false
         val lastMembers = memberJoinTimes
             .getOrDefault(guild.idLong, emptyMap<Long, Long>())

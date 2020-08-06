@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.internals.utils.message
 
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.embed.EmbedDisabledWrapper
@@ -17,7 +16,7 @@ import java.time.format.DateTimeFormatter
 
 
 suspend fun sendEmbedRspAwaitEL(context: CommandContext, embed: MessageEmbed): List<Message> {
-    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
+    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     return if (premiumGuild) {
         sendEmbedRspAwaitEL(context.daoManager, context.textChannel, embed)
     } else {
@@ -56,8 +55,8 @@ fun sendEmbed(context: CommandContext, embed: MessageEmbed) {
     }
 }
 
-fun sendEmbedRsp(context: CommandContext, embed: MessageEmbed) {
-    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
+suspend fun sendEmbedRsp(context: CommandContext, embed: MessageEmbed) {
+    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
         sendEmbedRsp(context.daoManager, context.textChannel, embed)
     } else {
@@ -75,7 +74,7 @@ fun sendEmbedRsp(daoManager: DaoManager, textChannel: TextChannel, embed: Messag
         TaskManager.async(textChannel) {
             val message = textChannel.sendMessage(embed).awaitOrNull() ?: return@async
 
-            val timeMap = daoManager.removeResponseWrapper.removeResponseCache.get(textChannel.guild.idLong).await()
+            val timeMap = daoManager.removeResponseWrapper.getMap(textChannel.guild.idLong)
             val seconds = timeMap[textChannel.idLong] ?: return@async
 
             delay(seconds * 1000L)

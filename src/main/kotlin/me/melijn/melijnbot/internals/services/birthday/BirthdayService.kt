@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.services.birthday
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.RoleType
@@ -44,7 +43,7 @@ class BirthdayService(
                 guild.getAndVerifyRoleById(daoManager, RoleType.BIRTHDAY, it, true)
             } ?: continue
 
-            val guildZone = daoManager.timeZoneWrapper.timeZoneCache.get(guild.idLong).await()
+            val guildZone = daoManager.timeZoneWrapper.getTimeZone(guild.idLong)
             val guildTZ = TimeZone.getTimeZone(if (guildZone.isBlank()) "GMT" else guildZone)
 
             //Add birthday role (maybe channel message)
@@ -105,7 +104,7 @@ class BirthdayService(
             val guild = shardManager.getGuildById(guildId) ?: continue
 
             //Get guild timezone (GMT if none set)
-            val guildZone = daoManager.timeZoneWrapper.timeZoneCache.get(guild.idLong).await()
+            val guildZone = daoManager.timeZoneWrapper.getTimeZone(guild.idLong)
             val guildTZ = TimeZone.getTimeZone(if (guildZone.isBlank()) "GMT" else guildZone)
 
             //Get birthday channel

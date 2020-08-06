@@ -6,7 +6,6 @@ import me.melijn.melijnbot.internals.services.bans.BanService
 import me.melijn.melijnbot.internals.services.birthday.BirthdayService
 import me.melijn.melijnbot.internals.services.donator.DonatorService
 import me.melijn.melijnbot.internals.services.message.MessageCleanerService
-import me.melijn.melijnbot.internals.services.music.SongCacheCleanerService
 import me.melijn.melijnbot.internals.services.music.SpotifyService
 import me.melijn.melijnbot.internals.services.mutes.MuteService
 import me.melijn.melijnbot.internals.services.roles.RolesService
@@ -29,19 +28,16 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
         services.add(MuteService(shardManager, daoManager))
         services.add(StatsService(shardManager, webManager.botListApi))
         services.add(BirthdayService(shardManager, daoManager))
-        //services.add(MemSpammerService())
         webManager.spotifyApi?.let { spotifyApi ->
             services.add(SpotifyService(spotifyApi))
         }
 
-        services.add(SongCacheCleanerService(daoManager.songCacheWrapper))
         services.add(MessageCleanerService(daoManager.messageHistoryWrapper))
         services.add(VoiceService(container, shardManager))
         services.add(VoiceScoutService(container, shardManager))
         services.add(DonatorService(container, shardManager))
         services.add(RolesService(daoManager.tempRoleWrapper, shardManager))
         services.add(VoteReminderService(daoManager))
-        //services.add(BrokenService(container, shardManager))
     }
 
     fun startServices() {
