@@ -548,10 +548,10 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
 
         private suspend fun commandIsDisabled(daoManager: DaoManager, id: String, event: MessageReceivedEvent): Boolean {
-            val disabledCommandCache = daoManager.disabledCommandWrapper.disabledCommandsCache
-            val channelCommandStateCache = daoManager.channelCommandStateWrapper.channelCommandsStateCache
+            val disabledCommandCache = daoManager.disabledCommandWrapper
+            val channelCommandStateCache = daoManager.channelCommandStateWrapper
 
-            val disabledChannelCommands = channelCommandStateCache.get(event.channel.idLong).await()
+            val disabledChannelCommands = channelCommandStateCache.getMap(event.channel.idLong)
             if (disabledChannelCommands.contains(id)) {
                 if (disabledChannelCommands[id] == ChannelCommandState.ENABLED) {
                     return false
@@ -560,7 +560,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 }
             }
 
-            val disabledCommands = disabledCommandCache.get(event.guild.idLong).await()
+            val disabledCommands = disabledCommandCache.getSet(event.guild.idLong)
             if (disabledCommands.contains(id)) return true
 
             return false

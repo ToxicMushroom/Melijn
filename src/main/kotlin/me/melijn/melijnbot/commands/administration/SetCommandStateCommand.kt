@@ -117,7 +117,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
         override suspend fun execute(context: CommandContext) {
             val daoManager = context.daoManager
             if (context.args.isEmpty()) {
-                val ids = daoManager.disabledCommandWrapper.disabledCommandsCache.get(context.guildId).await()
+                val ids = daoManager.disabledCommandWrapper.getSet(context.guildId)
                 val commandNames = mutableListOf<String>()
                 val filteredCommands = context.commandList
                     .filter { cmd -> ids.contains(cmd.id.toString()) }
@@ -146,7 +146,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                 val channel = getTextChannelByArgsNMessage(context, 0) ?: return
 
 
-                val stateMap = daoManager.channelCommandStateWrapper.channelCommandsStateCache.get(channel.idLong).await()
+                val stateMap = daoManager.channelCommandStateWrapper.getMap(channel.idLong)
                 val ids = stateMap.keys
                 val commandMap = HashMap<String, String>()
                 val filteredCommands = context.commandList
