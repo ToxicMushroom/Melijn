@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.utility
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -24,7 +23,7 @@ class SetPrivateEmbedColorCommand : AbstractCommand("command.setprivateembedcolo
     override suspend fun execute(context: CommandContext) {
         val wrapper = context.daoManager.userEmbedColorWrapper
         val msg = if (context.args.isEmpty()) {
-            val colorInt = wrapper.userEmbedColorCache.get(context.authorId).await()
+            val colorInt = wrapper.getColor(context.authorId)
 
             if (colorInt == 0) {
                 context.getTranslation("$root.show.unset")

@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.events.eventutil
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.database.message.ModularMessage
@@ -36,7 +35,7 @@ object JoinLeaveUtil {
             ?: return
 
         val messageWrapper = daoManager.messageWrapper
-        var modularMessage = messageWrapper.messageCache.get(Pair(guildId, messageType)).await() ?: return
+        var modularMessage = messageWrapper.getMessage(guildId, messageType) ?: return
         if (MessageCommandUtil.removeMessageIfEmpty(guildId, messageType, modularMessage, messageWrapper)) return
 
         modularMessage = replaceVariablesInWelcomeMessage(guild, user, modularMessage)
@@ -82,8 +81,8 @@ object JoinLeaveUtil {
         val guild = member.guild
         if (!guild.selfMember.canInteract(member) || !guild.selfMember.hasPermission(Permission.MANAGE_ROLES)) return
 
-        val groups = daoManager.joinRoleGroupWrapper.joinRoleGroupCache[guild.idLong].await()
-        val joinRoleInfo = daoManager.joinRoleWrapper.joinRoleCache.get(guild.idLong).await()
+        val groups = daoManager.joinRoleGroupWrapper.getList(guild.idLong)
+        val joinRoleInfo = daoManager.joinRoleWrapper.getJRI(guild.idLong)
         val map = joinRoleInfo.dataMap
         for ((groupName, list) in map) {
             val group = groups.firstOrNull { it.groupName == groupName } ?: continue
@@ -131,7 +130,7 @@ object JoinLeaveUtil {
         if (!guild.selfMember.canInteract(member)) return
         val wrapper = daoManager.forceRoleWrapper
 
-        val map = wrapper.forceRoleCache.get(guild.idLong).await()
+        val map = wrapper.getForceRoles(guild.idLong)
         val roleIds = map.getOrDefault(member.idLong, emptyList())
         for (roleId in roleIds) {
             val role = guild.getRoleById(roleId)

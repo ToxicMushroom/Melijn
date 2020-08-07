@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -22,7 +21,7 @@ class SetEmbedColorCommand : AbstractCommand("command.setembedcolor") {
     override suspend fun execute(context: CommandContext) {
         val wrapper = context.daoManager.embedColorWrapper
         val msg = if (context.args.isEmpty()) {
-            val colorInt = wrapper.embedColorCache.get(context.guildId).await()
+            val colorInt = wrapper.getColor(context.guildId)
 
             if (colorInt == 0) {
                 context.getTranslation("$root.show.unset")

@@ -8,12 +8,11 @@ class VerificationEmotejiWrapper(private val verificationEmotejiDao: Verificatio
 
     suspend fun getEmoteji(guildId: Long): String {
         val cached = verificationEmotejiDao.getCacheEntry(guildId, HIGHER_CACHE)
-        if (cached == null) {
-            val emoteji = verificationEmotejiDao.get(guildId)
-            verificationEmotejiDao.setCacheEntry(guildId, emoteji, NORMAL_CACHE)
-            return emoteji
-        }
-        return cached
+        if (cached != null) return cached
+
+        val emoteji = verificationEmotejiDao.get(guildId)
+        verificationEmotejiDao.setCacheEntry(guildId, emoteji, NORMAL_CACHE)
+        return emoteji
     }
 
     fun setEmoteji(guildId: Long, emoteji: String) {

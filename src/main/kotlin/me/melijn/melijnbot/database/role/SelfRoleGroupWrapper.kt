@@ -10,13 +10,11 @@ class SelfRoleGroupWrapper(private val selfRoleGroupDao: SelfRoleGroupDao) {
     suspend fun getMap(guildId: Long): List<SelfRoleGroup> {
         val result = selfRoleGroupDao.getCacheEntry(guildId, HIGHER_CACHE)?.let { objectMapper.readValue<List<SelfRoleGroup>>(it) }
 
-        if (result == null) {
-            val selfroleGroups = selfRoleGroupDao.get(guildId)
-            selfRoleGroupDao.setCacheEntry(guildId, objectMapper.writeValueAsString(selfroleGroups), NORMAL_CACHE)
-            return selfroleGroups
-        }
+        if (result != null) return result
 
-        return result
+        val selfroleGroups = selfRoleGroupDao.get(guildId)
+        selfRoleGroupDao.setCacheEntry(guildId, objectMapper.writeValueAsString(selfroleGroups), NORMAL_CACHE)
+        return selfroleGroups
     }
 
     suspend fun insertOrUpdate(guildId: Long, selfRoleGroup: SelfRoleGroup) {

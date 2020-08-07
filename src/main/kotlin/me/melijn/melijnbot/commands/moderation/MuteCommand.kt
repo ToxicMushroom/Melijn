@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.moderation
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.mute.Mute
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.RoleType
@@ -64,7 +63,7 @@ class MuteCommand : AbstractCommand("command.mute") {
 
         reason = reason.trim()
 
-        val roleId = context.daoManager.roleWrapper.roleCache.get(Pair(context.guildId, RoleType.MUTE)).await()
+        val roleId = context.daoManager.roleWrapper.getRoleId(context.guildId, RoleType.MUTE)
         val muteRole: Role? = context.guild.getRoleById(roleId)
         if (muteRole == null) {
             val msg = context.getTranslation("message.creatingmuterole")
@@ -140,7 +139,7 @@ class MuteCommand : AbstractCommand("command.mute") {
             )?.override(true)?.queue()
 
             val logChannelWrapper = context.daoManager.logChannelWrapper
-            val logChannelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.PERMANENT_MUTE)).await()
+            val logChannelId = logChannelWrapper.getChannelId(guild.idLong, LogChannelType.PERMANENT_MUTE)
             val logChannel = guild.getTextChannelById(logChannelId)
             logChannel?.let { it1 -> sendEmbed(context.daoManager.embedDisabledWrapper, it1, mutedMessageLc) }
 

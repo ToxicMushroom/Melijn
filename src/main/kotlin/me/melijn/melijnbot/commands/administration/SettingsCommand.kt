@@ -39,21 +39,27 @@ class SettingsCommand : AbstractCommand("command.settings") {
 
         val guildId = guild.idLong
         val daoManager = context.daoManager
-        val roleCache = daoManager.roleWrapper.roleCache
+        val roleWrapper = daoManager.roleWrapper
         val channelCache = daoManager.channelWrapper.channelCache
-        val logChannelCache = daoManager.logChannelWrapper.logChannelCache
-        val logChannels = LogChannelType.values().joinToString("\n") { type ->
-            "**${type.text}:** " + idToChannelMention(logChannelCache.get(Pair(guildId, type)).get())
+        val logChannelWrapper = daoManager.logChannelWrapper
+        val logChannels = StringBuilder()
+        for (type in LogChannelType.values()) {
+            logChannels.append("**")
+                .append(type.text)
+                .append(":** ")
+                .append(idToChannelMention(logChannelWrapper.getChannelId(guildId, type)))
+                .append("\n")
         }
-        val ec = daoManager.embedColorWrapper.embedColorCache.get(guildId).await()
-        val pec = daoManager.userEmbedColorWrapper.userEmbedColorCache.get(context.authorId).await()
+        logChannels.removeSuffix("\n")
+        val ec = daoManager.embedColorWrapper.getColor(guildId)
+        val pec = daoManager.userEmbedColorWrapper.getColor(context.authorId)
 
         val description = "MusicChannel:** " + idToChannelMention(daoManager.musicChannelWrapper.musicChannelCache.get(guildId).await()) +
             "\n**StreamUrl:** " + stringToString(daoManager.streamUrlWrapper.streamUrlCache.get(guildId).await()) +
             "\n" +
-            "\n**MuteRole:** " + idToRoleMention(roleCache.get(Pair(guildId, RoleType.MUTE)).await()) +
-            "\n**UnverifiedRole:** " + idToRoleMention(roleCache.get(Pair(guildId, RoleType.UNVERIFIED)).await()) +
-            "\n**BirthDayRole:** " + idToRoleMention(roleCache.get(Pair(guildId, RoleType.BIRTHDAY)).await()) +
+            "\n**MuteRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.MUTE)) +
+            "\n**UnverifiedRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.UNVERIFIED)) +
+            "\n**BirthDayRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.BIRTHDAY)) +
             "\n" +
             "\n**VerificationChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.VERIFICATION)).await()) +
             "\n**JoinChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.JOIN)).await()) +
@@ -62,6 +68,7 @@ class SettingsCommand : AbstractCommand("command.settings") {
             "\n**BirthDayChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.BIRTHDAY)).await()) +
             "\n**PreVerificationJoinChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.PRE_VERIFICATION_JOIN)).await()) +
             "\n**PreVerificationLeaveChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.PRE_VERIFICATION_LEAVE)).await()) +
+            "\n" +
             "\n$logChannels" +
             "\n" +
             "\n**VerificationPassword:** " + stringToString(daoManager.verificationPasswordWrapper.getPassword(guildId)) +
@@ -80,8 +87,8 @@ class SettingsCommand : AbstractCommand("command.settings") {
             "\nEmbedState: **" + booleanToString(context, !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guildId)) +
             "\n**EmbedColor: **" + (if (ec == 0) "unset" else "#" + ec.toHexString()) +
             "\n**PrivateEmbedColor: **" + (if (pec == 0) "unset" else pec.toHexString()) +
-            "\n**Language: **" + daoManager.guildLanguageWrapper.languageCache.get(guildId).await() +
-            "\n**PrivateLanguage: **" + stringToString(daoManager.userLanguageWrapper.languageCache.get(context.authorId).await()) + "**"
+            "\n**Language: **" + daoManager.guildLanguageWrapper.getLanguage(guildId) +
+            "\n**PrivateLanguage: **" + stringToString(daoManager.userLanguageWrapper.getLanguage(context.authorId)) + "**"
 
 
 

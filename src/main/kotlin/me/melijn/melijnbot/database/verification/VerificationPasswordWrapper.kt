@@ -22,7 +22,7 @@ class VerificationPasswordWrapper(private val verificationPasswordDao: Verificat
     }
 
     fun remove(guildId: Long) {
-        verificationPasswordDao.setCacheEntry(guildId, "")
+        verificationPasswordDao.setCacheEntry(guildId, "", NORMAL_CACHE)
         verificationPasswordDao.remove(guildId)
     }
 

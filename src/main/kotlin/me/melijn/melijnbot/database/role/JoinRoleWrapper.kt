@@ -1,36 +1,28 @@
 package me.melijn.melijnbot.database.role
 
-import com.google.common.cache.CacheBuilder
-import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.NOT_IMPORTANT_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 import net.dv8tion.jda.api.utils.data.DataArray
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
 
 class JoinRoleWrapper(private val joinRoleDao: JoinRoleDao) {
 
     // guildId -> <selfRoleGroupName -> emotejiInfo (see SelfRoleDao for example)
-    val joinRoleCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, JoinRoleInfo> { key ->
-            getMap(key)
-        })
 
-    fun getMap(guildId: Long): CompletableFuture<JoinRoleInfo> {
-        val future = CompletableFuture<JoinRoleInfo>()
-       TaskManager.async {
-            val map = joinRoleDao.get(guildId)
-            val info = convertToJoinRoleInfo(map)
-            future.complete(info)
+    suspend fun getJRI(guildId: Long): JoinRoleInfo {
+        val result = joinRoleDao.getCacheEntry(guildId, HIGHER_CACHE)?.let {
+            convertToJoinRoleInfo(it)
         }
-        return future
+
+        if (result != null) return result
+
+        val joinroleInfo = convertToJoinRoleInfo(joinRoleDao.get(guildId))
+        joinRoleDao.setCacheEntry(guildId, convertToJson(joinroleInfo), NORMAL_CACHE)
+        return joinroleInfo
     }
 
-    suspend fun put(guildId: Long, joinRoleInfo: JoinRoleInfo) {
+    fun put(guildId: Long, joinRoleInfo: JoinRoleInfo) {
         joinRoleDao.put(guildId, convertToJson(joinRoleInfo))
-        joinRoleCache.put(guildId, CompletableFuture.completedFuture(joinRoleInfo))
+        joinRoleDao.setCacheEntry(guildId, convertToJson(joinRoleInfo), NORMAL_CACHE)
     }
 
     private fun convertToJoinRoleInfo(fromString: String): JoinRoleInfo {
@@ -93,7 +85,7 @@ class JoinRoleWrapper(private val joinRoleDao: JoinRoleDao) {
 
     // inserts or updates an entry
     suspend fun set(guildId: Long, groupName: String, roleId: Long?, chance: Int) {
-        val currentInfo = joinRoleCache.get(guildId).await()
+        val currentInfo = getJRI(guildId)
         val map = currentInfo.dataMap.toMutableMap()
         val list = currentInfo.dataMap.getOrDefault(groupName, emptyList()).toMutableList()
         val entryToUpdate = list.firstOrNull { (roleId1) -> roleId1 == roleId }
@@ -112,7 +104,7 @@ class JoinRoleWrapper(private val joinRoleDao: JoinRoleDao) {
 
     // [returns] true if the item was removed, false if it was never there
     suspend fun remove(guildId: Long, groupName: String, roleId: Long?): Boolean {
-        val currentInfo = joinRoleCache.get(guildId).await()
+        val currentInfo = getJRI(guildId)
         val map = currentInfo.dataMap.toMutableMap()
         val list = currentInfo.dataMap.getOrDefault(groupName, emptyList()).toMutableList()
         val exists = list.any { (roleId1) -> roleId1 == roleId }

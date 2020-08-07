@@ -9,13 +9,11 @@ class GuildPrefixWrapper(private val guildPrefixDao: GuildPrefixDao) {
     suspend fun getPrefixes(guildId: Long): List<String> {
         val result = guildPrefixDao.getCacheEntry(guildId, HIGHER_CACHE)?.splitIETEL("%SPLIT%")
 
-        if (result == null) {
-            val prefixes = guildPrefixDao.get(guildId)
-            guildPrefixDao.setCacheEntry(guildId, prefixes)
-            return prefixes.splitIETEL("%SPLIT%")
-        }
+        if (result != null) return result
 
-        return result
+        val prefixes = guildPrefixDao.get(guildId)
+        guildPrefixDao.setCacheEntry(guildId, prefixes, NORMAL_CACHE)
+        return prefixes.splitIETEL("%SPLIT%")
     }
 
     suspend fun addPrefix(guildId: Long, prefix: String) {

@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
-import kotlinx.coroutines.future.await
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.utility.HelpCommand
 import me.melijn.melijnbot.database.message.DaoMessage
@@ -143,13 +144,12 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
 //        if (event.author.isBot && event.author.idLong != container.settings.id) return
         val guildId = event.guild.idLong
         val logChannelWrapper = container.daoManager.logChannelWrapper
-        val logChannelCache = logChannelWrapper.logChannelCache
 
-        val odmId = logChannelCache.get(Pair(guildId, LogChannelType.OTHER_DELETED_MESSAGE))
-        val sdmId = logChannelCache.get(Pair(guildId, LogChannelType.SELF_DELETED_MESSAGE))
-        val pmId = logChannelCache.get(Pair(guildId, LogChannelType.PURGED_MESSAGE))
-        val fmId = logChannelCache.get(Pair(guildId, LogChannelType.FILTERED_MESSAGE))
-        val emId = logChannelCache.get(Pair(guildId, LogChannelType.EDITED_MESSAGE))
+        val odmId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.OTHER_DELETED_MESSAGE) }
+        val sdmId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.SELF_DELETED_MESSAGE) }
+        val pmId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.PURGED_MESSAGE) }
+        val fmId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.FILTERED_MESSAGE) }
+        val emId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.EDITED_MESSAGE) }
         if (odmId.await() == -1L && sdmId.await() == -1L && pmId.await() == -1L && fmId.await() == -1L && emId.await() == -1L) return
 
 

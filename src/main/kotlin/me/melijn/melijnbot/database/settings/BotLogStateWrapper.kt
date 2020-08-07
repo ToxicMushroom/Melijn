@@ -10,13 +10,11 @@ class BotLogStateWrapper(
     suspend fun shouldLog(guildId: Long): Boolean {
         val result = botLogStateDao.getCacheEntry("$guildId", HIGHER_CACHE)?.toBoolean()
 
-        if (result == null) {
-            val state = botLogStateDao.contains(guildId)
-            botLogStateDao.setCacheEntry(guildId, state, NORMAL_CACHE)
-            return state
-        }
+        if (result != null) return result
 
-        return result
+        val state = botLogStateDao.contains(guildId)
+        botLogStateDao.setCacheEntry(guildId, state, NORMAL_CACHE)
+        return state
     }
 
     fun set(guildId: Long, state: Boolean) {

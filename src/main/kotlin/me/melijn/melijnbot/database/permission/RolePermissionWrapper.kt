@@ -1,33 +1,28 @@
 package me.melijn.melijnbot.database.permission
 
-import com.google.common.cache.CacheBuilder
-import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.IMPORTANT_CACHE
+import com.fasterxml.jackson.module.kotlin.readValue
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 import me.melijn.melijnbot.enums.PermState
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import me.melijn.melijnbot.objectMapper
 
 class RolePermissionWrapper(private val rolePermissionDao: RolePermissionDao) {
 
-    val rolePermissionCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, Map<String, PermState>> { key ->
-            getPermissionList(key)
-        })
 
-    private fun getPermissionList(roleId: Long): CompletableFuture<Map<String, PermState>> {
-        val languageFuture = CompletableFuture<Map<String, PermState>>()
-       TaskManager.async {
-            val map = rolePermissionDao.getMap(roleId)
-            languageFuture.complete(map)
+    suspend fun getPermMap(roleId: Long): Map<String, PermState> {
+        val result = rolePermissionDao.getCacheEntry(roleId, HIGHER_CACHE)?.let {
+            objectMapper.readValue<Map<String, PermState>>(it)
         }
-        return languageFuture
+
+        if (result != null) return result
+
+        val permissionMap = rolePermissionDao.getMap(roleId)
+        rolePermissionDao.setCacheEntry(roleId, objectMapper.writeValueAsString(permissionMap), NORMAL_CACHE)
+        return permissionMap
     }
 
     suspend fun setPermissions(guildId: Long, roleId: Long, permissions: List<String>, state: PermState) {
-        val permissionMap = rolePermissionCache.get(roleId).await().toMutableMap()
+        val permissionMap = getPermMap(roleId).toMutableMap()
         if (state == PermState.DEFAULT) {
             permissions.forEach { permissionMap.remove(it) }
             rolePermissionDao.bulkDelete(roleId, permissions)
@@ -35,11 +30,11 @@ class RolePermissionWrapper(private val rolePermissionDao: RolePermissionDao) {
             permissions.forEach { permissionMap[it] = state }
             rolePermissionDao.bulkPut(guildId, roleId, permissions, state)
         }
-        rolePermissionCache.put(roleId, CompletableFuture.completedFuture(permissionMap.toMap()))
+        rolePermissionDao.setCacheEntry(roleId, objectMapper.writeValueAsString(permissionMap), NORMAL_CACHE)
     }
 
     suspend fun setPermission(guildId: Long, roleId: Long, permission: String, state: PermState) {
-        val permissionMap = rolePermissionCache.get(roleId).await().toMutableMap()
+        val permissionMap = getPermMap(roleId).toMutableMap()
         if (state == PermState.DEFAULT) {
             permissionMap.remove(permission)
             rolePermissionDao.delete(roleId, permission)
@@ -47,11 +42,11 @@ class RolePermissionWrapper(private val rolePermissionDao: RolePermissionDao) {
             permissionMap[permission] = state
             rolePermissionDao.set(guildId, roleId, permission, state)
         }
-        rolePermissionCache.put(roleId, CompletableFuture.completedFuture(permissionMap.toMap()))
+        rolePermissionDao.setCacheEntry(roleId, objectMapper.writeValueAsString(permissionMap), NORMAL_CACHE)
     }
 
-    suspend fun clear(roleId: Long) {
-        rolePermissionCache.put(roleId, CompletableFuture.completedFuture(emptyMap()))
+    fun clear(roleId: Long) {
+        rolePermissionDao.setCacheEntry(roleId, objectMapper.writeValueAsString(emptyMap<String, PermState>()), NORMAL_CACHE)
         rolePermissionDao.delete(roleId)
     }
 

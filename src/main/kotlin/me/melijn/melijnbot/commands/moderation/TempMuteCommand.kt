@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.moderation
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.mute.Mute
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.RoleType
@@ -67,7 +66,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         reason = reason.trim()
 
         val roleWrapper = context.daoManager.roleWrapper
-        val roleId = roleWrapper.roleCache.get(Pair(context.guildId, RoleType.MUTE)).await()
+        val roleId = roleWrapper.getRoleId(context.guildId, RoleType.MUTE)
         var muteRole: Role? = context.guild.getRoleById(roleId)
         if (muteRole == null) {
             val msg = context.getTranslation("message.creatingmuterole")

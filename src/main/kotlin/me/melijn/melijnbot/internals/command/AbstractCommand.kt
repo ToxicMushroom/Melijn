@@ -173,8 +173,8 @@ suspend fun hasPermission(context: CommandContext, permission: String, required:
 
 
     val channelId = context.channelId
-    val userMap = daoManager.userPermissionWrapper.guildUserPermissionCache.get(Pair(guildId, authorId)).await()
-    val channelUserMap = daoManager.channelUserPermissionWrapper.channelUserPermissionCache.get(Pair(channelId, authorId)).await()
+    val userMap = daoManager.userPermissionWrapper.getPermMap(guildId, authorId)
+    val channelUserMap = daoManager.channelUserPermissionWrapper.getPermMap(channelId, authorId)
 
     val lPermission = permission.toLowerCase()
 
@@ -195,9 +195,7 @@ suspend fun hasPermission(context: CommandContext, permission: String, required:
     // Permission checking for roles
     for (roleId in (context.member.roles.map { role -> role.idLong } + context.guild.publicRole.idLong)) {
         channelRoleResult = when (
-            daoManager.channelRolePermissionWrapper.channelRolePermissionCache
-                .get(Pair(channelId, roleId))
-                .await()[lPermission]
+            daoManager.channelRolePermissionWrapper.getPermMap(channelId, roleId)[lPermission]
             ) {
             PermState.ALLOW -> PermState.ALLOW
             PermState.DENY -> if (channelRoleResult == PermState.DEFAULT) {
@@ -210,7 +208,7 @@ suspend fun hasPermission(context: CommandContext, permission: String, required:
         if (channelRoleResult == PermState.ALLOW) break
         if (channelRoleResult != PermState.DEFAULT) continue
         if (roleResult != PermState.ALLOW) {
-            roleResult = when (context.daoManager.rolePermissionWrapper.rolePermissionCache.get(roleId).await()[lPermission]) {
+            roleResult = when (context.daoManager.rolePermissionWrapper.getPermMap(roleId)[lPermission]) {
                 PermState.ALLOW -> PermState.ALLOW
                 PermState.DENY -> if (roleResult == PermState.DEFAULT) PermState.DENY else roleResult
                 else -> roleResult
@@ -246,8 +244,8 @@ suspend fun hasPermission(command: AbstractCommand, container: Container, event:
     if (container.settings.developerIds.contains(authorId)) return true
 
     val channelId = event.textChannel.idLong
-    val userMap = container.daoManager.userPermissionWrapper.guildUserPermissionCache.get(Pair(guildId, authorId)).await()
-    val channelUserMap = container.daoManager.channelUserPermissionWrapper.channelUserPermissionCache.get(Pair(channelId, authorId)).await()
+    val userMap = container.daoManager.userPermissionWrapper.getPermMap(guildId, authorId)
+    val channelUserMap = container.daoManager.channelUserPermissionWrapper.getPermMap(channelId, authorId)
 
     val lPermission = permission.toLowerCase()
 
@@ -266,7 +264,7 @@ suspend fun hasPermission(command: AbstractCommand, container: Container, event:
 
     // Permission checking for roles
     for (roleId in (member.roles.map { role -> role.idLong } + guild.publicRole.idLong)) {
-        channelRoleResult = when (container.daoManager.channelRolePermissionWrapper.channelRolePermissionCache.get(Pair(channelId, roleId)).await()[lPermission]) {
+        channelRoleResult = when (container.daoManager.channelRolePermissionWrapper.getPermMap(channelId, roleId)[lPermission]) {
             PermState.ALLOW -> PermState.ALLOW
             PermState.DENY -> if (channelRoleResult == PermState.DEFAULT) PermState.DENY else channelRoleResult
             else -> channelRoleResult
@@ -274,15 +272,15 @@ suspend fun hasPermission(command: AbstractCommand, container: Container, event:
         if (channelRoleResult == PermState.ALLOW) break
         if (channelRoleResult != PermState.DEFAULT) continue
         if (roleResult != PermState.ALLOW) {
-            roleResult = when (container.daoManager.rolePermissionWrapper.rolePermissionCache.get(roleId).await()[lPermission]) {
+            roleResult = when (container.daoManager.rolePermissionWrapper.getPermMap(roleId)[lPermission]) {
                 PermState.ALLOW -> PermState.ALLOW
                 PermState.DENY -> if (roleResult == PermState.DEFAULT) PermState.DENY else roleResult
                 else -> roleResult
             }
         }
     }
-    if (channelRoleResult != PermState.DEFAULT) roleResult = channelRoleResult
 
+    if (channelRoleResult != PermState.DEFAULT) roleResult = channelRoleResult
 
     return if (
         command.commandCategory == CommandCategory.ADMINISTRATION ||

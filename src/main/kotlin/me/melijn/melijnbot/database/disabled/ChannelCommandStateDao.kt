@@ -1,16 +1,18 @@
 package me.melijn.melijnbot.database.disabled
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.ChannelCommandState
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class ChannelCommandStateDao(driverManager: DriverManager) : Dao(driverManager) {
+class ChannelCommandStateDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "channelCommandStates"
     override val tableStructure: String = "guildId bigint, channelId bigint, commandId varchar(16), state varchar(32)"
     override val primaryKey: String = "channelId, commandId"
+
+    override val cacheName: String = "channel:command:state"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)

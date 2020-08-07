@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.moderation
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
@@ -46,7 +45,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
 
             val role = getRoleByArgsNMessage(context, 0) ?: return
 
-            val userIds = context.daoManager.forceRoleWrapper.forceRoleCache.get(context.guildId).await()
+            val userIds = context.daoManager.forceRoleWrapper.getForceRoles(context.guildId)
                 .filter { it.value.contains(role.idLong) }.keys
 
             var content = "```INI\n[user] - [userId]"
@@ -82,7 +81,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
             }
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
 
-            val roleIds = context.daoManager.forceRoleWrapper.forceRoleCache.get(context.guildId).await()
+            val roleIds = context.daoManager.forceRoleWrapper.getForceRoles(context.guildId)
                 .getOrDefault(user.idLong, emptyList())
 
             var content = "```INI\n[role] - [roleId]"
@@ -182,7 +181,7 @@ class ForceRoleCommand : AbstractCommand("command.forcerole") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            val userRolesMap = context.daoManager.forceRoleWrapper.forceRoleCache.get(context.guildId).await()
+            val userRolesMap = context.daoManager.forceRoleWrapper.getForceRoles(context.guildId)
             val reverseMap = mutableMapOf<Long, Int>()
 
             for ((_, roleIds) in userRolesMap) {

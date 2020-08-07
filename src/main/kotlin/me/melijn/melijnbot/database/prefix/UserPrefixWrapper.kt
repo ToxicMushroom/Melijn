@@ -9,13 +9,11 @@ class UserPrefixWrapper(private val userPrefixDao: UserPrefixDao) {
     suspend fun getPrefixes(userId: Long): List<String> {
         val result = userPrefixDao.getCacheEntry(userId, HIGHER_CACHE)?.splitIETEL("%SPLIT%")
 
-        if (result == null) {
-            val prefixes = userPrefixDao.get(userId)
-            userPrefixDao.setCacheEntry(userId, prefixes)
-            return prefixes.splitIETEL("%SPLIT%")
-        }
+        if (result != null) return result
 
-        return result
+        val prefixes = userPrefixDao.get(userId)
+        userPrefixDao.setCacheEntry(userId, prefixes, NORMAL_CACHE)
+        return prefixes.splitIETEL("%SPLIT%")
     }
 
     suspend fun addPrefix(userId: Long, prefix: String) {
@@ -28,7 +26,7 @@ class UserPrefixWrapper(private val userPrefixDao: UserPrefixDao) {
     private fun setPrefixes(userId: Long, prefixList: List<String>) {
         val prefixes = prefixList.joinToString("%SPLIT%")
         userPrefixDao.set(userId, prefixes)
-        userPrefixDao.setCacheEntry(userId, prefixList, NORMAL_CACHE)
+        userPrefixDao.setCacheEntry(userId, prefixes, NORMAL_CACHE)
     }
 
     suspend fun removePrefix(userId: Long, prefix: String) {

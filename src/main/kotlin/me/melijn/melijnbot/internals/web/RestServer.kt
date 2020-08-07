@@ -15,7 +15,6 @@ import io.ktor.server.engine.stop
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.joinAll
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
@@ -330,7 +329,7 @@ class RestServer(container: Container) {
                     val streak = body.getInt("streak")
                     val wrapper = container.daoManager.balanceWrapper
 
-                    val newBalance = wrapper.balanceCache[userId].await() + credits
+                    val newBalance = wrapper.getBalance(userId) + credits
                     wrapper.setBalance(userId, newBalance)
 
                     LogUtils.sendReceivedVoteRewards(container, userId, newBalance, credits, streak, votes)
@@ -387,7 +386,7 @@ class RestServer(container: Container) {
                 })
 
                 jobs.add(TaskManager.async {
-                    val ec = daoManager.embedColorWrapper.embedColorCache.get(idLong).await()
+                    val ec = daoManager.embedColorWrapper.getColor(idLong)
                     settings.put("embedColor", ec)
                 })
 
@@ -397,7 +396,7 @@ class RestServer(container: Container) {
                 })
 
                 jobs.add(TaskManager.async {
-                    val language = daoManager.guildLanguageWrapper.languageCache.get(idLong).await()
+                    val language = daoManager.guildLanguageWrapper.getLanguage(idLong)
                     settings.put("language", language)
                 })
 

@@ -7,13 +7,12 @@ class VerificationUserFlowRateWrapper(private val verificationUserFlowRateDao: V
 
 
     suspend fun getFlowRate(guildId: Long): Long {
-        val cached = verificationUserFlowRateDao.getCacheEntry(guildId, HIGHER_CACHE)
-        if (cached == null) {
-            val flowRate = verificationUserFlowRateDao.get(guildId)
-            verificationUserFlowRateDao.setCacheEntry(guildId, flowRate, NORMAL_CACHE)
-            return flowRate
-        }
-        return cached.toLong()
+        val cached = verificationUserFlowRateDao.getCacheEntry(guildId, HIGHER_CACHE)?.let { it.toLong() }
+        if (cached != null) return cached
+
+        val flowRate = verificationUserFlowRateDao.get(guildId)
+        verificationUserFlowRateDao.setCacheEntry(guildId, flowRate, NORMAL_CACHE)
+        return flowRate
     }
 
     fun setUserFlowRate(guildId: Long, rate: Long) {

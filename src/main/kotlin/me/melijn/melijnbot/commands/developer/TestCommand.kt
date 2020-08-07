@@ -18,7 +18,6 @@ class TestCommand : AbstractCommand("command.test") {
 
     val logger: Logger = LoggerFactory.getLogger(TestCommand::class.java)
 
-
     override suspend fun execute(context: CommandContext) {
         sendRsp(context, "test")
     }

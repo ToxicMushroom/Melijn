@@ -3,7 +3,6 @@ package me.melijn.melijnbot.commands.anime
 import com.apollographql.apollo.ApolloCall
 import com.apollographql.apollo.api.Response
 import com.apollographql.apollo.exception.ApolloException
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.anilist.FindAnimeQuery
 import me.melijn.melijnbot.anilist.FindCharacterQuery
 import me.melijn.melijnbot.anilist.FindMangaQuery
@@ -216,8 +215,8 @@ class AniListCommand : AbstractCommand("command.anilist") {
             val daoManager = context.daoManager
             val embedColorWrapper = daoManager.embedColorWrapper
             val userEmbedColorWrapper = daoManager.userEmbedColorWrapper
-            val guildColor: Int = embedColorWrapper.embedColorCache.get(context.guildId).await()
-            val userColor = userEmbedColorWrapper.userEmbedColorCache.get(context.guildId).await()
+            val guildColor: Int = embedColorWrapper.getColor(context.guildId)
+            val userColor = userEmbedColorWrapper.getColor(context.guildId)
 
             val defaultColor = when {
                 userColor != 0 -> userColor

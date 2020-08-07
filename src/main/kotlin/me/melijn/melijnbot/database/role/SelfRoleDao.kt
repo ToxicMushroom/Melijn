@@ -12,7 +12,7 @@ class SelfRoleDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
     override val tableStructure: String = "guildId bigint, groupName varchar(64), emotejiInfo varchar(4096)"
     override val primaryKey: String = "guildId, groupName"
 
-    override val cacheName: String = "selfroles"
+    override val cacheName: String = "roles:self"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)

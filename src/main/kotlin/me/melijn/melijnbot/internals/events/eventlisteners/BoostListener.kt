@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
 import me.melijn.melijnbot.database.message.ModularMessage
@@ -46,7 +45,7 @@ class BoostListener(container: Container) : AbstractListener(container) {
             ?: return
 
         val messageWrapper = daoManager.messageWrapper
-        var modularMessage = messageWrapper.messageCache.get(Pair(guildId, messageType)).await() ?: return
+        var modularMessage = messageWrapper.getMessage(guildId, messageType) ?: return
         if (MessageCommandUtil.removeMessageIfEmpty(guildId, messageType, modularMessage, messageWrapper)) return
 
         modularMessage = replaceVariablesInBoostMessage(guild, boosted, modularMessage)

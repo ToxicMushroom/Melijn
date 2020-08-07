@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.moderation
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.ban.SoftBan
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.SpecialPermission
@@ -112,7 +111,7 @@ class SoftBanCommand : AbstractCommand("command.softban") {
             )?.override(true)?.queue()
 
             val logChannelWrapper = daoManager.logChannelWrapper
-            val logChannelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.SOFT_BAN)).await()
+            val logChannelId = logChannelWrapper.getChannelId(guild.idLong, LogChannelType.SOFT_BAN)
             val logChannel = guild.getTextChannelById(logChannelId)
             logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, softBannedMessageLc) }
 

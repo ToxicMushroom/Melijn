@@ -1,15 +1,17 @@
 package me.melijn.melijnbot.database.role
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class JoinRoleDao(driverManager: DriverManager) : Dao(driverManager) {
+class JoinRoleDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "joinRoles"
     override val tableStructure: String = "guildId bigint, joinRoleInfo varchar(2048)"
     override val primaryKey: String = "guildId"
+
+    override val cacheName: String = "roles:join"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
@@ -25,12 +27,12 @@ class JoinRoleDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId)
     }
 
-    suspend fun put(guildId: Long, joinRoleInfo: String) {
+    fun put(guildId: Long, joinRoleInfo: String) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, joinRoleInfo) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET joinRoleInfo = ?",
             guildId, joinRoleInfo, joinRoleInfo)
     }
 
-    suspend fun remove(guildId: Long) {
+    fun remove(guildId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ?", guildId)
     }
 }

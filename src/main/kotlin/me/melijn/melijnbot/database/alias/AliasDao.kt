@@ -17,12 +17,12 @@ class AliasDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun insert(id: Long, commandNode: String, aliases: String) {
+    fun insert(id: Long, commandNode: String, aliases: String) {
         driverManager.executeUpdate("INSERT INTO $table (id, command, aliases) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET aliases = ?",
             id, commandNode, aliases, aliases)
     }
 
-    suspend fun remove(id: Long, commandNode: String) {
+    fun remove(id: Long, commandNode: String) {
         driverManager.executeUpdate("DELETE FROM $table WHERE id = ? AND command = ?", id, commandNode)
     }
 

@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.message.DaoMessage
 import me.melijn.melijnbot.enums.LogChannelType
@@ -51,12 +50,12 @@ class MessageDeletedListener(container: Container) : AbstractListener(container)
         val guild = event.guild
         val guildId = event.guild.idLong
         val daoManager = container.daoManager
-        val logChannelCache = daoManager.logChannelWrapper.logChannelCache
+        val logChannelWrapper = daoManager.logChannelWrapper
         if (!guild.selfMember.hasPermission(Permission.VIEW_AUDIT_LOGS)) return
 
-        val odmId = logChannelCache.get(Pair(guildId, LogChannelType.OTHER_DELETED_MESSAGE)).await()
-        val sdmId = logChannelCache.get(Pair(guildId, LogChannelType.SELF_DELETED_MESSAGE)).await()
-        val fmId = logChannelCache.get(Pair(guildId, LogChannelType.FILTERED_MESSAGE)).await()
+        val odmId = logChannelWrapper.getChannelId(guildId, LogChannelType.OTHER_DELETED_MESSAGE)
+        val sdmId = logChannelWrapper.getChannelId(guildId, LogChannelType.SELF_DELETED_MESSAGE)
+        val fmId = logChannelWrapper.getChannelId(guildId, LogChannelType.FILTERED_MESSAGE)
         if (odmId == -1L && sdmId == -1L && fmId == -1L) return
 
         val odmLogChannel = guild.getAndVerifyLogChannelById(daoManager, LogChannelType.OTHER_DELETED_MESSAGE, odmId)

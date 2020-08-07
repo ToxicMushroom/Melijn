@@ -14,12 +14,11 @@ class RemoveResponseWrapper(
             objectMapper.readValue<Map<Long, Int>>(it)
         }
 
-        if (result == null) {
-            val channels = removeResponsesDao.getChannels(guildId)
-            removeResponsesDao.setCacheEntry(guildId, channels, NORMAL_CACHE)
-            return channels
-        }
-        return result
+        if (result != null) return result
+
+        val channels = removeResponsesDao.getChannels(guildId)
+        removeResponsesDao.setCacheEntry(guildId, channels, NORMAL_CACHE)
+        return channels
     }
 
     suspend fun set(guildId: Long, channelId: Long, seconds: Int) {

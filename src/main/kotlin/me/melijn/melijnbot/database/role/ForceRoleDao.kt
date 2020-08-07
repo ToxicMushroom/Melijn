@@ -1,15 +1,17 @@
 package me.melijn.melijnbot.database.role
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class ForceRoleDao(driverManager: DriverManager) : Dao(driverManager) {
+class ForceRoleDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "forcedRoles"
     override val tableStructure: String = "guildId bigint, userId bigint, roleId bigint"
     override val primaryKey: String = "roleId"
+
+    override val cacheName: String = "roles:force"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
@@ -28,14 +30,13 @@ class ForceRoleDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId)
     }
 
-    suspend fun add(guildId: Long, userId: Long, roleId: Long) {
+    fun add(guildId: Long, userId: Long, roleId: Long) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, userId, roleId) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
             guildId, userId, roleId)
     }
 
-    suspend fun remove(guildId: Long, userId: Long, roleId: Long) {
+    fun remove(guildId: Long, userId: Long, roleId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND userId = ? AND roleId = ?",
             guildId, userId, roleId)
     }
-
 }

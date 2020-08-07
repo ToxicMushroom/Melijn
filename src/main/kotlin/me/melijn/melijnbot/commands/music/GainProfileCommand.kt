@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.music
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.audio.GainProfile
 import me.melijn.melijnbot.internals.command.*
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
@@ -44,7 +43,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             }
 
             val wrapper = context.daoManager.gainProfileWrapper
-            val map = wrapper.gainProfileCache.get(context.guildId).await()
+            val map = wrapper.getGainProfile(context.guildId)
 
             val pair: Pair<String, GainProfile> = getGainProfileNMessage(context, map, 0) ?: return
             val profile = pair.second
@@ -75,7 +74,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             }
 
             val wrapper = context.daoManager.gainProfileWrapper
-            val map = wrapper.gainProfileCache.get(context.guildId).await()
+            val map = wrapper.getGainProfile(context.guildId)
 
             val pair = getGainProfileNMessage(context, map, 0) ?: return
             val name = pair.first
@@ -107,7 +106,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
             }
 
             val wrapper = context.daoManager.gainProfileWrapper
-            val map = wrapper.gainProfileCache.get(context.guildId).await()
+            val map = wrapper.getGainProfile(context.guildId)
 
             val pair = getGainProfileNMessage(context, map, 0) ?: return
             val name: String = pair.first
@@ -152,7 +151,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
 
 
             val wrapper = context.daoManager.gainProfileWrapper
-            val map = wrapper.gainProfileCache.get(context.guildId).await()
+            val map = wrapper.getGainProfile(context.guildId)
 
             val profileName = getGainProfileNMessage(context, map, 0)?.first ?: return
 
@@ -175,7 +174,7 @@ class GainProfileCommand : AbstractCommand("command.gainprofile") {
 
         override suspend fun execute(context: CommandContext) {
             val wrapper = context.daoManager.gainProfileWrapper
-            val map = wrapper.gainProfileCache.get(context.guildId).await()
+            val map = wrapper.getGainProfile(context.guildId)
 
             val title = context.getTranslation("$root.title")
             var content = "```INI\n" +

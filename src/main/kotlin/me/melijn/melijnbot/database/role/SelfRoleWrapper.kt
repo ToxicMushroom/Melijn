@@ -17,12 +17,11 @@ class SelfRoleWrapper(private val selfRoleDao: SelfRoleDao) {
             }
         }
 
-        if (result == null) {
-            val map = selfRoleDao.getMap(guildId)
-            selfRoleDao.setCacheEntry(guildId, objectMapper.writeValueAsString(map.mapValues { it.value.toString() }), NORMAL_CACHE)
-            return map
-        }
-        return result
+        if (result != null) return result
+
+        val map = selfRoleDao.getMap(guildId)
+        selfRoleDao.setCacheEntry(guildId, objectMapper.writeValueAsString(map.mapValues { it.value.toString() }), NORMAL_CACHE)
+        return map
     }
 
     suspend fun set(guildId: Long, groupName: String, emoteji: String, roleId: Long, chance: Int = 100) {

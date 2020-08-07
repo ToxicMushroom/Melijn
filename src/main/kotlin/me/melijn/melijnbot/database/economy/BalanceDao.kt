@@ -1,14 +1,17 @@
 package me.melijn.melijnbot.database.economy
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class BalanceDao(driverManager: DriverManager) : Dao(driverManager) {
+class BalanceDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
+
     override val table: String = "balances"
     override val tableStructure: String = "userId bigint, money bigint"
     override val primaryKey: String = "userId"
+
+    override val cacheName: String = "balance"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
@@ -24,7 +27,7 @@ class BalanceDao(driverManager: DriverManager) : Dao(driverManager) {
         }, userId)
     }
 
-    suspend fun setBalance(userId: Long, money: Long) {
+    fun setBalance(userId: Long, money: Long) {
         driverManager.executeUpdate("INSERT INTO $table (userId, money) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET money=?",
             userId, money, money)
     }

@@ -1,80 +1,44 @@
 package me.melijn.melijnbot.database.filter
 
-import com.google.common.cache.CacheBuilder
-import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.IMPORTANT_CACHE
+import com.fasterxml.jackson.module.kotlin.readValue
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 import me.melijn.melijnbot.enums.FilterType
-import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.addIfNotPresent
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import me.melijn.melijnbot.objectMapper
 
 class FilterWrapper(private val filterDao: FilterDao) {
 
     //guildId, filterName, filter
-    val allowedFilterCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Pair<Long, String>, List<String>> { (first, second) ->
-            getFilters(first, second, FilterType.ALLOWED)
-        })
 
-
-    val deniedFilterCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Pair<Long, String>, List<String>> { (first, second) ->
-            getFilters(first, second, FilterType.DENIED)
-        })
-
-    private fun getFilters(guildId: Long, filterGroupName: String, filterType: FilterType): CompletableFuture<List<String>> {
-        val future = CompletableFuture<List<String>>()
-        TaskManager.async {
-            val filters = filterDao.get(guildId, filterGroupName, filterType)
-            future.complete(filters)
+    suspend fun getFilters(guildId: Long, filterGroupName: String, filterType: FilterType): List<String> {
+        val cached = filterDao.getCacheEntry("$filterType:$guildId:$filterGroupName", HIGHER_CACHE)?.let {
+            objectMapper.readValue<List<String>>(it)
         }
-        return future
+        if (cached != null) return cached
+
+        val filters = filterDao.get(guildId, filterGroupName, filterType)
+        filterDao.setCacheEntry("$filterType:$guildId:$filterGroupName", objectMapper.writeValueAsString(filters), NORMAL_CACHE)
+        return filters
     }
 
     suspend fun addFilter(guildId: Long, filterGroupName: String, filterType: FilterType, filter: String) {
         filterDao.add(guildId, filterGroupName, filterType, filter)
 
-        val pair = Pair(guildId, filterGroupName)
-
-        when (filterType) {
-            FilterType.ALLOWED -> {
-                val filters = allowedFilterCache.get(pair).await().toMutableList()
-                filters.addIfNotPresent(filter)
-                allowedFilterCache.put(pair, CompletableFuture.completedFuture(filters))
-            }
-            FilterType.DENIED -> {
-                val filters = deniedFilterCache.get(pair).await().toMutableList()
-                filters.addIfNotPresent(filter)
-                deniedFilterCache.put(pair, CompletableFuture.completedFuture(filters))
-            }
-        }
+        val filters = getFilters(guildId, filterGroupName, filterType).toMutableList()
+        filters.addIfNotPresent(filter)
+        filterDao.setCacheEntry("$filterType:$guildId:$filterGroupName", objectMapper.writeValueAsString(filters), NORMAL_CACHE)
     }
 
-    suspend fun removeFilter(guildId: Long, filterGroupName: String, type: FilterType, filter: String) {
-        filterDao.remove(guildId, filterGroupName, type, filter)
+    suspend fun removeFilter(guildId: Long, filterGroupName: String, filterType: FilterType, filter: String) {
+        filterDao.remove(guildId, filterGroupName, filterType, filter)
 
-        val pair = Pair(guildId, filterGroupName)
-        when (type) {
-            FilterType.ALLOWED -> {
-                val newFilters = allowedFilterCache.get(pair).await().toMutableList() - filter
-                allowedFilterCache.put(pair, CompletableFuture.completedFuture(newFilters))
-            }
-            FilterType.DENIED -> {
-                val newFilters = deniedFilterCache.get(pair).await().toMutableList() - filter
-                deniedFilterCache.put(pair, CompletableFuture.completedFuture(newFilters))
-            }
-        }
+        val filters = getFilters(guildId, filterGroupName, filterType).toMutableList()
+        filters.remove(filter)
+        filterDao.setCacheEntry("$filterType:$guildId:$filterGroupName", objectMapper.writeValueAsString(filters), NORMAL_CACHE)
     }
 
-    suspend fun contains(guildId: Long, filterGroupName: String, type: FilterType, filter: String): Boolean {
-        val pair = Pair(guildId, filterGroupName)
-        return when (type) {
-            FilterType.ALLOWED -> allowedFilterCache
-            FilterType.DENIED -> deniedFilterCache
-        }.get(pair).await().contains(filter)
+    suspend fun contains(guildId: Long, filterGroupName: String, filterType: FilterType, filter: String): Boolean {
+        return getFilters(guildId, filterGroupName, filterType).contains(filter)
     }
 }

@@ -1,37 +1,26 @@
 package me.melijn.melijnbot.database.embed
 
-import com.google.common.cache.CacheBuilder
-import me.melijn.melijnbot.database.FREQUENTLY_USED_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 
 class UserEmbedColorWrapper(private val userEmbedColorDao: UserEmbedColorDao) {
 
-    val userEmbedColorCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, Int> { key ->
-            getColor(key)
-        })
+    suspend fun getColor(userId: Long): Int {
+        val cached = userEmbedColorDao.getCacheEntry(userId, HIGHER_CACHE)?.toInt()
+        if (cached != null) return cached
 
-    private fun getColor(userId: Long): CompletableFuture<Int> {
-        val future = CompletableFuture<Int>()
-       TaskManager.async {
-            userEmbedColorDao.get(userId) {
-                future.complete(it)
-            }
-        }
-        return future
+        val color = userEmbedColorDao.get(userId)
+        userEmbedColorDao.setCacheEntry(userId, color, NORMAL_CACHE)
+        return color
     }
 
-    suspend fun setColor(userId: Long, color: Int) {
-        userEmbedColorCache.put(userId, CompletableFuture.completedFuture(color))
+    fun setColor(userId: Long, color: Int) {
         userEmbedColorDao.set(userId, color)
+        userEmbedColorDao.setCacheEntry(userId, color, NORMAL_CACHE)
     }
 
-    suspend fun removeColor(userId: Long) {
-        userEmbedColorCache.put(userId, CompletableFuture.completedFuture(0))
+    fun removeColor(userId: Long) {
         userEmbedColorDao.remove(userId)
+        userEmbedColorDao.setCacheEntry(userId, 0, NORMAL_CACHE)
     }
 }

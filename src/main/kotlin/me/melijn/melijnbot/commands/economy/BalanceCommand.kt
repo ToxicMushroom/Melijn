@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.economy
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -20,7 +19,7 @@ class BalanceCommand : AbstractCommand("command.balance") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
-            val balance = context.daoManager.balanceWrapper.balanceCache[context.authorId].await()
+            val balance = context.daoManager.balanceWrapper.getBalance(context.authorId)
             val description = context.getTranslation("$root.show.self")
                 .withVariable("user", context.author.asTag)
                 .withVariable("balance", balance)
@@ -31,7 +30,7 @@ class BalanceCommand : AbstractCommand("command.balance") {
 
         } else {
             val user = retrieveUserByArgsNMessage(context, 0) ?: return
-            val balance = context.daoManager.balanceWrapper.balanceCache[user.idLong].await()
+            val balance = context.daoManager.balanceWrapper.getBalance(user.idLong)
             val description = context.getTranslation("$root.show.other")
                 .withVariable("user", user.asTag)
                 .withVariable("balance", balance)

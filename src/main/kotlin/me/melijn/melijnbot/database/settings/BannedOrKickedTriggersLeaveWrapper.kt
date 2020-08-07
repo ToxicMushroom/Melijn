@@ -10,13 +10,11 @@ class BannedOrKickedTriggersLeaveWrapper(
     suspend fun shouldTrigger(guildId: Long): Boolean {
         val result = bannedOrKickedTriggersLeaveDao.getCacheEntry(guildId, HIGHER_CACHE)?.toBoolean()
 
-        if (result == null) {
-            val state = bannedOrKickedTriggersLeaveDao.contains(guildId)
-            bannedOrKickedTriggersLeaveDao.setCacheEntry(guildId, state, NORMAL_CACHE)
-            return state
-        }
+        if (result != null) return result
 
-        return result
+        val state = bannedOrKickedTriggersLeaveDao.contains(guildId)
+        bannedOrKickedTriggersLeaveDao.setCacheEntry(guildId, state, NORMAL_CACHE)
+        return state
     }
 
     fun set(guildId: Long, state: Boolean) {

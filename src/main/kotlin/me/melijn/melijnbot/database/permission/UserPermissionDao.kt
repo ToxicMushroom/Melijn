@@ -1,16 +1,18 @@
 package me.melijn.melijnbot.database.permission
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.PermState
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class UserPermissionDao(driverManager: DriverManager) : Dao(driverManager) {
+class UserPermissionDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "userPermissions"
     override val tableStructure: String = "guildId bigint, userId bigint, permission varchar(64), state varchar(8)"
     override val primaryKey: String = "userId, permission"
+
+    override val cacheName: String = "permission:user"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
@@ -26,16 +28,16 @@ class UserPermissionDao(driverManager: DriverManager) : Dao(driverManager) {
         }, userId, permission)
     }
 
-    suspend fun set(guildId: Long, userId: Long, permission: String, permState: PermState) {
+    fun set(guildId: Long, userId: Long, permission: String, permState: PermState) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, userId, permission, state) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET state = ?",
             guildId, userId, permission, permState.toString(), permState.toString())
     }
 
-    suspend fun delete(guildId: Long, userId: Long, permission: String) {
+    fun delete(guildId: Long, userId: Long, permission: String) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND userId = ? AND permission = ?", guildId, userId, permission)
     }
 
-    suspend fun delete(guildId: Long, userId: Long) {
+    fun delete(guildId: Long, userId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND userId = ?", guildId, userId)
     }
 

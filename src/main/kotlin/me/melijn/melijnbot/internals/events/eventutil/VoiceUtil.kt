@@ -59,7 +59,7 @@ object VoiceUtil {
         val guildId = botChannel.guild.idLong
         if (
             listeningMembers(botChannel) == 0 &&
-            !(daoManager.music247Wrapper.music247Cache.get(guildId).await() &&
+            !(daoManager.music247Wrapper.is247Mode(guildId) &&
                 daoManager.supporterWrapper.getUsers().contains(guildId))
         ) {
             if (!disconnectQueue.containsKey(guildId)) {

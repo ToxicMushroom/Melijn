@@ -87,25 +87,4 @@ abstract class CacheDBDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.redisConnection.async()
             .del(key.toString())
     }
-
-    suspend fun setCacheMap(key: Any, map: Map<String, String>, ttlM: Int? = null) {
-        val result = driverManager.redisConnection.async()
-            .hset("$cacheName$key", map)
-            .await()
-        if (result != null && ttlM != null) {
-            driverManager.redisConnection.async()
-                .expire("$cacheName:$key", ttlM * 60L)
-        }
-    }
-
-    suspend fun getCacheMap(key: Any, newTTL: Int? = null): Map<String, String?> {
-        val result = driverManager.redisConnection.async()
-            .hgetall("$cacheName$key")
-            .await()
-        if (result != null && newTTL != null) {
-            driverManager.redisConnection.async()
-                .expire("$cacheName:$key", newTTL * 60L)
-        }
-        return result
-    }
 }

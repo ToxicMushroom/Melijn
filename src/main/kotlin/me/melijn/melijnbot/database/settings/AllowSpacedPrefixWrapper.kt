@@ -12,12 +12,11 @@ class AllowSpacedPrefixWrapper(
     suspend fun getGuildState(guildId: Long): Boolean {
         val result = allowSpacedPrefixDao.getCacheEntry("$guildId", HIGHER_CACHE)?.toBoolean()
 
-        if (result == null) {
-            val allowed = allowSpacedPrefixDao.contains(guildId)
-            allowSpacedPrefixDao.setCacheEntry(guildId, allowed, NORMAL_CACHE)
-            return allowed
-        }
-        return result
+        if (result != null) return result
+
+        val allowed = allowSpacedPrefixDao.contains(guildId)
+        allowSpacedPrefixDao.setCacheEntry(guildId, allowed, NORMAL_CACHE)
+        return allowed
     }
 
     suspend fun getUserTriState(userId: Long): TriState {

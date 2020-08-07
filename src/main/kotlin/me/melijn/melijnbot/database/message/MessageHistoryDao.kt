@@ -15,14 +15,14 @@ class MessageHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun set(daoMessage: DaoMessage) {
+    fun set(daoMessage: DaoMessage) {
         daoMessage.run {
             driverManager.executeUpdate("INSERT INTO $table (guildId, textChannelId, authorId, messageId, content, moment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET content = ?",
                 guildId, textChannelId, authorId, messageId, content, moment, content)
         }
     }
 
-    suspend fun add(daoMessage: DaoMessage) {
+    fun add(daoMessage: DaoMessage) {
         daoMessage.run {
             driverManager.executeUpdate("INSERT INTO $table (guildId, textChannelId, authorId, messageId, content, moment) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
                 guildId, textChannelId, authorId, messageId, content, moment)
@@ -47,10 +47,9 @@ class MessageHistoryDao(driverManager: DriverManager) : Dao(driverManager) {
         }, messageId)
     }
 
-    suspend fun clearOldMessages() {
+    fun clearOldMessages() {
         driverManager.executeUpdate("DELETE FROM $table WHERE moment < ?", (System.currentTimeMillis() - 86_400_000 * 7))
     }
-
 }
 
 data class DaoMessage(

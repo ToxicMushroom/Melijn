@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.economy
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -19,7 +18,7 @@ class DailyCommand : AbstractCommand("command.daily") {
     override suspend fun execute(context: CommandContext) {
         if (canDailyElseMessage(context)) {
             val balanceWrapper = context.daoManager.balanceWrapper
-            val cash = balanceWrapper.balanceCache.get(context.authorId).await()
+            val cash = balanceWrapper.getBalance(context.authorId)
             balanceWrapper.setBalance(context.authorId, cash + 100)
             context.daoManager.dailyCooldownWrapper.setCooldown(context.authorId, System.currentTimeMillis())
 
@@ -32,7 +31,7 @@ class DailyCommand : AbstractCommand("command.daily") {
 
     private suspend fun canDailyElseMessage(context: CommandContext): Boolean {
         val dailyCooldownWrapper = context.daoManager.dailyCooldownWrapper
-        val lastTime = dailyCooldownWrapper.cooldownCache.get(context.authorId).await()
+        val lastTime = dailyCooldownWrapper.getCooldown(context.authorId)
         val difference = System.currentTimeMillis() - lastTime
         if (difference > 86400000) {
             return true

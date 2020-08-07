@@ -14,12 +14,11 @@ class RemoveInvokeWrapper(
             objectMapper.readValue<Map<Long, Int>>(it)
         }
 
-        if (result == null) {
-            val channels = removeInvokeDao.getChannels(guildId)
-            removeInvokeDao.setCacheEntry(guildId, channels, NORMAL_CACHE)
-            return channels
-        }
-        return result
+        if (result != null) return result
+
+        val channels = removeInvokeDao.getChannels(guildId)
+        removeInvokeDao.setCacheEntry(guildId, channels, NORMAL_CACHE)
+        return channels
     }
 
     suspend fun set(guildId: Long, channelId: Long, seconds: Int) {

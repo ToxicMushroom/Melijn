@@ -13,12 +13,12 @@ class PollDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun add(guildId: Long, channelId: Long, messageId: Long, moment: Long, endTime: Long) {
+    fun add(guildId: Long, channelId: Long, messageId: Long, moment: Long, endTime: Long) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, messageId, moment, endTime) VALUES (?, ?, ?, ?, ?)",
             guildId, channelId, messageId, moment, endTime)
     }
 
-    suspend fun remove(guildId: Long, channelId: Long, messageId: Long, moment: Long, endTime: Long) {
+    fun remove(guildId: Long, channelId: Long, messageId: Long, moment: Long, endTime: Long) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, messageId, moment, endTime) VALUES (?, ?, ?, ?, ?)",
             guildId, channelId, messageId, moment, endTime)
     }

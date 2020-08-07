@@ -7,13 +7,12 @@ import me.melijn.melijnbot.enums.VerificationType
 class VerificationTypeWrapper(private val verificationTypeDao: VerificationTypeDao) {
 
     suspend fun getType(guildId: Long): VerificationType {
-        val cached = verificationTypeDao.getCacheEntry(guildId, HIGHER_CACHE)
-        if (cached == null) {
-            val type = verificationTypeDao.get(guildId)
-            verificationTypeDao.setCacheEntry(guildId, type, NORMAL_CACHE)
-            return type
-        }
-        return VerificationType.valueOf(cached)
+        val cached = verificationTypeDao.getCacheEntry(guildId, HIGHER_CACHE)?.let { VerificationType.valueOf(it) }
+        if (cached != null) return cached
+
+        val type = verificationTypeDao.get(guildId)
+        verificationTypeDao.setCacheEntry(guildId, type, NORMAL_CACHE)
+        return type
     }
 
     fun setType(guildId: Long, type: VerificationType) {

@@ -1,22 +1,24 @@
 package me.melijn.melijnbot.database.filter
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.FilterMode
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class FilterGroupDao(driverManager: DriverManager) : Dao(driverManager) {
+class FilterGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "filterGroups"
     override val tableStructure: String = "guildId bigint, filterGroupName varchar(32), channelIds varchar(2048), mode varchar(64), state boolean, points int"
     override val primaryKey: String = "guildId, filterGroupName"
 
+    override val cacheName: String = "filter:group"
+
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun add(guildId: Long, group: FilterGroup) {
+    fun add(guildId: Long, group: FilterGroup) {
         group.apply {
             val query = "INSERT INTO $table (guildId, filterGroupName, channelIds, mode, state, points) VALUES (?, ?, ?, ?, ?, ?) " +
                 "ON CONFLICT ($primaryKey) DO UPDATE SET channelIds = ?, mode = ?, state = ?, points = ?"
@@ -57,7 +59,7 @@ class FilterGroupDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId)
     }
 
-    suspend fun remove(guildId: Long, group: FilterGroup) {
+    fun remove(guildId: Long, group: FilterGroup) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND filterGroupName = ?",
             guildId, group.filterGroupName)
     }

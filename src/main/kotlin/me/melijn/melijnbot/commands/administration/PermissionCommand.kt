@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.PermState
 import me.melijn.melijnbot.enums.SpecialPermission
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -108,8 +107,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     .withVariable("permissionNode", permissionNode)
 
                 var content = "\n```INI"
-                val dao = context.daoManager.userPermissionWrapper.guildUserPermissionCache
-                    .get(Pair(context.guildId, user.idLong)).await()
+                val dao = context.daoManager.userPermissionWrapper.getPermMap(context.guildId, user.idLong)
                 var index = 1
                 for (perm in permissions) {
                     val state = dao.getOrDefault(perm, PermState.DEFAULT)
@@ -225,8 +223,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     .withVariable("permissionNode", permissionNode)
 
                 var content = "\n```INI"
-                val dao = context.daoManager.rolePermissionWrapper.rolePermissionCache
-                    .get(role.idLong).await()
+                val dao = context.daoManager.rolePermissionWrapper.getPermMap(role.idLong)
                 var index = 1
                 for (perm in permissions) {
                     val state = dao.getOrDefault(perm, PermState.DEFAULT)
@@ -362,8 +359,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .withVariable(PLACEHOLDER_ROLE, role.name)
                         .withVariable("permissionNode", permissionNode)
 
-                    val channelRolePermissionCache = context.daoManager.channelRolePermissionWrapper.channelRolePermissionCache
-                    val channelRole = channelRolePermissionCache.get(Pair(channel.idLong, role.idLong)).await()
+
+                    val channelRole = context.daoManager.channelRolePermissionWrapper.getPermMap(channel.idLong, role.idLong)
 
                     var content = "```INI"
                     for ((index, perm) in permissions.withIndex()) {
@@ -488,8 +485,8 @@ class PermissionCommand : AbstractCommand("command.permission") {
                         .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
                         .withVariable(PLACEHOLDER_USER, user.asTag)
                         .withVariable("permissionNode", permissionNode)
-                    val cache = context.daoManager.channelUserPermissionWrapper.channelUserPermissionCache
-                    val channelUser = cache.get(Pair(channel.idLong, user.idLong)).await()
+                    val wrapper = context.daoManager.channelUserPermissionWrapper
+                    val channelUser = wrapper.getPermMap(channel.idLong, user.idLong)
 
                     var content = "```INI"
                     for ((index, perm) in permissions.withIndex()) {
@@ -586,8 +583,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 val user2 = retrieveUserByArgsNMessage(context, 1) ?: return
 
                 val daoWrapper1 = context.daoManager.userPermissionWrapper
-                val permissions = daoWrapper1.guildUserPermissionCache
-                    .get(Pair(context.guildId, user1.idLong)).await()
+                val permissions = daoWrapper1.getPermMap(context.guildId, user1.idLong)
 
                 daoWrapper1.setPermissions(context.guildId, user2.idLong, permissions)
 
@@ -611,8 +607,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 val user2 = retrieveUserByArgsNMessage(context, 1) ?: return
 
                 val daoWrapper1 = context.daoManager.rolePermissionWrapper
-                val permissions = daoWrapper1.rolePermissionCache
-                    .get(role1.idLong).await()
+                val permissions = daoWrapper1.getPermMap(role1.idLong)
 
                 val daoWrapper2 = context.daoManager.userPermissionWrapper
                 daoWrapper2.setPermissions(context.guildId, user2.idLong, permissions)
@@ -637,8 +632,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 val user3 = retrieveUserByArgsNMessage(context, 2) ?: return
 
                 val daoWrapper1 = context.daoManager.channelUserPermissionWrapper
-                val permissions = daoWrapper1.channelUserPermissionCache
-                    .get(Pair(channel1.idLong, user2.idLong)).await()
+                val permissions = daoWrapper1.getPermMap(channel1.idLong, user2.idLong)
 
                 val daoWrapper2 = context.daoManager.userPermissionWrapper
                 daoWrapper2.setPermissions(context.guildId, user3.idLong, permissions)
@@ -665,8 +659,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 val user3 = retrieveUserByArgsNMessage(context, 2) ?: return
 
                 val daoWrapper1 = context.daoManager.channelRolePermissionWrapper
-                val permissions = daoWrapper1.channelRolePermissionCache
-                    .get(Pair(channel1.idLong, role2.idLong)).await()
+                val permissions = daoWrapper1.getPermMap(channel1.idLong, role2.idLong)
 
                 val daoWrapper2 = context.daoManager.userPermissionWrapper
                 daoWrapper2.setPermissions(context.guildId, user3.idLong, permissions)
@@ -725,8 +718,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 val role2 = getRoleByArgsNMessage(context, 1) ?: return
 
                 val daoWrapper1 = context.daoManager.userPermissionWrapper
-                val permissions = daoWrapper1.guildUserPermissionCache
-                    .get(Pair(context.guildId, user1.idLong)).await()
+                val permissions = daoWrapper1.getPermMap(context.guildId, user1.idLong)
 
                 val daoWrapper2 = context.daoManager.rolePermissionWrapper
                 daoWrapper2.setPermissions(context.guildId, role2.idLong, permissions)
@@ -751,8 +743,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 val role2 = getRoleByArgsNMessage(context, 1) ?: return
 
                 val daoWrapper1 = context.daoManager.rolePermissionWrapper
-                val permissions = daoWrapper1.rolePermissionCache
-                    .get(role1.idLong).await()
+                val permissions = daoWrapper1.getPermMap(role1.idLong)
 
                 daoWrapper1.setPermissions(context.guildId, role2.idLong, permissions)
                 val path = "$root.response1" + if (permissions.size > 1) {
@@ -776,8 +767,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 val role3 = getRoleByArgsNMessage(context, 2) ?: return
 
                 val daoWrapper1 = context.daoManager.channelUserPermissionWrapper
-                val permissions = daoWrapper1.channelUserPermissionCache
-                    .get(Pair(channel1.idLong, user2.idLong)).await()
+                val permissions = daoWrapper1.getPermMap(channel1.idLong, user2.idLong)
 
                 val daoWrapper2 = context.daoManager.rolePermissionWrapper
                 daoWrapper2.setPermissions(context.guildId, role3.idLong, permissions)
@@ -803,8 +793,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 val role3 = getRoleByArgsNMessage(context, 2) ?: return
 
                 val daoWrapper1 = context.daoManager.channelRolePermissionWrapper
-                val permissions = daoWrapper1.channelRolePermissionCache
-                    .get(Pair(channel1.idLong, role2.idLong)).await()
+                val permissions = daoWrapper1.getPermMap(channel1.idLong, role2.idLong)
 
                 val daoWrapper2 = context.daoManager.rolePermissionWrapper
                 daoWrapper2.setPermissions(context.guildId, role3.idLong, permissions)
@@ -874,8 +863,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     val role3 = getRoleByArgsNMessage(context, 2) ?: return
 
                     val daoWrapper1 = context.daoManager.userPermissionWrapper
-                    val permissions = daoWrapper1.guildUserPermissionCache
-                        .get(Pair(context.guildId, user1.idLong)).await()
+                    val permissions = daoWrapper1.getPermMap(context.guildId, user1.idLong)
 
                     val daoWrapper2 = context.daoManager.channelRolePermissionWrapper
                     daoWrapper2.setPermissions(context.guildId, channel2.idLong, role3.idLong, permissions)
@@ -901,8 +889,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     val role3 = getRoleByArgsNMessage(context, 2) ?: return
 
                     val daoWrapper1 = context.daoManager.rolePermissionWrapper
-                    val permissions = daoWrapper1.rolePermissionCache
-                        .get(role1.idLong).await()
+                    val permissions = daoWrapper1.getPermMap(role1.idLong)
 
                     val daoWrapper2 = context.daoManager.channelRolePermissionWrapper
                     daoWrapper2.setPermissions(context.guildId, channel2.idLong, role3.idLong, permissions)
@@ -929,8 +916,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     val role4 = getRoleByArgsNMessage(context, 3) ?: return
 
                     val daoWrapper1 = context.daoManager.channelUserPermissionWrapper
-                    val permissions = daoWrapper1.channelUserPermissionCache
-                        .get(Pair(channel1.idLong, user2.idLong)).await()
+                    val permissions = daoWrapper1.getPermMap(channel1.idLong, user2.idLong)
 
                     val daoWrapper2 = context.daoManager.channelRolePermissionWrapper
                     daoWrapper2.setPermissions(context.guildId, channel3.idLong, role4.idLong, permissions)
@@ -958,8 +944,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     val role4 = getRoleByArgsNMessage(context, 3) ?: return
 
                     val daoWrapper1 = context.daoManager.channelRolePermissionWrapper
-                    val permissions = daoWrapper1.channelRolePermissionCache
-                        .get(Pair(channel1.idLong, role2.idLong)).await()
+                    val permissions = daoWrapper1.getPermMap(channel1.idLong, role2.idLong)
 
                     daoWrapper1.setPermissions(context.guildId, channel3.idLong, role4.idLong, permissions)
                     val path = "$root.response1" + if (permissions.size > 1) {
@@ -1018,8 +1003,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     val user3 = retrieveUserByArgsNMessage(context, 2) ?: return
 
                     val daoWrapper1 = context.daoManager.userPermissionWrapper
-                    val permissions = daoWrapper1.guildUserPermissionCache
-                        .get(Pair(context.guildId, user1.idLong)).await()
+                    val permissions = daoWrapper1.getPermMap(context.guildId, user1.idLong)
 
                     val daoWrapper2 = context.daoManager.channelUserPermissionWrapper
                     daoWrapper2.setPermissions(context.guildId, channel2.idLong, user3.idLong, permissions)
@@ -1045,8 +1029,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     val user3 = retrieveUserByArgsNMessage(context, 2) ?: return
 
                     val daoWrapper1 = context.daoManager.rolePermissionWrapper
-                    val permissions = daoWrapper1.rolePermissionCache
-                        .get(role1.idLong).await()
+                    val permissions = daoWrapper1.getPermMap(role1.idLong)
 
                     val daoWrapper2 = context.daoManager.channelUserPermissionWrapper
                     daoWrapper2.setPermissions(context.guildId, channel2.idLong, user3.idLong, permissions)
@@ -1073,8 +1056,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     val user4 = retrieveUserByArgsNMessage(context, 3) ?: return
 
                     val daoWrapper1 = context.daoManager.channelUserPermissionWrapper
-                    val permissions = daoWrapper1.channelUserPermissionCache
-                        .get(Pair(channel1.idLong, user2.idLong)).await()
+                    val permissions = daoWrapper1.getPermMap(channel1.idLong, user2.idLong)
 
                     daoWrapper1.setPermissions(context.guildId, channel3.idLong, user4.idLong, permissions)
                     val path = "$root.response1" + if (permissions.size > 1) {
@@ -1101,8 +1083,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                     val user4 = retrieveUserByArgsNMessage(context, 3) ?: return
 
                     val daoWrapper1 = context.daoManager.channelRolePermissionWrapper
-                    val permissions = daoWrapper1.channelRolePermissionCache
-                        .get(Pair(channel1.idLong, role2.idLong)).await()
+                    val permissions = daoWrapper1.getPermMap(channel1.idLong, role2.idLong)
 
                     val daoWrapper2 = context.daoManager.channelUserPermissionWrapper
                     daoWrapper2.setPermissions(context.guildId, channel3.idLong, user4.idLong, permissions)

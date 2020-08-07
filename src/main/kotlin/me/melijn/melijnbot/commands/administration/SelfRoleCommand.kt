@@ -398,6 +398,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
         init {
             name = "group"
+            aliases = arrayOf("g")
             children = arrayOf(   // Groups will have lite ids, the arg for add will be the displayname
                 AddArg(root),     // Adds a group
                 RemoveArg(root),  // Removes a group

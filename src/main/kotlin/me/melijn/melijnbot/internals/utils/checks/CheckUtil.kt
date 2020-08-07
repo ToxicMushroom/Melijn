@@ -22,7 +22,7 @@ private const val NO_PERM_CAUSE = "nopermission"
 
 suspend fun Guild.getAndVerifyLogChannelByType(daoManager: DaoManager, type: LogChannelType, logIfInvalid: Boolean = true): TextChannel? {
     val logChannelWrapper = daoManager.logChannelWrapper
-    val channelId = logChannelWrapper.logChannelCache.get(Pair(idLong, type)).await()
+    val channelId = logChannelWrapper.getChannelId(idLong, type)
 
     return this.getAndVerifyLogChannelById(daoManager, type, channelId, logIfInvalid)
 }
@@ -144,7 +144,7 @@ suspend fun Guild.getAndVerifyMusicChannel(
 
 suspend fun Guild.getAndVerifyRoleByType(daoManager: DaoManager, type: RoleType, shouldBeInteractable: Boolean = false): Role? {
     val roleWrapper = daoManager.roleWrapper
-    val roleId = roleWrapper.roleCache.get(Pair(idLong, type)).await()
+    val roleId = roleWrapper.getRoleId(idLong, type)
     if (roleId == -1L) return null
 
     return this.getAndVerifyRoleById(daoManager, type, roleId, shouldBeInteractable)

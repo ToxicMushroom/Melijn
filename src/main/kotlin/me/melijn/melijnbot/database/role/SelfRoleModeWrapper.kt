@@ -9,13 +9,11 @@ class SelfRoleModeWrapper(private val selfRoleModeDao: SelfRoleModeDao) {
     suspend fun getMap(guildId: Long): SelfRoleMode {
         val result = selfRoleModeDao.getCacheEntry(guildId, HIGHER_CACHE)?.let { SelfRoleMode.valueOf(it) }
 
-        if (result == null) {
-            val selfroleMode = SelfRoleMode.valueOf(selfRoleModeDao.getMode(guildId))
-            selfRoleModeDao.setCacheEntry(guildId, selfroleMode, NORMAL_CACHE)
-            return selfroleMode
-        }
+        if (result != null) return result
 
-        return result
+        val selfroleMode = SelfRoleMode.valueOf(selfRoleModeDao.getMode(guildId))
+        selfRoleModeDao.setCacheEntry(guildId, selfroleMode, NORMAL_CACHE)
+        return selfroleMode
     }
 
     fun set(guildId: Long, mode: SelfRoleMode) {

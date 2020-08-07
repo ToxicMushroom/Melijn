@@ -90,7 +90,6 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val songCacheWrapper: SongCacheWrapper
     val gainProfileWrapper: GainProfileWrapper
     val music247Wrapper: Music247Wrapper
-    val musicNodeWrapper: MusicNodeWrapper
     val streamUrlWrapper: StreamUrlWrapper
     val musicChannelWrapper: MusicChannelWrapper
     val commandWrapper: CommandWrapper
@@ -188,7 +187,6 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         tracksWrapper = TracksWrapper(TracksDao(driverManager), LastVoiceChannelDao(driverManager))
         songCacheWrapper = SongCacheWrapper(SongCacheDao(driverManager))
         gainProfileWrapper = GainProfileWrapper(GainProfileDao(driverManager))
-        musicNodeWrapper = MusicNodeWrapper(MusicNodeDao(driverManager))
         music247Wrapper = Music247Wrapper(Music247Dao(driverManager))
 
         streamUrlWrapper = StreamUrlWrapper(StreamUrlDao(driverManager))

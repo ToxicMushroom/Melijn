@@ -1,31 +1,21 @@
 package me.melijn.melijnbot.database.economy
 
-import com.google.common.cache.CacheBuilder
-import me.melijn.melijnbot.database.FREQUENTLY_USED_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 
 class DailyCooldownWrapper(private val dailyCooldownDao: DailyCooldownDao) {
 
-    val cooldownCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, Long> { key ->
-            getCooldown(key)
-        })
+    suspend fun getCooldown(userId: Long): Long {
+        val cached = dailyCooldownDao.getCacheEntry(userId, HIGHER_CACHE)?.toLong()
+        if (cached != null) return cached
 
-    private fun getCooldown(userId: Long): CompletableFuture<Long> {
-        val time = CompletableFuture<Long>()
-       TaskManager.async {
-            time.complete(dailyCooldownDao.get(userId))
-
-        }
+        val time = dailyCooldownDao.get(userId)
+        dailyCooldownDao.setCacheEntry(userId, time, NORMAL_CACHE)
         return time
     }
 
-    suspend fun setCooldown(userId: Long, time: Long) {
+    fun setCooldown(userId: Long, time: Long) {
         dailyCooldownDao.set(userId, time)
-        cooldownCache.put(userId, CompletableFuture.completedFuture(time))
+        dailyCooldownDao.setCacheEntry(userId, time, NORMAL_CACHE)
     }
 }
