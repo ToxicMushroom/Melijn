@@ -1,0 +1,66 @@
+{
+  "name": "",
+  "id": 123,
+  "version": "2.0",
+  "database": {
+    "user": "",
+    "password": "",
+    "database": "",
+    "host": "localhost",
+    "port": 5432
+  },
+  "tokens": {
+    "discord": "",
+    "topDotGG": "",
+    "botsOnDiscordXYZ": "",
+    "botlistSpace": "",
+    "discordBotListCom": "",
+    "discordBotsGG": "",
+    "botsForDiscordCom": "",
+    "discordBoats": "",
+    "weebSh": "",
+    "melijnRest": "securerestpwd",
+    "randomCatApi": "",
+    "kSoftApi": ""
+  },
+  "lavalink": {
+    "enabled": true,
+    "verified_nodes": [
+      {
+        "host": "",
+        "password": ""
+      }
+    ],
+    "http_nodes": [
+      {
+        "host": "",
+        "password": ""
+      }
+    ]
+  },
+  "jikan": {
+    "ssl": false,
+    "host": "",
+    "port": 80
+  },
+  "unLoggedThreads": [
+    "OkHttp Dispatcher"
+  ],
+  "spotify": {
+    "clientId": "",
+    "password": ""
+  },
+  "melijnCDN": {
+    "token": ""
+  },
+  "prefix": ".",
+  "developerIds": [
+    231459866630291459,
+    218508002255306752
+  ],
+  "exceptionChannel": 1234567891011121314,
+  "environment": "testing",
+  "shardCount": 1,
+  "restPort": 8080,
+  "embedColor": -6179603
+}
