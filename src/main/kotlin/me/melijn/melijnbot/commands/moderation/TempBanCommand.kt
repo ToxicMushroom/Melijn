@@ -98,10 +98,10 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         val bannedMessageDm = getBanMessage(language, privZoneId, guild, targetUser, author, ban)
         val bannedMessageLc = getBanMessage(language, zoneId, guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
 
-        context.daoManager.banWrapper.setBan(ban)
+
 
         try {
-            context.guild.ban(targetUser, 7).await()
+            context.guild.ban(targetUser, 7).async {daoManager.banWrapper.setBan(ban) }
             banningMessage?.editMessage(
                 bannedMessageDm
             )?.override(true)?.queue()

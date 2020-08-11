@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.internals.utils
 
 import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.Permission
@@ -88,6 +89,22 @@ suspend fun <T> RestAction<T>.awaitBool() = suspendCoroutine<Boolean> {
         { _ -> it.resume(true) },
         { _ -> it.resume(false) }
     )
+}
+
+
+suspend fun <T> RestAction<T>.async(success: suspend (T) -> Unit, failure: suspend (Throwable) -> Unit) {
+    this.queue(
+        { t -> TaskManager.async { success(t) } },
+        { e ->
+            TaskManager.async {
+                failure(e)
+            }
+        }
+    )
+}
+
+suspend fun <T> RestAction<T>.async(success: suspend (T) -> Unit) {
+    this.queue { t -> TaskManager.async { success(t) } }
 }
 
 
