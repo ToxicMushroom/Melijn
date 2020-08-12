@@ -213,7 +213,8 @@ class CommandClientBuilder(private val container: Container) {
         LeaderBoardCommand(),
         TopVotersCommand(),
         ToggleVoteReminderCommand(),
-        MikuCommand()
+        MikuCommand(),
+        RedisCommand()
     )
 
     init {
