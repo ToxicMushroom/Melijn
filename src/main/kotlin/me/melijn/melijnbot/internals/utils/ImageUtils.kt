@@ -2,15 +2,22 @@ package me.melijn.melijnbot.internals.utils
 
 import com.madgag.gif.fmsware.GifDecoder
 import com.squareup.gifencoder.*
+import io.ktor.client.call.receive
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.readBytes
+import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.cancel
+import io.ktor.utils.io.readRemaining
+import io.ktor.utils.io.streams.writePacket
 import kotlinx.coroutines.*
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
 import me.melijn.melijnbot.internals.utils.message.sendMsgAwaitEL
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import net.dv8tion.jda.api.entities.Message
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.image.BufferedImage
@@ -21,6 +28,7 @@ import java.io.ByteArrayOutputStream
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipInputStream
 import javax.imageio.ImageIO
+import javax.naming.SizeLimitExceededException
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
@@ -52,12 +60,16 @@ object ImageUtils {
                 url = attachments[0].url + "?size=2048"
 
                 if (!checkFormat(context, attachments[0].url, reqFormat)) return null
-                withContext(Dispatchers.IO) {
-                    img = context.webManager.httpClient.get<HttpResponse>(url).readBytes()
+                img = withContext(Dispatchers.IO) {
+                    img = downloadImage(context, url)
                     ByteArrayInputStream(img).use { bis ->
                         if (ImageIO.read(bis) == null) img = null
                     }
+                    img
                 }
+            } catch (t: SizeLimitExceededException) {
+                t.printStackTrace()
+                return null
             } catch (e: Throwable) {
                 val msg = context.getTranslation("message.attachmentnotanimage")
                     .withVariable(PLACEHOLDER_ARG, attachments[0].url)
@@ -70,25 +82,30 @@ object ImageUtils {
                 arg = true
                 url = user.effectiveAvatarUrl + "?size=2048"
                 if (!checkFormat(context, user.effectiveAvatarUrl, reqFormat)) return null
-                withContext(Dispatchers.IO) {
-                    img = context.webManager.httpClient.get<HttpResponse>(url).readBytes()
+                img = withContext(Dispatchers.IO) {
+                    img = downloadImage(context, url)
                     ByteArrayInputStream(img).use { bis ->
                         if (ImageIO.read(bis) == null) img = null
                     }
+                    img
                 }
             } else {
                 arg = true
                 url = args[0]
                 try {
                     if (!checkFormat(context, args[0], reqFormat)) return null
-                    withContext(Dispatchers.IO) {
-                        img = context.webManager.httpClient.get<HttpResponse>(url).readBytes()
+                    img = withContext(Dispatchers.IO) {
+                        img = downloadImage(context, url)
                         ByteArrayInputStream(img).use { bis ->
                             if (ImageIO.read(bis) == null) {
                                 img = null
                             }
                         }
+                        img
                     }
+                } catch (t: SizeLimitExceededException) {
+                    t.printStackTrace()
+                    return null
                 } catch (e: Exception) {
                     val msg = context.getTranslation("message.notuserorurl")
                         .withVariable(PLACEHOLDER_ARG, args[0])
@@ -100,8 +117,8 @@ object ImageUtils {
             arg = false
             url = context.author.effectiveAvatarUrl + "?size=2048"
             if (!checkFormat(context, context.author.effectiveAvatarUrl, reqFormat)) return null
-            withContext(Dispatchers.IO) {
-                img = context.webManager.httpClient.get<HttpResponse>(url).readBytes()
+            img = withContext(Dispatchers.IO) {
+                downloadImage(context, url)
             }
         }
 
@@ -114,6 +131,38 @@ object ImageUtils {
 
         val nonnullImage: ByteArray = img ?: return null
         return Triple(nonnullImage, url, arg)
+    }
+
+    private suspend fun downloadImage(context: CommandContext, url: String): ByteArray {
+        return context.webManager.httpClient.get<HttpStatement>(url).execute {
+            val channel = it.receive<ByteReadChannel>()
+            var running = true
+
+
+            ByteArrayOutputStream().use { baos ->
+                var totalBytes = 0L
+                val toCompare = if (context.isFromGuild) context.guild.maxFileSize else (Message.MAX_FILE_SIZE.toLong())
+                while (running) {
+                    val read = channel.readRemaining(4096)
+                    val readsize = read.remaining
+                    totalBytes += readsize
+                    baos.writePacket(read)
+                    if (totalBytes > toCompare) {
+                        running = false
+                        val msg = context.getTranslation("message.filetobig")
+                            .withVariable("size", "100MB")
+                        sendRsp(context, msg)
+
+                        channel.cancel()
+                        throw SizeLimitExceededException("Size limit $toCompare")
+                    }
+                    if (channel.availableForRead == 0) {
+                        running = false
+                    }
+                }
+                baos.toByteArray()
+            }
+        }
     }
 
     //ByteArray (imageData)

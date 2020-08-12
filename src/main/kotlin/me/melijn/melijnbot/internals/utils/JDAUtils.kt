@@ -103,7 +103,7 @@ suspend fun <T> RestAction<T>.async(success: suspend (T) -> Unit, failure: suspe
     )
 }
 
-suspend fun <T> RestAction<T>.async(success: suspend (T) -> Unit) {
+fun <T> RestAction<T>.async(success: suspend (T) -> Unit) {
     this.queue { t -> TaskManager.async { success(t) } }
 }
 
