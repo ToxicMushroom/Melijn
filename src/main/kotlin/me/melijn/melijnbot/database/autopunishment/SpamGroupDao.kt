@@ -57,7 +57,7 @@ class SpamGroupDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId)
     }
 
-    suspend fun remove(guildId: Long, group: SpamGroup) {
+    fun remove(guildId: Long, group: SpamGroup) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND spamGroupName = ?",
             guildId, group.spamGroupName)
     }

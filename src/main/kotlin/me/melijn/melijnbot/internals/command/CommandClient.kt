@@ -488,8 +488,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 return false
             }
 
-            var lastExecution = 0L
-            var lastExecutionChannel = 0L
+            var lastExecution = 0L // millis for last guild execution
+            var lastExecutionChannel = 0L // millis for last channel execution
             var bool = false
             var cooldownResult = 0L
 

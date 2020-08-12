@@ -15,7 +15,7 @@ class AliasWrapper(private val aliasDao: AliasDao) {
         if (cached != null) return cached
 
         val result = aliasDao.getAliases(id)
-        aliasDao.setCacheEntry(id, result, NORMAL_CACHE)
+        aliasDao.setCacheEntry(id, objectMapper.writeValueAsString(result), NORMAL_CACHE)
         return result
     }
 
@@ -27,7 +27,7 @@ class AliasWrapper(private val aliasDao: AliasDao) {
 
             map[command] = newList
             aliasDao.insert(id, command, newList.joinToString("%SPLIT%"))
-            aliasDao.setCacheEntry(id, map, NORMAL_CACHE)
+            aliasDao.setCacheEntry(id, objectMapper.writeValueAsString(map), NORMAL_CACHE)
         }
     }
 
@@ -47,7 +47,7 @@ class AliasWrapper(private val aliasDao: AliasDao) {
                 aliasDao.insert(id, command, newList.joinToString("%SPLIT%"))
             }
 
-            aliasDao.setCacheEntry(id, map, NORMAL_CACHE)
+            aliasDao.setCacheEntry(id, objectMapper.writeValueAsString(map), NORMAL_CACHE)
         }
     }
 

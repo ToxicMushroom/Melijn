@@ -1,5 +1,9 @@
 package me.melijn.melijnbot.database.message
 
+import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
@@ -55,6 +59,7 @@ data class ModularMessage(
     var extra: Map<String, String> = emptyMap()
 ) {
 
+    @JsonValue
     fun toJSON(): String {
         val json = DataObject.empty()
         messageContent?.let { json.put("content", it) }
@@ -158,6 +163,13 @@ data class ModularMessage(
                 e.printStackTrace()
                 throw IllegalArgumentException("Invalid JSON structure")
             }
+        }
+    }
+
+    class ModularMessageDeserializer : StdDeserializer<ModularMessage>(ModularMessage::class.java) {
+
+        override fun deserialize(p: JsonParser, ctxt: DeserializationContext): ModularMessage {
+            return fromJSON(p.text)
         }
     }
 }

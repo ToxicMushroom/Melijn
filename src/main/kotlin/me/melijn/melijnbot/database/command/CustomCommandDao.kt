@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.database.command
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.database.message.ModularMessage
@@ -28,14 +29,14 @@ class CustomCommandDao(driverManager: DriverManager) : CacheDBDao(driverManager)
         }
     }
 
-    suspend fun update(guildId: Long, cc: CustomCommand) {
+    fun update(guildId: Long, cc: CustomCommand) {
         cc.apply {
             driverManager.executeUpdate("UPDATE $table SET name = ?, description = ?, content = ?, aliases = ?, chance = ?, prefix = ? WHERE guildId = ? AND id = ?",
                 name, description, content.toJSON(), aliases?.joinToString("%SPLIT%"), chance, prefix, guildId, cc.id)
         }
     }
 
-    suspend fun remove(guildId: Long, id: Long) {
+    fun remove(guildId: Long, id: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND id = ?",
             guildId, id)
     }
@@ -68,6 +69,7 @@ class CustomCommandDao(driverManager: DriverManager) : CacheDBDao(driverManager)
 data class CustomCommand(
     var id: Long,
     var name: String,
+    @JsonDeserialize(using = ModularMessage.ModularMessageDeserializer::class)
     var content: ModularMessage,
     var description: String? = null,
     var aliases: List<String>? = null,

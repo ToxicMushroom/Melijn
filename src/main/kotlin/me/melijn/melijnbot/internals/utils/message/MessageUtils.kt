@@ -9,10 +9,7 @@ import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.command.PLACEHOLDER_PREFIX
 import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.StringUtils
-import me.melijn.melijnbot.internals.utils.USER_MENTION
-import me.melijn.melijnbot.internals.utils.awaitOrNull
-import me.melijn.melijnbot.internals.utils.withVariable
+import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.PrivateChannel
@@ -62,10 +59,8 @@ fun sendRsp(channel: TextChannel, daoManager: DaoManager, msg: String) {
     require(channel.canTalk()) { "Cannot talk in this channel " + channel.name }
 
     if (msg.length <= 2000) {
-        channel.sendMessage(msg).queue { message ->
-            TaskManager.async(channel) {
-                handleRspDelete(daoManager, message)
-            }
+        channel.sendMessage(msg).async { message ->
+            handleRspDelete(daoManager, message)
         }
     } else {
         val msgParts = StringUtils.splitMessage(msg)

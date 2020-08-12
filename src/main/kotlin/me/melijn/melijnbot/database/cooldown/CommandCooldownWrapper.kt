@@ -4,7 +4,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import me.melijn.melijnbot.database.HIGHER_CACHE
 import me.melijn.melijnbot.database.NORMAL_CACHE
 import me.melijn.melijnbot.objectMapper
-import java.util.concurrent.CompletableFuture
 
 class CommandCooldownWrapper(private val commandCooldownDao: CommandCooldownDao) {
 
@@ -31,6 +30,6 @@ class CommandCooldownWrapper(private val commandCooldownDao: CommandCooldownDao)
         } else {
             commandCooldownDao.bulkPut(guildId, commands, cooldown)
         }
-        commandCooldownDao.setCacheEntry(guildId, CompletableFuture.completedFuture(cooldownMap.toMap()), NORMAL_CACHE)
+        commandCooldownDao.setCacheEntry(guildId, objectMapper.writeValueAsString(cooldownMap.toMap()), NORMAL_CACHE)
     }
 }
