@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.RoleType
@@ -40,7 +39,7 @@ class SettingsCommand : AbstractCommand("command.settings") {
         val guildId = guild.idLong
         val daoManager = context.daoManager
         val roleWrapper = daoManager.roleWrapper
-        val channelCache = daoManager.channelWrapper.channelCache
+        val channelWrapper = daoManager.channelWrapper
         val logChannelWrapper = daoManager.logChannelWrapper
         val logChannels = StringBuilder()
         for (type in LogChannelType.values()) {
@@ -54,20 +53,20 @@ class SettingsCommand : AbstractCommand("command.settings") {
         val ec = daoManager.embedColorWrapper.getColor(guildId)
         val pec = daoManager.userEmbedColorWrapper.getColor(context.authorId)
 
-        val description = "MusicChannel:** " + idToChannelMention(daoManager.musicChannelWrapper.musicChannelCache.get(guildId).await()) +
-            "\n**StreamUrl:** " + stringToString(daoManager.streamUrlWrapper.streamUrlCache.get(guildId).await()) +
+        val description = "MusicChannel:** " + idToChannelMention(daoManager.musicChannelWrapper.getChannel(guildId)) +
+            "\n**StreamUrl:** " + stringToString(daoManager.streamUrlWrapper.getUrl(guildId)) +
             "\n" +
             "\n**MuteRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.MUTE)) +
             "\n**UnverifiedRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.UNVERIFIED)) +
             "\n**BirthDayRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.BIRTHDAY)) +
             "\n" +
-            "\n**VerificationChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.VERIFICATION)).await()) +
-            "\n**JoinChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.JOIN)).await()) +
-            "\n**LeaveChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.LEAVE)).await()) +
-            "\n**SelfRoleChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.SELFROLE)).await()) +
-            "\n**BirthDayChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.BIRTHDAY)).await()) +
-            "\n**PreVerificationJoinChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.PRE_VERIFICATION_JOIN)).await()) +
-            "\n**PreVerificationLeaveChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.PRE_VERIFICATION_LEAVE)).await()) +
+            "\n**VerificationChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.VERIFICATION)) +
+            "\n**JoinChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.JOIN)) +
+            "\n**LeaveChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.LEAVE)) +
+            "\n**SelfRoleChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.SELFROLE)) +
+            "\n**BirthDayChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.BIRTHDAY)) +
+            "\n**PreVerificationJoinChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.PRE_VERIFICATION_JOIN)) +
+            "\n**PreVerificationLeaveChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId,ChannelType.PRE_VERIFICATION_LEAVE)) +
             "\n" +
             "\n$logChannels" +
             "\n" +

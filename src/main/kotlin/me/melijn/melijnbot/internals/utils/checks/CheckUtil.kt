@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.utils.checks
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
@@ -64,7 +63,7 @@ suspend fun Guild.getAndVerifyChannelByType(
     vararg requiredPerms: Permission
 ): TextChannel? {
     val channelWrapper = daoManager.channelWrapper
-    val channelId = channelWrapper.channelCache.get(Pair(idLong, type)).await()
+    val channelId = channelWrapper.getChannelId(this.idLong, type)
 
     return this.getAndVerifyChannelById(daoManager, type, channelId, requiredPerms.toSet())
 }
@@ -111,7 +110,7 @@ suspend fun Guild.getAndVerifyMusicChannel(
 ): VoiceChannel? {
     val channelWrapper = daoManager.musicChannelWrapper
     val zoneId = getZoneId(daoManager, this.idLong)
-    val channelId = channelWrapper.musicChannelCache.get(idLong).await()
+    val channelId = channelWrapper.getChannel(this.idLong)
     val voiceChannel = getVoiceChannelById(channelId)
     val selfMember = this.selfMember
 

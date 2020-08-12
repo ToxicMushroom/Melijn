@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.internals.command
 
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.PermState
 import me.melijn.melijnbot.internals.threading.TaskManager
@@ -57,11 +56,11 @@ abstract class AbstractCommand(val root: String) {
 
             // Searches if needed for aliases
             if (!context.searchedAliases) {
-                val aliasCache = context.daoManager.aliasWrapper.aliasCache
+                val aliasCache = context.daoManager.aliasWrapper
                 if (context.isFromGuild) {
-                    context.aliasMap.putAll(aliasCache.get(context.guildId).await())
+                    context.aliasMap.putAll(aliasCache.getAliases(context.guildId))
                 }
-                for ((cmd2, ls) in aliasCache.get(context.authorId).await()) {
+                for ((cmd2, ls) in aliasCache.getAliases(context.authorId)) {
                     val currentList = (context.aliasMap[cmd2] ?: emptyList()).toMutableList()
                     for (alias in ls) {
                         currentList.addIfNotPresent(alias)
@@ -108,7 +107,7 @@ abstract class AbstractCommand(val root: String) {
         if (hasPermission(context, permission)) {
             context.initArgs()
             if (context.isFromGuild) {
-                // Check for cooldowns
+                // Update cooldowns
                 val pair1 = Pair(context.channelId, context.authorId)
                 val map1 = context.daoManager.commandChannelCoolDownWrapper.executions[pair1]?.toMutableMap()
                     ?: hashMapOf()

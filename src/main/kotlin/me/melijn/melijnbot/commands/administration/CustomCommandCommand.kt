@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
 import me.melijn.melijnbot.database.command.CustomCommand
 import me.melijn.melijnbot.database.message.ModularMessage
@@ -120,16 +119,13 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             val pair = Pair(context.guildId, context.authorId)
             return if (selectionMap.containsKey(pair)) {
                 val id = selectionMap[pair]
-                val ccs = context.daoManager.customCommandWrapper.customCommandCache.get(context.guildId).await()
-                    .filter { (ccId) -> ccId == id }
-                if (ccs.isNotEmpty()) {
-                    ccs[0]
-                } else {
+                val cc = context.daoManager.customCommandWrapper.getCCById(context.guildId, id)
+                if (cc == null) {
                     val msg = context.getTranslation("message.ccremoved")
                         .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
                     sendRsp(context, msg)
-                    null
                 }
+                cc
             } else {
                 val msg = context.getTranslation("message.noccselected")
                     .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
@@ -153,7 +149,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
         override suspend fun execute(context: CommandContext) {
             val title = context.getTranslation("$root.title")
 
-            val ccs = context.daoManager.customCommandWrapper.customCommandCache.get(context.guildId).await()
+            val ccs = context.daoManager.customCommandWrapper.getList(context.guildId)
             var content = "```INI"
 
             content += "\n[id] - [name] - [chance]"
@@ -180,7 +176,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             }
 
             val wrapper = context.daoManager.customCommandWrapper
-            val size = wrapper.customCommandCache[context.guildId].await().size
+            val size = wrapper.getList(context.guildId).size
             if (size >= CUSTOM_COMMAND_LIMIT && !isPremiumGuild(context)) {
                 sendFeatureRequiresGuildPremiumMessage(context, PREMIUM_CC_LIMIT_PATH)
                 return
@@ -224,7 +220,7 @@ class CustomCommandCommand : AbstractCommand("command.customcommand") {
             val guildId = context.guildId
 
             val id = getLongFromArgNMessage(context, 0) ?: return
-            val cc = context.daoManager.customCommandWrapper.customCommandCache.get(guildId).await()
+            val cc = context.daoManager.customCommandWrapper.getList(guildId)
                 .firstOrNull { (ccId) -> ccId == id }
 
             if (cc == null) {

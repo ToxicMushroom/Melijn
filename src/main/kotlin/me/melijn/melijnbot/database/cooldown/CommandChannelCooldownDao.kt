@@ -1,25 +1,29 @@
 package me.melijn.melijnbot.database.cooldown
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
-class CommandChannelCooldownDao(driverManager: DriverManager) : Dao(driverManager) {
+class CommandChannelCooldownDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "commandChannelCooldowns"
     override val tableStructure: String = "guildId bigint, channelId bigint, commandId varchar(16), cooldownMillis bigint"
     override val primaryKey: String = "guildId, commandId"
 
+    override val cacheName: String = "command:channel:cooldown"
+
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    fun getCooldownMapForChannel(channelId: Long, cooldownMap: (Map<String, Long>) -> Unit) {
-        driverManager.executeQuery("SELECT * FROM $table WHERE channelId = ?", {
+    suspend fun getCooldownMapForChannel(channelId: Long): Map<String, Long> = suspendCoroutine {
+        driverManager.executeQuery("SELECT * FROM $table WHERE channelId = ?", {rs ->
             val map = HashMap<String, Long>()
-            while (it.next()) {
-                map[it.getString("commandId")] = it.getLong("cooldownMillis")
+            while (rs.next()) {
+                map[rs.getString("commandId")] = rs.getLong("cooldownMillis")
             }
-            cooldownMap.invoke(map)
+            it.resume(map)
         }, channelId)
     }
 

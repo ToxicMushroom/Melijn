@@ -1,60 +1,52 @@
 package me.melijn.melijnbot.database.command
 
-import com.google.common.cache.CacheBuilder
-import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.IMPORTANT_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import com.fasterxml.jackson.module.kotlin.readValue
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.objectMapper
 
 
 class CustomCommandWrapper(private val customCommandDao: CustomCommandDao) {
 
-    val customCommandCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.HOURS)
-        .build(loadingCacheFrom<Long, List<CustomCommand>> { key ->
-            getCustomCommands(key)
-        })
 
-    private fun getCustomCommands(guildId: Long): CompletableFuture<List<CustomCommand>> {
-        val future = CompletableFuture<List<CustomCommand>>()
-
-        TaskManager.async {
-            val customCommands = customCommandDao.getForGuild(guildId)
-            future.complete(customCommands)
+    suspend fun getList(guildId: Long): List<CustomCommand> {
+        val cached = customCommandDao.getCacheEntry(guildId, HIGHER_CACHE)?.let {
+            objectMapper.readValue<List<CustomCommand>>(it)
         }
+        if (cached != null) return cached
 
-        return future
+        val result = customCommandDao.getForGuild(guildId)
+        customCommandDao.setCacheEntry(guildId, objectMapper.writeValueAsString(result), NORMAL_CACHE)
+        return result
     }
 
     suspend fun add(guildId: Long, cc: CustomCommand): Long {
         val id = customCommandDao.add(guildId, cc)
-        val list = customCommandCache.get(guildId).await().toMutableList()
+        val list = getList(guildId).toMutableList()
         cc.id = id
         list.add(cc)
-        customCommandCache.put(guildId, CompletableFuture.completedFuture(list))
+        customCommandDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
         return id
     }
 
     suspend fun remove(guildId: Long, id: Long) {
-        val list = customCommandCache.get(guildId).await().toMutableList()
+        val list = getList(guildId).toMutableList()
         list.removeIf { it.id == id }
-        customCommandCache.put(guildId, CompletableFuture.completedFuture(list))
+        customCommandDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
         customCommandDao.remove(guildId, id)
     }
 
     suspend fun update(guildId: Long, cc: CustomCommand) {
-        val list = customCommandCache.get(guildId).await().toMutableList()
+        val list = getList(guildId).toMutableList()
         list.removeIf { it.id == cc.id }
         list.add(cc)
-        customCommandCache.put(guildId, CompletableFuture.completedFuture(list))
+        customCommandDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
         customCommandDao.update(guildId, cc)
     }
 
     suspend fun getCCById(guildId: Long, id: Long?): CustomCommand? {
         if (id == null) return null
-        val list = customCommandCache.get(guildId).await()
+        val list = getList(guildId)
         return list.firstOrNull { (id1) -> id1 == id }
     }
 }

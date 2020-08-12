@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.utils
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.moderation.*
 import me.melijn.melijnbot.database.autopunishment.Punishment
@@ -26,13 +25,13 @@ object PPUtils {
         val guildId = member.guild.idLong
         val daoManager = container.daoManager
         val apWrapper = daoManager.autoPunishmentWrapper
-        val oldPPMap = apWrapper.autoPunishmentCache.get(Pair(guildId, member.idLong)).await()
+        val oldPPMap = apWrapper.getPointsMap(guildId, member.idLong)
         apWrapper.set(guildId, member.idLong, ppMap)
 
         val apgWrapper = daoManager.autoPunishmentGroupWrapper
-        val pgs = apgWrapper.autoPunishmentCache.get(guildId).await()
+        val pgs = apgWrapper.getList(guildId)
 
-        val punishments = daoManager.punishmentWrapper.punishmentCache.get(guildId).await()
+        val punishments = daoManager.punishmentWrapper.getList(guildId)
         for (pg in pgs) {
             val key = ppMap.keys.firstOrNull { key -> key == pg.groupName } ?: continue
             val newPoints = ppMap[key] ?: continue

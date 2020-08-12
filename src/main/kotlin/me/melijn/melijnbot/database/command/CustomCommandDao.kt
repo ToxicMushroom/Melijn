@@ -1,12 +1,12 @@
 package me.melijn.melijnbot.database.command
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.database.message.ModularMessage
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class CustomCommandDao(driverManager: DriverManager) : Dao(driverManager) {
+class CustomCommandDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "customCommands"
     override val tableStructure: String =
@@ -14,6 +14,8 @@ class CustomCommandDao(driverManager: DriverManager) : Dao(driverManager) {
             " description varchar(256), content varchar(4096), aliases varchar(128)," +
             " chance int, prefix boolean"
     override val primaryKey: String = "id"
+
+    override val cacheName: String = "command:custom"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)

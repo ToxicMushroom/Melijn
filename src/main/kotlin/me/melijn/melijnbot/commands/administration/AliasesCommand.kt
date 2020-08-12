@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -45,7 +44,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            val aliasMap = context.daoManager.aliasWrapper.aliasCache.get(context.guildId).await()
+            val aliasMap = context.daoManager.aliasWrapper.getAliases(context.guildId)
             if (aliasMap.isEmpty()) {
                 val msg = context.getTranslation("$root.empty")
                 sendRsp(context, msg)
@@ -85,7 +84,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
                 return
             }
 
-            val aliasMap = context.daoManager.aliasWrapper.aliasCache.get(context.guildId).await()
+            val aliasMap = context.daoManager.aliasWrapper.getAliases(context.guildId)
             val commandKeys = aliasMap
                 .keys
                 .sorted()
@@ -121,7 +120,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             }
 
             val pathInfo = getCommandPathInfo(context, 0) ?: return
-            val aliasMap = context.daoManager.aliasWrapper.aliasCache.get(context.guildId).await()
+            val aliasMap = context.daoManager.aliasWrapper.getAliases(context.guildId)
             val removed = aliasMap[pathInfo.fullPath]?.size ?: 0
 
             context.daoManager.aliasWrapper.clear(context.guildId, pathInfo.fullPath)
@@ -147,7 +146,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             }
 
             val pathInfo = getCommandPathInfo(context, 0) ?: return
-            val aliasMap = context.daoManager.aliasWrapper.aliasCache.get(context.guildId).await()
+            val aliasMap = context.daoManager.aliasWrapper.getAliases(context.guildId)
             val aliases = aliasMap[pathInfo.fullPath] ?: emptyList()
             if (aliases.isEmpty()) {
                 val msg = context.getTranslation("$root.empty")
@@ -206,7 +205,7 @@ class AliasesCommand : AbstractCommand("command.aliases") {
             }
 
             var total = 0
-            val aliases = context.daoManager.aliasWrapper.aliasCache.get(context.guildId).await()
+            val aliases = context.daoManager.aliasWrapper.getAliases(context.guildId)
             for ((_, aliasList) in aliases) {
                 total += aliasList.size
             }

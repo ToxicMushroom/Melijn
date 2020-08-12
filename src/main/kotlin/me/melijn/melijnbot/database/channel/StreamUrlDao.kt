@@ -1,15 +1,17 @@
 package me.melijn.melijnbot.database.channel
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class StreamUrlDao(driverManager: DriverManager) : Dao(driverManager) {
+class StreamUrlDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "streamUrls"
     override val tableStructure: String = "guildId bigint, url varchar(512)"
     override val primaryKey: String = "guildId"
+
+    override val cacheName: String = "streamurl"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)

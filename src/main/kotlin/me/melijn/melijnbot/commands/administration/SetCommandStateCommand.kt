@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.ChannelCommandState
 import me.melijn.melijnbot.enums.CommandState
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -124,7 +123,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                     .map { cmd -> cmd.name }
                     .toList()
 
-                val filteredCCs = daoManager.customCommandWrapper.customCommandCache.get(context.guildId).await()
+                val filteredCCs = daoManager.customCommandWrapper.getList(context.guildId)
                     .filter { (ccId) -> ids.contains("cc.$ccId") }
                     .map { cmd -> cmd.name }
                     .toList()
@@ -154,7 +153,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                     .map { cmd -> cmd.id.toString() to cmd.name }
                     .toMap()
 
-                val filteredCCs = daoManager.customCommandWrapper.customCommandCache.get(context.guildId).await()
+                val filteredCCs = daoManager.customCommandWrapper.getList(context.guildId)
                     .filter { (ccId) -> ids.contains("cc.$ccId") }
                     .map { (ccId, ccName) -> ("cc.$ccId") to ccName }
                     .toMap()

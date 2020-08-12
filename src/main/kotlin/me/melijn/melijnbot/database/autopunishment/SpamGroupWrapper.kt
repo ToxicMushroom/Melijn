@@ -18,7 +18,7 @@ class SpamGroupWrapper(private val spamGroupDao: SpamGroupDao) {
 
     private fun getGroups(guildId: Long): CompletableFuture<List<SpamGroup>> {
         val future = CompletableFuture<List<SpamGroup>>()
-       TaskManager.async {
+        TaskManager.async {
             val mode = spamGroupDao.get(guildId)
             future.complete(mode)
         }

@@ -2,7 +2,6 @@ package me.melijn.melijnbot.internals.command
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
@@ -81,7 +80,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         val ccsWithoutPrefix = mutableListOf<CustomCommand>()
         if (event.isFromGuild) {
             val ccWrapper = container.daoManager.customCommandWrapper
-            val ccs = ccWrapper.customCommandCache.get(event.guild.idLong).await()
+            val ccs = ccWrapper.getList(event.guild.idLong)
 
             for (cc in ccs) {
                 if (cc.prefix) {
@@ -163,12 +162,12 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             val aliasesMap = mutableMapOf<String, List<String>>()
             var searchedAliases = false
             if (command == null) {
-                val aliasCache = container.daoManager.aliasWrapper.aliasCache
+                val aliasCache = container.daoManager.aliasWrapper
                 if (event.isFromGuild) {
-                    aliasesMap.putAll(aliasCache.get(event.guild.idLong).await())
+                    aliasesMap.putAll(aliasCache.getAliases(event.guild.idLong))
                 }
 
-                for ((cmd, ls) in aliasCache.get(event.author.idLong).await()) {
+                for ((cmd, ls) in aliasCache.getAliases(event.author.idLong)) {
                     val currentList = (aliasesMap[cmd] ?: emptyList()).toMutableList()
                     for (alias in ls) {
                         currentList.addIfNotPresent(alias)
@@ -482,8 +481,8 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             val userId = event.author.idLong
             val channelId = event.channel.idLong
 
-            val commandCooldownCache = daoManager.commandCooldownWrapper.commandCooldownCache
-            val channelCommandCooldownCache = daoManager.commandChannelCoolDownWrapper.commandChannelCooldownCache
+            val commandCooldownWrapper = daoManager.commandCooldownWrapper
+            val commandChannelCoolDownWrapper = daoManager.commandChannelCoolDownWrapper
 
             if (!daoManager.commandChannelCoolDownWrapper.executions.contains(Pair(guildId, userId))) {
                 return false
@@ -494,7 +493,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             var bool = false
             var cooldownResult = 0L
 
-            val commandChannelCooldowns = channelCommandCooldownCache.get(channelId).await()
+            val commandChannelCooldowns = commandChannelCoolDownWrapper.getMap(channelId)
             if (commandChannelCooldowns.containsKey(id)) {
 
                 //init lastExecutionChannel
@@ -511,7 +510,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                     bool = true
                 }
             }
-            val commandCooldowns = commandCooldownCache.get(guildId).await()
+            val commandCooldowns = commandCooldownWrapper.getMap(guildId)
             if (commandCooldowns.containsKey(id)) {
 
                 //init lastExecution

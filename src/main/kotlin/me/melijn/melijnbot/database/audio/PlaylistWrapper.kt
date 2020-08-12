@@ -6,7 +6,7 @@ import me.melijn.melijnbot.internals.music.TrackUserData
 import me.melijn.melijnbot.internals.music.toMessage
 import java.util.*
 
-class PlaylistWrapper(val tracksDao: TracksDao, val playlistDao: PlaylistDao) {
+class PlaylistWrapper(private val tracksDao: TracksDao, val playlistDao: PlaylistDao) {
 
     suspend fun getMap(): Map<Long, List<AudioTrack>> {
         val map = tracksDao.getMap()

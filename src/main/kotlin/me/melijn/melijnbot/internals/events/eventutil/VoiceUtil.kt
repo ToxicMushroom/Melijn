@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.events.eventutil
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.music.NextSongPosition
 import me.melijn.melijnbot.database.DaoManager
@@ -32,7 +31,7 @@ object VoiceUtil {
         val musicChannel = guild.getAndVerifyMusicChannel(daoManager, Permission.VOICE_CONNECT, Permission.VOICE_SPEAK)
             ?: return
 
-        val musicUrl = daoManager.streamUrlWrapper.streamUrlCache.get(guild.idLong).await()
+        val musicUrl = daoManager.streamUrlWrapper.getUrl(guild.idLong)
         if (musicUrl.isBlank()) return
 
         val musicPlayerManager = container.lavaManager.musicPlayerManager

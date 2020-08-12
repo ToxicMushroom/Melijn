@@ -1,30 +1,32 @@
 package me.melijn.melijnbot.database.autopunishment
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.PunishmentType
 import net.dv8tion.jda.api.utils.data.DataObject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class PunishmentDao(driverManager: DriverManager) : Dao(driverManager) {
+class PunishmentDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "punishments"
     override val tableStructure: String = "guildId bigint, name varchar(64), punishmentType varchar(64), extraMap varchar(512), reason varchar(2000)"
     override val primaryKey: String = "guildId, name"
 
+    override val cacheName: String = "punishment"
+
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun put(guildId: Long, punishment: Punishment) {
+    fun put(guildId: Long, punishment: Punishment) {
         val sql = "INSERT INTO $table (guildId, name, punishmentType, extraMap, reason) VALUES (?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET punishmentType = ?, extraMap = ?, reason = ?"
         punishment.apply {
             driverManager.executeUpdate(sql, guildId, name, punishmentType.toString(), extraMap.toString(), reason, punishmentType.toString(), extraMap.toString(), reason)
         }
     }
 
-    suspend fun remove(guildId: Long, name: String) {
+    fun remove(guildId: Long, name: String) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND name = ?",
             guildId, name)
     }

@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.events.eventutil
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.filter.FilterGroup
 import me.melijn.melijnbot.enums.FilterMode
@@ -38,8 +37,7 @@ object FilterUtil {
         val apWrapper = daoManager.autoPunishmentWrapper
 
         // Punish points map for a user (guildId, member) -> Map<filtergroupname, points>
-        val ppMap = apWrapper.autoPunishmentCache.get(Pair(guild.idLong, member.idLong))
-            .await()
+        val ppMap = apWrapper.getPointsMap(guild.idLong, member.idLong)
             .toMutableMap()
 
         // Loop through the filter groups

@@ -1,38 +1,27 @@
 package me.melijn.melijnbot.database.channel
 
-import com.google.common.cache.CacheBuilder
-import me.melijn.melijnbot.database.IMPORTANT_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 
-class MusicChannelWrapper(val musicChannelDao: MusicChannelDao) {
+class MusicChannelWrapper(private val musicChannelDao: MusicChannelDao) {
 
-    val musicChannelCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, Long> { guildId ->
-            getChannelId(guildId)
-        })
 
-    private fun getChannelId(guildId: Long): CompletableFuture<Long> {
-        val future = CompletableFuture<Long>()
+    suspend fun getChannel(guildId: Long): Long {
+        val cached = musicChannelDao.getCacheEntry(guildId, HIGHER_CACHE)?.toLong()
+        if (cached != null) return cached
 
-       TaskManager.async {
-            val channelId = musicChannelDao.get(guildId)
-            future.complete(channelId)
-        }
-
-        return future
+        val result = musicChannelDao.get(guildId)
+        musicChannelDao.setCacheEntry(guildId, result, NORMAL_CACHE)
+        return result
     }
 
-    suspend fun removeChannel(guildId: Long) {
+    fun removeChannel(guildId: Long) {
         musicChannelDao.remove(guildId)
-        musicChannelCache.put(guildId, CompletableFuture.completedFuture(-1))
+        musicChannelDao.setCacheEntry(guildId, -1, NORMAL_CACHE)
     }
 
-    suspend fun setChannel(guildId: Long, channelId: Long) {
+    fun setChannel(guildId: Long, channelId: Long) {
         musicChannelDao.set(guildId, channelId)
-        musicChannelCache.put(guildId, CompletableFuture.completedFuture(channelId))
+        musicChannelDao.setCacheEntry(guildId, channelId, NORMAL_CACHE)
     }
 }

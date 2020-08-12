@@ -1,37 +1,28 @@
 package me.melijn.melijnbot.database.cooldown
 
-import com.google.common.cache.CacheBuilder
-import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.IMPORTANT_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import com.fasterxml.jackson.module.kotlin.readValue
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.objectMapper
 
 class CommandChannelCooldownWrapper(private val commandChannelCooldownDao: CommandChannelCooldownDao) {
 
     //channelId/guildId, userId, commandId, execTime
     val executions: MutableMap<Pair<Long, Long>, Map<String, Long>> = HashMap()
 
-    //chanelId
-    val commandChannelCooldownCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, Map<String, Long>> { key ->
-            getCommandChannelCooldowns(key)
-        })
-
-    private fun getCommandChannelCooldowns(channelId: Long): CompletableFuture<Map<String, Long>> {
-        val map = CompletableFuture<Map<String, Long>>()
-       TaskManager.async {
-            commandChannelCooldownDao.getCooldownMapForChannel(channelId) {
-                map.complete(it)
-            }
+    suspend fun getMap(channelId: Long): Map<String, Long> {
+        val cached = commandChannelCooldownDao.getCacheEntry(channelId, HIGHER_CACHE)?.let {
+            objectMapper.readValue<Map<String, Long>>(it)
         }
-        return map
+        if (cached != null) return cached
+
+        val result = commandChannelCooldownDao.getCooldownMapForChannel(channelId)
+        commandChannelCooldownDao.setCacheEntry(channelId, objectMapper.writeValueAsString(result), NORMAL_CACHE)
+        return result
     }
 
     suspend fun setCooldowns(guildId: Long, channelId: Long, commandIds: Set<String>, cooldown: Long) {
-        val cooldownMap = commandChannelCooldownCache.get(channelId).await().toMutableMap()
+        val cooldownMap = getMap(channelId).toMutableMap()
         for (cmdId in commandIds) {
             if (cooldown < 1) cooldownMap.remove(cmdId)
             else cooldownMap[cmdId] = cooldown
@@ -41,7 +32,7 @@ class CommandChannelCooldownWrapper(private val commandChannelCooldownDao: Comma
         } else {
             commandChannelCooldownDao.bulkPut(guildId, channelId, commandIds, cooldown)
         }
-        commandChannelCooldownCache.put(channelId, CompletableFuture.completedFuture(cooldownMap.toMap()))
+        commandChannelCooldownDao.setCacheEntry(channelId, objectMapper.writeValueAsString(cooldownMap), NORMAL_CACHE)
     }
 
 }

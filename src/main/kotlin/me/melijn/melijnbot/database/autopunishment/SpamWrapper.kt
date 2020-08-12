@@ -64,7 +64,7 @@ class SpamWrapper(private val spamDao: SpamDao) {
 
     private fun <T> getSpams(guildId: Long, spamGroupName: String, type: SpamType, func: (String) -> T): CompletableFuture<T> {
         val future = CompletableFuture<T>()
-       TaskManager.async {
+        TaskManager.async {
             val filters = spamDao.get(guildId, spamGroupName, type)
             future.complete(func(filters))
         }

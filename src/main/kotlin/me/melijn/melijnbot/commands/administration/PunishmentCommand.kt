@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.autopunishment.Punishment
 import me.melijn.melijnbot.enums.PunishmentType
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -319,7 +318,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
 
         override suspend fun execute(context: CommandContext) {
             val wrapper = context.daoManager.punishmentWrapper
-            var list = wrapper.punishmentCache.get(context.guildId).await()
+            var list = wrapper.getList(context.guildId)
             val msg: String
             list = if (context.args.isEmpty()) {
                 msg = context.getTranslation("$root.title")
@@ -373,7 +372,7 @@ class PunishmentCommand : AbstractCommand("command.punishment") {
 suspend fun getPunishmentNMessage(context: CommandContext, position: Int, punishmentType: PunishmentType? = null): Punishment? {
     val name = context.args[position]
     val wrapper = context.daoManager.punishmentWrapper
-    val list = wrapper.punishmentCache.get(context.guildId).await()
+    val list = wrapper.getList(context.guildId)
 
     val item = list.filter { (pName) ->
         pName == name
