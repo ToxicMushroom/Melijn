@@ -22,8 +22,6 @@ class EventManager(val container: Container) : IEventManager {
     }
 
     private fun registerEvents() {
-
-
         val botJoinLeaveListener = BotJoinLeaveListener(container)
         val botStartShutdownListener = BotStartShutdownListener(container)
         val messageDeletedListener = MessageDeletedListener(container)

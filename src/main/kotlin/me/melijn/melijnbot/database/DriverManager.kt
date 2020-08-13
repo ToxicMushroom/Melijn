@@ -132,7 +132,6 @@ class DriverManager(
                         preparedStatement.setObject(index + 1, value)
                     }
                     preparedStatement.executeUpdate()
-
                 }
             }
         } catch (e: SQLException) {
