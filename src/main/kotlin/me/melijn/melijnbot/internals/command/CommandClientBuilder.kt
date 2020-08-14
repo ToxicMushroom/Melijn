@@ -214,7 +214,9 @@ class CommandClientBuilder(private val container: Container) {
         TopVotersCommand(),
         ToggleVoteReminderCommand(),
         MikuCommand(),
-        RedisCommand()
+        RedisCommand(),
+        RedditCommand(),
+        MemeCommand()
     )
 
     init {
