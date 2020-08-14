@@ -216,7 +216,10 @@ class CommandClientBuilder(private val container: Container) {
         MikuCommand(),
         RedisCommand(),
         RedditCommand(),
-        MemeCommand()
+        MemeCommand(),
+        BonkCommand(),
+        OsuCommand(),
+        EmotesCommand()
     )
 
     init {

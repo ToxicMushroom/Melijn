@@ -38,5 +38,7 @@ const val BOTS_FOR_DISCORD_COM = "https://botsfordiscord.com"
 const val DISCORD_BOATS = "https://discord.boats"
 const val KSOFT_SI = "https://api.ksoft.si"
 
+const val OSU_URL = "https://osu.ppy.sh/api"
+
 class StringConstants
 

@@ -9,6 +9,10 @@
     "host": "localhost",
     "port": 5432
   },
+  "redis": {
+    "host": "localhost",
+    "port": 1234
+  },
   "tokens": {
     "discord": "",
     "topDotGG": "",
@@ -21,7 +25,8 @@
     "weebSh": "",
     "melijnRest": "securerestpwd",
     "randomCatApi": "",
-    "kSoftApi": ""
+    "kSoftApi": "",
+    "osu": ""
   },
   "lavalink": {
     "enabled": true,
@@ -58,6 +63,9 @@
     231459866630291459,
     218508002255306752
   ],
+  "imghoard": {
+    "token": ""
+  },
   "exceptionChannel": 1234567891011121314,
   "environment": "testing",
   "shardCount": 1,

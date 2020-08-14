@@ -98,7 +98,7 @@ suspend fun sendEmbedAwaitEL(context: CommandContext, embed: MessageEmbed): List
 
 fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed) {
     if (privateChannel.user.isBot) return
-    privateChannel.sendMessage(embed).queue()
+    privateChannel.sendMessage(embed).queue(null, null)
 }
 
 suspend fun sendEmbedAwaitEL(privateChannel: PrivateChannel, embed: MessageEmbed): List<Message> {

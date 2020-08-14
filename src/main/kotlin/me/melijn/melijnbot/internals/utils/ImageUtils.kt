@@ -60,13 +60,12 @@ object ImageUtils {
                 url = attachments[0].url + "?size=2048"
 
                 if (!checkFormat(context, attachments[0].url, reqFormat)) return null
-                img = withContext(Dispatchers.IO) {
-                    img = downloadImage(context, url)
-                    ByteArrayInputStream(img).use { bis ->
-                        if (ImageIO.read(bis) == null) img = null
-                    }
-                    img
+
+                img = downloadImage(context, url)
+                ByteArrayInputStream(img).use { bis ->
+                    if (ImageIO.read(bis) == null) img = null
                 }
+
             } catch (t: SizeLimitExceededException) {
                 t.printStackTrace()
                 return null
@@ -82,27 +81,25 @@ object ImageUtils {
                 arg = true
                 url = user.effectiveAvatarUrl + "?size=2048"
                 if (!checkFormat(context, user.effectiveAvatarUrl, reqFormat)) return null
-                img = withContext(Dispatchers.IO) {
-                    img = downloadImage(context, url)
-                    ByteArrayInputStream(img).use { bis ->
-                        if (ImageIO.read(bis) == null) img = null
-                    }
-                    img
+
+                img = downloadImage(context, url)
+                ByteArrayInputStream(img).use { bis ->
+                    if (ImageIO.read(bis) == null) img = null
                 }
+
             } else {
                 arg = true
                 url = args[0]
                 try {
                     if (!checkFormat(context, args[0], reqFormat)) return null
-                    img = withContext(Dispatchers.IO) {
-                        img = downloadImage(context, url)
-                        ByteArrayInputStream(img).use { bis ->
-                            if (ImageIO.read(bis) == null) {
-                                img = null
-                            }
+
+                    img = downloadImage(context, url)
+                    ByteArrayInputStream(img).use { bis ->
+                        if (ImageIO.read(bis) == null) {
+                            img = null
                         }
-                        img
                     }
+
                 } catch (t: SizeLimitExceededException) {
                     t.printStackTrace()
                     return null
@@ -117,9 +114,7 @@ object ImageUtils {
             arg = false
             url = context.author.effectiveAvatarUrl + "?size=2048"
             if (!checkFormat(context, context.author.effectiveAvatarUrl, reqFormat)) return null
-            img = withContext(Dispatchers.IO) {
-                downloadImage(context, url)
-            }
+            img = downloadImage(context, url, false)
         }
 
         if (img == null) {
@@ -133,35 +128,39 @@ object ImageUtils {
         return Triple(nonnullImage, url, arg)
     }
 
-    private suspend fun downloadImage(context: CommandContext, url: String): ByteArray {
-        return context.webManager.httpClient.get<HttpStatement>(url).execute {
-            val channel = it.receive<ByteReadChannel>()
-            var running = true
+    private suspend fun downloadImage(context: CommandContext, url: String, doChecks: Boolean = true): ByteArray {
+        return if (doChecks) {
+            context.webManager.httpClient.get<HttpStatement>(url).execute {
+                val channel = it.receive<ByteReadChannel>()
+                var running = true
 
 
-            ByteArrayOutputStream().use { baos ->
-                var totalBytes = 0L
-                val toCompare = if (context.isFromGuild) context.guild.maxFileSize else (Message.MAX_FILE_SIZE.toLong())
-                while (running) {
-                    val read = channel.readRemaining(4096)
-                    val readsize = read.remaining
-                    totalBytes += readsize
-                    baos.writePacket(read)
-                    if (totalBytes > toCompare) {
-                        running = false
-                        val msg = context.getTranslation("message.filetobig")
-                            .withVariable("size", "100MB")
-                        sendRsp(context, msg)
+                ByteArrayOutputStream().use { baos ->
+                    var totalBytes = 0L
+                    val toCompare = if (context.isFromGuild) context.guild.maxFileSize else (Message.MAX_FILE_SIZE.toLong())
+                    while (running) {
+                        val read = channel.readRemaining(4096)
+                        val readsize = read.remaining
+                        totalBytes += readsize
+                        baos.writePacket(read)
+                        if (totalBytes > toCompare) {
+                            running = false
+                            val msg = context.getTranslation("message.filetobig")
+                                .withVariable("size", "100MB")
+                            sendRsp(context, msg)
 
-                        channel.cancel()
-                        throw SizeLimitExceededException("Size limit $toCompare")
+                            channel.cancel()
+                            throw SizeLimitExceededException("Size limit $toCompare")
+                        }
+                        if (channel.availableForRead == 0) {
+                            running = false
+                        }
                     }
-                    if (channel.availableForRead == 0) {
-                        running = false
-                    }
+                    baos.toByteArray()
                 }
-                baos.toByteArray()
             }
+        } else {
+            context.webManager.httpClient.get(url)
         }
     }
 

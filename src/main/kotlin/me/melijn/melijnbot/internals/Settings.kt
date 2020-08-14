@@ -62,7 +62,8 @@ data class Settings(
         var botsForDiscordCom: String,
         var discordBoats: String,
         var randomCatApi: String,
-        var kSoftApi: String
+        var kSoftApi: String,
+        var osu: String
     )
 
     data class Database(
