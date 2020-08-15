@@ -1,6 +1,8 @@
 package me.melijn.melijnbot.commands.image
 
-import com.squareup.gifencoder.*
+import com.wrapper.spotify.Base64
+import io.lettuce.core.SetArgs
+import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -9,10 +11,16 @@ import me.melijn.melijnbot.internals.utils.getLongFromArgN
 import me.melijn.melijnbot.internals.utils.message.sendFileRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.retrieveUserByArgsNMessage
+import java.awt.image.RenderedImage
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.net.URL
-import java.util.concurrent.TimeUnit
+import javax.imageio.IIOImage
 import javax.imageio.ImageIO
+import javax.imageio.ImageTypeSpecifier
+import javax.imageio.metadata.IIOMetadata
+import javax.imageio.metadata.IIOMetadataNode
+import javax.imageio.stream.ImageOutputStream
 
 class BonkCommand : AbstractCommand("command.bonk") {
 
@@ -25,10 +33,24 @@ class BonkCommand : AbstractCommand("command.bonk") {
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
             sendSyntax(context)
+            return
         }
 
         val user = retrieveUserByArgsNMessage(context, 0) ?: return
-        val inputImg = ImageIO.read(URL(user.effectiveAvatarUrl + "?size=512"))
+
+        val rediCon = context.daoManager.driverManager.redisConnection
+        val avatar = rediCon.async()
+            .get("avatar:${user.id}")
+            .await()
+
+        val inputImg = if (avatar == null) {
+            ImageIO.read(URL(user.effectiveAvatarUrl.replace(".gif", ".png") + "?size=512"))
+        } else {
+            rediCon.async()
+                .expire("avatar:${user.id}", 600)
+            ImageIO.read(ByteArrayInputStream(Base64.decode(avatar)))
+        }
+
         val delay = getLongFromArgN(context, 1, 20) ?: 200
         val loops = getBooleanFromArgN(context, 2) ?: true
 
@@ -45,22 +67,83 @@ class BonkCommand : AbstractCommand("command.bonk") {
         graphics2.dispose()
 
 
-        ByteArrayOutputStream().use {
-            val gifEnc = GifEncoder(it, 498, 498, if (loops) 0 else 1)
-            val options = ImageOptions()
-                .setColorQuantizer(KMeansQuantizer.INSTANCE)
-                .setDitherer(NearestColorDitherer.INSTANCE)
-                .setDisposalMethod(DisposalMethod.DO_NOT_DISPOSE)
-                .setDelay(delay, TimeUnit.MILLISECONDS)
+        ByteArrayOutputStream().use { baos ->
+            ImageIO.createImageOutputStream(baos).use { ios ->
+                GifSequenceWriter(ios, image1.type, delay.toInt(), loops)
+                    .writeToSequence(image1)
+                    .writeToSequence(image2)
+                    .close()
+            }
+            sendFileRsp(context, "**bonk** ${user.asTag} \uD83D\uDD28", baos.toByteArray(), "gif")
+        }
 
-            val buffer = IntArray(248_004)
-            gifEnc.addImage(image1.getRGB(0, 0, 498, 498, buffer, 0, 498), 498, options)
-            options.setUsePreviousColors(true)
-            gifEnc.addImage(image2.getRGB(0, 0, 498, 498, buffer, 0, 498), 498, options)
+        val baos = ByteArrayOutputStream()
+        ImageIO.write(inputImg, "png", baos);
 
-            gifEnc.finishEncoding()
+        rediCon.async()
+            .set("avatar:${user.id}", Base64.encode(baos.toByteArray()), SetArgs().ex(600))
+    }
+}
 
-            sendFileRsp(context, "**bonk** ${user.asTag} \uD83D\uDD28", it.toByteArray(), "gif")
+class GifSequenceWriter(outputStream: ImageOutputStream, imageType: Int, delay: Int, loop: Boolean) {
+
+    private val writer = ImageIO.getImageWritersBySuffix("gif").next()
+    private val params = writer.defaultWriteParam
+    private val metadata: IIOMetadata
+
+    init {
+        val imageTypeSpecifier: ImageTypeSpecifier = ImageTypeSpecifier.createFromBufferedImageType(imageType)
+        metadata = writer.getDefaultImageMetadata(imageTypeSpecifier, params)
+
+        configureRootMetadata(delay, loop)
+
+        writer.output = outputStream
+        writer.prepareWriteSequence(null)
+    }
+
+    private fun configureRootMetadata(delay: Int, loop: Boolean) {
+        val metaFormatName: String = metadata.nativeMetadataFormatName
+        val root: IIOMetadataNode = metadata.getAsTree(metaFormatName) as IIOMetadataNode
+
+        val graphicsControlExtensionNode: IIOMetadataNode = getNode(root, "GraphicControlExtension")
+        graphicsControlExtensionNode.setAttribute("disposalMethod", "restoreToBackgroundColor")
+        graphicsControlExtensionNode.setAttribute("userInputFlag", "FALSE")
+        graphicsControlExtensionNode.setAttribute("transparentColorFlag", "FALSE")
+        graphicsControlExtensionNode.setAttribute("delayTime", "${delay / 10}")
+        graphicsControlExtensionNode.setAttribute("transparentColorIndex", "0")
+
+        val appExtensionNode: IIOMetadataNode = getNode(root, "ApplicationExtensions")
+        val child = IIOMetadataNode("ApplicationExtension")
+        child.setAttribute("applicationID", "NETSCAPE")
+        child.setAttribute("authenticationCode", "2.0")
+
+        val loopContinuously: Int = if (loop) 0 else 1
+        child.userObject = byteArrayOf(0x1, (loopContinuously and 0xFF).toByte(), ((loopContinuously shr 8) and 0xFF).toByte())
+        appExtensionNode.appendChild(child)
+        metadata.setFromTree(metaFormatName, root)
+    }
+
+    fun writeToSequence(img: RenderedImage): GifSequenceWriter {
+        writer.writeToSequence(IIOImage(img, null, metadata), params)
+        return this
+    }
+
+    fun close() {
+        writer.endWriteSequence()
+    }
+
+    companion object {
+        private fun getNode(rootNode: IIOMetadataNode, nodeName: String): IIOMetadataNode {
+            val nNodes = rootNode.length
+            for (i in 0 until nNodes) {
+                if (rootNode.item(i).nodeName.equals(nodeName, ignoreCase = true)) {
+                    return rootNode.item(i) as IIOMetadataNode
+                }
+            }
+            val node = IIOMetadataNode(nodeName)
+            rootNode.appendChild(node)
+            return node
         }
     }
+
 }
