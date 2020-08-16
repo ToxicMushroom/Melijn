@@ -115,6 +115,7 @@ class RestServer(container: Container) {
                         .put("musicPlayers", musicPlayers)
                         .put("responses", shard.responseTotal)
                         .put("id", shard.shardInfo.shardId)
+                        .put("unavailable", shard.unavailableGuilds.size)
 
                     dataArray.add(dataObject)
                 }
