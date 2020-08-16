@@ -31,14 +31,13 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
 
             if (readyShards != container.settings.shardCount) return
 
-
-
-            if (!container.serviceManager.started) {
+            if (!container.serviceManager.slowStarted) {
                 TaskManager.async {
                     logger.info("Starting music clients..")
                     VoiceUtil.resumeMusic(event, container)
                     logger.info("Started music clients")
                 }
+                container.serviceManager.startSlowservices()
             }
         }
     }
