@@ -1,10 +1,12 @@
 package me.melijn.melijnbot.commands.utility
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.ktor.client.HttpClient
 import io.ktor.client.features.ClientRequestException
 import io.ktor.client.request.get
 import io.lettuce.core.SetArgs
 import kotlinx.coroutines.future.await
+import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -74,7 +76,7 @@ class RedditCommand : AbstractCommand("command.reddit") {
                 .await()
                 ?.let {
                     objectMapper.readValue<RedditAbout>(it)
-                } ?: requestAboutAndStore(context, subreddit)
+                } ?: requestAboutAndStore(context.webManager.httpClient, context.daoManager.driverManager, subreddit)
 
             if (about.over18 && context.isFromGuild && !context.textChannel.isNSFW) {
                 // send stinky nsfw warning
@@ -92,7 +94,8 @@ class RedditCommand : AbstractCommand("command.reddit") {
                 .await()
                 ?.let {
                     objectMapper.readValue<List<RedditResult>>(it)
-                } ?: requestPostsAndStore(context, subreddit, arg, time)
+                }
+                ?: requestPostsAndStore(context.webManager.httpClient, context.daoManager.driverManager, subreddit, arg, time)
 
             val filteredPosts = posts.filter { !it.nsfw || (it.nsfw && (!context.isFromGuild || context.textChannel.isNSFW)) }
             if (filteredPosts.isEmpty() && posts.isNotEmpty()) {
@@ -104,9 +107,9 @@ class RedditCommand : AbstractCommand("command.reddit") {
             return filteredPosts[Random.nextInt(filteredPosts.size)]
         }
 
-        private suspend fun requestPostsAndStore(context: CommandContext, subreddit: String, arg: String, time: String): List<RedditResult> {
+        suspend fun requestPostsAndStore(httpClient: HttpClient, driverManager: DriverManager, subreddit: String, arg: String, time: String): List<RedditResult> {
             val data = DataObject.fromJson(
-                context.webManager.httpClient.get<String>("https://www.reddit.com/r/$subreddit.json?sort=${arg}&t=${time}&limit=100")
+                httpClient.get<String>("https://www.reddit.com/r/$subreddit.json?sort=${arg}&t=${time}&limit=100")
             ).getObject("data")
 
             val posts = mutableListOf<RedditResult>()
@@ -131,19 +134,19 @@ class RedditCommand : AbstractCommand("command.reddit") {
             val timePart = if (arg == "top") {
                 ":${time}"
             } else ""
-            context.daoManager.driverManager.redisConnection.async()
-                .set("reddit:posts:${arg}$timePart:$subreddit", objectMapper.writeValueAsString(posts), SetArgs().ex(120))
+            driverManager.redisConnection.async()
+                .set("reddit:posts:${arg}$timePart:$subreddit", objectMapper.writeValueAsString(posts), SetArgs().ex(600))
             return posts
         }
 
-        private suspend fun requestAboutAndStore(context: CommandContext, subreddit: String): RedditAbout {
+        suspend fun requestAboutAndStore(httpClient: HttpClient, driverManager: DriverManager, subreddit: String): RedditAbout {
             val data = DataObject.fromJson(
-                context.webManager.httpClient.get<String>("https://api.reddit.com/r/$subreddit/about")
+                httpClient.get<String>("https://api.reddit.com/r/$subreddit/about")
             ).getObject("data")
 
             val about = RedditAbout(data.getBoolean("over18"))
-            context.daoManager.driverManager.redisConnection.async()
-                .set("reddit:about:$subreddit", objectMapper.writeValueAsString(about), SetArgs().ex(600))
+            driverManager.redisConnection.async()
+                .set("reddit:about:$subreddit", objectMapper.writeValueAsString(about), SetArgs().ex(1800))
             return about
         }
     }
