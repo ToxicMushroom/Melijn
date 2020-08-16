@@ -20,10 +20,12 @@ class MemeCommand : AbstractCommand("command.meme") {
         commandCategory = CommandCategory.UTILITY
     }
 
-    val reddits = arrayOf("dankmemes", "memes", "funny")
+    companion object {
+        val subreddits = arrayOf("dankmemes", "memes", "funny")
+    }
 
     override suspend fun execute(context: CommandContext) {
-        val subreddit = if (context.commandParts[0] == "dankmeme") "dankmemes" else reddits[Random.nextInt(reddits.size)]
+        val subreddit = if (context.commandParts[0] == "dankmeme") "dankmemes" else subreddits[Random.nextInt(subreddits.size)]
 
         val randomResult = RedditCommand.getRandomRedditResultNMessage(context, subreddit, "hot", "day") ?: return
 
