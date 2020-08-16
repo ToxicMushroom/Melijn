@@ -1,9 +1,11 @@
 package me.melijn.melijnbot.commands.utility
 
 import me.melijn.melijnbot.internals.command.AbstractCommand
+import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
-import me.melijn.melijnbot.internals.utils.getIntegerFromArgNMessage
+import me.melijn.melijnbot.internals.utils.getDurationString
+import me.melijn.melijnbot.internals.utils.getIntegerFromArgN
 import me.melijn.melijnbot.internals.utils.getStringFromArgsNMessage
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -20,19 +22,101 @@ class OsuCommand : AbstractCommand("command.osu") {
         aliases = arrayOf("osu!")
         children = arrayOf(
             UserArg(root),
-            TopArg(root)
+            TopArg(root),
+            RecentArg(root)
         )
-        //commandCategory = CommandCategory.UTILITY
+        commandCategory = CommandCategory.UTILITY
+    }
+
+    class RecentArg(parent: String) : AbstractCommand("$parent.recent") {
+
+        init {
+            name = "recent"
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+
+            val name = getStringFromArgsNMessage(context, 0, 1, 50) ?: return
+            val results = context.webManager.osuApi.getUserRecentPlays(name)
+
+            if (results == null) {
+                sendRsp(context, "user **$name** not found")
+                return
+            }
+
+            if (results.isEmpty()) {
+                sendRsp(context, "user **$name** has no scores")
+                return
+            }
+
+            val index = (getIntegerFromArgN(context, 1, 1, results.size) ?: 1) - 1
+
+            val result = results[index]
+            val rankAchievedEmote = emotes[result.rank]?.let { context.shardManager.getEmoteById(it)?.asMention }
+                ?: result.rank
+            val formatter = DecimalFormat("#.##", DecimalFormatSymbols(Locale.GERMANY))
+            formatter.isGroupingUsed = true
+            formatter.groupingSize = 3
+
+            var mods = ""
+            Integer.toBinaryString(result.mods).split("").reversed().withIndex().forEach { (index, value) ->
+                if (value == "1") mods += "${OsuMod.values().first { it.offset == (index) }}, "
+            }
+
+            val beatMap = context.webManager.osuApi.getBeatMap(result.beatmapId)
+            if (beatMap == null) {
+                sendRsp(context, "beatmap for ${result.beatmapId} wasn't found")
+                return
+            }
+
+            val accuracy = (result.count300 * 300 + result.count100 * 100 + result.count50 * 50) * 100.0 /
+                ((result.count300 + result.count100 + result.count50 + result.countMiss) * 300.0).toFloat()
+
+            mods = mods.trim().removeSuffix(",")
+            val eb = Embedder(context)
+                .setAuthor(name + " | recent #${index + 1}", "https://osu.ppy.sh/users/${result.userId}", "https://s.ppy.sh/a/${result.userId}")
+                .setThumbnail("https://b.ppy.sh/thumb/${beatMap.beatMapSetId}l.jpg")
+                .addField("Beatmap Info", """
+                    **title** [${beatMap.title}](https://osu.ppy.sh/b/${beatMap.beatMapId})
+                    **author** [${beatMap.creator}](https://osu.ppy.sh/u/${beatMap.creatorId})
+                    **artist** ${beatMap.artist}
+                    **diff** ${formatter.format(beatMap.difficulty)} | ${beatMap.version}
+                    **bpm** ${beatMap.bpm}
+                """.trimIndent(), false)
+                .addField("Combo", "`" + formatter.format(result.maxCombo) + "x`/" + formatter.format(beatMap.maxCombo) + "x", true)
+                .addField("Rank", rankAchievedEmote, true)
+                .addField("Score", "`" + formatter.format(result.score) + "`", true)
+                .setFooter("Score placed on: ${result.date}")
+
+            eb.addField("Hits", """
+                  miss: `${formatter.format(result.countMiss)}`
+                  50: `${formatter.format(result.count50)}` 
+                  100: `${formatter.format(result.count100)}`
+                  300: `${formatter.format(result.count300)}`
+            """.trimIndent(), true)
+                .addField("Accuracy", "`" + formatter.format(accuracy) + "%`", true)
+            if (mods.isNotBlank()) eb.addField("Mods", mods, true)
+
+
+            sendEmbedRsp(context, eb.build())
+        }
     }
 
 
     companion object {
         val emotes = mapOf<String, Long>(
-            Pair("SSH", 743910024518041741),
-            Pair("SS", 743910024337817641),
-            Pair("SH", 743910024564178994),
-            Pair("S", 743910024501395496),
-            Pair("A", 743910024337817673)
+            Pair("SSH", 744300240370139226),
+            Pair("SS", 744300239946514433),
+            Pair("SH", 744300240269475861),
+            Pair("S", 744300240202367017),
+            Pair("A", 744300239867084842),
+            Pair("B", 744300240114417665),
+            Pair("C", 744300239954903062),
+            Pair("D", 744300240248635503)
         )
     }
 
@@ -44,6 +128,11 @@ class OsuCommand : AbstractCommand("command.osu") {
         }
 
         override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                sendSyntax(context)
+                return
+            }
+
             val name = getStringFromArgsNMessage(context, 0, 1, 50) ?: return
             val results = context.webManager.osuApi.getUserTopPlays(name)
 
@@ -57,10 +146,11 @@ class OsuCommand : AbstractCommand("command.osu") {
                 return
             }
 
-            val index = (getIntegerFromArgNMessage(context, 1, 1, results.size) ?: return) - 1
+            val index = (getIntegerFromArgN(context, 1, 1, results.size) ?: 1) - 1
 
             val result = results[index]
-            val rankAchievedEmote = emotes[result.rank]?.let { context.shardManager.getEmoteById(it)?.asMention } ?: "?"
+            val rankAchievedEmote = emotes[result.rank]?.let { context.shardManager.getEmoteById(it)?.asMention }
+                ?: result.rank
             val formatter = DecimalFormat("#.##", DecimalFormatSymbols(Locale.GERMANY))
             formatter.isGroupingUsed = true
             formatter.groupingSize = 3
@@ -69,21 +159,41 @@ class OsuCommand : AbstractCommand("command.osu") {
             Integer.toBinaryString(result.mods).split("").reversed().withIndex().forEach { (index, value) ->
                 if (value == "1") mods += "${OsuMod.values().first { it.offset == (index) }}, "
             }
+
+            val beatMap = context.webManager.osuApi.getBeatMap(result.beatmapId)
+            if (beatMap == null) {
+                sendRsp(context, "beatmap for ${result.beatmapId} wasn't found")
+                return
+            }
+
+            val accuracy = (result.count300 * 300 + result.count100 * 100 + result.count50 * 500) * 100.0 /
+                ((result.count300 + result.count100 + result.count50 + result.countMiss) * 300.0).toFloat()
+
             mods = mods.trim().removeSuffix(",")
             val eb = Embedder(context)
-                .setTitle(name + " | score #${index + 1}", "https://osu.ppy.sh/users/${result.userId}")
-                .addField("pp", formatter.format(result.pp), true)
-                .addField("max-combo", formatter.format(result.maxCombo), true)
-                .addField("mods", mods, true)
-                .addField("hits",
-                    "miss: ${formatter.format(result.countMiss)}\n" +
-                        "50: ${formatter.format(result.count50)}\n" +
-                        "100: ${formatter.format(result.count100)}\n" +
-                        "300: ${formatter.format(result.count300)}\n" +
-                        "Katu: ${formatter.format(result.countKatu)}\n" +
-                        "Geki: ${formatter.format(result.countGeki)}", true)
-                .addField("rank", rankAchievedEmote, true)
-                .setThumbnail("http://s.ppy.sh/a/${result.userId}")
+                .setAuthor(name + " | score #${index + 1}", "https://osu.ppy.sh/scores/osu/${result.scoreId}", "https://s.ppy.sh/a/${result.userId}")
+                .setThumbnail("https://b.ppy.sh/thumb/${beatMap.beatMapSetId}l.jpg")
+                .addField("Beatmap Info", """
+                    **title** [${beatMap.title}](https://osu.ppy.sh/b/${beatMap.beatMapId})
+                    **author** [${beatMap.creator}](https://osu.ppy.sh/u/${beatMap.creatorId})
+                    **artist** ${beatMap.artist}
+                    **diff** ${formatter.format(beatMap.difficulty)} | ${beatMap.version}
+                    **bpm** ${beatMap.bpm}
+                """.trimIndent(), false)
+                .addField("PP", "`" + formatter.format(result.pp) + "`", true)
+                .addField("Combo", "`" + formatter.format(result.maxCombo) + "x`/" + formatter.format(beatMap.maxCombo) + "x", true)
+                .addField("Rank", rankAchievedEmote, true)
+
+            eb.addField("Hits", """
+                  miss: `${formatter.format(result.countMiss)}`
+                  50: `${formatter.format(result.count50)}` 
+                  100: `${formatter.format(result.count100)}`
+                  300: `${formatter.format(result.count300)}`
+            """.trimIndent(), true)
+                .addField("Accuracy", "`" + formatter.format(accuracy) + "%`", true)
+            if (mods.isNotBlank()) eb.addField("Mods", mods, true)
+            eb
+                .addField("Score", "`" + formatter.format(result.score) + "`", true)
                 .setFooter("Score placed on: ${result.date}")
 
             sendEmbedRsp(context, eb.build())
@@ -105,11 +215,11 @@ class OsuCommand : AbstractCommand("command.osu") {
                 return
             }
 
-            val ssSEmote = context.shardManager.getEmoteById(743910024518041741)?.asMention ?: "SS*"
-            val ssEmote = context.shardManager.getEmoteById(743910024337817641)?.asMention ?: "SS"
-            val sSEmote = context.shardManager.getEmoteById(743910024337817641)?.asMention ?: "S*"
-            val sEmote = context.shardManager.getEmoteById(743910024501395496)?.asMention ?: "S"
-            val aEmote = context.shardManager.getEmoteById(743910024337817673)?.asMention ?: "A"
+            val ssSEmote = emotes["SSH"]?.let { context.shardManager.getEmoteById(it)?.asMention } ?: "SSH"
+            val ssEmote = emotes["SS"]?.let { context.shardManager.getEmoteById(it)?.asMention } ?: "SS"
+            val sSEmote = emotes["SH"]?.let { context.shardManager.getEmoteById(it)?.asMention } ?: "SH"
+            val sEmote = emotes["S"]?.let { context.shardManager.getEmoteById(it)?.asMention } ?: "S"
+            val aEmote = emotes["A"]?.let { context.shardManager.getEmoteById(it)?.asMention } ?: "A"
 
             val formatter = DecimalFormat("#.##", DecimalFormatSymbols(Locale.GERMANY))
             formatter.isGroupingUsed = true
@@ -118,17 +228,20 @@ class OsuCommand : AbstractCommand("command.osu") {
 
             val eb = Embedder(context)
                 .setTitle(result.username, "https://osu.ppy.sh/users/${result.id}")
-                .addField("plays", formatter.format(result.plays), true)
-                .addField("acc", formatter.format(result.acc).take(5), true)
-                .addField("level", formatter.format(result.level).take(6), true)
-                .addField("scores", "${ssSEmote}: ${formatter.format(result.countSSH)}\n" +
-                    "${ssEmote}: ${formatter.format(result.countSS)}\n" +
-                    "${sSEmote}: ${formatter.format(result.countSH)}\n" +
-                    "${sEmote}: ${formatter.format(result.countS)}\n" +
-                    "${aEmote}: ${formatter.format(result.countA)}", true)
-                .addField("rank",
-                    "\uD83C\uDF10: ${formatter.format(result.rank)}\n" +
-                        ":flag_${result.country.toLowerCase()}:: ${formatter.format(result.localRank)}", true)
+                .addField("Games Played", formatter.format(result.plays), true)
+                .addField("Accuracy", formatter.format(result.acc) + "%", true)
+                .addField("Level", formatter.format(result.level), true)
+                .addField("Scores", """
+                    ${ssSEmote}: ${formatter.format(result.countSSH)}
+                    ${ssEmote}: ${formatter.format(result.countSS)}
+                    ${sSEmote}: ${formatter.format(result.countSH)}
+                    ${sEmote}: ${formatter.format(result.countS)}
+                    ${aEmote}: ${formatter.format(result.countA)}""", true)
+                .addField("Playtime", getDurationString(result.playtime * 1000), true)
+                .addField("Rank", """
+                        🌐 - ${formatter.format(result.rank)}
+                        :flag_${result.country.toLowerCase()}: - ${formatter.format(result.localRank)}
+                        """.trimIndent(), true)
                 .setThumbnail("http://s.ppy.sh/a/${result.id}")
                 .setFooter("Joined: ${result.joinDate}")
 
