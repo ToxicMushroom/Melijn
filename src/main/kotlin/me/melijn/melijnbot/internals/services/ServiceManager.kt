@@ -8,6 +8,8 @@ import me.melijn.melijnbot.internals.services.donator.DonatorService
 import me.melijn.melijnbot.internals.services.message.MessageCleanerService
 import me.melijn.melijnbot.internals.services.music.SpotifyService
 import me.melijn.melijnbot.internals.services.mutes.MuteService
+import me.melijn.melijnbot.internals.services.reddit.RedditAboutService
+import me.melijn.melijnbot.internals.services.reddit.RedditService
 import me.melijn.melijnbot.internals.services.roles.RolesService
 import me.melijn.melijnbot.internals.services.stats.StatsService
 import me.melijn.melijnbot.internals.services.voice.VoiceScoutService
@@ -38,6 +40,8 @@ class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
         services.add(DonatorService(container, shardManager))
         services.add(RolesService(daoManager.tempRoleWrapper, shardManager))
         services.add(VoteReminderService(daoManager))
+        services.add(RedditService(webManager.httpClient, daoManager.driverManager))
+        services.add(RedditAboutService(webManager.httpClient, daoManager.driverManager))
     }
 
     fun startServices() {

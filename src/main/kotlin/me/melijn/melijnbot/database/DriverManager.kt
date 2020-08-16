@@ -47,6 +47,7 @@ class DriverManager(
         this.dataSource = HikariDataSource(config)
 
 
+        logger.info("Connecting to redis..")
         // REDIS
         val uri = RedisURI.builder()
             .withHost(redisSettings.host)
@@ -55,6 +56,7 @@ class DriverManager(
 
         redisClient = RedisClient.create(uri)
         redisConnection = redisClient.connect()
+        logger.info("Connected to redis")
     }
 
     fun getUsableConnection(connection: (Connection) -> Unit) {

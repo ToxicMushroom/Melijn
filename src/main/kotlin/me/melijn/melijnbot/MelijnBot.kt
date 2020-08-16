@@ -5,6 +5,8 @@ import kotlinx.coroutines.runBlocking
 import me.melijn.llklient.io.jda.JDALavalink
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.events.EventManager
+import me.melijn.melijnbot.internals.threading.TaskManager
+import me.melijn.melijnbot.internals.web.RestServer
 import net.dv8tion.jda.api.GatewayEncoding
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
@@ -13,11 +15,14 @@ import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.ChunkingFilter
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import net.dv8tion.jda.internal.requests.restaction.MessageActionImpl
+import org.slf4j.LoggerFactory
 import java.net.URI
 import java.util.*
 
 
 class MelijnBot {
+
+    val logger = LoggerFactory.getLogger(MelijnBot::class.java)
 
     companion object {
         lateinit var instance: MelijnBot
@@ -34,7 +39,11 @@ class MelijnBot {
         val nodeMap = mutableMapOf<String, Array<Settings.Lavalink.Node>>()
         nodeMap["normal"] = container.settings.lavalink.verified_nodes
         nodeMap["http"] = container.settings.lavalink.http_nodes
-        val jdaLavaLink = runBlocking { generateJdaLinkFromNodes(container, nodeMap) }
+
+        logger.info("Connecting to lavalink")
+        val jdaLavaLink = runBlocking {
+            TaskManager.taskValueAsync { generateJdaLinkFromNodes(container, nodeMap) }.await()
+        }
 
         container.initLava(jdaLavaLink)
 
@@ -68,6 +77,23 @@ class MelijnBot {
 
         eventManager.start()
         shardManager = defaultShardManagerBuilder.build()
+
+        container.startTime = System.currentTimeMillis()
+
+        logger.info("Starting services..")
+        container.serviceManager.init(container, shardManager)
+        container.serviceManager.startServices()
+        logger.info("Services ready")
+
+        TaskManager.async {
+            logger.info("Starting rest-server..")
+
+            val restServer = RestServer(container)
+            restServer.start()
+
+            container.restServer = restServer
+            logger.info("Started rest-server")
+        }
     }
 
     private suspend fun generateJdaLinkFromNodes(container: Container, nodeMap: Map<String, Array<Settings.Lavalink.Node>>): JDALavalink? {

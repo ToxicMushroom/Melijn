@@ -1,9 +1,7 @@
 package me.melijn.melijnbot.internals.threading
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import me.melijn.melijnbot.internals.command.CommandContext
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
@@ -27,6 +25,12 @@ object TaskManager {
 
     fun async(block: suspend CoroutineScope.() -> Unit) = CoroutineScope(dispatcher).launch {
         Task {
+            block.invoke(this)
+        }.run()
+    }
+
+    fun <T> taskValueAsync(block: suspend CoroutineScope.() -> T): Deferred<T?> = CoroutineScope(dispatcher).async {
+        DeferredTask {
             block.invoke(this)
         }.run()
     }

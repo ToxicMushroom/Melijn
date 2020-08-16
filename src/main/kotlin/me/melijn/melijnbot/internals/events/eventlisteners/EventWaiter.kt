@@ -1,8 +1,6 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import me.melijn.melijnbot.internals.threading.TaskManager
 import net.dv8tion.jda.api.events.Event
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.hooks.EventListener
@@ -31,7 +29,7 @@ class EventWaiter : EventListener {
 
     override fun onEvent(event: GenericEvent) {
         val found = eventHandlers.getOrDefault(event::class.java, emptySet())
-        CoroutineScope(Dispatchers.Default).launch {
+        TaskManager.async {
             for (handler in found) {
                 if (handler.tryRun(event)) {
                     val set = eventHandlers.getOrDefault(event::class.java, emptySet()).toMutableSet()
