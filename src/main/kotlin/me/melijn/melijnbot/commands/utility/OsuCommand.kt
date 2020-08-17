@@ -1,5 +1,6 @@
 package me.melijn.melijnbot.commands.utility
 
+import me.melijn.melijnbot.commandutil.game.OsuUtil
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -10,6 +11,7 @@ import me.melijn.melijnbot.internals.utils.getStringFromArgsNMessage
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
+import me.melijn.melijnbot.internals.utils.withVariable
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
@@ -23,33 +25,117 @@ class OsuCommand : AbstractCommand("command.osu") {
         children = arrayOf(
             UserArg(root),
             TopArg(root),
-            RecentArg(root)
+            RecentArg(root),
+            SetUserArg(root)
         )
         commandCategory = CommandCategory.UTILITY
     }
 
-    class RecentArg(parent: String) : AbstractCommand("$parent.recent") {
+    override suspend fun execute(context: CommandContext) {
+        sendSyntax(context)
+    }
+
+    companion object {
+        val emotes = mapOf(
+            Pair("SSH", 744300240370139226),
+            Pair("SS", 744300239946514433),
+            Pair("SH", 744300240269475861),
+            Pair("S", 744300240202367017),
+            Pair("A", 744300239867084842),
+            Pair("B", 744300240114417665),
+            Pair("C", 744300239954903062),
+            Pair("D", 744300240248635503)
+        )
+    }
+
+    class SetUserArg(val parent: String) : AbstractCommand("$parent.setuser") {
+
+        init {
+            name = "setUser"
+        }
+
+        override suspend fun execute(context: CommandContext) {
+            if (context.args.isEmpty()) {
+                val currentName = context.daoManager.osuWrapper.getUserName(context.authorId)
+                val msg = if (currentName == "") {
+                    context.getTranslation("$root.show.unset")
+                } else {
+                    context.getTranslation("$root.show.set")
+                        .withVariable("name", currentName)
+                }
+                sendRsp(context, msg)
+                return
+            }
+
+            val name = getStringFromArgsNMessage(context, 0, 1, 50) ?: return
+
+            if (context.rawArg == "null") {
+                context.daoManager.osuWrapper.remove(context.authorId)
+                val msg = context.getTranslation("$root.unset")
+                sendRsp(context, msg)
+                return
+            }
+
+            val profile = context.webManager.osuApi.getUserInfo(name)
+            if (profile == null) {
+                val msg = context.getTranslation("$parent.unknownuser")
+                    .withVariable("name", name)
+                sendRsp(context, msg)
+                return
+            }
+
+            context.daoManager.osuWrapper.setName(context.authorId, name)
+
+            val msg = context.getTranslation("$root.set")
+                .withVariable("name", name)
+            sendRsp(context, msg)
+        }
+    }
+
+    class RecentArg(val parent: String) : AbstractCommand("$parent.recent") {
 
         init {
             name = "recent"
         }
 
         override suspend fun execute(context: CommandContext) {
+            var userName: String? = null
             if (context.args.isEmpty()) {
-                sendSyntax(context)
-                return
+                val name = context.daoManager.osuWrapper.getUserName(context.authorId)
+                userName = if (name.isEmpty()) null else name
+                if (userName == null) {
+                    val msg = context.getTranslation("$parent.guide")
+                        .withVariable("syntax", context.getTranslation(syntax))
+                        .withVariable("prefix", context.usedPrefix)
+
+                    sendRsp(context, msg)
+                    return
+                }
             }
 
-            val name = getStringFromArgsNMessage(context, 0, 1, 50) ?: return
+            if (userName == null) {
+                val user = OsuUtil.retrieveDiscordUserForOsuByArgsN(context, 0)
+                userName = if (user != null) {
+                    val cache = context.daoManager.osuWrapper.getUserName(user.idLong)
+                    if (cache.isEmpty()) null
+                    else cache
+                } else null
+            }
+
+            val name = userName ?: getStringFromArgsNMessage(context, 0, 1, 50) ?: return
             val results = context.webManager.osuApi.getUserRecentPlays(name)
 
             if (results == null) {
-                sendRsp(context, "user **$name** not found")
+                val msg = context.getTranslation("$parent.unknownuser")
+                    .withVariable("name", name)
+                sendRsp(context, msg)
                 return
             }
 
             if (results.isEmpty()) {
-                sendRsp(context, "user **$name** has no scores")
+                val msg = context.getTranslation("$parent.unknownscore")
+                    .withVariable("name", name)
+                sendRsp(context, msg)
                 return
             }
 
@@ -69,7 +155,9 @@ class OsuCommand : AbstractCommand("command.osu") {
 
             val beatMap = context.webManager.osuApi.getBeatMap(result.beatmapId)
             if (beatMap == null) {
-                sendRsp(context, "beatmap for ${result.beatmapId} wasn't found")
+                val msg = context.getTranslation("$parent.unknownbeatmapfromscore")
+                    .withVariable("x", index + 1)
+                sendRsp(context, msg)
                 return
             }
 
@@ -106,21 +194,7 @@ class OsuCommand : AbstractCommand("command.osu") {
         }
     }
 
-
-    companion object {
-        val emotes = mapOf<String, Long>(
-            Pair("SSH", 744300240370139226),
-            Pair("SS", 744300239946514433),
-            Pair("SH", 744300240269475861),
-            Pair("S", 744300240202367017),
-            Pair("A", 744300239867084842),
-            Pair("B", 744300240114417665),
-            Pair("C", 744300239954903062),
-            Pair("D", 744300240248635503)
-        )
-    }
-
-    class TopArg(parent: String) : AbstractCommand("$parent.top") {
+    class TopArg(val parent: String) : AbstractCommand("$parent.top") {
 
         init {
             name = "top"
@@ -128,21 +202,43 @@ class OsuCommand : AbstractCommand("command.osu") {
         }
 
         override suspend fun execute(context: CommandContext) {
+            var userName: String? = null
             if (context.args.isEmpty()) {
-                sendSyntax(context)
-                return
+                val name = context.daoManager.osuWrapper.getUserName(context.authorId)
+                userName = if (name.isEmpty()) null else name
+                if (userName == null) {
+                    val msg = context.getTranslation("$parent.guide")
+                        .withVariable("syntax", context.getTranslation(syntax))
+                        .withVariable("prefix", context.usedPrefix)
+
+                    sendRsp(context, msg)
+                    return
+                }
             }
 
-            val name = getStringFromArgsNMessage(context, 0, 1, 50) ?: return
+            if (userName == null) {
+                val user = OsuUtil.retrieveDiscordUserForOsuByArgsN(context, 0)
+                userName = if (user != null) {
+                    val cache = context.daoManager.osuWrapper.getUserName(user.idLong)
+                    if (cache.isEmpty()) null
+                    else cache
+                } else null
+            }
+
+            val name = userName ?: getStringFromArgsNMessage(context, 0, 1, 50) ?: return
             val results = context.webManager.osuApi.getUserTopPlays(name)
 
             if (results == null) {
-                sendRsp(context, "user **$name** not found")
+                val msg = context.getTranslation("$parent.unknownuser")
+                    .withVariable("name", name)
+                sendRsp(context, msg)
                 return
             }
 
             if (results.isEmpty()) {
-                sendRsp(context, "user **$name** has no scores")
+                val msg = context.getTranslation("$parent.unknownscore")
+                    .withVariable("name", name)
+                sendRsp(context, msg)
                 return
             }
 
@@ -162,7 +258,9 @@ class OsuCommand : AbstractCommand("command.osu") {
 
             val beatMap = context.webManager.osuApi.getBeatMap(result.beatmapId)
             if (beatMap == null) {
-                sendRsp(context, "beatmap for ${result.beatmapId} wasn't found")
+                val msg = context.getTranslation("$parent.unknownbeatmapfromscore")
+                    .withVariable("x", index + 1)
+                sendRsp(context, msg)
                 return
             }
 
@@ -200,7 +298,7 @@ class OsuCommand : AbstractCommand("command.osu") {
         }
     }
 
-    class UserArg(parent: String) : AbstractCommand("$parent.user") {
+    class UserArg(val parent: String) : AbstractCommand("$parent.user") {
 
         init {
             name = "user"
@@ -208,10 +306,35 @@ class OsuCommand : AbstractCommand("command.osu") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            val name = getStringFromArgsNMessage(context, 0, 1, 50) ?: return
+            var userName: String? = null
+            if (context.args.isEmpty()) {
+                val name = context.daoManager.osuWrapper.getUserName(context.authorId)
+                userName = if (name.isEmpty()) null else name
+                if (userName == null) {
+                    val msg = context.getTranslation("$parent.guide")
+                        .withVariable("syntax", context.getTranslation(syntax))
+                        .withVariable("prefix", context.usedPrefix)
+
+                    sendRsp(context, msg)
+                    return
+                }
+            }
+
+            if (userName == null) {
+                val user = OsuUtil.retrieveDiscordUserForOsuByArgsN(context, 0)
+                userName = if (user != null) {
+                    val cache = context.daoManager.osuWrapper.getUserName(user.idLong)
+                    if (cache.isEmpty()) null
+                    else cache
+                } else null
+            }
+
+            val name = userName ?: getStringFromArgsNMessage(context, 0, 1, 50) ?: return
             val result = context.webManager.osuApi.getUserInfo(name)
             if (result == null) {
-                sendRsp(context, "user **$name** not found")
+                val msg = context.getTranslation("$parent.unknownuser")
+                    .withVariable("name", name)
+                sendRsp(context, msg)
                 return
             }
 
@@ -249,10 +372,6 @@ class OsuCommand : AbstractCommand("command.osu") {
             sendEmbedRsp(context, eb.build())
         }
     }
-
-    override suspend fun execute(context: CommandContext) {
-        sendSyntax(context)
-    }
 }
 
 enum class OsuMod(val offset: Int) {
@@ -287,5 +406,4 @@ enum class OsuMod(val offset: Int) {
     K3(29), // 3Key
     SCORE_V2(30),
     MIRRO(31)
-
 }

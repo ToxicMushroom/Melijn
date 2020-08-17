@@ -31,6 +31,8 @@ import me.melijn.melijnbot.database.filter.FilterDao
 import me.melijn.melijnbot.database.filter.FilterGroupDao
 import me.melijn.melijnbot.database.filter.FilterGroupWrapper
 import me.melijn.melijnbot.database.filter.FilterWrapper
+import me.melijn.melijnbot.database.games.OsuDao
+import me.melijn.melijnbot.database.games.OsuWrapper
 import me.melijn.melijnbot.database.kick.KickDao
 import me.melijn.melijnbot.database.kick.KickWrapper
 import me.melijn.melijnbot.database.language.GuildLanguageDao
@@ -174,6 +176,9 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
     val voteWrapper: VoteWrapper
     val balanceWrapper: BalanceWrapper
     val dailyCooldownWrapper: DailyCooldownWrapper
+
+    val osuWrapper: OsuWrapper
+
     var driverManager: DriverManager
 
     init {
@@ -271,6 +276,8 @@ class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
         voteWrapper = VoteWrapper(VoteDao(driverManager))
         balanceWrapper = BalanceWrapper(BalanceDao(driverManager))
         dailyCooldownWrapper = DailyCooldownWrapper(DailyCooldownDao(driverManager))
+
+        osuWrapper = OsuWrapper(OsuDao(driverManager))
         //After registering wrappers
         driverManager.executeTableRegistration()
         for (func in afterTableFunctions) {
