@@ -37,7 +37,10 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
                     VoiceUtil.resumeMusic(event, container)
                     logger.info("Started music clients")
                 }
-                container.serviceManager.startSlowservices()
+                TaskManager.async {
+                    container.serviceManager.startSlowservices()
+                    logger.info("Slow Services ready")
+                }
             }
         }
     }
