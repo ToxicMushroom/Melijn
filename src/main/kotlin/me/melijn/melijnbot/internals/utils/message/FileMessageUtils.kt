@@ -188,10 +188,10 @@ fun sendFile(language: String, msg: String, privateChannel: PrivateChannel, byte
     if (privateChannel.jda.selfUser.allowedFileSize < (bytes.size)) {
         val size = StringUtils.humanReadableByteCountBin(bytes.size)
         val max = StringUtils.humanReadableByteCountBin(privateChannel.jda.selfUser.allowedFileSize)
-        val msg = i18n.getTranslation(language, "message.filetoobig")
+        val msg1 = i18n.getTranslation(language, "message.filetoobig")
             .withVariable("size", size)
             .withVariable("max", max)
-        sendMsg(privateChannel, msg)
+        sendMsg(privateChannel, msg1)
         return
     }
 

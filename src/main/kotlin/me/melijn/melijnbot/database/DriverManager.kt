@@ -70,11 +70,13 @@ class DriverManager(
         val hasPrimary = primaryKey != ""
         val hasUnique = uniqueKey != ""
         afterConnectToBeExecutedQueries.add(
-            "CREATE TABLE IF NOT EXISTS $table ($tableStructure${if (hasPrimary) {
-                ", PRIMARY KEY ($primaryKey)"
-            } else {
-                ""
-            }}${if (hasUnique) ", UNIQUE ($uniqueKey)" else ""})"
+            "CREATE TABLE IF NOT EXISTS $table ($tableStructure${
+                if (hasPrimary) {
+                    ", PRIMARY KEY ($primaryKey)"
+                } else {
+                    ""
+                }
+            }${if (hasUnique) ", UNIQUE ($uniqueKey)" else ""})"
         )
     }
 

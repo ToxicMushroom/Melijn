@@ -398,47 +398,28 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             }
 
             if (event.isFromGuild && !isSubCommand) {
-                command.discordChannelPermissions.forEach { permission ->
-                    val botMember = event.guild.selfMember
-                    var missingPermissionCount = 0
-                    var missingPermissionMessage = ""
+                val botMember = event.guild.selfMember
 
-                    if (!botMember.hasPermission(event.textChannel, permission)) {
-                        missingPermissionMessage += "\n    ⁎ `${permission.toUCSC()}`"
-                        missingPermissionCount++
-                    }
-
-                    if (missingPermissionCount > 0) {
-                        val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
-                        val more = if (missingPermissionCount > 1) "s" else ""
-                        val msg = i18n.getTranslation(language, "message.discordchannelpermission$more.missing")
-                            .withVariable("permissions", missingPermissionMessage)
-                            .withVariable("channel", event.textChannel.asTag)
-
-                        sendRspOrMsg(event.textChannel, container.daoManager, msg)
-                        return true
-                    }
+                // Channel perms
+                val missingChannelPermissions = command.discordChannelPermissions.filter { permission ->
+                    !botMember.hasPermission(event.textChannel, permission)
                 }
 
-                command.discordPermissions.forEach { permission ->
-                    val botMember = event.guild.selfMember
-                    var missingPermissionCount = 0
-                    var missingPermissionMessage = ""
+                if (missingChannelPermissions.isNotEmpty()) {
+                    val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
+                    sendMelijnMissingChannelPermissionMessage(event.textChannel, language, container.daoManager, missingChannelPermissions)
+                    return true
+                }
 
-                    if (!botMember.hasPermission(permission)) {
-                        missingPermissionMessage += "\n    ⁎ `${permission.toUCSC()}`"
-                        missingPermissionCount++
-                    }
+                // Global perms
+                val missingPermissions =  command.discordPermissions.filter { permission ->
+                    !botMember.hasPermission(event.textChannel, permission)
+                }
 
-                    if (missingPermissionCount > 0) {
-                        val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
-                        val more = if (missingPermissionCount > 1) "s" else ""
-                        val msg = i18n.getTranslation(language, "message.discordpermission$more.missing")
-                            .withVariable("permissions", missingPermissionMessage)
-
-                        sendRspOrMsg(event.textChannel, container.daoManager, msg)
-                        return true
-                    }
+                if (missingPermissions.isNotEmpty()) {
+                    val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
+                    sendMelijnMissingPermissionMessage(event.textChannel, language, container.daoManager, missingChannelPermissions)
+                    return true
                 }
 
                 if (commandIsOnCooldown(container.daoManager, cmdId, event)) {

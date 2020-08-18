@@ -19,9 +19,9 @@ class PermissionCommand : AbstractCommand("command.permission") {
         name = "permission"
         aliases = arrayOf("perm")
         children = arrayOf(
-            UserCommand(root),
-            RoleCommand(root),
-            ChannelCommand(root)
+            UserArg(root),
+            RoleArg(root),
+            ChannelArg(root)
         )
         commandCategory = CommandCategory.ADMINISTRATION
     }
@@ -31,14 +31,14 @@ class PermissionCommand : AbstractCommand("command.permission") {
     }
 
 
-    class UserCommand(parent: String) : AbstractCommand("$parent.user") {
+    class UserArg(parent: String) : AbstractCommand("$parent.user") {
 
         init {
             name = "user"
             aliases = arrayOf("u")
             children = arrayOf(
                 SetCommand(root),
-                CopyCommand(this),
+                CopyArg(this),
                 ViewCommand(root),
                 ClearCommand(root)
             )
@@ -144,16 +144,16 @@ class PermissionCommand : AbstractCommand("command.permission") {
         }
     }
 
-    class RoleCommand(parent: String) : AbstractCommand("$parent.role") {
+    class RoleArg(parent: String) : AbstractCommand("$parent.role") {
 
         init {
             name = "role"
             aliases = arrayOf("r")
             children = arrayOf(
-                SetCommand(root),
-                CopyCommand(this),
-                ViewCommand(root),
-                ClearCommand(root)
+                SetArg(root),
+                CopyArg(this),
+                ViewArg(root),
+                ClearArg(root)
             )
         }
 
@@ -161,7 +161,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
             sendSyntax(context)
         }
 
-        class SetCommand(parent: String) : AbstractCommand("$parent.set") {
+        class SetArg(parent: String) : AbstractCommand("$parent.set") {
 
             init {
                 name = "set"
@@ -201,7 +201,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
         }
 
-        class ViewCommand(parent: String) : AbstractCommand("$parent.view") {
+        class ViewArg(parent: String) : AbstractCommand("$parent.view") {
 
             init {
                 name = "view"
@@ -237,7 +237,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
         }
 
-        class ClearCommand(parent: String) : AbstractCommand("$parent.clear") {
+        class ClearArg(parent: String) : AbstractCommand("$parent.clear") {
 
             init {
                 name = "clear"
@@ -262,14 +262,14 @@ class PermissionCommand : AbstractCommand("command.permission") {
         }
     }
 
-    class ChannelCommand(parent: String) : AbstractCommand("$parent.channel") {
+    class ChannelArg(parent: String) : AbstractCommand("$parent.channel") {
 
         init {
             name = "channel"
             aliases = arrayOf("c")
             children = arrayOf(
-                UserChannelCommand(root),
-                RoleChannelCommand(root)
+                UserChannelArg(root),
+                RoleChannelArg(root)
             )
         }
 
@@ -277,16 +277,16 @@ class PermissionCommand : AbstractCommand("command.permission") {
             sendRsp(context, "Channel Permissions")
         }
 
-        class RoleChannelCommand(parent: String) : AbstractCommand("$parent.role") {
+        class RoleChannelArg(parent: String) : AbstractCommand("$parent.role") {
 
             init {
                 name = "role"
                 aliases = arrayOf("r")
                 children = arrayOf(
-                    SetCommand(root),
-                    CopyCommand(this),
-                    ViewCommand(root),
-                    ClearCommand(root)
+                    SetArg(root),
+                    CopyArg(this),
+                    ViewArg(root),
+                    ClearArg(root)
                 )
             }
 
@@ -294,7 +294,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 sendSyntax(context)
             }
 
-            class SetCommand(parent: String) : AbstractCommand("$parent.set") {
+            class SetArg(parent: String) : AbstractCommand("$parent.set") {
 
                 init {
                     name = "set"
@@ -334,7 +334,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
             }
 
-            class ViewCommand(parent: String) : AbstractCommand("$parent.view") {
+            class ViewArg(parent: String) : AbstractCommand("$parent.view") {
 
                 init {
                     name = "view"
@@ -376,7 +376,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 }
             }
 
-            class ClearCommand(parent: String) : AbstractCommand("$parent.clear") {
+            class ClearArg(parent: String) : AbstractCommand("$parent.clear") {
 
                 init {
                     name = "clear"
@@ -403,16 +403,16 @@ class PermissionCommand : AbstractCommand("command.permission") {
             }
         }
 
-        class UserChannelCommand(parent: String) : AbstractCommand("$parent.user") {
+        class UserChannelArg(parent: String) : AbstractCommand("$parent.user") {
 
             init {
                 name = "user"
                 aliases = arrayOf("u")
                 children = arrayOf(
-                    SetCommand(root),
-                    CopyCommand(this),
-                    ViewCommand(root),
-                    ClearCommand(root)
+                    SetArg(root),
+                    CopyArg(this),
+                    ViewArg(root),
+                    ClearArg(root)
                 )
             }
 
@@ -420,7 +420,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
                 sendSyntax(context)
             }
 
-            class SetCommand(parent: String) : AbstractCommand("$parent.set") {
+            class SetArg(parent: String) : AbstractCommand("$parent.set") {
 
                 init {
                     name = "set"
@@ -461,7 +461,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
             }
 
-            class ViewCommand(parent: String) : AbstractCommand("$parent.view") {
+            class ViewArg(parent: String) : AbstractCommand("$parent.view") {
 
                 init {
                     name = "view"
@@ -502,7 +502,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
             }
 
-            class ClearCommand(parent: String) : AbstractCommand("$parent.clear") {
+            class ClearArg(parent: String) : AbstractCommand("$parent.clear") {
 
                 init {
                     name = "clear"
@@ -531,15 +531,15 @@ class PermissionCommand : AbstractCommand("command.permission") {
         }
     }
 
-    class CopyCommand(parent: AbstractCommand) : AbstractCommand("${parent.root}.copy") {
+    class CopyArg(parent: AbstractCommand) : AbstractCommand("${parent.root}.copy") {
 
         init {
             name = "copy"
             aliases = arrayOf("cp")
             children = arrayOf(
-                UserCommand(parent, root),
-                RoleCommand(parent, root),
-                ChannelCommand(parent, root)
+                UserArg(parent, root),
+                RoleArg(parent, root),
+                ChannelArg(parent, root)
             )
         }
 
@@ -547,7 +547,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
             sendSyntax(context)
         }
 
-        class UserCommand(private val copyParent: AbstractCommand, copyRoot: String) : AbstractCommand("$copyRoot.user") {
+        class UserArg(private val copyParent: AbstractCommand, copyRoot: String) : AbstractCommand("$copyRoot.user") {
             init {
                 name = "user"
                 aliases = arrayOf("u")
@@ -555,24 +555,24 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
             override suspend fun execute(context: CommandContext) {
                 val extraArg = if (
-                    copyParent is PermissionCommand.ChannelCommand.RoleChannelCommand ||
-                    copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
+                    copyParent is PermissionCommand.ChannelArg.RoleChannelArg ||
+                    copyParent is PermissionCommand.ChannelArg.UserChannelArg
                 ) 1 else 0
                 if (context.args.size < (2 + extraArg)) {
                     sendSyntax(context)
                     return
                 }
                 when (copyParent) {
-                    is PermissionCommand.ChannelCommand.RoleChannelCommand -> {
+                    is PermissionCommand.ChannelArg.RoleChannelArg -> {
                         copyChannelRoleToUser(context)
                     }
-                    is PermissionCommand.ChannelCommand.UserChannelCommand -> {
+                    is PermissionCommand.ChannelArg.UserChannelArg -> {
                         copyChannelUserToUser(context)
                     }
-                    is PermissionCommand.RoleCommand -> {
+                    is PermissionCommand.RoleArg -> {
                         copyRoleToUser(context)
                     }
-                    is PermissionCommand.UserCommand -> {
+                    is PermissionCommand.UserArg -> {
                         copyUserToUser(context)
                     }
                 }
@@ -681,7 +681,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
         }
 
-        class RoleCommand(private val copyParent: AbstractCommand, copyRoot: String) : AbstractCommand("$copyRoot.role") {
+        class RoleArg(private val copyParent: AbstractCommand, copyRoot: String) : AbstractCommand("$copyRoot.role") {
 
             init {
                 name = "role"
@@ -690,24 +690,24 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
             override suspend fun execute(context: CommandContext) {
                 val extraArg = if (
-                    copyParent is PermissionCommand.ChannelCommand.RoleChannelCommand ||
-                    copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
+                    copyParent is PermissionCommand.ChannelArg.RoleChannelArg ||
+                    copyParent is PermissionCommand.ChannelArg.UserChannelArg
                 ) 1 else 0
                 if (context.args.size < (2 + extraArg)) {
                     sendSyntax(context)
                     return
                 }
                 when (copyParent) {
-                    is PermissionCommand.ChannelCommand.RoleChannelCommand -> {
+                    is PermissionCommand.ChannelArg.RoleChannelArg -> {
                         copyChannelRoleToRole(context)
                     }
-                    is PermissionCommand.ChannelCommand.UserChannelCommand -> {
+                    is PermissionCommand.ChannelArg.UserChannelArg -> {
                         copyChannelUserToRole(context)
                     }
-                    is PermissionCommand.RoleCommand -> {
+                    is PermissionCommand.RoleArg -> {
                         copyRoleToRole(context)
                     }
-                    is PermissionCommand.UserCommand -> {
+                    is PermissionCommand.UserArg -> {
                         copyUserToRole(context)
                     }
                 }
@@ -814,7 +814,7 @@ class PermissionCommand : AbstractCommand("command.permission") {
             }
         }
 
-        class ChannelCommand(copyParent: AbstractCommand, copyRoot: String) : AbstractCommand("$copyRoot.channel") {
+        class ChannelArg(copyParent: AbstractCommand, copyRoot: String) : AbstractCommand("$copyRoot.channel") {
             init {
                 name = "channel"
                 aliases = arrayOf("c")
@@ -834,24 +834,24 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 override suspend fun execute(context: CommandContext) {
                     val extraArg = if (
-                        copyParent is PermissionCommand.ChannelCommand.RoleChannelCommand ||
-                        copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
+                        copyParent is PermissionCommand.ChannelArg.RoleChannelArg ||
+                        copyParent is PermissionCommand.ChannelArg.UserChannelArg
                     ) 1 else 0
                     if (context.args.size < (3 + extraArg)) {
                         sendSyntax(context)
                         return
                     }
                     when (copyParent) {
-                        is PermissionCommand.ChannelCommand.RoleChannelCommand -> {
+                        is PermissionCommand.ChannelArg.RoleChannelArg -> {
                             copyChannelRoleToChannelRole(context)
                         }
-                        is PermissionCommand.ChannelCommand.UserChannelCommand -> {
+                        is PermissionCommand.ChannelArg.UserChannelArg -> {
                             copyChannelUserToChannelRole(context)
                         }
-                        is PermissionCommand.RoleCommand -> {
+                        is PermissionCommand.RoleArg -> {
                             copyRoleToChannelRole(context)
                         }
-                        is PermissionCommand.UserCommand -> {
+                        is PermissionCommand.UserArg -> {
                             copyUserToChannelRole(context)
                         }
                     }
@@ -974,24 +974,24 @@ class PermissionCommand : AbstractCommand("command.permission") {
 
                 override suspend fun execute(context: CommandContext) {
                     val extraArg = if (
-                        copyParent is PermissionCommand.ChannelCommand.RoleChannelCommand ||
-                        copyParent is PermissionCommand.ChannelCommand.UserChannelCommand
+                        copyParent is PermissionCommand.ChannelArg.RoleChannelArg ||
+                        copyParent is PermissionCommand.ChannelArg.UserChannelArg
                     ) 1 else 0
                     if (context.args.size < (3 + extraArg)) {
                         sendSyntax(context)
                         return
                     }
                     when (copyParent) {
-                        is PermissionCommand.ChannelCommand.RoleChannelCommand -> {
+                        is PermissionCommand.ChannelArg.RoleChannelArg -> {
                             copyChannelRoleToChannelUser(context)
                         }
-                        is PermissionCommand.ChannelCommand.UserChannelCommand -> {
+                        is PermissionCommand.ChannelArg.UserChannelArg -> {
                             copyChannelUserToChannelUser(context)
                         }
-                        is PermissionCommand.RoleCommand -> {
+                        is PermissionCommand.RoleArg -> {
                             copyRoleToChannelUser(context)
                         }
-                        is PermissionCommand.UserCommand -> {
+                        is PermissionCommand.UserArg -> {
                             copyUserToChannelUser(context)
                         }
                     }

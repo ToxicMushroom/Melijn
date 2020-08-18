@@ -1,0 +1,15 @@
+query SearchAnime($name: String!) {
+    Page(page: 1, perPage: 10) {
+        media(search: $name, type: ANIME) {
+            id
+            title {
+                romaji
+                english
+                native
+                userPreferred
+            }
+            siteUrl
+            favourites
+        }
+    }
+}

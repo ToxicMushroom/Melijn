@@ -17,7 +17,7 @@ class RemoveInvokeWrapper(
         if (result != null) return result
 
         val channels = removeInvokeDao.getChannels(guildId)
-        removeInvokeDao.setCacheEntry(guildId, channels, NORMAL_CACHE)
+        removeInvokeDao.setCacheEntry(guildId, objectMapper.writeValueAsString(channels), NORMAL_CACHE)
         return channels
     }
 
@@ -26,7 +26,7 @@ class RemoveInvokeWrapper(
         map[channelId] = seconds
 
         removeInvokeDao.insert(guildId, channelId, seconds)
-        removeInvokeDao.setCacheEntry("$guildId", map, NORMAL_CACHE)
+        removeInvokeDao.setCacheEntry("$guildId", objectMapper.writeValueAsString(map), NORMAL_CACHE)
     }
 
     suspend fun remove(guildId: Long, channelId: Long) {
@@ -34,6 +34,6 @@ class RemoveInvokeWrapper(
         map.remove(channelId)
 
         removeInvokeDao.remove(guildId, channelId)
-        removeInvokeDao.setCacheEntry("$guildId", map, NORMAL_CACHE)
+        removeInvokeDao.setCacheEntry("$guildId", objectMapper.writeValueAsString(map), NORMAL_CACHE)
     }
 }

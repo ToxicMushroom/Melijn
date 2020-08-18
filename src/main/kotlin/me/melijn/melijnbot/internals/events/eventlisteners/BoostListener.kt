@@ -31,7 +31,7 @@ class BoostListener(container: Container) : AbstractListener(container) {
     }
 
     private suspend fun onBoost(event: GuildUpdateBoostCountEvent) {
-        val boosted = event.guild.boosters.maxBy {
+        val boosted = event.guild.boosters.maxByOrNull {
             it.timeBoosted?.toInstant()?.toEpochMilli() ?: 0
         } ?: return
 

@@ -52,19 +52,19 @@ suspend fun Throwable.sendInGuildSuspend(
 
     val sb = StringBuilder()
 
-    sb.append("**CaseID**: ").appendln(caseId)
+    sb.append("**CaseID**: ").appendLine(caseId)
     if (guild != null) {
-        sb.append("**Guild**: ").append(guild.name).append(" | ").appendln(guild.id)
+        sb.append("**Guild**: ").append(guild.name).append(" | ").appendLine(guild.id)
     }
     if (channel != null) {
         sb.append("**")
             .append(channel.type.toUCC())
-            .append("Channel**: #").append(channel.name).append(" | ").appendln(channel.id)
+            .append("Channel**: #").append(channel.name).append(" | ").appendLine(channel.id)
     }
     if (author != null) {
-        sb.append("**User**: ").append(author.asTag).append(" | ").appendln(author.id)
+        sb.append("**User**: ").append(author.asTag).append(" | ").appendLine(author.id)
     }
-    sb.append("**Thread**: ").appendln(thread.name)
+    sb.append("**Thread**: ").appendLine(thread.name)
 
     val writer = StringWriter()
     val printWriter = PrintWriter(writer)
@@ -73,8 +73,8 @@ suspend fun Throwable.sendInGuildSuspend(
         .replace("at me.melijn.melijnbot", "**at me.melijn.melijnbot**")
     sb.append(stacktrace)
     extra?.let {
-        sb.appendln("**Extra**")
-        sb.appendln(it)
+        sb.appendLine("**Extra**")
+        sb.appendLine(it)
     }
 
     if (Container.instance.logToDiscord) {

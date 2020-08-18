@@ -98,7 +98,7 @@ suspend fun sendEmbedAwaitEL(context: CommandContext, embed: MessageEmbed): List
 
 fun sendEmbed(privateChannel: PrivateChannel, embed: MessageEmbed) {
     if (privateChannel.user.isBot) return
-    privateChannel.sendMessage(embed).queue(null, null)
+    privateChannel.sendMessage(embed).queue(null, {})
 }
 
 suspend fun sendEmbedAwaitEL(privateChannel: PrivateChannel, embed: MessageEmbed): List<Message> {
@@ -144,11 +144,11 @@ fun MessageEmbed.toMessage(): String {
     val sb = StringBuilder()
 
     if (this.author != null) {
-        sb.append("***").append(this.author?.name).appendln("***")
+        sb.append("***").append(this.author?.name).appendLine("***")
     }
 
     if (this.title != null) {
-        sb.appendln("__${this.title}__\n")
+        sb.appendLine("__${this.title}__\n")
     }
 
     if (this.description != null) {

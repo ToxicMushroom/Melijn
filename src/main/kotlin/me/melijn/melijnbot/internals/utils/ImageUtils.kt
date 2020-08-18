@@ -2,15 +2,11 @@ package me.melijn.melijnbot.internals.utils
 
 import com.madgag.gif.fmsware.GifDecoder
 import com.squareup.gifencoder.*
-import io.ktor.client.call.receive
-import io.ktor.client.request.get
-import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.HttpStatement
-import io.ktor.client.statement.readBytes
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.cancel
-import io.ktor.utils.io.readRemaining
-import io.ktor.utils.io.streams.writePacket
+import io.ktor.client.call.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.utils.io.*
+import io.ktor.utils.io.streams.*
 import kotlinx.coroutines.*
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_ARG
@@ -764,7 +760,7 @@ object ImageUtils {
                         for ((partProgress, c) in part.toCharArray().withIndex()) {
                             val charWidth = fontMetrics.charWidth(c)
                             if (contentWidth + dashWidth + charWidth > lineWidth) {
-                                if (partProgress != 0) sb.append("-\n") else sb.appendln()
+                                if (partProgress != 0) sb.append("-\n") else sb.appendLine()
                                 contentWidth = 0
                             }
                             sb.append(c)
@@ -772,7 +768,7 @@ object ImageUtils {
                         }
                     }
                     fontMetrics.stringWidth(possibleFutureLineContent) > lineWidth -> {
-                        sb.appendln().append(part)
+                        sb.appendLine().append(part)
                     }
                     else -> {
                         if (sb.isNotEmpty()) sb.append(' ')

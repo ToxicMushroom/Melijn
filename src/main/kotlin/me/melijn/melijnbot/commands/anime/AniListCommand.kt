@@ -3,11 +3,12 @@ package me.melijn.melijnbot.commands.anime
 import com.apollographql.apollo.ApolloCall
 import com.apollographql.apollo.api.Response
 import com.apollographql.apollo.exception.ApolloException
-import me.melijn.melijnbot.anilist.FindAnimeQuery
 import me.melijn.melijnbot.anilist.FindCharacterQuery
 import me.melijn.melijnbot.anilist.FindMangaQuery
 import me.melijn.melijnbot.anilist.FindUserQuery
+import me.melijn.melijnbot.anilist.SearchAnimeQuery
 import me.melijn.melijnbot.anilist.type.MediaType
+import me.melijn.melijnbot.commandutil.anime.AniListCommandUtil
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -20,6 +21,7 @@ import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import java.awt.Color
 import java.util.regex.Pattern
 
@@ -34,9 +36,13 @@ class AniListCommand : AbstractCommand("command.anilist") {
         animeArg = AnimeArg(root)
         children = arrayOf(
             animeArg,
+            SearchAnimeArg(root),
             MangaArg(root),
+//            SearchMangaArg(root),
             CharacterArg(root),
+//            SearchCharacterArg(root),
             UserArg(root)
+//            , SearchUserArg(root)
         )
         commandCategory = CommandCategory.ANIME
     }
@@ -319,8 +325,7 @@ class AniListCommand : AbstractCommand("command.anilist") {
                         StringUtils.splitMessage(
                             mangaList.joinToString("\n") { manga ->
                                 "⁎ [${manga?.title()?.english() ?: manga?.title()?.romaji()}](${manga?.siteUrl()})"
-                            }
-                            , 800, MessageEmbed.VALUE_MAX_LENGTH
+                            }, 800, MessageEmbed.VALUE_MAX_LENGTH
                         ).first(),
                         true
                     )
@@ -352,6 +357,18 @@ class AniListCommand : AbstractCommand("command.anilist") {
         }
 
         override suspend fun execute(context: CommandContext) {
+            AniListCommandUtil.searchAnime(context)
+        }
+    }
+
+    class SearchAnimeArg(parent: String) : AbstractCommand("$parent.searchanime") {
+
+        init {
+            name = "searchanime"
+            aliases = arrayOf("sa", "searchmovie", "searchova", "searchona")
+        }
+
+        override suspend fun execute(context: CommandContext) {
             searchAnime(context)
         }
 
@@ -364,10 +381,10 @@ class AniListCommand : AbstractCommand("command.anilist") {
             val animeName = context.rawArg.take(256)
 
             context.webManager.aniListApolloClient.query(
-                FindAnimeQuery.builder()
+                SearchAnimeQuery.builder()
                     .name(animeName)
                     .build()
-            ).enqueue(object : ApolloCall.Callback<FindAnimeQuery.Data>() {
+            ).enqueue(object : ApolloCall.Callback<SearchAnimeQuery.Data>() {
                 override fun onFailure(e: ApolloException) {
                     TaskManager.async(context) {
                         val msg = context.getTranslation("$root.noresult")
@@ -376,108 +393,43 @@ class AniListCommand : AbstractCommand("command.anilist") {
                     }
                 }
 
-                override fun onResponse(response: Response<FindAnimeQuery.Data>) {
+                override fun onResponse(response: Response<SearchAnimeQuery.Data>) {
                     TaskManager.async(context) {
-                        val char: FindAnimeQuery.Media = response.data?.Media() ?: return@async
-                        foundAnime(context, char)
+                        val animes = response.data?.Page()?.media() ?: return@async
+                        if (animes.isEmpty()) {
+                            sendRsp(context, "weird")
+                            return@async
+                        }
+
+                        val eb = Embedder(context)
+                        val sb = StringBuilder()
+                        for ((index, anime) in animes.withIndex()) {
+                            sb.append("[").append(index + 1).append("](").append(anime.siteUrl()
+                                ?: "").append(") - ").append(anime.title()?.romaji()
+                                ?: "?").append(" | ").append(anime.title()?.english()).append(" ` ")
+                                .append(anime.favourites() ?: 0).appendLine(" \uD83D\uDC97`")
+                        }
+
+                        eb
+                            .setTitle("Results for: $animeName")
+                            .setDescription(sb.toString())
+                            .setFooter("Send the number to select that series or write anything else to cancel")
+
+                        sendEmbedRsp(context, eb.build())
+
+                        context.container.eventWaiter.waitFor(MessageReceivedEvent::class.java, {
+                            it.channel.idLong == context.channelId && it.author.idLong == context.authorId
+                        }, received@{
+                            val index = it.message.contentRaw.toIntOrNull()
+                            if (index == null || index < 1 || index > animes.size) {
+                                sendRsp(context, "cancelled search")
+                                return@received
+                            }
+                            AniListCommandUtil.searchAnime(context, animes[index - 1]?.id() ?: return@received)
+                        })
                     }
                 }
             })
-        }
-
-        suspend fun foundAnime(context: CommandContext, media: FindAnimeQuery.Media) {
-            if (media.isAdult == true && context.isFromGuild && !context.textChannel.isNSFW) {
-                val msg = context.getTranslation("$root.nsfw")
-                    .withVariable("manga", media.title()?.english() ?: media.title()?.romaji() ?: context.rawArg)
-                sendRsp(context, msg)
-                return
-            }
-            val eb = Embedder(context)
-                .setThumbnail(media.coverImage()?.extraLarge())
-                .setTitle(media.title()?.english() ?: media.title()?.romaji() ?: "?", media.siteUrl())
-
-            var description: String = media.description() ?: ""
-            val italicRegex = "<i>(.*?)</i>".toRegex()
-
-            for (res in italicRegex.findAll(description)) {
-                description = description.replace(res.groups[0]?.value
-                    ?: "$$$$$$$", "*${res.groups[1]?.value}*")
-
-            }
-
-            if (description.isNotBlank()) {
-                eb.setDescription(
-                    description
-                        .replace("<br>", "\n")
-                        .replace(("[" + Pattern.quote("\n") + "]{3,15}").toRegex(), "\n\n")
-                        .take(MessageEmbed.TEXT_MAX_LENGTH)
-                )
-            }
-
-            var alias = media.synonyms()?.joinToString()
-            if (alias == null || alias.isBlank()) alias = "/"
-
-
-            val genres = context.getTranslation("title.genres")
-            val othernames = context.getTranslation("title.othernames")
-            val rating = context.getTranslation("title.rating")
-
-            val format = context.getTranslation("title.format")
-            val episodes = context.getTranslation("title.episodes")
-            val avgepisodelength = context.getTranslation("title.avgepisodelength")
-
-
-            val status = context.getTranslation("title.status")
-            val startdate = context.getTranslation("title.startdate")
-            val enddate = context.getTranslation("title.enddate")
-
-
-            eb.addField(genres, media.genres()?.joinToString("\n") ?: "/", true)
-                .addField(othernames, alias, true)
-                .addField(rating, (media.averageScore()?.toString() ?: "?") + "%", true)
-
-                .addField(format, media.format()?.toUCC() ?: "/", true)
-                .addField(episodes, media.episodes()?.toString() ?: "/", true)
-                .addField(avgepisodelength, media.duration()?.toString() ?: "/", true)
-
-                .addField(status, media.status()?.toUCC() ?: "/", true)
-                .addField(startdate, formatDate(media.startDate()), true)
-                .addField(enddate, formatDate(media.endDate()), true)
-
-            val next = media.nextAiringEpisode()
-            if (next != null) {
-                val nextepisode = context.getTranslation("title.nextepisode")
-                val airingat = context.getTranslation("title.airingat")
-
-                val epochMillis = next.airingAt() * 1000L
-                val dateTime = epochMillis.asEpochMillisToDateTime(context.getTimeZoneId())
-                eb.addField(nextepisode, next.episode().toString(), true)
-                eb.addField(airingat, dateTime, true)
-            }
-
-            val favourites = context.getTranslation("footer.favourites")
-                .withVariable("amount", media.favourites() ?: 0)
-            eb.setFooter(favourites)
-
-            sendEmbedRsp(context, eb.build())
-        }
-
-        private fun formatDate(date: FindAnimeQuery.StartDate?): String {
-            if (date == null) return "/"
-            val year = date.year()
-            val month = date.month()
-            val day = date.day()
-            if (year == null || month == null || day == null) return "/"
-            return "$year-$month-$day"
-        }
-
-        private fun formatDate(date: FindAnimeQuery.EndDate?): String {
-            if (date == null) return "/"
-            val year = date.year()
-            val month = date.month()
-            val day = date.day()
-            if (year == null || month == null || day == null) return "/"
-            return "$year-$month-$day"
         }
     }
 
@@ -608,6 +560,6 @@ class AniListCommand : AbstractCommand("command.anilist") {
             return
         }
 
-        animeArg.searchAnime(context)
+        AniListCommandUtil.searchAnime(context)
     }
 }

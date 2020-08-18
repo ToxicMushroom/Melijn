@@ -17,7 +17,7 @@ class RemoveResponseWrapper(
         if (result != null) return result
 
         val channels = removeResponsesDao.getChannels(guildId)
-        removeResponsesDao.setCacheEntry(guildId, channels, NORMAL_CACHE)
+        removeResponsesDao.setCacheEntry(guildId, objectMapper.writeValueAsString(channels), NORMAL_CACHE)
         return channels
     }
 
@@ -26,7 +26,7 @@ class RemoveResponseWrapper(
         map[channelId] = seconds
 
         removeResponsesDao.insert(guildId, channelId, seconds)
-        removeResponsesDao.setCacheEntry("$guildId", map, NORMAL_CACHE)
+        removeResponsesDao.setCacheEntry("$guildId", objectMapper.writeValueAsString(map), NORMAL_CACHE)
     }
 
     suspend fun remove(guildId: Long, channelId: Long) {
@@ -34,6 +34,6 @@ class RemoveResponseWrapper(
         map.remove(channelId)
 
         removeResponsesDao.remove(guildId, channelId)
-        removeResponsesDao.setCacheEntry("$guildId", map, NORMAL_CACHE)
+        removeResponsesDao.setCacheEntry("$guildId", objectMapper.writeValueAsString(map), NORMAL_CACHE)
     }
 }

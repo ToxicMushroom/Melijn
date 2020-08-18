@@ -125,13 +125,16 @@ abstract class AbstractCommand(val root: String) {
                 execute(context)
                 if (context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)) {
                     TaskManager.async {
-                        val timeMap = context.daoManager.removeResponseWrapper.getMap(context.guildId)
+                        val timeMap = context.daoManager.removeInvokeWrapper.getMap(context.guildId)
                         val seconds = timeMap[context.textChannel.idLong] ?: timeMap[context.guildId] ?: return@async
+
+                        if (!context.selfMember.hasPermission(context.textChannel, Permission.MESSAGE_MANAGE)) return@async
 
                         delay(seconds * 1000L)
                         val message = context.message
                         context.container.botDeletedMessageIds.add(message.idLong)
 
+                        if (!context.selfMember.hasPermission(context.textChannel, Permission.MESSAGE_MANAGE)) return@async
                         message.delete().queue(null, { context.container.botDeletedMessageIds.remove(message.idLong) })
                     }
                 }
