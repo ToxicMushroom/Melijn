@@ -98,7 +98,7 @@ dependencies {
 
 
     implementation group: 'io.ktor', name: 'ktor', version: '1.3.2'
-    implementation group: 'io.ktor', name: 'ktor-client-cio', version: '1.3.2'
+    implementation group: 'io.ktor', name: 'ktor-client-cio', version: '1.4.0'
     implementation group: 'io.ktor', name: 'ktor-server-netty', version: '1.3.2'
 
 
