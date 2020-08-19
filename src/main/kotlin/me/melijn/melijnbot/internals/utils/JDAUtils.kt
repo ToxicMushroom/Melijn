@@ -118,7 +118,6 @@ fun getUserByArgsN(context: CommandContext, index: Int): User? {//With null
 }
 
 fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String): User? {
-
     return if (DISCORD_ID.matches(arg)) {
         shardManager.getUserById(arg)
     } else if (USER_MENTION.matches(arg)) {
@@ -138,8 +137,6 @@ fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String): User
             null
         }
     } else null
-
-
 }
 
 suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? {
@@ -162,7 +159,6 @@ suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? {
         }
         else -> null
     }
-
 }
 
 suspend fun retrieveUserByArgsN(guild: Guild, arg: String): User? {

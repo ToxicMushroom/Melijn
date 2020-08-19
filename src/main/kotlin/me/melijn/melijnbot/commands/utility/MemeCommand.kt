@@ -29,7 +29,6 @@ class MemeCommand : AbstractCommand("command.meme") {
 
         val randomResult = RedditCommand.getRandomRedditResultNMessage(context, subreddit, "hot", "day") ?: return
 
-
         try {
             val embedder = Embedder(context)
                 .setTitle(randomResult.title.take(256), "https://reddit.com" + randomResult.url)
@@ -37,8 +36,11 @@ class MemeCommand : AbstractCommand("command.meme") {
                 .setThumbnail(if (randomResult.justText) "https://cdn.melijn.com/img/11ixgBjie.png" else null)
                 .setFooter("\uD83D\uDD3C ${randomResult.ups} | " + (randomResult.created * 1000).asEpochMillisToDateTime(context.getTimeZoneId()))
 
-            if (randomResult.thumb.isNotBlank() && randomResult.justText) {
-                embedder.setThumbnail(randomResult.thumb)
+            if (randomResult.thumb.isNotBlank() && randomResult.thumb != "self" && randomResult.justText) {
+                try {
+                    embedder.setThumbnail(randomResult.thumb)
+                } catch (t: Exception) {
+                }
             }
 
             if (randomResult.justText) {

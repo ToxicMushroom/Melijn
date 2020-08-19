@@ -204,7 +204,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
 
             var total = 0
             val aliasWrapper = context.daoManager.aliasWrapper
-            val aliases = aliasWrapper.getAliases(context.guildId)
+            val aliases = aliasWrapper.getAliases(context.authorId)
             for ((_, aliasList) in aliases) {
                 total += aliasList.size
             }
@@ -230,7 +230,7 @@ class PrivateAliasesCommand : AbstractCommand("command.privatealiases") {
                 return
             }
 
-            aliasWrapper.add(context.guildId, pathInfo.fullPath, alias)
+            aliasWrapper.add(context.authorId, pathInfo.fullPath, alias)
 
             val msg = context.getTranslation("$root.added")
                 .withVariable("alias", alias)

@@ -1,7 +1,7 @@
 package me.melijn.melijnbot.internals.web.osu
 
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
+import io.ktor.client.*
+import io.ktor.client.request.*
 import me.melijn.melijnbot.internals.translation.OSU_URL
 import net.dv8tion.jda.api.utils.data.DataArray
 
@@ -90,7 +90,7 @@ class OsuApi(val httpClient: HttpClient, private val apiKey: String) {
             beatMapJson.getString("artist"), // Creater of music/song
             beatMapJson.getString("beatmap_id").toLong(),
             beatMapJson.getString("beatmapset_id").toLong(),
-            beatMapJson.getString("bpm").toInt(),
+            beatMapJson.getString("bpm").toFloat().toInt(),
             beatMapJson.getString("creator"), // User who uploaded the map
             beatMapJson.getString("creator_id").toLong(),
             beatMapJson.getString("difficultyrating").toFloat(), // amount of stars

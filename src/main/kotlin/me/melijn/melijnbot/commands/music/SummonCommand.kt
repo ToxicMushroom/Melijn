@@ -7,6 +7,7 @@ import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.internals.utils.RunConditionUtil
 import me.melijn.melijnbot.internals.utils.getVoiceChannelByArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendMissingPermissionMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.notEnoughPermissionsAndMessage
 import me.melijn.melijnbot.internals.utils.withVariable

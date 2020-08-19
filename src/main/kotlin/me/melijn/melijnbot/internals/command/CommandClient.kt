@@ -247,8 +247,13 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         if (checksFailed(container.daoManager, cc, event)) return
 
-        val cParts = commandParts.toMutableList()
-        executeCC(cc, event, cParts, hasPrefix)
+        if (hasPermission(container, event, "cc.${cc.id}")) {
+            val cParts = commandParts.toMutableList()
+            executeCC(cc, event, cParts, hasPrefix)
+        } else {
+            val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
+            sendMissingPermissionMessage(event.textChannel, container.daoManager, language, "cc.${cc.id}")
+        }
     }
 
     private suspend fun executeCC(cc: CustomCommand, event: MessageReceivedEvent, commandParts: List<String>, hasPrefix: Boolean) {
@@ -412,7 +417,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 }
 
                 // Global perms
-                val missingPermissions =  command.discordPermissions.filter { permission ->
+                val missingPermissions = command.discordPermissions.filter { permission ->
                     !botMember.hasPermission(event.textChannel, permission)
                 }
 

@@ -1,9 +1,9 @@
 package me.melijn.melijnbot.commands.utility
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.client.HttpClient
-import io.ktor.client.features.ClientRequestException
-import io.ktor.client.request.get
+import io.ktor.client.*
+import io.ktor.client.features.*
+import io.ktor.client.request.*
 import io.lettuce.core.SetArgs
 import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.DriverManager
@@ -57,8 +57,11 @@ class RedditCommand : AbstractCommand("command.reddit") {
             .setImage(if (randomResult.justText) null else randomResult.img)
             .setThumbnail(if (randomResult.justText) "https://cdn.melijn.com/img/11ixgBjie.png" else null)
             .setFooter("\uD83D\uDD3C ${randomResult.ups} | " + (randomResult.created * 1000).asEpochMillisToDateTime(context.getTimeZoneId()))
-        if (randomResult.thumb.isNotBlank() && randomResult.justText) {
-            embedder.setThumbnail(randomResult.thumb)
+        if (randomResult.thumb.isNotBlank() && randomResult.thumb != "self" && randomResult.justText) {
+            try {
+                embedder.setThumbnail(randomResult.thumb)
+            } catch (e: Exception) {
+            }
         }
         if (randomResult.justText) {
             embedder.setTitle(null, null)

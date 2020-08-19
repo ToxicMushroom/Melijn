@@ -52,7 +52,7 @@ suspend fun Throwable.sendInGuildSuspend(
 
     val sb = StringBuilder()
 
-    sb.append("**CaseID**: ").appendLine(caseId)
+    sb.append("**CaseID**: `").append(caseId).appendLine("`")
     if (guild != null) {
         sb.append("**Guild**: ").append(guild.name).append(" | ").appendLine(guild.id)
     }

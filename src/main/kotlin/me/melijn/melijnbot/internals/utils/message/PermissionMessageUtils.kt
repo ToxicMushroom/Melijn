@@ -9,6 +9,17 @@ import me.melijn.melijnbot.internals.utils.withVariable
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.TextChannel
 
+suspend fun sendMissingPermissionMessage(context: CommandContext, permission: String) {
+    sendMissingPermissionMessage(context.textChannel, context.daoManager, context.getLanguage(), permission)
+}
+
+
+suspend fun sendMissingPermissionMessage(tc: TextChannel, daoManager: DaoManager, language: String, permission: String) {
+    val msg = i18n.getTranslation(language, "message.botpermission.missing")
+        .withVariable("permission", permission)
+    sendRsp(tc, daoManager, msg)
+}
+
 suspend fun sendMelijnMissingChannelPermissionMessage(context: CommandContext, permissions: List<Permission>) {
     sendMelijnMissingChannelPermissionMessage(context.textChannel, context.getLanguage(), context.daoManager, permissions)
 }

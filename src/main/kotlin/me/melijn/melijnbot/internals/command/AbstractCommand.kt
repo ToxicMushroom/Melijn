@@ -7,8 +7,7 @@ import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.utils.SPACE_PATTERN
 import me.melijn.melijnbot.internals.utils.addIfNotPresent
 import me.melijn.melijnbot.internals.utils.message.sendInGuild
-import me.melijn.melijnbot.internals.utils.message.sendRsp
-import me.melijn.melijnbot.internals.utils.withVariable
+import me.melijn.melijnbot.internals.utils.message.sendMissingPermissionMessage
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
@@ -145,12 +144,6 @@ abstract class AbstractCommand(val root: String) {
         } else sendMissingPermissionMessage(context, permission)
     }
 
-    suspend fun sendMissingPermissionMessage(context: CommandContext, permission: String) {
-        val msg = context.getTranslation("message.botpermission.missing")
-            .withVariable("permission", permission)
-        sendRsp(context, msg)
-    }
-
     fun isCommandFor(input: String): Boolean {
         if (name.equals(input, true)) {
             return true
@@ -236,7 +229,7 @@ suspend fun hasPermission(context: CommandContext, permission: String, required:
     }
 }
 
-suspend fun hasPermission(command: AbstractCommand, container: Container, event: MessageReceivedEvent, permission: String, required: Boolean = false): Boolean {
+suspend fun hasPermission(container: Container, event: MessageReceivedEvent, permission: String, category: CommandCategory? = null, required: Boolean = false): Boolean {
     val member = event.member ?: return true
     if (member.isOwner || member.hasPermission(Permission.ADMINISTRATOR)) return true
     val guild = member.guild
@@ -285,8 +278,8 @@ suspend fun hasPermission(command: AbstractCommand, container: Container, event:
     if (channelRoleResult != PermState.DEFAULT) roleResult = channelRoleResult
 
     return if (
-        command.commandCategory == CommandCategory.ADMINISTRATION ||
-        command.commandCategory == CommandCategory.MODERATION ||
+        category == CommandCategory.ADMINISTRATION ||
+        category == CommandCategory.MODERATION ||
         required
     ) {
         roleResult == PermState.ALLOW

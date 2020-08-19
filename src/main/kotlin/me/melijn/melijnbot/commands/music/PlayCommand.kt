@@ -6,6 +6,7 @@ import me.melijn.melijnbot.internals.music.LavaManager
 import me.melijn.melijnbot.internals.translation.SC_SELECTOR
 import me.melijn.melijnbot.internals.translation.YT_SELECTOR
 import me.melijn.melijnbot.internals.utils.message.sendInGuild
+import me.melijn.melijnbot.internals.utils.message.sendMissingPermissionMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.replacePrefix

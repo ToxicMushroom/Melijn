@@ -150,7 +150,7 @@ object RunConditionUtil {
 
         if (vc?.id == botVc?.id) return true
         else if (vc != null && botVc == null) return true
-        else if (hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_SAMEVC.node, false)) return true
+        else if (hasPermission(container, event, SpecialPermission.MUSIC_BYPASS_SAMEVC.node, command.commandCategory, false)) return true
 
         val msg = i18n.getTranslation(language, "message.runcondition.failed.vcbot")
         sendRspOrMsg(event.textChannel, container.daoManager, msg)
@@ -173,7 +173,7 @@ object RunConditionUtil {
         return if (vc?.id == bc?.id && vc?.let { listeningMembers(it, member.idLong) } == 0) true
         else if (vc != null && bc == null) true
         else if (vc?.id != bc?.id && bc != null && listeningMembers(bc) == 0) true
-        else if (hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_VCBOTALONE.node, false)) true
+        else if (hasPermission(container, event, SpecialPermission.MUSIC_BYPASS_VCBOTALONE.node, command.commandCategory, false)) true
         else {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.vcbotalone")
             sendRspOrMsg(event.textChannel, container.daoManager, msg)
@@ -196,7 +196,7 @@ object RunConditionUtil {
         val selfMember = guild.selfMember
         val vc = selfMember.voiceState?.channel
         val botAlone = vc == null || listeningMembers(vc, event.author.idLong) == 0
-        return if (botAlone || hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_BOTALONE.node, false)) {
+        return if (botAlone || hasPermission(container, event, SpecialPermission.MUSIC_BYPASS_BOTALONE.node, command.commandCategory, false)) {
             true
         } else {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.botalone")
@@ -220,7 +220,7 @@ object RunConditionUtil {
         return if (bc == null) true
         else if (vc.idLong == bc.idLong) true
         else if (vc.idLong != bc.idLong && listeningMembers(bc) == 0) true
-        else if (hasPermission(command, container, event, SpecialPermission.MUSIC_BYPASS_VCBOTALONE.node, false)) true
+        else if (hasPermission(container, event, SpecialPermission.MUSIC_BYPASS_VCBOTALONE.node, command.commandCategory, false)) true
         else {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.vcbotalone")
             sendRspOrMsg(event.textChannel, container.daoManager, msg)

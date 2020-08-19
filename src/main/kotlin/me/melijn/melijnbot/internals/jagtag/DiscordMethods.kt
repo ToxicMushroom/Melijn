@@ -14,6 +14,10 @@ object DiscordMethods {
         Method("userMention", { env ->
             val user: User = env.getReifiedX("user")
             user.asMention
+        }, { env, input ->
+            val arg = input[0]
+            if (arg.isEmpty()) "null"
+            else retrieveUserByArgsN(env.getReifiedX("guild"), arg)?.asMention ?: "null"
         }),
 
         Method("userTag", { env ->
