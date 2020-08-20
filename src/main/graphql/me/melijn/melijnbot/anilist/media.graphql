@@ -1,0 +1,65 @@
+query SearchMedia($name: String!, $type: MediaType!) {
+    Page(page: 1, perPage: 10) {
+        media(search: $name, type: $type) {
+            id
+            title {
+                romaji
+                english
+                native
+                userPreferred
+            }
+            siteUrl
+            favourites
+        }
+    }
+}
+
+fragment mediaFragment on Media {
+    title {
+        romaji
+        english
+        native
+        userPreferred
+    }
+    synonyms
+    type
+    status
+    startDate {
+        year
+        month
+        day
+    }
+    endDate{
+        year
+        month
+        day
+    }
+    format
+    description(asHtml: false)
+    coverImage {
+        extraLarge
+        color
+    }
+    duration
+    siteUrl
+    averageScore
+    genres
+    trailer {
+        site
+    }
+    favourites
+    studios {
+        edges {
+            node {
+                name
+                siteUrl
+            }
+            isMain
+        }
+    }
+    isAdult
+    nextAiringEpisode {
+        episode
+        airingAt
+    }
+}

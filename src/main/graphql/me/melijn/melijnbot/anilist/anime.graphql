@@ -1,0 +1,17 @@
+query GetAnime($id: Int!) {
+    Media(id: $id, type: ANIME) {
+        ...animeFragment
+        ...mediaFragment
+    }
+}
+
+query FindAnime($name: String!) {
+    Media(search: $name, type: ANIME) {
+        ...animeFragment
+        ...mediaFragment
+    }
+}
+
+fragment animeFragment on Media {
+    episodes
+}

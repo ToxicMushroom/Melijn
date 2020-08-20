@@ -1,0 +1,54 @@
+query FindCharacter($name: String!) {
+    Character(search: $name) {
+        ...characterFragment
+    }
+}
+
+query GetCharacter($id: Int!) {
+    Character(id: $id) {
+        ...characterFragment
+    }
+}
+
+query SearchCharacter($name: String!) {
+    Page(page: 1, perPage: 10) {
+        characters(search: $name) {
+            id
+            name {
+                first
+                last
+                native
+                alternative
+            }
+            siteUrl
+        }
+    }
+}
+
+
+fragment characterFragment on Character {
+    name {
+        first
+        last
+        native
+        alternative
+    }
+    image {
+        large
+    }
+    siteUrl
+    description(asHtml: false)
+    favourites
+    media(sort: [POPULARITY_DESC]) {
+        edges {
+            node {
+                title {
+                    romaji
+                }
+                type
+                siteUrl
+            }
+            characterRole
+        }
+    }
+}

@@ -21,12 +21,17 @@ version = '2.0.8'
 sourceCompatibility = JavaVersion.VERSION_12
 
 apollo {
-    generateKotlinModels.set(false) // or false for Java models
+    generateKotlinModels.set(true) // or false for Java models
 
     service("anilist") {
         rootPackageName = "me.melijn.melijnbot.anilist"
         sourceFolder = "me/melijn/melijnbot/anilist"
     }
+
+    customTypeMapping = [
+            "StartDate" : "me.melijn.melijnbot.internals.models.AnilistDateKt",
+            "MediaFragment.StartDate" : "me.melijn.melijnbot.internals.models.AnilistDateKt",
+    ]
 //    service("kitsu") {
 //        rootPackageName = "me.melijn.melijnbot.kitsu"
 //        sourceFolder = "me/melijn/melijnbot/kitsu"

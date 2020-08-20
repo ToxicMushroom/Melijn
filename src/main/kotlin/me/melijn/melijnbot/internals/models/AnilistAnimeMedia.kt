@@ -4,28 +4,6 @@ import me.melijn.melijnbot.anilist.type.MediaFormat
 import me.melijn.melijnbot.anilist.type.MediaStatus
 import me.melijn.melijnbot.anilist.type.MediaType
 
-data class AnilistAnimeMedia(
-    val title: AnilistTitle?,
-    val synonyms: List<String>,
-    val type: MediaType?,
-    val status: MediaStatus?,
-    val startDate: AnilistDate?,
-    val endDate: AnilistDate?,
-    val format: MediaFormat?,
-    val description: String?,
-    val coverImage: AnilistCoverImage?,
-    val episodes: Int?,
-    val duration: Int?,
-    val siteUrl: String?,
-    val averageScore: Int?,
-    val genres: List<String>,
-    val trailer: AnilistTrailer?,
-    val favourites: Int?,
-    val studios: List<AnilistStudio>,
-    val nsfw: Boolean?,
-    val nextAiringEpisode: AnilistAiringEpisode?
-)
-
 data class AnilistTitle(
     val romaji: String?,
     val english: String?,
@@ -61,7 +39,7 @@ data class AnilistAiringEpisode(
 )
 
 
-data class AnilistMangaMedia(
+data class AnilistMedia(
     val title: AnilistTitle?,
     val synonyms: List<String>,
     val type: MediaType?,
@@ -71,8 +49,6 @@ data class AnilistMangaMedia(
     val format: MediaFormat?,
     val description: String?,
     val coverImage: AnilistCoverImage?,
-    val chapters: Int?,
-    val volumes: Int?,
     val duration: Int?,
     val siteUrl: String?,
     val averageScore: Int?,
@@ -82,4 +58,23 @@ data class AnilistMangaMedia(
     val studios: List<AnilistStudio>,
     val nsfw: Boolean?,
     val nextAiringEpisode: AnilistAiringEpisode?
+)
+
+data class AnilistMangaMedia(
+    val media: AnilistMedia,
+    val manga: AnilistManga
+)
+
+data class AnilistManga(
+    val chapters: Int?,
+    val volumes: Int?
+)
+
+data class AnilistAnimeMedia(
+    val media: AnilistMedia,
+    val anime: AnilistAnime
+)
+
+data class AnilistAnime(
+    val episodes: Int?
 )
