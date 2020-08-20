@@ -11,6 +11,7 @@ import me.melijn.melijnbot.internals.translation.PLACEHOLDER_TYPE
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.time.Instant
 
@@ -362,6 +363,15 @@ object MessageCommandUtil {
         val arg = context.rawArg
         val eb = EmbedBuilder(message.embed)
 
+        if (arg.length > MessageEmbed.TITLE_MAX_LENGTH) {
+            val msg = context.getTranslation("message.embed.title.tolong")
+                .withVariable("arg", arg)
+                .withVariable("length", arg.length)
+                .withVariable("max", MessageEmbed.TITLE_MAX_LENGTH)
+            sendRsp(context, msg)
+            return
+        }
+
         val msg = if (arg.equals("null", true)) {
             eb.setTitle(null)
             context.getTranslation("message.embed.title.unset")
@@ -371,7 +381,11 @@ object MessageCommandUtil {
                 .withVariable(PLACEHOLDER_ARG, arg)
         }.withVariable(PLACEHOLDER_TYPE, type.text)
 
-        message.embed = eb.build()
+        message.embed = try {
+            eb.build()
+        } catch (e: IllegalStateException) {
+            null
+        }
         sendRsp(context, msg)
     }
 

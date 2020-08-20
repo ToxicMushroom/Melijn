@@ -396,6 +396,7 @@ suspend fun handleRspDelete(daoManager: DaoManager, msgList: MutableList<Message
 }
 
 suspend fun handleRspDelete(daoManager: DaoManager, message: Message) {
+    if (message.channel !is TextChannel) return
     val timeMap = daoManager.removeResponseWrapper.getMap(message.textChannel.guild.idLong)
     val seconds = timeMap[message.textChannel.idLong] ?: timeMap[message.guild.idLong] ?: return
 

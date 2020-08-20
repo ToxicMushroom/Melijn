@@ -75,7 +75,7 @@ class PurgeCommand : AbstractCommand("command.purge") {
                         .withVariable(PLACEHOLDER_USER, targetUser?.asTag ?: "")
 
                     if (!context.commandParts[1].equals(silentPurgeName, true) && !context.commandParts[1].equals(silentPruneName, true))
-                        sendMsgAwaitEL(context, msg)[0].delete().queueAfter(5, TimeUnit.SECONDS)
+                        sendMsgAwaitEL(context, msg).firstOrNull()?.delete()?.queueAfter(5, TimeUnit.SECONDS)
 
                     LogUtils.sendPurgeLog(context, messages)
                 }
