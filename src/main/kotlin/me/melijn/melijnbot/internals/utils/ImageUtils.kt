@@ -790,7 +790,7 @@ object ImageUtils {
         (argb shr 24 and 0xff) < 128 -> { // Checks if alpha is almost invisible
             -1 // Sets to transparent gif color
         }
-        argb and 0x00ffffff == 16777215 -> { //Cuts off the alpha of the int and compares it with white
+        argb and 0x00ffffff == 16777215 -> { // Cuts off the alpha of the int and compares it with white
             ((argb shr 24 and 0xff shl 24) // Only the alpha is visible here
                 or (254 shl 16) // integrates other values into the int
                 or (254 shl 8)

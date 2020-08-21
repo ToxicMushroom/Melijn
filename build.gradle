@@ -54,21 +54,21 @@ dependencies {
         exclude module: 'opus-java'
     }
 
+
     // https://bintray.com/sedmelluq/com.sedmelluq/jda-nas
     implementation group: 'com.sedmelluq', name: 'jda-nas', version: '1.1.0'
-
 
     // https://bintray.com/sedmelluq/com.sedmelluq/lavaplayer
     implementation group: 'com.github.ToxicMushroom', name: 'lavaplayer-test', version: 'a2cd883a06'
     // implementation group: 'com.github.Melijn', name: 'lavaplayer', version: '18000a1479'
 
-    // https://jitpack.io/#ToxicMushroom/Lavalink-Client
-    //implementation group: 'com.github.ToxicMushroom', name: 'Lavalink-Klient', version: 'b8b964b7dd'
-    implementation group: 'me.melijn.llklient', name: 'Lavalink-Klient', version: '1.0.3-okhttp'
+    // https://jitpack.io/#ToxicMushroom/Lavalink-Klient
+    implementation group: 'com.github.ToxicMushroom', name: 'Lavalink-Klient', version: 'bac4b90f16'
+    // implementation group: 'me.melijn.llklient', name: 'Lavalink-Klient', version: '1.0.3-okhttp'
 
 
     // https://github.com/ToxicMushroom/JagTag-Kotlin
-    implementation group: 'com.github.ToxicMushroom', name: 'JagTag-Kotlin', version: '0.6.2'
+    implementation group: 'com.github.ToxicMushroom', name: 'JagTag-Kotlin', version: '0.6.4'
 
     // https://search.maven.org/artifact/com.zaxxer/HikariCP
     implementation group: 'com.zaxxer', name: 'HikariCP', version: '3.4.5'
