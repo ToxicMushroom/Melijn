@@ -30,7 +30,7 @@ class TracksWrapper(private val tracksDao: TracksDao, private val lastVoiceChann
         return newMap
     }
 
-    suspend fun put(guildId: Long, botId: Long, playingTrack: AudioTrack, queue: Queue<AudioTrack>) {
+    fun put(guildId: Long, botId: Long, playingTrack: AudioTrack, queue: Queue<AudioTrack>) {
         //Concurrent modification don't ask me why
         val newQueue: Queue<AudioTrack> = LinkedList(queue)
         val playing = LavalinkUtil.toMessage(playingTrack)
@@ -55,7 +55,7 @@ class TracksWrapper(private val tracksDao: TracksDao, private val lastVoiceChann
         tracksDao.clear()
     }
 
-    suspend fun addChannel(guildId: Long, channelId: Long) {
+    fun addChannel(guildId: Long, channelId: Long) {
         lastVoiceChannelDao.add(guildId, channelId)
     }
 

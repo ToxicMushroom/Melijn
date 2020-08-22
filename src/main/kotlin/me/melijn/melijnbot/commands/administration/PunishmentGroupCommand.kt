@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.autopunishment.PunishGroup
 import me.melijn.melijnbot.enums.PointsTriggerType
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -41,7 +40,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
             val pair = context.guildId to context.authorId
             return if (selectionMap.containsKey(pair)) {
                 val id = selectionMap[pair] ?: return null
-                val pList = context.daoManager.autoPunishmentGroupWrapper.autoPunishmentCache.get(context.guildId).await()
+                val pList = context.daoManager.autoPunishmentGroupWrapper.getList(context.guildId)
                 val punishGroup = pList.firstOrNull { (groupName) ->
                     groupName == id
                 }
@@ -268,7 +267,7 @@ class PunishmentGroupCommand : AbstractCommand("command.punishmentgroup") {
                 ?: return
 
             val wrapper = context.daoManager.autoPunishmentGroupWrapper
-            val exists = wrapper.autoPunishmentCache[context.guildId].await().any { (groupName) ->
+            val exists = wrapper.getList(context.guildId).any { (groupName) ->
                 groupName == newName
             }
 
@@ -297,7 +296,7 @@ suspend fun getPunishmentGroupByArgNMessage(context: CommandContext, index: Int)
     val wrapper = context.daoManager.autoPunishmentGroupWrapper
     val group = getStringFromArgsNMessage(context, index, 1, 64, cantContainChars = arrayOf('[', ',', ']'))
         ?: return null
-    val punishGroup = wrapper.autoPunishmentCache[context.guildId].await().firstOrNull { (groupName) ->
+    val punishGroup = wrapper.getList(context.guildId).firstOrNull { (groupName) ->
         groupName == group
     }
     if (punishGroup == null) {

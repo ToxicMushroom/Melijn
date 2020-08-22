@@ -1,32 +1,26 @@
 package me.melijn.melijnbot.database.role
 
-import com.google.common.cache.CacheBuilder
-import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.NOT_IMPORTANT_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import com.fasterxml.jackson.module.kotlin.readValue
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.objectMapper
 
 class JoinRoleGroupWrapper(private val joinRoleGroupDao: JoinRoleGroupDao) {
 
-    val joinRoleGroupCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, List<JoinRoleGroupInfo>> { key ->
-            getList(key)
-        })
-
-    private fun getList(guildId: Long): CompletableFuture<List<JoinRoleGroupInfo>> {
-        val future = CompletableFuture<List<JoinRoleGroupInfo>>()
-       TaskManager.async {
-            val list = joinRoleGroupDao.get(guildId)
-            future.complete(list)
+    suspend fun getList(guildId: Long): List<JoinRoleGroupInfo> {
+        val result = joinRoleGroupDao.getCacheEntry(guildId, HIGHER_CACHE)?.let {
+            objectMapper.readValue<List<JoinRoleGroupInfo>>(it)
         }
-        return future
+
+        if (result != null) return result
+
+        val list = joinRoleGroupDao.get(guildId)
+        joinRoleGroupDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
+        return list
     }
 
     suspend fun insertOrUpdate(guildId: Long, selfRoleGroup: JoinRoleGroupInfo) {
-        val list = joinRoleGroupCache.get(guildId).await().toMutableList()
+        val list = getList(guildId).toMutableList()
         list.firstOrNull { (groupName) ->
             groupName == selfRoleGroup.groupName
         }?.let { group ->
@@ -36,11 +30,11 @@ class JoinRoleGroupWrapper(private val joinRoleGroupDao: JoinRoleGroupDao) {
         list.add(selfRoleGroup)
 
         joinRoleGroupDao.put(guildId, selfRoleGroup)
-        joinRoleGroupCache.put(guildId, CompletableFuture.completedFuture(list))
+        joinRoleGroupDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
     }
 
     suspend fun delete(guildId: Long, groupName1: String) {
-        val list = joinRoleGroupCache.get(guildId).await().toMutableList()
+        val list = getList(guildId).toMutableList()
         list.firstOrNull { (groupName) ->
             groupName == groupName1
         }?.let { group ->
@@ -48,6 +42,6 @@ class JoinRoleGroupWrapper(private val joinRoleGroupDao: JoinRoleGroupDao) {
         }
 
         joinRoleGroupDao.remove(guildId)
-        joinRoleGroupCache.put(guildId, CompletableFuture.completedFuture(list))
+        joinRoleGroupDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
     }
 }

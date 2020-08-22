@@ -53,7 +53,7 @@ class Container {
     var settings: Settings = objectMapper.readValue(File("${System.getenv("CONFIG_NAME") ?: "config"}.json"), Settings::class.java)
 
     //Used by events
-    val daoManager = DaoManager(settings.database)
+    val daoManager = DaoManager(settings.database, settings.redis)
     val webManager = WebManager(settings)
 
     //enabled on event

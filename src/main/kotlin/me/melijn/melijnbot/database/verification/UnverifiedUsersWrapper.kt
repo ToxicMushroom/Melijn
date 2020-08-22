@@ -10,11 +10,11 @@ class UnverifiedUsersWrapper(private val unverifiedUsersDao: UnverifiedUsersDao)
         return unverifiedUsersDao.getTries(guildId, userId)
     }
 
-    suspend fun remove(guildId: Long, userId: Long) {
+    fun remove(guildId: Long, userId: Long) {
         unverifiedUsersDao.remove(guildId, userId)
     }
 
-    suspend fun add(guildId: Long, userId: Long) {
+    fun add(guildId: Long, userId: Long) {
         unverifiedUsersDao.add(guildId, userId)
     }
 
@@ -22,7 +22,7 @@ class UnverifiedUsersWrapper(private val unverifiedUsersDao: UnverifiedUsersDao)
         return unverifiedUsersDao.contains(guildId, userId)
     }
 
-    suspend fun update(guildId: Long, userId: Long, tries: Long) {
+    fun update(guildId: Long, userId: Long, tries: Long) {
         unverifiedUsersDao.update(guildId, userId, tries)
     }
 }

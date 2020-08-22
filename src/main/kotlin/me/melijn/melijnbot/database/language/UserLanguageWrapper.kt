@@ -1,37 +1,26 @@
 package me.melijn.melijnbot.database.language
 
-import com.google.common.cache.CacheBuilder
-import me.melijn.melijnbot.database.IMPORTANT_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 
 class UserLanguageWrapper(private val userLanguageDao: UserLanguageDao) {
 
-    val languageCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, String> { key ->
-            getLanguage(key)
-        })
+    suspend fun getLanguage(userId: Long): String {
+        val result = userLanguageDao.getCacheEntry(userId, HIGHER_CACHE)
+        if (result != null) return result
 
-    private fun getLanguage(userId: Long): CompletableFuture<String> {
-        val languageFuture = CompletableFuture<String>()
-       TaskManager.async {
-            val language = userLanguageDao.get(userId)
-            languageFuture.complete(language)
-        }
-        return languageFuture
+        val language = userLanguageDao.get(userId)
+        userLanguageDao.setCacheEntry(userId, language, NORMAL_CACHE)
+        return language
     }
 
-    suspend fun setLanguage(userId: Long, language: String) {
-        val future = CompletableFuture.completedFuture(language)
-        languageCache.put(userId, future)
+    fun setLanguage(userId: Long, language: String) {
         userLanguageDao.set(userId, language)
+        userLanguageDao.setCacheEntry(userId, language, NORMAL_CACHE)
     }
 
-    suspend fun removeLanguage(authorId: Long) {
-        languageCache.put(authorId, CompletableFuture.completedFuture(""))
+    fun removeLanguage(authorId: Long) {
         userLanguageDao.remove(authorId)
+        userLanguageDao.setCacheEntry(authorId, "", NORMAL_CACHE)
     }
 }

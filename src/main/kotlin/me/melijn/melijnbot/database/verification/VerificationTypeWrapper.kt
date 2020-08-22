@@ -1,38 +1,27 @@
 package me.melijn.melijnbot.database.verification
 
-import com.google.common.cache.CacheBuilder
-import me.melijn.melijnbot.database.NOT_IMPORTANT_CACHE
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 import me.melijn.melijnbot.enums.VerificationType
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
 
 class VerificationTypeWrapper(private val verificationTypeDao: VerificationTypeDao) {
 
-    val verificationTypeCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, VerificationType> { key ->
-            getType(key)
-        })
+    suspend fun getType(guildId: Long): VerificationType {
+        val cached = verificationTypeDao.getCacheEntry(guildId, HIGHER_CACHE)?.let { VerificationType.valueOf(it) }
+        if (cached != null) return cached
 
-    private fun getType(guildId: Long): CompletableFuture<VerificationType> {
-        val future = CompletableFuture<VerificationType>()
-       TaskManager.async {
-            val type = verificationTypeDao.get(guildId)
-            future.complete(type)
-        }
-        return future
+        val type = verificationTypeDao.get(guildId)
+        verificationTypeDao.setCacheEntry(guildId, type, NORMAL_CACHE)
+        return type
     }
 
-    suspend fun setType(guildId: Long, type: VerificationType) {
-        verificationTypeCache.put(guildId, CompletableFuture.completedFuture(type))
+    fun setType(guildId: Long, type: VerificationType) {
+        verificationTypeDao.setCacheEntry(guildId, type, NORMAL_CACHE)
         verificationTypeDao.set(guildId, type)
     }
 
-    suspend fun removeType(guildId: Long) {
-        verificationTypeCache.put(guildId, CompletableFuture.completedFuture(VerificationType.NONE))
-        verificationTypeDao.remove(guildId)
+    fun removeType(guildId: Long) {
+        verificationTypeDao.setCacheEntry(guildId, VerificationType.NONE, NORMAL_CACHE)
+        verificationTypeDao.set(guildId, VerificationType.NONE)
     }
-
 }

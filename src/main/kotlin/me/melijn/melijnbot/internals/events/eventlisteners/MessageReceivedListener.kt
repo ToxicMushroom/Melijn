@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
-import kotlinx.coroutines.future.await
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.commands.utility.HelpCommand
 import me.melijn.melijnbot.database.message.DaoMessage
@@ -100,30 +101,28 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
             return
         }
 
-        val verificationType = dao.verificationTypeWrapper.verificationTypeCache[guild.idLong].await()
-        verificationType?.let {
-            when (it) {
-                VerificationType.PASSWORD -> {
-                    val password = dao.verificationPasswordWrapper.verificationPasswordCache[guild.idLong].await()
-                    if (event.message.contentRaw == password) {
-                        VerificationUtils.verify(dao, unverifiedRole, guild.selfMember.user, member)
-                    } else {
-                        VerificationUtils.failedVerification(dao, member)
-                    }
-                }
-
-                VerificationType.GOOGLE_RECAPTCHAV2 -> {
-                    val code = dao.unverifiedUsersWrapper.getMoment(guild.idLong, member.idLong)
-                    if (event.message.contentRaw == code.toString()) {
-                        VerificationUtils.verify(dao, unverifiedRole, guild.selfMember.user, member)
-                    } else {
-                        VerificationUtils.failedVerification(dao, member)
-                    }
-                }
-                else -> {
+        when (dao.verificationTypeWrapper.getType(guild.idLong)) {
+            VerificationType.PASSWORD -> {
+                val password = dao.verificationPasswordWrapper.getPassword(guild.idLong)
+                if (event.message.contentRaw == password) {
+                    VerificationUtils.verify(dao, unverifiedRole, guild.selfMember.user, member)
+                } else {
+                    VerificationUtils.failedVerification(dao, member)
                 }
             }
+
+            VerificationType.GOOGLE_RECAPTCHAV2 -> {
+                val code = dao.unverifiedUsersWrapper.getMoment(guild.idLong, member.idLong)
+                if (event.message.contentRaw == code.toString()) {
+                    VerificationUtils.verify(dao, unverifiedRole, guild.selfMember.user, member)
+                } else {
+                    VerificationUtils.failedVerification(dao, member)
+                }
+            }
+            else -> {
+            }
         }
+
         container.botDeletedMessageIds.add(event.messageIdLong)
         event.message.delete().reason("verification channel").queue({}, {})
     }
@@ -145,13 +144,12 @@ class MessageReceivedListener(container: Container) : AbstractListener(container
 //        if (event.author.isBot && event.author.idLong != container.settings.id) return
         val guildId = event.guild.idLong
         val logChannelWrapper = container.daoManager.logChannelWrapper
-        val logChannelCache = logChannelWrapper.logChannelCache
 
-        val odmId = logChannelCache.get(Pair(guildId, LogChannelType.OTHER_DELETED_MESSAGE))
-        val sdmId = logChannelCache.get(Pair(guildId, LogChannelType.SELF_DELETED_MESSAGE))
-        val pmId = logChannelCache.get(Pair(guildId, LogChannelType.PURGED_MESSAGE))
-        val fmId = logChannelCache.get(Pair(guildId, LogChannelType.FILTERED_MESSAGE))
-        val emId = logChannelCache.get(Pair(guildId, LogChannelType.EDITED_MESSAGE))
+        val odmId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.OTHER_DELETED_MESSAGE) }
+        val sdmId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.SELF_DELETED_MESSAGE) }
+        val pmId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.PURGED_MESSAGE) }
+        val fmId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.FILTERED_MESSAGE) }
+        val emId = GlobalScope.async { logChannelWrapper.getChannelId(guildId, LogChannelType.EDITED_MESSAGE) }
         if (odmId.await() == -1L && sdmId.await() == -1L && pmId.await() == -1L && fmId.await() == -1L && emId.await() == -1L) return
 
 

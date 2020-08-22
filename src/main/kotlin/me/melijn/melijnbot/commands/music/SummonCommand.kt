@@ -7,6 +7,7 @@ import me.melijn.melijnbot.internals.command.hasPermission
 import me.melijn.melijnbot.internals.translation.PLACEHOLDER_CHANNEL
 import me.melijn.melijnbot.internals.utils.RunConditionUtil
 import me.melijn.melijnbot.internals.utils.getVoiceChannelByArgNMessage
+import me.melijn.melijnbot.internals.utils.message.sendMissingPermissionMessage
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.notEnoughPermissionsAndMessage
 import me.melijn.melijnbot.internals.utils.withVariable
@@ -23,7 +24,7 @@ class SummonCommand : AbstractCommand("command.summon") {
 
     override suspend fun execute(context: CommandContext) {
         if (context.args.isEmpty()) {
-            if (!RunConditionUtil.checkOtherOrSameVCBotAloneOrUserDJ(context.container, context.event, this, context.getLanguage())) return
+            if (!RunConditionUtil.checkOtherBotAloneOrDJOrSameVC(context.container, context.event, this, context.getLanguage())) return
             val vc = context.member.voiceState?.channel ?: throw IllegalStateException("I messed up")
             if (notEnoughPermissionsAndMessage(context, vc, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT)) return
 

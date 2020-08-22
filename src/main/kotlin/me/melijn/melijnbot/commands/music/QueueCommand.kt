@@ -8,6 +8,7 @@ import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.embed.Embedder
 import me.melijn.melijnbot.internals.utils.StringUtils
 import me.melijn.melijnbot.internals.utils.getDurationString
+import me.melijn.melijnbot.internals.utils.message.sendMelijnMissingChannelPermissionMessage
 import me.melijn.melijnbot.internals.utils.message.sendPaginationModularRsp
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.withVariable
@@ -74,7 +75,11 @@ class QueueCommand : AbstractCommand("command.queue") {
         }
 
         if (modularMessages.size > 1) {
-            sendPaginationModularRsp(context, modularMessages, 0)
+            if (context.selfMember.hasPermission(context.textChannel, Permission.MESSAGE_ADD_REACTION)) {
+                sendPaginationModularRsp(context, modularMessages, 0)
+            } else {
+                sendMelijnMissingChannelPermissionMessage(context, listOf(Permission.MESSAGE_ADD_REACTION))
+            }
         } else {
             sendRsp(context.textChannel, context, modularMessages.first())
         }

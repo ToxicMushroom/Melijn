@@ -16,10 +16,12 @@ data class Settings(
     val exceptionChannel: Long,
     val jikan: Jikan,
     val melijnCDN: MelijnCDN,
+    val imghoard: Imghoard,
     val spotify: Spotify,
     val lavalink: Lavalink,
     val tokens: Tokens,
     val database: Database,
+    val redis: Redis,
     val unLoggedThreads: Array<String>
 ) {
 
@@ -60,7 +62,8 @@ data class Settings(
         var botsForDiscordCom: String,
         var discordBoats: String,
         var randomCatApi: String,
-        var kSoftApi: String
+        var kSoftApi: String,
+        var osu: String
     )
 
     data class Database(
@@ -73,5 +76,14 @@ data class Settings(
 
     data class MelijnCDN(
         var token: String
+    )
+
+    data class Imghoard(
+        var token: String
+    )
+
+    data class Redis(
+        val host: String,
+        val port: Int
     )
 }

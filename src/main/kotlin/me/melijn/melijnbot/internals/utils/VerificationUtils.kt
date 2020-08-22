@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.utils
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.MessageType
@@ -14,6 +13,7 @@ import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.exceptions.HierarchyException
 
 object VerificationUtils {
 
@@ -32,7 +32,7 @@ object VerificationUtils {
 
     suspend fun getUnverifiedRoleN(textChannel: TextChannel, daoManager: DaoManager): Role? {
         val guild = textChannel.guild
-        val unverifiedRoleId = daoManager.roleWrapper.roleCache[Pair(guild.idLong, RoleType.UNVERIFIED)].await()
+        val unverifiedRoleId = daoManager.roleWrapper.getRoleId(guild.idLong, RoleType.UNVERIFIED)
 
         return if (unverifiedRoleId == -1L) {
             null
@@ -56,9 +56,13 @@ object VerificationUtils {
         }
         val guild = unverifiedRole.guild
         if (unverifiedRole.idLong != guild.idLong) {
-            val result = guild.removeRoleFromMember(member, unverifiedRole)
-                .reason("verified")
-                .awaitBool()
+            val result = try {
+                guild.removeRoleFromMember(member, unverifiedRole)
+                    .reason("verified")
+                    .awaitBool()
+            } catch (t: HierarchyException) {
+                false
+            }
             if (!result) {
                 LogUtils.sendMessageFailedToAddRoleToMember(daoManager, member, unverifiedRole)
                 return false
@@ -83,7 +87,7 @@ object VerificationUtils {
 
     private suspend fun hasHitThroughputLimit(daoManager: DaoManager, member: Member): Boolean {
         val guild = member.guild
-        val max = daoManager.verificationUserFlowRateWrapper.verificationUserFlowRateCache[guild.idLong].await()
+        val max = daoManager.verificationUserFlowRateWrapper.getFlowRate(guild.idLong)
         if (max == -1L) return false
         val lastMembers = memberJoinTimes
             .getOrDefault(guild.idLong, emptyMap<Long, Long>())

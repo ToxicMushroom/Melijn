@@ -1,34 +1,28 @@
 package me.melijn.melijnbot.database.disabled
 
-import com.google.common.cache.CacheBuilder
-import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.IMPORTANT_CACHE
+import com.fasterxml.jackson.module.kotlin.readValue
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 import me.melijn.melijnbot.enums.CommandState
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import me.melijn.melijnbot.objectMapper
 
 class DisabledCommandWrapper(private val disabledCommandDao: DisabledCommandDao) {
 
     //guildId | commandId (or ccId)
-    val disabledCommandsCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, Set<String>> { key ->
-            getDisabledCommandSet(key)
-        })
 
-    private fun getDisabledCommandSet(guildId: Long): CompletableFuture<Set<String>> {
-        val future = CompletableFuture<Set<String>>()
-       TaskManager.async {
-            val id = disabledCommandDao.get(guildId)
-            future.complete(id)
+    suspend fun getSet(guildId: Long): Set<String> {
+        val cached = disabledCommandDao.getCacheEntry(guildId, HIGHER_CACHE)?.let {
+            objectMapper.readValue<Set<String>>(it)
         }
-        return future
+        if (cached != null) return cached
+
+        val set = disabledCommandDao.get(guildId)
+        disabledCommandDao.setCacheEntry(guildId, objectMapper.writeValueAsString(set), NORMAL_CACHE)
+        return set
     }
 
     suspend fun setCommandState(guildId: Long, commandIds: Set<String>, commandState: CommandState) {
-        val set = disabledCommandsCache.get(guildId).await().toMutableSet()
+        val set = getSet(guildId).toMutableSet()
 
         if (commandState == CommandState.DISABLED) {
             for (id in commandIds) {
@@ -42,6 +36,6 @@ class DisabledCommandWrapper(private val disabledCommandDao: DisabledCommandDao)
             }
             disabledCommandDao.bulkDelete(guildId, commandIds)
         }
-        disabledCommandsCache.put(guildId, CompletableFuture.completedFuture(set.toSet()))
+        disabledCommandDao.setCacheEntry(guildId, objectMapper.writeValueAsString(set), NORMAL_CACHE)
     }
 }

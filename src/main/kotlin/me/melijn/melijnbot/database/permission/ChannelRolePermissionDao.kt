@@ -1,16 +1,18 @@
 package me.melijn.melijnbot.database.permission
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.PermState
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class ChannelRolePermissionDao(driverManager: DriverManager) : Dao(driverManager) {
+class ChannelRolePermissionDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "channelRolePermissions"
     override val tableStructure: String = "guildId bigint, channelId bigint, roleId bigint, permission varchar(64), state varchar(8)"
     override val primaryKey: String = "channelId, roleId, permission"
+
+    override val cacheName: String = "permission:channel:role"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
@@ -24,17 +26,17 @@ class ChannelRolePermissionDao(driverManager: DriverManager) : Dao(driverManager
         }, roleId, permission, channelId)
     }
 
-    suspend fun set(guildId: Long, channelId: Long, roleId: Long, permission: String, permState: PermState) {
+    fun set(guildId: Long, channelId: Long, roleId: Long, permission: String, permState: PermState) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, channelId, roleId, permission, state) VALUES (?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET state = ?",
             guildId, channelId, roleId, permission, permState.toString(), permState.toString())
     }
 
-    suspend fun delete(channelId: Long, roleId: Long, permission: String) {
+    fun delete(channelId: Long, roleId: Long, permission: String) {
         driverManager.executeUpdate("DELETE FROM $table WHERE channelId = ? AND roleId = ? AND permission = ?",
             channelId, roleId, permission)
     }
 
-    suspend fun delete(channelId: Long, roleId: Long) {
+    fun delete(channelId: Long, roleId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE channelId = ? AND roleId = ?",
             channelId, roleId)
     }

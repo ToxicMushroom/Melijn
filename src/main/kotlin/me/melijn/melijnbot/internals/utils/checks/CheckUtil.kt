@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.utils.checks
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
@@ -22,7 +21,7 @@ private const val NO_PERM_CAUSE = "nopermission"
 
 suspend fun Guild.getAndVerifyLogChannelByType(daoManager: DaoManager, type: LogChannelType, logIfInvalid: Boolean = true): TextChannel? {
     val logChannelWrapper = daoManager.logChannelWrapper
-    val channelId = logChannelWrapper.logChannelCache.get(Pair(idLong, type)).await()
+    val channelId = logChannelWrapper.getChannelId(idLong, type)
 
     return this.getAndVerifyLogChannelById(daoManager, type, channelId, logIfInvalid)
 }
@@ -64,7 +63,7 @@ suspend fun Guild.getAndVerifyChannelByType(
     vararg requiredPerms: Permission
 ): TextChannel? {
     val channelWrapper = daoManager.channelWrapper
-    val channelId = channelWrapper.channelCache.get(Pair(idLong, type)).await()
+    val channelId = channelWrapper.getChannelId(this.idLong, type)
 
     return this.getAndVerifyChannelById(daoManager, type, channelId, requiredPerms.toSet())
 }
@@ -111,7 +110,7 @@ suspend fun Guild.getAndVerifyMusicChannel(
 ): VoiceChannel? {
     val channelWrapper = daoManager.musicChannelWrapper
     val zoneId = getZoneId(daoManager, this.idLong)
-    val channelId = channelWrapper.musicChannelCache.get(idLong).await()
+    val channelId = channelWrapper.getChannel(this.idLong)
     val voiceChannel = getVoiceChannelById(channelId)
     val selfMember = this.selfMember
 
@@ -144,7 +143,7 @@ suspend fun Guild.getAndVerifyMusicChannel(
 
 suspend fun Guild.getAndVerifyRoleByType(daoManager: DaoManager, type: RoleType, shouldBeInteractable: Boolean = false): Role? {
     val roleWrapper = daoManager.roleWrapper
-    val roleId = roleWrapper.roleCache.get(Pair(idLong, type)).await()
+    val roleId = roleWrapper.getRoleId(idLong, type)
     if (roleId == -1L) return null
 
     return this.getAndVerifyRoleById(daoManager, type, roleId, shouldBeInteractable)

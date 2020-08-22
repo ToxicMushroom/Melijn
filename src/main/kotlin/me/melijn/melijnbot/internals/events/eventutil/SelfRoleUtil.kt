@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.events.eventutil
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.internals.translation.getLanguage
@@ -40,7 +39,7 @@ object SelfRoleUtil {
             reaction.reactionEmote.emoji
         }
 
-        val selfRoleGroups = daoManager.selfRoleGroupWrapper.getMap(guildId).await()
+        val selfRoleGroups = daoManager.selfRoleGroupWrapper.getMap(guildId)
         val selfRoleGroupMatches = selfRoleGroups.filter {
             it.channelId == channelId && (it.messageIds.contains(event.messageIdLong) || it.messageIds.isEmpty())
         }
@@ -51,7 +50,7 @@ object SelfRoleUtil {
 
 
         val roles = mutableListOf<Role>()
-        val selfRoles = daoManager.selfRoleWrapper.selfRoleCache.get(guildId).await()
+        val selfRoles = daoManager.selfRoleWrapper.getMap(guildId)
         for ((groupName) in selfRoleGroupMatches) {
             val subMap = selfRoles[groupName] ?: continue
 
@@ -95,7 +94,7 @@ object SelfRoleUtil {
                         continue
                     }
 
-                    if (daoManager.forceRoleWrapper.forceRoleCache[guildId].await()[member.idLong]?.contains(roleId) == true) return null
+                    if (daoManager.forceRoleWrapper.getForceRoles(guildId)[member.idLong]?.contains(roleId) == true) return null
                     val role = guild.getRoleById(roleId)
                     val language = getLanguage(daoManager, -1, guildId)
                     val logChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.BOT)

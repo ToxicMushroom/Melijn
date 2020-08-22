@@ -10,7 +10,9 @@ object CCMethods {
         }),
         Method("arg", complex = { env, input ->
             val args: List<String> = env.getReifiedX("args")
-            args[input[0].toInt()]
+            val arg = input[0].toIntOrNull() ?: 0
+            if (args.size > arg) args[arg]
+            else "null"
         }),
         Method("rawArg", { env ->
             env.getReifiedX("rawArg")

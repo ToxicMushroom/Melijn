@@ -1,12 +1,13 @@
 package me.melijn.melijnbot.database.command
 
-import me.melijn.melijnbot.database.Dao
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.database.message.ModularMessage
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class CustomCommandDao(driverManager: DriverManager) : Dao(driverManager) {
+class CustomCommandDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "customCommands"
     override val tableStructure: String =
@@ -14,6 +15,8 @@ class CustomCommandDao(driverManager: DriverManager) : Dao(driverManager) {
             " description varchar(256), content varchar(4096), aliases varchar(128)," +
             " chance int, prefix boolean"
     override val primaryKey: String = "id"
+
+    override val cacheName: String = "command:custom"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
@@ -26,14 +29,14 @@ class CustomCommandDao(driverManager: DriverManager) : Dao(driverManager) {
         }
     }
 
-    suspend fun update(guildId: Long, cc: CustomCommand) {
+    fun update(guildId: Long, cc: CustomCommand) {
         cc.apply {
             driverManager.executeUpdate("UPDATE $table SET name = ?, description = ?, content = ?, aliases = ?, chance = ?, prefix = ? WHERE guildId = ? AND id = ?",
                 name, description, content.toJSON(), aliases?.joinToString("%SPLIT%"), chance, prefix, guildId, cc.id)
         }
     }
 
-    suspend fun remove(guildId: Long, id: Long) {
+    fun remove(guildId: Long, id: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND id = ?",
             guildId, id)
     }
@@ -66,6 +69,7 @@ class CustomCommandDao(driverManager: DriverManager) : Dao(driverManager) {
 data class CustomCommand(
     var id: Long,
     var name: String,
+    @JsonDeserialize(using = ModularMessage.ModularMessageDeserializer::class)
     var content: ModularMessage,
     var description: String? = null,
     var aliases: List<String>? = null,

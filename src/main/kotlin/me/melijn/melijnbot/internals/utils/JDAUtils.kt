@@ -1,6 +1,7 @@
 package me.melijn.melijnbot.internals.utils
 
 import me.melijn.melijnbot.internals.command.CommandContext
+import me.melijn.melijnbot.internals.threading.TaskManager
 import me.melijn.melijnbot.internals.translation.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.Permission
@@ -91,6 +92,22 @@ suspend fun <T> RestAction<T>.awaitBool() = suspendCoroutine<Boolean> {
 }
 
 
+suspend fun <T> RestAction<T>.async(success: suspend (T) -> Unit, failure: suspend (Throwable) -> Unit) {
+    this.queue(
+        { t -> TaskManager.async { success(t) } },
+        { e ->
+            TaskManager.async {
+                failure(e)
+            }
+        }
+    )
+}
+
+fun <T> RestAction<T>.async(success: suspend (T) -> Unit) {
+    this.queue { t -> TaskManager.async { success(t) } }
+}
+
+
 fun getUserByArgsN(context: CommandContext, index: Int): User? {//With null
     val shardManager = context.shardManager
     return if (context.args.size > index) {
@@ -101,7 +118,6 @@ fun getUserByArgsN(context: CommandContext, index: Int): User? {//With null
 }
 
 fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String): User? {
-
     return if (DISCORD_ID.matches(arg)) {
         shardManager.getUserById(arg)
     } else if (USER_MENTION.matches(arg)) {
@@ -121,8 +137,6 @@ fun getUserByArgsN(shardManager: ShardManager, guild: Guild?, arg: String): User
             null
         }
     } else null
-
-
 }
 
 suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? {
@@ -145,7 +159,6 @@ suspend fun retrieveUserByArgsN(context: CommandContext, index: Int): User? {
         }
         else -> null
     }
-
 }
 
 suspend fun retrieveUserByArgsN(guild: Guild, arg: String): User? {

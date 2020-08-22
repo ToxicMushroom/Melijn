@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.database
 
-import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.database.alias.AliasDao
 import me.melijn.melijnbot.database.alias.AliasWrapper
 import me.melijn.melijnbot.database.audio.*
@@ -32,6 +31,8 @@ import me.melijn.melijnbot.database.filter.FilterDao
 import me.melijn.melijnbot.database.filter.FilterGroupDao
 import me.melijn.melijnbot.database.filter.FilterGroupWrapper
 import me.melijn.melijnbot.database.filter.FilterWrapper
+import me.melijn.melijnbot.database.games.OsuDao
+import me.melijn.melijnbot.database.games.OsuWrapper
 import me.melijn.melijnbot.database.kick.KickDao
 import me.melijn.melijnbot.database.kick.KickWrapper
 import me.melijn.melijnbot.database.language.GuildLanguageDao
@@ -53,8 +54,8 @@ import me.melijn.melijnbot.database.prefix.UserPrefixDao
 import me.melijn.melijnbot.database.prefix.UserPrefixWrapper
 import me.melijn.melijnbot.database.role.*
 import me.melijn.melijnbot.database.settings.*
+import me.melijn.melijnbot.database.supporter.SupporterDao
 import me.melijn.melijnbot.database.supporter.SupporterWrapper
-import me.melijn.melijnbot.database.supporter.UserSupporterDao
 import me.melijn.melijnbot.database.time.TimeZoneDao
 import me.melijn.melijnbot.database.time.TimeZoneWrapper
 import me.melijn.melijnbot.database.verification.*
@@ -65,18 +66,23 @@ import me.melijn.melijnbot.database.votes.VoteWrapper
 import me.melijn.melijnbot.database.warn.WarnDao
 import me.melijn.melijnbot.database.warn.WarnWrapper
 import me.melijn.melijnbot.internals.Settings
+import me.melijn.melijnbot.internals.threading.TaskManager
 
 const val RAPIDLY_USED_CACHE = 1L
 const val NOT_IMPORTANT_CACHE = 2L
 const val FREQUENTLY_USED_CACHE = 5L
 const val IMPORTANT_CACHE = 10L
+const val HIGHER_CACHE = 10
+const val NORMAL_CACHE = 5
+const val SHORT_CACHE = 3
+const val RAPID_CACHE = 1
 
 const val HUGE_CACHE = 500L
 const val LARGE_CACHE = 200L
-const val NORMAL_CACHE = 100L
+const val NORMAL_CACHE_SIZE = 100L
 const val SMALL_CACHE = 50L
 
-class DaoManager(dbSettings: Settings.Database) {
+class DaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
 
     companion object {
         val afterTableFunctions = mutableListOf<() -> Unit>()
@@ -86,7 +92,6 @@ class DaoManager(dbSettings: Settings.Database) {
     val songCacheWrapper: SongCacheWrapper
     val gainProfileWrapper: GainProfileWrapper
     val music247Wrapper: Music247Wrapper
-    val musicNodeWrapper: MusicNodeWrapper
     val streamUrlWrapper: StreamUrlWrapper
     val musicChannelWrapper: MusicChannelWrapper
     val commandWrapper: CommandWrapper
@@ -129,8 +134,8 @@ class DaoManager(dbSettings: Settings.Database) {
     val selfRoleGroupWrapper: SelfRoleGroupWrapper
     val selfRoleModeWrapper: SelfRoleModeWrapper
 
-    var dbVersion: String
-    var connectorVersion: String
+    lateinit var dbVersion: String
+    lateinit var connectorVersion: String
 
     val banWrapper: BanWrapper
     val muteWrapper: MuteWrapper
@@ -171,14 +176,15 @@ class DaoManager(dbSettings: Settings.Database) {
     val voteWrapper: VoteWrapper
     val balanceWrapper: BalanceWrapper
     val dailyCooldownWrapper: DailyCooldownWrapper
+
+    val osuWrapper: OsuWrapper
+
     var driverManager: DriverManager
 
     init {
-        driverManager = DriverManager(dbSettings
-            //, dbSettings.mySQL
-        )
+        driverManager = DriverManager(dbSettings, redisSettings)
 
-        runBlocking {
+        TaskManager.async {
             dbVersion = driverManager.getDBVersion()
             connectorVersion = driverManager.getConnectorVersion()
         }
@@ -186,7 +192,6 @@ class DaoManager(dbSettings: Settings.Database) {
         tracksWrapper = TracksWrapper(TracksDao(driverManager), LastVoiceChannelDao(driverManager))
         songCacheWrapper = SongCacheWrapper(SongCacheDao(driverManager))
         gainProfileWrapper = GainProfileWrapper(GainProfileDao(driverManager))
-        musicNodeWrapper = MusicNodeWrapper(MusicNodeDao(driverManager))
         music247Wrapper = Music247Wrapper(Music247Dao(driverManager))
 
         streamUrlWrapper = StreamUrlWrapper(StreamUrlDao(driverManager))
@@ -216,7 +221,7 @@ class DaoManager(dbSettings: Settings.Database) {
         )
         aliasWrapper = AliasWrapper(AliasDao(driverManager))
 
-        supporterWrapper = SupporterWrapper(UserSupporterDao(driverManager))
+        supporterWrapper = SupporterWrapper(SupporterDao(driverManager))
 
         embedDisabledWrapper = EmbedDisabledWrapper(EmbedDisabledDao(driverManager))
         embedColorWrapper = EmbedColorWrapper(EmbedColorDao(driverManager))
@@ -271,6 +276,8 @@ class DaoManager(dbSettings: Settings.Database) {
         voteWrapper = VoteWrapper(VoteDao(driverManager))
         balanceWrapper = BalanceWrapper(BalanceDao(driverManager))
         dailyCooldownWrapper = DailyCooldownWrapper(DailyCooldownDao(driverManager))
+
+        osuWrapper = OsuWrapper(OsuDao(driverManager))
         //After registering wrappers
         driverManager.executeTableRegistration()
         for (func in afterTableFunctions) {

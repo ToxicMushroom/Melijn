@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -20,7 +19,7 @@ class SetVerificationPasswordCommand : AbstractCommand("command.setverificationp
     override suspend fun execute(context: CommandContext) {
         val wrapper = context.daoManager.verificationPasswordWrapper
         if (context.args.isEmpty()) {
-            val password = wrapper.verificationPasswordCache.get(context.guildId).await()
+            val password = wrapper.getPassword(context.guildId)
             val part = if (password.isBlank()) {
                 "unset"
             } else {

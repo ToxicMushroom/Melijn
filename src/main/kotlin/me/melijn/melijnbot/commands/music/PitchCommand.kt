@@ -26,7 +26,7 @@ class PitchCommand : AbstractCommand("command.pitch") {
             return
         }
 
-        val pitch = getLongFromArgNMessage(context, 0, 0, ignore = *arrayOf("%")) ?: return
+        val pitch = getLongFromArgNMessage(context, 0, 0, ignore = arrayOf("%")) ?: return
         iPlayer.setPitch(pitch / 100.0)
 
         val msg = context.getTranslation("$root.set")

@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -109,11 +108,11 @@ class SetCooldownCommand : AbstractCommand("command.setcooldown") {
             val title: String = if (context.args.isNotEmpty()) {
                 val channel = getTextChannelByArgsNMessage(context, 0) ?: return
 
-                map = daoManager.commandChannelCoolDownWrapper.commandChannelCooldownCache.get(channel.idLong).await()
+                map = daoManager.commandChannelCoolDownWrapper.getMap(channel.idLong)
                 context.getTranslation("$root.response1.title")
                     .withVariable(PLACEHOLDER_CHANNEL, channel.asTag)
             } else {
-                map = daoManager.commandCooldownWrapper.commandCooldownCache.get(context.guildId).await()
+                map = daoManager.commandCooldownWrapper.getMap(context.guildId)
                 context.getTranslation("$root.response2.title")
             }
 

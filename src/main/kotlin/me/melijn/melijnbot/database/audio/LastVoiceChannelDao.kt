@@ -15,7 +15,7 @@ class LastVoiceChannelDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun add(guildId: Long, channelId: Long) {
+    fun add(guildId: Long, channelId: Long) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, channelId) VALUES (?, ?)",
             guildId, channelId)
     }

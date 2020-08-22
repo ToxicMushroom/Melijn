@@ -1,32 +1,23 @@
 package me.melijn.melijnbot.database.cooldown
 
-import com.google.common.cache.CacheBuilder
-import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.IMPORTANT_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import com.fasterxml.jackson.module.kotlin.readValue
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.objectMapper
 
 class CommandCooldownWrapper(private val commandCooldownDao: CommandCooldownDao) {
 
-    val commandCooldownCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, Map<String, Long>> { key ->
-            getMap(key)
-        })
+    suspend fun getMap(guildId: Long): Map<String, Long> {
+        val cached = commandCooldownDao.getCacheEntry(guildId, HIGHER_CACHE)?.let { objectMapper.readValue<Map<String, Long>>(it) }
+        if (cached != null) return cached
 
-    private fun getMap(guildId: Long): CompletableFuture<Map<String, Long>> {
-        val future = CompletableFuture<Map<String, Long>>()
-        TaskManager.async {
-            val map = commandCooldownDao.getCooldowns(guildId)
-            future.complete(map)
-        }
-        return future
+        val result = commandCooldownDao.getCooldowns(guildId)
+        commandCooldownDao.setCacheEntry(guildId, objectMapper.writeValueAsString(result), NORMAL_CACHE)
+        return result
     }
 
     suspend fun setCooldowns(guildId: Long, commands: Set<String>, cooldown: Long) {
-        val cooldownMap = commandCooldownCache.get(guildId).await().toMutableMap()
+        val cooldownMap = getMap(guildId).toMutableMap()
         for (id in commands) {
             if (cooldown < 1) {
                 cooldownMap.remove(id)
@@ -39,6 +30,6 @@ class CommandCooldownWrapper(private val commandCooldownDao: CommandCooldownDao)
         } else {
             commandCooldownDao.bulkPut(guildId, commands, cooldown)
         }
-        commandCooldownCache.put(guildId, CompletableFuture.completedFuture(cooldownMap.toMap()))
+        commandCooldownDao.setCacheEntry(guildId, objectMapper.writeValueAsString(cooldownMap.toMap()), NORMAL_CACHE)
     }
 }

@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -21,7 +20,7 @@ class SetMusic247Command : AbstractCommand("command.setmusic247") {
     override suspend fun execute(context: CommandContext) {
         val wrapper = context.daoManager.music247Wrapper
         if (context.args.isEmpty()) {
-            val enabled = wrapper.music247Cache.get(context.guildId).await()
+            val enabled = wrapper.is247Mode(context.guildId)
             val extra = if (enabled) "enabled" else "disabled"
             val msg = context.getTranslation("$root.show.$extra")
 

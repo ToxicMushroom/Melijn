@@ -16,7 +16,7 @@ class SpamDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun add(guildId: Long, spamGroupName: String, type: SpamType, optionMap: String) {
+    fun add(guildId: Long, spamGroupName: String, type: SpamType, optionMap: String) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, spamGroupName, type, optionMap) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET optionMap = ?",
             guildId, spamGroupName, type.toString(), optionMap, optionMap)
     }

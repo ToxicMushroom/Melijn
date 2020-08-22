@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -33,7 +32,7 @@ class SetRemoveResponsesCommand : AbstractCommand("command.setremoveresponses") 
         val wrapper = context.daoManager.removeResponseWrapper
 
         if (context.args.size == 1) {
-            val map = wrapper.removeResponseCache.get(context.guildId).await()
+            val map = wrapper.getMap(context.guildId)
             val msg = if (map.containsKey(channel.idLong)) {
                 context.getTranslation("$root.show.set")
                     .withVariable("channel", channel.asTag)
@@ -79,7 +78,7 @@ class SetRemoveResponsesCommand : AbstractCommand("command.setremoveresponses") 
             val wrapper = context.daoManager.removeResponseWrapper
 
             if (context.args.isEmpty()) {
-                val map = wrapper.removeResponseCache.get(context.guildId).await()
+                val map = wrapper.getMap(context.guildId)
                 val msg = if (map.containsKey(guildId)) {
                     context.getTranslation("$root.show.set")
                         .withVariable("seconds", map[guildId] ?: 1)

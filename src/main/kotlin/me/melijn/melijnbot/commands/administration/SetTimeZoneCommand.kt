@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -30,7 +29,7 @@ class SetTimeZoneCommand : AbstractCommand("command.settimezone") {
 
     private suspend fun sendTimeZone(context: CommandContext) {
         val dao = context.daoManager.timeZoneWrapper
-        val id = dao.timeZoneCache.get(context.guildId).await()
+        val id = dao.getTimeZone(context.guildId)
 
         val msg = context.getTranslation(
             if (id.isBlank()) {

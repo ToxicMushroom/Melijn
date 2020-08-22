@@ -1,37 +1,28 @@
 package me.melijn.melijnbot.database.time
 
-import com.google.common.cache.CacheBuilder
-import me.melijn.melijnbot.database.FREQUENTLY_USED_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 import java.util.*
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
 
 class TimeZoneWrapper(private val timeZoneDao: TimeZoneDao) {
 
-    val timeZoneCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, String> { key ->
-            getTimeZone(key)
-        })
+    suspend fun getTimeZone(guildId: Long): String {
+        val cached = timeZoneDao.getCacheEntry(guildId, HIGHER_CACHE)
 
-    private fun getTimeZone(id: Long): CompletableFuture<String> {
-        val future = CompletableFuture<String>()
-       TaskManager.async {
-            val roleId = timeZoneDao.getZoneId(id)
-            future.complete(roleId)
-        }
-        return future
+        if (cached != null) return cached
+
+        val timezone = timeZoneDao.getZoneId(guildId)
+        timeZoneDao.setCacheEntry(guildId, timezone, NORMAL_CACHE)
+        return timezone
     }
 
-    suspend fun removeTimeZone(id: Long) {
+    fun removeTimeZone(id: Long) {
         timeZoneDao.remove(id)
-        timeZoneCache.put(id, CompletableFuture.completedFuture(""))
+        timeZoneDao.setCacheEntry(id, "", NORMAL_CACHE)
     }
 
-    suspend fun setTimeZone(id: Long, zone: TimeZone) {
+    fun setTimeZone(id: Long, zone: TimeZone) {
         timeZoneDao.put(id, zone.id)
-        timeZoneCache.put(id, CompletableFuture.completedFuture(zone.id))
+        timeZoneDao.setCacheEntry(id, zone.id, NORMAL_CACHE)
     }
 }

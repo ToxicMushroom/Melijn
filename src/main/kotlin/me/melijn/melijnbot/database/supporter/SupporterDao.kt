@@ -1,22 +1,26 @@
 package me.melijn.melijnbot.database.supporter
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
-class UserSupporterDao(driverManager: DriverManager) : Dao(driverManager) {
+class SupporterDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "supporters"
     override val tableStructure: String = "userId bigint, guildId bigint, startDate bigint, lastServerPickTime bigint"
     override val primaryKey: String = "userId"
+
+    override val cacheName: String = "supporter"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
     fun getSupporters(supporters: (Set<Supporter>) -> Unit) {
-        val list = HashSet<Supporter>()
         driverManager.executeQuery("SELECT * FROM $table", { resultset ->
+            val list = HashSet<Supporter>()
             while (resultset.next()) {
                 list.add(Supporter(
                     resultset.getLong("userId"),
@@ -26,6 +30,21 @@ class UserSupporterDao(driverManager: DriverManager) : Dao(driverManager) {
                 ))
             }
             supporters.invoke(list)
+        })
+    }
+
+    suspend fun getSupporters(): Set<Supporter> = suspendCoroutine {
+        driverManager.executeQuery("SELECT * FROM $table", { resultset ->
+            val list = HashSet<Supporter>()
+            while (resultset.next()) {
+                list.add(Supporter(
+                    resultset.getLong("userId"),
+                    resultset.getLong("guildId"),
+                    resultset.getLong("startDate"),
+                    resultset.getLong("lastServerPickTime")
+                ))
+            }
+            it.resume(list)
         })
     }
 
@@ -43,17 +62,17 @@ class UserSupporterDao(driverManager: DriverManager) : Dao(driverManager) {
         }, userId)
     }
 
-    suspend fun addUser(supporter: Supporter) {
+    fun addUser(supporter: Supporter) {
         driverManager.executeUpdate("INSERT INTO $table (userId, guildId, startDate, lastServerPickTime) VALUES (?, ?, ?, ?)",
             supporter.userId, supporter.guildId, supporter.startMillis, supporter.lastServerPickTime)
     }
 
-    suspend fun removeUser(userId: Long) {
+    fun removeUser(userId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE userId = ?",
             userId)
     }
 
-    suspend fun setGuild(authorId: Long, guildId: Long, lastServerPickTime: Long) {
+    fun setGuild(authorId: Long, guildId: Long, lastServerPickTime: Long) {
         driverManager.executeUpdate("UPDATE $table SET guildId = ?, lastServerPickTime = ? WHERE userId = ?",
             guildId, lastServerPickTime, authorId)
     }

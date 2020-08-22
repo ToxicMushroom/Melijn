@@ -4,10 +4,7 @@ import com.jagrosh.jagtag.Environment
 import com.jagrosh.jagtag.Method
 import com.jagrosh.jagtag.ParseException
 import me.melijn.melijnbot.Container
-import me.melijn.melijnbot.internals.utils.asEpochMillisToDateTime
-import me.melijn.melijnbot.internals.utils.getUserByArgsN
-import me.melijn.melijnbot.internals.utils.retrieveMemberByArgsN
-import me.melijn.melijnbot.internals.utils.retrieveUserByArgsN
+import me.melijn.melijnbot.internals.utils.*
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
@@ -17,6 +14,10 @@ object DiscordMethods {
         Method("userMention", { env ->
             val user: User = env.getReifiedX("user")
             user.asMention
+        }, { env, input ->
+            val arg = input[0]
+            if (arg.isEmpty()) "null"
+            else retrieveUserByArgsN(env.getReifiedX("guild"), arg)?.asMention ?: "null"
         }),
 
         Method("userTag", { env ->
@@ -76,6 +77,12 @@ object DiscordMethods {
         Method("effectiveAvatarUrl", { env ->
             val user: User = env.getReifiedX("user")
             user.effectiveAvatarUrl
+        }),
+        Method("effectiveAvatarUrlPart", { env ->
+            val user: User = env.getReifiedX("user")
+            user.effectiveAvatarUrl
+                .remove("https://cdn.discordapp.com/")
+                .remove("https://cdn.discord.com/")
         }),
         Method("discriminator", { env ->
             val user: User = env.getReifiedX("user")

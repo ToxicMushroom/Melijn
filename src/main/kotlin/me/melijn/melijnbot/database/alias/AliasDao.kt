@@ -1,28 +1,30 @@
 package me.melijn.melijnbot.database.alias
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.internals.utils.splitIETEL
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 // free: 5 rows, 1 value each | premium: 50 rows, 5 value each
-class AliasDao(driverManager: DriverManager) : Dao(driverManager) {
+class AliasDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "aliases"
     override val tableStructure: String = "id bigint, command varchar(128), aliases varchar(256)"
     override val primaryKey: String = "id, command"
 
+    override val cacheName: String = "alias"
+
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun insert(id: Long, commandNode: String, aliases: String) {
+    fun insert(id: Long, commandNode: String, aliases: String) {
         driverManager.executeUpdate("INSERT INTO $table (id, command, aliases) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET aliases = ?",
             id, commandNode, aliases, aliases)
     }
 
-    suspend fun remove(id: Long, commandNode: String) {
+    fun remove(id: Long, commandNode: String) {
         driverManager.executeUpdate("DELETE FROM $table WHERE id = ? AND command = ?", id, commandNode)
     }
 
@@ -37,7 +39,7 @@ class AliasDao(driverManager: DriverManager) : Dao(driverManager) {
         }, id)
     }
 
-    suspend fun clear(id: Long, command: String) {
+    fun clear(id: Long, command: String) {
         driverManager.executeUpdate("DELETE FROM $table WHERE id = ? AND command = ?",
             id, command)
     }

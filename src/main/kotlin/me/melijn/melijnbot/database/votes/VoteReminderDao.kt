@@ -15,7 +15,7 @@ class VoteReminderDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun addReminder(userId: Long, remindAt: Long) {
+    fun addReminder(userId: Long, remindAt: Long) {
         driverManager.executeUpdate("INSERT INTO $table (userId, remindAt) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET remindAt = ?",
             userId, remindAt, remindAt)
     }
@@ -32,7 +32,7 @@ class VoteReminderDao(driverManager: DriverManager) : Dao(driverManager) {
         }, beforeMillis)
     }
 
-    suspend fun removeReminders(beforeMillis: Long) {
+    fun removeReminders(beforeMillis: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE remindAt < ?", beforeMillis)
     }
 }

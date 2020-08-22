@@ -1,8 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import com.google.common.cache.LoadingCache
-import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.enums.FilterType
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
@@ -12,7 +9,6 @@ import me.melijn.melijnbot.internals.utils.message.sendRsp
 import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.removeFirst
 import me.melijn.melijnbot.internals.utils.withVariable
-import java.util.concurrent.CompletableFuture
 
 class FilterCommand : AbstractCommand("command.filter") {
 
@@ -73,8 +69,8 @@ class FilterCommand : AbstractCommand("command.filter") {
             }
             val filterGroup = getFilterGroupNMessage(context, 0) ?: return
             val wrapper = context.daoManager.filterWrapper
-            val cache = getCacheFromFilterType(context.daoManager, filterType)
-            val filters = cache.get(Pair(context.guildId, filterGroup.filterGroupName)).await()
+
+            val filters = wrapper.getFilters(context.guildId, filterGroup.filterGroupName, filterType)
             val index = getIntegerFromArgNMessage(context, 1, 0, filters.size - 1) ?: return
             val filter = filters[index]
             wrapper.removeFilter(context.guildId, filterGroup.filterGroupName, filterType, filter)
@@ -128,9 +124,8 @@ class FilterCommand : AbstractCommand("command.filter") {
             }
             val filterGroup = getFilterGroupNMessage(context, 0) ?: return
 
-            val cache = getCacheFromFilterType(context.daoManager, filterType)
-            val filters = cache.get(Pair(context.guildId, filterGroup.filterGroupName)).await()
-
+            val filterWrapper = context.daoManager.filterWrapper
+            val filters = filterWrapper.getFilters(context.guildId, filterGroup.filterGroupName, filterType)
 
             val title = context.getTranslation("$root.success")
                 .withVariable("filterGroup", filterGroup.filterGroupName)
@@ -183,12 +178,5 @@ class FilterCommand : AbstractCommand("command.filter") {
         override suspend fun execute(context: CommandContext) {
             sendSyntax(context)
         }
-    }
-}
-
-fun getCacheFromFilterType(daoManager: DaoManager, filterType: FilterType): LoadingCache<Pair<Long, String>, CompletableFuture<List<String>>> {
-    return when (filterType) {
-        FilterType.ALLOWED -> daoManager.filterWrapper.allowedFilterCache
-        FilterType.DENIED -> daoManager.filterWrapper.deniedFilterCache
     }
 }

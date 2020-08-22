@@ -1,35 +1,31 @@
 package me.melijn.melijnbot.database.role
 
-import com.google.common.cache.CacheBuilder
-import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.NOT_IMPORTANT_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
+import com.fasterxml.jackson.module.kotlin.readValue
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.objectMapper
 import net.dv8tion.jda.api.utils.data.DataArray
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
 
 class SelfRoleWrapper(private val selfRoleDao: SelfRoleDao) {
 
     // guildId -> <selfRoleGroupName -> emotejiInfo (see SelfRoleDao for example)
-    val selfRoleCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, Map<String, DataArray>> { key ->
-            getMap(key)
-        })
 
-    fun getMap(guildId: Long): CompletableFuture<Map<String, DataArray>> {
-        val future = CompletableFuture<Map<String, DataArray>>()
-       TaskManager.async {
-            val map = selfRoleDao.getMap(guildId)
-            future.complete(map)
+    suspend fun getMap(guildId: Long): Map<String, DataArray> {
+        val result = selfRoleDao.getCacheEntry(guildId, HIGHER_CACHE)?.let { map ->
+            objectMapper.readValue<Map<String, String>>(map).mapValues {
+                DataArray.fromJson(it.value)
+            }
         }
-        return future
+
+        if (result != null) return result
+
+        val map = selfRoleDao.getMap(guildId)
+        selfRoleDao.setCacheEntry(guildId, objectMapper.writeValueAsString(map.mapValues { it.value.toString() }), NORMAL_CACHE)
+        return map
     }
 
     suspend fun set(guildId: Long, groupName: String, emoteji: String, roleId: Long, chance: Int = 100) {
-        val map = selfRoleCache.get(guildId)
-            .await()
+        val map = getMap(guildId)
             .toMutableMap()
 
         val data = map.getOrDefault(groupName, DataArray.empty())
@@ -85,13 +81,14 @@ class SelfRoleWrapper(private val selfRoleDao: SelfRoleDao) {
 
         map[groupName] = data
         selfRoleDao.set(guildId, groupName, data.toString())
-        selfRoleCache.put(guildId, CompletableFuture.completedFuture(map))
+        selfRoleDao.setCacheEntry(guildId,
+            objectMapper.writeValueAsString(map.mapValues { it.value.toString() }), NORMAL_CACHE
+        )
     }
 
     suspend fun remove(guildId: Long, groupName: String, emoteji: String, roleId: Long) {
         // map
-        val map = selfRoleCache.get(guildId)
-            .await()
+        val map = getMap(guildId)
             .toMutableMap()
 
         // layer1
@@ -129,13 +126,12 @@ class SelfRoleWrapper(private val selfRoleDao: SelfRoleDao) {
         map[groupName] = data
 
         selfRoleDao.set(guildId, groupName, data.toString())
-        selfRoleCache.put(guildId, CompletableFuture.completedFuture(map))
+        selfRoleDao.setCacheEntry(guildId, objectMapper.writeValueAsString(map.mapValues { it.value.toString() }), NORMAL_CACHE)
     }
 
     suspend fun remove(guildId: Long, groupName: String, emoteji: String) {
         // map
-        val map = selfRoleCache.get(guildId)
-            .await()
+        val map = getMap(guildId)
             .toMutableMap()
 
         // layer1
@@ -154,18 +150,17 @@ class SelfRoleWrapper(private val selfRoleDao: SelfRoleDao) {
         map[groupName] = data
 
         selfRoleDao.set(guildId, groupName, data.toString())
-        selfRoleCache.put(guildId, CompletableFuture.completedFuture(map))
+        selfRoleDao.setCacheEntry(guildId, objectMapper.writeValueAsString(map.mapValues { it.value.toString() }), NORMAL_CACHE)
     }
 
     suspend fun update(guildId: Long, groupName: String, data: DataArray) {
         // map
-        val map = selfRoleCache.get(guildId)
-            .await()
+        val map = getMap(guildId)
             .toMutableMap()
 
         map[groupName] = data
 
         selfRoleDao.set(guildId, groupName, data.toString())
-        selfRoleCache.put(guildId, CompletableFuture.completedFuture(map))
+        selfRoleDao.setCacheEntry(guildId, objectMapper.writeValueAsString(map.mapValues { it.value.toString() }), NORMAL_CACHE)
     }
 }

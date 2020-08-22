@@ -1,21 +1,23 @@
 package me.melijn.melijnbot.database.audio
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class GainProfileDao(driverManager: DriverManager) : Dao(driverManager) {
+class GainProfileDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "gainProfiles"
     override val tableStructure: String = "id bigint, name varchar(32), profile varchar(128)"
     override val primaryKey: String = "id, name"
 
+    override val cacheName: String = "gainprofile"
+
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun insert(id: Long, name: String, profile: String) {
+    fun insert(id: Long, name: String, profile: String) {
         driverManager.executeUpdate("INSERT INTO $table (id, name, profile) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET profile = ?",
             id, name, profile, profile)
     }
@@ -32,7 +34,7 @@ class GainProfileDao(driverManager: DriverManager) : Dao(driverManager) {
         }, id)
     }
 
-    suspend fun delete(guildId: Long, profileName: String) {
+    fun delete(guildId: Long, profileName: String) {
         driverManager.executeUpdate("DELETE FROM $table WHERE id = ? AND name = ?",
             guildId, profileName)
     }

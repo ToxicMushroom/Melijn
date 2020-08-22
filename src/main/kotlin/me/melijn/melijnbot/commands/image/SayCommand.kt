@@ -10,7 +10,6 @@ import me.melijn.melijnbot.internals.utils.message.sendSyntax
 import me.melijn.melijnbot.internals.utils.removeFirst
 import net.dv8tion.jda.api.Permission
 import java.awt.Color
-import java.io.ByteArrayInputStream
 import javax.imageio.ImageIO
 
 
@@ -44,8 +43,7 @@ class SayCommand : AbstractCommand("command.say") {
             "melijn_says.jpg"
         }
 
-        val fileBytes = SayCommand::class.java.getResource("/$resourceName").readBytes()
-        val image = ImageIO.read(ByteArrayInputStream(fileBytes))
+        val image = SayCommand::class.java.getResourceAsStream("/$resourceName").use { ImageIO.read(it) }
         val graphics = image.graphics
         val font = graphics.font.deriveFont(fontSize?.toFloat() ?: 60f)
         graphics.font = font

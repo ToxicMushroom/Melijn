@@ -1,51 +1,41 @@
 package me.melijn.melijnbot.database.logchannel
 
-import com.google.common.cache.CacheBuilder
-import me.melijn.melijnbot.database.IMPORTANT_CACHE
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 import me.melijn.melijnbot.enums.LogChannelType
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
 
 class LogChannelWrapper(private val logChannelDao: LogChannelDao) {
 
-    val logChannelCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Pair<Long, LogChannelType>, Long> { key ->
-            getChannelId(key.first, key.second)
-        })
+    suspend fun getChannelId(guildId: Long, logChannelType: LogChannelType): Long {
+        val result = logChannelDao.getCacheEntry("$logChannelType:$guildId", HIGHER_CACHE)?.toLong()
+        if (result != null) return result
 
-    private fun getChannelId(guildId: Long, logChannelType: LogChannelType): CompletableFuture<Long> {
-        val future = CompletableFuture<Long>()
-       TaskManager.async {
-            val logChannel = logChannelDao.get(guildId, logChannelType)
-            future.complete(logChannel)
-        }
-        return future
+        val channel = logChannelDao.get(guildId, logChannelType)
+        logChannelDao.setCacheEntry("$logChannelType:$guildId", channel, NORMAL_CACHE)
+        return channel
     }
 
-    suspend fun removeChannel(guildId: Long, logChannelType: LogChannelType) {
+    fun removeChannel(guildId: Long, logChannelType: LogChannelType) {
         logChannelDao.unset(guildId, logChannelType)
-        logChannelCache.put(Pair(guildId, logChannelType), CompletableFuture.completedFuture(-1))
+        logChannelDao.setCacheEntry("$logChannelType:$guildId", -1, NORMAL_CACHE)
     }
 
     fun removeChannels(guildId: Long, logChannelTypes: List<LogChannelType>) {
         logChannelDao.bulkRemove(guildId, logChannelTypes)
         for (type in logChannelTypes) {
-            logChannelCache.put(Pair(guildId, type), CompletableFuture.completedFuture(-1))
+            logChannelDao.setCacheEntry("$type:$guildId", -1, NORMAL_CACHE)
         }
     }
 
     fun setChannels(guildId: Long, logChannelTypes: List<LogChannelType>, channelId: Long) {
         logChannelDao.bulkPut(guildId, logChannelTypes, channelId)
         for (type in logChannelTypes) {
-            logChannelCache.put(Pair(guildId, type), CompletableFuture.completedFuture(channelId))
+            logChannelDao.setCacheEntry("$type:$guildId", channelId, NORMAL_CACHE)
         }
     }
 
-    suspend fun setChannel(guildId: Long, logChannelType: LogChannelType, channelId: Long) {
+    fun setChannel(guildId: Long, logChannelType: LogChannelType, channelId: Long) {
         logChannelDao.set(guildId, logChannelType, channelId)
-        logChannelCache.put(Pair(guildId, logChannelType), CompletableFuture.completedFuture(channelId))
+        logChannelDao.setCacheEntry("$logChannelType:$guildId", channelId, NORMAL_CACHE)
     }
 }

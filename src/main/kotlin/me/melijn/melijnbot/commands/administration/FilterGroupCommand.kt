@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.filter.FilterGroup
 import me.melijn.melijnbot.enums.FilterMode
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -43,7 +42,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
             val pair = Pair(context.guildId, context.authorId)
             return if (selectionMap.containsKey(pair)) {
                 val fgn = selectionMap[pair]
-                val fgs = context.daoManager.filterGroupWrapper.filterGroupCache.get(context.guildId).await()
+                val fgs = context.daoManager.filterGroupWrapper.getGroups(context.guildId)
                     .filter { (ccId) -> ccId == fgn }
                 if (fgs.isNotEmpty()) {
                     fgs[0]
@@ -130,7 +129,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
 
         override suspend fun execute(context: CommandContext) {
             val wrapper = context.daoManager.filterGroupWrapper
-            val groups = wrapper.filterGroupCache.get(context.guildId).await()
+            val groups = wrapper.getGroups(context.guildId)
 
             val title = context.getTranslation("$root.title")
             val enabled = context.getTranslation("enabled")
@@ -356,7 +355,7 @@ class FilterGroupCommand : AbstractCommand("command.filtergroup") {
 
 suspend fun getFilterGroupNMessage(context: CommandContext, position: Int): FilterGroup? {
     val arg = context.args[position]
-    val filterGroups = context.daoManager.filterGroupWrapper.filterGroupCache.get(context.guildId).await()
+    val filterGroups = context.daoManager.filterGroupWrapper.getGroups(context.guildId)
     val filterGroup = filterGroups.firstOrNull { (filterGroupName) -> filterGroupName == arg }
     if (filterGroup == null) {
         val msg = context.getTranslation("message.unknown.filtergroup")

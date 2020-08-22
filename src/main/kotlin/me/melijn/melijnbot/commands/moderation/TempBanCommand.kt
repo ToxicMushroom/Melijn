@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.moderation
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.ban.Ban
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.SpecialPermission
@@ -99,16 +98,16 @@ class TempBanCommand : AbstractCommand("command.tempban") {
         val bannedMessageDm = getBanMessage(language, privZoneId, guild, targetUser, author, ban)
         val bannedMessageLc = getBanMessage(language, zoneId, guild, targetUser, author, ban, true, targetUser.isBot, banningMessage != null)
 
-        context.daoManager.banWrapper.setBan(ban)
+
 
         try {
-            context.guild.ban(targetUser, 7).await()
+            context.guild.ban(targetUser, 7).async {daoManager.banWrapper.setBan(ban) }
             banningMessage?.editMessage(
                 bannedMessageDm
             )?.override(true)?.queue()
 
             val logChannelWrapper = daoManager.logChannelWrapper
-            val logChannelId = logChannelWrapper.logChannelCache.get(Pair(guild.idLong, LogChannelType.TEMP_BAN)).await()
+            val logChannelId = logChannelWrapper.getChannelId(guild.idLong, LogChannelType.TEMP_BAN)
             val logChannel = guild.getTextChannelById(logChannelId)
             logChannel?.let { it1 -> sendEmbed(daoManager.embedDisabledWrapper, it1, bannedMessageLc) }
 

@@ -1,39 +1,27 @@
 package me.melijn.melijnbot.database.audio
 
-import com.google.common.cache.CacheBuilder
-import me.melijn.melijnbot.database.IMPORTANT_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 
-class Music247Wrapper(val music247Dao: Music247Dao) {
+class Music247Wrapper(private val music247Dao: Music247Dao) {
 
-    val music247Cache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, Boolean> { guildId ->
-            is247Mode(guildId)
-        })
+    suspend fun is247Mode(guildId: Long): Boolean {
+        val cached = music247Dao.getCacheEntry(guildId, HIGHER_CACHE)?.toBoolean()
+        if (cached != null) return cached
 
-    private fun is247Mode(guildId: Long): CompletableFuture<Boolean> {
-        val future = CompletableFuture<Boolean>()
-
-       TaskManager.async {
-            val contains = music247Dao.contains(guildId)
-            future.complete(contains)
-        }
-
-        return future
+        val mode = music247Dao.contains(guildId)
+        music247Dao.setCacheEntry(guildId, mode, NORMAL_CACHE)
+        return mode
     }
 
-    suspend fun add(guildId: Long) {
+    fun add(guildId: Long) {
         music247Dao.add(guildId)
-        music247Cache.put(guildId, CompletableFuture.completedFuture(true))
+        music247Dao.setCacheEntry(guildId, true, NORMAL_CACHE)
     }
 
-    suspend fun remove(guildId: Long) {
+    fun remove(guildId: Long) {
         music247Dao.remove(guildId)
-        music247Cache.put(guildId, CompletableFuture.completedFuture(false))
+        music247Dao.setCacheEntry(guildId, false, NORMAL_CACHE)
     }
 
 }

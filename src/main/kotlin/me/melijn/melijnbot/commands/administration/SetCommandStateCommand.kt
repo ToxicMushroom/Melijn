@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.ChannelCommandState
 import me.melijn.melijnbot.enums.CommandState
 import me.melijn.melijnbot.internals.command.AbstractCommand
@@ -117,14 +116,14 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
         override suspend fun execute(context: CommandContext) {
             val daoManager = context.daoManager
             if (context.args.isEmpty()) {
-                val ids = daoManager.disabledCommandWrapper.disabledCommandsCache.get(context.guildId).await()
+                val ids = daoManager.disabledCommandWrapper.getSet(context.guildId)
                 val commandNames = mutableListOf<String>()
                 val filteredCommands = context.commandList
                     .filter { cmd -> ids.contains(cmd.id.toString()) }
                     .map { cmd -> cmd.name }
                     .toList()
 
-                val filteredCCs = daoManager.customCommandWrapper.customCommandCache.get(context.guildId).await()
+                val filteredCCs = daoManager.customCommandWrapper.getList(context.guildId)
                     .filter { (ccId) -> ids.contains("cc.$ccId") }
                     .map { cmd -> cmd.name }
                     .toList()
@@ -146,7 +145,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                 val channel = getTextChannelByArgsNMessage(context, 0) ?: return
 
 
-                val stateMap = daoManager.channelCommandStateWrapper.channelCommandsStateCache.get(channel.idLong).await()
+                val stateMap = daoManager.channelCommandStateWrapper.getMap(channel.idLong)
                 val ids = stateMap.keys
                 val commandMap = HashMap<String, String>()
                 val filteredCommands = context.commandList
@@ -154,7 +153,7 @@ class SetCommandStateCommand : AbstractCommand("command.setcommandstate") {
                     .map { cmd -> cmd.id.toString() to cmd.name }
                     .toMap()
 
-                val filteredCCs = daoManager.customCommandWrapper.customCommandCache.get(context.guildId).await()
+                val filteredCCs = daoManager.customCommandWrapper.getList(context.guildId)
                     .filter { (ccId) -> ids.contains("cc.$ccId") }
                     .map { (ccId, ccName) -> ("cc.$ccId") to ccName }
                     .toMap()

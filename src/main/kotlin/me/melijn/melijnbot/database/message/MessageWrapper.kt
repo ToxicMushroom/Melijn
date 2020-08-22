@@ -1,42 +1,44 @@
 package me.melijn.melijnbot.database.message
 
-import com.google.common.cache.CacheBuilder
-import me.melijn.melijnbot.database.IMPORTANT_CACHE
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 import me.melijn.melijnbot.enums.MessageType
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
 import net.dv8tion.jda.api.entities.MessageEmbed
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
 
 class MessageWrapper(private val messageDao: MessageDao) {
 
-    val messageCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Pair<Long, MessageType>, ModularMessage?> { key ->
-            getMessage(key)
-        })
-
-    private fun getMessage(pair: Pair<Long, MessageType>): CompletableFuture<ModularMessage?> {
-        val future = CompletableFuture<ModularMessage?>()
-       TaskManager.async {
-            val json = messageDao.get(pair.first, pair.second)
-            if (json == null) {
-                future.complete(null)
-                return@async
-            }
-
+    suspend fun getMessage(guildId: Long, msgType: MessageType): ModularMessage? {
+        val result = messageDao.getCacheEntry("$msgType:$guildId", HIGHER_CACHE)?.let {
             try {
-                future.complete(ModularMessage.fromJSON(json))
-            } catch (e: Exception) {
-                e.printStackTrace()
-                future.complete(null)
+                if (it.isBlank()) return null
+                ModularMessage.fromJSON(it)
+            } catch (t: Throwable) {
+                t.printStackTrace()
+                return null
             }
         }
-        return future
+
+        if (result != null) return result
+
+        val json = messageDao.get(guildId, msgType)
+        if (json == null) {
+            messageDao.setCacheEntry("$msgType:$guildId", "", NORMAL_CACHE)
+            return null
+        }
+
+        val modular = try {
+            ModularMessage.fromJSON(json)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+
+        messageDao.setCacheEntry("$msgType:$guildId", modular?.toJSON() ?: "", NORMAL_CACHE)
+
+        return modular
     }
 
-    suspend fun updateMessage(message: ModularMessage, guildId: Long, type: MessageType) {
+    fun updateMessage(message: ModularMessage, guildId: Long, type: MessageType) {
         if (shouldRemove(message)) {
             removeMessage(guildId, type)
         } else {
@@ -45,14 +47,14 @@ class MessageWrapper(private val messageDao: MessageDao) {
     }
 
 
-    suspend fun removeMessage(guildId: Long, type: MessageType) {
+    fun removeMessage(guildId: Long, type: MessageType) {
         messageDao.remove(guildId, type)
-        messageCache.put(Pair(guildId, type), CompletableFuture.completedFuture(null))
+        messageDao.setCacheEntry("$type:$guildId", "", NORMAL_CACHE)
     }
 
-    suspend fun setMessage(guildId: Long, type: MessageType, message: ModularMessage) {
+    fun setMessage(guildId: Long, type: MessageType, message: ModularMessage) {
         messageDao.set(guildId, type, message.toJSON())
-        messageCache.put(Pair(guildId, type), CompletableFuture.completedFuture(message))
+        messageDao.setCacheEntry("$type:$guildId", message.toJSON(), NORMAL_CACHE)
     }
 
     fun shouldRemove(message: ModularMessage): Boolean {

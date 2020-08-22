@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.internals.events.eventlisteners
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
@@ -277,7 +276,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         val verificationChannel = guild.getAndVerifyChannelByType(dao, ChannelType.VERIFICATION, Permission.MESSAGE_MANAGE)
             ?: return
         if (verificationChannel.idLong != textChannel.idLong) return
-        val verificationType = dao.verificationTypeWrapper.verificationTypeCache[guild.idLong].await()
+        val verificationType = dao.verificationTypeWrapper.getType(guild.idLong)
         if (verificationType != VerificationType.REACTION) return
 
         val unverifiedRole = VerificationUtils.getUnverifiedRoleN(event.channel, dao) ?: return
@@ -293,7 +292,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         verificationType.let {
             when (it) {
                 VerificationType.REACTION -> {
-                    val code = dao.verificationEmotejiWrapper.verificationEmotejiCache[guild.idLong].await()
+                    val code = dao.verificationEmotejiWrapper.getEmoteji(guild.idLong)
                     if (
                         (event.reactionEmote.isEmoji && event.reactionEmote.emoji == code) ||
                         (event.reactionEmote.isEmote && event.reactionEmote.emote.id == code)
@@ -317,7 +316,7 @@ class MessageReactionAddedListener(container: Container) : AbstractListener(cont
         val logChannel = event.guild.getAndVerifyLogChannelByType(dao, LogChannelType.REACTION)
             ?: return
 
-        val botLogState = dao.botLogStateWrapper.botLogStateCache[event.guild.idLong].await()
+        val botLogState = dao.botLogStateWrapper.shouldLog(event.guild.idLong)
         if (!botLogState && event.member.user.isBot) return
 
 

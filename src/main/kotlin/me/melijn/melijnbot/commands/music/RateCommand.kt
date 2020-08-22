@@ -26,7 +26,7 @@ class RateCommand : AbstractCommand("command.rate") {
             return
         }
 
-        val rate = getLongFromArgNMessage(context, 0, 0, ignore = *arrayOf("%")) ?: return
+        val rate = getLongFromArgNMessage(context, 0, 0, ignore = arrayOf("%")) ?: return
         iPlayer.setRate(rate / 100.0)
 
         val msg = context.getTranslation("$root.set")

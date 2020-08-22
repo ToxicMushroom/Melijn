@@ -6,15 +6,15 @@ class MessageHistoryWrapper(private val messageHistoryDao: MessageHistoryDao) {
         return messageHistoryDao.get(messageId)
     }
 
-    suspend fun addMessage(daoMessage: DaoMessage) {
+    fun addMessage(daoMessage: DaoMessage) {
         messageHistoryDao.add(daoMessage)
     }
 
-    suspend fun setMessage(daoMessage: DaoMessage) {
+    fun setMessage(daoMessage: DaoMessage) {
         messageHistoryDao.set(daoMessage)
     }
 
-    suspend fun clearOldMessages() {
+    fun clearOldMessages() {
         messageHistoryDao.clearOldMessages()
     }
 }

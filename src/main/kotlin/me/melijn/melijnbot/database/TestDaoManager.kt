@@ -4,7 +4,7 @@ import kotlinx.coroutines.runBlocking
 import me.melijn.melijnbot.internals.Settings
 
 
-class TestDaoManager(dbSettings: Settings.Database) {
+class TestDaoManager(dbSettings: Settings.Database, redisSettings: Settings.Redis) {
 
     companion object {
         val afterTableFunctions = mutableListOf<() -> Unit>()
@@ -16,9 +16,7 @@ class TestDaoManager(dbSettings: Settings.Database) {
     var driverManager: DriverManager
 
     init {
-        driverManager = DriverManager(dbSettings
-            //, dbSettings.mySQL
-        )
+        driverManager = DriverManager(dbSettings, redisSettings)
 
         runBlocking {
             dbVersion = driverManager.getDBVersion()

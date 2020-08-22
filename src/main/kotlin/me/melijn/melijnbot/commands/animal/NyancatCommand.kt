@@ -5,8 +5,10 @@ import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.command.RunCondition
 import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.translation.MISSING_IMAGE_URL
 import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
-import kotlin.random.Random
+import me.melijn.melijnbot.internals.web.WebManager
+import me.melijn.melijnbot.internals.web.WebUtils
 
 
 class NyancatCommand : AbstractCommand("command.nyancat") {
@@ -24,12 +26,14 @@ class NyancatCommand : AbstractCommand("command.nyancat") {
 
         val eb = Embedder(context)
             .setTitle(title)
-            .setImage(getRandomNyancatUrl())
+            .setImage(getRandomNyancatUrl(context.webManager, context.container.settings.imghoard.token))
         sendEmbedRsp(context, eb.build())
     }
 
-    private fun getRandomNyancatUrl(): String {
-        val randomInt = Random.nextInt(2, 33)
-        return "https://github.com/ToxicMushroom/nyan-cats/raw/master/cat%20($randomInt).gif"
+
+    private suspend fun getRandomNyancatUrl(webManager: WebManager, token: String): String {
+        val reply = WebUtils.getJsonFromUrl(webManager.httpClient, "https://api.miki.bot/images/random?tags=nyancat",
+            headers = mapOf(Pair("Authorization", token))) ?: return MISSING_IMAGE_URL
+        return reply.getString("url")
     }
 }

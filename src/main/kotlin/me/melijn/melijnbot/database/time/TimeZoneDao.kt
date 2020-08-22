@@ -1,26 +1,28 @@
 package me.melijn.melijnbot.database.time
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class TimeZoneDao(driverManager: DriverManager) : Dao(driverManager) {
+class TimeZoneDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "timeZones"
     override val tableStructure: String = "id bigint, zoneId varchar(64)"
     override val primaryKey: String = "id"
 
+    override val cacheName: String = "timezone"
+
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun put(id: Long, zoneId: String) {
+    fun put(id: Long, zoneId: String) {
         driverManager.executeUpdate("INSERT INTO $table (id, zoneId) VALUES (?, ?) ON CONFLICT (id) DO UPDATE SET zoneId = ?",
             id, zoneId, zoneId)
     }
 
-    suspend fun remove(id: Long) {
+    fun remove(id: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE id = ?", id)
     }
 

@@ -1,46 +1,38 @@
 package me.melijn.melijnbot.database.autopunishment
 
-import com.google.common.cache.CacheBuilder
-import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.NOT_IMPORTANT_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import com.fasterxml.jackson.module.kotlin.readValue
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 
-class PunishmentWrapper(val punishmentDao: PunishmentDao) {
+class PunishmentWrapper(private val punishmentDao: PunishmentDao) {
 
-    val punishmentCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, List<Punishment>> { guildId ->
-            getList(guildId)
-        })
-
-    private fun getList(guildId: Long): CompletableFuture<List<Punishment>> {
-        val future = CompletableFuture<List<Punishment>>()
-       TaskManager.async {
-            val map = punishmentDao.get(guildId)
-            future.complete(map)
+    suspend fun getList(guildId: Long): List<Punishment> {
+        val cached = punishmentDao.getCacheEntry(guildId, HIGHER_CACHE)?.let {
+            objectMapper.readValue<List<Punishment>>(it)
         }
-        return future
+        if (cached != null) return cached
+
+        val result = punishmentDao.get(guildId)
+        punishmentDao.setCacheEntry(guildId, objectMapper.writeValueAsString(result), NORMAL_CACHE)
+        return result
     }
 
     suspend fun put(guildId: Long, punishment: Punishment) {
         punishmentDao.put(guildId, punishment)
-        val list = punishmentCache.get(guildId).await().toMutableList()
+        val list = getList(guildId).toMutableList()
         list.removeIf { (pName) ->
             pName == punishment.name
         }
         list.add(punishment)
-        punishmentCache.put(guildId, CompletableFuture.completedFuture(list))
+        punishmentDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
     }
 
     suspend fun remove(guildId: Long, name: String) {
         punishmentDao.remove(guildId, name)
-        punishmentCache.put(guildId, CompletableFuture.completedFuture(
-            punishmentCache.get(guildId).await().toMutableList().filter { (pName) ->
-                pName != name
-            }
-        ))
+        val list = getList(guildId).toMutableList()
+        list.removeIf { name == it.name }
+        punishmentDao.setCacheEntry(guildId, objectMapper.writeValueAsString(
+            list
+        ), NORMAL_CACHE)
     }
 }

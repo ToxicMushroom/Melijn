@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -20,7 +19,7 @@ class SetStreamUrlCommand : AbstractCommand("command.setstreamurl") {
     override suspend fun execute(context: CommandContext) {
         val wrapper = context.daoManager.streamUrlWrapper
         if (context.args.isEmpty()) {
-            val url = wrapper.streamUrlCache.get(context.guildId).await()
+            val url = wrapper.getUrl(context.guildId)
             val part = if (url.isBlank()) "unset" else "set"
 
             val msg = context.getTranslation("$root.show.$part")

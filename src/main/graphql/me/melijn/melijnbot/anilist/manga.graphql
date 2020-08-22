@@ -1,0 +1,18 @@
+query GetManga($id: Int!) {
+    Media(id: $id, type: MANGA) {
+        ...mangaFragment
+        ...mediaFragment
+    }
+}
+
+query FindManga($name: String!) {
+    Media(search: $name, type: MANGA) {
+        ...mangaFragment
+        ...mediaFragment
+    }
+}
+
+fragment mangaFragment on Media {
+    chapters
+    volumes
+}

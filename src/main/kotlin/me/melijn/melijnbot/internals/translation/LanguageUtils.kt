@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.translation
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.internals.command.CommandContext
 
@@ -54,11 +53,11 @@ private suspend fun getUserLanguageOrDefault(daoManager: DaoManager, userId: Lon
 
 
 private suspend fun getUserLanguage(daoManager: DaoManager, userId: Long): String {
-    return daoManager.userLanguageWrapper.languageCache.get(userId).await()
+    return daoManager.userLanguageWrapper.getLanguage(userId)
 }
 
 private suspend fun getGuildLanguage(daoManager: DaoManager, guildId: Long): String {
-    return daoManager.guildLanguageWrapper.languageCache.get(guildId).await()
+    return daoManager.guildLanguageWrapper.getLanguage(guildId)
 }
 
 val DEFAULT_LANGUAGE = "EN"

@@ -1,0 +1,85 @@
+query FindUser($name: String!) {
+    User(search: $name) {
+        ...userFragment
+    }
+}
+
+query GetUser($id: Int!) {
+    User(id: $id) {
+        ...userFragment
+    }
+}
+
+query SearchUser($name: String!) {
+    Page(page: 1, perPage: 10) {
+        users(search: $name) {
+            id
+            name
+            siteUrl
+        }
+    }
+}
+
+fragment userFragment on User {
+    name
+    siteUrl
+    about
+    avatar {
+        large
+    }
+    options {
+        profileColor
+    }
+    statistics {
+        anime {
+            count
+            genres(limit: 6, sort: [MEAN_SCORE_DESC]) {
+                genre
+            }
+            episodesWatched
+            minutesWatched
+            meanScore
+            standardDeviation
+        }
+        manga {
+            count
+            genres(limit: 6, sort: [MEAN_SCORE_DESC]) {
+                genre
+            }
+            volumesRead
+            chaptersRead
+            meanScore
+            standardDeviation
+        }
+    }
+    favourites {
+        anime {
+            nodes {
+                title {
+                    romaji
+                    english
+                }
+                format
+                siteUrl
+            }
+        }
+        characters {
+            nodes {
+                name {
+                    full
+                }
+                siteUrl
+            }
+        }
+        manga {
+            nodes {
+                title {
+                    romaji
+                    english
+                }
+                format
+                siteUrl
+            }
+        }
+    }
+}

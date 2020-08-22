@@ -1,7 +1,11 @@
 package me.melijn.melijnbot.database.message
 
+import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import me.melijn.melijnbot.MelijnBot
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.MessageType
 import net.dv8tion.jda.api.EmbedBuilder
@@ -17,19 +21,26 @@ import java.time.Instant
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class MessageDao(driverManager: DriverManager) : Dao(driverManager) {
+class MessageDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "messages"
     override val tableStructure: String = "guildId bigint, type varchar(32), message varchar(4096)"
     override val primaryKey: String = "guildId, type"
 
+    override val cacheName: String = "messages"
+
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun set(guildId: Long, type: MessageType, message: String) {
+    fun set(guildId: Long, type: MessageType, message: String) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, type, message) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET message = ?",
             guildId, type.toString(), message, message)
+    }
+
+    fun remove(guildId: Long, type: MessageType) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND type = ?",
+            guildId, type.toString())
     }
 
     suspend fun get(guildId: Long, type: MessageType): String? = suspendCoroutine {
@@ -38,11 +49,6 @@ class MessageDao(driverManager: DriverManager) : Dao(driverManager) {
                 it.resume(rs.getString("message"))
             } else it.resume(null)
         }, guildId, type.toString())
-    }
-
-    suspend fun remove(guildId: Long, type: MessageType) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND type = ?",
-            guildId, type.toString())
     }
 }
 
@@ -53,6 +59,7 @@ data class ModularMessage(
     var extra: Map<String, String> = emptyMap()
 ) {
 
+    @JsonValue
     fun toJSON(): String {
         val json = DataObject.empty()
         messageContent?.let { json.put("content", it) }
@@ -103,7 +110,12 @@ data class ModularMessage(
             mb.setAllowedMentions(emptyList())
         }
 
-        return mb.build()
+        return try {
+            mb.build()
+        } catch (t: IllegalStateException) { // Fixes: Cannot build a Message with no content
+            mb.setContent("This message had no content. (This is placeholder text for empty messages)")
+                .build()
+        }
     }
 
     companion object {
@@ -151,6 +163,13 @@ data class ModularMessage(
                 e.printStackTrace()
                 throw IllegalArgumentException("Invalid JSON structure")
             }
+        }
+    }
+
+    class ModularMessageDeserializer : StdDeserializer<ModularMessage>(ModularMessage::class.java) {
+
+        override fun deserialize(p: JsonParser, ctxt: DeserializationContext): ModularMessage {
+            return fromJSON(p.text)
         }
     }
 }

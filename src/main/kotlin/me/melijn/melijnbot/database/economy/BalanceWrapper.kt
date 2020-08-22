@@ -1,31 +1,22 @@
 package me.melijn.melijnbot.database.economy
 
-import com.google.common.cache.CacheBuilder
-import me.melijn.melijnbot.database.FREQUENTLY_USED_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 
 class BalanceWrapper(private val balanceDao: BalanceDao) {
 
-    val balanceCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, Long> { key ->
-            getBalance(key)
-        })
+    suspend fun getBalance(userId: Long): Long {
+        val cached = balanceDao.getCacheEntry(userId, HIGHER_CACHE)?.toLong()
+        if (cached != null) return cached
 
-    private fun getBalance(userId: Long): CompletableFuture<Long> {
-        val balance = CompletableFuture<Long>()
-        TaskManager.async {
-            balance.complete(balanceDao.getBalance(userId))
-        }
+        val balance = balanceDao.getBalance(userId)
+        balanceDao.setCacheEntry(userId, balance, NORMAL_CACHE)
         return balance
     }
 
-    suspend fun setBalance(userId: Long, money: Long) {
+    fun setBalance(userId: Long, money: Long) {
         balanceDao.setBalance(userId, money)
-        balanceCache.put(userId, CompletableFuture.completedFuture(money))
+        balanceDao.setCacheEntry(userId, money, NORMAL_CACHE)
     }
 
     suspend fun getTop(users: Int, offset: Int): Map<Long, Long> {

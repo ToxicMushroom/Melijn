@@ -15,9 +15,14 @@ class TempRoleDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun set(guildId: Long, userId: Long, roleId: Long, start: Long, end: Long, added: Boolean) {
+    fun set(guildId: Long, userId: Long, roleId: Long, start: Long, end: Long, added: Boolean) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, userId, roleId, start, endTime, added) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET endTime = ?, added = ?",
             guildId, userId, roleId, start, end, added, end, added)
+    }
+
+    fun remove(userId: Long, roleId: Long) {
+        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ? AND roleId = ?",
+            userId, roleId)
     }
 
     suspend fun getMap(guildId: Long): Map<String, Long> = suspendCoroutine {
@@ -28,11 +33,6 @@ class TempRoleDao(driverManager: DriverManager) : Dao(driverManager) {
             }
         }, guildId)
         it.resume(map)
-    }
-
-    suspend fun remove(userId: Long, roleId: Long) {
-        driverManager.executeUpdate("DELETE FROM $table WHERE userId = ? AND roleId = ?",
-            userId, roleId)
     }
 
     suspend fun getFinishedObjects(endThreshold: Long): List<TempRoleInfo> = suspendCoroutine {

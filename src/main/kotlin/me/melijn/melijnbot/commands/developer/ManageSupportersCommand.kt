@@ -81,10 +81,11 @@ class ManageSupportersCommand : AbstractCommand("command.managesupporters") {
         }
 
         override suspend fun execute(context: CommandContext) {
-            val supporters = context.daoManager.supporterWrapper.supporters
+            val supporters = context.daoManager.supporterWrapper.getUsers()
 
             var msg = "```INI\n[userId] - [guildId] - [lastServerPicked] - [startTime]\n"
-            for (supporter in supporters) {
+            for (supporterId in supporters) {
+                val supporter = context.daoManager.supporterWrapper.getSupporter(supporterId) ?: continue
                 msg += "${supporter.userId} (${context.shardManager.retrieveUserById(supporter.userId).awaitOrNull()?.asTag?.replace("#", "//") ?: "unknown"}) -" +
                     " ${if (supporter.guildId == -1L) "/" else supporter.guildId.toString()} -" +
                     " [${supporter.lastServerPickTime.asEpochMillisToDateTime(context.daoManager, context.guildId, context.authorId)}] -" +

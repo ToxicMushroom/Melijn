@@ -1,25 +1,28 @@
 package me.melijn.melijnbot.database.channel
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class MusicChannelDao(driverManager: DriverManager) : Dao(driverManager) {
+class MusicChannelDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
+
     override val table: String = "musicChannel"
     override val tableStructure: String = "guildId bigint, channelId bigint"
     override val primaryKey: String = "guildId"
+
+    override val cacheName: String = "channel:music"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun set(guildId: Long, channelId: Long) {
+    fun set(guildId: Long, channelId: Long) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, channelId) VALUES (?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET channelId = ?",
             guildId, channelId, channelId)
     }
 
-    suspend fun remove(guildId: Long) {
+    fun remove(guildId: Long) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ?", guildId)
     }
 

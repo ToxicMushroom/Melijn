@@ -1,33 +1,26 @@
 package me.melijn.melijnbot.database.disabled
 
-import com.google.common.cache.CacheBuilder
-import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.IMPORTANT_CACHE
+import com.fasterxml.jackson.module.kotlin.readValue
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 import me.melijn.melijnbot.enums.ChannelCommandState
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import me.melijn.melijnbot.objectMapper
 
 class ChannelCommandStateWrapper(private val channelCommandStateDao: ChannelCommandStateDao) {
 
-    val channelCommandsStateCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, Map<String, ChannelCommandState>> { key ->
-            getCommandStateMap(key)
-        })
-
-    private fun getCommandStateMap(channelId: Long): CompletableFuture<Map<String, ChannelCommandState>> {
-        val future = CompletableFuture<Map<String, ChannelCommandState>>()
-       TaskManager.async {
-            val id = channelCommandStateDao.get(channelId)
-            future.complete(id)
+    suspend fun getMap(channelId: Long): Map<String, ChannelCommandState> {
+        val cached = channelCommandStateDao.getCacheEntry(channelId, HIGHER_CACHE)?.let {
+            objectMapper.readValue<Map<String, ChannelCommandState>>(it)
         }
-        return future
+        if (cached != null) return cached
+
+        val map = channelCommandStateDao.get(channelId)
+        channelCommandStateDao.setCacheEntry(channelId, objectMapper.writeValueAsString(map), NORMAL_CACHE)
+        return map
     }
 
     suspend fun setCommandState(guildId: Long, channelId: Long, commandIds: Set<String>, channelCommandState: ChannelCommandState) {
-        val map = channelCommandsStateCache.get(channelId).await().toMutableMap()
+        val map = getMap(channelId).toMutableMap()
         if (channelCommandState == ChannelCommandState.DEFAULT) {
             channelCommandStateDao.bulkRemove(channelId, commandIds)
             for (id in commandIds) {
@@ -39,6 +32,6 @@ class ChannelCommandStateWrapper(private val channelCommandStateDao: ChannelComm
                 map[id] = channelCommandState
             }
         }
-        channelCommandsStateCache.put(channelId, CompletableFuture.completedFuture(map.toMap()))
+        channelCommandStateDao.setCacheEntry(channelId, objectMapper.writeValueAsString(map), NORMAL_CACHE)
     }
 }

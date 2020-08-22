@@ -1,50 +1,39 @@
 package me.melijn.melijnbot.database.settings
 
-import com.google.common.cache.CacheBuilder
-import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.IMPORTANT_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import com.fasterxml.jackson.module.kotlin.readValue
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.objectMapper
 
 class RemoveInvokeWrapper(
-
     private val removeInvokeDao: RemoveInvokeDao
 ) {
 
-    val removeInvokeCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, Map<Long, Int>> {
-            getMap(it)
-        })
-
-    private fun getMap(guildId: Long): CompletableFuture<Map<Long, Int>> {
-        val future = CompletableFuture<Map<Long, Int>>()
-       TaskManager.async {
-            val result = removeInvokeDao.getChannels(guildId)
-            future.complete(result)
+    suspend fun getMap(guildId: Long): Map<Long, Int> {
+        val result = removeInvokeDao.getCacheEntry(guildId, HIGHER_CACHE)?.let {
+            objectMapper.readValue<Map<Long, Int>>(it)
         }
-        return future
+
+        if (result != null) return result
+
+        val channels = removeInvokeDao.getChannels(guildId)
+        removeInvokeDao.setCacheEntry(guildId, objectMapper.writeValueAsString(channels), NORMAL_CACHE)
+        return channels
     }
 
     suspend fun set(guildId: Long, channelId: Long, seconds: Int) {
-        val ls = removeInvokeCache.get(guildId).await().toMutableMap()
+        val map = getMap(guildId).toMutableMap()
+        map[channelId] = seconds
 
-        if (ls[channelId] != seconds) {
-            ls[channelId] = seconds
-            removeInvokeDao.insert(guildId, channelId, seconds)
-            removeInvokeCache.put(guildId, CompletableFuture.completedFuture(ls))
-        }
+        removeInvokeDao.insert(guildId, channelId, seconds)
+        removeInvokeDao.setCacheEntry("$guildId", objectMapper.writeValueAsString(map), NORMAL_CACHE)
     }
 
     suspend fun remove(guildId: Long, channelId: Long) {
-        val ls = removeInvokeCache.get(guildId).await().toMutableMap()
+        val map = getMap(guildId).toMutableMap()
+        map.remove(channelId)
 
-        if (ls.containsKey(channelId)) {
-            ls.remove(channelId)
-            removeInvokeDao.remove(guildId, channelId)
-            removeInvokeCache.put(guildId, CompletableFuture.completedFuture(ls))
-        }
+        removeInvokeDao.remove(guildId, channelId)
+        removeInvokeDao.setCacheEntry("$guildId", objectMapper.writeValueAsString(map), NORMAL_CACHE)
     }
 }

@@ -1,26 +1,28 @@
 package me.melijn.melijnbot.database.autopunishment
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class PunishmentGroupDao(driverManager: DriverManager) : Dao(driverManager) {
+class PunishmentGroupDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "punishmentGroups"
     override val tableStructure: String = "guildId bigint, punishGroup varchar(64), enabledTypes varchar(512), pointGoalMap varchar(512)"
     override val primaryKey: String = "guildId, punishGroup"
 
+    override val cacheName: String = "punishmentgroup"
+
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun setEnabledTypes(guildId: Long, punishGroup: String, enabledTypes: String) {
+    fun setEnabledTypes(guildId: Long, punishGroup: String, enabledTypes: String) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, punishGroup, enabledTypes, pointGoalMap) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET enabledTypes = ?",
             guildId, punishGroup, enabledTypes, "", enabledTypes)
     }
 
-    suspend fun setPointGoalMap(guildId: Long, punishGroup: String, pointGoalMap: String) {
+    fun setPointGoalMap(guildId: Long, punishGroup: String, pointGoalMap: String) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, punishGroup, enabledTypes, pointGoalMap) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET pointGoalMap = ?",
             guildId, punishGroup, "", pointGoalMap, pointGoalMap)
     }
@@ -35,12 +37,12 @@ class PunishmentGroupDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId, punishGroup)
     }
 
-    suspend fun add(guildId: Long, punishGroup: String) {
+    fun add(guildId: Long, punishGroup: String) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, punishGroup, enabledTypes, pointGoalMap) VALUES (?, ?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
             guildId, punishGroup, "", "")
     }
 
-    suspend fun remove(guildId: Long, punishGroup: String) {
+    fun remove(guildId: Long, punishGroup: String) {
         driverManager.executeUpdate("DELETED FROM $table WHERE guildId = ? AND punishGroup = ?",
             guildId, punishGroup)
     }

@@ -2,7 +2,6 @@ package me.melijn.melijnbot.internals.command
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.database.DaoManager
@@ -25,15 +24,14 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
-import java.util.stream.Collectors
 import kotlin.random.Random
 
 val SPACE_REGEX = "\\s+".toRegex()
 
 class CommandClient(private val commandList: Set<AbstractCommand>, private val container: Container) : ListenerAdapter() {
 
-    private val guildPrefixCache = container.daoManager.guildPrefixWrapper.prefixCache
-    private val userPrefixCache = container.daoManager.userPrefixWrapper.prefixCache
+    private val guildPrefixWrapper = container.daoManager.guildPrefixWrapper
+    private val userPrefixWrapper = container.daoManager.userPrefixWrapper
     private val melijnMentions = arrayOf("<@${container.settings.id}>", "<@!${container.settings.id}>")
 
     private val commandMap: HashMap<String, AbstractCommand> = HashMap()
@@ -45,11 +43,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 commandMap[alias.toLowerCase()] = command
             }
         }
-        container.commandMap = commandList.stream().collect(Collectors.toMap({ cmd: AbstractCommand ->
-            cmd.id
-        }, { cmd: AbstractCommand ->
-            cmd
-        }))
+        container.commandMap = commandList.map { it.id to it }.toMap()
     }
 
 
@@ -86,7 +80,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         val ccsWithoutPrefix = mutableListOf<CustomCommand>()
         if (event.isFromGuild) {
             val ccWrapper = container.daoManager.customCommandWrapper
-            val ccs = ccWrapper.customCommandCache.get(event.guild.idLong).await()
+            val ccs = ccWrapper.getList(event.guild.idLong)
 
             for (cc in ccs) {
                 if (cc.prefix) {
@@ -117,11 +111,11 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 // Used a space :angry:
                 if (!melijnMentions.contains(prefix)) {
                     val userTriState = container.daoManager.allowSpacedPrefixWrapper
-                        .privateAllowSpacedPrefixGuildCache.get(event.author.idLong).await()
+                        .getUserTriState(event.author.idLong)
                     val allowSpace = if (userTriState == TriState.DEFAULT) {
                         if (event.isFromGuild) {
                             val guildAllows = container.daoManager.allowSpacedPrefixWrapper
-                                .allowSpacedPrefixGuildCache.get(event.guild.idLong).await()
+                                .getGuildState(event.guild.idLong)
                             guildAllows
 
                         } else false
@@ -168,12 +162,12 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             val aliasesMap = mutableMapOf<String, List<String>>()
             var searchedAliases = false
             if (command == null) {
-                val aliasCache = container.daoManager.aliasWrapper.aliasCache
+                val aliasCache = container.daoManager.aliasWrapper
                 if (event.isFromGuild) {
-                    aliasesMap.putAll(aliasCache.get(event.guild.idLong).await())
+                    aliasesMap.putAll(aliasCache.getAliases(event.guild.idLong))
                 }
 
-                for ((cmd, ls) in aliasCache.get(event.author.idLong).await()) {
+                for ((cmd, ls) in aliasCache.getAliases(event.author.idLong)) {
                     val currentList = (aliasesMap[cmd] ?: emptyList()).toMutableList()
                     for (alias in ls) {
                         currentList.addIfNotPresent(alias)
@@ -253,8 +247,13 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
         if (checksFailed(container.daoManager, cc, event)) return
 
-        val cParts = commandParts.toMutableList()
-        executeCC(cc, event, cParts, hasPrefix)
+        if (hasPermission(container, event, "cc.${cc.id}")) {
+            val cParts = commandParts.toMutableList()
+            executeCC(cc, event, cParts, hasPrefix)
+        } else {
+            val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
+            sendMissingPermissionMessage(event.textChannel, container.daoManager, language, "cc.${cc.id}")
+        }
     }
 
     private suspend fun executeCC(cc: CustomCommand, event: MessageReceivedEvent, commandParts: List<String>, hasPrefix: Boolean) {
@@ -343,7 +342,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
     private suspend fun getPrefixes(event: MessageReceivedEvent): List<String> {
         var prefixes = if (event.isFromGuild) {
-            guildPrefixCache.get(event.guild.idLong).await().toMutableList()
+            guildPrefixWrapper.getPrefixes(event.guild.idLong).toMutableList()
         } else {
             mutableListOf()
         }
@@ -354,7 +353,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
         }
 
         //registering private prefixes
-        prefixes.addAll(userPrefixCache.get(event.author.idLong).await())
+        prefixes.addAll(userPrefixWrapper.getPrefixes(event.author.idLong))
 
 
         //mentioning the bot will always work
@@ -404,47 +403,28 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             }
 
             if (event.isFromGuild && !isSubCommand) {
-                command.discordChannelPermissions.forEach { permission ->
-                    val botMember = event.guild.selfMember
-                    var missingPermissionCount = 0
-                    var missingPermissionMessage = ""
+                val botMember = event.guild.selfMember
 
-                    if (!botMember.hasPermission(event.textChannel, permission)) {
-                        missingPermissionMessage += "\n    ⁎ `${permission.toUCSC()}`"
-                        missingPermissionCount++
-                    }
-
-                    if (missingPermissionCount > 0) {
-                        val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
-                        val more = if (missingPermissionCount > 1) "s" else ""
-                        val msg = i18n.getTranslation(language, "message.discordchannelpermission$more.missing")
-                            .withVariable("permissions", missingPermissionMessage)
-                            .withVariable("channel", event.textChannel.asTag)
-
-                        sendRspOrMsg(event.textChannel, container.daoManager, msg)
-                        return true
-                    }
+                // Channel perms
+                val missingChannelPermissions = command.discordChannelPermissions.filter { permission ->
+                    !botMember.hasPermission(event.textChannel, permission)
                 }
 
-                command.discordPermissions.forEach { permission ->
-                    val botMember = event.guild.selfMember
-                    var missingPermissionCount = 0
-                    var missingPermissionMessage = ""
+                if (missingChannelPermissions.isNotEmpty()) {
+                    val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
+                    sendMelijnMissingChannelPermissionMessage(event.textChannel, language, container.daoManager, missingChannelPermissions)
+                    return true
+                }
 
-                    if (!botMember.hasPermission(permission)) {
-                        missingPermissionMessage += "\n    ⁎ `${permission.toUCSC()}`"
-                        missingPermissionCount++
-                    }
+                // Global perms
+                val missingPermissions = command.discordPermissions.filter { permission ->
+                    !botMember.hasPermission(event.textChannel, permission)
+                }
 
-                    if (missingPermissionCount > 0) {
-                        val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
-                        val more = if (missingPermissionCount > 1) "s" else ""
-                        val msg = i18n.getTranslation(language, "message.discordpermission$more.missing")
-                            .withVariable("permissions", missingPermissionMessage)
-
-                        sendRspOrMsg(event.textChannel, container.daoManager, msg)
-                        return true
-                    }
+                if (missingPermissions.isNotEmpty()) {
+                    val language = getLanguage(container.daoManager, event.author.idLong, event.guild.idLong)
+                    sendMelijnMissingPermissionMessage(event.textChannel, language, container.daoManager, missingChannelPermissions)
+                    return true
                 }
 
                 if (commandIsOnCooldown(container.daoManager, cmdId, event)) {
@@ -487,19 +467,19 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
             val userId = event.author.idLong
             val channelId = event.channel.idLong
 
-            val commandCooldownCache = daoManager.commandCooldownWrapper.commandCooldownCache
-            val channelCommandCooldownCache = daoManager.commandChannelCoolDownWrapper.commandChannelCooldownCache
+            val commandCooldownWrapper = daoManager.commandCooldownWrapper
+            val commandChannelCoolDownWrapper = daoManager.commandChannelCoolDownWrapper
 
             if (!daoManager.commandChannelCoolDownWrapper.executions.contains(Pair(guildId, userId))) {
                 return false
             }
 
-            var lastExecution = 0L
-            var lastExecutionChannel = 0L
+            var lastExecution = 0L // millis for last guild execution
+            var lastExecutionChannel = 0L // millis for last channel execution
             var bool = false
             var cooldownResult = 0L
 
-            val commandChannelCooldowns = channelCommandCooldownCache.get(channelId).await()
+            val commandChannelCooldowns = commandChannelCoolDownWrapper.getMap(channelId)
             if (commandChannelCooldowns.containsKey(id)) {
 
                 //init lastExecutionChannel
@@ -516,7 +496,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                     bool = true
                 }
             }
-            val commandCooldowns = commandCooldownCache.get(guildId).await()
+            val commandCooldowns = commandCooldownWrapper.getMap(guildId)
             if (commandCooldowns.containsKey(id)) {
 
                 //init lastExecution
@@ -553,10 +533,10 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
 
         private suspend fun commandIsDisabled(daoManager: DaoManager, id: String, event: MessageReceivedEvent): Boolean {
-            val disabledCommandCache = daoManager.disabledCommandWrapper.disabledCommandsCache
-            val channelCommandStateCache = daoManager.channelCommandStateWrapper.channelCommandsStateCache
+            val disabledCommandCache = daoManager.disabledCommandWrapper
+            val channelCommandStateCache = daoManager.channelCommandStateWrapper
 
-            val disabledChannelCommands = channelCommandStateCache.get(event.channel.idLong).await()
+            val disabledChannelCommands = channelCommandStateCache.getMap(event.channel.idLong)
             if (disabledChannelCommands.contains(id)) {
                 if (disabledChannelCommands[id] == ChannelCommandState.ENABLED) {
                     return false
@@ -565,7 +545,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
                 }
             }
 
-            val disabledCommands = disabledCommandCache.get(event.guild.idLong).await()
+            val disabledCommands = disabledCommandCache.getSet(event.guild.idLong)
             if (disabledCommands.contains(id)) return true
 
             return false

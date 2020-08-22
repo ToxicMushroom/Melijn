@@ -87,9 +87,16 @@ class StatsCommand : AbstractCommand("command.stats") {
 
         val embed = Embedder(context)
             .setThumbnail(context.selfUser.effectiveAvatarUrl)
-            .addField(title1, value1, false)
-            .addField(title2, value2, false)
-            .addField(title3, value3, false)
+            .setDescription("""
+                |```INI
+                |[${title1}]```$value1
+                |
+                |```INI
+                |[${title2}]```$value2
+                |                                
+                |```INI
+                |[${title3}]```$value3
+            """.trimMargin())
             .build()
 
         sendEmbedRsp(context, embed)

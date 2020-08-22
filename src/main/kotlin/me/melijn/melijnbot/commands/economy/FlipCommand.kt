@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.economy
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -27,7 +26,7 @@ class FlipCommand : AbstractCommand("command.flip") {
         }
 
         val balanceWrapper = context.daoManager.balanceWrapper
-        val cash = balanceWrapper.balanceCache.get(context.authorId).await()
+        val cash = balanceWrapper.getBalance(context.authorId)
 
         val amount = if (context.args[0].equals("all", true)) {
             cash

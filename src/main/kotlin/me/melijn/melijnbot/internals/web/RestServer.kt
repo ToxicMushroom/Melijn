@@ -1,21 +1,14 @@
 package me.melijn.melijnbot.internals.web
 
 import com.sun.management.OperatingSystemMXBean
-import io.ktor.application.call
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.request.header
-import io.ktor.request.receiveText
-import io.ktor.response.respondText
-import io.ktor.routing.get
-import io.ktor.routing.post
-import io.ktor.routing.routing
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.engine.stop
-import io.ktor.server.netty.Netty
-import io.ktor.server.netty.NettyApplicationEngine
+import io.ktor.application.*
+import io.ktor.http.*
+import io.ktor.request.*
+import io.ktor.response.*
+import io.ktor.routing.*
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.joinAll
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
@@ -116,6 +109,7 @@ class RestServer(container: Container) {
                         .put("musicPlayers", musicPlayers)
                         .put("responses", shard.responseTotal)
                         .put("id", shard.shardInfo.shardId)
+                        .put("unavailable", shard.unavailableGuilds.size)
 
                     dataArray.add(dataObject)
                 }
@@ -330,7 +324,7 @@ class RestServer(container: Container) {
                     val streak = body.getInt("streak")
                     val wrapper = container.daoManager.balanceWrapper
 
-                    val newBalance = wrapper.balanceCache[userId].await() + credits
+                    val newBalance = wrapper.getBalance(userId) + credits
                     wrapper.setBalance(userId, newBalance)
 
                     LogUtils.sendReceivedVoteRewards(container, userId, newBalance, credits, streak, votes)
@@ -377,32 +371,35 @@ class RestServer(container: Container) {
                 val daoManager = container.daoManager
 
                 jobs.add(TaskManager.async {
-                    val prefixes = DataArray.fromCollection(daoManager.guildPrefixWrapper.prefixCache.get(idLong).await())
+                    val prefixes = DataArray.fromCollection(daoManager.guildPrefixWrapper.getPrefixes(idLong))
                     settings.put("prefixes", prefixes)
                 })
 
                 jobs.add(TaskManager.async {
-                    val allowed = daoManager.allowSpacedPrefixWrapper.allowSpacedPrefixGuildCache.get(idLong).await()
+                    val allowed = daoManager.allowSpacedPrefixWrapper.getGuildState(idLong)
                     settings.put("allowSpacePrefix", allowed)
                 })
 
                 jobs.add(TaskManager.async {
-                    val ec = daoManager.embedColorWrapper.embedColorCache.get(idLong).await()
+                    val ec = daoManager.embedColorWrapper.getColor(idLong)
                     settings.put("embedColor", ec)
                 })
 
                 jobs.add(TaskManager.async {
-                    val tz = daoManager.timeZoneWrapper.timeZoneCache.get(idLong).await()
+                    val tz = daoManager.timeZoneWrapper.getTimeZone(idLong)
                     settings.put("timeZone", tz)
                 })
 
                 jobs.add(TaskManager.async {
-                    val language = daoManager.guildLanguageWrapper.languageCache.get(idLong).await()
+                    val language = daoManager.guildLanguageWrapper.getLanguage(idLong)
                     settings.put("language", language)
                 })
 
                 val disabled = daoManager.embedDisabledWrapper.embedDisabledCache.contains(idLong)
                 settings.put("embedsDisabled", disabled)
+
+                val provided = DataObject.empty()
+                provided.put("timezones", DataArray.fromCollection(TimeZone.getAvailableIDs().toList()))
 
                 jobs.joinAll()
 
@@ -410,6 +407,7 @@ class RestServer(container: Container) {
                     DataObject.empty()
                         .put("guild", guildData)
                         .put("settings", settings)
+                        .put("provided", provided)
                         .toString()
                 }
             }

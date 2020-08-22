@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.internals.utils
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.DaoManager
 import me.melijn.melijnbot.internals.command.CommandContext
 import me.melijn.melijnbot.internals.utils.message.sendRsp
@@ -34,13 +33,13 @@ object TimeUtils {
 suspend fun getZoneId(daoManager: DaoManager?, guildId: Long? = null, userId: Long? = null): ZoneId {
 
     val guildTimezone = guildId?.let {
-        val zoneId = daoManager?.timeZoneWrapper?.timeZoneCache?.get(it)?.await()
+        val zoneId = daoManager?.timeZoneWrapper?.getTimeZone(it)
         if (zoneId?.isBlank() == true) null
         else ZoneId.of(zoneId)
     }
 
     val userTimezone = userId?.let {
-        val zoneId = daoManager?.timeZoneWrapper?.timeZoneCache?.get(it)?.await()
+        val zoneId = daoManager?.timeZoneWrapper?.getTimeZone(it)
         if (zoneId?.isBlank() == true) null
         else ZoneId.of(zoneId)
     }
@@ -50,13 +49,13 @@ suspend fun getZoneId(daoManager: DaoManager?, guildId: Long? = null, userId: Lo
 
 suspend fun Long.asEpochMillisToDateTime(daoManager: DaoManager?, guildId: Long? = null, userId: Long? = null): String {
     val guildTimezone = guildId?.let {
-        val zoneId = daoManager?.timeZoneWrapper?.timeZoneCache?.get(it)?.await()
+        val zoneId = daoManager?.timeZoneWrapper?.getTimeZone(it)
         if (zoneId?.isBlank() == true) null
         else ZoneId.of(zoneId)
     }
 
     val userTimezone = userId?.let {
-        val zoneId = daoManager?.timeZoneWrapper?.timeZoneCache?.get(it)?.await()
+        val zoneId = daoManager?.timeZoneWrapper?.getTimeZone(it)
         if (zoneId?.isBlank() == true) null
         else ZoneId.of(zoneId)
     }

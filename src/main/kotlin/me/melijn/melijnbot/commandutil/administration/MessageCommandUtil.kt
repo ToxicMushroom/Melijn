@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commandutil.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.command.CustomCommand
 import me.melijn.melijnbot.database.message.MessageWrapper
 import me.melijn.melijnbot.database.message.ModularMessage
@@ -12,6 +11,7 @@ import me.melijn.melijnbot.internals.translation.PLACEHOLDER_TYPE
 import me.melijn.melijnbot.internals.utils.*
 import me.melijn.melijnbot.internals.utils.message.sendRsp
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.utils.data.DataObject
 import java.time.Instant
 
@@ -29,7 +29,7 @@ object MessageCommandUtil {
     suspend fun setMessage(context: CommandContext, property: ModularMessageProperty, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
         val guildId = context.guildId
-        val message = messageWrapper.messageCache.get(Pair(guildId, type)).await() ?: ModularMessage()
+        val message = messageWrapper.getMessage(guildId, type) ?: ModularMessage()
 
         runCorrectSetThing(property, context, message, type)
         messageWrapper.updateMessage(message, guildId, type)
@@ -69,7 +69,7 @@ object MessageCommandUtil {
     suspend fun showMessage(context: CommandContext, property: ModularMessageProperty, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
         val guildId = context.guildId
-        val message = messageWrapper.messageCache.get(Pair(guildId, type)).await()
+        val message = messageWrapper.getMessage(guildId, type)
 
         showMessage(context, property, message, type)
     }
@@ -150,7 +150,7 @@ object MessageCommandUtil {
 
     suspend fun clearEmbed(context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.guildId, type)).await()
+        val modularMessage = messageWrapper.getMessage(context.guildId, type)
             ?: ModularMessage()
         clearEmbedAndMessage(context, type, modularMessage)
         messageWrapper.updateMessage(modularMessage, context.guildId, type)
@@ -176,7 +176,7 @@ object MessageCommandUtil {
 
     suspend fun listAttachments(context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.guildId, type)).await()
+        val modularMessage = messageWrapper.getMessage(context.guildId, type)
         listAttachmentsAndMessage(context, modularMessage, type)
     }
 
@@ -205,7 +205,7 @@ object MessageCommandUtil {
 
     suspend fun addAttachment(context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.guildId, type)).await()
+        val modularMessage = messageWrapper.getMessage(context.guildId, type)
             ?: ModularMessage()
 
         addAttachmentAndMessage(context, type, modularMessage)
@@ -237,7 +237,7 @@ object MessageCommandUtil {
 
     suspend fun removeAttachment(context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.guildId, type)).await()
+        val modularMessage = messageWrapper.getMessage(context.guildId, type)
             ?: ModularMessage()
 
         removeAttachmentAndMessage(context, type, modularMessage)
@@ -363,6 +363,15 @@ object MessageCommandUtil {
         val arg = context.rawArg
         val eb = EmbedBuilder(message.embed)
 
+        if (arg.length > MessageEmbed.TITLE_MAX_LENGTH) {
+            val msg = context.getTranslation("message.embed.title.tolong")
+                .withVariable("arg", arg)
+                .withVariable("length", arg.length)
+                .withVariable("max", MessageEmbed.TITLE_MAX_LENGTH)
+            sendRsp(context, msg)
+            return
+        }
+
         val msg = if (arg.equals("null", true)) {
             eb.setTitle(null)
             context.getTranslation("message.embed.title.unset")
@@ -372,7 +381,11 @@ object MessageCommandUtil {
                 .withVariable(PLACEHOLDER_ARG, arg)
         }.withVariable(PLACEHOLDER_TYPE, type.text)
 
-        message.embed = eb.build()
+        message.embed = try {
+            eb.build()
+        } catch (e: IllegalStateException) {
+            null
+        }
         sendRsp(context, msg)
     }
 
@@ -534,7 +547,11 @@ object MessageCommandUtil {
             }
         }.withVariable(PLACEHOLDER_TYPE, type.text)
 
-        message.embed = eb.build()
+        try { // Fixes the cannot build empty embed error
+            message.embed = eb.build()
+        } catch (t: IllegalStateException) {
+            message.embed = null
+        }
         sendRsp(context, msg)
     }
 
@@ -593,7 +610,7 @@ object MessageCommandUtil {
 
     suspend fun addEmbedField(title: String, value: String, inline: Boolean, context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.guildId, type)).await()
+        val modularMessage = messageWrapper.getMessage(context.guildId, type)
             ?: ModularMessage()
 
         addEmbedFieldAndMessage(title, value, inline, context, modularMessage, type)
@@ -659,7 +676,7 @@ object MessageCommandUtil {
 
     private suspend fun setEmbedFieldPartJoinLeave(index: Int, partName: String, value: Any, context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.guildId, type)).await()
+        val modularMessage = messageWrapper.getMessage(context.guildId, type)
             ?: ModularMessage()
 
         setEmbedFieldPartAndMessage(index, partName, value, context, modularMessage, type)
@@ -694,7 +711,7 @@ object MessageCommandUtil {
 
     suspend fun removeEmbedField(index: Int, context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.guildId, type)).await()
+        val modularMessage = messageWrapper.getMessage(context.guildId, type)
             ?: ModularMessage()
 
         removeEmbedFieldAndMessage(index, context, type, modularMessage)
@@ -736,7 +753,7 @@ object MessageCommandUtil {
 
     suspend fun showEmbedFields(context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.guildId, type)).await()
+        val modularMessage = messageWrapper.getMessage(context.guildId, type)
             ?: ModularMessage()
 
         showEmbedFieldsAndMessage(context, type, modularMessage)
@@ -769,7 +786,7 @@ object MessageCommandUtil {
     suspend fun showMessagePreviewTyped(context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
         val guildId = context.guildId
-        val message = messageWrapper.messageCache.get(Pair(guildId, type)).await()?.toMessage()
+        val message = messageWrapper.getMessage(guildId, type)?.toMessage()
         if (message == null) {
             val msg2 = context.getTranslation("message.view.isempty")
                 .withVariable("type", type.toUCC())
@@ -796,7 +813,7 @@ object MessageCommandUtil {
 
     suspend fun setPingable(context: CommandContext, type: MessageType, pingable: Boolean) {
         val messageWrapper = context.daoManager.messageWrapper
-        val modularMessage = messageWrapper.messageCache.get(Pair(context.guildId, type)).await()
+        val modularMessage = messageWrapper.getMessage(context.guildId, type)
             ?: ModularMessage()
 
         setPingableAndMessage(context, modularMessage, type, pingable)
@@ -829,7 +846,7 @@ object MessageCommandUtil {
     suspend fun showPingable(context: CommandContext, type: MessageType) {
         val messageWrapper = context.daoManager.messageWrapper
         val guildId = context.guildId
-        val message = messageWrapper.messageCache.get(Pair(guildId, type)).await()
+        val message = messageWrapper.getMessage(guildId, type)
             ?: ModularMessage()
         val isPingable = message.extra.containsKey("isPingable")
 

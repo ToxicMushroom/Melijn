@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.economy
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -26,7 +25,7 @@ class PayCommand : AbstractCommand("command.pay") {
         }
 
         val balanceWrapper = context.daoManager.balanceWrapper
-        val cash = balanceWrapper.balanceCache.get(context.authorId).await()
+        val cash = balanceWrapper.getBalance(context.authorId)
 
         val amount = if (context.args[1].equals("all", true)) {
             cash
@@ -44,7 +43,7 @@ class PayCommand : AbstractCommand("command.pay") {
             amount
         }
         val user = retrieveUserByArgsNMessage(context, 0) ?: return
-        val balance = context.daoManager.balanceWrapper.balanceCache[user.idLong].await()
+        val balance = balanceWrapper.getBalance(user.idLong)
         if (user.idLong == context.authorId) {
             val msg = context.getTranslation("$root.payself")
             sendRsp(context, msg)

@@ -15,7 +15,7 @@ class SpamGroupDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun add(guildId: Long, group: SpamGroup) {
+    fun add(guildId: Long, group: SpamGroup) {
         group.apply {
             val query = "INSERT INTO $table (guildId, spamGroupName, channelIds, state, points) VALUES (?, ?, ?, ?, ?) " +
                 "ON CONFLICT ($primaryKey) DO UPDATE SET channelIds = ?, state = ?, points = ?"
@@ -57,7 +57,7 @@ class SpamGroupDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId)
     }
 
-    suspend fun remove(guildId: Long, group: SpamGroup) {
+    fun remove(guildId: Long, group: SpamGroup) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND spamGroupName = ?",
             guildId, group.spamGroupName)
     }

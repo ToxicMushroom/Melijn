@@ -1,32 +1,27 @@
 package me.melijn.melijnbot.database.permission
 
-import com.google.common.cache.CacheBuilder
-import me.melijn.melijnbot.database.IMPORTANT_CACHE
+import com.fasterxml.jackson.module.kotlin.readValue
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 import me.melijn.melijnbot.enums.PermState
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import me.melijn.melijnbot.objectMapper
 
 class ChannelRolePermissionWrapper(private val channelRolePermissionDao: ChannelRolePermissionDao) {
 
-    val channelRolePermissionCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Pair<Long, Long>, Map<String, PermState>> { pair ->
-            getPermissionList(pair.first, pair.second)
-        })
 
-    private fun getPermissionList(channelId: Long, roleId: Long): CompletableFuture<Map<String, PermState>> {
-        val languageFuture = CompletableFuture<Map<String, PermState>>()
-        TaskManager.async {
-            val map = channelRolePermissionDao.getMap(channelId, roleId)
-            languageFuture.complete(map)
+    suspend fun getPermMap(channelId: Long, roleId: Long): Map<String, PermState> {
+        val result = channelRolePermissionDao.getCacheEntry("$channelId:$roleId", HIGHER_CACHE)?.let {
+            objectMapper.readValue<Map<String, PermState>>(it)
         }
-        return languageFuture
+        if (result != null) return result
+
+        val permissionMap = channelRolePermissionDao.getMap(channelId, roleId)
+        channelRolePermissionDao.setCacheEntry("$channelId:$roleId", objectMapper.writeValueAsString(permissionMap), NORMAL_CACHE)
+        return permissionMap
     }
 
-    fun setPermissions(guildId: Long, channelId: Long, roleId: Long, permissions: List<String>, state: PermState) {
-        val permissionMap = channelRolePermissionCache.get(Pair(channelId, roleId)).get().toMutableMap()
+    suspend fun setPermissions(guildId: Long, channelId: Long, roleId: Long, permissions: List<String>, state: PermState) {
+        val permissionMap = getPermMap(channelId, roleId).toMutableMap()
         if (state == PermState.DEFAULT) {
             permissions.forEach { permissionMap.remove(it) }
             channelRolePermissionDao.bulkDelete(channelId, roleId, permissions)
@@ -34,11 +29,11 @@ class ChannelRolePermissionWrapper(private val channelRolePermissionDao: Channel
             permissions.forEach { permissionMap[it] = state }
             channelRolePermissionDao.bulkPut(guildId, channelId, roleId, permissions, state)
         }
-        channelRolePermissionCache.put(Pair(channelId, roleId), CompletableFuture.completedFuture(permissionMap.toMap()))
+        channelRolePermissionDao.setCacheEntry("$channelId:$roleId", objectMapper.writeValueAsString(permissionMap), NORMAL_CACHE)
     }
 
     suspend fun setPermission(guildId: Long, channelId: Long, roleId: Long, permission: String, state: PermState) {
-        val permissionMap = channelRolePermissionCache.get(Pair(channelId, roleId)).get().toMutableMap()
+        val permissionMap = getPermMap(channelId, roleId).toMutableMap()
         if (state == PermState.DEFAULT) {
             permissionMap.remove(permission)
             channelRolePermissionDao.delete(channelId, roleId, permission)
@@ -46,15 +41,15 @@ class ChannelRolePermissionWrapper(private val channelRolePermissionDao: Channel
             permissionMap[permission] = state
             channelRolePermissionDao.set(guildId, channelId, roleId, permission, state)
         }
-        channelRolePermissionCache.put(Pair(channelId, roleId), CompletableFuture.completedFuture(permissionMap.toMap()))
+        channelRolePermissionDao.setCacheEntry("$channelId:$roleId", objectMapper.writeValueAsString(permissionMap), NORMAL_CACHE)
     }
 
-    suspend fun clear(channelId: Long, roleId: Long) {
-        channelRolePermissionCache.put(Pair(channelId, roleId), CompletableFuture.completedFuture(emptyMap()))
+    fun clear(channelId: Long, roleId: Long) {
+        channelRolePermissionDao.setCacheEntry("$channelId:$roleId", objectMapper.writeValueAsString(emptyMap<String, PermState>()), NORMAL_CACHE)
         channelRolePermissionDao.delete(channelId, roleId)
     }
 
-    fun setPermissions(guildId: Long, channelId: Long, roleId: Long, permissions: Map<String, PermState>) {
+    suspend fun setPermissions(guildId: Long, channelId: Long, roleId: Long, permissions: Map<String, PermState>) {
         for (state in PermState.values()) {
             setPermissions(guildId, channelId, roleId, permissions.filter { entry ->
                 entry.value == state

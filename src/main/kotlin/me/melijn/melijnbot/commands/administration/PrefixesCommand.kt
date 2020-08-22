@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -44,7 +43,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
 
         override suspend fun execute(context: CommandContext) {
             val title = context.getTranslation("$root.response1.title")
-            val prefixes = context.daoManager.guildPrefixWrapper.prefixCache.get(context.guildId).await()
+            val prefixes = context.daoManager.guildPrefixWrapper.getPrefixes(context.guildId)
                 .sortedBy { it }
 
             val defPrefixMsg = context.getTranslation("$root.defprefix")
@@ -76,7 +75,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             }
 
             val wrapper = context.daoManager.guildPrefixWrapper
-            val ppList = wrapper.prefixCache[context.guildId].await()
+            val ppList = wrapper.getPrefixes(context.guildId)
             if (ppList.size >= PREFIXES_LIMIT && !isPremiumGuild(context)) {
                 val replaceMap = mapOf(
                     Pair("limit", "$PREFIXES_LIMIT"),
@@ -137,7 +136,7 @@ class PrefixesCommand : AbstractCommand("command.prefixes") {
             }
 
             val wrapper = context.daoManager.guildPrefixWrapper
-            val list = wrapper.prefixCache.get(context.guildId).await()
+            val list = wrapper.getPrefixes(context.guildId)
             val index = getIntegerFromArgNMessage(context, 0, 0, list.size - 1) ?: return
 
             val toRemove = list[index]

@@ -1,48 +1,38 @@
 package me.melijn.melijnbot.database.alias
 
-import com.google.common.cache.CacheBuilder
-import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.IMPORTANT_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
+import com.fasterxml.jackson.module.kotlin.readValue
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 import me.melijn.melijnbot.internals.utils.addIfNotPresent
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import me.melijn.melijnbot.objectMapper
 
 class AliasWrapper(private val aliasDao: AliasDao) {
 
-
-    val aliasCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, Map<String, List<String>>> { id ->
-            getAliases(id)
-        })
-
-    private fun getAliases(id: Long): CompletableFuture<Map<String, List<String>>> {
-        val future = CompletableFuture<Map<String, List<String>>>()
-
-        TaskManager.async {
-            val profileMap = aliasDao.getAliases(id)
-            future.complete(profileMap)
+    suspend fun getAliases(id: Long): Map<String, List<String>> {
+        val cached = aliasDao.getCacheEntry(id, HIGHER_CACHE)?.let {
+            objectMapper.readValue<Map<String, List<String>>>(it)
         }
+        if (cached != null) return cached
 
-        return future
+        val result = aliasDao.getAliases(id)
+        aliasDao.setCacheEntry(id, objectMapper.writeValueAsString(result), NORMAL_CACHE)
+        return result
     }
 
     suspend fun add(id: Long, command: String, alias: String) {
-        val map = aliasCache[id].await().toMutableMap()
+        val map = getAliases(id).toMutableMap()
         val newList = ((map[command]?.toMutableList() ?: mutableListOf()))
         val added = newList.addIfNotPresent(alias, true)
         if (added) {
 
             map[command] = newList
-            aliasCache.put(id, CompletableFuture.completedFuture(map))
             aliasDao.insert(id, command, newList.joinToString("%SPLIT%"))
+            aliasDao.setCacheEntry(id, objectMapper.writeValueAsString(map), NORMAL_CACHE)
         }
     }
 
     suspend fun remove(id: Long, command: String, alias: String) {
-        val map = aliasCache[id].await().toMutableMap()
+        val map = getAliases(id).toMutableMap()
         val newList = ((map[command]?.toMutableList() ?: mutableListOf()))
 
         val removed = newList.removeIf { it.equals(alias, true) }
@@ -57,11 +47,11 @@ class AliasWrapper(private val aliasDao: AliasDao) {
                 aliasDao.insert(id, command, newList.joinToString("%SPLIT%"))
             }
 
-            aliasCache.put(id, CompletableFuture.completedFuture(map))
+            aliasDao.setCacheEntry(id, objectMapper.writeValueAsString(map), NORMAL_CACHE)
         }
     }
 
-    suspend fun clear(id: Long, command: String) {
+    fun clear(id: Long, command: String) {
         aliasDao.clear(id, command)
     }
 }

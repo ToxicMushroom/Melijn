@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.moderation
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.mute.Mute
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.RoleType
@@ -67,7 +66,7 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         reason = reason.trim()
 
         val roleWrapper = context.daoManager.roleWrapper
-        val roleId = roleWrapper.roleCache.get(Pair(context.guildId, RoleType.MUTE)).await()
+        val roleId = roleWrapper.getRoleId(context.guildId, RoleType.MUTE)
         var muteRole: Role? = context.guild.getRoleById(roleId)
         if (muteRole == null) {
             val msg = context.getTranslation("message.creatingmuterole")
@@ -132,19 +131,20 @@ class TempMuteCommand : AbstractCommand("command.tempmute") {
         val privZoneId = getZoneId(daoManager, guild.idLong, targetUser.idLong)
         val mutedMessageDm = getMuteMessage(language, privZoneId, guild, targetUser, author, mute)
         val mutedMessageLc = getMuteMessage(language, zoneId, guild, targetUser, author, mute, true, targetUser.isBot, mutingMessage != null)
-        daoManager.muteWrapper.setMute(mute)
+
         val targetMember = guild.retrieveMember(targetUser).awaitOrNull()
 
 
         if (targetMember == null) {
             death(mutingMessage, mutedMessageDm, context, mutedMessageLc, activeMute, mute, targetUser)
+            daoManager.muteWrapper.setMute(mute)
             return
         }
 
         try {
             guild.addRoleToMember(targetMember, muteRole)
                 .reason("muted")
-                .await()
+                .async { daoManager.muteWrapper.setMute(mute) }
             death(mutingMessage, mutedMessageDm, context, mutedMessageLc, activeMute, mute, targetUser)
 
         } catch (t: Throwable) {

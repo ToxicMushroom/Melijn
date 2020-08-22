@@ -1,60 +1,50 @@
 package me.melijn.melijnbot.database.settings
 
-import com.google.common.cache.CacheBuilder
-import me.melijn.melijnbot.database.IMPORTANT_CACHE
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 import me.melijn.melijnbot.internals.models.TriState
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
 
 class AllowSpacedPrefixWrapper(
     private val allowSpacedPrefixDao: AllowSpacedPrefixDao,
     private val privateAllowSpacedPrefixDao: PrivateAllowSpacedPrefixDao
 ) {
 
-    val allowSpacedPrefixGuildCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, Boolean> { key ->
-            containsGuild(key)
-        })
+    suspend fun getGuildState(guildId: Long): Boolean {
+        val result = allowSpacedPrefixDao.getCacheEntry("$guildId", HIGHER_CACHE)?.toBoolean()
 
-    val privateAllowSpacedPrefixGuildCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, TriState> { key ->
-            getUserTriState(key)
-        })
+        if (result != null) return result
 
-    private fun containsGuild(guildId: Long): CompletableFuture<Boolean> {
-        val future = CompletableFuture<Boolean>()
-        TaskManager.async {
-            val result = allowSpacedPrefixDao.contains(guildId)
-            future.complete(result)
-        }
-        return future
+        val allowed = allowSpacedPrefixDao.contains(guildId)
+        allowSpacedPrefixDao.setCacheEntry(guildId, allowed, NORMAL_CACHE)
+        return allowed
     }
 
-    private fun getUserTriState(userId: Long): CompletableFuture<TriState> {
-        val future = CompletableFuture<TriState>()
-        TaskManager.async {
-            val result = privateAllowSpacedPrefixDao.getState(userId)
-            future.complete(result)
+    suspend fun getUserTriState(userId: Long): TriState {
+        val result = privateAllowSpacedPrefixDao.getCacheEntry("$userId", HIGHER_CACHE)?.let {
+            TriState.valueOf(it)
         }
-        return future
+
+        if (result == null) {
+            val tristate = privateAllowSpacedPrefixDao.getState(userId)
+            privateAllowSpacedPrefixDao.setCacheEntry(userId, tristate, NORMAL_CACHE)
+            return tristate
+        }
+        return result
+
     }
 
-    suspend fun setGuildState(guildId: Long, state: Boolean) {
+    fun setGuildState(guildId: Long, state: Boolean) {
         if (state) allowSpacedPrefixDao.add(guildId)
         else allowSpacedPrefixDao.delete(guildId)
-        allowSpacedPrefixGuildCache.put(guildId, CompletableFuture.completedFuture(state))
+        allowSpacedPrefixDao.setCacheEntry(guildId, state, NORMAL_CACHE)
     }
 
-    suspend fun setUserState(userId: Long, triState: TriState) {
+    fun setUserState(userId: Long, triState: TriState) {
         when (triState) {
             TriState.TRUE -> privateAllowSpacedPrefixDao.setState(userId, true)
             TriState.DEFAULT -> privateAllowSpacedPrefixDao.delete(userId)
             TriState.FALSE -> privateAllowSpacedPrefixDao.setState(userId, false)
         }
-        privateAllowSpacedPrefixGuildCache.put(userId, CompletableFuture.completedFuture(triState))
+        privateAllowSpacedPrefixDao.setCacheEntry(userId, triState.toString(), NORMAL_CACHE)
     }
 }

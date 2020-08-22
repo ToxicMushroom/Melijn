@@ -6,9 +6,10 @@ import me.melijn.melijnbot.internals.services.bans.BanService
 import me.melijn.melijnbot.internals.services.birthday.BirthdayService
 import me.melijn.melijnbot.internals.services.donator.DonatorService
 import me.melijn.melijnbot.internals.services.message.MessageCleanerService
-import me.melijn.melijnbot.internals.services.music.SongCacheCleanerService
 import me.melijn.melijnbot.internals.services.music.SpotifyService
 import me.melijn.melijnbot.internals.services.mutes.MuteService
+import me.melijn.melijnbot.internals.services.reddit.RedditAboutService
+import me.melijn.melijnbot.internals.services.reddit.RedditService
 import me.melijn.melijnbot.internals.services.roles.RolesService
 import me.melijn.melijnbot.internals.services.stats.StatsService
 import me.melijn.melijnbot.internals.services.voice.VoiceScoutService
@@ -20,28 +21,39 @@ import net.dv8tion.jda.api.sharding.ShardManager
 class ServiceManager(val daoManager: DaoManager, val webManager: WebManager) {
 
     var started = false
+    var slowStarted = false
     var shardManager: ShardManager? = null
     val services = mutableListOf<Service>()
+    val slowServices = mutableListOf<Service>()
 
+    // TODO make everything able to start as fast* services
     fun init(container: Container, shardManager: ShardManager) {
         this.shardManager = shardManager
-        services.add(BanService(shardManager, daoManager))
-        services.add(MuteService(shardManager, daoManager))
-        services.add(StatsService(shardManager, webManager.botListApi))
-        services.add(BirthdayService(shardManager, daoManager))
-        //services.add(MemSpammerService())
+        slowServices.add(BanService(shardManager, daoManager))
+        slowServices.add(MuteService(shardManager, daoManager))
+        slowServices.add(StatsService(shardManager, webManager.botListApi))
+        slowServices.add(BirthdayService(shardManager, daoManager))
         webManager.spotifyApi?.let { spotifyApi ->
             services.add(SpotifyService(spotifyApi))
         }
 
-        services.add(SongCacheCleanerService(daoManager.songCacheWrapper))
         services.add(MessageCleanerService(daoManager.messageHistoryWrapper))
-        services.add(VoiceService(container, shardManager))
-        services.add(VoiceScoutService(container, shardManager))
+        slowServices.add(VoiceService(container, shardManager))
+        slowServices.add(VoiceScoutService(container, shardManager))
         services.add(DonatorService(container, shardManager))
-        services.add(RolesService(daoManager.tempRoleWrapper, shardManager))
-        services.add(VoteReminderService(daoManager))
-        //services.add(BrokenService(container, shardManager))
+        slowServices.add(RolesService(daoManager.tempRoleWrapper, shardManager))
+        slowServices.add(VoteReminderService(daoManager))
+        services.add(RedditService(webManager.httpClient, daoManager.driverManager))
+        services.add(RedditAboutService(webManager.httpClient, daoManager.driverManager))
+    }
+
+    fun startSlowservices() {
+        requireNotNull(shardManager) { "Init first!" }
+        slowServices.forEach { service ->
+            service.start()
+        }
+
+        slowStarted = true
     }
 
     fun startServices() {

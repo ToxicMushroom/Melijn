@@ -1,16 +1,18 @@
 package me.melijn.melijnbot.database.logchannel
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import me.melijn.melijnbot.enums.LogChannelType
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class LogChannelDao(driverManager: DriverManager) : Dao(driverManager) {
+class LogChannelDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "logChannels"
     override val tableStructure: String = "guildId bigInt, type varchar(64), channelId bigInt"
     override val primaryKey: String = "guildId, type"
+
+    override val cacheName: String = "channels"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
@@ -27,12 +29,12 @@ class LogChannelDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId, type.toString())
     }
 
-    suspend fun set(guildId: Long, type: LogChannelType, channelId: Long) {
+    fun set(guildId: Long, type: LogChannelType, channelId: Long) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, type, channelId) VALUES (?, ?, ?) ON CONFLICT (guildId,  type) DO UPDATE SET channelId = ?",
             guildId, type.toString(), channelId, channelId)
     }
 
-    suspend fun unset(guildId: Long, type: LogChannelType) {
+    fun unset(guildId: Long, type: LogChannelType) {
         driverManager.executeUpdate("DELETE FROM $table WHERE guildId = ? AND type = ?",
             guildId, type.toString())
     }

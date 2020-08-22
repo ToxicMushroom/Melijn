@@ -1,15 +1,17 @@
 package me.melijn.melijnbot.database.disabled
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class DisabledCommandDao(driverManager: DriverManager) : Dao(driverManager) {
+class DisabledCommandDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "disabledCommands"
     override val tableStructure: String = "guildId bigint, commandId varchar(16)"
     override val primaryKey: String = "guildId, commandId"
+
+    override val cacheName: String = "disabledcommands"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
@@ -31,7 +33,7 @@ class DisabledCommandDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId, commandId)
     }
 
-    suspend fun insert(guildId: Long, commandId: String) {
+    fun insert(guildId: Long, commandId: String) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, commandId) VALUES (?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
             guildId, commandId)
     }

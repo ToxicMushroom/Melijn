@@ -317,8 +317,8 @@ object ImageCommandUtil {
         val fps = getIntegerFromArgN(context, argInt + argumentAmount)?.toFloat()
 
         transform(decoder, fps, repeat, argData).use { baos ->
-            sendFileRsp(context, baos.toByteArray(), "gif")
             lmsg?.delete()?.queue()
+            sendFileRsp(context, baos.toByteArray(), "gif")
         }
     }
 }

@@ -84,7 +84,7 @@ class RemoveCommand : AbstractCommand("command.remove") {
             return null
         }
         for (i in ints) {
-            if (i < start - 1 || i > end - 1) {
+            if (i < (start - 1) || i > (end - 1)) {
                 val msg = context.getTranslation("message.number.notinrange")
                     .withVariable(PLACEHOLDER_ARG, i + 1)
                     .withVariable("start", start)

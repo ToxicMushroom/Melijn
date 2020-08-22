@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.role.SelfRoleGroup
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
@@ -75,7 +74,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             require(name != null) { "what.." }
 
             val wrapper = context.daoManager.selfRoleWrapper
-            val map = wrapper.selfRoleCache.get(context.guildId).await()
+            val map = wrapper.getMap(context.guildId)
 
             val data = map[group.groupName] ?: return
 
@@ -153,7 +152,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             require(name != null) { "what.." }
 
             val wrapper = context.daoManager.selfRoleWrapper
-            val map = wrapper.selfRoleCache.get(context.guildId).await()
+            val map = wrapper.getMap(context.guildId)
 
             val data = map[group.groupName] ?: return
 
@@ -237,7 +236,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val wrapper = context.daoManager.selfRoleGroupWrapper
             val wrapper2 = context.daoManager.selfRoleWrapper
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
-            val selfRoles = wrapper2.selfRoleCache[context.guildId].await()[group.groupName]
+            val selfRoles = wrapper2.getMap(context.guildId)[group.groupName]
 
             if (selfRoles == null || selfRoles.isEmpty) {
                 val msg = context.getTranslation("$root.noselfroles.forgroup")
@@ -399,6 +398,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
         init {
             name = "group"
+            aliases = arrayOf("g")
             children = arrayOf(   // Groups will have lite ids, the arg for add will be the displayname
                 AddArg(root),     // Adds a group
                 RemoveArg(root),  // Removes a group
@@ -821,8 +821,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             }
 
             override suspend fun execute(context: CommandContext) {
-                val list = context.daoManager.selfRoleGroupWrapper.selfRoleGroupCache.get(context.guildId)
-                    .await()
+                val list = context.daoManager.selfRoleGroupWrapper.getMap(context.guildId)
                     .sortedBy { it.groupName }
 
                 val title = context.getTranslation("$root.title")
@@ -958,8 +957,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
             val pair = getEmotejiByArgsN(context, 1) ?: return
             val selfRoleWrapper = context.daoManager.selfRoleWrapper
-            val guildSelfRoles = selfRoleWrapper.selfRoleCache.get(context.guildId)
-                .await()[group.groupName] ?: throw IllegalArgumentException("Angry boy :c")
+            val guildSelfRoles = selfRoleWrapper.getMap(context.guildId)[group.groupName]
+                ?: throw IllegalArgumentException("Angry boy :c")
 
             val emotejis = mutableListOf<String>()
             val roleIds = mutableListOf<Long>()
@@ -1029,8 +1028,8 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
             val selfRoleWrapper = context.daoManager.selfRoleWrapper
             val group = getSelfRoleGroupByArgNMessage(context, 0) ?: return
-            val guildSelfRoles = selfRoleWrapper.selfRoleCache.get(context.guildId)
-                .await()[group.groupName] ?: throw IllegalArgumentException("Angry boy :c")
+            val guildSelfRoles = selfRoleWrapper.getMap(context.guildId)[group.groupName]
+                ?: throw IllegalArgumentException("Angry boy :c")
             val index = getIntegerFromArgNMessage(context, 1, 1, guildSelfRoles.length()) ?: return
 
             val dataEntry = guildSelfRoles.getArray(index)
@@ -1065,7 +1064,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
         override suspend fun execute(context: CommandContext) {
             val wrapper = context.daoManager.selfRoleWrapper
-            val map = wrapper.selfRoleCache.get(context.guildId).await()
+            val map = wrapper.getMap(context.guildId)
 
 
             val msg = if (map.isNotEmpty()) {
@@ -1112,7 +1111,7 @@ class SelfRoleCommand : AbstractCommand("command.selfrole") {
 
 suspend fun getSelfRoleGroupByGroupNameN(context: CommandContext, group: String): SelfRoleGroup? {
     val wrapper = context.daoManager.selfRoleGroupWrapper
-    return wrapper.selfRoleGroupCache[context.guildId].await().firstOrNull { (groupName) ->
+    return wrapper.getMap(context.guildId).firstOrNull { (groupName) ->
         groupName == group
     }
 }
@@ -1121,7 +1120,7 @@ suspend fun getSelfRoleGroupByArgNMessage(context: CommandContext, index: Int): 
     val wrapper = context.daoManager.selfRoleGroupWrapper
     val group = getStringFromArgsNMessage(context, index, 1, 64)
         ?: return null
-    val selfRoleGroup = wrapper.selfRoleGroupCache[context.guildId].await().firstOrNull { (groupName) ->
+    val selfRoleGroup = wrapper.getMap(context.guildId).firstOrNull { (groupName) ->
         groupName == group
     }
     if (selfRoleGroup == null) {

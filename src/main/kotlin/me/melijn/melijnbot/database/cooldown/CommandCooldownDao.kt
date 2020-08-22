@@ -1,16 +1,18 @@
 package me.melijn.melijnbot.database.cooldown
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 
-class CommandCooldownDao(driverManager: DriverManager) : Dao(driverManager) {
+class CommandCooldownDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "commandCooldowns"
     override val tableStructure: String = "guildId bigint, commandId varchar(16), cooldown bigint"
     override val primaryKey: String = "guildId, commandId"
+
+    override val cacheName: String = "command:cooldown"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
@@ -26,7 +28,7 @@ class CommandCooldownDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId)
     }
 
-    suspend fun insert(guildId: Long, commandId: String, cooldown: Long) {
+    fun insert(guildId: Long, commandId: String, cooldown: Long) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, commandId, cooldown) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO NOTHING",
             guildId, commandId, cooldown)
     }

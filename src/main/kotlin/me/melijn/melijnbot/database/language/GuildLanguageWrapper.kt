@@ -1,40 +1,26 @@
 package me.melijn.melijnbot.database.language
 
-import com.google.common.cache.CacheBuilder
-import me.melijn.melijnbot.database.FREQUENTLY_USED_CACHE
-import me.melijn.melijnbot.enums.Language
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 
 class GuildLanguageWrapper(private val languageDao: GuildLanguageDao) {
 
-    val languageCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, String> { key ->
-            getLanguage(key)
-        })
+    suspend fun getLanguage(userId: Long): String {
+        val result = languageDao.getCacheEntry(userId, HIGHER_CACHE)
+        if (result != null) return result
 
-    private fun getLanguage(guildId: Long): CompletableFuture<String> {
-        val languageFuture = CompletableFuture<String>()
-       TaskManager.async {
-            val language = languageDao.get(guildId)
-            languageFuture.complete(language)
-        }
-        return languageFuture
+        val language = languageDao.get(userId)
+        languageDao.setCacheEntry(userId, language, NORMAL_CACHE)
+        return language
     }
 
-    suspend fun setLanguage(guildId: Long, language: String) {
-        val future = CompletableFuture<String>()
-        languageCache.put(guildId, future)
+    fun setLanguage(userId: Long, language: String) {
+        languageDao.set(userId, language)
+        languageDao.setCacheEntry(userId, language, NORMAL_CACHE)
+    }
 
-        if (language.isEmpty()) {
-            future.complete(Language.EN.toString())
-            languageDao.remove(guildId)
-        } else {
-            future.complete(language)
-            languageDao.set(guildId, language)
-        }
+    fun removeLanguage(authorId: Long) {
+        languageDao.remove(authorId)
+        languageDao.setCacheEntry(authorId, "", NORMAL_CACHE)
     }
 }

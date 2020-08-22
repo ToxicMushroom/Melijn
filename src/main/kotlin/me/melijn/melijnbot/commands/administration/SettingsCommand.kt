@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.ChannelType
 import me.melijn.melijnbot.enums.LogChannelType
 import me.melijn.melijnbot.enums.RoleType
@@ -39,49 +38,56 @@ class SettingsCommand : AbstractCommand("command.settings") {
 
         val guildId = guild.idLong
         val daoManager = context.daoManager
-        val roleCache = daoManager.roleWrapper.roleCache
-        val channelCache = daoManager.channelWrapper.channelCache
-        val logChannelCache = daoManager.logChannelWrapper.logChannelCache
-        val logChannels = LogChannelType.values().joinToString("\n") { type ->
-            "**${type.text}:** " + idToChannelMention(logChannelCache.get(Pair(guildId, type)).get())
+        val roleWrapper = daoManager.roleWrapper
+        val channelWrapper = daoManager.channelWrapper
+        val logChannelWrapper = daoManager.logChannelWrapper
+        val logChannels = StringBuilder()
+        for (type in LogChannelType.values()) {
+            logChannels.append("**")
+                .append(type.text)
+                .append(":** ")
+                .append(idToChannelMention(logChannelWrapper.getChannelId(guildId, type)))
+                .append("\n")
         }
-        val ec = daoManager.embedColorWrapper.embedColorCache.get(guildId).await()
-        val pec = daoManager.userEmbedColorWrapper.userEmbedColorCache.get(context.authorId).await()
+        logChannels.removeSuffix("\n")
+        val ec = daoManager.embedColorWrapper.getColor(guildId)
+        val pec = daoManager.userEmbedColorWrapper.getColor(context.authorId)
 
-        val description = "MusicChannel:** " + idToChannelMention(daoManager.musicChannelWrapper.musicChannelCache.get(guildId).await()) +
-            "\n**StreamUrl:** " + stringToString(daoManager.streamUrlWrapper.streamUrlCache.get(guildId).await()) +
+        val description = "MusicChannel:** " + idToChannelMention(daoManager.musicChannelWrapper.getChannel(guildId)) +
+            "\n**StreamUrl:** " + stringToString(daoManager.streamUrlWrapper.getUrl(guildId)) +
             "\n" +
-            "\n**MuteRole:** " + idToRoleMention(roleCache.get(Pair(guildId, RoleType.MUTE)).await()) +
-            "\n**UnverifiedRole:** " + idToRoleMention(roleCache.get(Pair(guildId, RoleType.UNVERIFIED)).await()) +
-            "\n**BirthDayRole:** " + idToRoleMention(roleCache.get(Pair(guildId, RoleType.BIRTHDAY)).await()) +
+            "\n**MuteRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.MUTE)) +
+            "\n**UnverifiedRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.UNVERIFIED)) +
+            "\n**BirthDayRole:** " + idToRoleMention(roleWrapper.getRoleId(guildId, RoleType.BIRTHDAY)) +
             "\n" +
-            "\n**VerificationChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.VERIFICATION)).await()) +
-            "\n**JoinChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.JOIN)).await()) +
-            "\n**LeaveChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.LEAVE)).await()) +
-            "\n**SelfRoleChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.SELFROLE)).await()) +
-            "\n**BirthDayChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.BIRTHDAY)).await()) +
-            "\n**PreVerificationJoinChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.PRE_VERIFICATION_JOIN)).await()) +
-            "\n**PreVerificationLeaveChannel:** " + idToChannelMention(channelCache.get(Pair(guildId, ChannelType.PRE_VERIFICATION_LEAVE)).await()) +
+            "\n**VerificationChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.VERIFICATION)) +
+            "\n**JoinChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.JOIN)) +
+            "\n**LeaveChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.LEAVE)) +
+            "\n**SelfRoleChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.SELFROLE)) +
+            "\n**BirthDayChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.BIRTHDAY)) +
+            "\n**PreVerificationJoinChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId, ChannelType.PRE_VERIFICATION_JOIN)) +
+            "\n**PreVerificationLeaveChannel:** " + idToChannelMention(channelWrapper.getChannelId(guildId,ChannelType.PRE_VERIFICATION_LEAVE)) +
+            "\n" +
             "\n$logChannels" +
             "\n" +
-            "\n**VerificationPassword:** " + stringToString(daoManager.verificationPasswordWrapper.verificationPasswordCache.get(guildId).await()) +
-            "\n**VerificationEmoteji:** " + stringToString(daoManager.verificationEmotejiWrapper.verificationEmotejiCache.get(guildId).await()) +
-            "\n**VerificationType:** " + stringToString(daoManager.verificationTypeWrapper.verificationTypeCache.get(guildId).await().toUCSC()) +
-            "\n**MaxVerificationFlowRate:** " + daoManager.verificationUserFlowRateWrapper.verificationUserFlowRateCache.get(guildId).await() +
+            "\n**VerificationPassword:** " + stringToString(daoManager.verificationPasswordWrapper.getPassword(guildId)) +
+            "\n**VerificationEmoteji:** " + stringToString(daoManager.verificationEmotejiWrapper.getEmoteji(guildId)) +
+            "\n**VerificationType:** " + stringToString(daoManager.verificationTypeWrapper.getType(guildId).toUCSC()) +
+            "\n**MaxVerificationFlowRate:** " + daoManager.verificationUserFlowRateWrapper.getFlowRate(guildId) +
             "\n" +
             "\n**Prefixes:" +
-            daoManager.guildPrefixWrapper.prefixCache.get(guildId).await().joinToString { pref ->
+            daoManager.guildPrefixWrapper.getPrefixes(guildId).joinToString { pref ->
                 "\n  - **" + MarkdownSanitizer.escape(pref) + "**"
             } +
             "\nPrivatePrefixes:" +
-            daoManager.userPrefixWrapper.prefixCache.get(context.authorId).await().joinToString { pref ->
+            daoManager.userPrefixWrapper.getPrefixes(context.authorId).joinToString { pref ->
                 "\n  - **" + MarkdownSanitizer.escape(pref) + "**"
             } +
             "\nEmbedState: **" + booleanToString(context, !daoManager.embedDisabledWrapper.embedDisabledCache.contains(guildId)) +
             "\n**EmbedColor: **" + (if (ec == 0) "unset" else "#" + ec.toHexString()) +
             "\n**PrivateEmbedColor: **" + (if (pec == 0) "unset" else pec.toHexString()) +
-            "\n**Language: **" + daoManager.guildLanguageWrapper.languageCache.get(guildId).await() +
-            "\n**PrivateLanguage: **" + stringToString(daoManager.userLanguageWrapper.languageCache.get(context.authorId).await()) + "**"
+            "\n**Language: **" + daoManager.guildLanguageWrapper.getLanguage(guildId) +
+            "\n**PrivateLanguage: **" + stringToString(daoManager.userLanguageWrapper.getLanguage(context.authorId)) + "**"
 
 
 

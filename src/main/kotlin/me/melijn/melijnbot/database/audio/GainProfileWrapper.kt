@@ -1,44 +1,36 @@
 package me.melijn.melijnbot.database.audio
 
-import com.google.common.cache.CacheBuilder
-import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.IMPORTANT_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import com.fasterxml.jackson.module.kotlin.readValue
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.objectMapper
 
 class GainProfileWrapper(private val gainProfileDao: GainProfileDao) {
 
-    val gainProfileCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, Map<String, GainProfile>> { id ->
-            getGainProfile(id)
-        })
 
-    private fun getGainProfile(id: Long): CompletableFuture<Map<String, GainProfile>> {
-        val future = CompletableFuture<Map<String, GainProfile>>()
-
-       TaskManager.async {
-            val profileMap = gainProfileDao.get(id)
-            future.complete(profileMap)
+    suspend fun getGainProfile(id: Long): Map<String, GainProfile> {
+        val cached = gainProfileDao.getCacheEntry(id, HIGHER_CACHE)?.let {
+            objectMapper.readValue<Map<String, GainProfile>>(it)
         }
+        if (cached != null) return cached
 
-        return future
+        val gps = gainProfileDao.get(id)
+        gainProfileDao.setCacheEntry(id, objectMapper.writeValueAsString(gps), NORMAL_CACHE)
+        return gps
     }
 
     suspend fun add(id: Long, name: String, bands: FloatArray) {
-        val map = gainProfileCache[id].await().toMutableMap()
+        val map = getGainProfile(id).toMutableMap()
         map[name] = GainProfile.fromString(bands.joinToString(","))
 
-        gainProfileCache.put(id, CompletableFuture.completedFuture(map))
         gainProfileDao.insert(id, name, bands.joinToString(","))
+        gainProfileDao.setCacheEntry(id, objectMapper.writeValueAsString(map), NORMAL_CACHE)
     }
 
     suspend fun remove(guildId: Long, profileName: String) {
-        val map = gainProfileCache.get(guildId).await().toMutableMap()
+        val map = getGainProfile(guildId).toMutableMap()
         map.remove(profileName)
         gainProfileDao.delete(guildId, profileName)
-        gainProfileCache.put(guildId, CompletableFuture.completedFuture(map))
+        gainProfileDao.setCacheEntry(guildId, objectMapper.writeValueAsString(map), NORMAL_CACHE)
     }
 }

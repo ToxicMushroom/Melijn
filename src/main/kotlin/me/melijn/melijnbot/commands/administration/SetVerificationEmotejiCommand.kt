@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -21,7 +20,7 @@ class SetVerificationEmotejiCommand : AbstractCommand("command.setverificationem
     override suspend fun execute(context: CommandContext) {
         val wrapper = context.daoManager.verificationEmotejiWrapper
         if (context.args.isEmpty()) {
-            val code = wrapper.verificationEmotejiCache.get(context.guildId).await()
+            val code = wrapper.getEmoteji(context.guildId)
             val part = if (code.isBlank()) {
                 "unset"
             } else {

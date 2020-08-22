@@ -6,11 +6,11 @@ class DenyVoteReminderWrapper(private val denyVoteReminderDao: DenyVoteReminderD
         return denyVoteReminderDao.contains(userId)
     }
 
-    suspend fun add(userId: Long) {
+    fun add(userId: Long) {
         denyVoteReminderDao.add(userId)
     }
 
-    suspend fun remove(userId: Long) {
-        denyVoteReminderDao.remove(userId)
+    fun remove(userId: Long) {
+        denyVoteReminderDao.delete(userId)
     }
 }

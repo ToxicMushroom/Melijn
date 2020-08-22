@@ -1,37 +1,27 @@
 package me.melijn.melijnbot.database.channel
 
-import com.google.common.cache.CacheBuilder
-import me.melijn.melijnbot.database.NOT_IMPORTANT_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
 
 class StreamUrlWrapper(private val streamUrlDao: StreamUrlDao) {
 
-    val streamUrlCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(NOT_IMPORTANT_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, String> { key ->
-            getCode(key)
-        })
+    suspend fun getUrl(guildId: Long): String {
+        val cached = streamUrlDao.getCacheEntry(guildId, HIGHER_CACHE)
+        if (cached != null) return cached
 
-    private fun getCode(guildId: Long): CompletableFuture<String> {
-        val future = CompletableFuture<String>()
-       TaskManager.async {
-            val url = streamUrlDao.get(guildId)
-            future.complete(url)
-        }
-        return future
+        val result = streamUrlDao.get(guildId)
+        streamUrlDao.setCacheEntry(guildId, result, NORMAL_CACHE)
+        return result
     }
 
     suspend fun setUrl(guildId: Long, url: String) {
-        streamUrlCache.put(guildId, CompletableFuture.completedFuture(url))
         streamUrlDao.set(guildId, url)
+        streamUrlDao.setCacheEntry(guildId, url, NORMAL_CACHE)
     }
 
     suspend fun removeUrl(guildId: Long) {
-        streamUrlCache.put(guildId, CompletableFuture.completedFuture(""))
         streamUrlDao.remove(guildId)
+        streamUrlDao.setCacheEntry(guildId, "", NORMAL_CACHE)
     }
 
 }

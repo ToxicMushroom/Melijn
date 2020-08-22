@@ -15,7 +15,7 @@ class MessageIdsDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun set(guildId: Long, idType: String, ids: String) {
+    fun set(guildId: Long, idType: String, ids: String) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, idType, ids) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET ids = ?",
             guildId, idType, ids, ids)
     }

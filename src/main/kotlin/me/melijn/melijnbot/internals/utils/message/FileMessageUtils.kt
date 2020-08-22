@@ -22,7 +22,7 @@ import javax.imageio.ImageIO
 
 
 suspend fun sendRsp(context: CommandContext, image: BufferedImage, extension: String) {
-    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
+    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
         sendRsp(context.textChannel, context.daoManager, context.getLanguage(), image, extension)
     } else {
@@ -74,8 +74,48 @@ suspend fun sendMsg(textChannel: TextChannel, image: BufferedImage, extension: S
     }
 }
 
+
+suspend fun sendFileRsp(context: CommandContext, msg: String, bytes: ByteArray, extension: String) {
+    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
+    if (premiumGuild) {
+        sendFileRsp(context.textChannel, msg, context.daoManager, context.getLanguage(), bytes, extension)
+    } else {
+        sendFile(context, msg, bytes, extension)
+    }
+}
+
+suspend fun sendFile(context: CommandContext, msg: String, bytes: ByteArray, extension: String) {
+    if (context.isFromGuild) {
+        sendFile(context.getLanguage(), msg, context.textChannel, bytes, extension)
+    } else {
+        sendFile(context.getLanguage(), msg, context.privateChannel, bytes, extension)
+    }
+}
+
+fun sendFileRsp(textChannel: TextChannel, msg: String, daoManager: DaoManager, language: String, bytes: ByteArray, extension: String) {
+    require(textChannel.canTalk()) { "Cannot talk in this channel " + textChannel.name }
+
+    if (textChannel.guild.maxFileSize < (bytes.size)) {
+        val size = StringUtils.humanReadableByteCountBin(bytes.size)
+        val max = StringUtils.humanReadableByteCountBin(textChannel.jda.selfUser.allowedFileSize)
+
+        val err = i18n.getTranslation(language, "message.filetoobig")
+            .withVariable("size", size)
+            .withVariable("max", max)
+        sendRsp(textChannel, daoManager, err)
+        return
+    }
+
+    TaskManager.async(textChannel) {
+        val message = textChannel.sendMessage(msg).addFile(bytes, "finished.$extension").awaitOrNull()
+            ?: return@async
+
+        handleRspDelete(daoManager, message)
+    }
+}
+
 suspend fun sendFileRsp(context: CommandContext, bytes: ByteArray, extension: String) {
-    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.guildSupporterIds.contains(context.guildId)
+    val premiumGuild = context.isFromGuild && context.daoManager.supporterWrapper.getGuilds().contains(context.guildId)
     if (premiumGuild) {
         sendFileRsp(context.textChannel, context.daoManager, context.getLanguage(), bytes, extension)
     } else {
@@ -142,6 +182,36 @@ fun sendFile(language: String, textChannel: TextChannel, bytes: ByteArray, exten
     }
 
     textChannel.sendFile(bytes, "finished.$extension").queue()
+}
+
+fun sendFile(language: String, msg: String, privateChannel: PrivateChannel, bytes: ByteArray, extension: String) {
+    if (privateChannel.jda.selfUser.allowedFileSize < (bytes.size)) {
+        val size = StringUtils.humanReadableByteCountBin(bytes.size)
+        val max = StringUtils.humanReadableByteCountBin(privateChannel.jda.selfUser.allowedFileSize)
+        val msg1 = i18n.getTranslation(language, "message.filetoobig")
+            .withVariable("size", size)
+            .withVariable("max", max)
+        sendMsg(privateChannel, msg1)
+        return
+    }
+
+    privateChannel.sendMessage(msg).addFile(bytes, "finished.$extension").queue()
+}
+
+fun sendFile(language: String, msg: String, textChannel: TextChannel, bytes: ByteArray, extension: String) {
+    require(textChannel.canTalk()) { "Cannot talk in this channel " + textChannel.name }
+
+    if (textChannel.guild.maxFileSize < (bytes.size)) {
+        val size = StringUtils.humanReadableByteCountBin(bytes.size)
+        val max = StringUtils.humanReadableByteCountBin(textChannel.jda.selfUser.allowedFileSize)
+        val msg = i18n.getTranslation(language, "message.filetoobig")
+            .withVariable("size", size)
+            .withVariable("max", max)
+        sendMsg(textChannel, msg)
+        return
+    }
+
+    textChannel.sendMessage(msg).addFile(bytes, "finished.$extension").queue()
 }
 
 

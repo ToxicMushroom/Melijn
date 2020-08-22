@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
@@ -19,7 +18,7 @@ class SetBotLogStateCommand : AbstractCommand("command.setbotlogstate") {
     override suspend fun execute(context: CommandContext) {
         val wrapper = context.daoManager.botLogStateWrapper
         if (context.args.isEmpty()) {
-            val state = wrapper.botLogStateCache.get(context.guildId).await()
+            val state = wrapper.shouldLog(context.guildId)
             val msg = context.getTranslation("$root.show.$state")
             sendRsp(context, msg)
             return

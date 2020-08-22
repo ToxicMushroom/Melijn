@@ -1,7 +1,6 @@
 package me.melijn.melijnbot.commands.administration
 
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.enums.Language
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
@@ -35,7 +34,7 @@ class SetLanguageCommand : AbstractCommand("command.setlanguage") {
 
     private suspend fun sendCurrentLang(context: CommandContext) {
         val wrapper = context.daoManager.guildLanguageWrapper
-        val lang = wrapper.languageCache.get(context.guildId).await()
+        val lang = wrapper.getLanguage(context.guildId)
 
         val msg = context.getTranslation(
             if (lang.isBlank()) {

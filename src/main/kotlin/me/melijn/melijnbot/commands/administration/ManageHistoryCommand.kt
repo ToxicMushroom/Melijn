@@ -23,6 +23,10 @@ class ManageHistoryCommand : AbstractCommand("command.managehistory") {
         commandCategory = CommandCategory.ADMINISTRATION
     }
 
+    override suspend fun execute(context: CommandContext) {
+        sendSyntax(context)
+    }
+
     class ClearArg(parent: String) : AbstractCommand("$parent.clear") {
 
         init {
@@ -171,7 +175,5 @@ class ManageHistoryCommand : AbstractCommand("command.managehistory") {
         }
     }
 
-    override suspend fun execute(context: CommandContext) {
-        sendSyntax(context)
-    }
+
 }

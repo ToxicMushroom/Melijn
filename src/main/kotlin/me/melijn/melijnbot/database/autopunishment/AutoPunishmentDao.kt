@@ -1,15 +1,17 @@
 package me.melijn.melijnbot.database.autopunishment
 
-import me.melijn.melijnbot.database.Dao
+import me.melijn.melijnbot.database.CacheDBDao
 import me.melijn.melijnbot.database.DriverManager
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class AutoPunishmentDao(driverManager: DriverManager) : Dao(driverManager) {
+class AutoPunishmentDao(driverManager: DriverManager) : CacheDBDao(driverManager) {
 
     override val table: String = "autoPunishments"
     override val tableStructure: String = "guildId bigint, userId bigint, pointsMap varchar(1024)"
     override val primaryKey: String = "guildId, userId"
+
+    override val cacheName: String = "autopunishment"
 
     init {
         driverManager.registerTable(table, tableStructure, primaryKey)
@@ -25,7 +27,7 @@ class AutoPunishmentDao(driverManager: DriverManager) : Dao(driverManager) {
         }, guildId, userId)
     }
 
-    suspend fun set(guildId: Long, userId: Long, pointsMap: String) {
+    fun set(guildId: Long, userId: Long, pointsMap: String) {
         driverManager.executeUpdate("INSERT INTO $table (guildId, userId, pointsMap) VALUES (?, ?, ?) ON CONFLICT ($primaryKey) DO UPDATE SET pointsMap = ?",
             guildId, userId, pointsMap, pointsMap)
     }

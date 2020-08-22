@@ -1,8 +1,6 @@
 package me.melijn.melijnbot.internals.events.eventutil
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
-import me.melijn.melijnbot.commands.administration.getCacheFromFilterType
 import me.melijn.melijnbot.database.filter.FilterGroup
 import me.melijn.melijnbot.enums.FilterMode
 import me.melijn.melijnbot.enums.FilterType
@@ -39,8 +37,7 @@ object FilterUtil {
         val apWrapper = daoManager.autoPunishmentWrapper
 
         // Punish points map for a user (guildId, member) -> Map<filtergroupname, points>
-        val ppMap = apWrapper.autoPunishmentCache.get(Pair(guild.idLong, member.idLong))
-            .await()
+        val ppMap = apWrapper.getPointsMap(guild.idLong, member.idLong)
             .toMutableMap()
 
         // Loop through the filter groups
@@ -152,8 +149,7 @@ object FilterUtil {
     }
 
     private suspend fun getFilterGroups(container: Container, guildId: Long, channelId: Long): List<FilterGroup> {
-        return container.daoManager.filterGroupWrapper.filterGroupCache.get(guildId)
-            .await()
+        return container.daoManager.filterGroupWrapper.getGroups(guildId)
             .filter { group ->
                 group.channels.contains(channelId) || group.channels.isEmpty()
             }
@@ -227,10 +223,7 @@ object FilterUtil {
     }
 
     private suspend fun getFiltersForGroup(container: Container, guildId: Long, fg: FilterGroup, type: FilterType): List<String> {
-        return getCacheFromFilterType(container.daoManager, type)
-            .get(Pair(guildId, fg.filterGroupName))
-            .await()
-
+        return container.daoManager.filterWrapper.getFilters(guildId, fg.filterGroupName, type)
     }
 
     private fun addPositions(message: String, positions: MutableMap<Int, Int>, detectionList: List<String>) {

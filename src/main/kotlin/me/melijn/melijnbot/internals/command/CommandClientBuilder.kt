@@ -18,6 +18,11 @@ class CommandClientBuilder(private val container: Container) {
 
     private val logger = LoggerFactory.getLogger(this::class.java.name)
 
+    init {
+        logger.info("Loading commands...")
+        container.daoManager.commandWrapper.clearCommands()
+    }
+
     private val commands = hashSetOf<AbstractCommand>(
         PunishmentCommand(),
         SetCommandStateCommand(),
@@ -212,19 +217,22 @@ class CommandClientBuilder(private val container: Container) {
         NightcoreCommand(),
         LeaderBoardCommand(),
         TopVotersCommand(),
-        ToggleVoteReminderCommand()
+        ToggleVoteReminderCommand(),
+        MikuCommand(),
+        RedisCommand(),
+        RedditCommand(),
+        MemeCommand(),
+        BonkCommand(),
+        OsuCommand(),
+        EmotesCommand()
     )
-
-    init {
-        container.daoManager.commandWrapper.clearCommands()
-    }
 
     fun build(): CommandClient {
         return CommandClient(commands.toSet(), container)
     }
 
     fun loadCommands(): CommandClientBuilder {
-        logger.info("Loading ${commands.size} commands...")
+
         TaskManager.async {
             container.daoManager.commandWrapper.bulkInsert(commands)
         }

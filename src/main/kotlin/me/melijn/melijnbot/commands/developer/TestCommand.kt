@@ -3,7 +3,10 @@ package me.melijn.melijnbot.commands.developer
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
 import me.melijn.melijnbot.internals.command.CommandContext
-import me.melijn.melijnbot.internals.utils.message.sendRsp
+import me.melijn.melijnbot.internals.embed.Embedder
+import me.melijn.melijnbot.internals.utils.message.sendEmbedRsp
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 
 class TestCommand : AbstractCommand("command.test") {
@@ -14,70 +17,31 @@ class TestCommand : AbstractCommand("command.test") {
         commandCategory = CommandCategory.DEVELOPER
     }
 
+    val logger: Logger = LoggerFactory.getLogger(TestCommand::class.java)
+
     override suspend fun execute(context: CommandContext) {
-        val start = System.currentTimeMillis()
-        context.daoManager.messageHistoryWrapper.clearOldMessages()
-        sendRsp(context, "Done, this took: ${(System.currentTimeMillis() - start) / 1000.0}s")
+        val eb = Embedder(context)
+            .setDescription("**Bot Stats**\n" +
+                "Shards: `1`\n" +
+                "Cached Users: `2`\n" +
+                "Servers: `6`\n" +
+                "Listening/VoiceChannels: `0/0`\n" +
+                "Threads: `0`\n" +
+                "Uptime: `00:24`\n" +
+                "Queued Tracks: `0`\n" +
+                "Music Players: `0`\n" +
+                "\n" +
+                "**Server Stats**\n" +
+                "Cores: `4`\n" +
+                "RAM Usage: `11653MB/15312MB`\n" +
+                "System Uptime: `4d 02:49:42`\n" +
+                "\n" +
+                "**JVM Stats**\n" +
+                "CPU Usage: `33.918%`\n" +
+                "Ram Usage: `34MB/512MB`\n" +
+                "Threads: `52/57`")
+            .setThumbnail(context.selfMember.user.effectiveAvatarUrl)
+
+        sendEmbedRsp(context, eb.build())
     }
 }
-
-//        val driverManager = context.daoManager.driverManager
-//
-//        var jrcounter = 0
-//        val jrw = context.daoManager.joinRoleWrapper
-//        val jrgw = context.daoManager.joinRoleGroupWrapper
-//
-//        driverManager.executeQuery("SELECT * FROM roles WHERE roleType = ?", { rs ->
-//            while (rs.next()) {
-//                runBlocking {
-//                    jrgw.insertOrUpdate(context.guildId, JoinRoleGroupInfo("basic", true, true))
-//                    val guildId = rs.getLong("guildId")
-//                    jrw.set(guildId, "basic", rs.getLong("roleId"), 100)
-//                }
-//                println("migrated ${jrcounter++} joinroles")
-//            }
-//        }, "JOIN")
-
-//        var srgcounter = 0
-//        val srgw = context.daoManager.selfRoleGroupWrapper
-//        driverManager.executeQuery("SELECT * FROM old_selfrolegroups", { rs ->
-//            while (rs.next()) {
-//                runBlocking {
-//                    srgw.insertOrUpdate(rs.getLong("guildId"),
-//                        SelfRoleGroup(
-//                            rs.getString("groupName"),
-//                            emptyList(),
-//                            rs.getLong("channelId"),
-//                            rs.getBoolean("isEnabled"),
-//                            "",
-//                            rs.getBoolean("isSelfRoleAble")
-//                        )
-//                    )
-//                }
-//                println("migrated ${srgcounter++} selfrolegroups")
-//            }
-//        })
-//
-//        val srw = context.daoManager.selfRoleWrapper
-//        val map = mutableMapOf<Long, Map<String, Map<String, Long>>>()
-//        driverManager.executeQuery("SELECT * FROM old_selfroles", { rs ->
-//            while (rs.next()) {
-//                val guildId = rs.getLong("guildId")
-//                val groupName = rs.getString("groupName")
-//                val guildMap = map.getOrDefault(guildId, emptyMap()).toMutableMap()
-//                val groupMap = guildMap.getOrDefault(groupName, emptyMap()).toMutableMap()
-//                groupMap[rs.getString("emoteji")] = rs.getLong("roleId")
-//                guildMap[groupName] = groupMap
-//                map[guildId] = guildMap
-//            }
-//        })
-//
-//        var srcounter = 0
-//        for ((guildId, guildMap) in map) {
-//            for ((group, emotejiMap) in guildMap) {
-//                for ((emote, roleId) in emotejiMap) {
-//                    srw.set(guildId, group, emote, roleId)
-//                    println("migrated ${srcounter++} selfroles")
-//                }
-//            }
-//        }

@@ -3,7 +3,8 @@ package me.melijn.melijnbot.database.command
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import java.util.*
-import kotlin.Comparator
+import java.util.Map.Entry.comparingByValue
+import kotlin.collections.Map.Entry
 import kotlin.math.max
 
 class CommandUsageWrapper(private val commandUsageDao: CommandUsageDao) {
@@ -26,6 +27,15 @@ class CommandUsageWrapper(private val commandUsageDao: CommandUsageDao) {
     private fun mapKeysToAbstractCommand(map: MutableMap<Int, Long>): MutableMap<AbstractCommand, Long> {
         val newMutableMap = mutableMapOf<AbstractCommand, Long>()
         for ((id, usageCount) in map) {
+            val cmd = Container.instance.commandMap[id] ?: continue
+            newMutableMap[cmd] = usageCount
+        }
+        return newMutableMap
+    }
+
+    private fun mapKeysToAbstractCommand(list: List<Entry<Int, Long>>): MutableMap<AbstractCommand, Long> {
+        val newMutableMap = mutableMapOf<AbstractCommand, Long>()
+        for ((id, usageCount) in list) {
             val cmd = Container.instance.commandMap[id] ?: continue
             newMutableMap[cmd] = usageCount
         }
@@ -55,12 +65,8 @@ class CommandUsageWrapper(private val commandUsageDao: CommandUsageDao) {
         return map.filter { cmd -> cmdList.contains(cmd.key) }.toMutableMap()
     }
 
-    private fun sortUsage(map: MutableMap<Int, Long>): MutableMap<Int, Long> {
-        val sorted = map.toSortedMap(Comparator { o1, o2 ->
-            val one = map.getOrDefault(o1, -1)
-            val two = map.getOrDefault(o2, -1)
-            two.compareTo(one)
-        })
-        return sorted.toMutableMap()
+    private fun sortUsage(map: MutableMap<Int, Long>): List<Entry<Int, Long>> {
+        val entries = map.entries.toList()
+        return entries.sortedWith(comparingByValue()).reversed()
     }
 }

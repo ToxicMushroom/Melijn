@@ -2,7 +2,6 @@ package me.melijn.melijnbot.internals.utils
 
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.Container
 import me.melijn.melijnbot.MelijnBot
 import me.melijn.melijnbot.commandutil.administration.MessageCommandUtil
@@ -490,7 +489,7 @@ object LogUtils {
         val messageType = MessageType.BIRTHDAY
         val language = getLanguage(daoManager, guildId)
         val messageWrapper = daoManager.messageWrapper
-        var message = messageWrapper.messageCache.get(Pair(guildId, messageType)).await()
+        var message = messageWrapper.getMessage(guildId, messageType)
         if (message == null) {
             val msg = i18n.getTranslation(language, "logging.birthday")
                 .withVariable("user", member.asTag)
@@ -532,7 +531,7 @@ object LogUtils {
         val daoManager = context.daoManager
         val pmLogChannel = guild.getAndVerifyLogChannelByType(daoManager, LogChannelType.PURGED_MESSAGE)
             ?: return
-        val botLogState = daoManager.botLogStateWrapper.botLogStateCache[pmLogChannel.guild.idLong].await()
+        val botLogState = daoManager.botLogStateWrapper.shouldLog(pmLogChannel.guild.idLong)
         val zoneId = getZoneId(daoManager, guild.idLong)
 
         val channel: TextChannel = messages.first().textChannel
@@ -642,6 +641,9 @@ object LogUtils {
             .setFooter("You can disable this reminder with >toggleVoteReminder")
             .build()
 
-        sendEmbed(pc, embedder)
+        try { // Handle closed dms
+            sendEmbed(pc, embedder)
+        } catch (t: Throwable) {
+        }
     }
 }

@@ -15,12 +15,12 @@ class PlaylistDao(driverManager: DriverManager) : Dao(driverManager) {
         driverManager.registerTable(table, tableStructure, primaryKey)
     }
 
-    suspend fun insert(id: Long, playlist: String) {
+    fun insert(id: Long, playlist: String) {
         driverManager.executeUpdate("INSERT INTO $table (id, playlist) VALUES (?, ?)",
             id, playlist)
     }
 
-    suspend fun delete(id: Long, playlist: String) {
+    fun delete(id: Long, playlist: String) {
         driverManager.executeUpdate("DELETE FROM $table WHERE id=? AND playlist=?",
             id, playlist)
     }

@@ -1,6 +1,5 @@
 package me.melijn.melijnbot.commands.administration
 
-import kotlinx.coroutines.future.await
 import me.melijn.melijnbot.database.role.JoinRoleGroupInfo
 import me.melijn.melijnbot.internals.command.AbstractCommand
 import me.melijn.melijnbot.internals.command.CommandCategory
@@ -117,7 +116,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 val name = getStringFromArgsNMessage(context, 0, 1, 64) ?: return
                 val wrapper = context.daoManager.joinRoleGroupWrapper
 
-                val sr = getSelfRoleGroupByGroupNameN(context, name)
+                val sr = getJoinRoleGroupByGroupNameN(context, name)
                 if (sr != null) {
                     val msg = context.getTranslation("$parent.exists")
                         .withVariable(PLACEHOLDER_PREFIX, context.usedPrefix)
@@ -169,7 +168,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
                 }
 
                 val wrapper = context.daoManager.joinRoleGroupWrapper
-                val list = wrapper.joinRoleGroupCache[context.guildId].await().sortedBy { (groupName) ->
+                val list = wrapper.getList(context.guildId).sortedBy { (groupName) ->
                     groupName
                 }
                 val index = (getIntegerFromArgNMessage(context, 0, 1, list.size) ?: return) - 1
@@ -195,7 +194,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
 
             override suspend fun execute(context: CommandContext) {
                 val wrapper = context.daoManager.joinRoleGroupWrapper
-                val list = wrapper.joinRoleGroupCache[context.guildId].await().sortedBy { (groupName) ->
+                val list = wrapper.getList(context.guildId).sortedBy { (groupName) ->
                     groupName
                 }
 
@@ -246,9 +245,6 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
 
             val msg = if (context.args.size > 2) {
                 val chance = getIntegerFromArgNMessage(context, 2, 1) ?: return
-
-
-
 
                 context.daoManager.joinRoleWrapper.set(context.guildId, group.groupName, role?.idLong ?: -1, chance)
 
@@ -319,7 +315,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
 
             val group = getJoinRoleGroupByArgNMessage(context, 0) ?: return
 
-            val jrInfo = context.daoManager.joinRoleWrapper.joinRoleCache.get(context.guildId).await()
+            val jrInfo = context.daoManager.joinRoleWrapper.getJRI(context.guildId)
             val map = jrInfo.dataMap.toMutableMap()
             val ls = map[group.groupName]?.toMutableList()
             if (ls == null) {
@@ -359,7 +355,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
 
         override suspend fun execute(context: CommandContext) {
             val wrapper = context.daoManager.joinRoleWrapper
-            val map = wrapper.joinRoleCache[context.guildId].await().dataMap
+            val map = wrapper.getJRI(context.guildId).dataMap
 
             if (map.isEmpty()) {
                 val msg = context.getTranslation("$root.empty")
@@ -392,7 +388,7 @@ class JoinRoleCommand : AbstractCommand("command.joinrole") {
 
 suspend fun getJoinRoleGroupByGroupNameN(context: CommandContext, group: String): JoinRoleGroupInfo? {
     val wrapper = context.daoManager.joinRoleGroupWrapper
-    return wrapper.joinRoleGroupCache[context.guildId].await().firstOrNull { (groupName) ->
+    return wrapper.getList(context.guildId).firstOrNull { (groupName) ->
         groupName == group
     }
 }
@@ -401,7 +397,7 @@ suspend fun getJoinRoleGroupByArgNMessage(context: CommandContext, index: Int): 
     val wrapper = context.daoManager.joinRoleGroupWrapper
     val group = getStringFromArgsNMessage(context, index, 1, 64)
         ?: return null
-    val joinRoleGroupInfo = wrapper.joinRoleGroupCache[context.guildId].await().firstOrNull { (groupName) ->
+    val joinRoleGroupInfo = wrapper.getList(context.guildId).firstOrNull { (groupName) ->
         groupName == group
     }
     if (joinRoleGroupInfo == null) {

@@ -1,42 +1,36 @@
 package me.melijn.melijnbot.database.filter
 
-import com.google.common.cache.CacheBuilder
-import kotlinx.coroutines.future.await
-import me.melijn.melijnbot.database.FREQUENTLY_USED_CACHE
-import me.melijn.melijnbot.internals.threading.TaskManager
-import me.melijn.melijnbot.internals.utils.loadingCacheFrom
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
+import com.fasterxml.jackson.module.kotlin.readValue
+import me.melijn.melijnbot.database.HIGHER_CACHE
+import me.melijn.melijnbot.database.NORMAL_CACHE
+import me.melijn.melijnbot.objectMapper
 
-class FilterGroupWrapper(val filterGroupDao: FilterGroupDao) {
+class FilterGroupWrapper(private val filterGroupDao: FilterGroupDao) {
 
-    val filterGroupCache = CacheBuilder.newBuilder()
-        .expireAfterAccess(FREQUENTLY_USED_CACHE, TimeUnit.MINUTES)
-        .build(loadingCacheFrom<Long, List<FilterGroup>> { guildId ->
-            getGroups(guildId)
-        })
-
-    private fun getGroups(guildId: Long): CompletableFuture<List<FilterGroup>> {
-        val future = CompletableFuture<List<FilterGroup>>()
-       TaskManager.async {
-            val mode = filterGroupDao.get(guildId)
-            future.complete(mode)
+    suspend fun getGroups(guildId: Long): List<FilterGroup> {
+        val cached = filterGroupDao.getCacheEntry(guildId, HIGHER_CACHE)?.let {
+            objectMapper.readValue<List<FilterGroup>>(it)
         }
-        return future
+        if (cached != null) return cached
+
+
+        val list = filterGroupDao.get(guildId)
+        filterGroupDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
+        return list
     }
 
     suspend fun putGroup(guildId: Long, group: FilterGroup) {
-        val list = filterGroupCache.get(guildId).await().toMutableList()
+        val list = getGroups(guildId).toMutableList()
         list.removeIf { (groupId) -> groupId == group.filterGroupName }
         list.add(group)
-        filterGroupCache.put(guildId, CompletableFuture.completedFuture(list))
+        filterGroupDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
         filterGroupDao.add(guildId, group)
     }
 
     suspend fun deleteGroup(guildId: Long, group: FilterGroup) {
-        val list = filterGroupCache.get(guildId).await().toMutableList()
+        val list = getGroups(guildId).toMutableList()
         list.removeIf { (groupId) -> groupId == group.filterGroupName }
-        filterGroupCache.put(guildId, CompletableFuture.completedFuture(list))
+        filterGroupDao.setCacheEntry(guildId, objectMapper.writeValueAsString(list), NORMAL_CACHE)
         filterGroupDao.remove(guildId, group)
     }
 }

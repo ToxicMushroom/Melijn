@@ -60,7 +60,7 @@ class ServerInfo : AbstractCommand("command.serverinfo") {
     }
 
     private suspend fun replaceFieldVar(context: CommandContext, guild: Guild, path: String): String {
-        val isSupporter = context.daoManager.supporterWrapper.guildSupporterIds.contains(guild.idLong)
+        val isSupporter = context.daoManager.supporterWrapper.getGuilds().contains(guild.idLong)
         val yes = context.getTranslation("yes")
         val no = context.getTranslation("no")
         return replaceFieldVar(context.getTranslation(path), guild, isSupporter, yes, no)
