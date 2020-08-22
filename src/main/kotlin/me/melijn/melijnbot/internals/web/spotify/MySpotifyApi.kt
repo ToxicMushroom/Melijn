@@ -14,7 +14,7 @@ import me.melijn.melijnbot.internals.threading.TaskManager
 import java.io.IOException
 import kotlin.math.min
 
-class MySpotifyApi(spotifySettings: Settings.Spotify) {
+class MySpotifyApi(spotifySettings: Settings.Api.Spotify) {
 
     private var spotifyApi: SpotifyApi = SpotifyApi.Builder()
         .setClientId(spotifySettings.clientId)

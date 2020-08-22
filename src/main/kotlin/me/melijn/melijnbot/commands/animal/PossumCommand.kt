@@ -24,7 +24,7 @@ class PossumCommand : AbstractCommand("command.possum") {
 
         val eb = Embedder(context)
             .setTitle(title)
-            .setImage(getRandomPossumUrl(web, context.container.settings.imghoard.token))
+            .setImage(getRandomPossumUrl(web, context.container.settings.api.imgHoard.token))
         sendEmbedRsp(context, eb.build())
     }
 

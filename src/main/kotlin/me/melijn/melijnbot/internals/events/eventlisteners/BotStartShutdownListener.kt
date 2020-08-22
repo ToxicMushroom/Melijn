@@ -29,7 +29,7 @@ class BotStartShutdownListener(container: Container) : AbstractListener(containe
             val readyShards = shardManager.shards.count { jda -> jda.status == JDA.Status.CONNECTED }
             logger.info("$readyShards/${shardManager.shards.size} shards ready")
 
-            if (readyShards != container.settings.shardCount) return
+            if (readyShards != container.settings.botInfo.shardCount) return
 
             if (!container.serviceManager.slowStarted) {
                 TaskManager.async {

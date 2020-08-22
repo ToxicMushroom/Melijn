@@ -33,7 +33,7 @@ class RestServer(container: Container) {
 
     private val jsonType = ContentType.parse("Application/JSON")
 
-    private val server: NettyApplicationEngine = embeddedServer(Netty, container.settings.restPort) {
+    private val server: NettyApplicationEngine = embeddedServer(Netty, container.settings.restServer.port) {
         routing {
             get("/guildCount") {
                 call.respondText {
@@ -311,7 +311,7 @@ class RestServer(container: Container) {
             }
 
             post("/voted") {
-                if (call.request.header("Authorization") != container.settings.tokens.melijnRest) {
+                if (call.request.header("Authorization") != container.settings.restServer.token) {
                     call.respondText(status = HttpStatusCode.Forbidden) { "bruh" }
                     return@post
                 }

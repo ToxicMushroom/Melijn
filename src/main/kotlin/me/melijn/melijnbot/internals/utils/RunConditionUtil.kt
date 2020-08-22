@@ -30,7 +30,7 @@ object RunConditionUtil {
     ): Boolean {
         val userId = event.author.idLong
         val language = getLanguage(container.daoManager, userId, if (event.isFromGuild) event.guild.idLong else -1)
-        val prefix = getNicerUsedPrefix(container.settings, commandParts[0])
+        val prefix = getNicerUsedPrefix(event.jda.selfUser, commandParts[0])
         return when (runCondition) {
             RunCondition.GUILD -> checkGuild(container, event, language)
             RunCondition.VC_BOT_ALONE_OR_USER_DJ -> checkOtherOrSameVCBotAloneOrUserDJ(container, event, command, language)
@@ -62,7 +62,7 @@ object RunConditionUtil {
         val supporters = container.daoManager.supporterWrapper.getUsers()
         return if (
             supporters.contains(event.author.idLong) ||
-            container.settings.developerIds.contains(event.author.idLong)
+            container.settings.botInfo.developerIds.contains(event.author.idLong)
         ) {
             true
         } else {
@@ -75,7 +75,7 @@ object RunConditionUtil {
 
     private suspend fun checkVoted(container: Container, event: MessageReceivedEvent, language: String): Boolean {
         return if (
-            container.settings.developerIds.contains(event.author.idLong) ||
+            container.settings.botInfo.developerIds.contains(event.author.idLong) ||
             container.daoManager.supporterWrapper.getUsers().contains(event.author.idLong) ||
             container.settings.environment == Environment.TESTING
         ) {
@@ -94,7 +94,7 @@ object RunConditionUtil {
     }
 
     private fun checkChannelNSFW(container: Container, event: MessageReceivedEvent, language: String): Boolean {
-        return if (container.settings.developerIds.contains(event.author.idLong)) {
+        return if (container.settings.botInfo.developerIds.contains(event.author.idLong)) {
             true
         } else {
             if (event.textChannel.isNSFW) {
@@ -108,7 +108,7 @@ object RunConditionUtil {
     }
 
     private fun checkDevOnly(container: Container, event: MessageReceivedEvent, language: String): Boolean {
-        return if (container.settings.developerIds.contains(event.author.idLong)) {
+        return if (container.settings.botInfo.developerIds.contains(event.author.idLong)) {
             true
         } else {
             val msg = i18n.getTranslation(language, "message.runcondition.failed.devonly")

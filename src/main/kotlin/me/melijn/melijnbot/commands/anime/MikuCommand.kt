@@ -22,7 +22,7 @@ class MikuCommand : AbstractCommand("command.miku") {
         val web = context.webManager
 
         val eb = Embedder(context)
-            .setImage(getRandomPossumUrl(web, context.container.settings.imghoard.token))
+            .setImage(getRandomPossumUrl(web, context.container.settings.api.imgHoard.token))
         sendEmbedRsp(context, eb.build())
     }
 

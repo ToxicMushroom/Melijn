@@ -1,13 +1,10 @@
 package me.melijn.melijnbot.internals.web.botlist
 
-import io.ktor.client.HttpClient
-import io.ktor.client.features.ClientRequestException
-import io.ktor.client.features.ServerResponseException
-import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.header
-import io.ktor.client.request.post
-import io.ktor.content.TextContent
-import io.ktor.http.ContentType
+import io.ktor.client.*
+import io.ktor.client.features.*
+import io.ktor.client.request.*
+import io.ktor.content.*
+import io.ktor.http.*
 import kotlinx.coroutines.TimeoutCancellationException
 import me.melijn.melijnbot.internals.Settings
 import me.melijn.melijnbot.internals.threading.TaskManager
@@ -23,7 +20,7 @@ class BotListApi(val httpClient: HttpClient, val settings: Settings) {
 
     fun updateTopDotGG(serversArray: List<Long>) {
         val token = settings.tokens.topDotGG
-        val url = "$TOP_GG_URL/api/bots/${settings.id}/stats"
+        val url = "$TOP_GG_URL/api/bots/${settings.botInfo.id}/stats"
         if (token.isBlank()) return
         TaskManager.async {
             val body = DataObject.empty()
@@ -51,7 +48,7 @@ class BotListApi(val httpClient: HttpClient, val settings: Settings) {
 
     fun updateBotsOnDiscordXYZ(servers: Long) {
         val token = settings.tokens.botsOnDiscordXYZ
-        val url = "$BOTS_ON_DISCORD_XYZ_URL/bot-api/bots/${settings.id}/guilds"
+        val url = "$BOTS_ON_DISCORD_XYZ_URL/bot-api/bots/${settings.botInfo.id}/guilds"
         if (token.isBlank()) return
         TaskManager.async {
             val body = DataObject.empty()
@@ -67,7 +64,7 @@ class BotListApi(val httpClient: HttpClient, val settings: Settings) {
 
     fun updateBotlistSpace(serversArray: List<Long>) {
         val token = settings.tokens.botlistSpace
-        val url = "$BOTLIST_SPACE/v1/bots/${settings.id}"
+        val url = "$BOTLIST_SPACE/v1/bots/${settings.botInfo.id}"
         if (token.isBlank()) return
         TaskManager.async {
             val body = DataObject.empty()
@@ -83,7 +80,7 @@ class BotListApi(val httpClient: HttpClient, val settings: Settings) {
 
     fun updateDiscordBotListCom(servers: Long, voice: Long) {
         val token = settings.tokens.discordBotListCom
-        val url = "$DISCORD_BOT_LIST_COM/api/v1/bots/${settings.id}/stats"
+        val url = "$DISCORD_BOT_LIST_COM/api/v1/bots/${settings.botInfo.id}/stats"
         if (token.isBlank()) return
         TaskManager.async {
             val body = DataObject.empty()
@@ -101,7 +98,7 @@ class BotListApi(val httpClient: HttpClient, val settings: Settings) {
 
     fun updateDiscordBotsGG(servers: Long, shards: Long) {
         val token = settings.tokens.discordBotsGG
-        val url = "$DISCORD_BOTS_GG/api/v1/bots/${settings.id}/stats"
+        val url = "$DISCORD_BOTS_GG/api/v1/bots/${settings.botInfo.id}/stats"
         if (token.isBlank()) return
         TaskManager.async {
             val body = DataObject.empty()
@@ -118,7 +115,7 @@ class BotListApi(val httpClient: HttpClient, val settings: Settings) {
 
     fun updateBotsForDiscordCom(servers: Long) {
         val token = settings.tokens.botsForDiscordCom
-        val url = "$BOTS_FOR_DISCORD_COM/api/bot/${settings.id}"
+        val url = "$BOTS_FOR_DISCORD_COM/api/bot/${settings.botInfo.id}"
         if (token.isBlank()) return
         TaskManager.async {
             val body = DataObject.empty()
@@ -134,7 +131,7 @@ class BotListApi(val httpClient: HttpClient, val settings: Settings) {
 
     fun updateDiscordBoats(servers: Long) {
         val token = settings.tokens.discordBoats
-        val url = "$DISCORD_BOATS/api/bot/${settings.id}"
+        val url = "$DISCORD_BOATS/api/bot/${settings.botInfo.id}"
         if (token.isBlank()) return
         TaskManager.async {
             val body = DataObject.empty()

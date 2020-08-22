@@ -45,7 +45,7 @@ object VoiceUtil {
             audioLoader.loadNewTrack(daoManager, container.lavaManager, channelUpdate, guild.jda.selfUser, musicUrl, NextSongPosition.BOTTOM)
 
         } else if (botChannel == null && musicChannel.id == channelUpdate.id) {
-            if (listeningMembers(musicChannel, container.settings.id) > 0) {
+            if (listeningMembers(musicChannel, container.settings.botInfo.id) > 0) {
                 val groupId = trackManager.groupId
                 if (container.lavaManager.tryToConnectToVCSilent(musicChannel, groupId)) {
                     audioLoader.loadNewTrack(daoManager, container.lavaManager, channelUpdate, guild.jda.selfUser, musicUrl, NextSongPosition.BOTTOM)

@@ -20,7 +20,7 @@ import moe.ganen.jikankt.connection.RestClient
 import moe.ganen.jikankt.exception.JikanException
 import net.dv8tion.jda.api.entities.MessageEmbed
 
-class MyAnimeListCommand(jikanSettings: Settings.Jikan) : AbstractCommand("command.myanimelist") {
+class MyAnimeListCommand(jikanSettings: Settings.Api.Jikan) : AbstractCommand("command.myanimelist") {
 
     private val animeArg: AnimeArg
     private val jikanUrl: String

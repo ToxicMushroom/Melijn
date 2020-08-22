@@ -26,7 +26,7 @@ class NyancatCommand : AbstractCommand("command.nyancat") {
 
         val eb = Embedder(context)
             .setTitle(title)
-            .setImage(getRandomNyancatUrl(context.webManager, context.container.settings.imghoard.token))
+            .setImage(getRandomNyancatUrl(context.webManager, context.container.settings.api.imgHoard.token))
         sendEmbedRsp(context, eb.build())
     }
 

@@ -32,7 +32,7 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
     private val guildPrefixWrapper = container.daoManager.guildPrefixWrapper
     private val userPrefixWrapper = container.daoManager.userPrefixWrapper
-    private val melijnMentions = arrayOf("<@${container.settings.id}>", "<@!${container.settings.id}>")
+    private val melijnMentions = arrayOf("<@${container.settings.botInfo.id}>", "<@!${container.settings.botInfo.id}>")
 
     private val commandMap: HashMap<String, AbstractCommand> = HashMap()
 
@@ -341,15 +341,15 @@ class CommandClient(private val commandList: Set<AbstractCommand>, private val c
 
 
     private suspend fun getPrefixes(event: MessageReceivedEvent): List<String> {
-        var prefixes = if (event.isFromGuild) {
+        val prefixes = if (event.isFromGuild) {
             guildPrefixWrapper.getPrefixes(event.guild.idLong).toMutableList()
         } else {
             mutableListOf()
         }
 
-        //add default prefix if none are set
+        // add default prefix if none are set
         if (prefixes.isEmpty()) {
-            prefixes = mutableListOf(container.settings.prefix)
+            prefixes.add(container.settings.botInfo.prefix)
         }
 
         //registering private prefixes
