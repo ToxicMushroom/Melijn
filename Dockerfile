@@ -9,6 +9,6 @@ FROM toxicmushroom/openjdk12-procps:v3
 WORKDIR /opt/melijn
 COPY --from=builder ./etc/melijn/build/libs/ .
 ENTRYPOINT java \
-    -Xmx2560M\
+    -Xmx2560M \
     -jar \
     ./melijn.jar
