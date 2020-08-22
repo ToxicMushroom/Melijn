@@ -1,19 +1,13 @@
 package me.melijn.melijnbot.internals.web
 
 import com.sun.management.OperatingSystemMXBean
-import io.ktor.application.call
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.request.header
-import io.ktor.request.receiveText
-import io.ktor.response.respondText
-import io.ktor.routing.get
-import io.ktor.routing.post
-import io.ktor.routing.routing
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.engine.stop
-import io.ktor.server.netty.Netty
-import io.ktor.server.netty.NettyApplicationEngine
+import io.ktor.application.*
+import io.ktor.http.*
+import io.ktor.request.*
+import io.ktor.response.*
+import io.ktor.routing.*
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.joinAll
 import me.melijn.melijnbot.Container
@@ -404,12 +398,16 @@ class RestServer(container: Container) {
                 val disabled = daoManager.embedDisabledWrapper.embedDisabledCache.contains(idLong)
                 settings.put("embedsDisabled", disabled)
 
+                val provided = DataObject.empty()
+                provided.put("timezones", DataArray.fromCollection(TimeZone.getAvailableIDs().toList()))
+
                 jobs.joinAll()
 
                 call.respondText {
                     DataObject.empty()
                         .put("guild", guildData)
                         .put("settings", settings)
+                        .put("provided", provided)
                         .toString()
                 }
             }

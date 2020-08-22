@@ -33,7 +33,7 @@ class TopVotersCommand : AbstractCommand("command.topvoters") {
         }
 
         val tableBuilder = TableBuilder(true)
-        tableBuilder.setColumns("Rank", "User", "Votes")
+        tableBuilder.setColumns("Rank", "Votes", "User")
         for ((index, pair) in userMap.toList().withIndex()) {
             val user = context.shardManager.retrieveUserById(pair.first).await()
             tableBuilder.addRow("${index + 1 + (10 * page)}", "${pair.second}", user.asTag)
