@@ -99,6 +99,7 @@ data class Settings(
     companion object {
         private val dotenv = dotenv {
             this.filename = System.getenv("ENV_FILE") ?: ".env"
+            this.ignoreIfMissing = true
         }
 
         fun get(path: String): String = dotenv[path.toUpperCase().replace(".", "_")]
