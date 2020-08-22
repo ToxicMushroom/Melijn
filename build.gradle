@@ -50,7 +50,7 @@ repositories {
 
 dependencies {
     // https://bintray.com/dv8fromtheworld/maven/JDA/
-    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.2.0_194') {
+    implementation(group: 'net.dv8tion', name: 'JDA', version: '4.2.0_196') {
         exclude module: 'opus-java'
     }
 
@@ -124,6 +124,8 @@ dependencies {
     implementation group: 'io.lettuce', name: 'lettuce-core', version: '5.3.3.RELEASE'
 
     implementation group: 'org.codehaus.groovy', name: 'groovy', version: '3.0.5'
+
+    implementation 'io.github.cdimascio:java-dotenv:5.2.1'
 
 }
 
